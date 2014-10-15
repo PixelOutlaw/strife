@@ -97,6 +97,10 @@ public class Champion {
         if (getPlayer().getEquipment().getItemInHand() != null && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
             ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
             for (StrifeAttribute attr : StrifeAttribute.values()) {
+                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
+                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION) {
+                    continue;
+                }
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
                 attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
