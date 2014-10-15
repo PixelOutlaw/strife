@@ -57,13 +57,20 @@ public class ExperienceListener implements Listener {
         }
 
         if (desiredLevelUp.intValue() == defaultLevelUp.intValue()) {
+            event.setAmount(0);
             return;
         }
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
         double exact = Math.min(amount * factor, 0.25 * experienceManager.getXpNeededToLevelUp(player.getLevel()));
 
-        experienceManager.changeExp(exact);
+        int newXp = (int) exact;
+
+        event.setAmount(newXp);
+
+        if (exact > newXp) {
+            experienceManager.changeExp(exact - newXp);
+        }
     }
 
 }
