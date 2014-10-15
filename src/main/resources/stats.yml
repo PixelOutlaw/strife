@@ -1,0 +1,6 @@
+version: "0.0.1"
+vitality:
+  name: "Vitality"
+  description: "+2 Health"
+  attributes:
+    health: 2.0

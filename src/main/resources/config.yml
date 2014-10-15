@@ -1,0 +1,5 @@
+version: "0.0.1"
+leveling:
+  formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
+  gain-cap: 0.1
+

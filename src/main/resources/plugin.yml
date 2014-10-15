@@ -1,0 +1,16 @@
+name: ${project.build.name}
+version: ${project.build.version}
+main: info.faceland.strife.StrifePlugin
+depend: [Facecore]
+
+commands:
+  attributes:
+    aliases: [attr]
+  stats:
+    aliases: [st]
+
+permissions:
+  strife.command.attributes:
+    default: true
+  strife.command.stats.level:
+    default: true
