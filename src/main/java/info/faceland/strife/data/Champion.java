@@ -76,9 +76,13 @@ public class Champion {
 
     public Map<StrifeAttribute, Double> getAttributeValues() {
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        for (StrifeAttribute attr : StrifeAttribute.values()) {
+            attributeDoubleMap.put(attr, attr.getBaseValue());
+        }
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
-                attributeDoubleMap.put(attr, entry.getKey().getAttribute(attr) * entry.getValue());
+                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
         for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
@@ -87,9 +91,6 @@ public class Champion {
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                if (!attributeDoubleMap.containsKey(attr)) {
-                    val += attr.getBaseValue();
-                }
                 attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
@@ -97,9 +98,6 @@ public class Champion {
             ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                if (!attributeDoubleMap.containsKey(attr)) {
-                    val += attr.getBaseValue();
-                }
                 attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
