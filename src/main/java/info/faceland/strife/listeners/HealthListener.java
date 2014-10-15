@@ -103,6 +103,9 @@ public class HealthListener implements Listener {
     }
 
     private void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
+        if (!attributeDoubleMap.containsKey(StrifeAttribute.HEALTH)) {
+            return;
+        }
         double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
         if (player.getHealth() > newMaxHealth) {
             double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
