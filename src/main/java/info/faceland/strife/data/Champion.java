@@ -87,13 +87,20 @@ public class Champion {
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, attr.getBaseValue() + val + AttributeHandler.getValue(itemStack, attr));
+                if (!attributeDoubleMap.containsKey(attr)) {
+                    val += attr.getBaseValue();
+                }
+                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
         if (getPlayer().getEquipment().getItemInHand() != null && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
+            ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, attr.getBaseValue() + val + AttributeHandler.getValue(getPlayer().getEquipment().getItemInHand(), attr));
+                if (!attributeDoubleMap.containsKey(attr)) {
+                    val += attr.getBaseValue();
+                }
+                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
         return attributeDoubleMap;
