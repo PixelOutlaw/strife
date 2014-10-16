@@ -24,6 +24,7 @@ import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.JsonDataStorage;
+import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.SaveTask;
 import net.nunnerycode.java.libraries.cannonball.DebugPrinter;
 import org.bukkit.Bukkit;
@@ -46,6 +47,7 @@ public class StrifePlugin extends FacePlugin {
     private JsonDataStorage storage;
     private ChampionManager championManager;
     private SaveTask saveTask;
+    private AttackSpeedTask attackSpeedTask;
     private CommandHandler commandHandler;
     private IvorySettings settings;
     private LevelingRate levelingRate;
@@ -117,6 +119,7 @@ public class StrifePlugin extends FacePlugin {
         }
 
         saveTask = new SaveTask(this);
+        attackSpeedTask = new AttackSpeedTask();
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new StatsCommand(this));
@@ -134,6 +137,7 @@ public class StrifePlugin extends FacePlugin {
     @Override
     public void postEnable() {
         saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
+        attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
