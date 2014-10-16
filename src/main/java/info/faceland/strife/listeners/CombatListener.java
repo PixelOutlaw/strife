@@ -83,8 +83,7 @@ public class CombatListener implements Listener {
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             meleeDamageA = vals.get(StrifeAttribute.MELEE_DAMAGE);
-            attackSpeedA = StrifeAttribute.ATTACK_SPEED.getBaseValue() / (vals.get(StrifeAttribute.ATTACK_SPEED)
-                                                                          / StrifeAttribute.ATTACK_SPEED.getBaseValue());
+            attackSpeedA = vals.get(StrifeAttribute.ATTACK_SPEED) / StrifeAttribute.ATTACK_SPEED.getBaseValue();
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE) / StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
