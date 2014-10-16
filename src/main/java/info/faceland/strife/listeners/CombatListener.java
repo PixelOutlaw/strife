@@ -23,6 +23,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
 
 public class CombatListener implements Listener {
 
@@ -97,6 +98,8 @@ public class CombatListener implements Listener {
                 attackSpeedMultA = Math.min(1.0, Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0));
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
+            plugin.debug(Level.INFO, "attackSpeedA = " + attackSpeedA, "timeLeft = " + timeLeft, "timeToSet = " + timeToSet,
+                         "attackSpeedMult = " + attackSpeedMultA);
         }
         if (b instanceof Player) {
             Player p = (Player) b;
@@ -132,7 +135,7 @@ public class CombatListener implements Listener {
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
                 event.setDamage(damage);
-                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+                a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 a.damage(damage * reflectDamageB);
                 return;
             }
@@ -144,7 +147,7 @@ public class CombatListener implements Listener {
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
             event.setDamage(damage);
-            a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+            a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             a.damage(damage * reflectDamageB);
             return;
         }
