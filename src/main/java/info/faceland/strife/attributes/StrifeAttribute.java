@@ -14,10 +14,10 @@ import org.bukkit.Sound;
 public enum StrifeAttribute {
 
     // modify any attributes here
-    MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Maximum damage dealt by melee attacks", 0, false, null),
-    RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by bow", 0, false, null),
+    MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Maximum damage dealt by melee attacks", 1, false, null),
+    RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by bow", 1, false, null),
     CRITICAL_RATE("Critical Rate", ChatColor.YELLOW, "Chance of landing a critical strike", 0, true, null),
-    CRITICAL_DAMAGE("Critical Damage", ChatColor.YELLOW, "100% Critical Damage = no bonus. 200% Critical Damage = 2x.", 1D, true, null),
+    CRITICAL_DAMAGE("Critical Damage", ChatColor.YELLOW, "100% Critical Damage = no bonus. 200% Critical Damage = 2x.", 1.5D, true, null),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "100% Attack Speed = 2s. 200% Attack Speed = 1s.", 2D, true, null),
     FIRE_DAMAGE("Fire Damage", ChatColor.YELLOW, "Sets enemies on fire.", 0, false, null),
     LIFE_STEAL("Life Steal", ChatColor.YELLOW, "Heals for a percentage of damage dealt.", 0, true, null),
