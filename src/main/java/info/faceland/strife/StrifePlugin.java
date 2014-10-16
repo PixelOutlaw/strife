@@ -73,6 +73,10 @@ public class StrifePlugin extends FacePlugin {
         return levelingRate;
     }
 
+    public AttackSpeedTask getAttackSpeedTask() {
+        return attackSpeedTask;
+    }
+
     @Override
     public void enable() {
         if (statsYAML.update()) {
@@ -184,4 +188,5 @@ public class StrifePlugin extends FacePlugin {
     public IvorySettings getSettings() {
         return settings;
     }
+
 }
