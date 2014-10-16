@@ -12,9 +12,11 @@ import info.faceland.facecore.shade.google.common.base.CharMatcher;
 import info.faceland.hilt.HiltItemStack;
 import info.faceland.utils.StringConverter;
 import info.faceland.utils.StringListUtils;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Map;
 
 public class AttributeHandler {
 
@@ -39,6 +41,20 @@ public class AttributeHandler {
 
     public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
         return getValue(new HiltItemStack(itemStack), attribute);
+    }
+
+    public static void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
+        if (!attributeDoubleMap.containsKey(StrifeAttribute.HEALTH)) {
+            return;
+        }
+        double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
+        if (player.getHealth() > newMaxHealth) {
+            double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
+            player.setHealth(tempHealth);
+        }
+        player.setMaxHealth(newMaxHealth);
+        player.setHealthScaled(true);
+        player.setHealthScale(player.getMaxHealth());
     }
 
 }

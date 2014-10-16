@@ -14,6 +14,7 @@ import info.faceland.facecore.shade.voorhees.PrettyMessageFactory;
 import info.faceland.facecore.shade.voorhees.api.IPrettyMessage;
 import info.faceland.messaging.Chatty;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.ChatColor;
@@ -67,6 +68,7 @@ public class StatsCommand {
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         Chatty.sendMessage(sender, "<green>You leveled up <white>%stat%<green>.", new String[][]{{"%stat%", stat.getName()}});
+        AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
     }
 
 }

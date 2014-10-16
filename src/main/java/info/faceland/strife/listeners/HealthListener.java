@@ -44,28 +44,28 @@ public class HealthListener implements Listener {
         }
         Player player = (Player) event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        updateHealth(player, champion.getAttributeValues());
+        AttributeHandler.updateHealth(player, champion.getAttributeValues());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerPickupItem(PlayerPickupItemEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        updateHealth(player, champion.getAttributeValues());
+        AttributeHandler.updateHealth(player, champion.getAttributeValues());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        updateHealth(player, champion.getAttributeValues());
+        AttributeHandler.updateHealth(player, champion.getAttributeValues());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerItemBreak(PlayerItemBreakEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        updateHealth(player, champion.getAttributeValues());
+        AttributeHandler.updateHealth(player, champion.getAttributeValues());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -99,21 +99,7 @@ public class HealthListener implements Listener {
                 attributeDoubleMap.put(attr, attr.getBaseValue() + val);
             }
         }
-        updateHealth(player, attributeDoubleMap);
-    }
-
-    private void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
-        if (!attributeDoubleMap.containsKey(StrifeAttribute.HEALTH)) {
-            return;
-        }
-        double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
-        if (player.getHealth() > newMaxHealth) {
-            double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
-            player.setHealth(tempHealth);
-        }
-        player.setMaxHealth(newMaxHealth);
-        player.setHealthScaled(true);
-        player.setHealthScale(player.getMaxHealth());
+        AttributeHandler.updateHealth(player, attributeDoubleMap);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
