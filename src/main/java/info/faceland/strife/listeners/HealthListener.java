@@ -73,30 +73,34 @@ public class HealthListener implements Listener {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        for (StrifeAttribute attr : StrifeAttribute.values()) {
+            attributeDoubleMap.put(attr, attr.getBaseValue());
+        }
         for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
-                attributeDoubleMap.put(attr, entry.getKey().getAttribute(attr) * entry.getValue());
+                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
-        for (ItemStack itemStack : player.getEquipment().getArmorContents()) {
+        for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
                 continue;
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, attr.getBaseValue() + val + AttributeHandler.getValue(itemStack, attr));
+                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
-        if (player.getInventory().getItem(event.getNewSlot()) != null && player.getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
+        if (champion.getPlayer().getInventory().getItem(event.getNewSlot()) != null
+            && champion.getPlayer().getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
+            ItemStack itemStack = champion.getPlayer().getInventory().getItem(event.getNewSlot());
             for (StrifeAttribute attr : StrifeAttribute.values()) {
+                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
+                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION) {
+                    continue;
+                }
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, attr.getBaseValue() + val + AttributeHandler.getValue(player.getInventory().getItem(event.getNewSlot())
-                        , attr));
-            }
-        } else {
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, attr.getBaseValue() + val);
+                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
         AttributeHandler.updateHealth(player, attributeDoubleMap);
@@ -105,7 +109,9 @@ public class HealthListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityRegainHealth(EntityRegainHealthEvent event) {
         if (!(event.getEntity() instanceof Player) || !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN || event
-                .getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) || event.isCancelled()) {
+                                                                                                                                         .getRegainReason() ==
+                                                                                                                                 EntityRegainHealthEvent.RegainReason.SATIATED) ||
+            event.isCancelled()) {
             return;
         }
         Player player = (Player) event.getEntity();
