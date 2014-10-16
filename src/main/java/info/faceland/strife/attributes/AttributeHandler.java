@@ -12,6 +12,7 @@ import info.faceland.facecore.shade.google.common.base.CharMatcher;
 import info.faceland.hilt.HiltItemStack;
 import info.faceland.utils.StringConverter;
 import info.faceland.utils.StringListUtils;
+import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +33,7 @@ public class AttributeHandler {
 
     public static double getValue(HiltItemStack itemStack, StrifeAttribute attribute) {
         double amount = 0D;
-        if (itemStack == null || attribute == null) {
+        if (itemStack == null || itemStack.getType() == Material.AIR || attribute == null) {
             return amount;
         }
         List<String> lore = itemStack.getLore();
