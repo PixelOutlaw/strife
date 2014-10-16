@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 
@@ -25,6 +26,13 @@ public class ExperienceListener implements Listener {
 
     public ExperienceListener(StrifePlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        event.setKeepLevel(true);
+        event.setDroppedExp(0);
+        event.getEntity().setExp(Math.max(event.getEntity().getExp() - 0.05f, 0f));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
