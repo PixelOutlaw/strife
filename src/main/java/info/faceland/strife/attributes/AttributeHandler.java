@@ -12,6 +12,7 @@ import info.faceland.facecore.shade.google.common.base.CharMatcher;
 import info.faceland.hilt.HiltItemStack;
 import info.faceland.utils.StringConverter;
 import info.faceland.utils.StringListUtils;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -19,6 +20,15 @@ import java.util.List;
 import java.util.Map;
 
 public class AttributeHandler {
+
+    public static double getValue(LivingEntity livingEntity, StrifeAttribute attribute) {
+        double amount = 0D;
+        for (ItemStack itemStack : livingEntity.getEquipment().getArmorContents()) {
+            amount += getValue(itemStack, attribute);
+        }
+        amount += getValue(livingEntity.getEquipment().getItemInHand(), attribute);
+        return amount;
+    }
 
     public static double getValue(HiltItemStack itemStack, StrifeAttribute attribute) {
         double amount = 0D;
