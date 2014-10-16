@@ -10,6 +10,7 @@ package info.faceland.strife.listeners;
 
 import info.faceland.messaging.Chatty;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import org.bukkit.entity.LivingEntity;
@@ -90,7 +91,8 @@ public class CombatListener implements Listener {
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             meleeDamageA = vals.get(StrifeAttribute.MELEE_DAMAGE);
-            attackSpeedA = vals.get(StrifeAttribute.ATTACK_SPEED) / StrifeAttribute.ATTACK_SPEED.getBaseValue();
+            attackSpeedA = (StrifeAttribute.ATTACK_SPEED.getBaseValue() / (2 * (1 / (1 + AttributeHandler.getValue(p,
+                                                                                                                   StrifeAttribute.ATTACK_SPEED)))));
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE) / StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
@@ -98,7 +100,7 @@ public class CombatListener implements Listener {
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
-            long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
+            long timeToSet = Math.round(Math.max(4.0 * attackSpeedA * StrifeAttribute.ATTACK_SPEED.getBaseValue(), 0.0));
             if (timeLeft > 0) {
                 attackSpeedMultA = Math.min(1.0, Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0));
             }
