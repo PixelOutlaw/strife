@@ -63,7 +63,7 @@ public class CombatListener implements Listener {
                 return;
             }
         }
-        double damage;
+        double damage = (a instanceof Player) ? 0 : event.getDamage(EntityDamageEvent.DamageModifier.BASE);
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA = 0D, playerHealthA = b.getHealth();
@@ -97,6 +97,8 @@ public class CombatListener implements Listener {
                 attackSpeedMultA = Math.min(1.0, Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0));
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
+        } else {
+            meleeDamageA = damage;
         }
         if (b instanceof Player) {
             Player p = (Player) b;
@@ -127,7 +129,7 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < criticalRateA) {
                     damage = damage * criticalDamageA;
                 }
-                double damageReducer = (1 - (armorB / 100)) * (1 - (armorPenA / 100));
+                double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
                 damage = damage * damageReducer;
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
@@ -140,7 +142,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
             }
-            double damageReducer = (1 - (armorB / 100)) * (1 - (armorPenA / 100));
+            double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
             event.setDamage(damage);
