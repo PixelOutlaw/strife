@@ -14,6 +14,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,12 +40,13 @@ public class HealthListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) {
-            return;
+        for (HumanEntity entity : event.getViewers()) {
+            if (entity instanceof Player) {
+                Player player = (Player) event.getPlayer();
+                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+                AttributeHandler.updateHealth(player, champion.getAttributeValues());
+            }
         }
-        Player player = (Player) event.getPlayer();
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        AttributeHandler.updateHealth(player, champion.getAttributeValues());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
