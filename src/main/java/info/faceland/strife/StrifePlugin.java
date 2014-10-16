@@ -18,6 +18,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.StatsCommand;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.listeners.CombatListener;
 import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.HealthListener;
 import info.faceland.strife.managers.ChampionManager;
@@ -144,6 +145,7 @@ public class StrifePlugin extends FacePlugin {
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
 
