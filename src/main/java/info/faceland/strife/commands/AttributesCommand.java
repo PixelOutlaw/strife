@@ -34,7 +34,7 @@ public class AttributesCommand {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
         for (StrifeAttribute attribute : StrifeAttribute.values()) {
-            double val = valueMap.containsKey(attribute) ? valueMap.get(attribute) : attribute.getBaseValue();
+            double val = valueMap.get(attribute);
             IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
             if (attribute == StrifeAttribute.ATTACK_SPEED) {
                 message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")

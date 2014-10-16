@@ -81,7 +81,7 @@ public class Champion {
         }
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                double val = attributeDoubleMap.get(attr);
                 attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
@@ -90,7 +90,7 @@ public class Champion {
                 continue;
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                double val = attributeDoubleMap.get(attr);
                 attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
@@ -101,7 +101,7 @@ public class Champion {
                     || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION) {
                     continue;
                 }
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                double val = attributeDoubleMap.get(attr);
                 attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }

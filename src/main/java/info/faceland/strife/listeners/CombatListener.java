@@ -23,7 +23,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
 
 public class CombatListener implements Listener {
 
@@ -64,14 +63,14 @@ public class CombatListener implements Listener {
                 return;
             }
         }
-        double damage = 0;
-        double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA = StrifeAttribute.ATTACK_SPEED.getBaseValue();
+        double damage;
+        double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA = 0D, playerHealthA = b.getHealth();
         double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
         double attackSpeedMultA = 1D;
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
-        double playerHealthB = b.getHealth(), parryB = StrifeAttribute.PARRY.getBaseValue(), blockB = StrifeAttribute.BLOCK.getBaseValue();
+        double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
         boolean parried = false;
         if (a instanceof Player) {
@@ -98,8 +97,6 @@ public class CombatListener implements Listener {
                 attackSpeedMultA = Math.min(1.0, Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0));
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
-            plugin.debug(Level.INFO, "attackSpeedA = " + attackSpeedA, "timeLeft = " + timeLeft, "timeToSet = " + timeToSet,
-                         "attackSpeedMult = " + attackSpeedMultA);
         }
         if (b instanceof Player) {
             Player p = (Player) b;
