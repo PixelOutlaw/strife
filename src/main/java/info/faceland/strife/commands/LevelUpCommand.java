@@ -20,15 +20,15 @@ import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public class StatsCommand {
+public class LevelUpCommand {
 
     private final StrifePlugin plugin;
 
-    public StatsCommand(StrifePlugin plugin) {
+    public LevelUpCommand(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
-    @Command(identifier = "stats")
+    @Command(identifier = "levelup")
     public void baseCommand(Player sender) {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         Chatty.sendMessage(sender, "<gold>----------------------------------");
@@ -38,7 +38,7 @@ public class StatsCommand {
             IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
             message.then(ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel() + " ] " + stat.getName() + " ");
             if (champion.getLevel(stat) < champion.getMaximumStatLevel() && champion.getUnusedStatPoints() > 0) {
-                message.then("[+]").color(ChatColor.GOLD).command("/stats level " + stat.getKey()).tooltip(ChatColor.WHITE + "Level up.").then(" ");
+                message.then("[+]").color(ChatColor.GOLD).command("/levelup level " + stat.getKey()).tooltip(ChatColor.WHITE + "Level up.").then(" ");
             }
             message.then("[?]").color(ChatColor.WHITE).tooltip(ChatColor.WHITE + stat.getDescription());
             message.send(sender);
@@ -46,7 +46,7 @@ public class StatsCommand {
         Chatty.sendMessage(sender, "<gold>----------------------------------");
     }
 
-    @Command(identifier = "stats level", permissions = "strife.command.strife.level")
+    @Command(identifier = "levelup level", permissions = "strife.command.strife.level")
     public void levelSubCommand(Player sender, @Arg(name = "stat") String name) {
         StrifeStat stat = plugin.getStatManager().getStatByName(name);
         if (stat == null) {

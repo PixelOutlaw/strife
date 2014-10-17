@@ -4,13 +4,13 @@ main: info.faceland.strife.StrifePlugin
 depend: [Facecore]
 
 commands:
-  attributes:
-    aliases: [attr]
   stats:
     aliases: [st]
+  levelup:
+    aliases: [lu]
 
 permissions:
-  strife.command.attributes:
+  strife.command.stats:
     default: true
-  strife.command.stats.level:
+  strife.command.levelup:
     default: true

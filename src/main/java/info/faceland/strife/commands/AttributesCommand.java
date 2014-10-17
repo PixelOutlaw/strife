@@ -30,7 +30,7 @@ public class AttributesCommand {
         this.plugin = plugin;
     }
 
-    @Command(identifier = "attributes", permissions = "strife.command.attributes")
+    @Command(identifier = "stats", permissions = "strife.command.stats")
     public void baseCommand(Player sender) {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();

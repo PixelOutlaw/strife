@@ -16,7 +16,7 @@ import info.faceland.facecore.shade.nun.ivory.config.VersionedIvoryYamlConfigura
 import info.faceland.facecore.shade.nun.ivory.config.settings.IvorySettings;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
-import info.faceland.strife.commands.StatsCommand;
+import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.listeners.CombatListener;
 import info.faceland.strife.listeners.DataListener;
@@ -128,7 +128,7 @@ public class StrifePlugin extends FacePlugin {
         attackSpeedTask = new AttackSpeedTask();
 
         commandHandler.registerCommands(new AttributesCommand(this));
-        commandHandler.registerCommands(new StatsCommand(this));
+        commandHandler.registerCommands(new LevelUpCommand(this));
 
         levelingRate = new LevelingRate();
         for (int i = 0; i < 100; i++) {
