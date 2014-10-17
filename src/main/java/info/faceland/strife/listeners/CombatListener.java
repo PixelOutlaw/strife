@@ -135,7 +135,9 @@ public class CombatListener implements Listener {
                 lifeStolenA = damage * lifeStealA;
                 event.setDamage(damage);
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
-                a.damage(damage * reflectDamageB);
+                if (reflectDamageB > 0) {
+                    a.damage(damage * reflectDamageB);
+                }
                 return;
             }
             damage = meleeDamageA * attackSpeedMultA;
@@ -147,7 +149,9 @@ public class CombatListener implements Listener {
             lifeStolenA = damage * lifeStealA;
             event.setDamage(damage);
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
-            a.damage(damage * reflectDamageB);
+            if (reflectDamageB > 0) {
+                a.damage(damage * reflectDamageB);
+            }
             return;
         }
         if (blocking) {
@@ -165,7 +169,9 @@ public class CombatListener implements Listener {
             lifeStolenA = damage * lifeStealA;
             event.setDamage(damage);
             a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-            a.damage(damage * reflectDamageB);
+            if (reflectDamageB > 0) {
+                a.damage(damage * reflectDamageB);
+            }
             return;
         }
         damage = rangedDamageA * event.getDamager().getVelocity().lengthSquared();
@@ -177,7 +183,9 @@ public class CombatListener implements Listener {
         lifeStolenA = damage * lifeStealA;
         event.setDamage(damage);
         a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-        a.damage(damage * reflectDamageB);
+        if (reflectDamageB > 0) {
+            a.damage(damage * reflectDamageB);
+        }
     }
 
 }
