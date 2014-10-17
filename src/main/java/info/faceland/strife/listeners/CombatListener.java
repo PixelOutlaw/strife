@@ -9,7 +9,6 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import org.bukkit.Sound;
@@ -81,7 +80,7 @@ public class CombatListener implements Listener {
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             meleeDamageA = vals.get(StrifeAttribute.MELEE_DAMAGE);
-            attackSpeedA = (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + AttributeHandler.getValue(p, StrifeAttribute.ATTACK_SPEED))));
+            attackSpeedA = (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + vals.get(StrifeAttribute.ATTACK_SPEED))));
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);

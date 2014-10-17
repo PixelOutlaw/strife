@@ -12,7 +12,6 @@ import info.faceland.facecore.shade.command.Command;
 import info.faceland.facecore.shade.voorhees.PrettyMessageFactory;
 import info.faceland.facecore.shade.voorhees.api.IPrettyMessage;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import org.bukkit.ChatColor;
@@ -40,8 +39,7 @@ public class AttributesCommand {
             if (attribute == StrifeAttribute.ATTACK_SPEED) {
                 message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
                        .color(ChatColor.DARK_GRAY).then(" ")
-                       .then(FORMAT.format(100D * (StrifeAttribute.ATTACK_SPEED.getBaseValue() /
-                                           (2 * (1 / (1 + AttributeHandler.getValue(sender, StrifeAttribute.ATTACK_SPEED)))))));
+                       .then(FORMAT.format(100D * (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + val)))));
             } else {
                 message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
                        .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100 : val));
