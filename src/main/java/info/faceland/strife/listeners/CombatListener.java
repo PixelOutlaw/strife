@@ -35,13 +35,6 @@ public class CombatListener implements Listener {
         random = new Random(System.currentTimeMillis());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityDamageByEntityMonitor(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player) {
-            ((Player) event.getDamager()).sendMessage("final damage: " + event.getFinalDamage());
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         LivingEntity a;
@@ -104,9 +97,6 @@ public class CombatListener implements Listener {
                 attackSpeedMultA = Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0);
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
-            ((Player) a).sendMessage("meleeDamageA: " + meleeDamageA);
-            ((Player) a).sendMessage("attackSpeedA: " + attackSpeedA);
-            ((Player) a).sendMessage("attackSpeedMultA: " + attackSpeedMultA);
         } else {
             meleeDamageA = damage;
         }
