@@ -8,11 +8,11 @@
 
 package info.faceland.strife.listeners;
 
-import info.faceland.messaging.Chatty;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -56,11 +56,7 @@ public class CombatListener implements Listener {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues().get(StrifeAttribute.EVASION);
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
-                Chatty.sendMessage((Player) b, "<green>You evaded an attack!");
-                if (a instanceof Player) {
-                    Chatty.sendMessage((Player) a, "<white>%player%<red> evaded your attack!",
-                                       new String[][]{{"%player%", ((Player) a).getDisplayName()}});
-                }
+                b.getWorld().playSound(b.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
                 return;
             }
         }
