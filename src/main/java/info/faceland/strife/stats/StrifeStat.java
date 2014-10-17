@@ -13,12 +13,13 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StrifeStat {
+public class StrifeStat implements Comparable<StrifeStat> {
 
     private final String key;
     private String name;
     private String description;
     private Map<StrifeAttribute, Double> attributeMap;
+    private int order;
 
     public StrifeStat(String key) {
         this.key = key;
@@ -76,6 +77,22 @@ public class StrifeStat {
     @Override
     public int hashCode() {
         return key != null ? key.hashCode() : 0;
+    }
+
+    @Override
+    public int compareTo(StrifeStat o) {
+        if (o == null) {
+            return 1;
+        }
+        return Integer.compare(getOrder(), o.getOrder());
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
 }
