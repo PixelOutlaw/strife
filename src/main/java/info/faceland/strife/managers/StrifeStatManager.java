@@ -10,17 +10,18 @@ package info.faceland.strife.managers;
 
 import info.faceland.strife.stats.StrifeStat;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class StrifeStatManager {
 
     private Map<String, StrifeStat> statMap;
 
     public StrifeStatManager() {
-        statMap = new HashMap<>();
+        statMap = new LinkedHashMap<>();
     }
 
     public StrifeStat getStat(String name) {
@@ -42,8 +43,10 @@ public class StrifeStatManager {
         }
     }
 
-    public Set<StrifeStat> getStats() {
-        return new HashSet<>(statMap.values());
+    public List<StrifeStat> getStats() {
+        List<StrifeStat> list = new ArrayList<>(statMap.values());
+        Collections.sort(list);
+        return list;
     }
 
     public StrifeStat getStatByName(String name) {
