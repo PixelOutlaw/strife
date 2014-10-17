@@ -38,7 +38,8 @@ public class LevelUpCommand {
             IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
             message.then(ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel() + " ] " + stat.getName() + " ");
             if (champion.getLevel(stat) < champion.getMaximumStatLevel() && champion.getUnusedStatPoints() > 0) {
-                message.then("[+]").color(ChatColor.GOLD).command("/levelup level " + stat.getKey()).tooltip(ChatColor.WHITE + "Level up.").then(" ");
+                message.then("[+]").color(ChatColor.GOLD).command("/levelup level " + stat.getKey()).tooltip(
+                        ChatColor.GREEN + "Click to level up " + ChatColor.WHITE + stat.getName() + ChatColor.GREEN + "!").then(" ");
             }
             message.then("[?]").color(ChatColor.WHITE).tooltip(ChatColor.WHITE + stat.getDescription());
             message.send(sender);
