@@ -8,10 +8,12 @@
 
 package info.faceland.strife.listeners;
 
-import info.faceland.messaging.Chatty;
+import info.faceland.facecore.shade.voorhees.PrettyMessageFactory;
+import info.faceland.facecore.shade.voorhees.api.IPrettyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import me.desht.dhutils.ExperienceManager;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -46,7 +48,9 @@ public class ExperienceListener implements Listener {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        Chatty.sendMessage(player, "<gold>You have unspent stat points! Use \"/stats\" to use them.");
+        IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
+        message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
