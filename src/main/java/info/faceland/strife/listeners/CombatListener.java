@@ -91,9 +91,9 @@ public class CombatListener implements Listener {
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             meleeDamageA = vals.get(StrifeAttribute.MELEE_DAMAGE);
-            attackSpeedA = (StrifeAttribute.ATTACK_SPEED.getBaseValue() / (2 * (1 / (1 + AttributeHandler.getValue(p,
+            attackSpeedA = (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (2 * (1 / (1 + AttributeHandler.getValue(p,
                                                                                                                    StrifeAttribute.ATTACK_SPEED)))));
-            criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE) / StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
+            criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
             playerHealthA = a.getHealth();
@@ -102,7 +102,7 @@ public class CombatListener implements Listener {
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
             if (timeLeft > 0) {
-                attackSpeedMultA = Math.min(1.0, Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0));
+                attackSpeedMultA = Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0);
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
             ((Player) a).sendMessage("meleeDamageA: " + meleeDamageA);
