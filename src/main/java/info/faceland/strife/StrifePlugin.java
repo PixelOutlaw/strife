@@ -99,6 +99,7 @@ public class StrifePlugin extends FacePlugin {
             ConfigurationSection cs = statsYAML.getConfigurationSection(key);
             StrifeStat stat = new StrifeStat(key);
             stat.setName(cs.getString("name"));
+            stat.setOrder(cs.getInt("order"));
             stat.setDescription(cs.getString("description"));
             Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
             if (cs.isConfigurationSection("attributes")) {
