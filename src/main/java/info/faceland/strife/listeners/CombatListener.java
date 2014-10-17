@@ -175,7 +175,7 @@ public class CombatListener implements Listener {
             lifeStolenA = damage * lifeStealA;
             event.setDamage(damage);
             a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-            // a.damage(damage * reflectDamageB);
+            a.damage(damage * reflectDamageB);
             return;
         }
         damage = rangedDamageA * event.getDamager().getVelocity().length();
@@ -187,7 +187,7 @@ public class CombatListener implements Listener {
         lifeStolenA = damage * lifeStealA;
         event.setDamage(damage);
         a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-        // a.damage(damage * reflectDamageB);
+        a.damage(damage * reflectDamageB);
     }
 
 }
