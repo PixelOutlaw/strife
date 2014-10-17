@@ -178,7 +178,7 @@ public class CombatListener implements Listener {
             a.damage(damage * reflectDamageB);
             return;
         }
-        damage = rangedDamageA * event.getDamager().getVelocity().length();
+        damage = rangedDamageA * event.getDamager().getVelocity().lengthSquared();
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
         }
