@@ -66,7 +66,7 @@ public class CombatListener implements Listener {
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA = 0D, playerHealthA = b.getHealth();
         double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
-        double attackSpeedMultA = 1D;
+        double attackSpeedMultA = 1D, fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue();
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
@@ -88,6 +88,7 @@ public class CombatListener implements Listener {
             playerHealthA = a.getHealth();
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
+            fireDamageA = vals.get(StrifeAttribute.FIRE_DAMAGE);
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
             if (timeLeft > 0) {
@@ -142,6 +143,7 @@ public class CombatListener implements Listener {
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
                 }
+                b.setFireTicks((int) Math.round(fireDamageA * 20));
                 return;
             }
             damage = meleeDamageA * attackSpeedMultA;
@@ -157,6 +159,7 @@ public class CombatListener implements Listener {
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
             }
+            b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
         }
         if (blocking) {
@@ -179,6 +182,7 @@ public class CombatListener implements Listener {
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
             }
+            b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
         }
         damage = rangedDamageA * event.getDamager().getVelocity().lengthSquared();
@@ -194,6 +198,7 @@ public class CombatListener implements Listener {
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
         }
+        b.setFireTicks((int) Math.round(fireDamageA * 20));;
     }
 
 }
