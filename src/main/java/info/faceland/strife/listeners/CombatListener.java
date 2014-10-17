@@ -100,7 +100,7 @@ public class CombatListener implements Listener {
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
-            long timeToSet = Math.round(Math.max(4.0 * attackSpeedA * StrifeAttribute.ATTACK_SPEED.getBaseValue(), 0.0));
+            long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
             if (timeLeft > 0) {
                 attackSpeedMultA = Math.min(1.0, Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0));
             }
