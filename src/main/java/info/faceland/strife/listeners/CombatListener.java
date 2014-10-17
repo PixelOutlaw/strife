@@ -160,6 +160,34 @@ public class CombatListener implements Listener {
             a.damage(damage * reflectDamageB);
             return;
         }
+        if (blocking) {
+            if (parried) {
+                event.setDamage(0);
+                return;
+            }
+            damage = rangedDamageA * event.getDamager().getVelocity().length();
+            if (random.nextDouble() < criticalRateA) {
+                damage = damage * criticalDamageA;
+            }
+            double damageReducer = (1 - armorB) * (1 - armorPenA);
+            damage = damage * damageReducer;
+            damage = damage * (1 - blockB);
+            lifeStolenA = damage * lifeStealA;
+            event.setDamage(damage);
+            a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+            // a.damage(damage * reflectDamageB);
+            return;
+        }
+        damage = rangedDamageA * event.getDamager().getVelocity().length();
+        if (random.nextDouble() < criticalRateA) {
+            damage = damage * criticalDamageA;
+        }
+        double damageReducer = (1 - armorB) * (1 - armorPenA);
+        damage = damage * damageReducer;
+        lifeStolenA = damage * lifeStealA;
+        event.setDamage(damage);
+        a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+        // a.damage(damage * reflectDamageB);
     }
 
 }
