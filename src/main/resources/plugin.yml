@@ -8,9 +8,17 @@ commands:
     aliases: [st]
   levelup:
     aliases: [lu]
+  strife:
+    aliases: [str]
 
 permissions:
   strife.command.stats:
     default: true
   strife.command.levelup:
     default: true
+  strife.command.strife.reset:
+    default: op
+  strife.command.strife.clear:
+    default: op
+  strife.command.strife.raise:
+    default: op
