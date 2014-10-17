@@ -46,7 +46,7 @@ public class LevelUpCommand {
         Chatty.sendMessage(sender, "<gold>----------------------------------");
     }
 
-    @Command(identifier = "levelup level", permissions = "strife.command.strife.level")
+    @Command(identifier = "levelup level", permissions = "strife.command.levelup")
     public void levelSubCommand(Player sender, @Arg(name = "stat") String name) {
         StrifeStat stat = plugin.getStatManager().getStatByName(name);
         if (stat == null) {
