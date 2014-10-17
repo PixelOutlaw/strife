@@ -8,6 +8,7 @@
 
 package info.faceland.strife.listeners;
 
+import info.faceland.messaging.Chatty;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import org.bukkit.event.EventHandler;
@@ -31,6 +32,9 @@ public class DataListener implements Listener {
             champion.setUnusedStatPoints(event.getPlayer().getLevel());
             plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
             plugin.getChampionManager().addChampion(champion);
+            if (event.getPlayer().getLevel() > 0) {
+                Chatty.sendMessage(event.getPlayer(), "<gold>Your stat points have been reset. You may use <white>\"/stats\"<gold> to use them.");
+            }
         }
     }
 
