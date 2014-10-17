@@ -72,6 +72,8 @@ public class StrifeCommand {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         int diff = newLevel - oldLevel;
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff);
+        plugin.getChampionManager().removeChampion(champion.getUniqueId());
+        plugin.getChampionManager().addChampion(champion);
         Chatty.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
                            new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         Chatty.sendMessage(target, "<green>Your level has been raised.");
