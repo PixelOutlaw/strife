@@ -8,9 +8,12 @@
 
 package info.faceland.strife.listeners;
 
-import info.faceland.messaging.Chatty;
+import info.faceland.facecore.shade.voorhees.PrettyMessageFactory;
+import info.faceland.facecore.shade.voorhees.api.IPrettyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -25,7 +28,7 @@ public class DataListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(final PlayerJoinEvent event) {
         if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
             Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
             champion.setHighestReachedLevel(event.getPlayer().getLevel());
@@ -33,7 +36,26 @@ public class DataListener implements Listener {
             plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
             plugin.getChampionManager().addChampion(champion);
             if (event.getPlayer().getLevel() > 0) {
-                Chatty.sendMessage(event.getPlayer(), "<gold>Your stat points have been reset. You may use <white>\"/stats\"<gold> to use them.");
+                Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
+                        message.then("Your stats have been reset. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+                               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+                    }
+                }, 20L * 2);
+            }
+        } else {
+            Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+            if (champion.getUnusedStatPoints() > 0) {
+                Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
+                        message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+                               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+                    }
+                }, 20L * 2);
             }
         }
     }
