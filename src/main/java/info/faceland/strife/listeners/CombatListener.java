@@ -64,8 +64,8 @@ public class CombatListener implements Listener {
                 return;
             }
         }
-        double damage = (a instanceof Player) ? 0 : event.getDamage(EntityDamageEvent.DamageModifier.BASE);
-        double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
+        double damage;
+        double meleeDamageA, attackSpeedA;
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA = 0D, playerHealthA = b.getHealth();
         double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
@@ -98,7 +98,12 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            meleeDamageA = damage;
+            meleeDamageA = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
+            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
+                if (event.isApplicable(modifier)) {
+                    event.setDamage(modifier, 0D);
+                }
+            }
         }
         if (b instanceof Player) {
             Player p = (Player) b;
