@@ -57,6 +57,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
+                b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
                 return;
             }
         }
@@ -129,6 +130,7 @@ public class CombatListener implements Listener {
                 damage = meleeDamageA * attackSpeedMultA;
                 if (random.nextDouble() < criticalRateA) {
                     damage = damage * criticalDamageA;
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 }
                 double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
                 damage = damage * damageReducer;
@@ -144,6 +146,7 @@ public class CombatListener implements Listener {
             damage = meleeDamageA * attackSpeedMultA;
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
             damage = damage * damageReducer;
@@ -163,6 +166,7 @@ public class CombatListener implements Listener {
             damage = rangedDamageA * event.getDamager().getVelocity().length();
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             double damageReducer = (1 - armorB) * (1 - armorPenA);
             damage = damage * damageReducer;
@@ -178,6 +182,7 @@ public class CombatListener implements Listener {
         damage = rangedDamageA * event.getDamager().getVelocity().lengthSquared();
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
+            b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
         }
         double damageReducer = (1 - armorB) * (1 - armorPenA);
         damage = damage * damageReducer;
