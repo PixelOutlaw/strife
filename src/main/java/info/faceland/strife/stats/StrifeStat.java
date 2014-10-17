@@ -56,7 +56,7 @@ public class StrifeStat {
         if (attributeMap.containsKey(attribute)) {
             return attributeMap.get(attribute);
         }
-        return attribute.getBaseValue();
+        return 0;
     }
 
     @Override
