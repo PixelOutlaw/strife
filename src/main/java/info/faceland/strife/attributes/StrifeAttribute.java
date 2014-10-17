@@ -14,12 +14,12 @@ public enum StrifeAttribute {
 
     // modify any attributes here
     HEALTH("Health", ChatColor.BLUE, "Increases maximum health.", 20, false),
-    ARMOR("Armor", ChatColor.BLUE, "Protects from a percentage of damage received.", 0, true),
     REGENERATION("Regeneration", ChatColor.BLUE, "Increases health regained during natural regeneration.", 0, false),
-    EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true),
-    DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back to enemy.", 0, true),
+    ARMOR("Armor", ChatColor.BLUE, "Protects from a percentage of damage received.", 0, true),
     BLOCK("Block", ChatColor.BLUE, "Percentage of damage taken to reduce when blocking.", 0, true),
     PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect some damage when blocking.", 0, true),
+    EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true),
+    DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back to enemy.", 0, true),
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Maximum damage dealt by melee attacks", 1, false),
     RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by bow", 1, false),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "100% Attack Speed = 2s. 200% Attack Speed = 1s.", 2D, true),
