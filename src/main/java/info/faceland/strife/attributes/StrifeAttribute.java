@@ -68,7 +68,8 @@ public enum StrifeAttribute {
 
     public static StrifeAttribute fromName(String s) {
         for (StrifeAttribute val : values()) {
-            if (val.name.equalsIgnoreCase(s) || val.name().equalsIgnoreCase(s)) {
+            if (val.name.equalsIgnoreCase(s) || val.name().equalsIgnoreCase(s) || val.name.replace(" ", "-").equalsIgnoreCase(s) ||
+                    val.name().replace("_", "-").equalsIgnoreCase(s)) {
                 return val;
             }
         }
