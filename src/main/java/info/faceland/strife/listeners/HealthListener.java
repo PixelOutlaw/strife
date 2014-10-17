@@ -21,6 +21,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -46,6 +47,27 @@ public class HealthListener implements Listener {
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
                 AttributeHandler.updateHealth(player, champion.getAttributeValues());
             }
+        }
+        if (event.getPlayer() instanceof Player) {
+            Player player = (Player) event.getPlayer();
+            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+            AttributeHandler.updateHealth(player, champion.getAttributeValues());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        for (HumanEntity entity : event.getViewers()) {
+            if (entity instanceof Player) {
+                Player player = (Player) event.getPlayer();
+                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+                AttributeHandler.updateHealth(player, champion.getAttributeValues());
+            }
+        }
+        if (event.getPlayer() instanceof Player) {
+            Player player = (Player) event.getPlayer();
+            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+            AttributeHandler.updateHealth(player, champion.getAttributeValues());
         }
     }
 
