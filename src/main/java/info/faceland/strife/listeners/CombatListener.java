@@ -151,7 +151,7 @@ public class CombatListener implements Listener {
                     damage = damage * criticalDamageA;
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 }
-                double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
+                double damageReducer = (1 - (armorB * (1 - armorPenA)));
                 damage = damage * damageReducer;
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
@@ -169,7 +169,7 @@ public class CombatListener implements Listener {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
-            double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
+            double damageReducer = (1 - (armorB * (1 - armorPenA)));
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
@@ -192,7 +192,7 @@ public class CombatListener implements Listener {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
-            double damageReducer = (1 - armorB) * (1 - armorPenA);
+            double damageReducer = (1 - (armorB * (1 - armorPenA)));
             damage = damage * damageReducer;
             damage = damage * (1 - blockB);
             lifeStolenA = damage * lifeStealA;
@@ -210,7 +210,7 @@ public class CombatListener implements Listener {
             damage = damage * criticalDamageA;
             b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
         }
-        double damageReducer = (1 - armorB) * (1 - armorPenA);
+        double damageReducer = (1 - (armorB * (1 - armorPenA)));
         damage = damage * damageReducer;
         lifeStolenA = damage * lifeStealA;
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
