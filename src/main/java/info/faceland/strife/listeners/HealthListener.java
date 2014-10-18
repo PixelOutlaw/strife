@@ -50,13 +50,8 @@ public class HealthListener implements Listener {
                 AttributeHandler.updateHealth(player, champion.getAttributeValues());
             }
         }
-        if (event.getPlayer() instanceof Player) {
+        if (event.getPlayer() instanceof Player && event.getPlayer().getHealth() > 0) {
             Player player = (Player) event.getPlayer();
-            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            AttributeHandler.updateHealth(player, champion.getAttributeValues());
-        }
-        if (event.getInventory().getHolder() instanceof Player) {
-            Player player = (Player) event.getInventory().getHolder();
             Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
             AttributeHandler.updateHealth(player, champion.getAttributeValues());
         }
@@ -73,11 +68,6 @@ public class HealthListener implements Listener {
         }
         if (event.getPlayer() instanceof Player) {
             Player player = (Player) event.getPlayer();
-            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            AttributeHandler.updateHealth(player, champion.getAttributeValues());
-        }
-        if (event.getInventory().getHolder() instanceof Player) {
-            Player player = (Player) event.getInventory().getHolder();
             Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
             AttributeHandler.updateHealth(player, champion.getAttributeValues());
         }
