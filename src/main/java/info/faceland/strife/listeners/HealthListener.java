@@ -57,10 +57,8 @@ public class HealthListener implements Listener {
         }
         if (event.getInventory().getHolder() instanceof Player) {
             Player player = (Player) event.getInventory().getHolder();
-            if (!player.isDead()) {
-                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                AttributeHandler.updateHealth(player, champion.getAttributeValues());
-            }
+            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+            AttributeHandler.updateHealth(player, champion.getAttributeValues());
         }
     }
 
