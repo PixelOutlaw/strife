@@ -156,13 +156,17 @@ public class CombatListener implements Listener {
                 damage = damage * damageReducer;
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
-                event.setDamage(damage);
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
                     a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
                 }
                 b.setFireTicks((int) Math.round(fireDamageA * 20));
+                event.setDamage(0);
+                b.setHealth(Math.max(b.getHealth() - damage, 0D));
+                if (b.getHealth() <= 0D) {
+                    b.remove();
+                }
                 return;
             }
             damage = meleeDamageA * attackSpeedMultA;
@@ -173,13 +177,17 @@ public class CombatListener implements Listener {
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(damage);
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
+            event.setDamage(0);
+            b.setHealth(Math.max(b.getHealth() - damage, 0D));
+            if (b.getHealth() <= 0D) {
+                b.remove();
+            }
             return;
         }
         if (blocking) {
@@ -197,13 +205,17 @@ public class CombatListener implements Listener {
             damage = damage * damageReducer;
             damage = damage * (1 - blockB);
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(damage);
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
+            event.setDamage(0);
+            b.setHealth(Math.max(b.getHealth() - damage, 0D));
+            if (b.getHealth() <= 0D) {
+                b.remove();
+            }
             return;
         }
         damage = rangedDamageA * (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2));
@@ -214,13 +226,17 @@ public class CombatListener implements Listener {
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
         damage = damage * damageReducer;
         lifeStolenA = damage * lifeStealA;
-        event.setDamage(damage);
         a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
             a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
         }
         b.setFireTicks((int) Math.round(fireDamageA * 20));
+        event.setDamage(0);
+        b.setHealth(Math.max(b.getHealth() - damage, 0D));
+        if (b.getHealth() <= 0D) {
+            b.remove();
+        }
     }
 
 }
