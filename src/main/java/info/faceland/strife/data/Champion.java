@@ -77,7 +77,7 @@ public class Champion {
     public Map<StrifeAttribute, Double> getAttributeValues() {
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         for (StrifeAttribute attr : StrifeAttribute.values()) {
-            attributeDoubleMap.put(attr, attr.getBaseValue());
+            attributeDoubleMap.put(attr, attr != StrifeAttribute.ATTACK_SPEED ? attr.getBaseValue() : 0);
         }
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
