@@ -12,6 +12,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -20,6 +21,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 
 import java.util.Map;
 import java.util.Random;
@@ -32,6 +34,13 @@ public class CombatListener implements Listener {
     public CombatListener(StrifePlugin plugin) {
         this.plugin = plugin;
         random = new Random(System.currentTimeMillis());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onProjectileLaunch(ProjectileLaunchEvent event) {
+        if (event.getEntity().getShooter() instanceof Entity) {
+            event.getEntity().setVelocity(event.getEntity().getVelocity().add(((Entity) event.getEntity().getShooter()).getVelocity()));
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -184,7 +193,7 @@ public class CombatListener implements Listener {
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
         }
-        damage = rangedDamageA * event.getDamager().getVelocity().lengthSquared();
+        damage = rangedDamageA * (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2));
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
             b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
