@@ -39,7 +39,7 @@ public class AttributesCommand {
             if (attribute == StrifeAttribute.ATTACK_SPEED) {
                 message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
                        .color(ChatColor.DARK_GRAY).then(" ")
-                       .then(FORMAT.format(100D * (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + val)))));
+                       .then(FORMAT.format(100D * val));
             } else {
                 message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
                        .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100 : val));
