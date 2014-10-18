@@ -59,6 +59,7 @@ public class AttributeHandler {
             return;
         }
         double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
+        double oldHealth = player.getHealth();
         if (player.getHealth() > newMaxHealth) {
             double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
             player.setHealth(tempHealth);
@@ -66,6 +67,7 @@ public class AttributeHandler {
         player.setMaxHealth(newMaxHealth);
         player.setHealthScaled(true);
         player.setHealthScale(player.getMaxHealth());
+        player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
     }
 
 }
