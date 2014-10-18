@@ -40,8 +40,9 @@ public class DataListener implements Listener {
                     @Override
                     public void run() {
                         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
-                        message.then("Your stats have been reset. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                               .color(ChatColor.WHITE).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+                        message.then("Your stats have been reset! ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+                               .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                               .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }
@@ -52,8 +53,9 @@ public class DataListener implements Listener {
                     @Override
                     public void run() {
                         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
-                        message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                               .color(ChatColor.WHITE).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+                        message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+                                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                                .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }
