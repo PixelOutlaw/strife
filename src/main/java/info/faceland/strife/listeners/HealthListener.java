@@ -13,6 +13,7 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -90,10 +91,15 @@ public class HealthListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        Player player = event.getPlayer();
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        AttributeHandler.updateHealth(player, champion.getAttributeValues());
+    public void onPlayerRespawn(final PlayerRespawnEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                Player player = event.getPlayer();
+                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+                AttributeHandler.updateHealth(player, champion.getAttributeValues());
+            }
+        }, 20L);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
