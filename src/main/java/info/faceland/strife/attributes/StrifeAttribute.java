@@ -14,7 +14,7 @@ public enum StrifeAttribute {
 
     // modify any attributes here
     HEALTH("Health", ChatColor.BLUE, "Increases maximum health.", 20, false),
-    REGENERATION("Regeneration", ChatColor.BLUE, "Increases health regained during natural regeneration.", 0, false),
+    REGENERATION("Regeneration", ChatColor.BLUE, "Increases health regained during natural regeneration.", 1, false),
     ARMOR("Armor", ChatColor.BLUE, "Protects from a percentage of damage received.", 0, true),
     BLOCK("Block", ChatColor.BLUE, "Percentage of damage taken to reduce when blocking.", 0, true),
     PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect some damage when blocking.", 0, true),
