@@ -50,7 +50,7 @@ public class ExperienceListener implements Listener {
         plugin.getChampionManager().addChampion(champion);
         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
         message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+               .color(ChatColor.WHITE).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

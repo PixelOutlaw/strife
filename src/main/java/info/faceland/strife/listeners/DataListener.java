@@ -41,7 +41,7 @@ public class DataListener implements Listener {
                     public void run() {
                         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
                         message.then("Your stats have been reset. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+                               .color(ChatColor.WHITE).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }
@@ -53,7 +53,7 @@ public class DataListener implements Listener {
                     public void run() {
                         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
                         message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
+                               .color(ChatColor.WHITE).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }
