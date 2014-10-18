@@ -44,7 +44,7 @@ public class HealthListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClose(InventoryCloseEvent event) {
         for (HumanEntity entity : event.getViewers()) {
-            if (entity instanceof Player) {
+            if (entity instanceof Player && entity.getHealth() > 0) {
                 Player player = (Player) event.getPlayer();
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
                 AttributeHandler.updateHealth(player, champion.getAttributeValues());
