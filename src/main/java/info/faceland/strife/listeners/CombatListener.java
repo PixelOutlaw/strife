@@ -65,7 +65,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
-                b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
+                b.getWorld().playSound(a.getEyeLocation(), Sound.IRONGOLEM_THROW, 1f, 2f);
                 return;
             }
         }
