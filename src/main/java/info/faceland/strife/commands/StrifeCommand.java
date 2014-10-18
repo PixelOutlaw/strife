@@ -56,6 +56,7 @@ public class StrifeCommand {
             champion.setLevel(stat, 0);
         }
         champion.setUnusedStatPoints(0);
+        champion.setHighestReachedLevel(0);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         Chatty.sendMessage(sender, "<green>You cleared <white>%player%<green>.", new String[][]{{"%player%", target.getDisplayName()}});
