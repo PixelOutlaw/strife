@@ -8,9 +8,13 @@
 
 package info.faceland.strife.listeners;
 
+import com.google.common.base.CharMatcher;
+import info.faceland.beast.BeastData;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+import info.faceland.utils.StringConverter;
+import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -70,7 +74,7 @@ public class CombatListener implements Listener {
             }
         }
         double damage;
-        double meleeDamageA, attackSpeedA;
+        double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA = 0D, playerHealthA = b.getHealth();
         double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
@@ -104,11 +108,10 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            meleeDamageA = event.getDamage();
-            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-                if (event.isApplicable(modifier)) {
-                    event.setDamage(modifier, 0D);
-                }
+            BeastData data = plugin.getBeastPlugin().getData(a.getType());
+            if (data != null) {
+                int level = StringConverter.toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(a.getCustomName())));
+                meleeDamageA = data.getDamageExpression().setVariable("LEVEL", level).evaluate();
             }
         }
         if (b instanceof Player) {
@@ -146,7 +149,7 @@ public class CombatListener implements Listener {
                 damage = damage * damageReducer;
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+                event.setDamage(damage);
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
@@ -162,7 +165,7 @@ public class CombatListener implements Listener {
             double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+            event.setDamage(damage);
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -185,7 +188,7 @@ public class CombatListener implements Listener {
             damage = damage * damageReducer;
             damage = damage * (1 - blockB);
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+            event.setDamage(damage);
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -201,7 +204,7 @@ public class CombatListener implements Listener {
         double damageReducer = (1 - armorB) * (1 - armorPenA);
         damage = damage * damageReducer;
         lifeStolenA = damage * lifeStealA;
-        event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+        event.setDamage(damage);
         a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);

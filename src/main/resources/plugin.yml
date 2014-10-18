@@ -1,7 +1,7 @@
 name: ${project.build.name}
 version: ${project.build.version}
 main: info.faceland.strife.StrifePlugin
-depend: [Facecore]
+depend: [Facecore, Beast]
 
 commands:
   stats:

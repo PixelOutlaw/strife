@@ -10,6 +10,7 @@ package info.faceland.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
 import info.faceland.api.FacePlugin;
+import info.faceland.beast.BeastPlugin;
 import info.faceland.facecore.shade.command.CommandHandler;
 import info.faceland.facecore.shade.nun.ivory.config.VersionedIvoryConfiguration;
 import info.faceland.facecore.shade.nun.ivory.config.VersionedIvoryYamlConfiguration;
@@ -54,6 +55,7 @@ public class StrifePlugin extends FacePlugin {
     private CommandHandler commandHandler;
     private IvorySettings settings;
     private LevelingRate levelingRate;
+    private BeastPlugin beastPlugin;
 
     @Override
     public void preEnable() {
@@ -70,6 +72,8 @@ public class StrifePlugin extends FacePlugin {
         championManager = new ChampionManager();
 
         commandHandler = new CommandHandler(this);
+
+        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
     }
 
     public LevelingRate getLevelingRate() {
@@ -194,6 +198,10 @@ public class StrifePlugin extends FacePlugin {
 
     public IvorySettings getSettings() {
         return settings;
+    }
+
+    public BeastPlugin getBeastPlugin() {
+        return beastPlugin;
     }
 
 }
