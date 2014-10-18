@@ -104,7 +104,7 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            meleeDamageA = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
+            meleeDamageA = event.getDamage();
             for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
                 if (event.isApplicable(modifier)) {
                     event.setDamage(modifier, 0D);
