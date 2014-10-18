@@ -156,7 +156,7 @@ public class CombatListener implements Listener {
                 damage = damage * damageReducer;
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+                event.setDamage(damage);
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
@@ -173,7 +173,7 @@ public class CombatListener implements Listener {
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+            event.setDamage(damage);
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -197,7 +197,7 @@ public class CombatListener implements Listener {
             damage = damage * damageReducer;
             damage = damage * (1 - blockB);
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+            event.setDamage(damage);
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -214,7 +214,7 @@ public class CombatListener implements Listener {
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
         damage = damage * damageReducer;
         lifeStolenA = damage * lifeStealA;
-        event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+        event.setDamage(damage);
         a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
