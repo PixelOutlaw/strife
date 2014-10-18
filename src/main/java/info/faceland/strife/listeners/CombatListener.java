@@ -111,6 +111,7 @@ public class CombatListener implements Listener {
             if (data != null && a.getCustomName() != null) {
                 int level = StringConverter.toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(a.getCustomName())));
                 meleeDamageA = data.getDamageExpression().setVariable("LEVEL", level).evaluate();
+                rangedDamageA = meleeDamageA;
             }
         }
         if (b instanceof Player) {
