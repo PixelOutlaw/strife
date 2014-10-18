@@ -137,7 +137,7 @@ public class CombatListener implements Listener {
                 damage = damage * damageReducer;
                 damage = damage * (1 - blockB);
                 lifeStolenA = damage * lifeStealA;
-                event.setDamage(damage);
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
@@ -153,7 +153,7 @@ public class CombatListener implements Listener {
             double damageReducer = (1 - (armorB)) * (1 - (armorPenA));
             damage = damage * damageReducer;
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(damage);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -163,7 +163,7 @@ public class CombatListener implements Listener {
         }
         if (blocking) {
             if (parried) {
-                event.setDamage(0);
+                event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
@@ -176,7 +176,7 @@ public class CombatListener implements Listener {
             damage = damage * damageReducer;
             damage = damage * (1 - blockB);
             lifeStolenA = damage * lifeStealA;
-            event.setDamage(damage);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -192,12 +192,12 @@ public class CombatListener implements Listener {
         double damageReducer = (1 - armorB) * (1 - armorPenA);
         damage = damage * damageReducer;
         lifeStolenA = damage * lifeStealA;
-        event.setDamage(damage);
+        event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
         a.setHealth(Math.max(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
         }
-        b.setFireTicks((int) Math.round(fireDamageA * 20));;
+        b.setFireTicks((int) Math.round(fireDamageA * 20));
     }
 
 }
