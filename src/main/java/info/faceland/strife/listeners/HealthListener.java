@@ -140,7 +140,7 @@ public class HealthListener implements Listener {
         }
         Player player = (Player) event.getEntity();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        double amount = event.getAmount() + champion.getAttributeValues().get(StrifeAttribute.REGENERATION);
+        double amount = champion.getAttributeValues().get(StrifeAttribute.REGENERATION);
         event.setAmount(amount);
     }
 
