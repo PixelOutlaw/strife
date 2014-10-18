@@ -85,6 +85,9 @@ public class Champion {
                 attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
+        if (getPlayer().getEquipment() == null) {
+            return attributeDoubleMap;
+        }
         for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
                 continue;
