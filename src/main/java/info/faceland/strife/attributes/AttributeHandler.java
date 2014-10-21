@@ -8,7 +8,7 @@
 
 package info.faceland.strife.attributes;
 
-import info.faceland.facecore.shade.google.common.base.CharMatcher;
+import com.google.common.base.CharMatcher;
 import info.faceland.hilt.HiltItemStack;
 import info.faceland.utils.StringConverter;
 import info.faceland.utils.StringListUtils;
