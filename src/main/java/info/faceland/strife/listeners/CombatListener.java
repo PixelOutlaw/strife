@@ -137,6 +137,7 @@ public class CombatListener implements Listener {
                 event.setDamage(modifier, 0);
             }
         }
+        event.setDamage(0);
 
         if (melee) {
             if (blocking) {
@@ -162,8 +163,7 @@ public class CombatListener implements Listener {
                     a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
                 }
                 b.setFireTicks((int) Math.round(fireDamageA * 20));
-                event.setDamage(0);
-                b.setHealth(Math.max(b.getHealth() - damage, 0D));
+                event.setDamage(damage);
                 return;
             }
             damage = meleeDamageA * attackSpeedMultA;
@@ -180,8 +180,7 @@ public class CombatListener implements Listener {
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
-            event.setDamage(0);
-            b.setHealth(Math.max(b.getHealth() - damage, 0D));
+            event.setDamage(damage);
             return;
         }
         if (blocking) {
@@ -205,8 +204,7 @@ public class CombatListener implements Listener {
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
-            event.setDamage(0);
-            b.setHealth(Math.max(b.getHealth() - damage, 0D));
+            event.setDamage(damage);
             return;
         }
         damage = rangedDamageA * (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2));
@@ -223,8 +221,7 @@ public class CombatListener implements Listener {
             a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
         }
         b.setFireTicks((int) Math.round(fireDamageA * 20));
-        event.setDamage(0);
-        b.setHealth(Math.max(b.getHealth() - damage, 0D));
+        event.setDamage(damage);
     }
 
 }
