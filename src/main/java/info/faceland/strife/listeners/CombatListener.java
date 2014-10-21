@@ -164,9 +164,6 @@ public class CombatListener implements Listener {
                 b.setFireTicks((int) Math.round(fireDamageA * 20));
                 event.setDamage(0);
                 b.setHealth(Math.max(b.getHealth() - damage, 0D));
-                if (b.getHealth() <= 0D) {
-                    b.remove();
-                }
                 return;
             }
             damage = meleeDamageA * attackSpeedMultA;
@@ -185,9 +182,6 @@ public class CombatListener implements Listener {
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             event.setDamage(0);
             b.setHealth(Math.max(b.getHealth() - damage, 0D));
-            if (b.getHealth() <= 0D) {
-                b.remove();
-            }
             return;
         }
         if (blocking) {
@@ -213,9 +207,6 @@ public class CombatListener implements Listener {
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             event.setDamage(0);
             b.setHealth(Math.max(b.getHealth() - damage, 0D));
-            if (b.getHealth() <= 0D) {
-                b.remove();
-            }
             return;
         }
         damage = rangedDamageA * (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2));
@@ -234,9 +225,6 @@ public class CombatListener implements Listener {
         b.setFireTicks((int) Math.round(fireDamageA * 20));
         event.setDamage(0);
         b.setHealth(Math.max(b.getHealth() - damage, 0D));
-        if (b.getHealth() <= 0D) {
-            b.remove();
-        }
     }
 
 }
