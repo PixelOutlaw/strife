@@ -146,14 +146,9 @@ public class CombatListener implements Listener {
                     damage = damage * criticalDamageA;
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 }
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
                 double damageReducer = (1 - (armorB * (1 - armorPenA)));
-                if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-                    event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, damage - damage * damageReducer);
-                }
-                if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
-                    event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, damage - damage * (1 - blockB));
-                }
+                double blockReducer = (1 - blockB);
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
                 lifeStolenA = event.getFinalDamage() * lifeStealA;
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 if (reflectDamageB > 0) {
@@ -168,11 +163,8 @@ public class CombatListener implements Listener {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
-            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, damage - damage * damageReducer);
-            }
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
             lifeStolenA = event.getFinalDamage() * lifeStealA;
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
@@ -193,14 +185,9 @@ public class CombatListener implements Listener {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
-            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, damage - damage * damageReducer);
-            }
-            if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, damage - damage * (1 - blockB));
-            }
+            double blockReducer = (1 - blockB);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
             lifeStolenA = event.getFinalDamage() * lifeStealA;
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
@@ -215,11 +202,8 @@ public class CombatListener implements Listener {
             damage = damage * criticalDamageA;
             b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
         }
-        event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
-        if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, damage - damage * damageReducer);
-        }
+        event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
         lifeStolenA = event.getFinalDamage() * lifeStealA;
         a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         if (reflectDamageB > 0) {
