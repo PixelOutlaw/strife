@@ -154,7 +154,7 @@ public class CombatListener implements Listener {
                 if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, damage - damage * (1 - blockB));
                 }
-                lifeStolenA = damage * lifeStealA;
+                lifeStolenA = event.getFinalDamage() * lifeStealA;
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
@@ -173,7 +173,7 @@ public class CombatListener implements Listener {
             if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, damage - damage * damageReducer);
             }
-            lifeStolenA = damage * lifeStealA;
+            lifeStolenA = event.getFinalDamage() * lifeStealA;
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -201,7 +201,7 @@ public class CombatListener implements Listener {
             if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
                 event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, damage - damage * (1 - blockB));
             }
-            lifeStolenA = damage * lifeStealA;
+            lifeStolenA = event.getFinalDamage() * lifeStealA;
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
@@ -220,7 +220,7 @@ public class CombatListener implements Listener {
         if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
             event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, damage - damage * damageReducer);
         }
-        lifeStolenA = damage * lifeStealA;
+        lifeStolenA = event.getFinalDamage() * lifeStealA;
         a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
