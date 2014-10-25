@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
-public class JsonDataStorage {
+public class JsonDataStorage implements DataStorage {
 
     private final StrifePlugin plugin;
     private IvoryJsonConfiguration configuration;
@@ -29,6 +29,7 @@ public class JsonDataStorage {
         this.configuration = new IvoryJsonConfiguration(new File(plugin.getDataFolder(), "data.json"));
     }
 
+    @Override
     public void save(Collection<Champion> champions) {
         for (Champion champ : champions) {
             for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
@@ -40,6 +41,7 @@ public class JsonDataStorage {
         configuration.save();
     }
 
+    @Override
     public Collection<Champion> load() {
         configuration.load();
         Collection<Champion> collection = new HashSet<>();

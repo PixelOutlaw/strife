@@ -27,6 +27,7 @@ import info.faceland.strife.listeners.HealthListener;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.SaveTask;
@@ -48,7 +49,7 @@ public class StrifePlugin extends FacePlugin {
     private VersionedIvoryYamlConfiguration configYAML;
     private VersionedIvoryYamlConfiguration statsYAML;
     private StrifeStatManager statManager;
-    private JsonDataStorage storage;
+    private DataStorage storage;
     private ChampionManager championManager;
     private SaveTask saveTask;
     private AttackSpeedTask attackSpeedTask;
@@ -143,7 +144,7 @@ public class StrifePlugin extends FacePlugin {
         }
     }
 
-    public JsonDataStorage getStorage() {
+    public DataStorage getStorage() {
         return storage;
     }
 
