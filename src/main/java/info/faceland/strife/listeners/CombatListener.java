@@ -108,8 +108,9 @@ public class CombatListener implements Listener {
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
             BeastData data = plugin.getBeastPlugin().getData(a.getType());
+            String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
             if (data != null && a.getCustomName() != null) {
-                int level = StringConverter.toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(a.getCustomName())));
+                int level = StringConverter.toInt(CharMatcher.DIGIT.retainFrom(name));
                 meleeDamageA = data.getDamageExpression().setVariable("LEVEL", level).evaluate();
                 rangedDamageA = meleeDamageA;
             }
