@@ -8,18 +8,45 @@
 
 package info.faceland.strife.storage;
 
+import info.faceland.dossier.Dossier;
 import info.faceland.strife.data.Champion;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 
-public interface DataStorage {
+public class MySqlDataStorage implements DataStorage {
 
-    void init();
+    public MySqlDataStorage() {
+        try {
+            Connection connection = Dossier.getInstance().getConnection();
+        } catch (SQLException e) {
+            return;
+        }
+    }
 
-    void shutdown();
+    @Override
+    public void init() {
 
-    void save(Collection<Champion> champions);
+    }
 
-    Collection<Champion> load();
+    @Override
+    public void shutdown() {
 
+    }
+
+    @Override
+    public void save(Collection<Champion> champions) {
+        try {
+            Connection connection = Dossier.getInstance().getConnection();
+        } catch (SQLException e) {
+            return;
+        }
+    }
+
+    @Override
+    public Collection<Champion> load() {
+        return new ArrayList<>();
+    }
 }

@@ -30,6 +30,16 @@ public class JsonDataStorage implements DataStorage {
     }
 
     @Override
+    public void init() {
+        // do nothing
+    }
+
+    @Override
+    public void shutdown() {
+        // do nothing
+    }
+
+    @Override
     public void save(Collection<Champion> champions) {
         for (Champion champ : champions) {
             for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
