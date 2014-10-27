@@ -148,6 +148,9 @@ public class CombatListener implements Listener {
                 }
                 double damageReducer = (1 - (armorB * (1 - armorPenA)));
                 double blockReducer = (1 - blockB);
+                if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+                    damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
+                }
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
                 lifeStolenA = event.getFinalDamage() * lifeStealA;
                 a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
@@ -164,6 +167,9 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
+            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+                damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
+            }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
             lifeStolenA = event.getFinalDamage() * lifeStealA;
             a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
@@ -187,6 +193,9 @@ public class CombatListener implements Listener {
             }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             double blockReducer = (1 - blockB);
+            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+                damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
+            }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
             lifeStolenA = event.getFinalDamage() * lifeStealA;
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
@@ -203,6 +212,9 @@ public class CombatListener implements Listener {
             b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
         }
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
+        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+            damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
+        }
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
         lifeStolenA = event.getFinalDamage() * lifeStealA;
         a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
