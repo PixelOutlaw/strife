@@ -186,7 +186,7 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 0);
+            damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
@@ -206,7 +206,7 @@ public class CombatListener implements Listener {
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
         }
-        damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 0);
+        damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
             b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
