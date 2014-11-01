@@ -29,6 +29,20 @@ public class StrifeCommand {
         this.plugin = plugin;
     }
 
+    @Command(identifier = "strife profile", permissions = "strife.command.strife.profile", onlyPlayers = false)
+    public void profileCommand(CommandSender sender, @Arg(name = "target") Player target) {
+        Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+        Chatty.sendMessage(sender, "<gold>----------------------------------");
+        Chatty.sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%", new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
+        Chatty.sendMessage(sender, "<gold>----------------------------------");
+        for (StrifeStat stat : plugin.getStatManager().getStats()) {
+            Chatty.sendMessage(sender,
+                               ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel() + " ] " +
+                               stat.getName());
+        }
+        Chatty.sendMessage(sender, "<gold>----------------------------------");
+    }
+
     @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
     public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
@@ -66,11 +80,12 @@ public class StrifeCommand {
 
     @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
     public void raiseCommand(CommandSender sender, @Arg(name = "target") Player target, @Arg(name = "level") int newLevel) {
-        target.setExp(0f);
         int oldLevel = target.getLevel();
         if (newLevel <= oldLevel) {
             Chatty.sendMessage(sender, "<red>New level must be higher than old level.");
         }
+        target.setExp(0f);
+        target.setLevel(newLevel);
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         int diff = newLevel - oldLevel;
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff);
