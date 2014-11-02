@@ -57,7 +57,8 @@ public class StrifeCommand {
         Chatty.sendMessage(target, "<green>Your stats have been reset.");
         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
         message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(target);
+               .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+               .color(ChatColor.WHITE).then(" to spend them.").send(target);
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
 
@@ -96,7 +97,8 @@ public class StrifeCommand {
         Chatty.sendMessage(target, "<green>Your level has been raised.");
         IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
         message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-               .color(ChatColor.GOLD).style(ChatColor.UNDERLINE).then(" to use them.").color(ChatColor.GOLD).send(target);
+                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                .color(ChatColor.WHITE).then(" to spend them.").send(target);
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
 
