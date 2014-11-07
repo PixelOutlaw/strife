@@ -89,16 +89,12 @@ public class StrifeCommand {
         target.setLevel(newLevel);
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         int diff = newLevel - oldLevel;
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff);
+        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff - 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         Chatty.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
                            new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         Chatty.sendMessage(target, "<green>Your level has been raised.");
-        IPrettyMessage message = PrettyMessageFactory.buildPrettyMessage();
-        message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                .color(ChatColor.WHITE).then(" to spend them.").send(target);
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
 
