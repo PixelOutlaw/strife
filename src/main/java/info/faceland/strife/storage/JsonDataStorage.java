@@ -8,7 +8,7 @@
 
 package info.faceland.strife.storage;
 
-import info.faceland.facecore.shade.nun.ivory.config.IvoryJsonConfiguration;
+import info.faceland.config.FaceJsonConfiguration;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
@@ -22,11 +22,11 @@ import java.util.UUID;
 public class JsonDataStorage implements DataStorage {
 
     private final StrifePlugin plugin;
-    private IvoryJsonConfiguration configuration;
+    private FaceJsonConfiguration configuration;
 
     public JsonDataStorage(StrifePlugin plugin) {
         this.plugin = plugin;
-        this.configuration = new IvoryJsonConfiguration(new File(plugin.getDataFolder(), "data.json"));
+        this.configuration = new FaceJsonConfiguration(new File(plugin.getDataFolder(), "data.json"));
     }
 
     @Override

@@ -11,10 +11,10 @@ package info.faceland.strife;
 import com.comphenix.xp.lookup.LevelingRate;
 import info.faceland.api.FacePlugin;
 import info.faceland.beast.BeastPlugin;
+import info.faceland.config.VersionedFaceConfiguration;
+import info.faceland.config.VersionedFaceYamlConfiguration;
+import info.faceland.config.settings.FaceSettings;
 import info.faceland.facecore.shade.command.CommandHandler;
-import info.faceland.facecore.shade.nun.ivory.config.VersionedIvoryConfiguration;
-import info.faceland.facecore.shade.nun.ivory.config.VersionedIvoryYamlConfiguration;
-import info.faceland.facecore.shade.nun.ivory.config.settings.IvorySettings;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
@@ -46,25 +46,25 @@ import java.util.logging.Level;
 public class StrifePlugin extends FacePlugin {
 
     private DebugPrinter debugPrinter;
-    private VersionedIvoryYamlConfiguration configYAML;
-    private VersionedIvoryYamlConfiguration statsYAML;
+    private VersionedFaceYamlConfiguration configYAML;
+    private VersionedFaceYamlConfiguration statsYAML;
     private StrifeStatManager statManager;
     private DataStorage storage;
     private ChampionManager championManager;
     private SaveTask saveTask;
     private AttackSpeedTask attackSpeedTask;
     private CommandHandler commandHandler;
-    private IvorySettings settings;
+    private FaceSettings settings;
     private LevelingRate levelingRate;
     private BeastPlugin beastPlugin;
 
     @Override
     public void preEnable() {
         debugPrinter = new DebugPrinter(getDataFolder().getPath(), "debug.log");
-        statsYAML = new VersionedIvoryYamlConfiguration(new File(getDataFolder(), "stats.yml"), getResource("stats.yml"),
-                                                        VersionedIvoryConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-        configYAML = new VersionedIvoryYamlConfiguration(new File(getDataFolder(), "config.yml"), getResource("config.yml"),
-                                                         VersionedIvoryConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        statsYAML = new VersionedFaceYamlConfiguration(new File(getDataFolder(), "stats.yml"), getResource("stats.yml"),
+                                                        VersionedFaceConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        configYAML = new VersionedFaceYamlConfiguration(new File(getDataFolder(), "config.yml"), getResource("config.yml"),
+                                                         VersionedFaceConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
 
@@ -94,7 +94,7 @@ public class StrifePlugin extends FacePlugin {
             getLogger().info("Updating config.yml");
         }
 
-        settings = IvorySettings.loadFromFiles(configYAML);
+        settings = FaceSettings.loadFromFiles(configYAML);
 
         List<StrifeStat> stats = new ArrayList<>();
         List<String> loadedStats = new ArrayList<>();
@@ -197,7 +197,7 @@ public class StrifePlugin extends FacePlugin {
         return championManager;
     }
 
-    public IvorySettings getSettings() {
+    public FaceSettings getSettings() {
         return settings;
     }
 
