@@ -146,9 +146,9 @@ public class HealthListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-        if (!(event.getEntity() instanceof Player) || !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN || event
-                                                                                                                                         .getRegainReason() ==
-                                                                                                                                 EntityRegainHealthEvent.RegainReason.SATIATED) ||
+        if (!(event.getEntity() instanceof Player) ||
+                !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN ||
+                        event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) ||
             event.isCancelled()) {
             return;
         }

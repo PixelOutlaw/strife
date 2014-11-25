@@ -153,8 +153,10 @@ public class CombatListener implements Listener {
                     damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
                 }
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
-                lifeStolenA = event.getFinalDamage() * lifeStealA;
-                a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
+                if (a instanceof Player) {
+                    lifeStolenA = event.getFinalDamage() * lifeStealA;
+                    a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+                }
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
                     a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
@@ -172,8 +174,10 @@ public class CombatListener implements Listener {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
-            lifeStolenA = event.getFinalDamage() * lifeStealA;
-            a.setHealth(Math.min(playerHealthA + lifeStolenA, a.getMaxHealth()));
+            if (a instanceof Player) {
+                lifeStolenA = event.getFinalDamage() * lifeStealA;
+                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+            }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
@@ -198,8 +202,10 @@ public class CombatListener implements Listener {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
-            lifeStolenA = event.getFinalDamage() * lifeStealA;
-            a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+            if (a instanceof Player) {
+                lifeStolenA = event.getFinalDamage() * lifeStealA;
+                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+            }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
@@ -217,8 +223,10 @@ public class CombatListener implements Listener {
             damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
         }
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
-        lifeStolenA = event.getFinalDamage() * lifeStealA;
-        a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+        if (a instanceof Player) {
+            lifeStolenA = event.getFinalDamage() * lifeStealA;
+            a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+        }
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
             a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
