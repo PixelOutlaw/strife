@@ -10,6 +10,7 @@ package info.faceland.strife.listeners;
 
 import info.faceland.facecore.shade.voorhees.PrettyMessageFactory;
 import info.faceland.facecore.shade.voorhees.api.IPrettyMessage;
+import info.faceland.messaging.Chatty;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import me.desht.dhutils.ExperienceManager;
@@ -78,6 +79,10 @@ public class ExperienceListener implements Listener {
         double exact = Math.min(amount * factor, 0.25 * experienceManager.getXpNeededToLevelUp(player.getLevel()));
 
         int newXp = (int) exact;
+
+        if (player.hasPermission("strife.xp")) {
+            Chatty.sendMessage(player, "XP Orb value: " + event.getAmount() + " | Adjusted amount: " + newXp);
+        }
 
         event.setAmount(newXp);
 

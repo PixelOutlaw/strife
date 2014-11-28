@@ -22,3 +22,5 @@ permissions:
     default: op
   strife.command.strife.raise:
     default: op
+  strife.xp:
+    default: false
