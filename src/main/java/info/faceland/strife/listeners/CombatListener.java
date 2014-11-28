@@ -75,7 +75,7 @@ public class CombatListener implements Listener {
         double damage;
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
-        double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA = 0D, playerHealthA = b.getHealth();
+        double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA;
         double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
         double attackSpeedMultA = 1D, fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue();
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
@@ -96,7 +96,6 @@ public class CombatListener implements Listener {
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
-            playerHealthA = a.getHealth();
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
             fireDamageA = vals.get(StrifeAttribute.FIRE_DAMAGE);
