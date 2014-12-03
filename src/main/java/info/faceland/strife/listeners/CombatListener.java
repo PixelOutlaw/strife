@@ -29,6 +29,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
 
 public class CombatListener implements Listener {
 
@@ -158,6 +159,7 @@ public class CombatListener implements Listener {
                 }
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
+                    plugin.debug(Level.INFO, "reflectDamageB: " + reflectDamageB);
                     a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
                 }
                 b.setFireTicks((int) Math.round(fireDamageA * 20));
@@ -179,6 +181,7 @@ public class CombatListener implements Listener {
             }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
+                plugin.debug(Level.INFO, "reflectDamageB: " + reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
@@ -207,6 +210,7 @@ public class CombatListener implements Listener {
             }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
+                plugin.debug(Level.INFO, "reflectDamageB: " + reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
@@ -228,6 +232,7 @@ public class CombatListener implements Listener {
         }
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
+            plugin.debug(Level.INFO, "reflectDamageB: " + reflectDamageB);
             a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
         }
         b.setFireTicks((int) Math.round(fireDamageA * 20));
