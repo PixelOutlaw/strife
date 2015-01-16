@@ -1,22 +1,30 @@
-/******************************************************************************
- * Copyright (c) 2014, Richard Harrah                                         *
- *                                                                            *
- * Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
- *                                                                            *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- ******************************************************************************/
-
+/*
+ * This file is part of Strife, licensed under the ISC License.
+ *
+ * Copyright (c) 2014 Richard Harrah
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
+ * provided that the above copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
+ */
 package info.faceland.strife.attributes;
 
-import com.google.common.base.CharMatcher;
-import info.faceland.hilt.HiltItemStack;
-import info.faceland.utils.StringConverter;
-import info.faceland.utils.StringListUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.nunnerycode.facecore.hilt.HiltItemStack;
+import org.nunnerycode.facecore.utilities.TextUtils;
+import org.nunnerycode.kern.apache.commons.lang3.math.NumberUtils;
+import org.nunnerycode.kern.shade.google.common.base.CharMatcher;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,11 +45,11 @@ public class AttributeHandler {
             return amount;
         }
         List<String> lore = itemStack.getLore();
-        List<String> strippedLore = StringListUtils.stripColor(lore);
+        List<String> strippedLore = stripColor(lore);
         for (String s : strippedLore) {
             String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
             if (retained.equals(attribute.getName().trim())) {
-                amount += StringConverter.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+                amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
             }
         }
         if (attribute.isPercentage()) {
@@ -68,6 +76,14 @@ public class AttributeHandler {
         player.setHealthScaled(true);
         player.setHealthScale(player.getMaxHealth());
         player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
+    }
+
+    private static List<String> stripColor(List<String> strings) {
+        List<String> stripped = new ArrayList<>();
+        for (String s : strings) {
+            stripped.add(ChatColor.stripColor(s));
+        }
+        return stripped;
     }
 
 }

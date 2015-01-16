@@ -1,20 +1,21 @@
-/******************************************************************************
- * Copyright (c) 2014, Richard Harrah                                         *
- *                                                                            *
- * Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
- *                                                                            *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- ******************************************************************************/
-
+/*
+ * This file is part of Strife, licensed under the ISC License.
+ *
+ * Copyright (c) 2014 Richard Harrah
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
+ * provided that the above copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
+ */
 package info.faceland.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
-import info.faceland.api.FacePlugin;
 import info.faceland.beast.BeastPlugin;
-import info.faceland.config.VersionedFaceConfiguration;
-import info.faceland.config.VersionedFaceYamlConfiguration;
-import info.faceland.config.settings.FaceSettings;
-import info.faceland.facecore.shade.command.CommandHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
@@ -31,13 +32,19 @@ import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.SaveTask;
-import net.nunnerycode.java.libraries.cannonball.DebugPrinter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
+import org.nunnerycode.facecore.configuration.MasterConfiguration;
+import org.nunnerycode.facecore.configuration.VersionedSmartConfiguration;
+import org.nunnerycode.facecore.configuration.VersionedSmartYamlConfiguration;
+import org.nunnerycode.facecore.logging.PluginLogger;
+import org.nunnerycode.facecore.plugin.FacePlugin;
+import org.nunnerycode.kern.methodcommand.CommandHandler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,37 +52,18 @@ import java.util.logging.Level;
 
 public class StrifePlugin extends FacePlugin {
 
-    private DebugPrinter debugPrinter;
-    private VersionedFaceYamlConfiguration configYAML;
-    private VersionedFaceYamlConfiguration statsYAML;
+    private PluginLogger debugPrinter;
+    private VersionedSmartYamlConfiguration configYAML;
+    private VersionedSmartYamlConfiguration statsYAML;
     private StrifeStatManager statManager;
     private DataStorage storage;
     private ChampionManager championManager;
     private SaveTask saveTask;
     private AttackSpeedTask attackSpeedTask;
     private CommandHandler commandHandler;
-    private FaceSettings settings;
+    private MasterConfiguration settings;
     private LevelingRate levelingRate;
     private BeastPlugin beastPlugin;
-
-    @Override
-    public void preEnable() {
-        debugPrinter = new DebugPrinter(getDataFolder().getPath(), "debug.log");
-        statsYAML = new VersionedFaceYamlConfiguration(new File(getDataFolder(), "stats.yml"), getResource("stats.yml"),
-                                                        VersionedFaceConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-        configYAML = new VersionedFaceYamlConfiguration(new File(getDataFolder(), "config.yml"), getResource("config.yml"),
-                                                         VersionedFaceConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-
-        statManager = new StrifeStatManager();
-
-        storage = new JsonDataStorage(this);
-
-        championManager = new ChampionManager();
-
-        commandHandler = new CommandHandler(this);
-
-        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
-    }
 
     public LevelingRate getLevelingRate() {
         return levelingRate;
@@ -87,6 +75,22 @@ public class StrifePlugin extends FacePlugin {
 
     @Override
     public void enable() {
+        debugPrinter = new PluginLogger(this);
+        statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
+                getResource("stats.yml"), VersionedSmartConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
+                getResource("config.yml"), VersionedSmartConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+
+        statManager = new StrifeStatManager();
+
+        storage = new JsonDataStorage(this);
+
+        championManager = new ChampionManager();
+
+        commandHandler = new CommandHandler(this);
+
+        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
+
         if (statsYAML.update()) {
             getLogger().info("Updating stats.yml");
         }
@@ -94,7 +98,7 @@ public class StrifePlugin extends FacePlugin {
             getLogger().info("Updating config.yml");
         }
 
-        settings = FaceSettings.loadFromFiles(configYAML);
+        settings = MasterConfiguration.loadFromFiles(configYAML);
 
         List<StrifeStat> stats = new ArrayList<>();
         List<String> loadedStats = new ArrayList<>();
@@ -142,14 +146,7 @@ public class StrifePlugin extends FacePlugin {
         for (int i = 0; i < 100; i++) {
             levelingRate.put(i, i, (int) (5 + (2 * i) + (Math.pow(i, 1.2))) * i);
         }
-    }
 
-    public DataStorage getStorage() {
-        return storage;
-    }
-
-    @Override
-    public void postEnable() {
         saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
@@ -159,20 +156,16 @@ public class StrifePlugin extends FacePlugin {
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
 
-    @Override
-    public void preDisable() {
-        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
-        saveTask.cancel();
-        HandlerList.unregisterAll(this);
+    public DataStorage getStorage() {
+        return storage;
     }
 
     @Override
     public void disable() {
+        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
+        saveTask.cancel();
+        HandlerList.unregisterAll(this);
         storage.save(championManager.getChampions());
-    }
-
-    @Override
-    public void postDisable() {
         configYAML = null;
         statsYAML = null;
         statManager = null;
@@ -189,7 +182,7 @@ public class StrifePlugin extends FacePlugin {
 
     public void debug(Level level, String... messages) {
         if (debugPrinter != null) {
-            debugPrinter.debug(level, messages);
+            debugPrinter.log(level, Arrays.asList(messages));
         }
     }
 
@@ -197,7 +190,7 @@ public class StrifePlugin extends FacePlugin {
         return championManager;
     }
 
-    public FaceSettings getSettings() {
+    public MasterConfiguration getSettings() {
         return settings;
     }
 

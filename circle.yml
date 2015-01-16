@@ -1,0 +1,12 @@
+dependencies:
+  override:
+    - chmod +x gradlew
+    - ./gradlew publish
+
+general:
+  artifacts:
+    - "build/libs"
+
+test:
+  override:
+    - ./gradlew test
