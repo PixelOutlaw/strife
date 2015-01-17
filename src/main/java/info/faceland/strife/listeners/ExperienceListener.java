@@ -54,7 +54,7 @@ public class ExperienceListener implements Listener {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        FancyMessage message = new FancyMessage();
+        FancyMessage message = new FancyMessage("");
         message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
@@ -66,7 +66,6 @@ public class ExperienceListener implements Listener {
         double amount = event.getAmount();
 
         ExperienceManager experienceManager = new ExperienceManager(player);
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
 
         Integer desiredLevelUp = plugin.getLevelingRate().get(player.getLevel());
         Integer defaultLevelUp = player.getExpToLevel();
