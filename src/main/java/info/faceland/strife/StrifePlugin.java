@@ -89,7 +89,7 @@ public class StrifePlugin extends FacePlugin {
 
         commandHandler = new CommandHandler(this);
 
-        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
+        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("beast");
 
         if (statsYAML.update()) {
             getLogger().info("Updating stats.yml");
