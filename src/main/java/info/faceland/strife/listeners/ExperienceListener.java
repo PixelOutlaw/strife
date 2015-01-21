@@ -80,7 +80,7 @@ public class ExperienceListener implements Listener {
         }
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = Math.min(amount * factor, 0.25 * experienceManager.getXpNeededToLevelUp(player.getLevel()));
+        double exact = amount * factor;
 
         int newXp = (int) exact;
 
