@@ -14,9 +14,11 @@
  */
 package info.faceland.strife.listeners;
 
+import be.maximvdw.titlemotd.ui.Title;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import me.desht.dhutils.ExperienceManager;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -58,6 +60,16 @@ public class ExperienceListener implements Listener {
         message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
+        Title title = new Title("<gold>Congratulations!", "<gold>You reached level <white>" + event.getNewLevel() +
+                "<gold>!", 1, 3, 1);
+        title.setTimingsToSeconds();
+        title.send(event.getPlayer());
+        if (event.getNewLevel() % 5 == 0) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                MessageUtils.sendMessage(p, "<white>%player%<gold> has reached level <white>%level%<gold>!",
+                        new String[][]{{"%player%", player.getDisplayName()}, {"%level%", "" + event.getNewLevel()}});
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
