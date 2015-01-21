@@ -80,7 +80,7 @@ public class ExperienceListener implements Listener {
         }
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = amount * factor;
+        double exact = Math.min(amount, 0.25 * desiredLevelUp) * factor;
 
         int newXp = (int) exact;
 
