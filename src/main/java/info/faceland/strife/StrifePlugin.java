@@ -145,8 +145,8 @@ public class StrifePlugin extends FacePlugin {
         commandHandler.registerCommands(new StrifeCommand(this));
 
         levelingRate = new LevelingRate();
-        Expression expr = new ExpressionBuilder(settings.getString("leveling.formula", "(5+(2*LEVEL)+(LEVEL^1.2))" +
-                "*LEVEL")).variable("LEVEL").build();
+        Expression expr = new ExpressionBuilder(settings.getString("config.leveling.formula",
+                "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
         for (int i = 0; i < 100; i++) {
             levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
         }
