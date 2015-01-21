@@ -41,6 +41,8 @@ import org.nunnerycode.facecore.configuration.VersionedSmartYamlConfiguration;
 import org.nunnerycode.facecore.logging.PluginLogger;
 import org.nunnerycode.facecore.plugin.FacePlugin;
 import org.nunnerycode.kern.methodcommand.CommandHandler;
+import org.nunnerycode.kern.objecthunter.exp4j.Expression;
+import org.nunnerycode.kern.objecthunter.exp4j.ExpressionBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -143,8 +145,10 @@ public class StrifePlugin extends FacePlugin {
         commandHandler.registerCommands(new StrifeCommand(this));
 
         levelingRate = new LevelingRate();
+        Expression expr = new ExpressionBuilder(settings.getString("leveling.formula", "(5+(2*LEVEL)+(LEVEL^1.2))" +
+                "*LEVEL")).variable("LEVEL").build();
         for (int i = 0; i < 100; i++) {
-            levelingRate.put(i, i, (int) (5 + (2 * i) + (Math.pow(i, 1.2))) * i);
+            levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
         }
 
         saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
