@@ -56,6 +56,7 @@ public class ExperienceListener implements Listener {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
+        MessageUtils.sendMessage(player, "<gold>You have leveled up!");
         FancyMessage message = new FancyMessage("");
         message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
