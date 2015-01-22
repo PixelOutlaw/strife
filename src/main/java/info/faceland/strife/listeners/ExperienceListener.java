@@ -56,18 +56,18 @@ public class ExperienceListener implements Listener {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(player, "<gold>You have leveled up!");
+        MessageUtils.sendMessage(player, "<green>You have leveled up!");
         FancyMessage message = new FancyMessage("");
-        message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+        message.then("You gained a levelup point! ").color(ChatColor.GOLD).then("Click here").command("/levelup")
                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-               .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
-        Title title = new Title("<gold>Congratulations!", "<gold>You reached level <white>" + event.getNewLevel() +
-                "<gold>!", 1, 3, 1);
+               .color(ChatColor.WHITE).then(" to use it!").color(ChatColor.GOLD).send(event.getPlayer());
+        Title title = new Title("<green>LEVEL UP!", "<green>You reached level <white>" + event.getNewLevel() +
+                "<green>!", 1, 1, 1);
         title.setTimingsToSeconds();
         title.send(event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
-                MessageUtils.sendMessage(p, "<white>%player%<gold> has reached level <white>%level%<gold>!",
+                MessageUtils.sendMessage(p, "<green>[Levelup!] <white>%player%<green> has reached level <white>%level%<green>!",
                         new String[][]{{"%player%", player.getDisplayName()}, {"%level%", "" + event.getNewLevel()}});
             }
         }
