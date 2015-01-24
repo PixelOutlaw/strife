@@ -126,8 +126,10 @@ public class CombatListener implements Listener {
             Player p = (Player) b;
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            meleeDamageA = (meleeDamageA / 4);
-            rangedDamageA = (rangedDamageA / 4);
+            if (a instanceof Player) {
+                meleeDamageA = (meleeDamageA / 4);
+                rangedDamageA = (rangedDamageA / 4);
+            }
             armorB = vals.get(StrifeAttribute.ARMOR);
             reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
             parryB = vals.get(StrifeAttribute.PARRY);
