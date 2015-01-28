@@ -54,17 +54,21 @@ public class HealthListener implements Listener {
                 Player player = (Player) event.getPlayer();
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
                 Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-                AttributeHandler.updateHealth(player, attributeDoubleMap);
+                if (player.getHealth() > 0) {
+                    AttributeHandler.updateHealth(player, attributeDoubleMap);
+                }
                 double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
                 float speed = 0.2F * (float) perc;
                 player.setWalkSpeed(speed);
             }
         }
-        if (event.getPlayer() instanceof Player && event.getPlayer().getHealth() > 0) {
+        if (event.getPlayer() instanceof Player) {
             Player player = (Player) event.getPlayer();
             Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
             Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-            AttributeHandler.updateHealth(player, attributeDoubleMap);
+            if (player.getHealth() > 0) {
+                AttributeHandler.updateHealth(player, attributeDoubleMap);
+            }
             double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
             float speed = 0.2F * (float) perc;
             player.setWalkSpeed(speed);
