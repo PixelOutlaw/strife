@@ -27,6 +27,9 @@ repositories {
     maven {
         url "https://hub.spigotmc.org/nexus/content/groups/public/"
     }
+    maven {
+        url "http://repo.comphenix.net/content/groups/public/"
+    }
 }
 
 dependencies {
