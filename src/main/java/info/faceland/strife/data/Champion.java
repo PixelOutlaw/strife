@@ -107,7 +107,7 @@ public class Champion {
             ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION) {
+                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr == StrifeAttribute.MOVEMENT_SPEED) {
                     continue;
                 }
                 double val = attributeDoubleMap.get(attr);
