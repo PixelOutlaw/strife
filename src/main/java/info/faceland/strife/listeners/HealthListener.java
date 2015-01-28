@@ -53,13 +53,21 @@ public class HealthListener implements Listener {
             if (entity instanceof Player && entity.getHealth() > 0) {
                 Player player = (Player) event.getPlayer();
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                AttributeHandler.updateHealth(player, champion.getAttributeValues());
+                Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+                AttributeHandler.updateHealth(player, attributeDoubleMap);
+                double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+                float speed = 0.2F * (float) perc;
+                player.setWalkSpeed(speed);
             }
         }
         if (event.getPlayer() instanceof Player && event.getPlayer().getHealth() > 0) {
             Player player = (Player) event.getPlayer();
             Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            AttributeHandler.updateHealth(player, champion.getAttributeValues());
+            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+            AttributeHandler.updateHealth(player, attributeDoubleMap);
+            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+            float speed = 0.2F * (float) perc;
+            player.setWalkSpeed(speed);
         }
     }
 
@@ -69,13 +77,21 @@ public class HealthListener implements Listener {
             if (entity instanceof Player) {
                 Player player = (Player) event.getPlayer();
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                AttributeHandler.updateHealth(player, champion.getAttributeValues());
+                Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+                AttributeHandler.updateHealth(player, attributeDoubleMap);
+                double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+                float speed = 0.2F * (float) perc;
+                player.setWalkSpeed(speed);
             }
         }
         if (event.getPlayer() instanceof Player) {
             Player player = (Player) event.getPlayer();
             Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            AttributeHandler.updateHealth(player, champion.getAttributeValues());
+            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+            AttributeHandler.updateHealth(player, attributeDoubleMap);
+            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+            float speed = 0.2F * (float) perc;
+            player.setWalkSpeed(speed);
         }
     }
 
@@ -83,7 +99,11 @@ public class HealthListener implements Listener {
     public void onPlayerPickupItem(PlayerPickupItemEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        AttributeHandler.updateHealth(player, champion.getAttributeValues());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        AttributeHandler.updateHealth(player, attributeDoubleMap);
+        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(speed);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -93,7 +113,11 @@ public class HealthListener implements Listener {
             public void run() {
                 Player player = event.getPlayer();
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                AttributeHandler.updateHealth(player, champion.getAttributeValues());
+                Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+                AttributeHandler.updateHealth(player, attributeDoubleMap);
+                double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+                float speed = 0.2F * (float) perc;
+                player.setWalkSpeed(speed);
             }
         }, 20L);
     }
@@ -102,14 +126,22 @@ public class HealthListener implements Listener {
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        AttributeHandler.updateHealth(player, champion.getAttributeValues());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        AttributeHandler.updateHealth(player, attributeDoubleMap);
+        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(speed);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerItemBreak(PlayerItemBreakEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        AttributeHandler.updateHealth(player, champion.getAttributeValues());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        AttributeHandler.updateHealth(player, attributeDoubleMap);
+        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(speed);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -148,6 +180,9 @@ public class HealthListener implements Listener {
             }
         }
         AttributeHandler.updateHealth(player, attributeDoubleMap);
+        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(speed);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
