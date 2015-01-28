@@ -26,6 +26,7 @@ public enum StrifeAttribute {
     PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect some damage when blocking.", 0, true),
     EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true),
     DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back to enemy.", 0, true),
+    MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Increases the movement speed of the player.", 100, false),
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Maximum damage dealt by melee attacks", 1, false),
     RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by bow", 1, false),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "100% Attack Speed = 2s. 200% Attack Speed = 1s.", 2D, true),
