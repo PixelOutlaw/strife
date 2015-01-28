@@ -28,6 +28,7 @@ public enum StrifeAttribute {
     DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back at your attacker.", 0, true),
     MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Player's movement speed, base is 100, 200 is double.", 100, false),
     XP_GAIN("Experience Gain", ChatColor.BLUE, "Increases the rate at which experience is gained.", 0D, true),
+    ITEM_DISCOVERY("Item Discovery", ChatColor.BLUE, "Increases the rate at which items are found.", 0D, true),
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Base melee damage dealt.", 1, false),
     RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by fired arrows.", 1, false),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "How quickly your melee damage recharges inbetween attacks", 2D, true),

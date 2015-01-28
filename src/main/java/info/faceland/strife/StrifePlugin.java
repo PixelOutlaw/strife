@@ -23,6 +23,7 @@ import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.listeners.CombatListener;
 import info.faceland.strife.listeners.DataListener;
+import info.faceland.strife.listeners.DropListener;
 import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.HealthListener;
 import info.faceland.strife.managers.ChampionManager;
@@ -157,6 +158,7 @@ public class StrifePlugin extends FacePlugin {
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new DropListener(this), this);
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
 
