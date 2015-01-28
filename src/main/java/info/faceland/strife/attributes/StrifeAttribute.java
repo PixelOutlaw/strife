@@ -22,13 +22,11 @@ public enum StrifeAttribute {
     HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 20, false),
     REGENERATION("Regeneration", ChatColor.BLUE, "How much health you recover per natural regeneration tick.", 1, false),
     ARMOR("Armor", ChatColor.BLUE, "Percent by which incoming damage is reduced.", 0, true),
-    BLOCK("Block", ChatColor.BLUE, "Percent by which incoming damage is reduced (after armor).", 0, true),
+    BLOCK("Block", ChatColor.BLUE, "Percent by which incoming damage is reduced (after armor) when blocking.", 0, true),
     PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect damage when blocking.", 0, true),
     EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true),
     DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back at your attacker.", 0, true),
     MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Player's movement speed, base is 100, 200 is double.", 100, false),
-    XP_GAIN("Experience Gain", ChatColor.BLUE, "Increases the rate at which experience is gained.", 0D, true),
-    ITEM_DISCOVERY("Item Discovery", ChatColor.BLUE, "Increases the rate at which items are found.", 0D, true),
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Base melee damage dealt.", 1, false),
     RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by fired arrows.", 1, false),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "How quickly your melee damage recharges inbetween attacks", 2D, true),
@@ -36,7 +34,9 @@ public enum StrifeAttribute {
     CRITICAL_RATE("Critical Rate", ChatColor.YELLOW, "Chance of landing a critical strike, dealing bonus damage.", 0, true),
     CRITICAL_DAMAGE("Critical Damage", ChatColor.YELLOW, "Percent damage you deal when you critically strike.", 1.25D, true),
     FIRE_DAMAGE("Fire Damage", ChatColor.YELLOW, "On hit, ignites enemies for one second per point.", 0, false),
-    LIFE_STEAL("Life Steal", ChatColor.YELLOW, "Percentage of damage dealt recovered as health.", 0, true);
+    LIFE_STEAL("Life Steal", ChatColor.YELLOW, "Percentage of damage dealt recovered as health.", 0, true),
+    XP_GAIN("Experience Gain", ChatColor.GREEN, "Increases the rate at which experience is gained.", 0D, true),
+    ITEM_DISCOVERY("Item Discovery", ChatColor.GREEN, "Increases the rate at which items are found.", 0D, true);
 
     private final String name;
     private final ChatColor displayColor;
