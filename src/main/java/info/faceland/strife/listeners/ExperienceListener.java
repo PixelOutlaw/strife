@@ -16,6 +16,7 @@ package info.faceland.strife.listeners;
 
 import be.maximvdw.titlemotd.ui.Title;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
@@ -29,6 +30,8 @@ import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.nunnerycode.facecore.utilities.MessageUtils;
 import org.nunnerycode.kern.fanciful.FancyMessage;
+
+import java.util.Map;
 
 public class ExperienceListener implements Listener {
 
@@ -79,6 +82,8 @@ public class ExperienceListener implements Listener {
         double amount = event.getAmount();
 
         ExperienceManager experienceManager = new ExperienceManager(player);
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
 
         Integer desiredLevelUp = plugin.getLevelingRate().get(player.getLevel());
         Integer defaultLevelUp = player.getExpToLevel();
@@ -93,8 +98,8 @@ public class ExperienceListener implements Listener {
         }
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = Math.min(amount, plugin.getSettings().getDouble("config.leveling.gain-cap", 0.25) *
-                desiredLevelUp) * factor;
+        double exact = Math.min(amount + amount * attributeDoubleMap.get(StrifeAttribute.XP_GAIN),
+                plugin.getSettings().getDouble("config.leveling.gain-cap", 0.25) * desiredLevelUp) * factor;
 
         int newXp = (int) exact;
 
