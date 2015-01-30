@@ -55,7 +55,7 @@ public class HealthListener implements Listener {
         AttributeHandler.updateHealth(player, attributeDoubleMap);
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(speed);
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -69,7 +69,7 @@ public class HealthListener implements Listener {
                 AttributeHandler.updateHealth(player, attributeDoubleMap);
                 double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
                 float speed = 0.2F * (float) perc;
-                player.setWalkSpeed(speed);
+                player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
             }
         }, 20L);
     }
@@ -82,7 +82,7 @@ public class HealthListener implements Listener {
         AttributeHandler.updateHealth(player, attributeDoubleMap);
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(speed);
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -93,7 +93,7 @@ public class HealthListener implements Listener {
         AttributeHandler.updateHealth(player, attributeDoubleMap);
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(speed);
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -135,7 +135,7 @@ public class HealthListener implements Listener {
         AttributeHandler.updateHealth(player, attributeDoubleMap);
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(speed);
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
