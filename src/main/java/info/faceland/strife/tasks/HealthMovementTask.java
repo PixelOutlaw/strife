@@ -12,35 +12,37 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.tasks;
 
-import info.faceland.loot.events.LootDetermineChanceEvent;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 
-public class DropListener implements Listener {
+public class HealthMovementTask extends BukkitRunnable {
 
     private final StrifePlugin plugin;
 
-    public DropListener(StrifePlugin plugin) {
+    public HealthMovementTask(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
-    public StrifePlugin getPlugin() {
-        return plugin;
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onLootDetermineChance(LootDetermineChanceEvent event) {
-        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        double chance = event.getChance() + event.getChance() * attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
-        event.setChance(chance);
+    @Override
+    public void run() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+            if (!player.isDead()) {
+                AttributeHandler.updateHealth(player, attributeDoubleMap);
+            }
+            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+            float speed = 0.2F * (float) perc;
+            player.setWalkSpeed(speed);
+        }
     }
 }

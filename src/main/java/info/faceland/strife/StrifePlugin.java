@@ -32,6 +32,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
+import info.faceland.strife.tasks.HealthMovementTask;
 import info.faceland.strife.tasks.SaveTask;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -67,6 +68,7 @@ public class StrifePlugin extends FacePlugin {
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
     private BeastPlugin beastPlugin;
+    private HealthMovementTask healthMovementTask;
 
     public LevelingRate getLevelingRate() {
         return levelingRate;
@@ -140,6 +142,7 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask = new SaveTask(this);
         attackSpeedTask = new AttackSpeedTask();
+        healthMovementTask = new HealthMovementTask(this);
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new LevelUpCommand(this));
@@ -154,6 +157,7 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
+        healthMovementTask.runTaskTimer(this, 20L * 10, 20L * 10);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);

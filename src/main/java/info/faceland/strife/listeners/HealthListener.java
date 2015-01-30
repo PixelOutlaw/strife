@@ -48,58 +48,6 @@ public class HealthListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onInventoryClose(InventoryCloseEvent event) {
-        for (HumanEntity entity : event.getViewers()) {
-            if (entity instanceof Player && entity.getHealth() > 0) {
-                Player player = (Player) event.getPlayer();
-                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-                if (player.getHealth() > 0) {
-                    AttributeHandler.updateHealth(player, attributeDoubleMap);
-                }
-                double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-                float speed = 0.2F * (float) perc;
-                player.setWalkSpeed(speed);
-            }
-        }
-        if (event.getPlayer() instanceof Player) {
-            Player player = (Player) event.getPlayer();
-            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-            if (player.getHealth() > 0) {
-                AttributeHandler.updateHealth(player, attributeDoubleMap);
-            }
-            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-            float speed = 0.2F * (float) perc;
-            player.setWalkSpeed(speed);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onInventoryOpen(InventoryOpenEvent event) {
-        for (HumanEntity entity : event.getViewers()) {
-            if (entity instanceof Player) {
-                Player player = (Player) event.getPlayer();
-                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-                AttributeHandler.updateHealth(player, attributeDoubleMap);
-                double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-                float speed = 0.2F * (float) perc;
-                player.setWalkSpeed(speed);
-            }
-        }
-        if (event.getPlayer() instanceof Player) {
-            Player player = (Player) event.getPlayer();
-            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-            AttributeHandler.updateHealth(player, attributeDoubleMap);
-            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-            float speed = 0.2F * (float) perc;
-            player.setWalkSpeed(speed);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerPickupItem(PlayerPickupItemEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
