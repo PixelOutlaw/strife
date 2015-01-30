@@ -176,7 +176,8 @@ public class HealthListener implements Listener {
             ItemStack itemStack = champion.getPlayer().getInventory().getItem(event.getNewSlot());
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr == StrifeAttribute.MOVEMENT_SPEED) {
+                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                        StrifeAttribute.MOVEMENT_SPEED  || attr == StrifeAttribute.XP_GAIN) {
                     continue;
                 }
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
