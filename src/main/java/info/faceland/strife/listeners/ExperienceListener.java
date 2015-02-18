@@ -97,9 +97,20 @@ public class ExperienceListener implements Listener {
             return;
         }
 
+        double mult = 1D;
+        if (player.hasPermission("strife.mult.half")) {
+            mult = 0.5D;
+        }
+        if (player.hasPermission("strife.mult.two")) {
+            mult = 2D;
+        }
+        if (player.hasPermission("strife.mult.three")) {
+            mult = 3D;
+        }
+
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
         double exact = Math.min(amount + amount * attributeDoubleMap.get(StrifeAttribute.XP_GAIN),
-                plugin.getSettings().getDouble("config.leveling.gain-cap", 0.25) * desiredLevelUp) * factor;
+                plugin.getSettings().getDouble("config.leveling.gain-cap", 0.25) * desiredLevelUp) * factor * mult;
 
         int newXp = (int) exact;
 

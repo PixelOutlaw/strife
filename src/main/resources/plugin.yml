@@ -24,3 +24,9 @@ permissions:
     default: op
   strife.xp:
     default: false
+  strife.mult.half:
+    default: false
+  strife.mult.two:
+    default: false
+  strife.mult.three:
+    default: false
