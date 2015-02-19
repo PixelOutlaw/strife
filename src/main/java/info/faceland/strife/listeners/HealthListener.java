@@ -77,12 +77,14 @@ public class HealthListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        AttributeHandler.updateHealth(player, attributeDoubleMap);
-        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-        float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+        if (player.getHealth() > 0) {
+            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+            AttributeHandler.updateHealth(player, attributeDoubleMap);
+            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+            float speed = 0.2F * (float) perc;
+            player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
