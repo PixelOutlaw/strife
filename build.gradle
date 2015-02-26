@@ -37,7 +37,7 @@ dependencies {
 processResources {
     filter ReplaceTokens, tokens: [
             VERSION: version + "-" + (System.getenv("BUILD_NUMBER") ?: "0"),
-            NAME   : project.name
+            NAME   : System.getenv("JOB_NAME") ?: project.archivesBaseName
     ]
 }
 
