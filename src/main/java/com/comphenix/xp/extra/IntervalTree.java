@@ -14,8 +14,8 @@
  */
 package com.comphenix.xp.extra;
 
-import org.nunnerycode.kern.shade.google.common.base.Objects;
-import org.nunnerycode.kern.shade.google.common.collect.Range;
+import com.tealcube.minecraft.bukkit.kern.shade.google.common.base.Objects;
+import com.tealcube.minecraft.bukkit.kern.shade.google.common.collect.Range;
 
 import java.util.HashSet;
 import java.util.Map;

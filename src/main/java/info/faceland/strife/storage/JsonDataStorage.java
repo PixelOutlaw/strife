@@ -14,10 +14,10 @@
  */
 package info.faceland.strife.storage;
 
+import com.tealcube.minecraft.bukkit.facecore.shade.config.SmartYamlConfiguration;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-import org.nunnerycode.facecore.configuration.SmartYamlConfiguration;
 
 import java.io.File;
 import java.util.Collection;

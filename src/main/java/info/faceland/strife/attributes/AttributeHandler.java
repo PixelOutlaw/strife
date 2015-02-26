@@ -14,15 +14,14 @@
  */
 package info.faceland.strife.attributes;
 
+import com.tealcube.minecraft.bukkit.facecore.shade.hilt.HiltItemStack;
+import com.tealcube.minecraft.bukkit.kern.apache.commons.lang3.math.NumberUtils;
+import com.tealcube.minecraft.bukkit.kern.shade.google.common.base.CharMatcher;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.nunnerycode.facecore.hilt.HiltItemStack;
-import org.nunnerycode.facecore.utilities.TextUtils;
-import org.nunnerycode.kern.apache.commons.lang3.math.NumberUtils;
-import org.nunnerycode.kern.shade.google.common.base.CharMatcher;
 
 import java.util.ArrayList;
 import java.util.List;

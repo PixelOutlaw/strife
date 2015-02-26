@@ -14,8 +14,8 @@
  */
 package me.desht.dhutils;
 
+import com.tealcube.minecraft.bukkit.kern.apache.commons.lang3.Validate;
 import org.bukkit.entity.Player;
-import org.nunnerycode.kern.apache.commons.lang3.Validate;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;

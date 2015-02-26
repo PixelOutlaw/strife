@@ -14,6 +14,7 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import org.bukkit.Bukkit;
@@ -22,7 +23,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.nunnerycode.kern.fanciful.FancyMessage;
 
 public class DataListener implements Listener {
 

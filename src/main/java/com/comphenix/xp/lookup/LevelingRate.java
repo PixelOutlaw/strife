@@ -15,7 +15,7 @@
 package com.comphenix.xp.lookup;
 
 import com.comphenix.xp.extra.IntervalTree;
-import org.nunnerycode.kern.objecthunter.exp4j.Expression;
+import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.Expression;
 
 /**
  * Allows users to modify the amount of experience that is needed to level up a level.

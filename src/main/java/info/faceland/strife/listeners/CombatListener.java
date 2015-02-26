@@ -14,6 +14,8 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.kern.apache.commons.lang3.math.NumberUtils;
+import com.tealcube.minecraft.bukkit.kern.shade.google.common.base.CharMatcher;
 import info.faceland.beast.BeastData;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -30,8 +32,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.nunnerycode.kern.apache.commons.lang3.math.NumberUtils;
-import org.nunnerycode.kern.shade.google.common.base.CharMatcher;
 
 import java.util.Map;
 import java.util.Random;

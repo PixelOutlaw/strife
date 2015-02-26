@@ -14,6 +14,10 @@
  */
 package info.faceland.strife.commands;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
+import com.tealcube.minecraft.bukkit.kern.methodcommand.Arg;
+import com.tealcube.minecraft.bukkit.kern.methodcommand.Command;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
@@ -21,10 +25,6 @@ import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.nunnerycode.facecore.utilities.MessageUtils;
-import org.nunnerycode.kern.fanciful.FancyMessage;
-import org.nunnerycode.kern.methodcommand.Arg;
-import org.nunnerycode.kern.methodcommand.Command;
 
 public class StrifeCommand {
 

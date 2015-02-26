@@ -14,13 +14,13 @@
  */
 package info.faceland.strife.commands;
 
+import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
+import com.tealcube.minecraft.bukkit.kern.methodcommand.Command;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.nunnerycode.kern.fanciful.FancyMessage;
-import org.nunnerycode.kern.methodcommand.Command;
 
 import java.text.DecimalFormat;
 import java.util.Map;

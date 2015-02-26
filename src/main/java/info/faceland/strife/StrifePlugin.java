@@ -15,6 +15,14 @@
 package info.faceland.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
+import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
+import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
+import com.tealcube.minecraft.bukkit.facecore.shade.config.MasterConfiguration;
+import com.tealcube.minecraft.bukkit.facecore.shade.config.VersionedSmartConfiguration;
+import com.tealcube.minecraft.bukkit.facecore.shade.config.VersionedSmartYamlConfiguration;
+import com.tealcube.minecraft.bukkit.kern.methodcommand.CommandHandler;
+import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.Expression;
+import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.ExpressionBuilder;
 import info.faceland.beast.BeastPlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
@@ -37,14 +45,6 @@ import info.faceland.strife.tasks.SaveTask;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
-import org.nunnerycode.facecore.configuration.MasterConfiguration;
-import org.nunnerycode.facecore.configuration.VersionedSmartConfiguration;
-import org.nunnerycode.facecore.configuration.VersionedSmartYamlConfiguration;
-import org.nunnerycode.facecore.logging.PluginLogger;
-import org.nunnerycode.facecore.plugin.FacePlugin;
-import org.nunnerycode.kern.methodcommand.CommandHandler;
-import org.nunnerycode.kern.objecthunter.exp4j.Expression;
-import org.nunnerycode.kern.objecthunter.exp4j.ExpressionBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
