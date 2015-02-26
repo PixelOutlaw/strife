@@ -37,10 +37,11 @@ public class HealthMovementTask extends BukkitRunnable {
         for (Player player : Bukkit.getOnlinePlayers()) {
             Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
             Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-            if (!player.isDead()) {
+            if (player.getHealth() > 0D) {
                 AttributeHandler.updateHealth(player, attributeDoubleMap);
             }
-            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+            Double val = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED);
+            double perc = (val != null ? val : 100D) / 100D;
             float speed = 0.2F * (float) perc;
             player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         }
