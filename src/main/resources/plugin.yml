@@ -1,7 +1,7 @@
 name: @NAME@
 version: @VERSION@
 main: info.faceland.strife.StrifePlugin
-depend: [Facecore, Beast, Loot]
+depend: [Facecore, Beast, Loot, Bullion]
 
 commands:
   stats:

@@ -32,6 +32,7 @@ dependencies {
     compile "com.tealcube.minecraft.bukkit:facecore-all:1.0.0-SNAPSHOT"
     compile "com.tealcube.minecraft.bukkit:beast:1.0.0-SNAPSHOT"
     compile "com.tealcube.minecraft.bukkit:loot:1.0.0-SNAPSHOT"
+    compile "com.tealcube.minecraft.bukkit:bullion:1.0.0-SNAPSHOT"
 }
 
 processResources {
