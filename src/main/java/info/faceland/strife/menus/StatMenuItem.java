@@ -54,7 +54,7 @@ public class StatMenuItem extends MenuItem {
         if (level < champion.getMaximumStatLevel()) {
             lore.add(ChatColor.YELLOW + "Click to upgrade!");
         } else {
-            lore.add(ChatColor.YELLOW + "Stat cap reached!");
+            lore.add(ChatColor.RED + "Point cap reached!");
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
