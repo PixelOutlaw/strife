@@ -24,18 +24,20 @@ import java.util.List;
 public class StatsMenu extends ItemMenu {
 
     public StatsMenu(StrifePlugin plugin, List<StrifeStat> stats) {
-        super("Stats", Size.fit(stats.size() + 9), plugin);
+        super("LEVEL YO SHIT UP", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
 
-        int counter = 0;
         for (StrifeStat stat : stats) {
-            if (counter == getSize().getSize() - 9 || counter == getSize().getSize() - 1) {
-                counter++;
-            }
+            int counter = stat.getMenuY() * 9 + stat.getMenuX();
             setItem(counter, new StatMenuItem(plugin, stat));
-            counter++;
         }
-        setItem(getSize().getSize() - 9, new StatPointsMenuItem(plugin));
-        setItem(getSize().getSize() - 1, new CloseItem());
+
+        int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
+        counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
+        setItem(counter, new StatPointsMenuItem(plugin));
+
+        counter = plugin.getSettings().getInt("config.menu.close-marker-y") * 9;
+        counter += plugin.getSettings().getInt("config.menu.close-marker-x");
+        setItem(counter, new CloseItem());
     }
 
 }
@@ -43,4 +45,8 @@ public class StatsMenu extends ItemMenu {
 /*
 00 01 02 03 04 05 06 07 08
 09 10 11 12 13 14 15 16 17
+18 19 20 21 22 23 24 25 26
+27 28 29 30 31 32 33 34 35
+36 37 38 39 40 41 42 43 44
+45 46 47 48 49 50 51 52 53
 */

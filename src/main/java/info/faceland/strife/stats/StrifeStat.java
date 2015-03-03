@@ -30,6 +30,8 @@ public class StrifeStat implements Comparable<StrifeStat> {
     private int order;
     private DyeColor dyeColor;
     private ChatColor chatColor;
+    private int menuX;
+    private int menuY;
 
     public StrifeStat(String key) {
         this.key = key;
@@ -120,4 +122,21 @@ public class StrifeStat implements Comparable<StrifeStat> {
     public void setChatColor(ChatColor chatColor) {
         this.chatColor = chatColor;
     }
+
+    public int getMenuX() {
+        return menuX;
+    }
+
+    public void setMenuX(int menuX) {
+        this.menuX = menuX;
+    }
+
+    public int getMenuY() {
+        return menuY;
+    }
+
+    public void setMenuY(int menuY) {
+        this.menuY = menuY;
+    }
+
 }

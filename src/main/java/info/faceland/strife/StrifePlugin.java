@@ -125,6 +125,8 @@ public class StrifePlugin extends FacePlugin {
             stat.setDescription(cs.getString("description"));
             stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
             stat.setChatColor(ChatColor.valueOf(cs.getString("chat-color", "WHITE")));
+            stat.setMenuX(cs.getInt("menu-x"));
+            stat.setMenuY(cs.getInt("menu-y"));
             Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
             if (cs.isConfigurationSection("attributes")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("attributes");

@@ -1,6 +1,10 @@
 version: "0.0.2"
 menu:
   num-of-rows: 6
+  unused-marker-x: 0
+  unused-marker-y: 5
+  close-marker-x: 8
+  close-marker-y: 5
 leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
   gain-cap: 0.1
