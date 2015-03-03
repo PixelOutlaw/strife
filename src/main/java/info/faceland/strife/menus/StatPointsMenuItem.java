@@ -25,9 +25,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class StatPointsMenuItem extends MenuItem {
 
-    private static final String DISPLAY_NAME = ChatColor.GOLD + "Unused Stat Points";
-    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.GOLD_BLOCK);
-    private static final String[] DISPLAY_LORE = {ChatColor.WHITE + "Displays number of unused stat points."};
+    private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
+    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.WOOL);
+    private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
     private final StrifePlugin plugin;
 
     public StatPointsMenuItem(StrifePlugin plugin) {

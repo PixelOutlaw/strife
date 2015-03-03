@@ -54,6 +54,7 @@ public class StatMenuItem extends MenuItem {
         if (level >= champion.getMaximumStatLevel()) {
             lore.add(ChatColor.RED + "No unused points.");
         } else {
+            lore.add(ChatColor.RED + "Point cap reached!");
             lore.add(ChatColor.YELLOW + "Click to upgrade!");
         }
         itemMeta.setLore(lore);

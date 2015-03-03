@@ -18,13 +18,14 @@ import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.items.CloseItem
 import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.menus.ItemMenu;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.stats.StrifeStat;
+import org.bukkit.ChatColor;
 
 import java.util.List;
 
 public class StatsMenu extends ItemMenu {
 
     public StatsMenu(StrifePlugin plugin, List<StrifeStat> stats) {
-        super("LEVEL YO SHIT UP", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
+        super(ChatColor.BLACK + "Levelup Menu", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
 
         for (StrifeStat stat : stats) {
             int counter = stat.getMenuY() * 9 + stat.getMenuX();
@@ -34,10 +35,6 @@ public class StatsMenu extends ItemMenu {
         int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
         counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
         setItem(counter, new StatPointsMenuItem(plugin));
-
-        counter = plugin.getSettings().getInt("config.menu.close-marker-y") * 9;
-        counter += plugin.getSettings().getInt("config.menu.close-marker-x");
-        setItem(counter, new CloseItem());
     }
 
 }
