@@ -15,14 +15,12 @@
 package info.faceland.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Arg;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Command;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class LevelUpCommand {
@@ -35,21 +33,7 @@ public class LevelUpCommand {
 
     @Command(identifier = "levelup")
     public void baseCommand(Player sender) {
-        Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
-        MessageUtils.sendMessage(sender, "<gold>----------------------------------");
-        MessageUtils.sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%", new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
-        MessageUtils.sendMessage(sender, "<gold>----------------------------------");
-        for (StrifeStat stat : plugin.getStatManager().getStats()) {
-            FancyMessage message = new FancyMessage("");
-            message.then(ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel() + " ] " + stat.getName() + " ");
-            if (champion.getLevel(stat) < champion.getMaximumStatLevel() && champion.getUnusedStatPoints() > 0) {
-                message.then("[+]").color(ChatColor.GOLD).command("/levelup level " + stat.getKey()).tooltip(
-                        ChatColor.GREEN + "Click to level up " + ChatColor.WHITE + stat.getName() + ChatColor.GREEN + "!").then(" ");
-            }
-            message.then("[?]").color(ChatColor.WHITE).tooltip(ChatColor.WHITE + stat.getDescription());
-            message.send(sender);
-        }
-        MessageUtils.sendMessage(sender, "<gold>----------------------------------");
+        plugin.getStatsMenu().open(sender);
     }
 
     @Command(identifier = "levelup level", permissions = "strife.command.levelup")

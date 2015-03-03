@@ -38,6 +38,10 @@ public class AttributeHandler {
         return amount;
     }
 
+    public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
+        return getValue(new HiltItemStack(itemStack), attribute);
+    }
+
     public static double getValue(HiltItemStack itemStack, StrifeAttribute attribute) {
         double amount = 0D;
         if (itemStack == null || itemStack.getType() == Material.AIR || attribute == null) {
@@ -57,8 +61,12 @@ public class AttributeHandler {
         return amount;
     }
 
-    public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
-        return getValue(new HiltItemStack(itemStack), attribute);
+    private static List<String> stripColor(List<String> strings) {
+        List<String> stripped = new ArrayList<>();
+        for (String s : strings) {
+            stripped.add(ChatColor.stripColor(s));
+        }
+        return stripped;
     }
 
     public static void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
@@ -75,14 +83,6 @@ public class AttributeHandler {
         player.setHealthScaled(true);
         player.setHealthScale(player.getMaxHealth());
         player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
-    }
-
-    private static List<String> stripColor(List<String> strings) {
-        List<String> stripped = new ArrayList<>();
-        for (String s : strings) {
-            stripped.add(ChatColor.stripColor(s));
-        }
-        return stripped;
     }
 
 }

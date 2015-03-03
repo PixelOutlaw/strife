@@ -17,6 +17,7 @@ package info.faceland.strife;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
+import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.MenuListener;
 import com.tealcube.minecraft.bukkit.facecore.shade.config.MasterConfiguration;
 import com.tealcube.minecraft.bukkit.facecore.shade.config.VersionedSmartConfiguration;
 import com.tealcube.minecraft.bukkit.facecore.shade.config.VersionedSmartYamlConfiguration;
@@ -36,6 +37,7 @@ import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.HealthListener;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
+import info.faceland.strife.menus.StatsMenu;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
@@ -43,6 +45,8 @@ import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.HealthMovementTask;
 import info.faceland.strife.tasks.SaveTask;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 
@@ -69,6 +73,7 @@ public class StrifePlugin extends FacePlugin {
     private LevelingRate levelingRate;
     private BeastPlugin beastPlugin;
     private HealthMovementTask healthMovementTask;
+    private StatsMenu statsMenu;
 
     public LevelingRate getLevelingRate() {
         return levelingRate;
@@ -94,6 +99,8 @@ public class StrifePlugin extends FacePlugin {
 
         commandHandler = new CommandHandler(this);
 
+        MenuListener.getInstance().register(this);
+
         beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
 
         if (statsYAML.update()) {
@@ -116,6 +123,8 @@ public class StrifePlugin extends FacePlugin {
             stat.setName(cs.getString("name"));
             stat.setOrder(cs.getInt("order"));
             stat.setDescription(cs.getString("description"));
+            stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
+            stat.setChatColor(ChatColor.valueOf(cs.getString("chat-color", "WHITE")));
             Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
             if (cs.isConfigurationSection("attributes")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
@@ -163,11 +172,9 @@ public class StrifePlugin extends FacePlugin {
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DropListener(this), this);
-        debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
-    }
 
-    public DataStorage getStorage() {
-        return storage;
+        statsMenu = new StatsMenu(this, getStatManager().getStats());
+        debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
 
     @Override
@@ -196,6 +203,10 @@ public class StrifePlugin extends FacePlugin {
         }
     }
 
+    public DataStorage getStorage() {
+        return storage;
+    }
+
     public ChampionManager getChampionManager() {
         return championManager;
     }
@@ -208,4 +219,7 @@ public class StrifePlugin extends FacePlugin {
         return beastPlugin;
     }
 
+    public StatsMenu getStatsMenu() {
+        return statsMenu;
+    }
 }

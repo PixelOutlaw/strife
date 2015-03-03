@@ -40,14 +40,14 @@ public class ChampionManager {
         return championMap.get(uuid);
     }
 
+    public boolean hasChampion(UUID uuid) {
+        return uuid != null && championMap.containsKey(uuid);
+    }
+
     public Champion createChampion(UUID uuid) {
         Champion champ = new Champion(uuid);
         championMap.put(uuid, champ);
         return champ;
-    }
-
-    public boolean hasChampion(UUID uuid) {
-        return uuid != null && championMap.containsKey(uuid);
     }
 
     public void addChampion(Champion champion) {

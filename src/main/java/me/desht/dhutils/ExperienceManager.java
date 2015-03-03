@@ -23,14 +23,13 @@ import java.util.Arrays;
 /**
  * @author desht
  *
- * Adapted from ExperienceUtils code originally in ScrollingMenuSign.
+ *         Adapted from ExperienceUtils code originally in ScrollingMenuSign.
  *
- * Credit to nisovin (http://forums.bukkit.org/threads/experienceutils-make-giving-taking-exp-a-bit-more-intuitive.54450/#post-1067480)
- * for an implementation that avoids the problems of getTotalExperience(), which doesn't work properly after a player has enchanted something.
+ *         Credit to nisovin (http://forums.bukkit.org/threads/experienceutils-make-giving-taking-exp-a-bit-more-intuitive.54450/#post-1067480)
+ *         for an implementation that avoids the problems of getTotalExperience(), which doesn't work properly after a player has enchanted something.
  *
- * Credit to comphenix for further contributions:
- * See http://forums.bukkit.org/threads/experiencemanager-was-experienceutils-make-giving-taking-exp-a-bit-more-intuitive.54450/page-3#post-1273622
- *
+ *         Credit to comphenix for further contributions:
+ *         See http://forums.bukkit.org/threads/experiencemanager-was-experienceutils-make-giving-taking-exp-a-bit-more-intuitive.54450/page-3#post-1273622
  */
 public class ExperienceManager {
     // this is to stop the lookup table growing without control
@@ -78,57 +77,6 @@ public class ExperienceManager {
     }
 
     /**
-     * Initialize the XP lookup table. See http://minecraft.gamepedia.com/Experience
-     *
-     * @param maxLevel The highest level handled by the lookup tables
-     */
-    private static void initLookupTables(int maxLevel) {
-        xpTotalToReachLevel = new int[maxLevel];
-
-        for (int i = 0; i < xpTotalToReachLevel.length; i++) {
-            xpTotalToReachLevel[i] =
-                    i >= 30 ? (int) (3.5 * i * i - 151.5 * i + 2220) :
-                    i >= 16 ? (int) (1.5 * i * i - 29.5 * i + 360) :
-                    17 * i;
-        }
-    }
-
-    /**
-     * Calculate the level that the given XP quantity corresponds to, without
-     * using the lookup tables. This is needed if getLevelForExp() is called
-     * with an XP quantity beyond the range of the existing lookup tables.
-     *
-     * @param exp
-     * @return
-     */
-    private static int calculateLevelForExp(int exp) {
-        int level = 0;
-        int curExp = 7; // level 1
-        int incr = 10;
-
-        while (curExp <= exp) {
-            curExp += incr;
-            level++;
-            incr += (level % 2 == 0) ? 3 : 4;
-        }
-        return level;
-    }
-
-    /**
-     * Get the Player associated with this ExperienceManager.
-     *
-     * @return the Player object
-     * @throws IllegalStateException if the player is no longer online
-     */
-    public Player getPlayer() {
-        Player p = player.get();
-        if (p == null) {
-            throw new IllegalStateException("Player " + playerName + " is not online");
-        }
-        return p;
-    }
-
-    /**
      * Adjust the player's XP by the given amount in an intelligent fashion.
      * Works around some of the non-intuitive behaviour of the basic Bukkit
      * player.giveExp() method.
@@ -159,15 +107,6 @@ public class ExperienceManager {
         setExp(0, amt);
     }
 
-    /**
-     * Set the player's fractional experience.
-     *
-     * @param amt Amount of XP, should not be negative
-     */
-    public void setExp(double amt) {
-        setExp(0, amt);
-    }
-
     private void setExp(double base, double amt) {
         int xp = (int) Math.max(base + amt, 0);
 
@@ -181,7 +120,7 @@ public class ExperienceManager {
         }
         // Increment total experience - this should force the server to send an update packet
         if (xp > base) {
-            player.setTotalExperience(player.getTotalExperience() + xp - (int)base);
+            player.setTotalExperience(player.getTotalExperience() + xp - (int) base);
         }
 
         double pct = (base - getXpForLevel(newLvl) + amt) / (double) (getXpNeededToLevelUp(newLvl));
@@ -189,47 +128,17 @@ public class ExperienceManager {
     }
 
     /**
-     * Get the player's current XP total.
+     * Get the Player associated with this ExperienceManager.
      *
-     * @return the player's total XP
+     * @return the Player object
+     * @throws IllegalStateException if the player is no longer online
      */
-    public int getCurrentExp() {
-        Player player = getPlayer();
-
-        int lvl = player.getLevel();
-        return getXpForLevel(lvl) + Math.round(getXpNeededToLevelUp(lvl) * player.getExp());
-    }
-
-    /**
-     * Get the player's current fractional XP.
-     *
-     * @return The player's total XP with fractions.
-     */
-    private double getCurrentFractionalXP() {
-        Player player = getPlayer();
-
-        int lvl = player.getLevel();
-        return getXpForLevel(lvl) + (double) (getXpNeededToLevelUp(lvl) * player.getExp());
-    }
-
-    /**
-     * Checks if the player has the given amount of XP.
-     *
-     * @param amt The amount to check for.
-     * @return true if the player has enough XP, false otherwise
-     */
-    public boolean hasExp(int amt) {
-        return getCurrentExp() >= amt;
-    }
-
-    /**
-     * Checks if the player has the given amount of fractional XP.
-     *
-     * @param amt The amount to check for.
-     * @return true if the player has enough XP, false otherwise
-     */
-    public boolean hasExp(double amt) {
-        return getCurrentFractionalXP() >= amt;
+    public Player getPlayer() {
+        Player p = player.get();
+        if (p == null) {
+            throw new IllegalStateException("Player " + playerName + " is not online");
+        }
+        return p;
     }
 
     /**
@@ -254,18 +163,6 @@ public class ExperienceManager {
     }
 
     /**
-     * Retrieves the amount of experience the experience bar can hold at the given level.
-     *
-     * @param level the level to check
-     * @return the amount of experience at this level in the level bar
-     * @throws IllegalArgumentException if the level is less than 0
-     */
-    public int getXpNeededToLevelUp(int level) {
-        Validate.isTrue(level >= 0, "Level may not be negative.");
-        return level > 30 ? 62 + (level - 30) * 7 : level >= 16 ? 17 + (level - 15) * 3 : 17;
-    }
-
-    /**
      * Return the total XP needed to be the given level.
      *
      * @param level The level to check for.
@@ -278,5 +175,107 @@ public class ExperienceManager {
             initLookupTables(level * 2);
         }
         return xpTotalToReachLevel[level];
+    }
+
+    /**
+     * Retrieves the amount of experience the experience bar can hold at the given level.
+     *
+     * @param level the level to check
+     * @return the amount of experience at this level in the level bar
+     * @throws IllegalArgumentException if the level is less than 0
+     */
+    public int getXpNeededToLevelUp(int level) {
+        Validate.isTrue(level >= 0, "Level may not be negative.");
+        return level > 30 ? 62 + (level - 30) * 7 : level >= 16 ? 17 + (level - 15) * 3 : 17;
+    }
+
+    /**
+     * Calculate the level that the given XP quantity corresponds to, without
+     * using the lookup tables. This is needed if getLevelForExp() is called
+     * with an XP quantity beyond the range of the existing lookup tables.
+     *
+     * @param exp
+     * @return
+     */
+    private static int calculateLevelForExp(int exp) {
+        int level = 0;
+        int curExp = 7; // level 1
+        int incr = 10;
+
+        while (curExp <= exp) {
+            curExp += incr;
+            level++;
+            incr += (level % 2 == 0) ? 3 : 4;
+        }
+        return level;
+    }
+
+    /**
+     * Initialize the XP lookup table. See http://minecraft.gamepedia.com/Experience
+     *
+     * @param maxLevel The highest level handled by the lookup tables
+     */
+    private static void initLookupTables(int maxLevel) {
+        xpTotalToReachLevel = new int[maxLevel];
+
+        for (int i = 0; i < xpTotalToReachLevel.length; i++) {
+            xpTotalToReachLevel[i] =
+                    i >= 30 ? (int) (3.5 * i * i - 151.5 * i + 2220) :
+                            i >= 16 ? (int) (1.5 * i * i - 29.5 * i + 360) :
+                                    17 * i;
+        }
+    }
+
+    /**
+     * Set the player's fractional experience.
+     *
+     * @param amt Amount of XP, should not be negative
+     */
+    public void setExp(double amt) {
+        setExp(0, amt);
+    }
+
+    /**
+     * Checks if the player has the given amount of XP.
+     *
+     * @param amt The amount to check for.
+     * @return true if the player has enough XP, false otherwise
+     */
+    public boolean hasExp(int amt) {
+        return getCurrentExp() >= amt;
+    }
+
+    /**
+     * Get the player's current XP total.
+     *
+     * @return the player's total XP
+     */
+    public int getCurrentExp() {
+        Player player = getPlayer();
+
+        int lvl = player.getLevel();
+        return getXpForLevel(lvl) + Math.round(getXpNeededToLevelUp(lvl) * player.getExp());
+    }
+
+    /**
+     * Checks if the player has the given amount of fractional XP.
+     *
+     * @param amt The amount to check for.
+     * @return true if the player has enough XP, false otherwise
+     */
+    public boolean hasExp(double amt) {
+        return getCurrentFractionalXP() >= amt;
+    }
+
+    /**
+     * Get the player's current fractional XP.
+     *
+     * @return The player's total XP with fractions.
+     */
+    private double getCurrentFractionalXP() {
+        Player player = getPlayer();
+
+        int lvl = player.getLevel();
+        return getXpForLevel(lvl) + (double) (getXpNeededToLevelUp(lvl) * player.getExp());
     }
 }

@@ -29,7 +29,6 @@ import java.util.TreeMap;
  *
  * @param <TKey>   - type of the key. Must implement Comparable.
  * @param <TValue> - type of the value to associate.
- *
  * @author Kristian
  */
 public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
@@ -119,7 +118,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      *
      * @param left  - leftmost end point.
      * @param right - rightmost end point.
-     *
      * @return The associated entry.
      */
     protected Entry getEntry(EndPoint left, EndPoint right) {
@@ -213,7 +211,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      * Determines if the given key is within an interval.
      *
      * @param key - key to check.
-     *
      * @return TRUE if the given key is within an interval in this tree, FALSE otherwise.
      */
     public boolean containsKey(TKey key) {
@@ -224,7 +221,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      * Get the left-most end-point associated with this key.
      *
      * @param key - key to search for.
-     *
      * @return The end point found, or NULL.
      */
     protected EndPoint getEndPoint(TKey key) {
@@ -257,7 +253,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      * Decrement the given key by one unit.
      *
      * @param key - the key that should be decremented.
-     *
      * @return The new decremented key.
      */
     protected abstract TKey decrementKey(TKey key);
@@ -329,7 +324,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      * Retrieves the value of the range that matches the given key, or NULL if nothing was found.
      *
      * @param key - the level to read for.
-     *
      * @return The correct amount of experience, or NULL if nothing was recorded.
      */
     public TValue get(TKey key) {
@@ -347,7 +341,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      *
      * @param point     - the point to search with.
      * @param inclusive - whether or not to include the current point in the search.
-     *
      * @return The previous end point of a given given key, or NULL if not found.
      */
     protected EndPoint getPreviousEndPoint(TKey point, boolean inclusive) {
@@ -368,7 +361,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      *
      * @param point     - the point to search with.
      * @param inclusive - whether or not to include the current point in the search.
-     *
      * @return The next end point of a given given key, or NULL if not found.
      */
     protected EndPoint getNextEndPoint(TKey point, boolean inclusive) {
@@ -422,7 +414,6 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
      * Increment the given key by one unit.
      *
      * @param key - the key that should be incremented.
-     *
      * @return The new incremented key.
      */
     protected abstract TKey incrementKey(TKey key);
@@ -492,8 +483,8 @@ public abstract class IntervalTree<TKey extends Comparable<TKey>, TValue> {
                 return true;
             } else if (obj instanceof IntervalTree.Entry) {
                 return Objects.equal(left.key, ((IntervalTree.Entry) obj).left.key) &&
-                       Objects.equal(right.key, ((IntervalTree.Entry) obj).right.key) &&
-                       Objects.equal(left.value, ((IntervalTree.Entry) obj).left.value);
+                        Objects.equal(right.key, ((IntervalTree.Entry) obj).right.key) &&
+                        Objects.equal(left.value, ((IntervalTree.Entry) obj).left.value);
             } else {
                 return false;
             }

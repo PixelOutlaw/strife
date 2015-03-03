@@ -1,7 +1,9 @@
-version: "0.0.2"
+version: "0.0.3"
 vitality:
   name: "Vitality"
-  description: "+2 Health"
+  description: "<red>+2 Health/n<red>+1 Regeneration"
   order: 0
+  chat-color: RED
+  dye-color: RED
   attributes:
     health: 2.0

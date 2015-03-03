@@ -53,6 +53,16 @@ public enum StrifeAttribute {
         this.percentage = percentage;
     }
 
+    public static StrifeAttribute fromName(String s) {
+        for (StrifeAttribute val : values()) {
+            if (val.name.equalsIgnoreCase(s) || val.name().equalsIgnoreCase(s) || val.name.replace(" ", "-").equalsIgnoreCase(s) ||
+                    val.name().replace("_", "-").equalsIgnoreCase(s)) {
+                return val;
+            }
+        }
+        return null;
+    }
+
     public String getName() {
         return name;
     }
@@ -67,16 +77,6 @@ public enum StrifeAttribute {
 
     public boolean isPercentage() {
         return percentage;
-    }
-
-    public static StrifeAttribute fromName(String s) {
-        for (StrifeAttribute val : values()) {
-            if (val.name.equalsIgnoreCase(s) || val.name().equalsIgnoreCase(s) || val.name.replace(" ", "-").equalsIgnoreCase(s) ||
-                    val.name().replace("_", "-").equalsIgnoreCase(s)) {
-                return val;
-            }
-        }
-        return null;
     }
 
     public ChatColor getDisplayColor() {

@@ -21,14 +21,11 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -122,12 +119,12 @@ public class HealthListener implements Listener {
             }
         }
         if (champion.getPlayer().getInventory().getItem(event.getNewSlot()) != null
-            && champion.getPlayer().getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
+                && champion.getPlayer().getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
             ItemStack itemStack = champion.getPlayer().getInventory().getItem(event.getNewSlot());
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
-                        StrifeAttribute.MOVEMENT_SPEED  || attr == StrifeAttribute.XP_GAIN) {
+                        || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                        StrifeAttribute.MOVEMENT_SPEED || attr == StrifeAttribute.XP_GAIN) {
                     continue;
                 }
                 double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
@@ -145,7 +142,7 @@ public class HealthListener implements Listener {
         if (!(event.getEntity() instanceof Player) ||
                 !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN ||
                         event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) ||
-            event.isCancelled()) {
+                event.isCancelled()) {
             return;
         }
         Player player = (Player) event.getEntity();

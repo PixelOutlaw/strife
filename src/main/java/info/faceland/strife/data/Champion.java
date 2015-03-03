@@ -38,8 +38,9 @@ public class Champion {
         this.levelMap = new HashMap<>();
     }
 
-    public UUID getUniqueId() {
-        return uniqueId;
+    @Override
+    public int hashCode() {
+        return uniqueId != null ? uniqueId.hashCode() : 0;
     }
 
     @Override
@@ -56,15 +57,6 @@ public class Champion {
         return !(uniqueId != null ? !uniqueId.equals(champion.uniqueId) : champion.uniqueId != null);
     }
 
-    @Override
-    public int hashCode() {
-        return uniqueId != null ? uniqueId.hashCode() : 0;
-    }
-
-    public Map<StrifeStat, Integer> getLevelMap() {
-        return new HashMap<>(levelMap);
-    }
-
     public int getLevel(StrifeStat stat) {
         if (levelMap.containsKey(stat)) {
             return levelMap.get(stat);
@@ -74,10 +66,6 @@ public class Champion {
 
     public void setLevel(StrifeStat stat, int level) {
         levelMap.put(stat, level);
-    }
-
-    public Player getPlayer() {
-        return Bukkit.getPlayer(getUniqueId());
     }
 
     public Map<StrifeAttribute, Double> getAttributeValues() {
@@ -107,7 +95,7 @@ public class Champion {
             ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                        || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
                         StrifeAttribute.MOVEMENT_SPEED || attr == StrifeAttribute.XP_GAIN) {
                     continue;
                 }
@@ -116,6 +104,18 @@ public class Champion {
             }
         }
         return attributeDoubleMap;
+    }
+
+    public Map<StrifeStat, Integer> getLevelMap() {
+        return new HashMap<>(levelMap);
+    }
+
+    public Player getPlayer() {
+        return Bukkit.getPlayer(getUniqueId());
+    }
+
+    public UUID getUniqueId() {
+        return uniqueId;
     }
 
     public int getUnusedStatPoints() {

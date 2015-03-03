@@ -46,8 +46,8 @@ public class DataListener implements Listener {
                     public void run() {
                         FancyMessage message = new FancyMessage("");
                         message.then("Your stats have been reset! ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                               .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                               .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
+                                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                                .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }

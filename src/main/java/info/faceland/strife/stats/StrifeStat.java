@@ -15,6 +15,8 @@
 package info.faceland.strife.stats;
 
 import info.faceland.strife.attributes.StrifeAttribute;
+import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +28,8 @@ public class StrifeStat implements Comparable<StrifeStat> {
     private String description;
     private Map<StrifeAttribute, Double> attributeMap;
     private int order;
+    private DyeColor dyeColor;
+    private ChatColor chatColor;
 
     public StrifeStat(String key) {
         this.key = key;
@@ -67,6 +71,11 @@ public class StrifeStat implements Comparable<StrifeStat> {
     }
 
     @Override
+    public int hashCode() {
+        return key != null ? key.hashCode() : 0;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -78,11 +87,6 @@ public class StrifeStat implements Comparable<StrifeStat> {
         StrifeStat that = (StrifeStat) o;
 
         return !(key != null ? !key.equals(that.key) : that.key != null);
-    }
-
-    @Override
-    public int hashCode() {
-        return key != null ? key.hashCode() : 0;
     }
 
     @Override
@@ -101,4 +105,19 @@ public class StrifeStat implements Comparable<StrifeStat> {
         this.order = order;
     }
 
+    public DyeColor getDyeColor() {
+        return dyeColor;
+    }
+
+    public void setDyeColor(DyeColor dyeColor) {
+        this.dyeColor = dyeColor;
+    }
+
+    public ChatColor getChatColor() {
+        return chatColor;
+    }
+
+    public void setChatColor(ChatColor chatColor) {
+        this.chatColor = chatColor;
+    }
 }

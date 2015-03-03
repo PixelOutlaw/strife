@@ -42,8 +42,8 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
             MessageUtils.sendMessage(sender,
-                               ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel() + " ] " +
-                               stat.getName());
+                    ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel() + " ] " +
+                            stat.getName());
         }
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
     }
@@ -62,8 +62,8 @@ public class StrifeCommand {
         MessageUtils.sendMessage(target, "<green>Your stats have been reset.");
         FancyMessage message = new FancyMessage("");
         message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-               .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-               .color(ChatColor.WHITE).then(" to spend them.").send(target);
+                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                .color(ChatColor.WHITE).then(" to spend them.").send(target);
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
 
@@ -99,7 +99,7 @@ public class StrifeCommand {
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
-                           new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
+                new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         MessageUtils.sendMessage(target, "<green>Your level has been raised.");
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
