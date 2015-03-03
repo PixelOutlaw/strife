@@ -35,10 +35,6 @@ public class StatsMenu extends ItemMenu {
         int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
         counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
         setItem(counter, new StatPointsMenuItem(plugin));
-
-        counter = plugin.getSettings().getInt("config.menu.close-marker-y") * 9;
-        counter += plugin.getSettings().getInt("config.menu.close-marker-x");
-        setItem(counter, new CloseItem());
     }
 
 }
