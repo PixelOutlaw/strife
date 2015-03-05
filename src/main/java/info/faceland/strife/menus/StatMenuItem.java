@@ -51,8 +51,10 @@ public class StatMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName() + " [" + level + "/" + champion.getMaximumStatLevel() + "]");
         List<String> lore = new ArrayList<>(getLore());
-        if (level >= champion.getMaximumStatLevel()) {
+        if (champion.getUnusedStatPoints() > 0) {
             lore.add(ChatColor.RED + "No unused points.");
+        } else if (level >= champion.getMaximumStatLevel()) {
+            lore.add(ChatColor.RED + "Point cap reached.");
         } else {
             lore.add(ChatColor.YELLOW + "Click to upgrade!");
         }
