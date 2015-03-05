@@ -41,7 +41,7 @@ public class CombatListener implements Listener {
 
     private final StrifePlugin plugin;
     private final Random random;
-    private static final String[] DOGE_MEMES = {"<aqua>wow", "<light green>wow", "<purple>wow", "<aqua>much pain", "<light green>much pain", "<purple>much pain", "<aqua>many disrespects", "<light green>many disrespects", "<purple>many disrespects", "<red>no u", "<red>2damage4me"};
+    private static final String[] DOGE_MEMES = {"<aqua>wow", "<green>wow", "<light purple>wow", "<aqua>much pain", "<green>much pain", "<light purple>much pain", "<aqua>many disrespects", "<green>many disrespects", "<light purple>many disrespects", "<red>no u", "<red>2damage4me"};
 
     public CombatListener(StrifePlugin plugin) {
         this.plugin = plugin;
