@@ -58,7 +58,7 @@ public class AttributeHandler {
         if (attribute.isPercentage()) {
             amount /= 100;
         }
-        return amount;
+        return attribute.getCap() > 0D ? Math.min(amount, attribute.getCap()) : amount;
     }
 
     private static List<String> stripColor(List<String> strings) {

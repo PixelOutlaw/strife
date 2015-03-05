@@ -52,9 +52,10 @@ public class AttributesCommand {
                 message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
                         .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100 : val));
             }
-            message.color(ChatColor.WHITE);
+            boolean atCap = attribute.getCap() > 0D && Math.abs(val - attribute.getCap()) < 0.0005;
+            message.color(atCap ? ChatColor.RED : ChatColor.WHITE);
             if (attribute.isPercentage()) {
-                message.then("%").color(ChatColor.WHITE);
+                message.then("%").color(atCap ? ChatColor.RED : ChatColor.WHITE);
             }
             message.send(sender);
         }
