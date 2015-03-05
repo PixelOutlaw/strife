@@ -14,6 +14,7 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.kern.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.kern.shade.google.common.base.CharMatcher;
 import info.faceland.beast.BeastData;
@@ -40,10 +41,26 @@ public class CombatListener implements Listener {
 
     private final StrifePlugin plugin;
     private final Random random;
+    private static final String[] DOGE_MEMES = {"<red>M'lady", "<red>Much damage, very wow", "<red>2damage4me", "<red>no u", "<red>Many ow, much pain, wow"};
 
     public CombatListener(StrifePlugin plugin) {
         this.plugin = plugin;
         random = new Random(System.currentTimeMillis());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityDamageEvent(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+        Player p = (Player) event.getEntity();
+        Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+        Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+        double chance = vals.get(StrifeAttribute.DOGE);
+        if (random.nextDouble() > chance) {
+            return;
+        }
+        MessageUtils.sendMessage(p, DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

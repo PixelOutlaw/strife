@@ -39,6 +39,10 @@ public class AttributesCommand {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
         for (StrifeAttribute attribute : StrifeAttribute.values()) {
+            if (attribute == StrifeAttribute.DOGE)
+            {
+                continue;
+            }
             double val = valueMap.get(attribute);
             FancyMessage message = new FancyMessage("");
             if (attribute == StrifeAttribute.ATTACK_SPEED) {
