@@ -38,7 +38,7 @@ public enum StrifeAttribute {
     XP_GAIN("Experience Gain", ChatColor.GREEN, "Increases the rate at which experience is gained.", 0D, true),
     ITEM_DISCOVERY("Item Discovery", ChatColor.GREEN, "Increases the rate at which items are found.", 0D, true),
     GOLD_FIND("Gold Find", ChatColor.GREEN, "Increases the amount of Gold dropped by monsters killed.", 0D, true),
-    DOGE("Doge", ChatColor.AQUA, "Much funny, very meme, so doge, wow.", 0D, true, 100D);
+    DOGE("Doge Chance", ChatColor.AQUA, "Much funny, very meme, so doge, wow.", 0D, true, 100D);
 
     private final String name;
     private final ChatColor displayColor;
