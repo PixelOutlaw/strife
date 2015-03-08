@@ -76,7 +76,9 @@ public class Champion {
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
+                attributeDoubleMap
+                        .put(attr, attr.getCap() > 0D ? Math.min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
+                                : val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
         if (getPlayer().getEquipment() == null) {
@@ -88,7 +90,7 @@ public class Champion {
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
+                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr)) : val + AttributeHandler.getValue(itemStack, attr));
             }
         }
         if (getPlayer().getEquipment().getItemInHand() != null && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
@@ -100,7 +102,7 @@ public class Champion {
                     continue;
                 }
                 double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
+                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap()) : val + AttributeHandler.getValue(itemStack, attr));
             }
         }
         return attributeDoubleMap;
