@@ -30,11 +30,7 @@ import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.listeners.CombatListener;
-import info.faceland.strife.listeners.DataListener;
-import info.faceland.strife.listeners.DropListener;
-import info.faceland.strife.listeners.ExperienceListener;
-import info.faceland.strife.listeners.HealthListener;
+import info.faceland.strife.listeners.*;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.StatsMenu;
@@ -51,11 +47,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 public class StrifePlugin extends FacePlugin {
@@ -173,7 +165,12 @@ public class StrifePlugin extends FacePlugin {
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new DropListener(this), this);
+        if (Bukkit.getPluginManager().getPlugin("Loot") != null) {
+            Bukkit.getPluginManager().registerEvents(new LootListener(this), this);
+        }
+        if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
+            Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
+        }
 
         statsMenu = new StatsMenu(this, getStatManager().getStats());
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");

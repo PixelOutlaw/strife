@@ -14,7 +14,6 @@
  */
 package info.faceland.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.bullion.GoldDropEvent;
 import info.faceland.loot.events.LootDetermineChanceEvent;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -25,11 +24,11 @@ import org.bukkit.event.Listener;
 
 import java.util.Map;
 
-public class DropListener implements Listener {
+public class LootListener implements Listener {
 
     private final StrifePlugin plugin;
 
-    public DropListener(StrifePlugin plugin) {
+    public LootListener(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -43,17 +42,6 @@ public class DropListener implements Listener {
         Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
         double chance = event.getChance() + event.getChance() * attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
         event.setChance(chance);
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onGoldDrop(GoldDropEvent event) {
-        if (event.getKiller() == null) {
-            return;
-        }
-        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        double amount = event.getAmount() + event.getAmount() * attributeDoubleMap.get(StrifeAttribute.GOLD_FIND);
-        event.setAmount(amount);
     }
 
 }
