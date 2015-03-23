@@ -165,7 +165,7 @@ public class CombatListener implements Listener {
             if (blocking) {
                 if (parried) {
                     damage = meleeDamageA * attackSpeedMultA;
-                    a.damage(damage * 1.25);
+                    a.damage(damage * 0.25);
                     event.setCancelled(true);
                     b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                     return;

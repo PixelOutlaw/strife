@@ -21,10 +21,10 @@ public enum StrifeAttribute {
     // modify any attributes here
     HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 20, false),
     REGENERATION("Regeneration", ChatColor.BLUE, "How much health you recover per natural regeneration tick.", 1, false),
-    ARMOR("Armor", ChatColor.BLUE, "Percent by which incoming damage is reduced.", 0, true, 0.95),
+    ARMOR("Armor", ChatColor.BLUE, "Percent by which incoming damage is reduced.", 0, true, 0.85),
     BLOCK("Block", ChatColor.BLUE, "Percent by which incoming damage is reduced (after armor) when blocking.", 0, true),
     PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect damage when blocking.", 0, true),
-    EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true, 0.80),
+    EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true, 0.85),
     DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back at your attacker.", 0, true),
     MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Player's movement speed, base is 100, 200 is double.", 100, false),
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Base melee damage dealt.", 1, false),
