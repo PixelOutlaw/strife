@@ -93,7 +93,7 @@ public class CombatListener implements Listener {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues().get(StrifeAttribute.EVASION);
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
-                b.getWorld().playSound(a.getEyeLocation(), Sound.IRONGOLEM_THROW, 2f, 2f);
+                b.getWorld().playSound(a.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
                 return;
             }
         }
