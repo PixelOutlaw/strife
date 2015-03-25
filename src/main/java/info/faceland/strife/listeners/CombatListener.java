@@ -203,7 +203,7 @@ public class CombatListener implements Listener {
             damage = meleeDamageA * attackSpeedMultA;
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 3f, 1f);
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
@@ -230,7 +230,7 @@ public class CombatListener implements Listener {
             damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 3f, 1f);
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             double blockReducer = (1 - blockB);
@@ -252,7 +252,7 @@ public class CombatListener implements Listener {
         damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
-            b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 3f, 1f);
+            b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
         }
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
