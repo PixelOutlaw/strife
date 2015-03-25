@@ -32,6 +32,7 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -148,6 +149,9 @@ public class HealthListener implements Listener {
         Player player = (Player) event.getEntity();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         double amount = champion.getAttributeValues().get(StrifeAttribute.REGENERATION);
+        if (player.hasPotionEffect(PotionEffectType.POISON)) {
+            amount *= 0.25;
+        }
         event.setAmount(amount);
     }
 

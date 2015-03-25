@@ -33,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.Map;
 import java.util.Random;
@@ -78,6 +79,7 @@ public class CombatListener implements Listener {
         }
         // LET THE DATA GATHERING COMMENCE
         boolean melee = true;
+        double poisonMult = 1.0;
         if (event.getDamager() instanceof LivingEntity) {
             a = (LivingEntity) event.getDamager();
         } else if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager()).getShooter() instanceof LivingEntity) {
@@ -91,7 +93,7 @@ public class CombatListener implements Listener {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues().get(StrifeAttribute.EVASION);
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
-                b.getWorld().playSound(a.getEyeLocation(), Sound.IRONGOLEM_THROW, 1f, 2f);
+                b.getWorld().playSound(a.getEyeLocation(), Sound.IRONGOLEM_THROW, 2f, 2f);
                 return;
             }
         }
@@ -106,6 +108,9 @@ public class CombatListener implements Listener {
         boolean blocking = false;
         boolean parried = false;
         if (a instanceof Player) {
+            if (a.hasPotionEffect(PotionEffectType.POISON)) {
+                poisonMult = 0.25;
+            }
             for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
                 if (event.isApplicable(modifier)) {
                     event.setDamage(modifier, 0D);
@@ -165,6 +170,9 @@ public class CombatListener implements Listener {
             if (blocking) {
                 if (parried) {
                     damage = meleeDamageA * attackSpeedMultA;
+                    if (a instanceof Player) {
+                        damage *= 0.5;
+                    }
                     a.damage(damage * 1.25);
                     event.setCancelled(true);
                     b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
@@ -182,12 +190,12 @@ public class CombatListener implements Listener {
                 }
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
                 if (a instanceof Player) {
-                    lifeStolenA = event.getFinalDamage() * lifeStealA;
+                    lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                     a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
                 }
                 if (reflectDamageB > 0) {
                     a.damage(damage * reflectDamageB);
-                    a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
+                    a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
                 }
                 b.setFireTicks((int) Math.round(fireDamageA * 20));
                 return;
@@ -195,7 +203,7 @@ public class CombatListener implements Listener {
             damage = meleeDamageA * attackSpeedMultA;
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 3f, 1f);
             }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
@@ -203,12 +211,12 @@ public class CombatListener implements Listener {
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
             if (a instanceof Player) {
-                lifeStolenA = event.getFinalDamage() * lifeStealA;
+                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
-                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
+                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
@@ -222,7 +230,7 @@ public class CombatListener implements Listener {
             damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 3f, 1f);
             }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             double blockReducer = (1 - blockB);
@@ -231,12 +239,12 @@ public class CombatListener implements Listener {
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
             if (a instanceof Player) {
-                lifeStolenA = event.getFinalDamage() * lifeStealA;
+                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB);
-                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
+                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
@@ -244,7 +252,7 @@ public class CombatListener implements Listener {
         damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
-            b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+            b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 3f, 1f);
         }
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
@@ -252,12 +260,12 @@ public class CombatListener implements Listener {
         }
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
         if (a instanceof Player) {
-            lifeStolenA = event.getFinalDamage() * lifeStealA;
+            lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
         }
         if (reflectDamageB > 0) {
             a.damage(damage * reflectDamageB);
-            a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 2f);
+            a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
         }
         b.setFireTicks((int) Math.round(fireDamageA * 20));
     }
