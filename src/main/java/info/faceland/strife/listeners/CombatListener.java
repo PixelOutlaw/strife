@@ -192,7 +192,7 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 }
                 if (attackSpeedMultA == 1D) {
-                    overbonus = damage + (overchargeA * damage);
+                    overbonus = overchargeA * damage;
                 }
                 damage = damage + critbonus + overbonus;
                 double damageReducer = (1 - (armorB * (1 - armorPenA)));
@@ -218,7 +218,7 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             if (attackSpeedMultA == 1D) {
-                overbonus = damage + (overchargeA * damage);
+                overbonus = overchargeA * damage;
             }
             damage = damage + critbonus + overbonus;
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
