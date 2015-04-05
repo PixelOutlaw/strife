@@ -92,6 +92,9 @@ public class CombatListener implements Listener {
             return;
         }
         LivingEntity b = (LivingEntity) event.getEntity();
+        if (a == null || b == null) {
+            return;
+        }
         if (b instanceof Player) {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues().get(StrifeAttribute.EVASION);
             if (random.nextDouble() < chance) {
@@ -137,7 +140,7 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            if (a != null && a.getType() != null) {
+            if (a.getType() != null) {
                 BeastData data = plugin.getBeastPlugin().getData(a.getType());
                 String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
                 if (data != null && a.getCustomName() != null) {
