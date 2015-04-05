@@ -201,14 +201,14 @@ public class CombatListener implements Listener {
                 if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
                     damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
                 }
+                if (reflectDamageB > 0) {
+                    a.damage(damage * reflectDamageB * 0.5);
+                    a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
+                }
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
                 if (a instanceof Player) {
                     lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                     a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-                }
-                if (reflectDamageB > 0) {
-                    a.damage(damage * reflectDamageB);
-                    a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
                 }
                 b.setFireTicks((int) Math.round(fireDamageA * 20));
                 return;
@@ -226,14 +226,14 @@ public class CombatListener implements Listener {
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
+            if (reflectDamageB > 0) {
+                a.damage(damage * reflectDamageB * 0.5);
+                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
+            }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-            }
-            if (reflectDamageB > 0) {
-                a.damage(damage * reflectDamageB);
-                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
@@ -254,14 +254,14 @@ public class CombatListener implements Listener {
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
+            if (reflectDamageB > 0) {
+                a.damage(damage * reflectDamageB * 0.5);
+                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
+            }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-            }
-            if (reflectDamageB > 0) {
-                a.damage(damage * reflectDamageB);
-                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
@@ -275,14 +275,14 @@ public class CombatListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
             damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
         }
+        if (reflectDamageB > 0) {
+            a.damage(damage * reflectDamageB * 0.5);
+            a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
+        }
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
         if (a instanceof Player) {
             lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
             a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-        }
-        if (reflectDamageB > 0) {
-            a.damage(damage * reflectDamageB);
-            a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.8f, 2f);
         }
         b.setFireTicks((int) Math.round(fireDamageA * 20));
     }
