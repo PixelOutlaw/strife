@@ -30,6 +30,7 @@ public enum StrifeAttribute {
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Base melee damage dealt.", 1, false),
     RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by fired arrows.", 1, false),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "How quickly your melee damage recharges inbetween attacks", 2D, true),
+    OVERCHARGE("Overcharge", ChatColor.YELLOW, "Bonus damage dealt when your attacks are fully recharged", 0, true),
     ARMOR_PENETRATION("Armor Penetration", ChatColor.YELLOW, "Percentage of enemy armor that is ignored.", 0, true),
     CRITICAL_RATE("Critical Rate", ChatColor.YELLOW, "Chance of landing a critical strike, dealing bonus damage.", 0, true),
     CRITICAL_DAMAGE("Critical Damage", ChatColor.YELLOW, "Percent damage you deal when you critically strike.", 1.25D, true),

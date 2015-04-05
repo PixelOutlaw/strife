@@ -104,7 +104,9 @@ public class CombatListener implements Listener {
             }
         }
         double damage;
+        double critbonus = 0, overbonus = 0;
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
+        double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
         double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA;
         double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
@@ -186,9 +188,13 @@ public class CombatListener implements Listener {
                 }
                 damage = meleeDamageA * attackSpeedMultA;
                 if (random.nextDouble() < criticalRateA) {
-                    damage = damage * criticalDamageA;
+                    critbonus = damage * (criticalDamageA - 1.0);
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 }
+                if (attackSpeedMultA == 1D) {
+                    overbonus = damage + (overchargeA * damage);
+                }
+                damage = damage + critbonus + overbonus;
                 double damageReducer = (1 - (armorB * (1 - armorPenA)));
                 double blockReducer = (1 - blockB);
                 if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
@@ -208,9 +214,13 @@ public class CombatListener implements Listener {
             }
             damage = meleeDamageA * attackSpeedMultA;
             if (random.nextDouble() < criticalRateA) {
-                damage = damage * criticalDamageA;
+                critbonus = damage * (criticalDamageA - 1.0);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
+            if (attackSpeedMultA == 1D) {
+                overbonus = damage + (overchargeA * damage);
+            }
+            damage = damage + critbonus + overbonus;
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
