@@ -131,6 +131,7 @@ public class CombatListener implements Listener {
             attackSpeedA = (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + vals.get(StrifeAttribute.ATTACK_SPEED))));
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
+            overchargeA = vals.get(StrifeAttribute.OVERCHARGE);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
