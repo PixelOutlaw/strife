@@ -76,6 +76,9 @@ public class CombatListener implements Listener {
         if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
             return;
         }
+        if (event.getEntity().hasMetadata("NPC")) {
+            return;
+        }
         // LET THE DATA GATHERING COMMENCE
         boolean melee = true;
         if (event.getDamager() instanceof LivingEntity) {
