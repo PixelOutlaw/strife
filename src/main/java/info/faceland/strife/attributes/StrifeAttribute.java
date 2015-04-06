@@ -29,6 +29,7 @@ public enum StrifeAttribute {
     MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Player's movement speed, base is 100, 200 is double.", 100, false),
     MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Base melee damage dealt.", 1, false),
     RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by fired arrows.", 1, false),
+    SNARE_CHANCE("Snare Chance", ChatColor.YELLOW, "Chance to snare enemies struck by your arrows for 2s", 0, true),
     ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "How quickly your melee damage recharges inbetween attacks", 2D, true),
     OVERCHARGE("Overcharge", ChatColor.YELLOW, "Bonus damage dealt when your attacks are fully recharged", 0, true),
     ARMOR_PENETRATION("Armor Penetration", ChatColor.YELLOW, "Percentage of enemy armor that is ignored.", 0, true),

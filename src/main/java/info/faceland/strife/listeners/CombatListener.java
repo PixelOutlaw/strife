@@ -33,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Map;
@@ -107,9 +108,10 @@ public class CombatListener implements Listener {
         double critbonus = 0, overbonus = 0;
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
-        double criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue(), armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
+        double armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA;
-        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
+        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), snarechanceA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
+        double criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue(), criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
         double attackSpeedMultA = 1D, fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue();
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
@@ -135,6 +137,7 @@ public class CombatListener implements Listener {
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
+            snarechanceA = vals.get(StrifeAttribute.CRITICAL_RATE);
             fireDamageA = vals.get(StrifeAttribute.FIRE_DAMAGE);
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
@@ -249,6 +252,9 @@ public class CombatListener implements Listener {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
+            if (random.nextDouble() < snarechanceA) {
+                b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5));
+            }
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
             double blockReducer = (1 - blockB);
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
@@ -270,6 +276,9 @@ public class CombatListener implements Listener {
         if (random.nextDouble() < criticalRateA) {
             damage = damage * criticalDamageA;
             b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+        }
+        if (random.nextDouble() < snarechanceA) {
+            b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5));
         }
         double damageReducer = (1 - (armorB * (1 - armorPenA)));
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
