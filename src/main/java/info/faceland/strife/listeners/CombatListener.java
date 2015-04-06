@@ -137,7 +137,7 @@ public class CombatListener implements Listener {
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
-            snarechanceA = vals.get(StrifeAttribute.CRITICAL_RATE);
+            snarechanceA = vals.get(StrifeAttribute.SNARE_CHANCE);
             fireDamageA = vals.get(StrifeAttribute.FIRE_DAMAGE);
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
