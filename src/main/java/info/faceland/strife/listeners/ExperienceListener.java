@@ -23,6 +23,7 @@ import info.faceland.strife.data.Champion;
 import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -122,6 +123,15 @@ public class ExperienceListener implements Listener {
 
         if (exact > newXp) {
             experienceManager.changeExp(exact - newXp);
+        }
+
+        double perc = 0.2;
+        for (Entity e : player.getNearbyEntities(8, 8, 8)) {
+            if (!(e instanceof Player)) {
+                continue;
+            }
+            ExperienceManager manager = new ExperienceManager((Player) e);
+            manager.changeExp(perc * exact);
         }
     }
 
