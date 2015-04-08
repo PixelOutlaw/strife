@@ -118,18 +118,20 @@ public class CombatListener implements Listener {
             }
         }
         double damage;
-        double critbonus = 0, overbonus = 0;
+        double critbonus = 0, overbonus = 0, trueDamage = 0;
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
         double armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA;
-        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(),
-            snarechanceA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
-        double criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue(),
-            criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
-        double attackSpeedMultA = 1D, fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue();
-        double armorB = StrifeAttribute.ARMOR.getBaseValue(),
-            reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
+        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), snarechanceA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
+        double criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue(), criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
+        double attackSpeedMultA = 1D;
+        double fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue(), igniteChanceA = StrifeAttribute.IGNITE_CHANCE.getBaseValue();
+        double lightningDamageA = StrifeAttribute.LIGHTNING_DAMAGE.getBaseValue(), shockChanceA = StrifeAttribute.SHOCK_CHANCE.getBaseValue();
+        double iceDamageA = StrifeAttribute.ICE_DAMAGE.getBaseValue(), freezeChanceA = StrifeAttribute.FREEZE_CHANCE.getBaseValue();
+        double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
+        double healthB = b.getMaxHealth();
+        double resistB = StrifeAttribute.RESISTANCE.getBaseValue();
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
         boolean parried = false;
@@ -156,6 +158,11 @@ public class CombatListener implements Listener {
             criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
             snarechanceA = vals.get(StrifeAttribute.SNARE_CHANCE);
             fireDamageA = vals.get(StrifeAttribute.FIRE_DAMAGE);
+            lightningDamageA = vals.get(StrifeAttribute.LIGHTNING_DAMAGE);
+            iceDamageA = vals.get(StrifeAttribute.ICE_DAMAGE);
+            igniteChanceA = vals.get(StrifeAttribute.IGNITE_CHANCE);
+            shockChanceA = vals.get(StrifeAttribute.SHOCK_CHANCE);
+            freezeChanceA = vals.get(StrifeAttribute.FREEZE_CHANCE);
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
             if (timeLeft > 0) {
@@ -182,6 +189,7 @@ public class CombatListener implements Listener {
                 rangedDamageA = (rangedDamageA / 2);
             }
             armorB = vals.get(StrifeAttribute.ARMOR);
+            resistB = vals.get(StrifeAttribute.RESISTANCE);
             reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
             parryB = vals.get(StrifeAttribute.PARRY);
             blockB = vals.get(StrifeAttribute.BLOCK);
@@ -209,7 +217,7 @@ public class CombatListener implements Listener {
                 critbonus = damage * (criticalDamageA - 1.0);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
-            if (attackSpeedMultA == 1D) {
+            if (attackSpeedMultA >= 1D) {
                 overbonus = overchargeA * damage;
             }
             damage = damage + critbonus + overbonus;
@@ -222,16 +230,33 @@ public class CombatListener implements Listener {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
             if (reflectDamageB > 0) {
-                a.damage(damage * reflectDamageB * 0.5);
+                a.damage(damage * reflectDamageB);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
+            if (fireDamageA > 0) {
+                if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
+                    b.setFireTicks((int) Math.round(fireDamageA * attackSpeedMultA * 20));
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                }
+            }
+            if (lightningDamageA > 0) {
+                if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
+                    trueDamage = lightningDamageA * attackSpeedMultA;
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
+                }
+            }
+            if (iceDamageA > 0) {
+                if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
+                    damage = damage + ((healthB / 100) * iceDamageA * attackSpeedMultA);
+                    b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                }
+            }
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
-            b.setFireTicks((int) Math.round(fireDamageA * 20));
-            return;
         } else {
             if (parried) {
                 event.setCancelled(true);
@@ -251,13 +276,31 @@ public class CombatListener implements Listener {
             if (blocking) {
                 blockReducer = (1 - blockB);
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
+            if (fireDamageA > 0) {
+                if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
+                    b.setFireTicks((int) Math.round(fireDamageA * 20));
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                }
+            }
+            if (lightningDamageA > 0) {
+                if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
+                    trueDamage = lightningDamageA;
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
+                }
+            }
+            if (iceDamageA > 0) {
+                if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
+                    damage = damage + ((healthB / 100) * iceDamageA);
+                    b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                }
+            }
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
-            return;
         }
     }
 
