@@ -17,48 +17,51 @@ package info.faceland.strife.commands;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Arg;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Command;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
+
 import org.bukkit.entity.Player;
 
 public class LevelUpCommand {
 
-    private final StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
-    public LevelUpCommand(StrifePlugin plugin) {
-        this.plugin = plugin;
-    }
+  public LevelUpCommand(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
 
-    @Command(identifier = "levelup")
-    public void baseCommand(Player sender) {
-        plugin.getStatsMenu().open(sender);
-    }
+  @Command(identifier = "levelup")
+  public void baseCommand(Player sender) {
+    plugin.getStatsMenu().open(sender);
+  }
 
-    @Command(identifier = "levelup level", permissions = "strife.command.levelup")
-    public void levelSubCommand(Player sender, @Arg(name = "stat") String name) {
-        StrifeStat stat = plugin.getStatManager().getStatByName(name);
-        if (stat == null) {
-            MessageUtils.sendMessage(sender, "<red>That is not a valid stat.");
-            return;
-        }
-        Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
-        if (champion.getUnusedStatPoints() <= 0) {
-            MessageUtils.sendMessage(sender, "<red>You must have unused stat points in order to level up.");
-            return;
-        }
-        int currentLevel = champion.getLevel(stat);
-        if (currentLevel + 1 > champion.getMaximumStatLevel()) {
-            MessageUtils.sendMessage(sender, "<red>You cannot level up that stat at the moment.");
-            return;
-        }
-        champion.setLevel(stat, currentLevel + 1);
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
-        plugin.getChampionManager().removeChampion(champion.getUniqueId());
-        plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(sender, "<green>You leveled up <white>%stat%<green>.", new String[][]{{"%stat%", stat.getName()}});
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
+  @Command(identifier = "levelup level", permissions = "strife.command.levelup")
+  public void levelSubCommand(Player sender, @Arg(name = "stat") String name) {
+    StrifeStat stat = plugin.getStatManager().getStatByName(name);
+    if (stat == null) {
+      MessageUtils.sendMessage(sender, "<red>That is not a valid stat.");
+      return;
     }
+    Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
+    if (champion.getUnusedStatPoints() <= 0) {
+      MessageUtils.sendMessage(sender, "<red>You must have unused stat points in order to level up.");
+      return;
+    }
+    int currentLevel = champion.getLevel(stat);
+    if (currentLevel + 1 > champion.getMaximumStatLevel()) {
+      MessageUtils.sendMessage(sender, "<red>You cannot level up that stat at the moment.");
+      return;
+    }
+    champion.setLevel(stat, currentLevel + 1);
+    champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
+    plugin.getChampionManager().removeChampion(champion.getUniqueId());
+    plugin.getChampionManager().addChampion(champion);
+    MessageUtils
+        .sendMessage(sender, "<green>You leveled up <white>%stat%<green>.", new String[][]{{"%stat%", stat.getName()}});
+    AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
+  }
 
 }

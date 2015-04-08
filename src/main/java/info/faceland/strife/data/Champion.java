@@ -17,6 +17,7 @@ package info.faceland.strife.data;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -28,116 +29,123 @@ import java.util.UUID;
 
 public class Champion {
 
-    private UUID uniqueId;
-    private Map<StrifeStat, Integer> levelMap;
-    private int unusedStatPoints;
-    private int highestReachedLevel;
+  private UUID uniqueId;
+  private Map<StrifeStat, Integer> levelMap;
+  private int unusedStatPoints;
+  private int highestReachedLevel;
 
-    public Champion(UUID uniqueId) {
-        this.uniqueId = uniqueId;
-        this.levelMap = new HashMap<>();
+  public Champion(UUID uniqueId) {
+    this.uniqueId = uniqueId;
+    this.levelMap = new HashMap<>();
+  }
+
+  @Override
+  public int hashCode() {
+    return uniqueId != null ? uniqueId.hashCode() : 0;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Champion)) {
+      return false;
     }
 
-    @Override
-    public int hashCode() {
-        return uniqueId != null ? uniqueId.hashCode() : 0;
-    }
+    Champion champion = (Champion) o;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    return !(uniqueId != null ? !uniqueId.equals(champion.uniqueId) : champion.uniqueId != null);
+  }
+
+  public int getLevel(StrifeStat stat) {
+    if (levelMap.containsKey(stat)) {
+      return levelMap.get(stat);
+    }
+    return 0;
+  }
+
+  public void setLevel(StrifeStat stat, int level) {
+    levelMap.put(stat, level);
+  }
+
+  public Map<StrifeAttribute, Double> getAttributeValues() {
+    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+    for (StrifeAttribute attr : StrifeAttribute.values()) {
+      attributeDoubleMap.put(attr, attr != StrifeAttribute.ATTACK_SPEED ? attr.getBaseValue() : 0);
+    }
+    for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
+      for (StrifeAttribute attr : StrifeAttribute.values()) {
+        double val = attributeDoubleMap.get(attr);
+        attributeDoubleMap
+            .put(attr, attr.getCap() > 0D ? Math
+                .min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
+                                          : val + entry.getKey().getAttribute(attr) * entry.getValue());
+      }
+    }
+    if (getPlayer().getEquipment() == null) {
+      return attributeDoubleMap;
+    }
+    for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
+      if (itemStack == null || itemStack.getType() == Material.AIR) {
+        continue;
+      }
+      for (StrifeAttribute attr : StrifeAttribute.values()) {
+        double val = attributeDoubleMap.get(attr);
+        attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
+            .min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr))
+                                                        : val + AttributeHandler.getValue(itemStack, attr));
+      }
+    }
+    if (getPlayer().getEquipment().getItemInHand() != null
+        && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
+      ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
+      for (StrifeAttribute attr : StrifeAttribute.values()) {
+        if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
+            || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                                                                                         StrifeAttribute.MOVEMENT_SPEED
+            || attr == StrifeAttribute.XP_GAIN) {
+          continue;
         }
-        if (!(o instanceof Champion)) {
-            return false;
-        }
-
-        Champion champion = (Champion) o;
-
-        return !(uniqueId != null ? !uniqueId.equals(champion.uniqueId) : champion.uniqueId != null);
+        double val = attributeDoubleMap.get(attr);
+        attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
+            .min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap())
+                                                        : val + AttributeHandler.getValue(itemStack, attr));
+      }
     }
+    return attributeDoubleMap;
+  }
 
-    public int getLevel(StrifeStat stat) {
-        if (levelMap.containsKey(stat)) {
-            return levelMap.get(stat);
-        }
-        return 0;
-    }
+  public Map<StrifeStat, Integer> getLevelMap() {
+    return new HashMap<>(levelMap);
+  }
 
-    public void setLevel(StrifeStat stat, int level) {
-        levelMap.put(stat, level);
-    }
+  public Player getPlayer() {
+    return Bukkit.getPlayer(getUniqueId());
+  }
 
-    public Map<StrifeAttribute, Double> getAttributeValues() {
-        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-        for (StrifeAttribute attr : StrifeAttribute.values()) {
-            attributeDoubleMap.put(attr, attr != StrifeAttribute.ATTACK_SPEED ? attr.getBaseValue() : 0);
-        }
-        for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap
-                        .put(attr, attr.getCap() > 0D ? Math.min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
-                                : val + entry.getKey().getAttribute(attr) * entry.getValue());
-            }
-        }
-        if (getPlayer().getEquipment() == null) {
-            return attributeDoubleMap;
-        }
-        for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
-            if (itemStack == null || itemStack.getType() == Material.AIR) {
-                continue;
-            }
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr)) : val + AttributeHandler.getValue(itemStack, attr));
-            }
-        }
-        if (getPlayer().getEquipment().getItemInHand() != null && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
-            ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
-                        || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
-                        StrifeAttribute.MOVEMENT_SPEED || attr == StrifeAttribute.XP_GAIN) {
-                    continue;
-                }
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap()) : val + AttributeHandler.getValue(itemStack, attr));
-            }
-        }
-        return attributeDoubleMap;
-    }
+  public UUID getUniqueId() {
+    return uniqueId;
+  }
 
-    public Map<StrifeStat, Integer> getLevelMap() {
-        return new HashMap<>(levelMap);
-    }
+  public int getUnusedStatPoints() {
+    return unusedStatPoints;
+  }
 
-    public Player getPlayer() {
-        return Bukkit.getPlayer(getUniqueId());
-    }
+  public void setUnusedStatPoints(int unusedStatPoints) {
+    this.unusedStatPoints = unusedStatPoints;
+  }
 
-    public UUID getUniqueId() {
-        return uniqueId;
-    }
+  public int getMaximumStatLevel() {
+    return 5 + (getHighestReachedLevel() / 5);
+  }
 
-    public int getUnusedStatPoints() {
-        return unusedStatPoints;
-    }
+  public int getHighestReachedLevel() {
+    return highestReachedLevel;
+  }
 
-    public void setUnusedStatPoints(int unusedStatPoints) {
-        this.unusedStatPoints = unusedStatPoints;
-    }
-
-    public int getMaximumStatLevel() {
-        return 5 + (getHighestReachedLevel() / 5);
-    }
-
-    public int getHighestReachedLevel() {
-        return highestReachedLevel;
-    }
-
-    public void setHighestReachedLevel(int highestReachedLevel) {
-        this.highestReachedLevel = highestReachedLevel;
-    }
+  public void setHighestReachedLevel(int highestReachedLevel) {
+    this.highestReachedLevel = highestReachedLevel;
+  }
 
 }

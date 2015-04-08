@@ -16,9 +16,11 @@ package info.faceland.strife.commands;
 
 import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Command;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -27,42 +29,46 @@ import java.util.Map;
 
 public class AttributesCommand {
 
-    private static final DecimalFormat FORMAT = new DecimalFormat("#.##");
-    private final StrifePlugin plugin;
+  private static final DecimalFormat FORMAT = new DecimalFormat("#.##");
+  private final StrifePlugin plugin;
 
-    public AttributesCommand(StrifePlugin plugin) {
-        this.plugin = plugin;
-    }
+  public AttributesCommand(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
 
-    @Command(identifier = "stats", permissions = "strife.command.stats")
-    public void baseCommand(Player sender) {
-        Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
-        Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
-        for (StrifeAttribute attribute : StrifeAttribute.values()) {
-            if (attribute == StrifeAttribute.DOGE)
-            {
-                continue;
-            }
-            double val = valueMap.get(attribute);
-            FancyMessage message = new FancyMessage("");
-            if (attribute == StrifeAttribute.ATTACK_SPEED) {
-                message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
-                        .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(100D * (attribute.getBaseValue() / attribute.getBaseValue() + val)));
-            } else if (attribute == StrifeAttribute.XP_GAIN || attribute == StrifeAttribute.ITEM_DISCOVERY || attribute == StrifeAttribute.GOLD_FIND) {
-                message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
-                        .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100
-                        + 100 : val + 100));
-            } else {
-                message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription()).then(":")
-                        .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100 : val));
-            }
-            boolean atCap = attribute.getCap() > 0D && Math.abs(val - attribute.getCap()) < 0.0005;
-            message.color(atCap ? ChatColor.RED : ChatColor.WHITE);
-            if (attribute.isPercentage()) {
-                message.then("%").color(atCap ? ChatColor.RED : ChatColor.WHITE);
-            }
-            message.send(sender);
-        }
+  @Command(identifier = "stats", permissions = "strife.command.stats")
+  public void baseCommand(Player sender) {
+    Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
+    Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
+    for (StrifeAttribute attribute : StrifeAttribute.values()) {
+      if (attribute == StrifeAttribute.DOGE) {
+        continue;
+      }
+      double val = valueMap.get(attribute);
+      FancyMessage message = new FancyMessage("");
+      if (attribute == StrifeAttribute.ATTACK_SPEED) {
+        message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription())
+            .then(":")
+            .color(ChatColor.DARK_GRAY).then(" ")
+            .then(FORMAT.format(100D * (attribute.getBaseValue() / attribute.getBaseValue() + val)));
+      } else if (attribute == StrifeAttribute.XP_GAIN || attribute == StrifeAttribute.ITEM_DISCOVERY
+                 || attribute == StrifeAttribute.GOLD_FIND) {
+        message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription())
+            .then(":")
+            .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100
+                                                                                                + 100 : val + 100));
+      } else {
+        message.then(attribute.getName()).color(attribute.getDisplayColor()).tooltip(attribute.getDescription())
+            .then(":")
+            .color(ChatColor.DARK_GRAY).then(" ").then(FORMAT.format(attribute.isPercentage() ? val * 100 : val));
+      }
+      boolean atCap = attribute.getCap() > 0D && Math.abs(val - attribute.getCap()) < 0.0005;
+      message.color(atCap ? ChatColor.RED : ChatColor.WHITE);
+      if (attribute.isPercentage()) {
+        message.then("%").color(atCap ? ChatColor.RED : ChatColor.WHITE);
+      }
+      message.send(sender);
     }
+  }
 
 }

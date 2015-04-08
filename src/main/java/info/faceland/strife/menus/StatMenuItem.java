@@ -17,10 +17,12 @@ package info.faceland.strife.menus;
 import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.events.ItemClickEvent;
 import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.items.MenuItem;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -33,54 +35,54 @@ import java.util.List;
 
 public class StatMenuItem extends MenuItem {
 
-    private final StrifePlugin plugin;
-    private final StrifeStat stat;
+  private final StrifePlugin plugin;
+  private final StrifeStat stat;
 
-    public StatMenuItem(StrifePlugin plugin, StrifeStat strifeStat) {
-        super(strifeStat.getChatColor() + strifeStat.getName(), new Wool().toItemStack(),
-                TextUtils.color(strifeStat.getDescription()).split("/n"));
-        this.plugin = plugin;
-        this.stat = strifeStat;
-    }
+  public StatMenuItem(StrifePlugin plugin, StrifeStat strifeStat) {
+    super(strifeStat.getChatColor() + strifeStat.getName(), new Wool().toItemStack(),
+          TextUtils.color(strifeStat.getDescription()).split("/n"));
+    this.plugin = plugin;
+    this.stat = strifeStat;
+  }
 
-    @Override
-    public ItemStack getFinalIcon(Player player) {
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        int level = champion.getLevel(stat);
-        ItemStack itemStack = new Wool(stat.getDyeColor()).toItemStack(level);
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
-        itemMeta.setDisplayName(getDisplayName() + " [" + level + "/" + champion.getMaximumStatLevel() + "]");
-        List<String> lore = new ArrayList<>(getLore());
-        if (champion.getUnusedStatPoints() == 0) {
-            lore.add(ChatColor.RED + "No unused points.");
-        } else if (level >= champion.getMaximumStatLevel()) {
-            lore.add(ChatColor.RED + "Point cap reached.");
-        } else {
-            lore.add(ChatColor.YELLOW + "Click to upgrade!");
-        }
-        itemMeta.setLore(lore);
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
+  @Override
+  public ItemStack getFinalIcon(Player player) {
+    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+    int level = champion.getLevel(stat);
+    ItemStack itemStack = new Wool(stat.getDyeColor()).toItemStack(level);
+    ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+    itemMeta.setDisplayName(getDisplayName() + " [" + level + "/" + champion.getMaximumStatLevel() + "]");
+    List<String> lore = new ArrayList<>(getLore());
+    if (champion.getUnusedStatPoints() == 0) {
+      lore.add(ChatColor.RED + "No unused points.");
+    } else if (level >= champion.getMaximumStatLevel()) {
+      lore.add(ChatColor.RED + "Point cap reached.");
+    } else {
+      lore.add(ChatColor.YELLOW + "Click to upgrade!");
     }
+    itemMeta.setLore(lore);
+    itemStack.setItemMeta(itemMeta);
+    return itemStack;
+  }
 
-    @Override
-    public void onItemClick(ItemClickEvent event) {
-        super.onItemClick(event);
-        Player player = event.getPlayer();
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        if (champion.getUnusedStatPoints() < 1) {
-            return;
-        }
-        int currentLevel = champion.getLevel(stat);
-        if (currentLevel + 1 > champion.getMaximumStatLevel()) {
-            return;
-        }
-        champion.setLevel(stat, currentLevel + 1);
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
-        plugin.getChampionManager().removeChampion(champion.getUniqueId());
-        plugin.getChampionManager().addChampion(champion);
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
-        event.setWillUpdate(true);
+  @Override
+  public void onItemClick(ItemClickEvent event) {
+    super.onItemClick(event);
+    Player player = event.getPlayer();
+    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+    if (champion.getUnusedStatPoints() < 1) {
+      return;
     }
+    int currentLevel = champion.getLevel(stat);
+    if (currentLevel + 1 > champion.getMaximumStatLevel()) {
+      return;
+    }
+    champion.setLevel(stat, currentLevel + 1);
+    champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
+    plugin.getChampionManager().removeChampion(champion.getUniqueId());
+    plugin.getChampionManager().addChampion(champion);
+    AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
+    event.setWillUpdate(true);
+  }
 
 }

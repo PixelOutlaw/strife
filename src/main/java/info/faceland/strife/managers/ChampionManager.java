@@ -24,50 +24,50 @@ import java.util.UUID;
 
 public class ChampionManager {
 
-    private Map<UUID, Champion> championMap;
+  private Map<UUID, Champion> championMap;
 
-    public ChampionManager() {
-        championMap = new HashMap<>();
-    }
+  public ChampionManager() {
+    championMap = new HashMap<>();
+  }
 
-    public Champion getChampion(UUID uuid) {
-        if (uuid == null) {
-            return null;
-        }
-        if (!hasChampion(uuid)) {
-            return createChampion(uuid);
-        }
-        return championMap.get(uuid);
+  public Champion getChampion(UUID uuid) {
+    if (uuid == null) {
+      return null;
     }
+    if (!hasChampion(uuid)) {
+      return createChampion(uuid);
+    }
+    return championMap.get(uuid);
+  }
 
-    public boolean hasChampion(UUID uuid) {
-        return uuid != null && championMap.containsKey(uuid);
-    }
+  public boolean hasChampion(UUID uuid) {
+    return uuid != null && championMap.containsKey(uuid);
+  }
 
-    public Champion createChampion(UUID uuid) {
-        Champion champ = new Champion(uuid);
-        championMap.put(uuid, champ);
-        return champ;
-    }
+  public Champion createChampion(UUID uuid) {
+    Champion champ = new Champion(uuid);
+    championMap.put(uuid, champ);
+    return champ;
+  }
 
-    public void addChampion(Champion champion) {
-        if (!hasChampion(champion.getUniqueId())) {
-            championMap.put(champion.getUniqueId(), champion);
-        }
+  public void addChampion(Champion champion) {
+    if (!hasChampion(champion.getUniqueId())) {
+      championMap.put(champion.getUniqueId(), champion);
     }
+  }
 
-    public void removeChampion(UUID uuid) {
-        if (hasChampion(uuid)) {
-            championMap.remove(uuid);
-        }
+  public void removeChampion(UUID uuid) {
+    if (hasChampion(uuid)) {
+      championMap.remove(uuid);
     }
+  }
 
-    public Collection<Champion> getChampions() {
-        return new HashSet<>(championMap.values());
-    }
+  public Collection<Champion> getChampions() {
+    return new HashSet<>(championMap.values());
+  }
 
-    public void clear() {
-        championMap.clear();
-    }
+  public void clear() {
+    championMap.clear();
+  }
 
 }

@@ -15,6 +15,7 @@
 package info.faceland.strife.storage;
 
 import com.tealcube.minecraft.bukkit.facecore.shade.config.SmartYamlConfiguration;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
@@ -27,58 +28,58 @@ import java.util.UUID;
 
 public class JsonDataStorage implements DataStorage {
 
-    private final StrifePlugin plugin;
-    private SmartYamlConfiguration configuration;
+  private final StrifePlugin plugin;
+  private SmartYamlConfiguration configuration;
 
-    public JsonDataStorage(StrifePlugin plugin) {
-        this.plugin = plugin;
-        this.configuration = new SmartYamlConfiguration(new File(plugin.getDataFolder(), "data.json"));
+  public JsonDataStorage(StrifePlugin plugin) {
+    this.plugin = plugin;
+    this.configuration = new SmartYamlConfiguration(new File(plugin.getDataFolder(), "data.json"));
+  }
+
+  @Override
+  public void init() {
+    // do nothing
+  }
+
+  @Override
+  public void shutdown() {
+    // do nothing
+  }
+
+  @Override
+  public void save(Collection<Champion> champions) {
+    for (Champion champ : champions) {
+      for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
+        configuration.set(champ.getUniqueId().toString() + "." + entry.getKey().getKey(), entry.getValue());
+      }
+      configuration.set(champ.getUniqueId().toString() + ".unused-stat-points", champ.getUnusedStatPoints());
+      configuration.set(champ.getUniqueId().toString() + ".highest-reached-level", champ.getHighestReachedLevel());
     }
+    configuration.save();
+  }
 
-    @Override
-    public void init() {
-        // do nothing
-    }
-
-    @Override
-    public void shutdown() {
-        // do nothing
-    }
-
-    @Override
-    public void save(Collection<Champion> champions) {
-        for (Champion champ : champions) {
-            for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
-                configuration.set(champ.getUniqueId().toString() + "." + entry.getKey().getKey(), entry.getValue());
-            }
-            configuration.set(champ.getUniqueId().toString() + ".unused-stat-points", champ.getUnusedStatPoints());
-            configuration.set(champ.getUniqueId().toString() + ".highest-reached-level", champ.getHighestReachedLevel());
+  @Override
+  public Collection<Champion> load() {
+    configuration.load();
+    Collection<Champion> collection = new HashSet<>();
+    for (String key : configuration.getKeys(false)) {
+      if (!configuration.isConfigurationSection(key)) {
+        continue;
+      }
+      UUID uuid = UUID.fromString(key);
+      Champion champion = new Champion(uuid);
+      for (String k : configuration.getConfigurationSection(key).getKeys(false)) {
+        StrifeStat stat = plugin.getStatManager().getStat(k);
+        if (stat == null) {
+          continue;
         }
-        configuration.save();
+        champion.setLevel(stat, configuration.getConfigurationSection(key).getInt(k));
+      }
+      champion.setUnusedStatPoints(configuration.getConfigurationSection(key).getInt("unused-stat-points"));
+      champion.setHighestReachedLevel(configuration.getConfigurationSection(key).getInt("highest-reached-level"));
+      collection.add(champion);
     }
-
-    @Override
-    public Collection<Champion> load() {
-        configuration.load();
-        Collection<Champion> collection = new HashSet<>();
-        for (String key : configuration.getKeys(false)) {
-            if (!configuration.isConfigurationSection(key)) {
-                continue;
-            }
-            UUID uuid = UUID.fromString(key);
-            Champion champion = new Champion(uuid);
-            for (String k : configuration.getConfigurationSection(key).getKeys(false)) {
-                StrifeStat stat = plugin.getStatManager().getStat(k);
-                if (stat == null) {
-                    continue;
-                }
-                champion.setLevel(stat, configuration.getConfigurationSection(key).getInt(k));
-            }
-            champion.setUnusedStatPoints(configuration.getConfigurationSection(key).getInt("unused-stat-points"));
-            champion.setHighestReachedLevel(configuration.getConfigurationSection(key).getInt("highest-reached-level"));
-            collection.add(champion);
-        }
-        return collection;
-    }
+    return collection;
+  }
 
 }
