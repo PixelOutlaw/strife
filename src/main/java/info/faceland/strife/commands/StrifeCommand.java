@@ -46,8 +46,7 @@ public class StrifeCommand {
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
       MessageUtils.sendMessage(sender,
                                ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion.getMaximumStatLevel()
-                               + " ] " +
-                               stat.getName());
+                               + " ] " + stat.getName());
     }
     MessageUtils.sendMessage(sender, "<gold>----------------------------------");
   }
