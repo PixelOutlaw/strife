@@ -234,20 +234,20 @@ public class CombatListener implements Listener {
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
             }
             if (fireDamageA > 0) {
-                if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
-                    b.setFireTicks((int) Math.round(fireDamageA * attackSpeedMultA * 20));
+                if (random.nextDouble() < ((igniteChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                    b.setFireTicks((int) Math.round(fireDamageA * 20));
                     b.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
             if (lightningDamageA > 0) {
-                if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
-                    trueDamage = lightningDamageA * attackSpeedMultA;
+                if (random.nextDouble() < ((shockChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                    trueDamage = lightningDamageA;
                     b.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
                 }
             }
             if (iceDamageA > 0) {
-                if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
-                    damage = damage + ((healthB / 100) * iceDamageA * attackSpeedMultA);
+                if (random.nextDouble() < ((freezeChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                    damage = damage + ((healthB / 100) * iceDamageA);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
                     b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
