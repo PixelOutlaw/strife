@@ -194,89 +194,30 @@ public class CombatListener implements Listener {
         }
 
         // LET THE DAMAGE CALCULATION COMMENCE
-
         if (melee) {
-            if (blocking) {
-                if (parried) {
-                    damage = meleeDamageA * attackSpeedMultA;
-                    if (a instanceof Player) {
-                        damage *= 0.5;
-                    }
-                    a.damage(damage * 1.25);
-                    event.setCancelled(true);
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
-                    return;
-                }
-                damage = meleeDamageA * attackSpeedMultA;
-                if (random.nextDouble() < criticalRateA) {
-                    critbonus = damage * (criticalDamageA - 1.0);
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-                }
-                if (attackSpeedMultA >= 1D) {
-                    overbonus = overchargeA * damage;
-                }
-                damage = damage + critbonus + overbonus;
-                double damageReducer = (1 - (armorB * (1 - armorPenA)));
-                double blockReducer = (1 - blockB);
-                if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-                    damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
-                }
-                if (reflectDamageB > 0) {
-                    a.damage(damage * reflectDamageB * 0.5);
-                    a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
-                }
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
-                if (a instanceof Player) {
-                    lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
-                    a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-                }
-                b.setFireTicks((int) Math.round(fireDamageA * 20));
-                return;
-            }
             damage = meleeDamageA * attackSpeedMultA;
-            if (random.nextDouble() < criticalRateA) {
-                critbonus = damage * (criticalDamageA - 1.0);
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-            }
-            if (attackSpeedMultA >= 1D) {
-                overbonus = overchargeA * damage;
-            }
-            damage = damage + critbonus + overbonus;
-            double damageReducer = (1 - (armorB * (1 - armorPenA)));
-            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-                damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
-            }
-            if (reflectDamageB > 0) {
-                a.damage(damage * reflectDamageB * 0.5);
-                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
-            }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
-            if (a instanceof Player) {
-                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
-                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-            }
-            b.setFireTicks((int) Math.round(fireDamageA * 20));
-            return;
-        }
-        if (blocking) {
             if (parried) {
+                if (a instanceof Player) {
+                    damage *= 0.5;
+                }
+                a.damage(damage * 1.25);
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage =
-                rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math
-                    .pow(3, 2))
-                                                     : 1);
             if (random.nextDouble() < criticalRateA) {
-                damage = damage * criticalDamageA;
+                critbonus = damage * (criticalDamageA - 1.0);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
-            if (random.nextDouble() < snarechanceA) {
-                b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5));
+            if (attackSpeedMultA == 1D) {
+                overbonus = overchargeA * damage;
             }
+            damage = damage + critbonus + overbonus;
             double damageReducer = (1 - (armorB * (1 - armorPenA)));
-            double blockReducer = (1 - blockB);
+            double blockReducer = 1;
+            if (blocking) {
+                blockReducer = (1 - blockB);
+            }
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
@@ -291,31 +232,33 @@ public class CombatListener implements Listener {
             }
             b.setFireTicks((int) Math.round(fireDamageA * 20));
             return;
+        } else {
+            if (parried) {
+                event.setCancelled(true);
+                b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                return;
+            }
+            damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
+            double damageReducer = (1 - (armorB * (1 - armorPenA)));
+            double blockReducer = 1;
+            if (random.nextDouble() < criticalRateA) {
+                damage = damage * criticalDamageA;
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+            }
+            if (random.nextDouble() < snarechanceA) {
+                b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5));
+            }
+            if (blocking) {
+                blockReducer = (1 - blockB);
+            }
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer * blockReducer);
+            if (a instanceof Player) {
+                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
+                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+            }
+            b.setFireTicks((int) Math.round(fireDamageA * 20));
+            return;
         }
-        damage =
-            rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2))
-                                                 : 1);
-        if (random.nextDouble() < criticalRateA) {
-            damage = damage * criticalDamageA;
-            b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-        }
-        if (random.nextDouble() < snarechanceA) {
-            b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5));
-        }
-        double damageReducer = (1 - (armorB * (1 - armorPenA)));
-        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-            damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
-        }
-        if (reflectDamageB > 0) {
-            a.damage(damage * reflectDamageB * 0.5);
-            a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
-        }
-        event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage * damageReducer);
-        if (a instanceof Player) {
-            lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
-            a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-        }
-        b.setFireTicks((int) Math.round(fireDamageA * 20));
     }
 
 }
