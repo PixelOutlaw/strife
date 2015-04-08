@@ -52,13 +52,13 @@ public enum StrifeAttribute {
   private final boolean percentage;
   private final double cap;
 
-  private StrifeAttribute(String name, ChatColor displayColor, String description, double baseValue,
-                          boolean percentage) {
+  StrifeAttribute(String name, ChatColor displayColor, String description, double baseValue,
+                  boolean percentage) {
     this(name, displayColor, description, baseValue, percentage, -1D);
   }
 
-  private StrifeAttribute(String name, ChatColor displayColor, String description, double baseValue, boolean percentage,
-                          double cap) {
+  StrifeAttribute(String name, ChatColor displayColor, String description, double baseValue, boolean percentage,
+                  double cap) {
     this.name = name;
     this.displayColor = displayColor;
     this.description = description;
