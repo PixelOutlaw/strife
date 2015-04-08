@@ -23,31 +23,31 @@ import java.util.UUID;
 
 public class AttackSpeedTask extends BukkitRunnable {
 
-  private Map<UUID, Long> timeLeftMap;
+    private Map<UUID, Long> timeLeftMap;
 
-  public AttackSpeedTask() {
-    timeLeftMap = new HashMap<>();
-  }
-
-  @Override
-  public void run() {
-    Iterator<Map.Entry<UUID, Long>> iterator = timeLeftMap.entrySet().iterator();
-    while (iterator.hasNext()) {
-      Map.Entry<UUID, Long> entry = iterator.next();
-      if (entry.getValue() < 1L) {
-        iterator.remove();
-        continue;
-      }
-      entry.setValue(entry.getValue() - 1L);
+    public AttackSpeedTask() {
+        timeLeftMap = new HashMap<>();
     }
-  }
 
-  public void setTimeLeft(UUID uuid, long timeToSet) {
-    timeLeftMap.put(uuid, timeToSet);
-  }
+    @Override
+    public void run() {
+        Iterator<Map.Entry<UUID, Long>> iterator = timeLeftMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Long> entry = iterator.next();
+            if (entry.getValue() < 1L) {
+                iterator.remove();
+                continue;
+            }
+            entry.setValue(entry.getValue() - 1L);
+        }
+    }
 
-  public long getTimeLeft(UUID uuid) {
-    return timeLeftMap.containsKey(uuid) ? timeLeftMap.get(uuid) : 0;
-  }
+    public void setTimeLeft(UUID uuid, long timeToSet) {
+        timeLeftMap.put(uuid, timeToSet);
+    }
+
+    public long getTimeLeft(UUID uuid) {
+        return timeLeftMap.containsKey(uuid) ? timeLeftMap.get(uuid) : 0;
+    }
 
 }

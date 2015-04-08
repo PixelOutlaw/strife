@@ -21,19 +21,19 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class SaveTask extends BukkitRunnable {
 
-  private final StrifePlugin plugin;
+    private final StrifePlugin plugin;
 
-  public SaveTask(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
-
-  @Override
-  public void run() {
-    plugin.getStorage().save(plugin.getChampionManager().getChampions());
-    plugin.getChampionManager().clear();
-    for (Champion champion : plugin.getStorage().load()) {
-      plugin.getChampionManager().addChampion(champion);
+    public SaveTask(StrifePlugin plugin) {
+        this.plugin = plugin;
     }
-  }
+
+    @Override
+    public void run() {
+        plugin.getStorage().save(plugin.getChampionManager().getChampions());
+        plugin.getChampionManager().clear();
+        for (Champion champion : plugin.getStorage().load()) {
+            plugin.getChampionManager().addChampion(champion);
+        }
+    }
 
 }

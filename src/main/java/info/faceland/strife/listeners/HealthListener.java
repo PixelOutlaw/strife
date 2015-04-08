@@ -40,28 +40,14 @@ import java.util.Map;
 
 public class HealthListener implements Listener {
 
-  private final StrifePlugin plugin;
+    private final StrifePlugin plugin;
 
-  public HealthListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
+    public HealthListener(StrifePlugin plugin) {
+        this.plugin = plugin;
+    }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerPickupItem(PlayerPickupItemEvent event) {
-    Player player = event.getPlayer();
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-    Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-    AttributeHandler.updateHealth(player, attributeDoubleMap);
-    double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-    float speed = 0.2F * (float) perc;
-    player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerRespawn(final PlayerRespawnEvent event) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerPickupItem(PlayerPickupItemEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
@@ -69,92 +55,107 @@ public class HealthListener implements Listener {
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-      }
-    }, 20L);
-  }
+    }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerDropItem(PlayerDropItemEvent event) {
-    Player player = event.getPlayer();
-    if (player.getHealth() > 0) {
-      Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-      Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-      AttributeHandler.updateHealth(player, attributeDoubleMap);
-      double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-      float speed = 0.2F * (float) perc;
-      player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerRespawn(final PlayerRespawnEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                Player player = event.getPlayer();
+                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+                Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+                AttributeHandler.updateHealth(player, attributeDoubleMap);
+                double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+                float speed = 0.2F * (float) perc;
+                player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+            }
+        }, 20L);
     }
-  }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerItemBreak(PlayerItemBreakEvent event) {
-    Player player = event.getPlayer();
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-    Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-    AttributeHandler.updateHealth(player, attributeDoubleMap);
-    double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-    float speed = 0.2F * (float) perc;
-    player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerItemHeld(PlayerItemHeldEvent event) {
-    Player player = event.getPlayer();
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-    for (StrifeAttribute attr : StrifeAttribute.values()) {
-      attributeDoubleMap.put(attr, attr.getBaseValue());
-    }
-    for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
-      for (StrifeAttribute attr : StrifeAttribute.values()) {
-        double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-        attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
-      }
-    }
-    for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
-      if (itemStack == null || itemStack.getType() == Material.AIR) {
-        continue;
-      }
-      for (StrifeAttribute attr : StrifeAttribute.values()) {
-        double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-        attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
-      }
-    }
-    if (champion.getPlayer().getInventory().getItem(event.getNewSlot()) != null
-        && champion.getPlayer().getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
-      ItemStack itemStack = champion.getPlayer().getInventory().getItem(event.getNewSlot());
-      for (StrifeAttribute attr : StrifeAttribute.values()) {
-        if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT || attr == StrifeAttribute.EVASION
-            || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
-                                                                                         StrifeAttribute.MOVEMENT_SPEED
-            || attr == StrifeAttribute.XP_GAIN) {
-          continue;
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        Player player = event.getPlayer();
+        if (player.getHealth() > 0) {
+            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+            AttributeHandler.updateHealth(player, attributeDoubleMap);
+            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+            float speed = 0.2F * (float) perc;
+            player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         }
-        double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-        attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
-      }
     }
-    AttributeHandler.updateHealth(player, attributeDoubleMap);
-    double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-    float speed = 0.2F * (float) perc;
-    player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-  }
 
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-    if (!(event.getEntity() instanceof Player) ||
-        !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN ||
-          event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) ||
-        event.isCancelled()) {
-      return;
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerItemBreak(PlayerItemBreakEvent event) {
+        Player player = event.getPlayer();
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        AttributeHandler.updateHealth(player, attributeDoubleMap);
+        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
-    Player player = (Player) event.getEntity();
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-    double amount = champion.getAttributeValues().get(StrifeAttribute.REGENERATION);
-    if (player.hasPotionEffect(PotionEffectType.POISON)) {
-      amount *= 0.25;
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
+        Player player = event.getPlayer();
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        for (StrifeAttribute attr : StrifeAttribute.values()) {
+            attributeDoubleMap.put(attr, attr.getBaseValue());
+        }
+        for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
+            for (StrifeAttribute attr : StrifeAttribute.values()) {
+                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
+            }
+        }
+        for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
+            if (itemStack == null || itemStack.getType() == Material.AIR) {
+                continue;
+            }
+            for (StrifeAttribute attr : StrifeAttribute.values()) {
+                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
+            }
+        }
+        if (champion.getPlayer().getInventory().getItem(event.getNewSlot()) != null
+            && champion.getPlayer().getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
+            ItemStack itemStack = champion.getPlayer().getInventory().getItem(event.getNewSlot());
+            for (StrifeAttribute attr : StrifeAttribute.values()) {
+                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
+                    || attr == StrifeAttribute.EVASION
+                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                                                                                                 StrifeAttribute.MOVEMENT_SPEED
+                    || attr == StrifeAttribute.XP_GAIN) {
+                    continue;
+                }
+                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
+            }
+        }
+        AttributeHandler.updateHealth(player, attributeDoubleMap);
+        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
-    event.setAmount(amount);
-  }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityRegainHealth(EntityRegainHealthEvent event) {
+        if (!(event.getEntity() instanceof Player) ||
+            !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN ||
+              event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) ||
+            event.isCancelled()) {
+            return;
+        }
+        Player player = (Player) event.getEntity();
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        double amount = champion.getAttributeValues().get(StrifeAttribute.REGENERATION);
+        if (player.hasPotionEffect(PotionEffectType.POISON)) {
+            amount *= 0.25;
+        }
+        event.setAmount(amount);
+    }
 
 }

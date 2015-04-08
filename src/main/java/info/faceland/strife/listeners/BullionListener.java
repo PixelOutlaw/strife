@@ -14,25 +14,25 @@ import java.util.Map;
 
 public class BullionListener implements Listener {
 
-  private final StrifePlugin plugin;
+    private final StrifePlugin plugin;
 
-  public BullionListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
-
-  public StrifePlugin getPlugin() {
-    return plugin;
-  }
-
-  @EventHandler(priority = EventPriority.NORMAL)
-  public void onGoldDrop(GoldDropEvent event) {
-    if (event.getKiller() == null) {
-      return;
+    public BullionListener(StrifePlugin plugin) {
+        this.plugin = plugin;
     }
-    Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-    Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-    double amount = event.getAmount() + event.getAmount() * attributeDoubleMap.get(StrifeAttribute.GOLD_FIND);
-    event.setAmount(amount);
-  }
+
+    public StrifePlugin getPlugin() {
+        return plugin;
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onGoldDrop(GoldDropEvent event) {
+        if (event.getKiller() == null) {
+            return;
+        }
+        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        double amount = event.getAmount() + event.getAmount() * attributeDoubleMap.get(StrifeAttribute.GOLD_FIND);
+        event.setAmount(amount);
+    }
 
 }

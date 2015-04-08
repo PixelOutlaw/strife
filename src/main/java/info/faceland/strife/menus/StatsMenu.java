@@ -25,19 +25,19 @@ import java.util.List;
 
 public class StatsMenu extends ItemMenu {
 
-  public StatsMenu(StrifePlugin plugin, List<StrifeStat> stats) {
-    super(ChatColor.BLACK + "Levelup Menu", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
-          plugin);
+    public StatsMenu(StrifePlugin plugin, List<StrifeStat> stats) {
+        super(ChatColor.BLACK + "Levelup Menu", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
+              plugin);
 
-    for (StrifeStat stat : stats) {
-      int counter = stat.getMenuY() * 9 + stat.getMenuX();
-      setItem(counter, new StatMenuItem(plugin, stat));
+        for (StrifeStat stat : stats) {
+            int counter = stat.getMenuY() * 9 + stat.getMenuX();
+            setItem(counter, new StatMenuItem(plugin, stat));
+        }
+
+        int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
+        counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
+        setItem(counter, new StatPointsMenuItem(plugin));
     }
-
-    int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
-    counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
-    setItem(counter, new StatPointsMenuItem(plugin));
-  }
 
 }
 

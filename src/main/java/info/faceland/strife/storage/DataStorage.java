@@ -20,12 +20,12 @@ import java.util.Collection;
 
 public interface DataStorage {
 
-  void init();
+    void init();
 
-  void shutdown();
+    void shutdown();
 
-  void save(Collection<Champion> champions);
+    void save(Collection<Champion> champions);
 
-  Collection<Champion> load();
+    Collection<Champion> load();
 
 }

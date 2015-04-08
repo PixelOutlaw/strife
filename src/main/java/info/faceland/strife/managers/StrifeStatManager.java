@@ -24,44 +24,44 @@ import java.util.Map;
 
 public class StrifeStatManager {
 
-  private Map<String, StrifeStat> statMap;
+    private Map<String, StrifeStat> statMap;
 
-  public StrifeStatManager() {
-    statMap = new LinkedHashMap<>();
-  }
-
-  public StrifeStat getStat(String name) {
-    if (statMap.containsKey(name)) {
-      return statMap.get(name);
+    public StrifeStatManager() {
+        statMap = new LinkedHashMap<>();
     }
-    return null;
-  }
 
-  public void addStat(StrifeStat stat) {
-    if (!statMap.containsKey(stat.getKey())) {
-      statMap.put(stat.getKey(), stat);
+    public StrifeStat getStat(String name) {
+        if (statMap.containsKey(name)) {
+            return statMap.get(name);
+        }
+        return null;
     }
-  }
 
-  public void removeStat(String key) {
-    if (statMap.containsKey(key)) {
-      statMap.remove(key);
+    public void addStat(StrifeStat stat) {
+        if (!statMap.containsKey(stat.getKey())) {
+            statMap.put(stat.getKey(), stat);
+        }
     }
-  }
 
-  public List<StrifeStat> getStats() {
-    List<StrifeStat> list = new ArrayList<>(statMap.values());
-    Collections.sort(list);
-    return list;
-  }
-
-  public StrifeStat getStatByName(String name) {
-    for (StrifeStat stat : statMap.values()) {
-      if (stat.getKey().equalsIgnoreCase(name) || stat.getName().equalsIgnoreCase(name)) {
-        return stat;
-      }
+    public void removeStat(String key) {
+        if (statMap.containsKey(key)) {
+            statMap.remove(key);
+        }
     }
-    return null;
-  }
+
+    public List<StrifeStat> getStats() {
+        List<StrifeStat> list = new ArrayList<>(statMap.values());
+        Collections.sort(list);
+        return list;
+    }
+
+    public StrifeStat getStatByName(String name) {
+        for (StrifeStat stat : statMap.values()) {
+            if (stat.getKey().equalsIgnoreCase(name) || stat.getName().equalsIgnoreCase(name)) {
+                return stat;
+            }
+        }
+        return null;
+    }
 
 }

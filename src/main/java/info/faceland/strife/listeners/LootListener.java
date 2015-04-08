@@ -27,22 +27,22 @@ import java.util.Map;
 
 public class LootListener implements Listener {
 
-  private final StrifePlugin plugin;
+    private final StrifePlugin plugin;
 
-  public LootListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
+    public LootListener(StrifePlugin plugin) {
+        this.plugin = plugin;
+    }
 
-  public StrifePlugin getPlugin() {
-    return plugin;
-  }
+    public StrifePlugin getPlugin() {
+        return plugin;
+    }
 
-  @EventHandler(priority = EventPriority.NORMAL)
-  public void onLootDetermineChance(LootDetermineChanceEvent event) {
-    Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-    Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-    double chance = event.getChance() + event.getChance() * attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
-    event.setChance(chance);
-  }
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onLootDetermineChance(LootDetermineChanceEvent event) {
+        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        double chance = event.getChance() + event.getChance() * attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
+        event.setChance(chance);
+    }
 
 }

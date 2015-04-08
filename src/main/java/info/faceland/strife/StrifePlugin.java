@@ -63,176 +63,176 @@ import java.util.logging.Level;
 
 public class StrifePlugin extends FacePlugin {
 
-  private PluginLogger debugPrinter;
-  private VersionedSmartYamlConfiguration configYAML;
-  private VersionedSmartYamlConfiguration statsYAML;
-  private StrifeStatManager statManager;
-  private DataStorage storage;
-  private ChampionManager championManager;
-  private SaveTask saveTask;
-  private AttackSpeedTask attackSpeedTask;
-  private CommandHandler commandHandler;
-  private MasterConfiguration settings;
-  private LevelingRate levelingRate;
-  private BeastPlugin beastPlugin;
-  private HealthMovementTask healthMovementTask;
-  private StatsMenu statsMenu;
+    private PluginLogger debugPrinter;
+    private VersionedSmartYamlConfiguration configYAML;
+    private VersionedSmartYamlConfiguration statsYAML;
+    private StrifeStatManager statManager;
+    private DataStorage storage;
+    private ChampionManager championManager;
+    private SaveTask saveTask;
+    private AttackSpeedTask attackSpeedTask;
+    private CommandHandler commandHandler;
+    private MasterConfiguration settings;
+    private LevelingRate levelingRate;
+    private BeastPlugin beastPlugin;
+    private HealthMovementTask healthMovementTask;
+    private StatsMenu statsMenu;
 
-  public LevelingRate getLevelingRate() {
-    return levelingRate;
-  }
-
-  public AttackSpeedTask getAttackSpeedTask() {
-    return attackSpeedTask;
-  }
-
-  @Override
-  public void enable() {
-    debugPrinter = new PluginLogger(this);
-    statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
-                                                    getResource("stats.yml"),
-                                                    VersionedSmartConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
-                                                     getResource("config.yml"),
-                                                     VersionedSmartConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-
-    statManager = new StrifeStatManager();
-
-    storage = new JsonDataStorage(this);
-
-    championManager = new ChampionManager();
-
-    commandHandler = new CommandHandler(this);
-
-    MenuListener.getInstance().register(this);
-
-    beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
-
-    if (statsYAML.update()) {
-      getLogger().info("Updating stats.yml");
-    }
-    if (configYAML.update()) {
-      getLogger().info("Updating config.yml");
+    public LevelingRate getLevelingRate() {
+        return levelingRate;
     }
 
-    settings = MasterConfiguration.loadFromFiles(configYAML);
+    public AttackSpeedTask getAttackSpeedTask() {
+        return attackSpeedTask;
+    }
 
-    List<StrifeStat> stats = new ArrayList<>();
-    List<String> loadedStats = new ArrayList<>();
-    for (String key : statsYAML.getKeys(false)) {
-      if (!statsYAML.isConfigurationSection(key)) {
-        continue;
-      }
-      ConfigurationSection cs = statsYAML.getConfigurationSection(key);
-      StrifeStat stat = new StrifeStat(key);
-      stat.setName(cs.getString("name"));
-      stat.setOrder(cs.getInt("order"));
-      stat.setDescription(cs.getString("description"));
-      stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
-      stat.setChatColor(ChatColor.valueOf(cs.getString("chat-color", "WHITE")));
-      stat.setMenuX(cs.getInt("menu-x"));
-      stat.setMenuY(cs.getInt("menu-y"));
-      Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
-      if (cs.isConfigurationSection("attributes")) {
-        ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
-        for (String k : attrCS.getKeys(false)) {
-          StrifeAttribute attr = StrifeAttribute.fromName(k);
-          if (attr == null) {
-            continue;
-          }
-          attributeMap.put(attr, attrCS.getDouble(k));
+    @Override
+    public void enable() {
+        debugPrinter = new PluginLogger(this);
+        statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
+                                                        getResource("stats.yml"),
+                                                        VersionedSmartConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
+                                                         getResource("config.yml"),
+                                                         VersionedSmartConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+
+        statManager = new StrifeStatManager();
+
+        storage = new JsonDataStorage(this);
+
+        championManager = new ChampionManager();
+
+        commandHandler = new CommandHandler(this);
+
+        MenuListener.getInstance().register(this);
+
+        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
+
+        if (statsYAML.update()) {
+            getLogger().info("Updating stats.yml");
         }
-      }
-      stat.setAttributeMap(attributeMap);
-      stats.add(stat);
-      loadedStats.add(stat.getKey());
+        if (configYAML.update()) {
+            getLogger().info("Updating config.yml");
+        }
+
+        settings = MasterConfiguration.loadFromFiles(configYAML);
+
+        List<StrifeStat> stats = new ArrayList<>();
+        List<String> loadedStats = new ArrayList<>();
+        for (String key : statsYAML.getKeys(false)) {
+            if (!statsYAML.isConfigurationSection(key)) {
+                continue;
+            }
+            ConfigurationSection cs = statsYAML.getConfigurationSection(key);
+            StrifeStat stat = new StrifeStat(key);
+            stat.setName(cs.getString("name"));
+            stat.setOrder(cs.getInt("order"));
+            stat.setDescription(cs.getString("description"));
+            stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
+            stat.setChatColor(ChatColor.valueOf(cs.getString("chat-color", "WHITE")));
+            stat.setMenuX(cs.getInt("menu-x"));
+            stat.setMenuY(cs.getInt("menu-y"));
+            Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
+            if (cs.isConfigurationSection("attributes")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.fromName(k);
+                    if (attr == null) {
+                        continue;
+                    }
+                    attributeMap.put(attr, attrCS.getDouble(k));
+                }
+            }
+            stat.setAttributeMap(attributeMap);
+            stats.add(stat);
+            loadedStats.add(stat.getKey());
+        }
+        for (StrifeStat stat : stats) {
+            getStatManager().addStat(stat);
+        }
+        debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
+
+        for (Champion champ : storage.load()) {
+            championManager.addChampion(champ);
+        }
+
+        saveTask = new SaveTask(this);
+        attackSpeedTask = new AttackSpeedTask();
+        healthMovementTask = new HealthMovementTask(this);
+
+        commandHandler.registerCommands(new AttributesCommand(this));
+        commandHandler.registerCommands(new LevelUpCommand(this));
+        commandHandler.registerCommands(new StrifeCommand(this));
+
+        levelingRate = new LevelingRate();
+        Expression expr = new ExpressionBuilder(settings.getString("config.leveling.formula",
+                                                                   "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL")
+            .build();
+        for (int i = 0; i < 100; i++) {
+            levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
+        }
+
+        saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
+        attackSpeedTask.runTaskTimer(this, 5L, 5L);
+        healthMovementTask.runTaskTimer(this, 20L * 10, 20L * 10);
+        Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+        if (Bukkit.getPluginManager().getPlugin("Loot") != null) {
+            Bukkit.getPluginManager().registerEvents(new LootListener(this), this);
+        }
+        if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
+            Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
+        }
+
+        statsMenu = new StatsMenu(this, getStatManager().getStats());
+        debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
-    for (StrifeStat stat : stats) {
-      getStatManager().addStat(stat);
-    }
-    debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
 
-    for (Champion champ : storage.load()) {
-      championManager.addChampion(champ);
-    }
-
-    saveTask = new SaveTask(this);
-    attackSpeedTask = new AttackSpeedTask();
-    healthMovementTask = new HealthMovementTask(this);
-
-    commandHandler.registerCommands(new AttributesCommand(this));
-    commandHandler.registerCommands(new LevelUpCommand(this));
-    commandHandler.registerCommands(new StrifeCommand(this));
-
-    levelingRate = new LevelingRate();
-    Expression expr = new ExpressionBuilder(settings.getString("config.leveling.formula",
-                                                               "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL")
-        .build();
-    for (int i = 0; i < 100; i++) {
-      levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
+    @Override
+    public void disable() {
+        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
+        saveTask.cancel();
+        HandlerList.unregisterAll(this);
+        storage.save(championManager.getChampions());
+        configYAML = null;
+        statsYAML = null;
+        statManager = null;
+        storage = null;
+        championManager = null;
+        saveTask = null;
+        commandHandler = null;
+        settings = null;
     }
 
-    saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
-    attackSpeedTask.runTaskTimer(this, 5L, 5L);
-    healthMovementTask.runTaskTimer(this, 20L * 10, 20L * 10);
-    Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
-    if (Bukkit.getPluginManager().getPlugin("Loot") != null) {
-      Bukkit.getPluginManager().registerEvents(new LootListener(this), this);
-    }
-    if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
-      Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
+    public StrifeStatManager getStatManager() {
+        return statManager;
     }
 
-    statsMenu = new StatsMenu(this, getStatManager().getStats());
-    debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
-  }
-
-  @Override
-  public void disable() {
-    debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
-    saveTask.cancel();
-    HandlerList.unregisterAll(this);
-    storage.save(championManager.getChampions());
-    configYAML = null;
-    statsYAML = null;
-    statManager = null;
-    storage = null;
-    championManager = null;
-    saveTask = null;
-    commandHandler = null;
-    settings = null;
-  }
-
-  public StrifeStatManager getStatManager() {
-    return statManager;
-  }
-
-  public void debug(Level level, String... messages) {
-    if (debugPrinter != null) {
-      debugPrinter.log(level, Arrays.asList(messages));
+    public void debug(Level level, String... messages) {
+        if (debugPrinter != null) {
+            debugPrinter.log(level, Arrays.asList(messages));
+        }
     }
-  }
 
-  public DataStorage getStorage() {
-    return storage;
-  }
+    public DataStorage getStorage() {
+        return storage;
+    }
 
-  public ChampionManager getChampionManager() {
-    return championManager;
-  }
+    public ChampionManager getChampionManager() {
+        return championManager;
+    }
 
-  public MasterConfiguration getSettings() {
-    return settings;
-  }
+    public MasterConfiguration getSettings() {
+        return settings;
+    }
 
-  public BeastPlugin getBeastPlugin() {
-    return beastPlugin;
-  }
+    public BeastPlugin getBeastPlugin() {
+        return beastPlugin;
+    }
 
-  public StatsMenu getStatsMenu() {
-    return statsMenu;
-  }
+    public StatsMenu getStatsMenu() {
+        return statsMenu;
+    }
 }

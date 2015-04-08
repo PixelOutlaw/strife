@@ -27,28 +27,28 @@ import org.bukkit.inventory.ItemStack;
 
 public class StatPointsMenuItem extends MenuItem {
 
-  private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
-  private static final ItemStack DISPLAY_ICON = new ItemStack(Material.WOOL);
-  private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
-  private final StrifePlugin plugin;
+    private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
+    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.WOOL);
+    private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
+    private final StrifePlugin plugin;
 
-  public StatPointsMenuItem(StrifePlugin plugin) {
-    super(DISPLAY_NAME, DISPLAY_ICON, DISPLAY_LORE);
-    this.plugin = plugin;
-  }
+    public StatPointsMenuItem(StrifePlugin plugin) {
+        super(DISPLAY_NAME, DISPLAY_ICON, DISPLAY_LORE);
+        this.plugin = plugin;
+    }
 
-  @Override
-  public ItemStack getFinalIcon(Player player) {
-    ItemStack itemStack = super.getFinalIcon(player);
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-    int stacks = champion.getUnusedStatPoints();
-    itemStack.setAmount(stacks);
-    return itemStack;
-  }
+    @Override
+    public ItemStack getFinalIcon(Player player) {
+        ItemStack itemStack = super.getFinalIcon(player);
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        int stacks = champion.getUnusedStatPoints();
+        itemStack.setAmount(stacks);
+        return itemStack;
+    }
 
-  @Override
-  public void onItemClick(ItemClickEvent event) {
-    super.onItemClick(event);
-  }
+    @Override
+    public void onItemClick(ItemClickEvent event) {
+        super.onItemClick(event);
+    }
 
 }

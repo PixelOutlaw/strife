@@ -30,60 +30,60 @@ import java.util.Map;
 
 public class AttributeHandler {
 
-  public static double getValue(LivingEntity livingEntity, StrifeAttribute attribute) {
-    double amount = 0D;
-    for (ItemStack itemStack : livingEntity.getEquipment().getArmorContents()) {
-      amount += getValue(itemStack, attribute);
+    public static double getValue(LivingEntity livingEntity, StrifeAttribute attribute) {
+        double amount = 0D;
+        for (ItemStack itemStack : livingEntity.getEquipment().getArmorContents()) {
+            amount += getValue(itemStack, attribute);
+        }
+        amount += getValue(livingEntity.getEquipment().getItemInHand(), attribute);
+        return amount;
     }
-    amount += getValue(livingEntity.getEquipment().getItemInHand(), attribute);
-    return amount;
-  }
 
-  public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
-    return getValue(new HiltItemStack(itemStack), attribute);
-  }
+    public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
+        return getValue(new HiltItemStack(itemStack), attribute);
+    }
 
-  public static double getValue(HiltItemStack itemStack, StrifeAttribute attribute) {
-    double amount = 0D;
-    if (itemStack == null || itemStack.getType() == Material.AIR || attribute == null) {
-      return amount;
+    public static double getValue(HiltItemStack itemStack, StrifeAttribute attribute) {
+        double amount = 0D;
+        if (itemStack == null || itemStack.getType() == Material.AIR || attribute == null) {
+            return amount;
+        }
+        List<String> lore = itemStack.getLore();
+        List<String> strippedLore = stripColor(lore);
+        for (String s : strippedLore) {
+            String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
+            if (retained.equals(attribute.getName().trim())) {
+                amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+            }
+        }
+        if (attribute.isPercentage()) {
+            amount /= 100;
+        }
+        return attribute.getCap() > 0D ? Math.min(amount, attribute.getCap()) : amount;
     }
-    List<String> lore = itemStack.getLore();
-    List<String> strippedLore = stripColor(lore);
-    for (String s : strippedLore) {
-      String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
-      if (retained.equals(attribute.getName().trim())) {
-        amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
-      }
-    }
-    if (attribute.isPercentage()) {
-      amount /= 100;
-    }
-    return attribute.getCap() > 0D ? Math.min(amount, attribute.getCap()) : amount;
-  }
 
-  private static List<String> stripColor(List<String> strings) {
-    List<String> stripped = new ArrayList<>();
-    for (String s : strings) {
-      stripped.add(ChatColor.stripColor(s));
+    private static List<String> stripColor(List<String> strings) {
+        List<String> stripped = new ArrayList<>();
+        for (String s : strings) {
+            stripped.add(ChatColor.stripColor(s));
+        }
+        return stripped;
     }
-    return stripped;
-  }
 
-  public static void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
-    if (!attributeDoubleMap.containsKey(StrifeAttribute.HEALTH)) {
-      return;
+    public static void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
+        if (!attributeDoubleMap.containsKey(StrifeAttribute.HEALTH)) {
+            return;
+        }
+        double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
+        double oldHealth = player.getHealth();
+        if (player.getHealth() > newMaxHealth) {
+            double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
+            player.setHealth(tempHealth);
+        }
+        player.setMaxHealth(newMaxHealth);
+        player.setHealthScaled(true);
+        player.setHealthScale(player.getMaxHealth());
+        player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
     }
-    double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
-    double oldHealth = player.getHealth();
-    if (player.getHealth() > newMaxHealth) {
-      double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
-      player.setHealth(tempHealth);
-    }
-    player.setMaxHealth(newMaxHealth);
-    player.setHealthScaled(true);
-    player.setHealthScale(player.getMaxHealth());
-    player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
-  }
 
 }
