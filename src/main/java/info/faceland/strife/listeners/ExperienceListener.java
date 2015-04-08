@@ -14,13 +14,15 @@
  */
 package info.faceland.strife.listeners;
 
+import be.maximvdw.titlemotd.ui.Title;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
-
+import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.Expression;
+import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.ExpressionBuilder;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-
+import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -34,15 +36,14 @@ import org.bukkit.event.player.PlayerLevelChangeEvent;
 
 import java.util.Map;
 
-import be.maximvdw.titlemotd.ui.Title;
-import me.desht.dhutils.ExperienceManager;
-
 public class ExperienceListener implements Listener {
 
     private final StrifePlugin plugin;
+    private final Expression expCapExpr;
 
     public ExperienceListener(StrifePlugin plugin) {
         this.plugin = plugin;
+        this.expCapExpr = new ExpressionBuilder(plugin.getSettings().getString("config.leveling.formula")).variable("LEVEL").build();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -66,18 +67,18 @@ public class ExperienceListener implements Listener {
         MessageUtils.sendMessage(player, "<green>You have leveled up!");
         FancyMessage message = new FancyMessage("");
         message.then("You gained a levelup point! ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-            .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-            .color(ChatColor.WHITE).then(" to use it!").color(ChatColor.GOLD).send(event.getPlayer());
+                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                .color(ChatColor.WHITE).then(" to use it!").color(ChatColor.GOLD).send(event.getPlayer());
         Title title = new Title("<green>LEVEL UP!", "<green>You reached level <white>" + event.getNewLevel() +
-                                                    "<green>!", 1, 1, 1);
+                "<green>!", 1, 1, 1);
         title.setTimingsToSeconds();
         title.send(event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 MessageUtils
-                    .sendMessage(p, "<green>[Levelup!] <white>%player%<green> has reached level <white>%level%<green>!",
-                                 new String[][]{{"%player%", player.getDisplayName()},
-                                                {"%level%", "" + event.getNewLevel()}});
+                        .sendMessage(p, "<green>[Levelup!] <white>%player%<green> has reached level <white>%level%<green>!",
+                                new String[][]{{"%player%", player.getDisplayName()},
+                                        {"%level%", "" + event.getNewLevel()}});
             }
         }
     }
@@ -116,9 +117,9 @@ public class ExperienceListener implements Listener {
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
         double exact = Math.min(amount + amount * attributeDoubleMap.get(StrifeAttribute.XP_GAIN),
-                                plugin.getSettings().getDouble("config.leveling.gain-cap", 0.25) * desiredLevelUp)
-                       * factor
-                       * mult;
+                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * desiredLevelUp)
+                * factor
+                * mult;
 
         int newXp = (int) exact;
 
