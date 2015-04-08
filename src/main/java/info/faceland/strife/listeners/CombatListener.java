@@ -208,7 +208,7 @@ public class CombatListener implements Listener {
           critbonus = damage * (criticalDamageA - 1.0);
           b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
         }
-        if (attackSpeedMultA == 1D) {
+        if (attackSpeedMultA >= 1D) {
           overbonus = overchargeA * damage;
         }
         damage = damage + critbonus + overbonus;
@@ -234,7 +234,7 @@ public class CombatListener implements Listener {
         critbonus = damage * (criticalDamageA - 1.0);
         b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
       }
-      if (attackSpeedMultA == 1D) {
+      if (attackSpeedMultA >= 1D) {
         overbonus = overchargeA * damage;
       }
       damage = damage + critbonus + overbonus;
