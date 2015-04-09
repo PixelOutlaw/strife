@@ -18,12 +18,11 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Arg;
 import com.tealcube.minecraft.bukkit.kern.methodcommand.Command;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-
+import me.desht.dhutils.ExperienceManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -41,13 +40,13 @@ public class StrifeCommand {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
         MessageUtils.sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
-                                 new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
+                new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
             MessageUtils.sendMessage(sender,
-                                     ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion
-                                         .getMaximumStatLevel()
-                                     + " ] " + stat.getName());
+                    ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion
+                            .getMaximumStatLevel()
+                            + " ] " + stat.getName());
         }
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
     }
@@ -63,12 +62,12 @@ public class StrifeCommand {
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You reset <white>%player%<green>.",
-                                 new String[][]{{"%player%", target.getDisplayName()}});
+                new String[][]{{"%player%", target.getDisplayName()}});
         MessageUtils.sendMessage(target, "<green>Your stats have been reset.");
         FancyMessage message = new FancyMessage("");
         message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-            .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-            .color(ChatColor.WHITE).then(" to spend them.").send(target);
+                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
+                .color(ChatColor.WHITE).then(" to spend them.").send(target);
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
 
@@ -85,7 +84,7 @@ public class StrifeCommand {
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You cleared <white>%player%<green>.",
-                                 new String[][]{{"%player%", target.getDisplayName()}});
+                new String[][]{{"%player%", target.getDisplayName()}});
         MessageUtils.sendMessage(target, "<green>Your stats have been cleared.");
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
@@ -105,9 +104,17 @@ public class StrifeCommand {
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
-                                 new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
+                new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         MessageUtils.sendMessage(target, "<green>Your level has been raised.");
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
+    }
+
+    @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
+    public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") int amount) {
+        ExperienceManager manager = new ExperienceManager(player);
+        manager.changeExp(amount);
+        MessageUtils.sendMessage(sender, "<green>You gave <white>%player% %amount%<green> experience.",
+                new String[][]{{"%player%", player.getDisplayName()}, {"%amount%", "" + amount}});
     }
 
 }

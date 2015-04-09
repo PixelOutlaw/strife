@@ -23,6 +23,8 @@ permissions:
     default: op
   strife.command.strife.raise:
     default: op
+  strife.command.strife.addxp:
+    default: op
   strife.xp:
     default: false
   strife.mult.half:
