@@ -131,7 +131,7 @@ public class CombatListener implements Listener {
         double iceDamageA = StrifeAttribute.ICE_DAMAGE.getBaseValue(), freezeChanceA = StrifeAttribute.FREEZE_CHANCE.getBaseValue();
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
         double healthB = b.getMaxHealth();
-        double resistB = StrifeAttribute.RESISTANCE.getBaseValue();
+        double resistB = 0;
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
         boolean parried = false;
@@ -236,20 +236,20 @@ public class CombatListener implements Listener {
             if (fireDamageA > 0) {
                 if (random.nextDouble() < ((igniteChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
                     b.setFireTicks((int) Math.round(fireDamageA * 20));
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
             if (lightningDamageA > 0) {
                 if (random.nextDouble() < ((shockChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
                     trueDamage = lightningDamageA;
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
                 }
             }
             if (iceDamageA > 0) {
                 if (random.nextDouble() < ((freezeChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
                     damage = damage + ((healthB / 100) * iceDamageA);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
@@ -279,20 +279,20 @@ public class CombatListener implements Listener {
             if (fireDamageA > 0) {
                 if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
                     b.setFireTicks((int) Math.round(fireDamageA * 20));
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
             if (lightningDamageA > 0) {
                 if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
                     trueDamage = lightningDamageA;
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
                 }
             }
             if (iceDamageA > 0) {
                 if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
                     damage = damage + ((healthB / 100) * iceDamageA);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
