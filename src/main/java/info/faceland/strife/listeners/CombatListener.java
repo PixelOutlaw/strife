@@ -277,7 +277,7 @@ public class CombatListener implements Listener {
                 blockReducer = (1 - blockB);
             }
             if (fireDamageA > 0) {
-                if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
+                if (random.nextDouble() < ((igniteChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
                     b.setFireTicks((int) Math.round(fireDamageA * 20));
                     b.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
