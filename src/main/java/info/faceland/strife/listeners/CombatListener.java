@@ -268,6 +268,7 @@ public class CombatListener implements Listener {
             double blockReducer = 1;
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
+                a.getWorld().playSound(a.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
             }
             if (random.nextDouble() < snarechanceA) {
@@ -277,15 +278,17 @@ public class CombatListener implements Listener {
                 blockReducer = (1 - blockB);
             }
             if (fireDamageA > 0) {
-                if (random.nextDouble() < ((igniteChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
                     b.setFireTicks((int) Math.round(fireDamageA * 20));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    a.getWorld().playSound(a.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
             if (lightningDamageA > 0) {
                 if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
                     trueDamage = lightningDamageA;
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 0.8f, 1.5f);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+                    a.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
                 }
             }
             if (iceDamageA > 0) {
@@ -293,6 +296,7 @@ public class CombatListener implements Listener {
                     damage = damage + ((healthB / 100) * iceDamageA);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                    a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
@@ -300,7 +304,6 @@ public class CombatListener implements Listener {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
-            b.setFireTicks((int) Math.round(fireDamageA * 20));
         }
     }
 
