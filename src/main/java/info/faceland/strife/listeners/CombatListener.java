@@ -142,6 +142,9 @@ public class CombatListener implements Listener {
             meleeBonus -= 0.2;
             rangedBonus -= 0.2;
         }
+        if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+            potionReuction = 0.85;
+        }
         if (a instanceof Player) {
             if (a.hasPotionEffect(PotionEffectType.POISON)) {
                 poisonMult = 0.33;
@@ -188,7 +191,7 @@ public class CombatListener implements Listener {
                 String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
                 if (data != null && a.getCustomName() != null) {
                     int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                    meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate()) * meleeBonus;
+                    meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate()) * meleeBonus * potionReuction;
                     rangedDamageA = meleeDamageA;
                 }
             }
@@ -197,9 +200,6 @@ public class CombatListener implements Listener {
             Player p = (Player) b;
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            if (a.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-                potionReuction = 0.85;
-            }
             if (a instanceof Player) {
                 meleeDamageA = (meleeDamageA / 2);
                 rangedDamageA = (rangedDamageA / 2);
@@ -219,7 +219,7 @@ public class CombatListener implements Listener {
 
         // LET THE DAMAGE CALCULATION COMMENCE
         if (melee) {
-            damage = (meleeDamageA * meleeBonus) * attackSpeedMultA;
+            damage = meleeDamageA * meleeBonus * attackSpeedMultA * potionReuction;
             if (parried) {
                 if (a instanceof Player) {
                     damage *= 0.5;
@@ -280,7 +280,7 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage = rangedDamageA * rangedBonus * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
+            damage = rangedDamageA * rangedBonus * potionReuction * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double effectiveArmor = Math.pow((armorB * (1 - armorPenA)), 1.7);
             double damageReducer = 1 - ( 500 / (500 + effectiveArmor));
             double blockReducer = 1;
