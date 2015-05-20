@@ -93,6 +93,9 @@ public class CombatListener implements Listener {
         // LET THE DATA GATHERING COMMENCE
         boolean melee = true;
         double poisonMult = 1.0;
+        double meleeBonus = 1.0;
+        double rangedBonus = 1.0;
+        double potionReuction = 1.0;
         if (event.getDamager() instanceof LivingEntity) {
             a = (LivingEntity) event.getDamager();
         } else if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager())
@@ -135,9 +138,19 @@ public class CombatListener implements Listener {
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
         boolean parried = false;
+        if (a.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+            meleeBonus -= 0.2;
+            rangedBonus -= 0.2;
+        }
         if (a instanceof Player) {
             if (a.hasPotionEffect(PotionEffectType.POISON)) {
-                poisonMult = 0.25;
+                poisonMult = 0.33;
+            }
+            if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                meleeBonus += 0.1;
+            }
+            if (a.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
+                rangedBonus += 0.1;
             }
             for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
                 if (event.isApplicable(modifier)) {
@@ -175,7 +188,7 @@ public class CombatListener implements Listener {
                 String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
                 if (data != null && a.getCustomName() != null) {
                     int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                    meleeDamageA = data.getDamageExpression().setVariable("LEVEL", level).evaluate();
+                    meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate()) * meleeBonus;
                     rangedDamageA = meleeDamageA;
                 }
             }
@@ -184,6 +197,9 @@ public class CombatListener implements Listener {
             Player p = (Player) b;
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+            if (a.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                potionReuction = 0.85;
+            }
             if (a instanceof Player) {
                 meleeDamageA = (meleeDamageA / 2);
                 rangedDamageA = (rangedDamageA / 2);
@@ -203,7 +219,7 @@ public class CombatListener implements Listener {
 
         // LET THE DAMAGE CALCULATION COMMENCE
         if (melee) {
-            damage = meleeDamageA * attackSpeedMultA;
+            damage = (meleeDamageA * meleeBonus) * attackSpeedMultA;
             if (parried) {
                 if (a instanceof Player) {
                     damage *= 0.5;
@@ -264,7 +280,7 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
+            damage = rangedDamageA * rangedBonus * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double effectiveArmor = Math.pow((armorB * (1 - armorPenA)), 1.7);
             double damageReducer = 1 - ( 500 / (500 + effectiveArmor));
             double blockReducer = 1;
