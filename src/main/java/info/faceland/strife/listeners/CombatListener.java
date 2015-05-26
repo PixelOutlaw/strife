@@ -221,9 +221,14 @@ public class CombatListener implements Listener {
                 overbonus = overchargeA * damage;
             }
             damage = damage + critbonus + overbonus;
-            double effectiveArmor = Math.pow(((armorB*100) * (1 - armorPenA)), 1.7);
-            double damageReducer = 500 / (500 + effectiveArmor);
             double blockReducer = 1;
+            double damageReducer;
+            if (armorB > 35) {
+                double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
+                damageReducer = 500 / (500 + effectiveArmor);
+            } else {
+                damageReducer = 1 - (armorB * 1.3);
+            }
             if (blocking) {
                 blockReducer = (1 - blockB);
             }
@@ -265,9 +270,14 @@ public class CombatListener implements Listener {
                 return;
             }
             damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
-            double effectiveArmor = Math.pow(((armorB*100) * (1 - armorPenA)), 1.7);
-            double damageReducer = 500 / (500 + effectiveArmor);
             double blockReducer = 1;
+            double damageReducer;
+            if (armorB > 35) {
+                double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
+                damageReducer = 500 / (500 + effectiveArmor);
+            } else {
+                damageReducer = 1 - (armorB * 1.3);
+            }
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
