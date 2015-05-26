@@ -227,7 +227,7 @@ public class CombatListener implements Listener {
                 double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
                 damageReducer = 500 / (500 + effectiveArmor);
             } else {
-                damageReducer = 1 - (armorB * 1.3);
+                damageReducer = 1 - (armorB * (1 + (0.71-armorB)));
             }
             if (blocking) {
                 blockReducer = (1 - blockB);
@@ -276,7 +276,7 @@ public class CombatListener implements Listener {
                 double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
                 damageReducer = 500 / (500 + effectiveArmor);
             } else {
-                damageReducer = 1 - (armorB * 1.3);
+                damageReducer = 1 - (armorB * (1 + (0.71-armorB)));
             }
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
