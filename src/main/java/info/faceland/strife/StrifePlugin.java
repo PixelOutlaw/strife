@@ -39,7 +39,7 @@ import info.faceland.strife.listeners.HealthListener;
 import info.faceland.strife.listeners.LootListener;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
-import info.faceland.strife.menus.StatsMenu;
+import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
@@ -76,7 +76,7 @@ public class StrifePlugin extends FacePlugin {
     private LevelingRate levelingRate;
     private BeastPlugin beastPlugin;
     private HealthMovementTask healthMovementTask;
-    private StatsMenu statsMenu;
+    private LevelupMenu levelupMenu;
 
     public LevelingRate getLevelingRate() {
         return levelingRate;
@@ -186,7 +186,7 @@ public class StrifePlugin extends FacePlugin {
             Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
         }
 
-        statsMenu = new StatsMenu(this, getStatManager().getStats());
+        levelupMenu = new LevelupMenu(this, getStatManager().getStats());
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
 
@@ -232,7 +232,7 @@ public class StrifePlugin extends FacePlugin {
         return beastPlugin;
     }
 
-    public StatsMenu getStatsMenu() {
-        return statsMenu;
+    public LevelupMenu getLevelupMenu() {
+        return levelupMenu;
     }
 }

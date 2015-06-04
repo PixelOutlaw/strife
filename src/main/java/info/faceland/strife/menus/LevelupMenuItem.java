@@ -33,12 +33,12 @@ import org.bukkit.material.Wool;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatMenuItem extends MenuItem {
+public class LevelupMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private final StrifeStat stat;
 
-    public StatMenuItem(StrifePlugin plugin, StrifeStat strifeStat) {
+    public LevelupMenuItem(StrifePlugin plugin, StrifeStat strifeStat) {
         super(strifeStat.getChatColor() + strifeStat.getName(), new Wool().toItemStack(),
               TextUtils.color(strifeStat.getDescription()).split("/n"));
         this.plugin = plugin;

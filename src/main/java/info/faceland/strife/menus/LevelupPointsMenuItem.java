@@ -25,14 +25,14 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class StatPointsMenuItem extends MenuItem {
+public class LevelupPointsMenuItem extends MenuItem {
 
     private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
     private static final ItemStack DISPLAY_ICON = new ItemStack(Material.WOOL);
     private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
     private final StrifePlugin plugin;
 
-    public StatPointsMenuItem(StrifePlugin plugin) {
+    public LevelupPointsMenuItem(StrifePlugin plugin) {
         super(DISPLAY_NAME, DISPLAY_ICON, DISPLAY_LORE);
         this.plugin = plugin;
     }

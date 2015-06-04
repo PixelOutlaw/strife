@@ -35,7 +35,7 @@ public class LevelUpCommand {
 
     @Command(identifier = "levelup")
     public void baseCommand(Player sender) {
-        plugin.getStatsMenu().open(sender);
+        plugin.getLevelupMenu().open(sender);
     }
 
     @Command(identifier = "levelup level", permissions = "strife.command.levelup")
