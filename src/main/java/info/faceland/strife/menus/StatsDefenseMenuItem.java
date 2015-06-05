@@ -16,22 +16,17 @@ package info.faceland.strife.menus;
 
 import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.events.ItemClickEvent;
 import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.items.MenuItem;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.stats.StrifeStat;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Wool;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +34,10 @@ import java.util.Map;
 public class StatsDefenseMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
 
     public StatsDefenseMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Defensve Stats", new ItemStack(Material.IRON_CHESTPLATE));
+        super(ChatColor.WHITE + "Defensive Stats", new ItemStack(Material.IRON_CHESTPLATE));
         this.plugin = plugin;
     }
 
@@ -53,13 +49,13 @@ public class StatsDefenseMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.HEALTH));
-        lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
-        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.ARMOR)*100);
-        lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.EVASION)*100);
+        lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.HEALTH)));
+        lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.REGENERATION)));
+        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ARMOR)*100));
+        lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.EVASION)*100));
         if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
-                ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.RESISTANCE) * 100 + "%");
+                ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.RESISTANCE) * 100) + "%");
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);

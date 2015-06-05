@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.Map;
 public class StatsBonusMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
 
     public StatsBonusMenuItem(StrifePlugin plugin) {
         super(ChatColor.WHITE + "Misc. Stats", new ItemStack(Material.DIAMOND_BOOTS));
@@ -49,8 +51,8 @@ public class StatsBonusMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.BLUE + "Movement Speed: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.MOVEMENT_SPEED));
-        lore.add(ChatColor.BLUE + "Damage Reflect: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.DAMAGE_REFLECT)*100 +"%");
+        lore.add(ChatColor.BLUE + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MOVEMENT_SPEED)));
+        lore.add(ChatColor.BLUE + "Damage Reflect: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.DAMAGE_REFLECT)*100) +"%");
         if (valueMap.get(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
         }
