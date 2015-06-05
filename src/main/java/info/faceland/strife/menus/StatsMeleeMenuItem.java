@@ -69,7 +69,7 @@ public class StatsMeleeMenuItem extends MenuItem {
                              + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
         }
         if (valueMap.get(StrifeAttribute.OVERCHARGE) != 0.1) {
-            lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.OVERCHARGE) * 100));
+            lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((valueMap.get(StrifeAttribute.OVERCHARGE)+1) * 100)+"%");
         }
         if (valueMap.get(StrifeAttribute.FIRE_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Ignite Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.IGNITE_CHANCE)
