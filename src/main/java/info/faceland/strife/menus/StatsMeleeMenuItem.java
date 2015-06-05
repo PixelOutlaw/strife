@@ -52,8 +52,8 @@ public class StatsMeleeMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.MELEE_DAMAGE));
-        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(2 / valueMap.get(StrifeAttribute.ATTACK_SPEED))
+        lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MELEE_DAMAGE)));
+        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(2 / (1+valueMap.get(StrifeAttribute.ATTACK_SPEED)))
                          + "s");
         if (valueMap.get(StrifeAttribute.BLOCK) != 0.1) {
             lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.BLOCK) * 100) + "%");
@@ -74,18 +74,20 @@ public class StatsMeleeMenuItem extends MenuItem {
         if (valueMap.get(StrifeAttribute.FIRE_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Ignite Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.IGNITE_CHANCE)
                     * 100) + "%");
-            lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.FIRE_DAMAGE)));
+            lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(valueMap.get(StrifeAttribute.FIRE_DAMAGE)));
         }
         if (valueMap.get(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Shock Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.SHOCK_CHANCE)
                     * 100) + "%");
             lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                    StrifeAttribute.LIGHTNING_DAMAGE)));
+                StrifeAttribute.LIGHTNING_DAMAGE)));
         }
         if (valueMap.get(StrifeAttribute.ICE_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Freeze Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.FREEZE_CHANCE)
                     * 100) + "%");
-            lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ICE_DAMAGE)));
+            lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(valueMap.get(StrifeAttribute.ICE_DAMAGE)));
         }
         if (valueMap.get(StrifeAttribute.LIFE_STEAL) > 0) {
             lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.LIFE_STEAL) * 100)
