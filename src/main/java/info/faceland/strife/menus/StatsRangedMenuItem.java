@@ -37,7 +37,7 @@ public class StatsRangedMenuItem extends MenuItem {
     private final StrifePlugin plugin;
 
     public StatsRangedMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Bow Stats", new ItemStack(Material.BOW), "/n");
+        super(ChatColor.WHITE + "Ranged Stats", new ItemStack(Material.BOW));
         this.plugin = plugin;
     }
 
@@ -60,18 +60,22 @@ public class StatsRangedMenuItem extends MenuItem {
                      + valueMap.get(StrifeAttribute.ARMOR_PENETRATION) * 100 + "%");
         }
         if (valueMap.get(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Ignite Chance:" + ChatColor.WHITE + valueMap.get(StrifeAttribute.IGNITE_CHANCE)*100 + "%");
-            lore.add(ChatColor.YELLOW + "Fire Damage:" + ChatColor.WHITE + valueMap.get(StrifeAttribute.FIRE_DAMAGE));
+            lore.add(ChatColor.YELLOW + "Ignite Chance: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.IGNITE_CHANCE)*100 + "%");
+            lore.add(ChatColor.YELLOW + "Fire Damage: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.FIRE_DAMAGE));
         }
         if (valueMap.get(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Shock Chance:" + ChatColor.WHITE + valueMap.get(StrifeAttribute.SHOCK_CHANCE)*100 + "%");
-            lore.add(ChatColor.YELLOW + "Lightning Damage:" + ChatColor.WHITE + valueMap.get(StrifeAttribute.LIGHTNING_DAMAGE));
+            lore.add(ChatColor.YELLOW + "Shock Chance: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.SHOCK_CHANCE)*100 + "%");
+            lore.add(ChatColor.YELLOW + "Lightning Damage: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.LIGHTNING_DAMAGE));
         }
         if (valueMap.get(StrifeAttribute.ICE_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Freeze Chance:" + ChatColor.WHITE + valueMap.get(StrifeAttribute.FREEZE_CHANCE)*100 + "%");
-            lore.add(ChatColor.YELLOW + "Ice Damage:" + ChatColor.WHITE + valueMap.get(StrifeAttribute.ICE_DAMAGE));
+            lore.add(ChatColor.YELLOW + "Freeze Chance: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.FREEZE_CHANCE)*100 + "%");
+            lore.add(ChatColor.YELLOW + "Ice Damage: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.ICE_DAMAGE));
         }
-        lore.add(ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.LIFE_STEAL) * 100 + "%");
+        if (valueMap.get(StrifeAttribute.LIFE_STEAL) > 0) {
+            lore.add(
+                ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.LIFE_STEAL) * 100
+                + "%");
+        }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;

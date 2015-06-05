@@ -37,7 +37,7 @@ public class StatsBonusMenuItem extends MenuItem {
     private final StrifePlugin plugin;
 
     public StatsBonusMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Bonus Stats", new ItemStack(Material.DIAMOND_BOOTS), "/n");
+        super(ChatColor.WHITE + "Misc. Stats", new ItemStack(Material.DIAMOND_BOOTS));
         this.plugin = plugin;
     }
 
@@ -50,7 +50,7 @@ public class StatsBonusMenuItem extends MenuItem {
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.BLUE + "Movement Speed: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.MOVEMENT_SPEED));
-        lore.add(ChatColor.BLUE + "Damage Reflect: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.DAMAGE_REFLECT));
+        lore.add(ChatColor.BLUE + "Damage Reflect: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.DAMAGE_REFLECT)*100 +"%");
         if (valueMap.get(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
         }

@@ -41,7 +41,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     private final StrifePlugin plugin;
 
     public StatsDefenseMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Defensve Stats", new ItemStack(Material.IRON_CHESTPLATE), "/n");
+        super(ChatColor.WHITE + "Defensve Stats", new ItemStack(Material.IRON_CHESTPLATE));
         this.plugin = plugin;
     }
 
