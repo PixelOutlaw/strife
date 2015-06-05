@@ -29,7 +29,7 @@ public class AttributesCommand {
 
     @Command(identifier = "stats", permissions = "strife.command.stats")
     public void baseCommand(Player sender) {
-        plugin.getLevelupMenu().open(sender);
+        plugin.getStatsMenu().open(sender);
     }
 
 }
