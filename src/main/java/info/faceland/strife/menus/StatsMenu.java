@@ -28,8 +28,8 @@ public class StatsMenu extends ItemMenu {
     public StatsMenu(StrifePlugin plugin, List<StrifeStat> stats) {
         super(ChatColor.BLACK + "Player Stats", Size.fit(36), plugin);
 
-        setItem(11, new StatsDefenseMenuItem(plugin));
-        setItem(13, new StatsMeleeMenuItem(plugin));
+        setItem(11, new StatsMeleeMenuItem(plugin));
+        setItem(13, new StatsDefenseMenuItem(plugin));
         setItem(15, new StatsRangedMenuItem(plugin));
 
         setItem(21, new StatsBonusMenuItem(plugin));

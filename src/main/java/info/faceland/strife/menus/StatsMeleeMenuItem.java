@@ -51,8 +51,8 @@ public class StatsMeleeMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.MELEE_DAMAGE));
         lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + 2/valueMap.get(StrifeAttribute.ATTACK_SPEED) + "s");
-        if (valueMap.get(StrifeAttribute.BLOCK) > 0) {
-            lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.BLOCK) * 100);
+        if (valueMap.get(StrifeAttribute.BLOCK) != 0.1) {
+            lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.BLOCK) * 100 + "%");
         }
         if (valueMap.get(StrifeAttribute.CRITICAL_RATE) > 0) {
             lore.add(ChatColor.RED + "Critical Rate: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.CRITICAL_RATE)*100 + "%");
@@ -62,7 +62,7 @@ public class StatsMeleeMenuItem extends MenuItem {
             lore.add(ChatColor.RED + "Armor Penetration: " + ChatColor.WHITE
                      + valueMap.get(StrifeAttribute.ARMOR_PENETRATION) * 100 + "%");
         }
-        if (valueMap.get(StrifeAttribute.OVERCHARGE) > 1.1) {
+        if (valueMap.get(StrifeAttribute.OVERCHARGE) != 0.1) {
             lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.OVERCHARGE)*100);
         }
         if (valueMap.get(StrifeAttribute.FIRE_DAMAGE) > 0) {
