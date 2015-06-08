@@ -38,6 +38,7 @@ public class StatsMeleeMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
+    private static final DecimalFormat AS_FORMAT = new DecimalFormat("#.##");
 
     public StatsMeleeMenuItem(StrifePlugin plugin) {
         super(ChatColor.WHITE + "Melee Stats", new ItemStack(Material.IRON_SWORD));
@@ -53,7 +54,7 @@ public class StatsMeleeMenuItem extends MenuItem {
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MELEE_DAMAGE)));
-        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(2 / (1+valueMap.get(StrifeAttribute.ATTACK_SPEED)))
+        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1+valueMap.get(StrifeAttribute.ATTACK_SPEED)))
                          + "s");
         if (valueMap.get(StrifeAttribute.BLOCK) != 0.1) {
             lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.BLOCK) * 100) + "%");
