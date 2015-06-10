@@ -205,10 +205,6 @@ public class CombatListener implements Listener {
             Player p = (Player) b;
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            if (a instanceof Player) {
-                meleeDamageA = (meleeDamageA / 2);
-                rangedDamageA = (rangedDamageA / 2);
-            }
             armorB = vals.get(StrifeAttribute.ARMOR);
             resistB = vals.get(StrifeAttribute.RESISTANCE);
             reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
@@ -224,7 +220,7 @@ public class CombatListener implements Listener {
 
         // LET THE DAMAGE CALCULATION COMMENCE
         if (melee) {
-            damage = meleeDamageA * attackSpeedMultA * meleeMult * pvpMult;
+            damage = meleeDamageA * attackSpeedMultA * meleeMult;
             if (parried) {
                 a.damage(damage * 1.25);
                 event.setCancelled(true);
@@ -276,7 +272,7 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
@@ -287,7 +283,7 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage = rangedDamageA * rangedMult * pvpMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
+            damage = rangedDamageA * rangedMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double blockReducer = 1;
             double damageReducer;
             if (armorB > 35) {
@@ -326,7 +322,7 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, (damage * damageReducer * blockReducer) + trueDamage);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
