@@ -222,7 +222,7 @@ public class CombatListener implements Listener {
         if (melee) {
             damage = meleeDamageA * attackSpeedMultA * meleeMult;
             if (parried) {
-                a.damage(damage * 1.25);
+                a.damage(damage * 1.25 * pvpMult);
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
@@ -250,7 +250,7 @@ public class CombatListener implements Listener {
                 damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
             if (reflectDamageB > 0) {
-                a.damage(damage * reflectDamageB);
+                a.damage(damage * reflectDamageB * pvpMult);
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
             }
             if (fireDamageA > 0) {
