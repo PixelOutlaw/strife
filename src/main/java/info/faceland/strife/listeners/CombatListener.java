@@ -93,6 +93,8 @@ public class CombatListener implements Listener {
         // LET THE DATA GATHERING COMMENCE
         boolean melee = true;
         double poisonMult = 1.0;
+        double meleeMult = 1.0;
+        double rangedMult = 1.0;
         if (event.getDamager() instanceof LivingEntity) {
             a = (LivingEntity) event.getDamager();
         } else if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager())
@@ -107,9 +109,7 @@ public class CombatListener implements Listener {
             return;
         }
         if (b instanceof Player) {
-            double
-                chance =
-                plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues()
+            double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues()
                     .get(StrifeAttribute.EVASION);
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
@@ -118,6 +118,7 @@ public class CombatListener implements Listener {
             }
         }
         double damage;
+        double pvpMult = 1.0;
         double critbonus = 0, overbonus = 0, trueDamage = 0;
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
@@ -135,9 +136,29 @@ public class CombatListener implements Listener {
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
         boolean parried = false;
+        if (b.hasPotionEffect(PotionEffectType.WITHER)) {
+            meleeMult += 0.1D;
+            rangedMult += 0.1D;
+        }
+        if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+            meleeMult -= 0.1D;
+            rangedMult -= 0.1D;
+        }
         if (a instanceof Player) {
+            if (b instanceof Player) {
+                pvpMult = 0.5;
+            }
             if (a.hasPotionEffect(PotionEffectType.POISON)) {
-                poisonMult = 0.33;
+                poisonMult = 0.33D;
+            }
+            if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                meleeMult += 0.1D;
+            }
+            if (a.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+                meleeMult -= 0.1D;
+            }
+            if (a.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
+                rangedMult = 1.1D;
             }
             for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
                 if (event.isApplicable(modifier)) {
@@ -203,11 +224,8 @@ public class CombatListener implements Listener {
 
         // LET THE DAMAGE CALCULATION COMMENCE
         if (melee) {
-            damage = meleeDamageA * attackSpeedMultA;
+            damage = meleeDamageA * attackSpeedMultA * meleeMult * pvpMult;
             if (parried) {
-                if (a instanceof Player) {
-                    damage *= 0.5;
-                }
                 a.damage(damage * 1.25);
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
@@ -269,7 +287,7 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage = rangedDamageA * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
+            damage = rangedDamageA * rangedMult * pvpMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double blockReducer = 1;
             double damageReducer;
             if (armorB > 35) {
