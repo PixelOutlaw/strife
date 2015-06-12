@@ -50,7 +50,7 @@ public class ExperienceListener implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         event.setKeepLevel(true);
         event.setDroppedExp(0);
-        event.getEntity().setExp(Math.max(event.getEntity().getExp() - 0.05f, 0f));
+        event.getEntity().setExp(Math.max(event.getEntity().getExp() - 0.1f, 0f));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
