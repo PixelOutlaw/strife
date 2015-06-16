@@ -53,8 +53,10 @@ public class StatsRangedMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.YELLOW + "Ranged Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
                 StrifeAttribute.RANGED_DAMAGE)));
-        lore.add(ChatColor.YELLOW + "Snare Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+        if (valueMap.get(StrifeAttribute.SNARE_CHANCE) > 0) {
+            lore.add(ChatColor.YELLOW + "Snare Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
                 StrifeAttribute.SNARE_CHANCE)) + "%");
+        }
         if (valueMap.get(StrifeAttribute.CRITICAL_RATE) > 0) {
             lore.add(ChatColor.YELLOW + "Critical Rate: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.CRITICAL_RATE)*100) + "%");
             lore.add(ChatColor.YELLOW + "Critical Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.CRITICAL_DAMAGE)*100) + "%");
