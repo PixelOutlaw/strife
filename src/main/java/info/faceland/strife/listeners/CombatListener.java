@@ -119,6 +119,7 @@ public class CombatListener implements Listener {
         }
         double damage;
         double pvpMult = 1.0;
+        double hungerMult = 1.0;
         double critbonus = 0, overbonus = 0, trueDamage = 0;
         double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
         double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
@@ -145,6 +146,7 @@ public class CombatListener implements Listener {
             rangedMult -= 0.1D;
         }
         if (a instanceof Player) {
+            hungerMult = Math.min(0.25+((((Player) a).getFoodLevel())/8), 1);
             if (b instanceof Player) {
                 pvpMult = 0.5;
             }
@@ -274,7 +276,7 @@ public class CombatListener implements Listener {
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
-                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
+                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
         } else {
@@ -324,7 +326,7 @@ public class CombatListener implements Listener {
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
-                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult;
+                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
         }
