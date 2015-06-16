@@ -26,6 +26,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -52,6 +53,7 @@ public class StatsMeleeMenuItem extends MenuItem {
         ItemStack itemStack = new ItemStack(Material.IRON_SWORD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
+        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MELEE_DAMAGE)));
         lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1+valueMap.get(StrifeAttribute.ATTACK_SPEED)))
