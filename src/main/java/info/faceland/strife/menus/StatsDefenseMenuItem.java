@@ -55,7 +55,7 @@ public class StatsDefenseMenuItem extends MenuItem {
         }
         lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ARMOR)*100));
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
-            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.EVASION) * 100));
+            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.EVASION) * 100)+"%");
         }
         if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
