@@ -15,17 +15,12 @@
 package info.faceland.strife.menus;
 
 import com.tealcube.minecraft.bukkit.facecore.shade.amp.ampmenus.menus.ItemMenu;
-
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.stats.StrifeStat;
-
 import org.bukkit.ChatColor;
-
-import java.util.List;
 
 public class StatsMenu extends ItemMenu {
 
-    public StatsMenu(StrifePlugin plugin, List<StrifeStat> stats) {
+    public StatsMenu(StrifePlugin plugin) {
         super(ChatColor.BLACK + "Player Stats", Size.fit(36), plugin);
 
         setItem(11, new StatsMeleeMenuItem(plugin));

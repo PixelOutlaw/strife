@@ -189,7 +189,7 @@ public class StrifePlugin extends FacePlugin {
         }
 
         levelupMenu = new LevelupMenu(this, getStatManager().getStats());
-        statsMenu = new StatsMenu(this, getStatManager().getStats());
+        statsMenu = new StatsMenu(this);
         debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
     }
 
