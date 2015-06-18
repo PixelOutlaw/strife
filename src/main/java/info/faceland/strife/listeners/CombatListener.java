@@ -146,7 +146,7 @@ public class CombatListener implements Listener {
             rangedMult -= 0.1D;
         }
         if (a instanceof Player) {
-            hungerMult = Math.min(((Player) a).getFoodLevel()/7, 1);
+            hungerMult = Math.min(((double) (((Player) a).getFoodLevel()))/7.0D, 1.0D);
             if (b instanceof Player) {
                 pvpMult = 0.5;
             }
