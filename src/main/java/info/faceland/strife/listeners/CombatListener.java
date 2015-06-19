@@ -269,7 +269,7 @@ public class CombatListener implements Listener {
             }
             if (iceDamageA > 0) {
                 if (random.nextDouble() < ((freezeChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
-                    damage = damage + ((healthB / 100) * iceDamageA);
+                    damage = damage + iceDamageA + Math.min(((healthB / 200) * iceDamageA), iceDamageA*4);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
@@ -319,7 +319,7 @@ public class CombatListener implements Listener {
             }
             if (iceDamageA > 0) {
                 if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
-                    damage = damage + ((healthB / 100) * iceDamageA);
+                    damage = damage + iceDamageA + Math.min(((healthB / 200) * iceDamageA), iceDamageA*4);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
