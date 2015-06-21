@@ -53,13 +53,13 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (valueMap.get(StrifeAttribute.REGENERATION) > 1) {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
         }
-        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ARMOR)*100));
+        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.ARMOR)));
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
-            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.EVASION) * 100)+"%");
+            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.EVASION)));
         }
         if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
-                ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.RESISTANCE) * 100) + "%");
+                ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.RESISTANCE)) + "%");
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);

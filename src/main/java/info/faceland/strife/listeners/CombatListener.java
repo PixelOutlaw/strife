@@ -122,10 +122,10 @@ public class CombatListener implements Listener {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues()
                 .get(StrifeAttribute.EVASION);
             double accuracy = 0;
+            chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.25))));
             if (aPlayer) {
                 accuracy = plugin.getChampionManager().getChampion(a.getUniqueId()).getAttributeValues()
                     .get(StrifeAttribute.ACCURACY);
-                chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.25))));
                 chance = chance * (1 - accuracy);
             }
             if (random.nextDouble() < chance) {

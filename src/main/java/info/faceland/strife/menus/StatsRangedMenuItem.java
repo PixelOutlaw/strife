@@ -54,11 +54,11 @@ public class StatsRangedMenuItem extends MenuItem {
         lore.add(ChatColor.YELLOW + "Ranged Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
                 StrifeAttribute.RANGED_DAMAGE)));
         if (valueMap.get(StrifeAttribute.ACCURACY) > 0) {
-            lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "+"+ DECIMAL_FORMAT.format(valueMap.get(
+            lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "+"+ DECIMAL_FORMAT.format(100*valueMap.get(
                 StrifeAttribute.ACCURACY)) + "%");
         }
         if (valueMap.get(StrifeAttribute.SNARE_CHANCE) > 0) {
-            lore.add(ChatColor.YELLOW + "Snare Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+            lore.add(ChatColor.YELLOW + "Snare Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(
                 StrifeAttribute.SNARE_CHANCE)) + "%");
         }
         if (valueMap.get(StrifeAttribute.CRITICAL_RATE) > 0) {
