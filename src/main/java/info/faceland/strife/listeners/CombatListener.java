@@ -92,6 +92,8 @@ public class CombatListener implements Listener {
         }
         // LET THE DATA GATHERING COMMENCE
         boolean melee = true;
+        boolean aPlayer = false;
+        boolean bPlayer = false;
         double poisonMult = 1.0;
         double meleeMult = 1.0;
         double rangedMult = 1.0;
@@ -108,9 +110,24 @@ public class CombatListener implements Listener {
         if (a == null || b == null) {
             return;
         }
+        if (a instanceof Player) {
+            aPlayer = true;
+        }
+
         if (b instanceof Player) {
+            bPlayer = true;
+        }
+
+        if (bPlayer) {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues()
-                    .get(StrifeAttribute.EVASION);
+                .get(StrifeAttribute.EVASION);
+            double accuracy = 0;
+            if (aPlayer) {
+                accuracy = plugin.getChampionManager().getChampion(a.getUniqueId()).getAttributeValues()
+                    .get(StrifeAttribute.ACCURACY);
+                chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.25))));
+                chance = chance * (1 - accuracy);
+            }
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
                 b.getWorld().playSound(a.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
@@ -145,7 +162,7 @@ public class CombatListener implements Listener {
             meleeMult -= 0.1D;
             rangedMult -= 0.1D;
         }
-        if (a instanceof Player) {
+        if (aPlayer) {
             hungerMult = Math.min(((double) (((Player) a).getFoodLevel()))/7.0D, 1.0D);
             if (b instanceof Player) {
                 pvpMult = 0.5;
@@ -203,7 +220,7 @@ public class CombatListener implements Listener {
                 }
             }
         }
-        if (b instanceof Player) {
+        if (bPlayer) {
             Player p = (Player) b;
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
