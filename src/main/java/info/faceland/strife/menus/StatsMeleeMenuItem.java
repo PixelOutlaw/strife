@@ -58,6 +58,10 @@ public class StatsMeleeMenuItem extends MenuItem {
         lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MELEE_DAMAGE)));
         lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1+valueMap.get(StrifeAttribute.ATTACK_SPEED)))
                          + "s");
+        if (valueMap.get(StrifeAttribute.ACCURACY) > 0) {
+            lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+"+ DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.ACCURACY)) + "%");
+        }
         if (valueMap.get(StrifeAttribute.BLOCK) != 0.1) {
             lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.BLOCK) * 100) + "%");
         }
