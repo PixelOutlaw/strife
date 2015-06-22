@@ -54,15 +54,9 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (valueMap.get(StrifeAttribute.REGENERATION) > 1) {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
         }
-        if (valueMap.get(StrifeAttribute.ARMOR) > 0.35) {
-            double highArmor = 100 * (500/(500+Math.pow(((valueMap.get(StrifeAttribute.ARMOR) * 100) * (1 - valueMap.get(StrifeAttribute.ARMOR))), 1.7)));
-            lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(highArmor) + "%)");
-        } else {
-            double lowArmor = 100 * (valueMap.get(StrifeAttribute.ARMOR) * (1 + (0.71-valueMap.get(StrifeAttribute.ARMOR))));
-            lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(lowArmor) + "%)");
-        }
+        double armor = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.ARMOR) * 100), 1.3)))));
+        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
+            .get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)" );
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
             double evasion = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25)))));
             lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap

@@ -255,13 +255,8 @@ public class CombatListener implements Listener {
             }
             damage = damage + critbonus + overbonus;
             double blockReducer = 1;
-            double damageReducer;
-            if (armorB > 0.35) {
-                double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
-                damageReducer = 500 / (500 + effectiveArmor);
-            } else {
-                damageReducer = 1 - (armorB * (1 + (0.71-armorB)));
-            }
+            double damageReducer = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
+            damageReducer *= (1 - armorPenA);
             if (blocking) {
                 blockReducer = (1 - blockB);
             }
@@ -304,13 +299,8 @@ public class CombatListener implements Listener {
             }
             damage = rangedDamageA * rangedMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double blockReducer = 1;
-            double damageReducer;
-            if (armorB > 35) {
-                double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
-                damageReducer = 500 / (500 + effectiveArmor);
-            } else {
-                damageReducer = 1 - (armorB * (1 + (0.71-armorB)));
-            }
+            double damageReducer = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
+            damageReducer *= (1 - armorPenA);
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
@@ -341,7 +331,8 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE,
+                            ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
