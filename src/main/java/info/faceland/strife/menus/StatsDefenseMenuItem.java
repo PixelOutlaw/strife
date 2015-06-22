@@ -54,20 +54,18 @@ public class StatsDefenseMenuItem extends MenuItem {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
         }
         if (valueMap.get(StrifeAttribute.ARMOR) > 0.35) {
+            String highArmor = DECIMAL_FORMAT.format(500/(500+Math.pow(((valueMap.get(StrifeAttribute.ARMOR) * 100) * (1 - valueMap.get(StrifeAttribute.ARMOR))), 1.7)));
             lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + "(" + DECIMAL_FORMAT
-                .format(500 / (500 + (Math.pow(((valueMap.get(StrifeAttribute.ARMOR) * 100) * (1 - valueMap
-                    .get(StrifeAttribute.ARMOR))), 1.7)))));
+                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + highArmor + "%)");
         } else {
+            String lowArmor = DECIMAL_FORMAT.format(100 * (1 - (valueMap.get(StrifeAttribute.ARMOR) * (1 + (0.71-valueMap.get(StrifeAttribute.ARMOR))))));
             lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + "(" + DECIMAL_FORMAT
-                .format(1 - (valueMap.get(StrifeAttribute.ARMOR) * (1 + (0.71-valueMap
-                    .get(StrifeAttribute.ARMOR))))) + "%)");
+                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + lowArmor + "%)");
         }
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
+            String evasion = DECIMAL_FORMAT.format(1 - (100 / (100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25)))));
             lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
-                .get(StrifeAttribute.EVASION)) + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format( 1 - (100 / (100 + (Math
-                    .pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25))))) + "%)" );
+                .get(StrifeAttribute.EVASION)) + ChatColor.GRAY + " (" + evasion + "%)" );
         }
         if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
