@@ -256,7 +256,7 @@ public class CombatListener implements Listener {
             damage = damage + critbonus + overbonus;
             double blockReducer = 1;
             double damageReducer;
-            if (armorB > 35) {
+            if (armorB > 0.35) {
                 double effectiveArmor = Math.pow(((armorB * 100) * (1 - armorPenA)), 1.7);
                 damageReducer = 500 / (500 + effectiveArmor);
             } else {

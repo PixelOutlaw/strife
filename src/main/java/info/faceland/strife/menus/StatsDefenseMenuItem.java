@@ -53,9 +53,21 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (valueMap.get(StrifeAttribute.REGENERATION) > 1) {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
         }
-        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.ARMOR)));
+        if (valueMap.get(StrifeAttribute.ARMOR) > 0.35) {
+            lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + "(" + DECIMAL_FORMAT
+                .format(500 / (500 + (Math.pow(((valueMap.get(StrifeAttribute.ARMOR) * 100) * (1 - valueMap
+                    .get(StrifeAttribute.ARMOR))), 1.7)))));
+        } else {
+            lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + "(" + DECIMAL_FORMAT
+                .format(1 - (valueMap.get(StrifeAttribute.ARMOR) * (1 + (0.71-valueMap
+                    .get(StrifeAttribute.ARMOR))))) + "%)");
+        }
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
-            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.EVASION)));
+            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
+                .get(StrifeAttribute.EVASION)) + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format( 1 - (100 / (100 + (Math
+                    .pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25))))) + "%)" );
         }
         if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
