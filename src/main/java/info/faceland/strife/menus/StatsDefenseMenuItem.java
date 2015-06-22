@@ -55,18 +55,18 @@ public class StatsDefenseMenuItem extends MenuItem {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
         }
         if (valueMap.get(StrifeAttribute.ARMOR) > 0.35) {
-            double highArmor = 500/(500+Math.pow(((valueMap.get(StrifeAttribute.ARMOR) * 100) * (1 - valueMap.get(StrifeAttribute.ARMOR))), 1.7));
+            double highArmor = 100 * (1-(500/(500+Math.pow(((valueMap.get(StrifeAttribute.ARMOR) * 100) * (1 - valueMap.get(StrifeAttribute.ARMOR))), 1.7))));
             lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(highArmor) + "%)");
+                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.DARK_GRAY + " (" + REDUCER_FORMAT.format(highArmor) + "%)");
         } else {
             double lowArmor = 100 * (valueMap.get(StrifeAttribute.ARMOR) * (1 + (0.71-valueMap.get(StrifeAttribute.ARMOR))));
             lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(lowArmor) + "%)");
+                .format(100 * valueMap.get(StrifeAttribute.ARMOR)) + ChatColor.DARK_GRAY + " (" + REDUCER_FORMAT.format(lowArmor) + "%)");
         }
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
-            double evasion = 100 * (100 / (100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25))));
+            double evasion = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25)))));
             lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
-                .get(StrifeAttribute.EVASION)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(evasion) + "%)" );
+                .get(StrifeAttribute.EVASION)) + ChatColor.DARK_GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)" );
         }
         if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
