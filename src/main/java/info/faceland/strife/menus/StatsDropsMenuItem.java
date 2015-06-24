@@ -53,7 +53,7 @@ public class StatsDropsMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.XP_GAIN)*100)+"%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" +DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ITEM_DISCOVERY)*100)+"%");
-        lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.DAMAGE_REFLECT)*100)+"%");
+        lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.GOLD_FIND)*100)+"%");
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
