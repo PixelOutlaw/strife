@@ -62,27 +62,28 @@ public class StatsRangedMenuItem extends MenuItem {
                 StrifeAttribute.SNARE_CHANCE)) + "%");
         }
         if (valueMap.get(StrifeAttribute.CRITICAL_RATE) > 0) {
-            lore.add(ChatColor.YELLOW + "Critical Rate: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.CRITICAL_RATE)*100) + "%");
-            lore.add(ChatColor.YELLOW + "Critical Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.CRITICAL_DAMAGE)*100) + "%");
+            lore.add(ChatColor.YELLOW + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
+                valueMap.get(StrifeAttribute.CRITICAL_RATE)*100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
+                valueMap.get(StrifeAttribute.CRITICAL_DAMAGE)*100) + "%)");
         }
         if (valueMap.get(StrifeAttribute.ARMOR_PENETRATION) > 0) {
             lore.add(ChatColor.YELLOW + "Armor Penetration: " + ChatColor.WHITE
                      + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
         }
         if (valueMap.get(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Ignite Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.IGNITE_CHANCE)*100) + "%");
-            lore.add(ChatColor.YELLOW + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                    StrifeAttribute.FIRE_DAMAGE)));
+            lore.add(ChatColor.YELLOW + "Fire/Ignite: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.FIRE_DAMAGE)) + " / " + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.IGNITE_CHANCE) * 100) + "%)");
         }
         if (valueMap.get(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Shock Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.SHOCK_CHANCE)*100) + "%");
-            lore.add(ChatColor.YELLOW + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                    StrifeAttribute.LIGHTNING_DAMAGE)));
+            lore.add(ChatColor.YELLOW + "Lightning/Shock: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.LIGHTNING_DAMAGE)) + " / " + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.SHOCK_CHANCE) * 100) + "%");
         }
         if (valueMap.get(StrifeAttribute.ICE_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Freeze Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.FREEZE_CHANCE)*100) + "%");
-            lore.add(ChatColor.YELLOW + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                    StrifeAttribute.ICE_DAMAGE)));
+            lore.add(ChatColor.YELLOW + "Ice/Freeze: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.ICE_DAMAGE)) + " / " + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.FREEZE_CHANCE) * 100) + "%");
         }
         if (valueMap.get(StrifeAttribute.LIFE_STEAL) > 0) {
             lore.add(
