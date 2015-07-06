@@ -1,5 +1,5 @@
-name: @NAME@
-version: @VERSION@
+name: Strife
+version: ${project.version}
 main: info.faceland.strife.StrifePlugin
 depend: [Facecore, Beast]
 softdepend: [Loot, Bullion]
