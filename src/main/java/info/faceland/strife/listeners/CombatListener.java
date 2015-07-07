@@ -247,7 +247,11 @@ public class CombatListener implements Listener {
 
         // LET THE DAMAGE CALCULATION COMMENCE
         if (melee) {
-            damage = meleeDamageA * attackSpeedMultA * meleeMult;
+            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+                damage = (meleeDamageA * 0.2) + ((meleeDamageA * 0.8) / (a.getLocation().distanceSquared(b.getLocation()) / 2));
+            } else {
+                damage = meleeDamageA * attackSpeedMultA * meleeMult;
+            }
             if (parried) {
                 a.damage(damage * 1.25 * pvpMult);
                 event.setCancelled(true);
@@ -267,9 +271,6 @@ public class CombatListener implements Listener {
             damageReducer *= (1 - armorPenA);
             if (blocking) {
                 blockReducer = (1 - blockB);
-            }
-            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-                damage += damage / (a.getLocation().distanceSquared(b.getLocation()) / 2);
             }
             if (reflectDamageB > 0) {
                 a.damage(damage * reflectDamageB * pvpMult);
