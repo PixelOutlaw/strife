@@ -278,7 +278,7 @@ public class CombatListener implements Listener {
             }
             if (fireDamageA > 0) {
                 if (random.nextDouble() < ((igniteChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
-                    b.setFireTicks((int) Math.round(fireDamageA * 20));
+                    b.setFireTicks(20 + (int) Math.round(fireDamageA * 20));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
@@ -322,7 +322,7 @@ public class CombatListener implements Listener {
             }
             if (fireDamageA > 0) {
                 if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
-                    b.setFireTicks((int) Math.round(fireDamageA * 20));
+                    b.setFireTicks(20 + (int) Math.round(fireDamageA * 20));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
