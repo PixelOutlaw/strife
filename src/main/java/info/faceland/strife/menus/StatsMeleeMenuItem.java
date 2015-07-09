@@ -83,19 +83,19 @@ public class StatsMeleeMenuItem extends MenuItem {
             lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((valueMap.get(StrifeAttribute.OVERCHARGE)+1) * 100)+"%");
         }
         if (valueMap.get(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            lore.add(ChatColor.RED + "Fire/Ignite: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                StrifeAttribute.FIRE_DAMAGE)) + " / " + DECIMAL_FORMAT.format(valueMap.get(
+            lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(valueMap.get(
                 StrifeAttribute.IGNITE_CHANCE) * 100) + "%)");
         }
         if (valueMap.get(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            lore.add(ChatColor.RED + "Lightning/Shock: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                StrifeAttribute.LIGHTNING_DAMAGE)) + " / " + DECIMAL_FORMAT.format(valueMap.get(
-                StrifeAttribute.SHOCK_CHANCE) * 100) + "%");
+            lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.SHOCK_CHANCE) * 100) + "%)");
         }
         if (valueMap.get(StrifeAttribute.ICE_DAMAGE) > 0) {
-            lore.add(ChatColor.RED + "Ice/Freeze: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
-                StrifeAttribute.ICE_DAMAGE)) + " / " + DECIMAL_FORMAT.format(valueMap.get(
-                StrifeAttribute.FREEZE_CHANCE) * 100) + "%");
+            lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(valueMap.get(
+                StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
         }
         if (valueMap.get(StrifeAttribute.LIFE_STEAL) > 0) {
             lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.LIFE_STEAL) * 100)
