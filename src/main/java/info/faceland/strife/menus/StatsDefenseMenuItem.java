@@ -74,6 +74,23 @@ public class StatsDefenseMenuItem extends MenuItem {
             lore.add(
                 ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.RESISTANCE)) + "%");
         }
+        if (valueMap.get(StrifeAttribute.PARRY) > 0) {
+            if (valueMap.get(StrifeAttribute.PARRY) < 0.85) {
+                lore.add(ChatColor.RED + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
+                    .format(valueMap.get(StrifeAttribute.PARRY) * 100) + "%");
+            } else {
+                lore.add(ChatColor.RED + "Parry Chance: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
+            }
+
+        }
+        if (valueMap.get(StrifeAttribute.BLOCK) != 0.1) {
+            if (valueMap.get(StrifeAttribute.BLOCK) < 0.85) {
+                lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
+                    .format(valueMap.get(StrifeAttribute.BLOCK) * 100) + "%");
+            } else {
+                lore.add(ChatColor.RED + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
+            }
+        }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;

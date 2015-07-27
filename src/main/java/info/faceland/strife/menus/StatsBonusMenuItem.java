@@ -58,9 +58,13 @@ public class StatsBonusMenuItem extends MenuItem {
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MOVEMENT_SPEED)));
-        if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
-            lore.add(ChatColor.DARK_AQUA + "Damage Reflect: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(valueMap.get(StrifeAttribute.DAMAGE_REFLECT) * 100) + "%");
+        if (valueMap.get(StrifeAttribute.DAMAGE_REFLECT) > 0) {
+            if (valueMap.get(StrifeAttribute.DAMAGE_REFLECT) < 0.3) {
+                lore.add(ChatColor.DARK_AQUA + "Damage Reflect: " + ChatColor.WHITE + DECIMAL_FORMAT
+                    .format(valueMap.get(StrifeAttribute.DAMAGE_REFLECT) * 100) + "%");
+            } else {
+                lore.add(ChatColor.DARK_AQUA + "Damage Reflect: " + ChatColor.WHITE + "30% " + ChatColor.GRAY + "(Max)");
+            }
         }
         if (valueMap.get(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
