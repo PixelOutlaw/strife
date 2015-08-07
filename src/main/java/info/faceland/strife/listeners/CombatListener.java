@@ -157,6 +157,7 @@ public class CombatListener implements Listener {
         double lightningDamageA = StrifeAttribute.LIGHTNING_DAMAGE.getBaseValue(), shockChanceA = StrifeAttribute.SHOCK_CHANCE.getBaseValue();
         double iceDamageA = StrifeAttribute.ICE_DAMAGE.getBaseValue(), freezeChanceA = StrifeAttribute.FREEZE_CHANCE.getBaseValue();
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
+        double armorA = StrifeAttribute.ARMOR.getBaseValue();
         double healthB = b.getMaxHealth();
         double resistB = 0;
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
@@ -200,6 +201,7 @@ public class CombatListener implements Listener {
                 (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + vals.get(StrifeAttribute.ATTACK_SPEED))));
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
+            armorA = vals.get(StrifeAttribute.ARMOR);
             overchargeA = vals.get(StrifeAttribute.OVERCHARGE);
             lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
             rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
@@ -253,7 +255,8 @@ public class CombatListener implements Listener {
                 damage = meleeDamageA * attackSpeedMultA * meleeMult;
             }
             if (parried) {
-                a.damage(damage * 1.25 * pvpMult);
+                double attackerArmor = 100 / (100 + (Math.pow((armorA * 100), 1.3)));
+                a.damage(damage * 1.25 * attackerArmor * pvpMult);
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
