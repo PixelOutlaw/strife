@@ -270,8 +270,13 @@ public class CombatListener implements Listener {
             }
             damage = damage + critbonus + overbonus;
             double blockReducer = 1;
-            double damageReducer = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
-            damageReducer *= (1 - armorPenA);
+            double armorCalc = 1;
+            if (armorB > 0) {
+                armorCalc = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
+                armorCalc *= (1 - armorPenA);
+            } else {
+                armorCalc = 1 + (armorPenA/2);
+            }
             if (blocking) {
                 blockReducer = (1 - blockB);
             }
@@ -298,7 +303,8 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorCalc * blockReducer) + trueDamage) *
+                    pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
@@ -311,8 +317,13 @@ public class CombatListener implements Listener {
             }
             damage = rangedDamageA * rangedMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double blockReducer = 1;
-            double damageReducer = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
-            damageReducer *= (1 - armorPenA);
+            double armorCalc = 1;
+            if (armorB > 0) {
+                armorCalc = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
+                armorCalc *= (1 - armorPenA);
+            } else {
+                armorCalc = 1 + (armorPenA/2);
+            }
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
                 b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
@@ -344,7 +355,7 @@ public class CombatListener implements Listener {
                 }
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE,
-                            ((damage * damageReducer * blockReducer) + trueDamage) * pvpMult);
+                            ((damage * armorCalc * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
