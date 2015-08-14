@@ -22,8 +22,8 @@
  */
 package com.comphenix.xp.extra;
 
-import com.tealcube.minecraft.bukkit.kern.shade.google.common.base.Objects;
-import com.tealcube.minecraft.bukkit.kern.shade.google.common.collect.Range;
+import com.tealcube.minecraft.bukkit.shade.google.common.base.Objects;
+import com.tealcube.minecraft.bukkit.shade.google.common.collect.Range;
 
 import java.util.HashSet;
 import java.util.Map;
