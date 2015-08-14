@@ -23,9 +23,9 @@
 package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.kern.apache.commons.lang3.math.NumberUtils;
-import com.tealcube.minecraft.bukkit.kern.shade.google.common.base.CharMatcher;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
+import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.beast.BeastData;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;

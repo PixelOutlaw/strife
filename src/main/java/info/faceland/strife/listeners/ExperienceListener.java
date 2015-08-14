@@ -24,9 +24,9 @@ package info.faceland.strife.listeners;
 
 import be.maximvdw.titlemotd.ui.Title;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.kern.fanciful.FancyMessage;
-import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.Expression;
-import com.tealcube.minecraft.bukkit.kern.objecthunter.exp4j.ExpressionBuilder;
+import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
+import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
+import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
