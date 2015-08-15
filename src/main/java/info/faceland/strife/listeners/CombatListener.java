@@ -256,7 +256,7 @@ public class CombatListener implements Listener {
             }
             if (parried) {
                 double attackerArmor = 100 / (100 + (Math.pow((armorA * 100), 1.3)));
-                a.damage(damage * 1.25 * attackerArmor * pvpMult);
+                a.damage(damage * 0.80 * attackerArmor * pvpMult);
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
@@ -272,10 +272,11 @@ public class CombatListener implements Listener {
             double blockReducer = 1;
             double armorCalc = 1;
             if (armorB > 0) {
-                armorCalc = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
-                armorCalc *= (1 - armorPenA);
+                double armorReduction = 1 - (100 / (100 + (Math.pow((armorB * 100), 1.3))));
+                armorReduction *= (1 - armorPenA);
+                armorCalc = 1 - armorReduction;
             } else {
-                armorCalc = 1 + (armorPenA/2);
+                armorCalc = 1 - (armorPenA/2);
             }
             if (blocking) {
                 blockReducer = (1 - blockB);
@@ -319,10 +320,11 @@ public class CombatListener implements Listener {
             double blockReducer = 1;
             double armorCalc = 1;
             if (armorB > 0) {
-                armorCalc = 100 / (100 + (Math.pow((armorB * 100), 1.3)));
-                armorCalc *= (1 - armorPenA);
+                double armorReduction = 1 - (100 / (100 + (Math.pow((armorB * 100), 1.3))));
+                armorReduction *= (1 - armorPenA);
+                armorCalc = 1 - armorReduction;
             } else {
-                armorCalc = 1 + (armorPenA/2);
+                armorCalc = 1 - (armorPenA/2);
             }
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
