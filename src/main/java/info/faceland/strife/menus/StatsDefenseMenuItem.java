@@ -79,7 +79,7 @@ public class StatsDefenseMenuItem extends MenuItem {
                 lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
                     .format(valueMap.get(StrifeAttribute.PARRY) * 100) + "%");
             } else {
-                lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
+                lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + "75% " + ChatColor.GRAY + "(Max)");
             }
 
         }

@@ -32,7 +32,7 @@ public enum StrifeAttribute {
     ARMOR("Armor", ChatColor.BLUE, "Damage reduction from normal attacks.", 0, true),
     RESISTANCE("Resistance", ChatColor.BLUE, "[PVP ONLY] Reduces the probability of status effects.", 0, true),
     BLOCK("Block", ChatColor.BLUE, "Percent by which incoming damage is reduced when blocking.", 0.1, true, 0.85),
-    PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect damage when blocking.", 0, true, 0.85),
+    PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect damage when blocking.", 0, true, 0.75),
     EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true),
     DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back at your attacker.", 0, true, 0.3),
     MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Player's movement speed, base is 100, 200 is double.", 100, false),
