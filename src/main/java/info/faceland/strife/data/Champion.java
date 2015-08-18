@@ -1,26 +1,18 @@
 /**
- * The MIT License
- * Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * The MIT License Copyright (c) 2015 Teal Cube Games <p> Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions: <p> The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software. <p> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+ * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package info.faceland.strife.data;
+
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -86,41 +78,55 @@ public class Champion {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.get(attr);
                 attributeDoubleMap
-                    .put(attr, attr.getCap() > 0D ? Math
-                        .min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
-                                                  : val + entry.getKey().getAttribute(attr) * entry.getValue());
+                        .put(attr, attr.getCap() > 0D ? Math
+                                .min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
+                                : val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
         if (getPlayer().getEquipment() == null) {
             return attributeDoubleMap;
         }
+        boolean spam = false;
         for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
+                continue;
+            }
+            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
+                spam = true;
                 continue;
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.get(attr);
                 attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
-                    .min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr))
-                                                                : val + AttributeHandler.getValue(itemStack, attr));
+                        .min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr))
+                        : val + AttributeHandler.getValue(itemStack, attr));
             }
         }
         if (getPlayer().getEquipment().getItemInHand() != null
-            && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
+                && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
             ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
-                    || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
-                                                                                                 StrifeAttribute.MOVEMENT_SPEED
-                    || attr == StrifeAttribute.XP_GAIN) {
-                    continue;
+            if (AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
+                for (StrifeAttribute attr : StrifeAttribute.values()) {
+                    if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
+                            || attr == StrifeAttribute.EVASION
+                            || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                            StrifeAttribute.MOVEMENT_SPEED
+                            || attr == StrifeAttribute.XP_GAIN) {
+                        continue;
+                    }
+                    double val = attributeDoubleMap.get(attr);
+                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
+                            .min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap())
+                            : val + AttributeHandler.getValue(itemStack, attr));
                 }
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
-                    .min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap())
-                                                                : val + AttributeHandler.getValue(itemStack, attr));
+            } else {
+                spam = true;
             }
+        }
+        if (spam) {
+            MessageUtils.sendMessage(getPlayer(),
+                    "<red>You don't meet the level requirement for one or more pieces of equipment! You will not " +
+                            "receive stats from those items!");
         }
         return attributeDoubleMap;
     }

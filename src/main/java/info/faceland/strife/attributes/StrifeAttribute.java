@@ -55,6 +55,7 @@ public enum StrifeAttribute {
     XP_GAIN("Experience Gain", ChatColor.GREEN, "Bonus xp gained", 0D, true),
     ITEM_DISCOVERY("Item Discovery", ChatColor.GREEN, "Bonus drop rate", 0D, true),
     GOLD_FIND("Gold Find", ChatColor.GREEN, "Bonus Bits dropped", 0D, true),
+    LEVEL_REQUIREMENT("Level Requirement", ChatColor.WHITE, "Required level to use an item", 0, false),
     DOGE("Doge Chance", ChatColor.AQUA, "wow", 0D, true, 100D);
 
     private final String name;

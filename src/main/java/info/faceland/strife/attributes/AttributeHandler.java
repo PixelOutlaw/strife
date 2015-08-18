@@ -93,4 +93,12 @@ public class AttributeHandler {
         player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
     }
 
+    public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {
+        return meetsLevelRequirement(player, new HiltItemStack(itemStack));
+    }
+
+    public static boolean meetsLevelRequirement(Player player, HiltItemStack hiltItemStack) {
+        return !(player == null || hiltItemStack == null) && player.getLevel() >= getValue(hiltItemStack, StrifeAttribute.LEVEL_REQUIREMENT);
+    }
+
 }
