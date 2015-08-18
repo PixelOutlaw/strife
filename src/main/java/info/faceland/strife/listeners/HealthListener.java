@@ -22,6 +22,8 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -119,8 +121,13 @@ public class HealthListener implements Listener {
                 attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
+        boolean spam = false;
         for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
+                continue;
+            }
+            if (!AttributeHandler.meetsLevelRequirement(player, itemStack)) {
+                spam = true;
                 continue;
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
@@ -128,20 +135,31 @@ public class HealthListener implements Listener {
                 attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
             }
         }
-        if (champion.getPlayer().getInventory().getItem(event.getNewSlot()) != null
-            && champion.getPlayer().getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
-            ItemStack itemStack = champion.getPlayer().getInventory().getItem(event.getNewSlot());
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
-                    || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
-                                                                                                 StrifeAttribute.MOVEMENT_SPEED
-                    || attr == StrifeAttribute.XP_GAIN) {
-                    continue;
+        if (player.getInventory().getItem(event.getNewSlot()) != null
+            && player.getInventory().getItem(event.getNewSlot()).getType() != Material.AIR) {
+            ItemStack itemStack = player.getInventory().getItem(event.getNewSlot());
+            if (AttributeHandler.meetsLevelRequirement(player, itemStack)) {
+                for (StrifeAttribute attr : StrifeAttribute.values()) {
+                    if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
+                            || attr == StrifeAttribute.EVASION
+                            || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
+                            StrifeAttribute.MOVEMENT_SPEED
+                            || attr == StrifeAttribute.XP_GAIN) {
+                        continue;
+                    }
+                    double val = attributeDoubleMap.get(attr);
+                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
+                            .min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap())
+                            : val + AttributeHandler.getValue(itemStack, attr));
                 }
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
+            } else {
+                spam = true;
             }
+        }
+        if (spam) {
+            MessageUtils.sendMessage(player,
+                    "<red>You don't meet the level requirement for one or more pieces of equipment! You will not " +
+                            "receive stats from those items!");
         }
         AttributeHandler.updateHealth(player, attributeDoubleMap);
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
