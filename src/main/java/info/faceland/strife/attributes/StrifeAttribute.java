@@ -27,7 +27,7 @@ import org.bukkit.ChatColor;
 public enum StrifeAttribute {
 
     // modify any attributes here
-    HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 20, false),
+    HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 10, false),
     REGENERATION("Regeneration", ChatColor.BLUE, "How much health you recover per natural regeneration tick.", 1, false),
     ARMOR("Armor", ChatColor.BLUE, "Damage reduction from normal attacks.", 0, true),
     RESISTANCE("Resistance", ChatColor.BLUE, "[PVP ONLY] Reduces the probability of status effects.", 0, true),
@@ -43,7 +43,7 @@ public enum StrifeAttribute {
     OVERCHARGE("Overcharge", ChatColor.YELLOW, "Bonus damage dealt when your attacks are fully recharged", 0.1, true),
     ARMOR_PENETRATION("Armor Penetration", ChatColor.YELLOW, "Percentage of enemy armor that is ignored.", 0, true),
     ACCURACY("Accuracy", ChatColor.YELLOW, "Percent that enemy's evasion is reduced", 0, true),
-    CRITICAL_RATE("Critical Rate", ChatColor.YELLOW, "Chance of landing a critical strike, dealing bonus damage.", 0, true),
+    CRITICAL_RATE("Critical Rate", ChatColor.YELLOW, "Chance of landing a critical strike, dealing bonus damage.", 0.05, true),
     CRITICAL_DAMAGE("Critical Damage", ChatColor.YELLOW, "Bonus Damage on crit", 1.3D, true),
     FIRE_DAMAGE("Fire Damage", ChatColor.YELLOW, "On Ignite: Burns target for X fire ticks.", 0, false),
     LIGHTNING_DAMAGE("Lightning Damage", ChatColor.YELLOW, "On Shock: Deals X bonus true damage.", 0, false),
