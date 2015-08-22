@@ -27,7 +27,7 @@ import org.bukkit.ChatColor;
 public enum StrifeAttribute {
 
     // modify any attributes here
-    HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 10, false),
+    HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 20, false),
     REGENERATION("Regeneration", ChatColor.BLUE, "How much health you recover per natural regeneration tick.", 1, false),
     ARMOR("Armor", ChatColor.BLUE, "Damage reduction from normal attacks.", 0, true),
     RESISTANCE("Resistance", ChatColor.BLUE, "[PVP ONLY] Reduces the probability of status effects.", 0, true),
