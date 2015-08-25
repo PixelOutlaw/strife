@@ -129,13 +129,13 @@ public class CombatListener implements Listener {
         if (bPlayer) {
             double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues()
                 .get(StrifeAttribute.EVASION);
-            double accuracy = 0;
-            chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.25))));
+            double accuracy;
             if (aPlayer) {
                 accuracy = plugin.getChampionManager().getChampion(a.getUniqueId()).getAttributeValues()
-                    .get(StrifeAttribute.ACCURACY);
+                        .get(StrifeAttribute.ACCURACY);
                 chance = chance * (1 - accuracy);
             }
+            chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.25))));
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
                 b.getWorld().playSound(a.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
@@ -270,13 +270,11 @@ public class CombatListener implements Listener {
             }
             damage = damage + critbonus + overbonus;
             double blockReducer = 1;
-            double armorCalc = 1;
+            double armorReduction;
             if (armorB > 0) {
-                double armorReduction = 1 - (100 / (100 + (Math.pow((armorB * 100), 1.3))));
-                armorReduction *= (1 - armorPenA);
-                armorCalc = 1 - armorReduction;
+                armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
             } else {
-                armorCalc = 1 - (armorPenA/2);
+                armorReduction = 1 + (armorPenA / 2);
             }
             if (blocking) {
                 blockReducer = (1 - blockB);
@@ -304,7 +302,7 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorCalc * blockReducer) + trueDamage) *
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) + trueDamage) *
                     pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
@@ -318,13 +316,11 @@ public class CombatListener implements Listener {
             }
             damage = rangedDamageA * rangedMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
             double blockReducer = 1;
-            double armorCalc = 1;
+            double armorReduction;
             if (armorB > 0) {
-                double armorReduction = 1 - (100 / (100 + (Math.pow((armorB * 100), 1.3))));
-                armorReduction *= (1 - armorPenA);
-                armorCalc = 1 - armorReduction;
+                armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
             } else {
-                armorCalc = 1 - (armorPenA/2);
+                armorReduction = 1 + (armorPenA / 2);
             }
             if (random.nextDouble() < criticalRateA) {
                 damage = damage * criticalDamageA;
@@ -357,7 +353,7 @@ public class CombatListener implements Listener {
                 }
             }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE,
-                            ((damage * armorCalc * blockReducer) + trueDamage) * pvpMult);
+                            ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
