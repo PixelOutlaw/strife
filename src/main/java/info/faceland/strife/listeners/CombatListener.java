@@ -272,7 +272,11 @@ public class CombatListener implements Listener {
             double blockReducer = 1;
             double armorReduction;
             if (armorB > 0) {
-                armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
+                if (armorPenA < 1) {
+                    armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
+                } else {
+                    armorReduction = 1 + ((armorPenA - 1) / 2);
+                }
             } else {
                 armorReduction = 1 + (armorPenA / 2);
             }
@@ -318,7 +322,11 @@ public class CombatListener implements Listener {
             double blockReducer = 1;
             double armorReduction;
             if (armorB > 0) {
-                armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
+                if (armorPenA < 1) {
+                    armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
+                } else {
+                    armorReduction = 1 + ((armorPenA - 1) / 2);
+                }
             } else {
                 armorReduction = 1 + (armorPenA / 2);
             }
