@@ -250,7 +250,7 @@ public class CombatListener implements Listener {
         // LET THE DAMAGE CALCULATION COMMENCE
         if (melee) {
             if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-                damage = (meleeDamageA * 0.2) + ((meleeDamageA * 0.8) / (a.getLocation().distanceSquared(b.getLocation()) / 2));
+                damage = meleeDamageA * Math.max(0.25, a.getLocation().distanceSquared(b.getLocation()) / 5);
             } else {
                 damage = meleeDamageA * attackSpeedMultA * meleeMult;
             }
