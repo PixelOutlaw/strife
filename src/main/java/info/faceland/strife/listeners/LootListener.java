@@ -49,8 +49,8 @@ public class LootListener implements Listener {
     public void onLootDetermineChance(LootDetermineChanceEvent event) {
         Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
         Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        double chance = event.getChance() + event.getChance() * attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
-        event.setChance(chance);
+        double dropBonus = attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
+        event.setChance(dropBonus);
     }
 
 }
