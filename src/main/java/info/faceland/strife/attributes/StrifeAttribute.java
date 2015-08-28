@@ -53,7 +53,7 @@ public enum StrifeAttribute {
     FREEZE_CHANCE("Freeze Chance", ChatColor.YELLOW, "Chance to freeze target on hit.", 0.15, true),
     LIFE_STEAL("Life Steal", ChatColor.YELLOW, "Percentage of damage dealt recovered as health.", 0, true),
     XP_GAIN("Experience Gain", ChatColor.GREEN, "Bonus xp gained", 0D, true),
-    ITEM_DISCOVERY("Item Discovery", ChatColor.GREEN, "Bonus drop rate", 0D, true),
+    ITEM_DISCOVERY("Item Discovery", ChatColor.GREEN, "Bonus drop rate", 1.0D, true),
     GOLD_FIND("Gold Find", ChatColor.GREEN, "Bonus Bits dropped", 0D, true),
     LEVEL_REQUIREMENT("Level Requirement", ChatColor.WHITE, "Required level to use an item", 0, false),
     DOGE("Doge Chance", ChatColor.AQUA, "wow", 0D, true, 100D);
