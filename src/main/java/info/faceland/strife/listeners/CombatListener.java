@@ -220,10 +220,12 @@ public class CombatListener implements Listener {
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
             if (a.hasMetadata("DAMAGE")) {
-                meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(1).asDouble();
+                Bukkit.getLogger().info("MONSTER HAS METADAMAE");
+                meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
                 Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
                 rangedDamageA = meleeDamageA;
             } else {
+                Bukkit.getLogger().info("MONSTER METADATA NOT FOUND, SETTING...");
                 if (a.getType() != null) {
                     BeastData data = plugin.getBeastPlugin().getData(a.getType());
                     String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
@@ -232,9 +234,8 @@ public class CombatListener implements Listener {
                         meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
                         rangedDamageA = meleeDamageA;
                         a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, meleeDamageA));
-                        event.getEntity().getMetadata("DAMAGE").add(1, new FixedMetadataValue(plugin, meleeDamageA));
-                        Bukkit.getLogger().info("MONSTER METADATA NOT FOUND, SETTING...");
                         Bukkit.getLogger().info("DEALT MONSTER METADAMAGE SET TO: " + meleeDamageA);
+
                     }
                 }
             }
