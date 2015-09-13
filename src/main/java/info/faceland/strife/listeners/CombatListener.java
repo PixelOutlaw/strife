@@ -31,6 +31,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -221,13 +222,9 @@ public class CombatListener implements Listener {
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
             if (a.getType() != null) {
-                BeastData data = plugin.getBeastPlugin().getData(a.getType());
-                String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
-                if (data != null && a.getCustomName() != null) {
-                    int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                    meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
-                    rangedDamageA = meleeDamageA;
-                }
+                meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
+                Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
+                rangedDamageA = meleeDamageA;
             }
         }
         if (bPlayer) {
