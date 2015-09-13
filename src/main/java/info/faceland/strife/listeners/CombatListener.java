@@ -221,7 +221,7 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            if (a.getType() != null) {
+            if (a.hasMetadata("DAMAGE")) {
                 meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
                 Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
                 rangedDamageA = meleeDamageA;
