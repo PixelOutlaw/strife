@@ -34,6 +34,7 @@ import info.faceland.strife.data.Champion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -311,8 +312,10 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            if (!(b instanceof ArmorStand)) {
+                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+                event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) + trueDamage) *
                     pvpMult);
             if (a instanceof Player) {
@@ -367,8 +370,10 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            if (!(b instanceof ArmorStand)) {
+                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+                event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            }
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) +
                     trueDamage) * pvpMult);
             if (a instanceof Player) {
