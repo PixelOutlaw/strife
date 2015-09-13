@@ -97,9 +97,6 @@ public class CombatListener implements Listener {
         if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
             return;
         }
-        if (event.getEntity().hasMetadata("NPC")) {
-            return;
-        }
         // LET THE DATA GATHERING COMMENCE
         boolean melee = true;
         boolean aPlayer = false;
@@ -222,19 +219,22 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            if (!a.hasMetadata("DAMAGE")) {
-                BeastData data = plugin.getBeastPlugin().getData(a.getType());
-                String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
-                if (data != null && a.getCustomName() != null) {
-                    int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                    event.getEntity().setMetadata("DAMAGE", new FixedMetadataValue(plugin, data.getDamageExpression().setVariable
-                            ("LEVEL", level).evaluate()));
-                    meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
-                    rangedDamageA = meleeDamageA;
-                } else {
-                    meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
-                    Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
-                    rangedDamageA = meleeDamageA;
+            if (a.hasMetadata("DAMAGE")) {
+                meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
+                Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
+                rangedDamageA = meleeDamageA;
+            } else {
+                if (a.getType() != null) {
+                    BeastData data = plugin.getBeastPlugin().getData(a.getType());
+                    String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
+                    if (data != null && a.getCustomName() != null) {
+                        int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
+                        meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
+                        rangedDamageA = meleeDamageA;
+                        a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, meleeDamageA));
+                        Bukkit.getLogger().info("MONSTER METADATA NOT FOUND, SETTING...");
+                        Bukkit.getLogger().info("DEALT MONSTER METADAMAGE SET TO: " + meleeDamageA);
+                    }
                 }
             }
         }
@@ -314,6 +314,8 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) + trueDamage) *
                     pvpMult);
             if (a instanceof Player) {
@@ -368,8 +370,10 @@ public class CombatListener implements Listener {
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE,
-                            ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult);
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) +
+                    trueDamage) * pvpMult);
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
