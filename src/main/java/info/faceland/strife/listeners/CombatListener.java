@@ -44,6 +44,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -221,10 +222,20 @@ public class CombatListener implements Listener {
             }
             plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
         } else {
-            if (a.hasMetadata("DAMAGE")) {
-                meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
-                Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
-                rangedDamageA = meleeDamageA;
+            if (!a.hasMetadata("DAMAGE")) {
+                BeastData data = plugin.getBeastPlugin().getData(a.getType());
+                String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
+                if (data != null && a.getCustomName() != null) {
+                    int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
+                    event.getEntity().setMetadata("DAMAGE", new FixedMetadataValue(plugin, data.getDamageExpression().setVariable
+                            ("LEVEL", level).evaluate()));
+                    meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
+                    rangedDamageA = meleeDamageA;
+                } else {
+                    meleeDamageA = event.getEntity().getMetadata("DAMAGE").get(0).asDouble();
+                    Bukkit.getLogger().info("DEALT MONSTER METADAMAGE: " + meleeDamageA);
+                    rangedDamageA = meleeDamageA;
+                }
             }
         }
         if (bPlayer) {
