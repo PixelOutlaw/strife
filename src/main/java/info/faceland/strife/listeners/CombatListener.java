@@ -123,6 +123,9 @@ public class CombatListener implements Listener {
         }
 
         if (b instanceof Player) {
+            if (!((Player) b).isOnline()) {
+                return;
+            }
             bPlayer = true;
         }
 
@@ -135,7 +138,7 @@ public class CombatListener implements Listener {
                         .get(StrifeAttribute.ACCURACY);
                 chance = chance * (1 - accuracy);
             }
-            chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.25))));
+            chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.2))));
             if (random.nextDouble() < chance) {
                 event.setCancelled(true);
                 b.getWorld().playSound(a.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
@@ -261,7 +264,7 @@ public class CombatListener implements Listener {
                 damage = meleeDamageA * attackSpeedMultA * meleeMult;
             }
             if (parried) {
-                double attackerArmor = 100 / (100 + (Math.pow((armorA * 100), 1.3)));
+                double attackerArmor = 100 / (100 + (Math.pow((armorA * 100), 1.36)));
                 a.damage(damage * 0.80 * attackerArmor * pvpMult);
                 event.setCancelled(true);
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
@@ -333,7 +336,7 @@ public class CombatListener implements Listener {
             double armorReduction;
             if (armorB > 0) {
                 if (armorPenA < 1) {
-                    armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
+                    armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.36)));
                 } else {
                     armorReduction = 1 + ((armorPenA - 1) / 5);
                 }
