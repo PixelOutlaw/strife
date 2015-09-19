@@ -74,6 +74,9 @@ public class CombatListener implements Listener {
             return;
         }
         Player p = (Player) event.getEntity();
+        if (p.hasMetadata("NPC")) {
+            return;
+        }
         Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
         Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
         double chance = vals.get(StrifeAttribute.DOGE);
@@ -96,6 +99,9 @@ public class CombatListener implements Listener {
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         LivingEntity a;
         if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
+            return;
+        }
+        if (event.getEntity().hasMetadata("NPC")) {
             return;
         }
         // LET THE DATA GATHERING COMMENCE
@@ -123,9 +129,6 @@ public class CombatListener implements Listener {
         }
 
         if (b instanceof Player) {
-            if (!((Player) b).isOnline()) {
-                return;
-            }
             bPlayer = true;
         }
 
