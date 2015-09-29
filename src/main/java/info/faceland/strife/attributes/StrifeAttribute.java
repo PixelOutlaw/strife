@@ -53,6 +53,7 @@ public enum StrifeAttribute {
     XP_GAIN("Experience Gain", 0D, true),
     ITEM_DISCOVERY("Item Discovery", 0D, true),
     GOLD_FIND("Gold Find", 0D, true),
+    HEAD_DROP("Head Drop", 0D, true),
     LEVEL_REQUIREMENT("Level Requirement", 0, false),
     DOGE("Doge Chance", 0D, true, 100D);
 
