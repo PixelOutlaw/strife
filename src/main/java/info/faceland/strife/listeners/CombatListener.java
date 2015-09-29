@@ -33,18 +33,25 @@ import info.faceland.strife.data.Champion;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.SkullType;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Skeleton;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -93,6 +100,44 @@ public class CombatListener implements Listener {
                 .setVelocity(
                     event.getEntity().getVelocity().add(((Entity) event.getEntity().getShooter()).getVelocity()));
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDeath(EntityDeathEvent event) {
+        if (event.getEntity() == null || event.getEntity().getKiller() == null) {
+            return;
+        }
+        double chance = plugin.getChampionManager().getChampion(event.getEntity().getKiller().getUniqueId())
+                .getAttributeValues().get(StrifeAttribute.HEAD_DROP);
+        if (chance == 0) {
+            return;
+        }
+        if (random.nextDouble() < chance) {
+            LivingEntity e = event.getEntity();
+            if (e.getType() == EntityType.SKELETON) {
+                if (((Skeleton)e).getSkeletonType() == Skeleton.SkeletonType.NORMAL) {
+                    ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short)0);
+                    e.getWorld().dropItemNaturally(e.getLocation(), skull);
+                }
+            }
+            else if ((e.getType() == EntityType.ZOMBIE)) {
+                ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short)2);
+                e.getWorld().dropItemNaturally(e.getLocation(), skull);
+            }
+            else if ((e.getType() == EntityType.CREEPER)) {
+                ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short)4);
+                e.getWorld().dropItemNaturally(e.getLocation(), skull);
+            }
+            else if ((e.getType() == EntityType.PLAYER)) {
+                ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) SkullType.PLAYER.ordinal());
+                SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
+                skullMeta.setOwner(event.getEntity().getKiller().getName());
+                skullMeta.setDisplayName(ChatColor.RED + "Head of " + event.getEntity().getKiller().getName());
+                skull.setItemMeta(skullMeta);
+                e.getWorld().dropItemNaturally(e.getLocation(), skull);
+            }
+        }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
