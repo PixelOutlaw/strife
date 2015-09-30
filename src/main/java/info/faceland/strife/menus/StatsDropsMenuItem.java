@@ -64,7 +64,7 @@ public class StatsDropsMenuItem extends MenuItem {
         lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
                 .format(valueMap.get(StrifeAttribute.GOLD_FIND) * 100) + "%");
         if (valueMap.get(StrifeAttribute.HEAD_DROP) > 0) {
-            lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            lore.add(ChatColor.YELLOW + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
                     .format(valueMap.get(StrifeAttribute.HEAD_DROP) * 100) + "%");
         }
         itemMeta.setLore(lore);
