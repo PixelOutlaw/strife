@@ -345,19 +345,19 @@ public class CombatListener implements Listener {
                 a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
             }
             if (fireDamageA > 0) {
-                if (random.nextDouble() < ((igniteChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                if (random.nextDouble() < ((igniteChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
                     b.setFireTicks(20 + (int) Math.round(fireDamageA * 20));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                 }
             }
             if (lightningDamageA > 0) {
-                if (random.nextDouble() < ((shockChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                if (random.nextDouble() < ((shockChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
                     trueDamage = lightningDamageA;
                     b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
                 }
             }
             if (iceDamageA > 0) {
-                if (random.nextDouble() < ((freezeChanceA * attackSpeedMultA * 1.2) * (1 - resistB))) {
+                if (random.nextDouble() < ((freezeChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
                     damage = damage + iceDamageA + (healthB / 200);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int)iceDamageA*3, 1));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
