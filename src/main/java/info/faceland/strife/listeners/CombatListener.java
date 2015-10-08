@@ -201,7 +201,7 @@ public class CombatListener implements Listener {
         double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
         double armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
         double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA;
-        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), snarechanceA = StrifeAttribute.CRITICAL_RATE.getBaseValue();
+        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), snarechanceA = StrifeAttribute.SNARE_CHANCE.getBaseValue();
         double criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue(), criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
         double attackSpeedMultA = 1D;
         double fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue(), igniteChanceA = StrifeAttribute.IGNITE_CHANCE.getBaseValue();
