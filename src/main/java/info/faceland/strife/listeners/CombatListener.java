@@ -368,16 +368,13 @@ public class CombatListener implements Listener {
                 event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             }
             double finalDamage = ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult;
-            if (healthB - finalDamage < 1) {
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+            if (healthB - finalDamage <= 0) {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5, 3));
                     MessageUtils.sendMessage(b, "&4&oYou refused to die.");
-                } else {
-                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
                 }
-            } else {
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
             }
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
@@ -436,16 +433,13 @@ public class CombatListener implements Listener {
                 event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             }
             double finalDamage = ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult;
-            if (healthB - finalDamage < 1) {
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+            if (healthB - finalDamage <= 0) {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5, 3));
                     MessageUtils.sendMessage(b, "&4&oYou refused to die.");
-                } else {
-                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
                 }
-            } else {
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
             }
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
