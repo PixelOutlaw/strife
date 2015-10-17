@@ -31,7 +31,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
@@ -208,8 +207,8 @@ public class CombatListener implements Listener {
         double lightningDamageA = StrifeAttribute.LIGHTNING_DAMAGE.getBaseValue(), shockChanceA = StrifeAttribute.SHOCK_CHANCE.getBaseValue();
         double iceDamageA = StrifeAttribute.ICE_DAMAGE.getBaseValue(), freezeChanceA = StrifeAttribute.FREEZE_CHANCE.getBaseValue();
         double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
-        double armorA = StrifeAttribute.ARMOR.getBaseValue();
-        double healthB = b.getMaxHealth();
+        double armorA = StrifeAttribute.ARMOR.getBaseValue(), resolveB = StrifeAttribute.RESOLVE.getBaseValue();
+        double maxHealthB = b.getMaxHealth(), healthB = b.getHealth();
         double resistB = 0;
         double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
         boolean blocking = false;
@@ -293,6 +292,7 @@ public class CombatListener implements Listener {
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             armorB = vals.get(StrifeAttribute.ARMOR);
             resistB = vals.get(StrifeAttribute.RESISTANCE);
+            resolveB = vals.get(StrifeAttribute.RESOLVE);
             reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
             parryB = vals.get(StrifeAttribute.PARRY);
             blockB = vals.get(StrifeAttribute.BLOCK);
@@ -358,7 +358,7 @@ public class CombatListener implements Listener {
             }
             if (iceDamageA > 0) {
                 if (random.nextDouble() < ((freezeChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
-                    damage = damage + iceDamageA + (healthB / 200);
+                    damage = damage + iceDamageA + (maxHealthB / 200);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int)iceDamageA*3, 1));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
@@ -367,8 +367,18 @@ public class CombatListener implements Listener {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
                 event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) + trueDamage) *
-                    pvpMult);
+            double finalDamage = ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult;
+            if (healthB - finalDamage < 1) {
+                if (random.nextDouble() < resolveB) {
+                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
+                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5, 3));
+                    MessageUtils.sendMessage(b, "&4&oYou refused to die.");
+                } else {
+                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+                }
+            } else {
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+            }
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
@@ -416,7 +426,7 @@ public class CombatListener implements Listener {
             }
             if (iceDamageA > 0) {
                 if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
-                    damage = damage + iceDamageA + (healthB / 200);
+                    damage = damage + iceDamageA + (maxHealthB / 200);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int)iceDamageA*3, 1));
                     b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
                 }
@@ -425,8 +435,18 @@ public class CombatListener implements Listener {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
                 event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             }
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, ((damage * armorReduction * blockReducer) +
-                    trueDamage) * pvpMult);
+            double finalDamage = ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult;
+            if (healthB - finalDamage < 1) {
+                if (random.nextDouble() < resolveB) {
+                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
+                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5, 3));
+                    MessageUtils.sendMessage(b, "&4&oYou refused to die.");
+                } else {
+                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+                }
+            } else {
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+            }
             if (a instanceof Player) {
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
