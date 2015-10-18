@@ -138,7 +138,28 @@ public class CombatListener implements Listener {
         }
 
     }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onDotDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+        if (event.getCause() == EntityDamageEvent.DamageCause.WITHER ||
+                event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK ||
+                event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
+            Player p = (Player) event.getEntity();
+            if (p.getHealth() - event.getDamage() <= 0) {
+                Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+                Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+                double resolve = vals.get(StrifeAttribute.RESOLVE);
+                if (random.nextDouble() < resolve) {
+                    event.setDamage(0);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
+                    MessageUtils.sendMessage(p, "&4&oYou refused to die.");
+                }
+            }
+        }
 
+    }
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         LivingEntity a;
@@ -372,7 +393,7 @@ public class CombatListener implements Listener {
             if (healthB - finalDamage <= 0) {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
-                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5, 3));
+                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
                     MessageUtils.sendMessage(b, "&4&oYou refused to die.");
                 }
             }
@@ -437,7 +458,7 @@ public class CombatListener implements Listener {
             if (healthB - finalDamage <= 0) {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
-                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5, 3));
+                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
                     MessageUtils.sendMessage(b, "&4&oYou refused to die.");
                 }
             }
