@@ -29,7 +29,7 @@ public enum StrifeAttribute {
     REGENERATION("Regeneration", 1, false),
     ARMOR("Armor", 0, true),
     RESISTANCE("Resistance", 0, true),
-    RESOLVE("Resolve", 0, true, 0.65),
+    RESOLVE("Resolve", 0, true, 0.85),
     BLOCK("Block", 0.1, true, 0.85),
     ABSORB_CHANCE("Absorb Chance", 0.0, true, 0.35),
     PARRY("Parry Chance", 0, true, 0.75),

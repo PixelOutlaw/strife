@@ -75,11 +75,11 @@ public class StatsDefenseMenuItem extends MenuItem {
                 ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.RESISTANCE)) + "%");
         }
         if (valueMap.get(StrifeAttribute.RESOLVE) > 0) {
-            if (valueMap.get(StrifeAttribute.RESOLVE) < 0.65) {
+            if (valueMap.get(StrifeAttribute.RESOLVE) < 0.85) {
                 lore.add(ChatColor.BLUE + "Resolve: " + ChatColor.WHITE + DECIMAL_FORMAT
                         .format(valueMap.get(StrifeAttribute.RESOLVE) * 100) + "%");
             } else {
-                lore.add(ChatColor.BLUE + "Resolve: " + ChatColor.WHITE + "65% " + ChatColor.GRAY + "(Max)");
+                lore.add(ChatColor.BLUE + "Resolve: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
             }
         }
         if (valueMap.get(StrifeAttribute.PARRY) > 0) {
