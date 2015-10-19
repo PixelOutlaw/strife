@@ -95,9 +95,8 @@ public class CombatListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         if (event.getEntity().getShooter() instanceof Entity) {
-            event.getEntity()
-                .setVelocity(
-                    event.getEntity().getVelocity().add(((Entity) event.getEntity().getShooter()).getVelocity()));
+            event.getEntity().setVelocity(event.getEntity().getVelocity().add(((Entity) event.getEntity()
+                    .getShooter()).getVelocity()));
         }
     }
 
@@ -143,23 +142,47 @@ public class CombatListener implements Listener {
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
-        if (event.getCause() == EntityDamageEvent.DamageCause.WITHER ||
-                event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK ||
-                event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
+        if (((Player) event.getEntity()).getHealth() - event.getDamage() > 0) {
+            return;
+        }
+        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
+            return;
+        }
+        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
             Player p = (Player) event.getEntity();
-            if (p.getHealth() - event.getDamage() <= 0) {
-                Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-                Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-                double resolve = vals.get(StrifeAttribute.RESOLVE);
-                if (random.nextDouble() < resolve) {
-                    event.setDamage(0);
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(p, "&4&oYou refused to die.");
-                }
+            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+            double resolve = vals.get(StrifeAttribute.RESOLVE);
+            if (random.nextDouble() < resolve) {
+                event.setCancelled(true);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
+                p.removePotionEffect(PotionEffectType.WITHER);
+                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
+            }
+        } else if (event.getCause() == EntityDamageEvent.DamageCause.WITHER) {
+            Player p = (Player) event.getEntity();
+            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+            double resolve = vals.get(StrifeAttribute.RESOLVE);
+            if (random.nextDouble() < resolve) {
+                event.setCancelled(true);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
+                p.setFireTicks(0);
+                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
+            }
+        } else if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
+            Player p = (Player) event.getEntity();
+            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+            double resolve = vals.get(StrifeAttribute.RESOLVE);
+            if (random.nextDouble() < resolve) {
+                event.setCancelled(true);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
+                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
             }
         }
-
     }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         LivingEntity a;
@@ -264,12 +287,11 @@ public class CombatListener implements Listener {
                     event.setDamage(modifier, 0D);
                 }
             }
-            Player p = (Player) a;
-            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+            Champion champ = plugin.getChampionManager().getChampion(a.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             meleeDamageA = vals.get(StrifeAttribute.MELEE_DAMAGE);
-            attackSpeedA =
-                (StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + vals.get(StrifeAttribute.ATTACK_SPEED))));
+            attackSpeedA = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + vals.get(StrifeAttribute
+                    .ATTACK_SPEED)));
             criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
             armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
             armorA = vals.get(StrifeAttribute.ARMOR);
@@ -394,7 +416,8 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(b, "&4&oYou refused to die.");
+                    MessageUtils.sendMessage(b, "&2&o You refused to die..!");
+                    MessageUtils.sendMessage(a, "&4&o " + b.getName() + " is sustained by nothing but resolve!");
                 }
             }
             if (a instanceof Player) {
@@ -459,7 +482,8 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(b, "&4&oYou refused to die.");
+                    MessageUtils.sendMessage(b, "&2&o You refused to die..!");
+                    MessageUtils.sendMessage(a, "&4&o " + b.getName() + " is sustained by nothing but resolve!");
                 }
             }
             if (a instanceof Player) {
