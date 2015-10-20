@@ -137,7 +137,7 @@ public class CombatListener implements Listener {
         }
 
     }
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onFireDamage(EntityDamageEvent event) {
         if (!(event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK)) {
             return;
@@ -159,7 +159,18 @@ public class CombatListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
             return;
         }
-        if (event.getCause() == EntityDamageEvent.DamageCause.WITHER) {
+        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
+            Player p = (Player) event.getEntity();
+            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+            double resolve = vals.get(StrifeAttribute.RESOLVE);
+            if (random.nextDouble() < resolve) {
+                event.setCancelled(true);
+                p.setFireTicks(0);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
+                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
+            }
+        } else if (event.getCause() == EntityDamageEvent.DamageCause.WITHER) {
             Player p = (Player) event.getEntity();
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
