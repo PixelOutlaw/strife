@@ -137,51 +137,16 @@ public class CombatListener implements Listener {
         }
 
     }
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onFireDamage(EntityDamageEvent event) {
-        if (!(event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK)) {
-            return;
-        }
-        if (event.getEntity() instanceof LivingEntity) {
-            Entity e = event.getEntity();
-            event.setDamage(1 + (((LivingEntity) e).getHealth())/50);
-        }
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onDotDamage(EntityDamageEvent event) {
+    public void onCustomDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
-        if (((Player) event.getEntity()).getHealth() - event.getDamage() > 0) {
-            return;
-        }
-        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
-            return;
-        }
-        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
-            Player p = (Player) event.getEntity();
-            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            double resolve = vals.get(StrifeAttribute.RESOLVE);
-            if (random.nextDouble() < resolve) {
-                event.setCancelled(true);
-                p.setFireTicks(0);
-                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
+        if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
+            if (((Player) event.getEntity()).getHealth() - event.getDamage() > 0) {
+                return;
             }
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.WITHER) {
-            Player p = (Player) event.getEntity();
-            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            double resolve = vals.get(StrifeAttribute.RESOLVE);
-            if (random.nextDouble() < resolve) {
-                event.setCancelled(true);
-                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                p.removePotionEffect(PotionEffectType.WITHER);
-                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
-            }
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
             Player p = (Player) event.getEntity();
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
