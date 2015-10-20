@@ -135,28 +135,6 @@ public class CombatListener implements Listener {
                 e.getWorld().dropItemNaturally(e.getLocation(), skull);
             }
         }
-
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onCustomDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
-            return;
-        }
-        if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
-            if (((Player) event.getEntity()).getHealth() - event.getDamage() > 0) {
-                return;
-            }
-            Player p = (Player) event.getEntity();
-            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            double resolve = vals.get(StrifeAttribute.RESOLVE);
-            if (random.nextDouble() < resolve) {
-                event.setCancelled(true);
-                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                MessageUtils.sendMessage(p, "&2&o You refused to die..!");
-            }
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
