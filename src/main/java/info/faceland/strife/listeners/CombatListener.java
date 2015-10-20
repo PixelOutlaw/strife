@@ -154,9 +154,9 @@ public class CombatListener implements Listener {
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
             double resolve = vals.get(StrifeAttribute.RESOLVE);
             if (random.nextDouble() < resolve) {
-                event.setCancelled(true);
+                p.setFireTicks(0);
+                p.setHealth(1.5);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                p.removePotionEffect(PotionEffectType.WITHER);
                 MessageUtils.sendMessage(p, "&2&o You refused to die..!");
             }
         } else if (event.getCause() == EntityDamageEvent.DamageCause.WITHER) {
@@ -167,7 +167,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < resolve) {
                 event.setCancelled(true);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                p.setFireTicks(0);
+                p.removePotionEffect(PotionEffectType.WITHER);
                 MessageUtils.sendMessage(p, "&2&o You refused to die..!");
             }
         } else if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
