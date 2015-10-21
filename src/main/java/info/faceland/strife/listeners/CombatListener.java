@@ -173,15 +173,27 @@ public class CombatListener implements Listener {
         if (b instanceof Player) {
             bPlayer = true;
         }
-
+        boolean blocking = false;
+        boolean parried = false;
+        double armorB = 0;
+        double resistB = 0;
+        double resolveB = 0;
+        double reflectDamageB = 0;
+        double parryB = 0;
+        double blockB = 0;
+        double absorbB = 0;
+        double maxHealthB = b.getMaxHealth();
+        double healthB = b.getHealth();
         if (bPlayer) {
-            double chance = plugin.getChampionManager().getChampion(b.getUniqueId()).getAttributeValues()
-                .get(StrifeAttribute.EVASION);
+            Player p = (Player) b;
+            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+            double chance = vals.get(StrifeAttribute.EVASION);
             double accuracy;
             if (aPlayer) {
                 accuracy = plugin.getChampionManager().getChampion(a.getUniqueId()).getAttributeValues()
                         .get(StrifeAttribute.ACCURACY);
-                chance = chance * (1 - accuracy);
+                chance = Math.max(chance * (1 - accuracy), 0);
             }
             chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.2))));
             if (random.nextDouble() < chance) {
@@ -189,6 +201,26 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(a.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
                 return;
             }
+            armorB = vals.get(StrifeAttribute.ARMOR);
+            resistB = vals.get(StrifeAttribute.RESISTANCE);
+            resolveB = vals.get(StrifeAttribute.RESOLVE);
+            reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
+            parryB = vals.get(StrifeAttribute.PARRY);
+            blockB = vals.get(StrifeAttribute.BLOCK);
+            absorbB = vals.get(StrifeAttribute.ABSORB_CHANCE);
+            if (((Player) b).isBlocking()) {
+                if (random.nextDouble() < absorbB) {
+                    event.setCancelled(true);
+                    b.setHealth(Math.min(healthB + (maxHealthB / 20), maxHealthB));
+                    b.getWorld().playSound(a.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                    return;
+                }
+                blocking = true;
+                if (random.nextDouble() < parryB) {
+                    parried = true;
+                }
+            }
+
         }
         double damage;
         double pvpMult = 1.0;
@@ -204,13 +236,7 @@ public class CombatListener implements Listener {
         double fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue(), igniteChanceA = StrifeAttribute.IGNITE_CHANCE.getBaseValue();
         double lightningDamageA = StrifeAttribute.LIGHTNING_DAMAGE.getBaseValue(), shockChanceA = StrifeAttribute.SHOCK_CHANCE.getBaseValue();
         double iceDamageA = StrifeAttribute.ICE_DAMAGE.getBaseValue(), freezeChanceA = StrifeAttribute.FREEZE_CHANCE.getBaseValue();
-        double armorB = StrifeAttribute.ARMOR.getBaseValue(), reflectDamageB = StrifeAttribute.DAMAGE_REFLECT.getBaseValue();
-        double armorA = StrifeAttribute.ARMOR.getBaseValue(), resolveB = StrifeAttribute.RESOLVE.getBaseValue();
-        double maxHealthB = b.getMaxHealth(), healthB = b.getHealth();
-        double resistB = 0;
-        double parryB, blockB = StrifeAttribute.BLOCK.getBaseValue();
-        boolean blocking = false;
-        boolean parried = false;
+        double armorA = StrifeAttribute.ARMOR.getBaseValue();
         if (b.hasPotionEffect(PotionEffectType.WITHER)) {
             meleeMult += 0.1D;
             rangedMult += 0.1D;
@@ -280,23 +306,6 @@ public class CombatListener implements Listener {
                         rangedDamageA = meleeDamageA;
                         a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, meleeDamageA));
                     }
-                }
-            }
-        }
-        if (bPlayer) {
-            Player p = (Player) b;
-            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            armorB = vals.get(StrifeAttribute.ARMOR);
-            resistB = vals.get(StrifeAttribute.RESISTANCE);
-            resolveB = vals.get(StrifeAttribute.RESOLVE);
-            reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
-            parryB = vals.get(StrifeAttribute.PARRY);
-            blockB = vals.get(StrifeAttribute.BLOCK);
-            if (((Player) b).isBlocking()) {
-                blocking = true;
-                if (random.nextDouble() < parryB) {
-                    parried = true;
                 }
             }
         }
@@ -370,8 +379,8 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(b, "&2&o You refused to die..!");
-                    MessageUtils.sendMessage(a, "&4&o " + b.getName() + " is sustained by nothing but resolve!");
+                    MessageUtils.sendMessage(b, "&2&oYou refused to die!");
+                    MessageUtils.sendMessage(a, "&4&o" + b.getName() + " is sustained by nothing but resolve!");
                 }
             }
             if (a instanceof Player) {
@@ -436,8 +445,8 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < resolveB) {
                     event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
                     b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(b, "&2&o You refused to die..!");
-                    MessageUtils.sendMessage(a, "&4&o " + b.getName() + " is sustained by nothing but resolve!");
+                    MessageUtils.sendMessage(b, "&2&oYou refused to die!");
+                    MessageUtils.sendMessage(a, "&4&o" + b.getName() + " is sustained by nothing but resolve!");
                 }
             }
             if (a instanceof Player) {
