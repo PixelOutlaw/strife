@@ -393,7 +393,14 @@ public class CombatListener implements Listener {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                 return;
             }
-            damage = rangedDamageA * rangedMult * (a instanceof Player ? (event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2)) : 1);
+            double velocityMult = 1;
+            if (aPlayer) {
+                velocityMult = event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2);
+                if (velocityMult >= 1) {
+                    velocityMult += velocityMult * overchargeA;
+                }
+            }
+            damage = rangedDamageA * rangedMult * velocityMult;
             double blockReducer = 1;
             double armorReduction;
             if (armorB > 0) {
@@ -425,7 +432,6 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
                     trueDamage = lightningDamageA;
                     b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
-                    a.getWorld().playSound(a.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
                 }
             }
             if (iceDamageA > 0) {
