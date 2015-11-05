@@ -396,7 +396,7 @@ public class CombatListener implements Listener {
             double velocityMult = 1;
             if (aPlayer) {
                 velocityMult = event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2);
-                if (velocityMult >= 1) {
+                if (velocityMult >= 0.9D) {
                     velocityMult += velocityMult * overchargeA;
                 }
             }
