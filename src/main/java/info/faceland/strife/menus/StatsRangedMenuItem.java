@@ -63,6 +63,10 @@ public class StatsRangedMenuItem extends MenuItem {
             lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "+"+ DECIMAL_FORMAT.format(100*valueMap.get(
                 StrifeAttribute.ACCURACY)) + "%");
         }
+        if (valueMap.get(StrifeAttribute.OVERCHARGE) != 0.1) {
+            lore.add(ChatColor.YELLOW + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((valueMap.get
+                    (StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
+        }
         if (valueMap.get(StrifeAttribute.SNARE_CHANCE) > 0) {
             lore.add(ChatColor.YELLOW + "Snare Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(
                 StrifeAttribute.SNARE_CHANCE)) + "%");
