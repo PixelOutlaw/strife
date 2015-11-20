@@ -57,8 +57,24 @@ public class StatsDropsMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
+        double mult = 1D;
+        if (player.hasPermission("strife.mult.75")) {
+            mult = 0.75D;
+        }
+        if (player.hasPermission("strife.mult.125")) {
+            mult = 1.25D;
+        }
+        if (player.hasPermission("strife.mult.150")) {
+            mult = 1.5D;
+        }
+        if (player.hasPermission("strife.mult.175")) {
+            mult = 1.75D;
+        }
+        if (player.hasPermission("strife.mult.200")) {
+            mult = 2D;
+        }
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(valueMap.get(StrifeAttribute.XP_GAIN) * 100) + "%");
+                .format(valueMap.get(StrifeAttribute.XP_GAIN)* mult * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
                 .format(valueMap.get(StrifeAttribute.ITEM_DISCOVERY) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT

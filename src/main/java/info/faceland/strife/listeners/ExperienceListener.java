@@ -113,14 +113,20 @@ public class ExperienceListener implements Listener {
         }
 
         double mult = 1D;
-        if (player.hasPermission("strife.mult.half")) {
-            mult = 0.5D;
+        if (player.hasPermission("strife.mult.75")) {
+            mult = 0.75D;
         }
-        if (player.hasPermission("strife.mult.two")) {
+        if (player.hasPermission("strife.mult.125")) {
+            mult = 1.25D;
+        }
+        if (player.hasPermission("strife.mult.150")) {
+            mult = 1.5D;
+        }
+        if (player.hasPermission("strife.mult.175")) {
+            mult = 1.75D;
+        }
+        if (player.hasPermission("strife.mult.200")) {
             mult = 2D;
-        }
-        if (player.hasPermission("strife.mult.three")) {
-            mult = 3D;
         }
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
