@@ -131,7 +131,8 @@ public class ExperienceListener implements Listener {
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
         double exact = Math.min(amount * (1 + attributeDoubleMap.get(StrifeAttribute.XP_GAIN) + mult),
-                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * desiredLevelUp) * factor;
+                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * (1 + mult) * desiredLevelUp) *
+                factor;
 
         int newXp = (int) exact;
 
