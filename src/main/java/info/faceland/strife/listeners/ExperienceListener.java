@@ -114,26 +114,24 @@ public class ExperienceListener implements Listener {
 
         double mult = 1D;
         if (player.hasPermission("strife.mult.75")) {
-            mult = 0.75D;
+            mult = -0.25D;
         }
         if (player.hasPermission("strife.mult.125")) {
-            mult = 1.25D;
+            mult = 0.25D;
         }
         if (player.hasPermission("strife.mult.150")) {
-            mult = 1.5D;
+            mult = 0.5D;
         }
         if (player.hasPermission("strife.mult.175")) {
-            mult = 1.75D;
+            mult = 0.75D;
         }
         if (player.hasPermission("strife.mult.200")) {
-            mult = 2D;
+            mult = 1.0D;
         }
 
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = Math.min(amount + amount * attributeDoubleMap.get(StrifeAttribute.XP_GAIN),
-                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * desiredLevelUp)
-                * factor
-                * mult;
+        double exact = Math.min(amount * (1 + attributeDoubleMap.get(StrifeAttribute.XP_GAIN) + mult),
+                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * desiredLevelUp) * factor;
 
         int newXp = (int) exact;
 
