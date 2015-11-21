@@ -92,6 +92,32 @@ public class CombatListener implements Listener {
         MessageUtils.sendMessage(p, DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityBurnEvent(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity)) {
+            return;
+        }
+        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
+            return;
+        }
+        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE) {
+            double hpdmg = ((LivingEntity) event.getEntity()).getHealth()/25;
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            event.setDamage(1 + hpdmg);
+        } else if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
+            double hpdmg = ((LivingEntity) event.getEntity()).getHealth()/25;
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            event.setDamage(1 + hpdmg);
+        } else if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
+            double hpdmg = ((LivingEntity) event.getEntity()).getHealth()/20;
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+            event.setDamage(1 + hpdmg);
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         if (event.getEntity().getShooter() instanceof Entity) {
