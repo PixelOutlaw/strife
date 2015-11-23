@@ -83,8 +83,8 @@ public class ExperienceListener implements Listener {
         title.send(event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
-                MessageUtils.sendMessage(p, "&2&lLevelup! &a" + player.getDisplayName() + " &2has reached level &a" +
-                        + event.getNewLevel() + "&2!");
+                MessageUtils.sendMessage(p, "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" +
+                        + event.getNewLevel() + "&a!");
             }
         }
     }
