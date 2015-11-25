@@ -110,7 +110,7 @@ public class ExperienceListener implements Listener {
             return;
         }
 
-        double mult = 1D;
+        double mult = 0D;
         if (player.hasPermission("strife.mult.75")) {
             mult = -0.25D;
         }

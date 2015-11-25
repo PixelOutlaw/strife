@@ -57,7 +57,7 @@ public class StatsDropsMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        double mult = 1D;
+        double mult = 0D;
         if (player.hasPermission("strife.mult.75")) {
             mult = -0.25D;
         }

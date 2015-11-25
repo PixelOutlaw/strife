@@ -57,17 +57,6 @@ public class HealthListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerPickupItem(PlayerPickupItemEvent event) {
-        Player player = event.getPlayer();
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        AttributeHandler.updateHealth(player, attributeDoubleMap);
-        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-        float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(final PlayerRespawnEvent event) {
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
             @Override
@@ -81,30 +70,6 @@ public class HealthListener implements Listener {
                 player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
             }
         }, 20L);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
-        Player player = event.getPlayer();
-        if (player.getHealth() > 0) {
-            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-            AttributeHandler.updateHealth(player, attributeDoubleMap);
-            double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-            float speed = 0.2F * (float) perc;
-            player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerItemBreak(PlayerItemBreakEvent event) {
-        Player player = event.getPlayer();
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        AttributeHandler.updateHealth(player, attributeDoubleMap);
-        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-        float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
