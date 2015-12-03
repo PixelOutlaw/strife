@@ -163,6 +163,31 @@ public class CombatListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onPlayerEvade(EntityDamageByEntityEvent event) {
+        if (event.isCancelled() || !(event.getEntity() instanceof Player)) {
+            return;
+        }
+        if (event.getEntity().hasMetadata("NPC")) {
+            return;
+        }
+        Player p = (Player) event.getEntity();
+        Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
+        Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
+        double chance = vals.get(StrifeAttribute.EVASION);
+        double accuracy;
+        if (event.getDamager() instanceof Player) {
+            accuracy = plugin.getChampionManager().getChampion(event.getDamager().getUniqueId()).getAttributeValues()
+                    .get(StrifeAttribute.ACCURACY);
+            chance = Math.max(chance * (1 - accuracy), 0);
+        }
+        chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.2))));
+        if (random.nextDouble() < chance) {
+            event.setCancelled(true);
+            p.getWorld().playSound(p.getEyeLocation(), Sound.GHAST_FIREBALL, 0.7f, 2f);
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         LivingEntity a;
@@ -214,19 +239,6 @@ public class CombatListener implements Listener {
             Player p = (Player) b;
             Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
             Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            double chance = vals.get(StrifeAttribute.EVASION);
-            double accuracy;
-            if (aPlayer) {
-                accuracy = plugin.getChampionManager().getChampion(a.getUniqueId()).getAttributeValues()
-                        .get(StrifeAttribute.ACCURACY);
-                chance = Math.max(chance * (1 - accuracy), 0);
-            }
-            chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.2))));
-            if (random.nextDouble() < chance) {
-                event.setCancelled(true);
-                b.getWorld().playSound(a.getEyeLocation(), Sound.GHAST_FIREBALL, 1f, 2f);
-                return;
-            }
             armorB = vals.get(StrifeAttribute.ARMOR);
             resistB = vals.get(StrifeAttribute.RESISTANCE);
             resolveB = vals.get(StrifeAttribute.RESOLVE);
