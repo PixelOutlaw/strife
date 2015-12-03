@@ -92,6 +92,10 @@ public class ExperienceListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerExpChange(PlayerExpChangeEvent event) {
         Player player = event.getPlayer();
+        if (player.getLevel() >= 100) {
+            event.setAmount(0);
+            return;
+        }
         double amount = event.getAmount();
 
         ExperienceManager experienceManager = new ExperienceManager(player);
