@@ -422,7 +422,9 @@ public class CombatListener implements Listener {
                 }
             }
             if (aPlayer) {
-                ActionBarMessage.send((Player) a, "&4&lEnemy Health: &f&l" +(int)(healthB-event.getFinalDamage()));
+                ActionBarMessage.send(
+                        (Player) a, "&4&lEnemy Health: &f" + (int)(healthB-event.getFinalDamage()) + "&8/&f" +
+                                (int)(maxHealthB));
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
@@ -495,7 +497,9 @@ public class CombatListener implements Listener {
                 }
             }
             if (aPlayer) {
-                ActionBarMessage.send((Player) a, "&4&lEnemy Health: &f&l" +(int)(healthB-event.getFinalDamage()));
+                ActionBarMessage.send(
+                        (Player) a, "&4&lEnemy Health: &f" + (int)(healthB-event.getFinalDamage()) + "&8/&f" +
+                                (int)(maxHealthB));
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }

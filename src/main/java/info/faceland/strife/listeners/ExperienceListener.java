@@ -96,7 +96,7 @@ public class ExperienceListener implements Listener {
             event.setAmount(0);
             return;
         }
-        double amount = event.getAmount();
+        double amount = Math.max(event.getAmount(), 1);
 
         ExperienceManager experienceManager = new ExperienceManager(player);
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
@@ -148,7 +148,8 @@ public class ExperienceListener implements Listener {
             Bukkit.getLogger().info("Final Orb Percentage: " + (exact / defaultLevelUp) * 100 + "%");
         }
         double remainingXp = desiredLevelUp * event.getPlayer().getExp();
-        ActionBarMessage.send(event.getPlayer(), "&a( &f" + (int)remainingXp + " &a/ &f" + desiredLevelUp + " &aXP )");
+        ActionBarMessage.send(event.getPlayer(), "&a&l( &f&l" + (int)remainingXp + " &a&l/&f&l " + desiredLevelUp +
+                " XP&a&l )");
 
         int newXp = (int) exact;
 
