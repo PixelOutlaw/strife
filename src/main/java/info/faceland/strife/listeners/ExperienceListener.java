@@ -23,6 +23,8 @@
 package info.faceland.strife.listeners;
 
 import be.maximvdw.titlemotd.ui.Title;
+
+import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
@@ -47,11 +49,9 @@ import java.util.Map;
 public class ExperienceListener implements Listener {
 
     private final StrifePlugin plugin;
-    private final Expression expCapExpr;
 
     public ExperienceListener(StrifePlugin plugin) {
         this.plugin = plugin;
-        this.expCapExpr = new ExpressionBuilder(plugin.getSettings().getString("config.leveling.formula")).variable("LEVEL").build();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -131,31 +131,31 @@ public class ExperienceListener implements Listener {
             mult = 1.0D;
         }
 
+        double bonusMult = 1 + attributeDoubleMap.get(StrifeAttribute.XP_GAIN) + mult;
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = Math.min(amount * (1 + attributeDoubleMap.get(StrifeAttribute.XP_GAIN) + mult),
-                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * (1 + mult) * desiredLevelUp) *
-                factor;
+        double exact = amount * bonusMult * factor;
+        if (plugin.getSettings().getBoolean("config.verbose")) {
+            Bukkit.getLogger().info("Incoming Orb Value: " + event.getAmount());
+            Bukkit.getLogger().info("Strife XP to level: " + desiredLevelUp);
+            Bukkit.getLogger().info("Vanilla XP to level: " + event.getPlayer().getExpToLevel());
+            Bukkit.getLogger().info("Pre-Cap Orb Value: " + exact);
+        }
+        exact = Math.min(exact, (defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.8) + 1)) * bonusMult);
+        if (plugin.getSettings().getBoolean("config.verbose")) {
+            Bukkit.getLogger().info("Max Rate: " + defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.8) + 1));
+            Bukkit.getLogger().info("Minimum Orbs: " + defaultLevelUp / (defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 2) + 1)));
+            Bukkit.getLogger().info("Final Orb Value: " + exact);
+            Bukkit.getLogger().info("Final Orb Percentage: " + (exact / defaultLevelUp) * 100 + "%");
+        }
+        double remainingXp = desiredLevelUp * event.getPlayer().getExp();
+        ActionBarMessage.send(event.getPlayer(), "&a( &f" + (int)remainingXp + " &a/ &f" + desiredLevelUp + " &aXP )");
 
         int newXp = (int) exact;
-
-        if (player.hasPermission("strife.xp")) {
-            MessageUtils.sendMessage(player, "XP Orb value: " + event.getAmount() + " | Adjusted amount: " + newXp);
-        }
 
         event.setAmount(newXp);
 
         if (exact > newXp) {
             experienceManager.changeExp(exact - newXp);
         }
-
-        double perc = 0.2;
-        for (Entity e : player.getNearbyEntities(8, 8, 8)) {
-            if (!(e instanceof Player)) {
-                continue;
-            }
-            ExperienceManager manager = new ExperienceManager((Player) e);
-            manager.changeExp(perc * exact);
-        }
     }
-
 }

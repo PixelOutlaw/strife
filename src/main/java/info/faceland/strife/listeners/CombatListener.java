@@ -22,6 +22,7 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
@@ -63,9 +64,8 @@ public class CombatListener implements Listener {
     private static final String[]
         DOGE_MEMES =
         {"<aqua>wow", "<green>wow", "<light purple>wow", "<aqua>much pain", "<green>much pain",
-         "<light purple>much pain",
-         "<aqua>many disrespects", "<green>many disrespects", "<light purple>many disrespects", "<red>no u",
-         "<red>2damage4me"};
+         "<light purple>much pain", "<aqua>many disrespects", "<green>many disrespects",
+         "<light purple>many disrespects", "<red>no u", "<red>2damage4me"};
     private final StrifePlugin plugin;
     private final Random random;
 
@@ -421,7 +421,8 @@ public class CombatListener implements Listener {
                     MessageUtils.sendMessage(a, "&4&o" + b.getName() + " is sustained by nothing but resolve!");
                 }
             }
-            if (a instanceof Player) {
+            if (aPlayer) {
+                ActionBarMessage.send((Player) a, "&4&lEnemy Health: &f&l" +(int)(healthB-event.getFinalDamage()));
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }
@@ -493,7 +494,8 @@ public class CombatListener implements Listener {
                     MessageUtils.sendMessage(a, "&4&o" + b.getName() + " is sustained by nothing but resolve!");
                 }
             }
-            if (a instanceof Player) {
+            if (aPlayer) {
+                ActionBarMessage.send((Player) a, "&4&lEnemy Health: &f&l" +(int)(healthB-event.getFinalDamage()));
                 lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
                 a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
             }

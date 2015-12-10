@@ -1,4 +1,5 @@
 version: "0.0.3"
+verbose: false
 menu:
   num-of-rows: 6
   unused-marker-x: 0
@@ -7,5 +8,4 @@ menu:
   close-marker-y: 5
 leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
-  gain-cap: 1/LEVEL
 
