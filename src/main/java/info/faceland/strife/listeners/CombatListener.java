@@ -32,11 +32,14 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -61,8 +64,7 @@ import java.util.Random;
 
 public class CombatListener implements Listener {
 
-    private static final String[]
-        DOGE_MEMES =
+    private static final String[] DOGE_MEMES =
         {"<aqua>wow", "<green>wow", "<light purple>wow", "<aqua>much pain", "<green>much pain",
          "<light purple>much pain", "<aqua>many disrespects", "<green>many disrespects",
          "<light purple>many disrespects", "<red>no u", "<red>2damage4me"};
@@ -72,24 +74,6 @@ public class CombatListener implements Listener {
     public CombatListener(StrifePlugin plugin) {
         this.plugin = plugin;
         random = new Random(System.currentTimeMillis());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityDamageEvent(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
-            return;
-        }
-        Player p = (Player) event.getEntity();
-        if (p.hasMetadata("NPC")) {
-            return;
-        }
-        Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-        Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-        double chance = vals.get(StrifeAttribute.DOGE);
-        if (random.nextDouble() > chance) {
-            return;
-        }
-        MessageUtils.sendMessage(p, DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -155,354 +139,441 @@ public class CombatListener implements Listener {
             else if ((e.getType() == EntityType.PLAYER)) {
                 ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) SkullType.PLAYER.ordinal());
                 SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
-                skullMeta.setOwner(event.getEntity().getKiller().getName());
-                skullMeta.setDisplayName(ChatColor.RED + "Head of " + event.getEntity().getKiller().getName());
+                skullMeta.setOwner(event.getEntity().getName());
                 skull.setItemMeta(skullMeta);
                 e.getWorld().dropItemNaturally(e.getLocation(), skull);
             }
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onPlayerEvade(EntityDamageByEntityEvent event) {
-        if (event.isCancelled() || !(event.getEntity() instanceof Player)) {
-            return;
-        }
-        if (event.getEntity().hasMetadata("NPC")) {
-            return;
-        }
-        Player p = (Player) event.getEntity();
-        Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-        Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-        double chance = vals.get(StrifeAttribute.EVASION);
-        double accuracy;
-        if (event.getDamager() instanceof Player) {
-            accuracy = plugin.getChampionManager().getChampion(event.getDamager().getUniqueId()).getAttributeValues()
-                    .get(StrifeAttribute.ACCURACY);
-            chance = Math.max(chance * (1 - accuracy), 0);
-        }
-        chance = 1 - (100 / (100 + (Math.pow((chance * 100), 1.2))));
-        if (random.nextDouble() < chance) {
-            event.setCancelled(true);
-            p.getWorld().playSound(p.getEyeLocation(), Sound.GHAST_FIREBALL, 0.7f, 2f);
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        LivingEntity a;
-        if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
+        if (event.isCancelled()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
         if (event.getEntity().hasMetadata("NPC")) {
             return;
         }
-        // LET THE DATA GATHERING COMMENCE
+        LivingEntity a;
         boolean melee = true;
-        boolean aPlayer = false;
-        boolean bPlayer = false;
-        double poisonMult = 1.0;
-        double meleeMult = 1.0;
-        double rangedMult = 1.0;
         if (event.getDamager() instanceof LivingEntity) {
             a = (LivingEntity) event.getDamager();
         } else if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager())
-            .getShooter() instanceof LivingEntity) {
+                .getShooter() instanceof LivingEntity) {
             a = (LivingEntity) ((Projectile) event.getDamager()).getShooter();
             melee = false;
         } else {
             return;
         }
         LivingEntity b = (LivingEntity) event.getEntity();
-        if (a == null || b == null) {
-            return;
-        }
+        boolean aPlayer = false;
+        boolean bPlayer = false;
         if (a instanceof Player) {
             aPlayer = true;
         }
-
         if (b instanceof Player) {
             bPlayer = true;
         }
-        boolean blocking = false;
-        boolean parried = false;
-        double armorB = 0;
-        double resistB = 0;
-        double resolveB = 0;
-        double reflectDamageB = 0;
-        double parryB = 0;
-        double blockB = 0;
-        double absorbB = 0;
-        double maxHealthB = b.getMaxHealth();
+        if (a == null || b == null) {
+            return;
+        }
+        if (!(b instanceof ArmorStand)) {
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+        }
         double healthB = b.getHealth();
-        if (bPlayer) {
-            Player p = (Player) b;
-            Champion champ = plugin.getChampionManager().getChampion(p.getUniqueId());
-            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            armorB = vals.get(StrifeAttribute.ARMOR);
-            resistB = vals.get(StrifeAttribute.RESISTANCE);
-            resolveB = vals.get(StrifeAttribute.RESOLVE);
-            reflectDamageB = vals.get(StrifeAttribute.DAMAGE_REFLECT);
-            parryB = vals.get(StrifeAttribute.PARRY);
-            blockB = vals.get(StrifeAttribute.BLOCK);
-            absorbB = vals.get(StrifeAttribute.ABSORB_CHANCE);
-            if (((Player) b).isBlocking()) {
-                if (random.nextDouble() < absorbB) {
-                    event.setCancelled(true);
-                    b.setHealth(Math.min(healthB + (maxHealthB / 20), maxHealthB));
-                    b.getWorld().playSound(a.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
-                    return;
-                }
-                blocking = true;
-                if (random.nextDouble() < parryB) {
-                    parried = true;
-                }
-            }
+        double maxHealthB = b.getMaxHealth();
+        double potionMult = 1;
+        double poisonMult = 1;
+        double trueDamage = 0;
+        double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
 
-        }
-        double damage;
-        double pvpMult = 1.0;
-        double hungerMult = 1.0;
-        double critbonus = 0, overbonus = 0, trueDamage = 0;
-        double meleeDamageA = StrifeAttribute.MELEE_DAMAGE.getBaseValue(), attackSpeedA;
-        double overchargeA = StrifeAttribute.OVERCHARGE.getBaseValue();
-        double armorPenA = StrifeAttribute.ARMOR_PENETRATION.getBaseValue();
-        double lifeStealA = StrifeAttribute.LIFE_STEAL.getBaseValue(), lifeStolenA;
-        double rangedDamageA = StrifeAttribute.RANGED_DAMAGE.getBaseValue(), snarechanceA = StrifeAttribute.SNARE_CHANCE.getBaseValue();
-        double criticalRateA = StrifeAttribute.CRITICAL_RATE.getBaseValue(), criticalDamageA = StrifeAttribute.CRITICAL_DAMAGE.getBaseValue();
-        double attackSpeedMultA = 1D;
-        double fireDamageA = StrifeAttribute.FIRE_DAMAGE.getBaseValue(), igniteChanceA = StrifeAttribute.IGNITE_CHANCE.getBaseValue();
-        double lightningDamageA = StrifeAttribute.LIGHTNING_DAMAGE.getBaseValue(), shockChanceA = StrifeAttribute.SHOCK_CHANCE.getBaseValue();
-        double iceDamageA = StrifeAttribute.ICE_DAMAGE.getBaseValue(), freezeChanceA = StrifeAttribute.FREEZE_CHANCE.getBaseValue();
-        double armorA = StrifeAttribute.ARMOR.getBaseValue();
-        if (b.hasPotionEffect(PotionEffectType.WITHER)) {
-            meleeMult += 0.1D;
-            rangedMult += 0.1D;
-        }
-        if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-            meleeMult -= 0.1D;
-            rangedMult -= 0.1D;
-        }
         if (aPlayer) {
-            hungerMult = Math.min(((double) (((Player) a).getFoodLevel()))/7.0D, 1.0D);
-            if (b instanceof Player) {
-                pvpMult = 0.5;
-            }
-            if (a.hasPotionEffect(PotionEffectType.POISON)) {
-                poisonMult = 0.33D;
-            }
-            if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-                meleeMult += 0.1D;
-            }
-            if (a.hasPotionEffect(PotionEffectType.WEAKNESS)) {
-                meleeMult -= 0.1D;
-            }
-            if (a.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
-                rangedMult = 1.1D;
-            }
-            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-                if (event.isApplicable(modifier)) {
-                    event.setDamage(modifier, 0D);
-                }
-            }
-            Champion champ = plugin.getChampionManager().getChampion(a.getUniqueId());
-            Map<StrifeAttribute, Double> vals = champ.getAttributeValues();
-            meleeDamageA = vals.get(StrifeAttribute.MELEE_DAMAGE);
-            attackSpeedA = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + vals.get(StrifeAttribute
-                    .ATTACK_SPEED)));
-            criticalDamageA = vals.get(StrifeAttribute.CRITICAL_DAMAGE);
-            armorPenA = vals.get(StrifeAttribute.ARMOR_PENETRATION);
-            armorA = vals.get(StrifeAttribute.ARMOR);
-            overchargeA = vals.get(StrifeAttribute.OVERCHARGE);
-            lifeStealA = vals.get(StrifeAttribute.LIFE_STEAL);
-            rangedDamageA = vals.get(StrifeAttribute.RANGED_DAMAGE);
-            criticalRateA = vals.get(StrifeAttribute.CRITICAL_RATE);
-            snarechanceA = vals.get(StrifeAttribute.SNARE_CHANCE);
-            fireDamageA = vals.get(StrifeAttribute.FIRE_DAMAGE);
-            lightningDamageA = vals.get(StrifeAttribute.LIGHTNING_DAMAGE);
-            iceDamageA = vals.get(StrifeAttribute.ICE_DAMAGE);
-            igniteChanceA = vals.get(StrifeAttribute.IGNITE_CHANCE);
-            shockChanceA = vals.get(StrifeAttribute.SHOCK_CHANCE);
-            freezeChanceA = vals.get(StrifeAttribute.FREEZE_CHANCE);
-            long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
-            long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
-            if (timeLeft > 0) {
-                attackSpeedMultA = Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0);
-            }
-            plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
-        } else {
-            if (a.hasMetadata("DAMAGE")) {
-                meleeDamageA = a.getMetadata("DAMAGE").get(0).asDouble();
-                rangedDamageA = meleeDamageA;
-            } else {
-                if (a.getType() != null) {
-                    BeastData data = plugin.getBeastPlugin().getData(a.getType());
-                    String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
-                    if (data != null && a.getCustomName() != null) {
-                        int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                        meleeDamageA = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
-                        rangedDamageA = meleeDamageA;
-                        a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, meleeDamageA));
+            Player aP = (Player) a;
+            Champion champA = plugin.getChampionManager().getChampion(aP.getUniqueId());
+            Map<StrifeAttribute, Double> valsA = champA.getAttributeValues();
+            if (bPlayer) {
+                //////////////////////////////////////////////////////////////////// PLAYER V PLAYER COMBAT ///
+                Player bP = (Player) b;
+                Champion champB = plugin.getChampionManager().getChampion(bP.getUniqueId());
+                Map<StrifeAttribute, Double> valsB = champB.getAttributeValues();
+
+                double evadeChance = valsB.get(StrifeAttribute.EVASION);
+                if (evadeChance > 0) {
+                    double accuracy;
+                    accuracy = valsA.get(StrifeAttribute.ACCURACY);
+                    evadeChance = Math.max(evadeChance * (1 - accuracy), 0);
+                    evadeChance = 1 - (100 / (100 + (Math.pow((evadeChance * 100), 1.2))));
+                    if (random.nextDouble() < evadeChance) {
+                        if (event.getDamager() instanceof Arrow) {
+                            event.getDamager().remove();
+                        }
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                        event.setCancelled(true);
+                        return;
                     }
                 }
-            }
-        }
 
-        // LET THE DAMAGE CALCULATION COMMENCE
-        if (melee) {
-            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-                damage = meleeDamageA * Math.max(0.3, 2.5 / (a.getLocation().distanceSquared(b.getLocation()) + 1));
-            } else {
-                damage = meleeDamageA * attackSpeedMultA * meleeMult;
-            }
-            if (parried) {
-                double attackerArmor = 100 / (100 + (Math.pow((armorA * 100), 1.36)));
-                a.damage(damage * 0.80 * attackerArmor * pvpMult);
-                event.setCancelled(true);
-                b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
-                return;
-            }
-            if (random.nextDouble() < criticalRateA) {
-                critbonus = damage * (criticalDamageA - 1.0);
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-            }
-            if (attackSpeedMultA >= 1D) {
-                overbonus = overchargeA * damage;
-            }
-            damage = damage + critbonus + overbonus;
-            double blockReducer = 1;
-            double armorReduction;
-            if (armorB > 0) {
-                if (armorPenA < 1) {
-                    armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.3)));
+                double damage = 0;
+                double attackSpeedMultA = 1D;
+                double velocityMultA = 0D;
+                if (melee) {
+                    double attackSpeedA = StrifeAttribute.ATTACK_SPEED.getBaseValue() *
+                            (1 / (1 + valsA.get(StrifeAttribute.ATTACK_SPEED)));
+                    long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
+                    long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
+                    if (timeLeft > 0) {
+                        attackSpeedMultA = Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0);
+                    }
+                    plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
+
+                    damage = valsA.get(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMultA;
                 } else {
-                    armorReduction = 1 + ((armorPenA - 1) / 5);
+                    velocityMultA = Math.min(event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2), 1);
+                    damage = valsA.get(StrifeAttribute.RANGED_DAMAGE) * velocityMultA;
                 }
+
+
+                if (bP.isBlocking()) {
+                    if (random.nextDouble() < valsB.get(StrifeAttribute.ABSORB_CHANCE)) {
+                        if (event.getDamager() instanceof Arrow) {
+                            event.getDamager().remove();
+                        }
+                        b.setHealth(Math.min(healthB + (maxHealthB / 25), maxHealthB));
+                        b.getWorld().playSound(a.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                        event.setCancelled(true);
+                        return;
+                    }
+                    if (melee) {
+                        if (random.nextDouble() < valsB.get(StrifeAttribute.PARRY)) {
+                            a.damage(damage * 0.2 * pvpMult);
+                            b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                            event.setCancelled(true);
+                            return;
+                        }
+                    } else {
+                        if (random.nextDouble() < 2 * valsB.get(StrifeAttribute.PARRY)) {
+                            if (event.getDamager() instanceof Arrow) {
+                                event.getDamager().remove();
+                            }
+                            b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                    damage *= valsB.get(StrifeAttribute.BLOCK);
+                }
+
+                double critbonus = 0;
+                if (random.nextDouble() < valsA.get(StrifeAttribute.CRITICAL_RATE)) {
+                    critbonus = damage * (valsA.get(StrifeAttribute.CRITICAL_DAMAGE) - 1.0);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+                }
+                double overbonus = 0;
+                if (velocityMultA > 0) {
+                    if (velocityMultA > 0.94D) {
+                        overbonus = valsA.get(StrifeAttribute.OVERCHARGE) * damage;
+                    }
+                } else {
+                    if (attackSpeedMultA > 0.94D) {
+                        overbonus = valsA.get(StrifeAttribute.OVERCHARGE) * damage;
+                    }
+                }
+
+                damage = damage + critbonus + overbonus;
+
+                double fireDamage = valsA.get(StrifeAttribute.FIRE_DAMAGE);
+                if (fireDamage > 0) {
+                    if (random.nextDouble() < ((valsA.get(StrifeAttribute.IGNITE_CHANCE) * (0.25 +
+                            attackSpeedMultA * 0.75)) * (1 - valsB.get(StrifeAttribute.RESISTANCE)))) {
+                        b.setFireTicks(20 + (int) Math.round(fireDamage * 20));
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    }
+                }
+                double lightningDamage = valsA.get(StrifeAttribute.LIGHTNING_DAMAGE);
+                if (lightningDamage > 0) {
+                    if (random.nextDouble() < ((valsA.get(StrifeAttribute.SHOCK_CHANCE) * (0.25 +
+                            attackSpeedMultA * 0.75)) * (1 - valsB.get(StrifeAttribute.RESISTANCE)))) {
+                        trueDamage = lightningDamage;
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+                    }
+                }
+                double iceDamage = valsA.get(StrifeAttribute.ICE_DAMAGE);
+                if (iceDamage > 0) {
+                    if (random.nextDouble() < ((valsA.get(StrifeAttribute.FREEZE_CHANCE) * (0.25 +
+                            attackSpeedMultA * 0.75)) * (1 - valsB.get(StrifeAttribute.RESISTANCE)))) {
+                        damage = damage + iceDamage + iceDamage * (maxHealthB / 300);
+                        b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                    }
+                }
+
+                if (b.hasPotionEffect(PotionEffectType.WITHER)) {
+                    potionMult += 0.1D;
+                }
+                if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                    potionMult -= 0.1D;
+                }
+                if (melee) {
+                    if (b.hasPotionEffect(PotionEffectType.WITHER)) {
+                        potionMult += 0.1D;
+                    }
+                    if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                        potionMult -= 0.1D;
+                    }
+                    if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                        potionMult += 0.1D;
+                    }
+                    if (a.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+                        potionMult -= 0.1D;
+                    }
+                } else {
+                    double snareChance = valsA.get(StrifeAttribute.SNARE_CHANCE);
+                    if (snareChance > 0) {
+                        if (random.nextDouble() < snareChance) {
+                            b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
+                            b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                        }
+                    }
+                }
+
+                damage *= potionMult;
+                damage *= getArmorMult(valsB.get(StrifeAttribute.ARMOR), 0);
+                damage += trueDamage;
+                damage *= pvpMult;
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+
+                double lifeSteal = valsA.get(StrifeAttribute.LIFE_STEAL);
+                if (lifeSteal > 0) {
+                    if (a.hasPotionEffect(PotionEffectType.POISON)) {
+                        poisonMult = 0.34D;
+                    }
+                    double hungerMult = Math.min(((double) (((Player) a).getFoodLevel())) / 7.0D, 1.0D);
+                    double lifeStolen = event.getFinalDamage() * lifeSteal * poisonMult * hungerMult;
+                    a.setHealth(Math.min(a.getHealth() + lifeStolen, a.getMaxHealth()));
+                }
+
+                double chance = valsB.get(StrifeAttribute.DOGE);
+                if (random.nextDouble() < chance) {
+                    MessageUtils.sendMessage(bP, DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
+                }
+
+                String msg;
+                if (healthB > damage) {
+                    msg = "&c&lHealth: &f" + (int) (healthB - damage) + "&7/&f" + (int) (maxHealthB);
+                } else {
+                    msg = "&c&lHealth: &fDEAD &7/ &fKILLED";
+                }
+                ActionBarMessage.send((Player) a, msg);
             } else {
-                armorReduction = 1 + (armorPenA / 5);
-            }
-            if (blocking) {
-                blockReducer = (1 - blockB);
-            }
-            if (reflectDamageB > 0) {
-                a.damage(damage * reflectDamageB * pvpMult);
-                a.getWorld().playSound(a.getEyeLocation(), Sound.GLASS, 0.6f, 2f);
-            }
-            if (fireDamageA > 0) {
-                if (random.nextDouble() < ((igniteChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
-                    b.setFireTicks(20 + (int) Math.round(fireDamageA * 20));
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                ///////////////////////////////////////////////////////////////////// PLAYER V MOB COMBAT ///
+                double damage = 0;
+                double attackSpeedMultA = 1D;
+                double velocityMultA = 0D;
+                if (melee) {
+                    double attackSpeedA = StrifeAttribute.ATTACK_SPEED.getBaseValue() *
+                            (1 / (1 + valsA.get(StrifeAttribute.ATTACK_SPEED)));
+                    long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(a.getUniqueId());
+                    long timeToSet = Math.round(Math.max(4.0 * attackSpeedA, 0.0));
+                    if (timeLeft > 0) {
+                        attackSpeedMultA = Math.max(1.0 - 1.0 * timeLeft / timeToSet, 0.0);
+                    }
+                    plugin.getAttackSpeedTask().setTimeLeft(a.getUniqueId(), timeToSet);
+
+                    damage = valsA.get(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMultA;
+                } else {
+                    velocityMultA = Math.min(event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2), 1);
+                    damage = valsA.get(StrifeAttribute.RANGED_DAMAGE) * velocityMultA;
+
                 }
-            }
-            if (lightningDamageA > 0) {
-                if (random.nextDouble() < ((shockChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
-                    trueDamage = lightningDamageA;
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+
+                double critbonus = 0;
+                if (random.nextDouble() < valsA.get(StrifeAttribute.CRITICAL_RATE)) {
+                    critbonus = damage * (valsA.get(StrifeAttribute.CRITICAL_DAMAGE) - 1.0);
+                    b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
                 }
-            }
-            if (iceDamageA > 0) {
-                if (random.nextDouble() < ((freezeChanceA * (0.25 + attackSpeedMultA * 0.75)) * (1 - resistB))) {
-                    damage = damage + iceDamageA + iceDamageA * (maxHealthB / 300);
-                    b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int)iceDamageA*3, 1));
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                double overbonus = 0;
+                if (velocityMultA > 0) {
+                    if (velocityMultA > 0.94D) {
+                        overbonus = valsA.get(StrifeAttribute.OVERCHARGE) * damage;
+                    }
+                } else {
+                    if (attackSpeedMultA > 0.94D) {
+                        overbonus = valsA.get(StrifeAttribute.OVERCHARGE) * damage;
+                    }
                 }
-            }
-            if (!(b instanceof ArmorStand)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-                event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
-            }
-            double finalDamage = ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult;
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
-            if (healthB - finalDamage <= 0) {
-                if (random.nextDouble() < resolveB) {
-                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
-                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(b, "&2&oYou refused to die!");
-                    MessageUtils.sendMessage(a, "&4&o" + b.getName() + " is sustained by nothing but resolve!");
+
+                damage = damage + critbonus + overbonus;
+
+                double fireDamage = valsA.get(StrifeAttribute.FIRE_DAMAGE);
+                if (fireDamage > 0) {
+                    if (random.nextDouble() < (valsA.get(StrifeAttribute.IGNITE_CHANCE) * (0.25 + attackSpeedMultA * 0.75))) {
+                        b.setFireTicks(20 + (int) Math.round(fireDamage * 20));
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    }
                 }
-            }
-            if (aPlayer) {
-                ActionBarMessage.send(
-                        (Player) a, "&4&lEnemy Health: &f" + (int)(healthB-event.getFinalDamage()) + "&7/&f" +
-                                (int)(maxHealthB));
-                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
-                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
+                double lightningDamage = valsA.get(StrifeAttribute.LIGHTNING_DAMAGE);
+                if (lightningDamage > 0) {
+                    if (random.nextDouble() < (valsA.get(StrifeAttribute.SHOCK_CHANCE) * (0.25 + attackSpeedMultA * 0.75))) {
+                        trueDamage = lightningDamage;
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+                    }
+                }
+                double iceDamage = valsA.get(StrifeAttribute.ICE_DAMAGE);
+                if (iceDamage > 0) {
+                    if (random.nextDouble() < (valsA.get(StrifeAttribute.FREEZE_CHANCE) * (0.25 + attackSpeedMultA * 0.75))) {
+                        damage = damage + iceDamage + iceDamage * (maxHealthB / 300);
+                        b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                    }
+                }
+
+                if (b.hasPotionEffect(PotionEffectType.WITHER)) {
+                    potionMult += 0.1D;
+                }
+                if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                    potionMult -= 0.1D;
+                }
+                if (melee) {
+                    if (b.hasPotionEffect(PotionEffectType.WITHER)) {
+                        potionMult += 0.1D;
+                    }
+                    if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                        potionMult -= 0.1D;
+                    }
+                    if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                        potionMult += 0.1D;
+                    }
+                    if (a.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+                        potionMult -= 0.1D;
+                    }
+                } else {
+                    double snareChance = valsA.get(StrifeAttribute.SNARE_CHANCE);
+                    if (snareChance > 0) {
+                        if (random.nextDouble() < snareChance) {
+                            b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
+                            b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                        }
+                    }
+                }
+
+                damage *= potionMult;
+                damage += trueDamage;
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+
+                double lifeSteal = valsA.get(StrifeAttribute.LIFE_STEAL);
+                if (lifeSteal > 0) {
+                    if (a.hasPotionEffect(PotionEffectType.POISON)) {
+                        poisonMult = 0.34D;
+                    }
+                    double hungerMult = Math.min(((double) (((Player) a).getFoodLevel())) / 7.0D, 1.0D);
+                    double lifeStolen = event.getFinalDamage() * lifeSteal * poisonMult * hungerMult;
+                    a.setHealth(Math.min(a.getHealth() + lifeStolen, a.getMaxHealth()));
+                }
+
+                String msg;
+                if (healthB > damage) {
+                    msg = "&c&lHealth: &f" + (int) (healthB - damage) + "&7/&f" + (int) (maxHealthB);
+                } else {
+                    msg = "&c&lHealth: &fDEAD &7/ &fKILLED";
+                }
+                ActionBarMessage.send((Player) a, msg);
             }
         } else {
-            if (parried) {
-                event.setCancelled(true);
-                b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
-                return;
-            }
-            double velocityMult = 1;
-            if (aPlayer) {
-                velocityMult = Math.min(event.getDamager().getVelocity().lengthSquared() / Math.pow(3, 2), 1);
-                if (velocityMult >= 0.95D) {
-                    velocityMult += velocityMult * overchargeA;
+            if (bPlayer) {
+                /////////////////////////////////////////////////////////////////////////////// MOB V PLAYER COMBAT ///
+                Player pB = (Player) b;
+                Champion champB = plugin.getChampionManager().getChampion(pB.getUniqueId());
+                Map<StrifeAttribute, Double> valsB = champB.getAttributeValues();
+                double evadeChance = valsB.get(StrifeAttribute.EVASION);
+                if (evadeChance > 0) {
+                    evadeChance = 1 - (100 / (100 + (Math.pow((evadeChance * 100), 1.2))));
+                    if (random.nextDouble() < evadeChance) {
+                        if (event.getDamager() instanceof Arrow) {
+                            event.getDamager().remove();
+                        }
+                        b.getWorld().playSound(b.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
-            }
-            damage = rangedDamageA * rangedMult * velocityMult;
-            double blockReducer = 1;
-            double armorReduction;
-            if (armorB > 0) {
-                if (armorPenA < 1) {
-                    armorReduction = 100 / (100 + (Math.pow(((armorB * (1 - armorPenA)) * 100), 1.36)));
-                } else {
-                    armorReduction = 1 + ((armorPenA - 1) / 5);
+                double damage = getDamageFromMeta(a, b, event.getCause());
+                if (pB.isBlocking()) {
+                    if (random.nextDouble() < valsB.get(StrifeAttribute.ABSORB_CHANCE)) {
+                        if (event.getDamager() instanceof Arrow) {
+                            event.getDamager().remove();
+                        }
+                        b.setHealth(Math.min(healthB + (maxHealthB / 25), maxHealthB));
+                        b.getWorld().playSound(a.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                        event.setCancelled(true);
+                        return;
+                    }
+                    if (melee) {
+                        if (random.nextDouble() < valsB.get(StrifeAttribute.PARRY)) {
+                            a.damage(damage * 0.2 * pvpMult);
+                            b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                            event.setCancelled(true);
+                            return;
+                        }
+                    } else {
+                        if (random.nextDouble() < 2 * valsB.get(StrifeAttribute.PARRY)) {
+                            if (event.getDamager() instanceof Arrow) {
+                                event.getDamager().remove();
+                            }
+                            b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                    damage *= valsB.get(StrifeAttribute.BLOCK);
+                }
+                damage *= getArmorMult(valsB.get(StrifeAttribute.ARMOR), 0);
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+                double chance = valsB.get(StrifeAttribute.DOGE);
+                if (random.nextDouble() < chance) {
+                    MessageUtils.sendMessage(b, DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
                 }
             } else {
-                armorReduction = 1 + (armorPenA / 5);
+                /// MOB V MOB COMBAT ///
+                double damage = getDamageFromMeta(a, b, event.getCause());
+                event.setDamage(damage);
             }
-            if (random.nextDouble() < criticalRateA) {
-                damage = damage * criticalDamageA;
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-            }
-            if (random.nextDouble() < snarechanceA) {
-                b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5));
-            }
-            if (blocking) {
-                blockReducer = (1 - blockB);
-            }
-            if (fireDamageA > 0) {
-                if (random.nextDouble() < (igniteChanceA * (1 - resistB))) {
-                    b.setFireTicks(20 + (int) Math.round(fireDamageA * 20));
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+        }
+    }
+
+    private double getDamageFromMeta (LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
+        double damage = 1;
+        if (a.hasMetadata("DAMAGE")) {
+            damage = a.getMetadata("DAMAGE").get(0).asDouble();
+        } else {
+            if (a.getType() != null) {
+                BeastData data = plugin.getBeastPlugin().getData(a.getType());
+                String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
+                if (data != null && a.getCustomName() != null) {
+                    int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
+                    damage = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
+                    a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, damage));
                 }
             }
-            if (lightningDamageA > 0) {
-                if (random.nextDouble() < (shockChanceA * (1 - resistB))) {
-                    trueDamage = lightningDamageA;
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
-                }
+        }
+        if (d == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+            damage = damage * Math.max(0.3, 2.5 / (a.getLocation().distanceSquared(b.getLocation()) + 1));
+        }
+        return damage;
+    }
+
+    private double getArmorMult (double armor, double apen) {
+        if (armor > 0) {
+            if (apen < 1) {
+                return 100 / (100 + (Math.pow(((armor * (1 - apen)) * 100), 1.3)));
+            } else {
+                return 1 + ((apen - 1) / 5);
             }
-            if (iceDamageA > 0) {
-                if (random.nextDouble() < (freezeChanceA * (1 - resistB))) {
-                    damage = damage + iceDamageA + iceDamageA * (maxHealthB / 300);
-                    b.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int)iceDamageA*3, 1));
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.GLASS, 1f, 1f);
-                }
-            }
-            if (!(b instanceof ArmorStand)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-                event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
-            }
-            double finalDamage = ((damage * armorReduction * blockReducer) + trueDamage) * pvpMult;
-            event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
-            if (healthB - finalDamage <= 0) {
-                if (random.nextDouble() < resolveB) {
-                    event.setDamage(EntityDamageEvent.DamageModifier.BASE, healthB - 1);
-                    b.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 15, 3));
-                    MessageUtils.sendMessage(b, "&2&oYou refused to die!");
-                    MessageUtils.sendMessage(a, "&4&o" + b.getName() + " is sustained by nothing but resolve!");
-                }
-            }
-            if (aPlayer) {
-                ActionBarMessage.send(
-                        (Player) a, "&4&lEnemy Health: &f" + (int)(healthB-event.getFinalDamage()) + "&7/&f" +
-                                (int)(maxHealthB));
-                lifeStolenA = event.getFinalDamage() * lifeStealA * poisonMult * hungerMult;
-                a.setHealth(Math.min(a.getHealth() + lifeStolenA, a.getMaxHealth()));
-            }
+        } else {
+            return 1 + (apen / 5);
         }
     }
 
