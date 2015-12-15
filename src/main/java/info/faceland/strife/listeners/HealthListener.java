@@ -105,9 +105,8 @@ public class HealthListener implements Listener {
             ItemStack itemStack = player.getInventory().getItem(event.getNewSlot());
             if (AttributeHandler.meetsLevelRequirement(player, itemStack)) {
                 for (StrifeAttribute attr : StrifeAttribute.values()) {
-                    if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
-                            || attr == StrifeAttribute.EVASION  || attr == StrifeAttribute.HEALTH
-                            || attr == StrifeAttribute.MOVEMENT_SPEED || attr == StrifeAttribute.XP_GAIN) {
+                    if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.EVASION  || attr == StrifeAttribute
+                            .HEALTH || attr == StrifeAttribute.MOVEMENT_SPEED || attr == StrifeAttribute.XP_GAIN) {
                         continue;
                     }
                     double val = attributeDoubleMap.get(attr);
@@ -121,8 +120,7 @@ public class HealthListener implements Listener {
         }
         if (spam) {
             MessageUtils.sendMessage(player,
-                    "<red>You don't meet the level requirement for one or more pieces of equipment! You will not " +
-                            "receive stats from those items!");
+                    "<red>You don't meet the requirement for one of your items! It will not give any stats!");
         }
         AttributeHandler.updateHealth(player, attributeDoubleMap);
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;

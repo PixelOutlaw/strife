@@ -44,6 +44,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class ExperienceListener implements Listener {
@@ -57,7 +58,15 @@ public class ExperienceListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDeath(PlayerDeathEvent event) {
         event.setKeepLevel(true);
-        event.setDroppedExp(0);
+        event.setDroppedExp(1);
+        if (plugin.getSettings().getStringList("config.penalty-free-worlds").contains(event.getEntity().getWorld()
+                .getName())) {
+            event.setDroppedExp(1 + event.getEntity().getLevel() / 2);
+            return;
+        }
+        double lostXP = Math.min(plugin.getLevelingRate().get(event.getEntity().getLevel()) * 0.025, plugin
+                .getLevelingRate().get(event.getEntity().getLevel()) * event.getEntity().getExp());
+        MessageUtils.sendMessage(event.getEntity(), "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
         event.getEntity().setExp(Math.max(event.getEntity().getExp() - 0.025f, 0.001f));
     }
 
@@ -65,6 +74,11 @@ public class ExperienceListener implements Listener {
     public void onPlayerLevelChange(PlayerLevelChangeEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        if (event.getOldLevel() < event.getNewLevel()) {
+            ActionBarMessage.send(event.getPlayer(), "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)");
+        } else {
+            ActionBarMessage.send(event.getPlayer(), "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)");
+        }
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
         }
@@ -140,23 +154,24 @@ public class ExperienceListener implements Listener {
             Bukkit.getLogger().info("Vanilla XP to level: " + event.getPlayer().getExpToLevel());
             Bukkit.getLogger().info("Pre-Cap Orb Value: " + exact);
         }
-        exact = Math.min(exact, (defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.8) + 1)) * bonusMult);
+        exact = Math.min(exact, (defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.62) + 1)) * bonusMult);
         if (plugin.getSettings().getBoolean("config.verbose")) {
-            Bukkit.getLogger().info("Max Rate: " + defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.8) + 1));
-            Bukkit.getLogger().info("Minimum Orbs: " + defaultLevelUp / (defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 2) + 1)));
+            Bukkit.getLogger().info("Max Rate: " + defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.62) + 1));
+            Bukkit.getLogger().info("Minimum Orbs: " + defaultLevelUp / (defaultLevelUp / (Math.pow(event.getPlayer()
+                    .getLevel(), 1.62) + 1)));
             Bukkit.getLogger().info("Final Orb Value: " + exact);
             Bukkit.getLogger().info("Final Orb Percentage: " + (exact / defaultLevelUp) * 100 + "%");
         }
-        double remainingXp = desiredLevelUp * event.getPlayer().getExp();
-        ActionBarMessage.send(event.getPlayer(), "&a&l( &f&l" + (int)remainingXp + " &a&l/&f&l " + desiredLevelUp +
-                " XP&a&l )");
 
         int newXp = (int) exact;
-
         event.setAmount(newXp);
 
+        double remainingXp = amount + desiredLevelUp * event.getPlayer().getExp();
+        ActionBarMessage.send(event.getPlayer(), "&a&l( &f&l" + (int) remainingXp + " &a&l/ &f&l" + desiredLevelUp +
+                " XP &a&l)");
+
         if (exact > newXp) {
-            experienceManager.changeExp(exact - newXp);
+            experienceManager.changeExp(exact);
         }
     }
 }

@@ -6,6 +6,9 @@ menu:
   unused-marker-y: 5
   close-marker-x: 8
   close-marker-y: 5
+pvp-multiplier: 0.5
+penalty-free-worlds:
+- WeenieWorld
 leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
 
