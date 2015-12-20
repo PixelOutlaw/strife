@@ -30,7 +30,7 @@ public enum StrifeAttribute {
     ARMOR("Armor", 0, true),
     RESISTANCE("Resistance", 0, true),
     BLOCK("Block", 0.1, true, 0.85),
-    ABSORB_CHANCE("Absorb Chance", 0.0, true, 0.35),
+    ABSORB_CHANCE("Absorb Chance", 0, true, 0.35),
     PARRY("Parry Chance", 0, true, 0.75),
     EVASION("Evasion", 0, true),
     MOVEMENT_SPEED("Movement Speed", 100, false),

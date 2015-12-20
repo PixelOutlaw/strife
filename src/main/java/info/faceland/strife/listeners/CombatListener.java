@@ -180,9 +180,17 @@ public class CombatListener implements Listener {
         if (a == null || b == null) {
             return;
         }
-        if (!(b instanceof ArmorStand)) {
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
+        if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0D);
+        }
+        if (event.isApplicable(EntityDamageEvent.DamageModifier.RESISTANCE)) {
+            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0D);
+        }
+        if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
+            event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, 0D);
+        }
+        if (event.isApplicable(EntityDamageEvent.DamageModifier.MAGIC)) {
+            event.setDamage(EntityDamageEvent.DamageModifier.MAGIC, 0D);
         }
         double healthB = b.getHealth();
         double maxHealthB = b.getMaxHealth();
@@ -264,7 +272,7 @@ public class CombatListener implements Listener {
                             return;
                         }
                     }
-                    damage *= valsB.get(StrifeAttribute.BLOCK);
+                    damage *= 1 - valsB.get(StrifeAttribute.BLOCK);
                 }
 
                 double critbonus = 0;
@@ -341,10 +349,9 @@ public class CombatListener implements Listener {
                 }
 
                 damage *= potionMult;
-                damage *= getArmorMult(valsB.get(StrifeAttribute.ARMOR), 0);
+                damage *= getArmorMult(valsB.get(StrifeAttribute.ARMOR), valsA.get(StrifeAttribute.ARMOR_PENETRATION));
                 damage += trueDamage;
                 damage *= pvpMult;
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
 
                 double lifeSteal = valsA.get(StrifeAttribute.LIFE_STEAL);
                 if (lifeSteal > 0) {
@@ -352,9 +359,13 @@ public class CombatListener implements Listener {
                         poisonMult = 0.34D;
                     }
                     double hungerMult = Math.min(((double) (((Player) a).getFoodLevel())) / 7.0D, 1.0D);
-                    double lifeStolen = event.getFinalDamage() * lifeSteal * poisonMult * hungerMult;
-                    a.setHealth(Math.min(a.getHealth() + lifeStolen, a.getMaxHealth()));
+                    double lifeStolen = damage * lifeSteal * poisonMult * hungerMult;
+                    if (a.getHealth() > 0) {
+                        a.setHealth(Math.min(a.getHealth() + lifeStolen, a.getMaxHealth()));
+                    }
                 }
+
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
 
                 double chance = valsB.get(StrifeAttribute.DOGE);
                 if (random.nextDouble() < chance) {
@@ -462,7 +473,6 @@ public class CombatListener implements Listener {
 
                 damage *= potionMult;
                 damage += trueDamage;
-                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
 
                 double lifeSteal = valsA.get(StrifeAttribute.LIFE_STEAL);
                 if (lifeSteal > 0) {
@@ -470,9 +480,13 @@ public class CombatListener implements Listener {
                         poisonMult = 0.34D;
                     }
                     double hungerMult = Math.min(((double) (((Player) a).getFoodLevel())) / 7.0D, 1.0D);
-                    double lifeStolen = event.getFinalDamage() * lifeSteal * poisonMult * hungerMult;
-                    a.setHealth(Math.min(a.getHealth() + lifeStolen, a.getMaxHealth()));
+                    double lifeStolen = damage * lifeSteal * poisonMult * hungerMult;
+                    if (a.getHealth() > 0) {
+                        a.setHealth(Math.min(a.getHealth() + lifeStolen, a.getMaxHealth()));
+                    }
                 }
+
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
 
                 String msg;
                 if (healthB > damage) {
@@ -528,7 +542,7 @@ public class CombatListener implements Listener {
                             return;
                         }
                     }
-                    damage *= valsB.get(StrifeAttribute.BLOCK);
+                    damage *= 1 - valsB.get(StrifeAttribute.BLOCK);
                 }
                 damage *= getArmorMult(valsB.get(StrifeAttribute.ARMOR), 0);
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
@@ -539,7 +553,7 @@ public class CombatListener implements Listener {
             } else {
                 /// MOB V MOB COMBAT ///
                 double damage = getDamageFromMeta(a, b, event.getCause());
-                event.setDamage(damage);
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             }
         }
     }
