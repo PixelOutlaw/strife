@@ -62,11 +62,11 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (valueMap.get(StrifeAttribute.REGENERATION) > 1) {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
         }
-        double armor = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.ARMOR) * 100), 1.36)))));
+        double armor = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.ARMOR) * 100), 1.25)))));
         lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
             .get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)" );
         if (valueMap.get(StrifeAttribute.EVASION) > 0) {
-            double evasion = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.2)))));
+            double evasion = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.1)))));
             lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
                 .get(StrifeAttribute.EVASION)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)" );
         }
