@@ -214,7 +214,7 @@ public class CombatListener implements Listener {
                     double accuracy;
                     accuracy = valsA.get(StrifeAttribute.ACCURACY);
                     evadeChance = Math.max(evadeChance * (1 - accuracy), 0);
-                    evadeChance = 1 - (100 / (100 + (Math.pow((evadeChance * 100), 1.2))));
+                    evadeChance = 1 - (100 / (100 + (Math.pow((evadeChance * 100), 1.1))));
                     if (random.nextDouble() < evadeChance) {
                         if (event.getDamager() instanceof Arrow) {
                             event.getDamager().remove();
@@ -514,7 +514,12 @@ public class CombatListener implements Listener {
                         return;
                     }
                 }
+
                 double damage = getDamageFromMeta(a, b, event.getCause());
+                if (damage == 0) {
+                    damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
+                }
+
                 if (pB.isBlocking()) {
                     if (random.nextDouble() < valsB.get(StrifeAttribute.ABSORB_CHANCE)) {
                         if (event.getDamager() instanceof Arrow) {
@@ -553,13 +558,16 @@ public class CombatListener implements Listener {
             } else {
                 /// MOB V MOB COMBAT ///
                 double damage = getDamageFromMeta(a, b, event.getCause());
+                if (damage == 0) {
+                    damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
+                }
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             }
         }
     }
 
     private double getDamageFromMeta (LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
-        double damage = 1;
+        double damage = 0;
         if (a.hasMetadata("DAMAGE")) {
             damage = a.getMetadata("DAMAGE").get(0).asDouble();
         } else {
@@ -582,7 +590,7 @@ public class CombatListener implements Listener {
     private double getArmorMult (double armor, double apen) {
         if (armor > 0) {
             if (apen < 1) {
-                return 100 / (100 + (Math.pow(((armor * (1 - apen)) * 100), 1.3)));
+                return 100 / (100 + (Math.pow(((armor * (1 - apen)) * 100), 1.25)));
             } else {
                 return 1 + ((apen - 1) / 5);
             }
