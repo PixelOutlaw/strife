@@ -37,10 +37,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
@@ -68,6 +65,7 @@ public class HealthListener implements Listener {
                 double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
                 float speed = 0.2F * (float) perc;
                 player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+                player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
             }
         }, 20L);
     }
@@ -126,6 +124,7 @@ public class HealthListener implements Listener {
         double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+        player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
