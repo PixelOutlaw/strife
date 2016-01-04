@@ -275,11 +275,9 @@ public class CombatListener implements Listener {
                     damage *= 1 - valsB.get(StrifeAttribute.BLOCK);
                 }
 
-                double critbonus = 0;
-                if (random.nextDouble() < valsA.get(StrifeAttribute.CRITICAL_RATE)) {
-                    critbonus = damage * (valsA.get(StrifeAttribute.CRITICAL_DAMAGE) - 1.0);
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-                }
+                double critbonus = damage * getCritBonus(valsA.get(StrifeAttribute.CRITICAL_RATE), valsA.get
+                        (StrifeAttribute.CRITICAL_DAMAGE), b, (Player) a);
+
                 double overbonus = 0;
                 if (velocityMultA > 0) {
                     if (velocityMultA > 0.94D) {
@@ -401,11 +399,9 @@ public class CombatListener implements Listener {
 
                 }
 
-                double critbonus = 0;
-                if (random.nextDouble() < valsA.get(StrifeAttribute.CRITICAL_RATE)) {
-                    critbonus = damage * (valsA.get(StrifeAttribute.CRITICAL_DAMAGE) - 1.0);
-                    b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-                }
+                double critbonus = damage * getCritBonus(valsA.get(StrifeAttribute.CRITICAL_RATE), valsA.get
+                        (StrifeAttribute.CRITICAL_DAMAGE), b, (Player) a);
+
                 double overbonus = 0;
                 if (velocityMultA > 0) {
                     if (velocityMultA > 0.94D) {
@@ -518,6 +514,8 @@ public class CombatListener implements Listener {
                 double damage = getDamageFromMeta(a, b, event.getCause());
                 if (damage == 0) {
                     damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
+                    Bukkit.getLogger().info("DAMAGE 0 : ALTERING BASED ON EVENT...");
+                    Bukkit.getLogger().info("New Base Damage: " + damage);
                 }
 
                 if (pB.isBlocking()) {
@@ -597,6 +595,18 @@ public class CombatListener implements Listener {
         } else {
             return 1 + (apen / 5);
         }
+    }
+
+    private double getCritBonus(double rate, double damage, LivingEntity b, Player a) {
+        if (random.nextDouble() < rate) {
+            if (a.getItemInHand().getItemMeta().getDisplayName().contains("Barking")) {
+                b.getWorld().playSound(b.getEyeLocation(), Sound.WOLF_BARK, 2f, 1f);
+            } else {
+                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
+            }
+            return damage - 1.0;
+        }
+        return 1.0;
     }
 
 }
