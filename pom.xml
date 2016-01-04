@@ -67,6 +67,13 @@
             <artifactId>bullion</artifactId>
             <version>2.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>mythicmobs</groupId>
+            <artifactId>mythicmobs</artifactId>
+            <version>mythicmobs</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/MythicMobs-2.0.2.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
