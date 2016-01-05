@@ -32,6 +32,8 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import net.elseland.xikage.MythicMobs.Mobs.ActiveMobHandler;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
@@ -276,7 +278,7 @@ public class CombatListener implements Listener {
                 }
 
                 double critbonus = damage * getCritBonus(valsA.get(StrifeAttribute.CRITICAL_RATE), valsA.get
-                        (StrifeAttribute.CRITICAL_DAMAGE), b, (Player) a);
+                        (StrifeAttribute.CRITICAL_DAMAGE), (Player) a, b);
 
                 double overbonus = 0;
                 if (velocityMultA > 0) {
@@ -400,7 +402,7 @@ public class CombatListener implements Listener {
                 }
 
                 double critbonus = damage * getCritBonus(valsA.get(StrifeAttribute.CRITICAL_RATE), valsA.get
-                        (StrifeAttribute.CRITICAL_DAMAGE), b, (Player) a);
+                        (StrifeAttribute.CRITICAL_DAMAGE), (Player) a, b);
 
                 double overbonus = 0;
                 if (velocityMultA > 0) {
@@ -511,11 +513,11 @@ public class CombatListener implements Listener {
                     }
                 }
 
-                double damage = getDamageFromMeta(a, b, event.getCause());
-                if (damage == 0) {
+                double damage = 0;
+                if (!ActiveMobHandler.isRegisteredMob(a.getUniqueId())) {
+                    damage = getDamageFromMeta(a, b, event.getCause());
+                } else {
                     damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
-                    Bukkit.getLogger().info("DAMAGE 0 : ALTERING BASED ON EVENT...");
-                    Bukkit.getLogger().info("New Base Damage: " + damage);
                 }
 
                 if (pB.isBlocking()) {
@@ -555,8 +557,10 @@ public class CombatListener implements Listener {
                 }
             } else {
                 /// MOB V MOB COMBAT ///
-                double damage = getDamageFromMeta(a, b, event.getCause());
-                if (damage == 0) {
+                double damage = 0;
+                if (!ActiveMobHandler.isRegisteredMob(a.getUniqueId())) {
+                    damage = getDamageFromMeta(a, b, event.getCause());
+                } else {
                     damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
                 }
                 event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
@@ -597,7 +601,7 @@ public class CombatListener implements Listener {
         }
     }
 
-    private double getCritBonus(double rate, double damage, LivingEntity b, Player a) {
+    private double getCritBonus(double rate, double damage, Player a, LivingEntity b) {
         if (random.nextDouble() < rate) {
             if (a.getItemInHand().getItemMeta().getDisplayName().contains("Barking")) {
                 b.getWorld().playSound(b.getEyeLocation(), Sound.WOLF_BARK, 2f, 1f);
