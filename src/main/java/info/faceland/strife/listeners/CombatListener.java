@@ -297,7 +297,9 @@ public class CombatListener implements Listener {
                 if (fireDamage > 0) {
                     if (random.nextDouble() < ((valsA.get(StrifeAttribute.IGNITE_CHANCE) * (0.25 +
                             attackSpeedMultA * 0.75)) * (1 - valsB.get(StrifeAttribute.RESISTANCE)))) {
-                        b.setFireTicks(20 + (int) Math.round(fireDamage * 20));
+                        damage += fireDamage;
+                        b.setFireTicks(b.getFireTicks() + (int)(fireDamage * 20));
+                        b.setFireTicks(Math.max(20 + (int) Math.round(fireDamage * 20), b.getFireTicks()));
                         b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                     }
                 }
@@ -420,7 +422,8 @@ public class CombatListener implements Listener {
                 double fireDamage = valsA.get(StrifeAttribute.FIRE_DAMAGE);
                 if (fireDamage > 0) {
                     if (random.nextDouble() < (valsA.get(StrifeAttribute.IGNITE_CHANCE) * (0.25 + attackSpeedMultA * 0.75))) {
-                        b.setFireTicks(20 + (int) Math.round(fireDamage * 20));
+                        damage += fireDamage;
+                        b.setFireTicks(b.getFireTicks() + (int)(fireDamage * 20));
                         b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                     }
                 }
