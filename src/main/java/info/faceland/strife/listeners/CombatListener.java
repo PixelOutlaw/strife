@@ -595,7 +595,7 @@ public class CombatListener implements Listener {
     private double getArmorMult (double armor, double apen) {
         if (armor > 0) {
             if (apen < 1) {
-                return 100 / (100 + (Math.pow(((armor * (1 - apen)) * 100), 1.25)));
+                return 100 / (100 + (Math.pow(((armor * (1 - apen)) * 100), 1.2)));
             } else {
                 return 1 + ((apen - 1) / 5);
             }
