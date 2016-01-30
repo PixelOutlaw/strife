@@ -25,14 +25,10 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
-import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
-import info.faceland.beast.BeastData;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
@@ -52,7 +48,6 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -554,15 +549,6 @@ public class CombatListener implements Listener {
     private double getDamageFromMeta (LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
         double damage = 0;
         damage = a.getMetadata("DAMAGE").get(0).asDouble();
-        if (a.getType() != null) {
-            BeastData data = plugin.getBeastPlugin().getData(a.getType());
-            String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
-            if (data != null && a.getCustomName() != null) {
-                int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                damage = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
-                a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, damage));
-            }
-        }
         if (d == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
             damage = damage * Math.max(0.3, 2.5 / (a.getLocation().distanceSquared(b.getLocation()) + 1));
         }

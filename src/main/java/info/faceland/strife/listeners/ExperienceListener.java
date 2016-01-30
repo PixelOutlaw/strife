@@ -88,9 +88,9 @@ public class ExperienceListener implements Listener {
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(player, "<green>You have leveled up!");
         FancyMessage message = new FancyMessage("");
-        message.then("You gained a levelup point! ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+        message.then("You gained 2 levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                .color(ChatColor.WHITE).then(" to use it!").color(ChatColor.GOLD).send(event.getPlayer());
+                .color(ChatColor.WHITE).then(" to use points!").color(ChatColor.GOLD).send(event.getPlayer());
         Title title = new Title("<green>LEVEL UP!", "<green>You reached level <white>" + event.getNewLevel() +
                 "<green>!", 1, 1, 1);
         title.setTimingsToSeconds();

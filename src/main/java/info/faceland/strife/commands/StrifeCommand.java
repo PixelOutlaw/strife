@@ -72,9 +72,9 @@ public class StrifeCommand {
                 new String[][]{{"%player%", target.getDisplayName()}});
         MessageUtils.sendMessage(target, "<green>Your stats have been reset.");
         FancyMessage message = new FancyMessage("");
-        message.then("You have unspent stat points. ").color(ChatColor.GOLD).then("Click here").command("/levelup")
+        message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                .color(ChatColor.WHITE).then(" to spend them.").send(target);
+                .color(ChatColor.WHITE).then(" to spend them!").send(target);
         AttributeHandler.updateHealth(target, champion.getAttributeValues());
     }
 
