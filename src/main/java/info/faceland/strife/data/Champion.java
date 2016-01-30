@@ -159,7 +159,7 @@ public class Champion {
     }
 
     public int getMaximumStatLevel() {
-        return 5 + (getHighestReachedLevel() / 5);
+        return 10 + (getHighestReachedLevel() / 5) * 2;
     }
 
     public int getHighestReachedLevel() {

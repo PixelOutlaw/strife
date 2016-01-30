@@ -63,10 +63,9 @@ public class StrifeCommand {
     public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
-            int lev = champion.getLevel(stat);
-            champion.setUnusedStatPoints(champion.getUnusedStatPoints() + lev);
             champion.setLevel(stat, 0);
         }
+        champion.setUnusedStatPoints(target.getLevel() * 2);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You reset <white>%player%<green>.",
@@ -108,7 +107,7 @@ public class StrifeCommand {
         target.setLevel(newLevel);
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         int diff = newLevel - oldLevel;
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff - 1);
+        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff * 2 - 2);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",

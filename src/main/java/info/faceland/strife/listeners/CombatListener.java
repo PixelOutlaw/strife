@@ -32,15 +32,10 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import net.elseland.xikage.MythicMobs.Mobs.ActiveMobHandler;
-
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -86,20 +81,21 @@ public class CombatListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
             return;
         }
+        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
+            double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 25;
+            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            event.setDamage(1 + hpdmg);
+            return;
+        }
         if (event.getCause() == EntityDamageEvent.DamageCause.FIRE) {
-            double hpdmg = ((LivingEntity) event.getEntity()).getHealth()/25;
+            double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 25;
             event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             event.setDamage(1 + hpdmg);
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
-            double hpdmg = ((LivingEntity) event.getEntity()).getHealth()/25;
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
-            event.setDamage(1 + hpdmg);
-        } else if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
+            return;
+        }
+        if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
             double hpdmg = ((LivingEntity) event.getEntity()).getHealth()/20;
             event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, 0);
             event.setDamage(1 + hpdmg);
         }
     }
@@ -179,9 +175,6 @@ public class CombatListener implements Listener {
         if (b instanceof Player) {
             bPlayer = true;
         }
-        if (a == null || b == null) {
-            return;
-        }
         if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
             event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0D);
         }
@@ -199,7 +192,6 @@ public class CombatListener implements Listener {
         double potionMult = 1;
         double poisonMult = 1;
         double trueDamage = 0;
-        double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
 
         if (aPlayer) {
             Player aP = (Player) a;
@@ -210,6 +202,7 @@ public class CombatListener implements Listener {
                 Player bP = (Player) b;
                 Champion champB = plugin.getChampionManager().getChampion(bP.getUniqueId());
                 Map<StrifeAttribute, Double> valsB = champB.getAttributeValues();
+                double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
 
                 double evadeChance = valsB.get(StrifeAttribute.EVASION);
                 if (evadeChance > 0) {
@@ -278,7 +271,7 @@ public class CombatListener implements Listener {
                 }
 
                 double critbonus = damage * getCritBonus(valsA.get(StrifeAttribute.CRITICAL_RATE), valsA.get
-                        (StrifeAttribute.CRITICAL_DAMAGE), (Player) a, b);
+                        (StrifeAttribute.CRITICAL_DAMAGE), aP);
 
                 double overbonus = 0;
                 if (velocityMultA > 0) {
@@ -297,9 +290,8 @@ public class CombatListener implements Listener {
                 if (fireDamage > 0) {
                     if (random.nextDouble() < ((valsA.get(StrifeAttribute.IGNITE_CHANCE) * (0.25 +
                             attackSpeedMultA * 0.75)) * (1 - valsB.get(StrifeAttribute.RESISTANCE)))) {
-                        damage += fireDamage;
-                        b.setFireTicks(b.getFireTicks() + (int)(fireDamage * 20));
-                        b.setFireTicks(Math.max(20 + (int) Math.round(fireDamage * 20), b.getFireTicks()));
+                        trueDamage += fireDamage / 10;
+                        b.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), b.getFireTicks()));
                         b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                     }
                 }
@@ -307,7 +299,7 @@ public class CombatListener implements Listener {
                 if (lightningDamage > 0) {
                     if (random.nextDouble() < ((valsA.get(StrifeAttribute.SHOCK_CHANCE) * (0.25 +
                             attackSpeedMultA * 0.75)) * (1 - valsB.get(StrifeAttribute.RESISTANCE)))) {
-                        trueDamage = lightningDamage;
+                        trueDamage += lightningDamage * 0.75;
                         b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
                     }
                 }
@@ -328,12 +320,6 @@ public class CombatListener implements Listener {
                     potionMult -= 0.1D;
                 }
                 if (melee) {
-                    if (b.hasPotionEffect(PotionEffectType.WITHER)) {
-                        potionMult += 0.1D;
-                    }
-                    if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-                        potionMult -= 0.1D;
-                    }
                     if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
                         potionMult += 0.1D;
                     }
@@ -404,7 +390,7 @@ public class CombatListener implements Listener {
                 }
 
                 double critbonus = damage * getCritBonus(valsA.get(StrifeAttribute.CRITICAL_RATE), valsA.get
-                        (StrifeAttribute.CRITICAL_DAMAGE), (Player) a, b);
+                        (StrifeAttribute.CRITICAL_DAMAGE), aP);
 
                 double overbonus = 0;
                 if (velocityMultA > 0) {
@@ -422,15 +408,15 @@ public class CombatListener implements Listener {
                 double fireDamage = valsA.get(StrifeAttribute.FIRE_DAMAGE);
                 if (fireDamage > 0) {
                     if (random.nextDouble() < (valsA.get(StrifeAttribute.IGNITE_CHANCE) * (0.25 + attackSpeedMultA * 0.75))) {
-                        damage += fireDamage;
-                        b.setFireTicks(b.getFireTicks() + (int)(fireDamage * 20));
+                        trueDamage += fireDamage / 10;
+                        b.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), b.getFireTicks()));
                         b.getWorld().playSound(b.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
                     }
                 }
                 double lightningDamage = valsA.get(StrifeAttribute.LIGHTNING_DAMAGE);
                 if (lightningDamage > 0) {
                     if (random.nextDouble() < (valsA.get(StrifeAttribute.SHOCK_CHANCE) * (0.25 + attackSpeedMultA * 0.75))) {
-                        trueDamage = lightningDamage;
+                        trueDamage += lightningDamage * 1.5;
                         b.getWorld().playSound(b.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
                     }
                 }
@@ -450,12 +436,6 @@ public class CombatListener implements Listener {
                     potionMult -= 0.1D;
                 }
                 if (melee) {
-                    if (b.hasPotionEffect(PotionEffectType.WITHER)) {
-                        potionMult += 0.1D;
-                    }
-                    if (b.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-                        potionMult -= 0.1D;
-                    }
                     if (a.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
                         potionMult += 0.1D;
                     }
@@ -517,7 +497,7 @@ public class CombatListener implements Listener {
                 }
 
                 double damage = 0;
-                if (!ActiveMobHandler.isRegisteredMob(a.getUniqueId())) {
+                if (a.hasMetadata("DAMAGE")) {
                     damage = getDamageFromMeta(a, b, event.getCause());
                 } else {
                     damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
@@ -535,7 +515,7 @@ public class CombatListener implements Listener {
                     }
                     if (melee) {
                         if (random.nextDouble() < valsB.get(StrifeAttribute.PARRY)) {
-                            a.damage(damage * 0.2 * pvpMult);
+                            a.damage(damage * 0.2);
                             b.getWorld().playSound(b.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
                             event.setCancelled(true);
                             return;
@@ -561,7 +541,7 @@ public class CombatListener implements Listener {
             } else {
                 /// MOB V MOB COMBAT ///
                 double damage = 0;
-                if (!ActiveMobHandler.isRegisteredMob(a.getUniqueId())) {
+                if (a.hasMetadata("DAMAGE")) {
                     damage = getDamageFromMeta(a, b, event.getCause());
                 } else {
                     damage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
@@ -573,17 +553,14 @@ public class CombatListener implements Listener {
 
     private double getDamageFromMeta (LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
         double damage = 0;
-        if (a.hasMetadata("DAMAGE")) {
-            damage = a.getMetadata("DAMAGE").get(0).asDouble();
-        } else {
-            if (a.getType() != null) {
-                BeastData data = plugin.getBeastPlugin().getData(a.getType());
-                String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
-                if (data != null && a.getCustomName() != null) {
-                    int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
-                    damage = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
-                    a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, damage));
-                }
+        damage = a.getMetadata("DAMAGE").get(0).asDouble();
+        if (a.getType() != null) {
+            BeastData data = plugin.getBeastPlugin().getData(a.getType());
+            String name = a.getCustomName() != null ? ChatColor.stripColor(a.getCustomName()) : "0";
+            if (data != null && a.getCustomName() != null) {
+                int level = NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(name));
+                damage = (data.getDamageExpression().setVariable("LEVEL", level).evaluate());
+                a.setMetadata("DAMAGE", new FixedMetadataValue(plugin, damage));
             }
         }
         if (d == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
@@ -604,13 +581,9 @@ public class CombatListener implements Listener {
         }
     }
 
-    private double getCritBonus(double rate, double damage, Player a, LivingEntity b) {
+    private double getCritBonus(double rate, double damage, Player a) {
         if (random.nextDouble() < rate) {
-            if (a.getItemInHand().getItemMeta().getDisplayName().contains("Barking")) {
-                b.getWorld().playSound(b.getEyeLocation(), Sound.WOLF_BARK, 2f, 1f);
-            } else {
-                b.getWorld().playSound(b.getEyeLocation(), Sound.FALL_BIG, 2f, 1f);
-            }
+            a.getWorld().playSound(a.getEyeLocation(), Sound.FALL_BIG, 2f, 0.8f);
             return damage - 1.0;
         }
         return 1.0;

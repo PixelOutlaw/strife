@@ -83,7 +83,7 @@ public class ExperienceListener implements Listener {
             return;
         }
         champion.setHighestReachedLevel(event.getNewLevel());
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 1);
+        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 2);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(player, "<green>You have leveled up!");

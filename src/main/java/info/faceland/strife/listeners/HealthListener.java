@@ -139,7 +139,7 @@ public class HealthListener implements Listener {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         double amount = champion.getAttributeValues().get(StrifeAttribute.REGENERATION);
         if (player.hasPotionEffect(PotionEffectType.POISON)) {
-            amount *= 0.25;
+            amount *= 0.33;
         }
         event.setAmount(amount);
     }
