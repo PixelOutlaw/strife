@@ -54,11 +54,10 @@ public class DataListener implements Listener {
                     @Override
                     public void run() {
                         FancyMessage message = new FancyMessage("");
-                        message.then("Your stats have been reset! ").color(ChatColor.GOLD).then("Click here")
-                            .command("/levelup")
-                            .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                            .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD)
-                            .send(event.getPlayer());
+                        message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE")
+                                .command("/levelup").color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD)
+                                .then("/levelup").color(ChatColor.WHITE).then(" to spend them and raise your stats!").color
+                                (ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }
@@ -69,11 +68,10 @@ public class DataListener implements Listener {
                     @Override
                     public void run() {
                         FancyMessage message = new FancyMessage("");
-                        message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here")
-                            .command("/levelup")
-                            .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                            .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD)
-                            .send(event.getPlayer());
+                        message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE")
+                            .command("/levelup").color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD)
+                            .then("/levelup").color(ChatColor.WHITE).then(" to spend them and raise your stats!").color
+                                (ChatColor.GOLD).send(event.getPlayer());
                     }
                 }, 20L * 2);
             }
