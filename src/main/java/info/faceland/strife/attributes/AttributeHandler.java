@@ -32,6 +32,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,17 +78,13 @@ public class AttributeHandler {
         return stripped;
     }
 
-    public static void updateHealth(Player player, Map<StrifeAttribute, Double> attributeDoubleMap) {
-        if (!attributeDoubleMap.containsKey(StrifeAttribute.HEALTH)) {
-            return;
-        }
-        double newMaxHealth = attributeDoubleMap.get(StrifeAttribute.HEALTH);
+    public static void updateHealth(Player player, double healthValue) {
         double oldHealth = player.getHealth();
-        if (player.getHealth() > newMaxHealth) {
-            double tempHealth = Math.min(newMaxHealth, player.getMaxHealth()) / 2;
+        if (player.getHealth() > healthValue) {
+            double tempHealth = Math.min(healthValue, player.getMaxHealth()) / 2;
             player.setHealth(tempHealth);
         }
-        player.setMaxHealth(newMaxHealth);
+        player.setMaxHealth(healthValue);
         player.setHealthScaled(true);
         player.setHealthScale(player.getMaxHealth());
         player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
@@ -99,6 +96,19 @@ public class AttributeHandler {
 
     public static boolean meetsLevelRequirement(Player player, HiltItemStack hiltItemStack) {
         return !(player == null || hiltItemStack == null) && player.getLevel() >= getValue(hiltItemStack, StrifeAttribute.LEVEL_REQUIREMENT);
+    }
+
+    @SafeVarargs
+    public static Map<StrifeAttribute, Double> combineMaps(Map<StrifeAttribute, Double>... maps) {
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        for (Map<StrifeAttribute, Double> map : maps) {
+            for (Map.Entry<StrifeAttribute, Double> ent : map.entrySet()) {
+                double val = attributeDoubleMap.containsKey(ent.getKey()) ? attributeDoubleMap.get(ent.getKey()) : 0;
+                double calculatedValue = val + ent.getValue();
+                attributeDoubleMap.put(ent.getKey(), calculatedValue);
+            }
+        }
+        return attributeDoubleMap;
     }
 
 }

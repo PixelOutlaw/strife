@@ -22,8 +22,6 @@
  */
 package info.faceland.strife.data;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
@@ -41,6 +39,9 @@ public class Champion {
 
     private UUID uniqueId;
     private Map<StrifeStat, Integer> levelMap;
+    private Map<StrifeAttribute, Double> attributeStatCache;
+    private Map<StrifeAttribute, Double> attributeArmorCache;
+    private Map<StrifeAttribute, Double> attributeWeaponCache;
     private Map<StrifeAttribute, Double> attributeCache;
     private int unusedStatPoints;
     private int highestReachedLevel;
@@ -48,6 +49,9 @@ public class Champion {
     public Champion(UUID uniqueId) {
         this.uniqueId = uniqueId;
         this.levelMap = new HashMap<>();
+        this.attributeStatCache = new HashMap<>();
+        this.attributeArmorCache = new HashMap<>();
+        this.attributeWeaponCache = new HashMap<>();
         this.attributeCache = new HashMap<>();
     }
 
@@ -81,7 +85,8 @@ public class Champion {
         levelMap.put(stat, level);
     }
 
-    public Map<StrifeAttribute, Double> getAttributeValues() {
+    public Map<StrifeAttribute, Double> getStatAttributeValues() {
+        attributeStatCache.clear();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         for (StrifeAttribute attr : StrifeAttribute.values()) {
             attributeDoubleMap.put(attr, attr != StrifeAttribute.ATTACK_SPEED ? attr.getBaseValue() : 0);
@@ -95,48 +100,65 @@ public class Champion {
                                 : val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
-        if (getPlayer().getEquipment() == null) {
-            return attributeDoubleMap;
-        }
-        boolean spam = false;
+        attributeStatCache.putAll(attributeDoubleMap);
+        return attributeDoubleMap;
+    }
+
+    public Map<StrifeAttribute, Double> getArmorAttributeValues() {
+        attributeArmorCache.clear();
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
                 continue;
             }
-            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
-                spam = true;
-                continue;
-            }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
-                        .min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr))
-                        : val + AttributeHandler.getValue(itemStack, attr));
+                double val = AttributeHandler.getValue(itemStack, attr);
+                attributeDoubleMap.put(attr,
+                        attr.getCap() > 0D ? Math.min(attr.getCap(), val) : val);
             }
         }
-        if (getPlayer().getEquipment().getItemInHand() != null
-                && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
-            ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
-            if (AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
-                for (StrifeAttribute attr : StrifeAttribute.values()) {
-                    if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.EVASION || attr ==
-                            StrifeAttribute.HEALTH || attr == StrifeAttribute.MOVEMENT_SPEED || attr ==
-                            StrifeAttribute.XP_GAIN) {
-                        continue;
-                    }
-                    double val = attributeDoubleMap.get(attr);
-                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
-                            .min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap())
-                            : val + AttributeHandler.getValue(itemStack, attr));
-                }
-            } else {
-                spam = true;
-            }
+        attributeArmorCache.putAll(attributeDoubleMap);
+        return attributeDoubleMap;
+    }
+
+    public Map<StrifeAttribute, Double> getWeaponAttributeValues() {
+        attributeWeaponCache.clear();
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
+        if (itemStack == null || itemStack.getType() == Material.AIR) {
+            attributeWeaponCache.putAll(attributeDoubleMap);
+            return attributeWeaponCache;
         }
-        if (spam) {
-            MessageUtils.sendMessage(getPlayer(),
-                    "<red>You don't meet the requirement for one of your items! It will not give any stats!");
+        for (StrifeAttribute attr : StrifeAttribute.values()) {
+            double val = AttributeHandler.getValue(itemStack, attr);
+            attributeDoubleMap.put(attr,
+                    attr.getCap() > 0D ? Math.min(attr.getCap(), val) : val);
         }
+        attributeWeaponCache.putAll(attributeDoubleMap);
+        return attributeDoubleMap;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeValues(boolean refresh) {
+        attributeCache.clear();
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        attributeDoubleMap.putAll(AttributeHandler.combineMaps(
+                refresh ? getStatAttributeValues() : getAttributeStatCache(),
+                refresh ? getArmorAttributeValues() : getAttributeArmorCache(),
+                refresh ? getWeaponAttributeValues() : getAttributeWeaponCache()
+        ));
+        attributeCache.putAll(attributeDoubleMap);
+        return attributeDoubleMap;
+    }
+
+    public Map<StrifeAttribute, Double> recombineCache() {
+        attributeCache.clear();
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        attributeDoubleMap.putAll(AttributeHandler.combineMaps(
+                getAttributeStatCache(),
+                getAttributeArmorCache(),
+                getAttributeWeaponCache()
+        ));
+        attributeCache.putAll(attributeDoubleMap);
         return attributeDoubleMap;
     }
 
@@ -172,15 +194,51 @@ public class Champion {
         this.highestReachedLevel = highestReachedLevel;
     }
 
-    public Map<StrifeAttribute, Double> getAttributeCache() {
-        return attributeCache;
+    public Map<StrifeAttribute, Double> getAttributeStatCache() {
+        return new HashMap<>(attributeStatCache);
     }
 
-    public double getAttributeFromCache(StrifeAttribute attribute, double def) {
+    public Map<StrifeAttribute, Double> getAttributeArmorCache() {
+        return new HashMap<>(attributeArmorCache);
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeWeaponCache() {
+        return new HashMap<>(attributeWeaponCache);
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeCache() {
+        return new HashMap<>(attributeCache);
+    }
+
+    public double getStatCacheAttribute(StrifeAttribute attribute, double def) {
+        return attributeStatCache.containsKey(attribute) ? attributeStatCache.get(attribute) : def;
+    }
+
+    public double getArmorCacheAttribute(StrifeAttribute attribute, double def) {
+        return attributeArmorCache.containsKey(attribute) ? attributeArmorCache.get(attribute) : def;
+    }
+
+    public double getWeaponCacheAttribute(StrifeAttribute attribute, double def) {
+        return attributeWeaponCache.containsKey(attribute) ? attributeWeaponCache.get(attribute) : def;
+    }
+
+    public double getCacheAttribute(StrifeAttribute attribute, double def) {
         return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : def;
     }
 
-    public void setAttributeInCache(StrifeAttribute attribute, double value) {
+    public void setStatCacheAttribue(StrifeAttribute attribute, double value) {
+        attributeStatCache.put(attribute, value);
+    }
+
+    public void setArmorCacheAttribue(StrifeAttribute attribute, double value) {
+        attributeArmorCache.put(attribute, value);
+    }
+
+    public void setWeaponCacheAttribue(StrifeAttribute attribute, double value) {
+        attributeWeaponCache.put(attribute, value);
+    }
+
+    public void setCacheAttribute(StrifeAttribute attribute, double value) {
         attributeCache.put(attribute, value);
     }
 }

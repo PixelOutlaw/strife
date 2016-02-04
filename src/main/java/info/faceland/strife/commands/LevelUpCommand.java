@@ -25,6 +25,7 @@ package info.faceland.strife.commands;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.entity.Player;
@@ -68,7 +69,8 @@ public class LevelUpCommand {
         MessageUtils
             .sendMessage(sender, "<green>You leveled up <white>%stat%<green>.",
                          new String[][]{{"%stat%", stat.getName()}});
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
+        AttributeHandler.updateHealth(champion.getPlayer(),
+                champion.getCacheAttribute(StrifeAttribute.HEALTH, StrifeAttribute.HEALTH.getBaseValue()));
     }
 
 }

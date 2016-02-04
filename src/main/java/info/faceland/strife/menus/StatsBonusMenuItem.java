@@ -25,8 +25,7 @@ package info.faceland.strife.menus;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-import ninja.amp.ampmenus.events.ItemClickEvent;
-import ninja.amp.ampmenus.items.MenuItem;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -38,6 +37,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
 
 public class StatsBonusMenuItem extends MenuItem {
 
@@ -52,7 +54,7 @@ public class StatsBonusMenuItem extends MenuItem {
     @Override
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
+        Map<StrifeAttribute, Double> valueMap = champion.getAttributeCache();
         ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());

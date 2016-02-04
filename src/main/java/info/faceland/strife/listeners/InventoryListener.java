@@ -1,3 +1,25 @@
+/**
+ * The MIT License
+ * Copyright (c) 2015 Teal Cube Games
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
@@ -6,7 +28,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.stats.StrifeStat;
 
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -17,9 +38,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class InventoryListener implements Listener {
 
@@ -41,16 +59,7 @@ public class InventoryListener implements Listener {
         }
         Player player = (Player) humanEntity;
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-        for (StrifeAttribute attr : StrifeAttribute.values()) {
-            attributeDoubleMap.put(attr, attr.getBaseValue());
-        }
-        for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, val + entry.getKey().getAttribute(attr) * entry.getValue());
-            }
-        }
+        champion.getAttributeValues(true);
         boolean spam = false;
         for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
@@ -58,20 +67,16 @@ public class InventoryListener implements Listener {
             }
             if (!AttributeHandler.meetsLevelRequirement(player, itemStack)) {
                 spam = true;
-                continue;
-            }
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr, val + AttributeHandler.getValue(itemStack, attr));
-                champion.setAttributeInCache(attr, attributeDoubleMap.get(attr));
             }
         }
         if (spam) {
             MessageUtils.sendMessage(player,
                     "<red>You don't meet the requirement for one of your items! It will not give any stats!");
         }
-        AttributeHandler.updateHealth(player, attributeDoubleMap);
-        double perc = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        AttributeHandler.updateHealth(player, champion.getCacheAttribute(StrifeAttribute.HEALTH,
+                StrifeAttribute.HEALTH.getBaseValue()));
+        double perc = champion.getCacheAttribute(StrifeAttribute.MOVEMENT_SPEED,
+                StrifeAttribute.MOVEMENT_SPEED.getBaseValue()) / 100D;
         float speed = 0.2F * (float) perc;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));

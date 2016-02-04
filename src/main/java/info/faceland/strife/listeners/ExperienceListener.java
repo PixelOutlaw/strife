@@ -22,20 +22,16 @@
  */
 package info.faceland.strife.listeners;
 
-import be.maximvdw.titlemotd.ui.Title;
-
 import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
-import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-import me.desht.dhutils.ExperienceManager;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -44,8 +40,10 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 
-import java.util.ArrayList;
 import java.util.Map;
+
+import be.maximvdw.titlemotd.ui.Title;
+import me.desht.dhutils.ExperienceManager;
 
 public class ExperienceListener implements Listener {
 
@@ -115,7 +113,7 @@ public class ExperienceListener implements Listener {
 
         ExperienceManager experienceManager = new ExperienceManager(player);
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
+        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeCache();
 
         Integer desiredLevelUp = plugin.getLevelingRate().get(player.getLevel());
         Integer defaultLevelUp = player.getExpToLevel();

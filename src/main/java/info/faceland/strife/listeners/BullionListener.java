@@ -32,8 +32,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import java.util.Map;
-
 public class BullionListener implements Listener {
 
     private final StrifePlugin plugin;
@@ -52,8 +50,8 @@ public class BullionListener implements Listener {
             return;
         }
         Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        double amount = event.getAmount() + event.getAmount() * attributeDoubleMap.get(StrifeAttribute.GOLD_FIND);
+        double amount = event.getAmount() + event.getAmount() * champion.getCacheAttribute(StrifeAttribute.GOLD_FIND,
+                StrifeAttribute.GOLD_FIND.getBaseValue());
         event.setAmount(amount);
     }
 

@@ -31,8 +31,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import java.util.Map;
-
 public class LootListener implements Listener {
 
     private final StrifePlugin plugin;
@@ -48,8 +46,8 @@ public class LootListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onLootDetermineChance(LootDetermineChanceEvent event) {
         Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        double dropBonus = attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
+        double dropBonus = champion.getCacheAttribute(StrifeAttribute.ITEM_DISCOVERY,
+                StrifeAttribute.ITEM_DISCOVERY.getBaseValue());
         event.setChance(dropBonus);
     }
 

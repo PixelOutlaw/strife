@@ -30,13 +30,19 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
+
 import info.faceland.beast.BeastPlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.listeners.*;
+import info.faceland.strife.listeners.BullionListener;
+import info.faceland.strife.listeners.CombatListener;
+import info.faceland.strife.listeners.DataListener;
+import info.faceland.strife.listeners.ExperienceListener;
+import info.faceland.strife.listeners.HealthListener;
+import info.faceland.strife.listeners.LootListener;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.LevelupMenu;
@@ -45,19 +51,25 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
-import info.faceland.strife.tasks.HealthMovementTask;
 import info.faceland.strife.tasks.SaveTask;
-import ninja.amp.ampmenus.MenuListener;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
+
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+
+import ninja.amp.ampmenus.MenuListener;
 
 public class StrifePlugin extends FacePlugin {
 
@@ -73,7 +85,6 @@ public class StrifePlugin extends FacePlugin {
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
     private BeastPlugin beastPlugin;
-    private HealthMovementTask healthMovementTask;
     private LevelupMenu levelupMenu;
     private StatsMenu statsMenu;
 
@@ -157,7 +168,6 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask = new SaveTask(this);
         attackSpeedTask = new AttackSpeedTask();
-        healthMovementTask = new HealthMovementTask(this);
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new LevelUpCommand(this));
@@ -173,7 +183,6 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
-        healthMovementTask.runTaskTimer(this, 20L * 10, 20L * 10);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);

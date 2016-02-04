@@ -24,16 +24,21 @@ package info.faceland.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-import me.desht.dhutils.ExperienceManager;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
+
+import me.desht.dhutils.ExperienceManager;
 
 public class StrifeCommand {
 
@@ -75,7 +80,8 @@ public class StrifeCommand {
         message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them!").send(target);
-        AttributeHandler.updateHealth(target, champion.getAttributeValues());
+        AttributeHandler.updateHealth(champion.getPlayer(),
+                champion.getCacheAttribute(StrifeAttribute.HEALTH, StrifeAttribute.HEALTH.getBaseValue()));
     }
 
     @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -93,7 +99,8 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<green>You cleared <white>%player%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}});
         MessageUtils.sendMessage(target, "<green>Your stats have been cleared.");
-        AttributeHandler.updateHealth(target, champion.getAttributeValues());
+        AttributeHandler.updateHealth(champion.getPlayer(),
+                champion.getCacheAttribute(StrifeAttribute.HEALTH, StrifeAttribute.HEALTH.getBaseValue()));
     }
 
     @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -113,7 +120,8 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         MessageUtils.sendMessage(target, "<green>Your level has been raised.");
-        AttributeHandler.updateHealth(target, champion.getAttributeValues());
+        AttributeHandler.updateHealth(champion.getPlayer(),
+                champion.getCacheAttribute(StrifeAttribute.HEALTH, StrifeAttribute.HEALTH.getBaseValue()));
     }
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
