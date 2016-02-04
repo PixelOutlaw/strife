@@ -41,12 +41,14 @@ public class Champion {
 
     private UUID uniqueId;
     private Map<StrifeStat, Integer> levelMap;
+    private Map<StrifeAttribute, Double> attributeCache;
     private int unusedStatPoints;
     private int highestReachedLevel;
 
     public Champion(UUID uniqueId) {
         this.uniqueId = uniqueId;
         this.levelMap = new HashMap<>();
+        this.attributeCache = new HashMap<>();
     }
 
     @Override
@@ -170,4 +172,15 @@ public class Champion {
         this.highestReachedLevel = highestReachedLevel;
     }
 
+    public Map<StrifeAttribute, Double> getAttributeCache() {
+        return attributeCache;
+    }
+
+    public double getAttributeFromCache(StrifeAttribute attribute, double def) {
+        return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : def;
+    }
+
+    public void setAttributeInCache(StrifeAttribute attribute, double value) {
+        attributeCache.put(attribute, value);
+    }
 }
