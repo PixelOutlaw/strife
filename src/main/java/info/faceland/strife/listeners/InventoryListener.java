@@ -37,6 +37,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -50,11 +51,21 @@ public class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getInventory() instanceof PlayerInventory)) {
-            Bukkit.getLogger().info("EVENT INVENTORY NOT PLAYER INVENTORY: " + event.getInventory().getClass().getSimpleName());
+        InventoryView inventoryView = event.getView();
+        if (!(inventoryView.getTopInventory() instanceof PlayerInventory) && !(inventoryView.getBottomInventory()
+                instanceof PlayerInventory)) {
+            Bukkit.getLogger().info("TOP INVENTORY NOT PLAYER INVENTORY: " + inventoryView.getTopInventory().getClass()
+                    .getSimpleName());
+            Bukkit.getLogger().info("BOTTOM INVENTORY NOT PLAYER INVENTORY: " + inventoryView.getBottomInventory()
+                    .getClass().getSimpleName());
             return;
         }
-        PlayerInventory playerInventory = (PlayerInventory) event.getInventory();
+        PlayerInventory playerInventory;
+        if (inventoryView.getTopInventory() instanceof PlayerInventory) {
+            playerInventory = (PlayerInventory) inventoryView.getTopInventory();
+        } else {
+            playerInventory = (PlayerInventory) inventoryView.getBottomInventory();
+        }
         HumanEntity humanEntity = playerInventory.getHolder();
         if (!(humanEntity instanceof Player)) {
             Bukkit.getLogger().info("HUMAN ENTITY NOT PLAYER");
