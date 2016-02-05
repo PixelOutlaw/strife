@@ -42,6 +42,8 @@ import info.faceland.strife.listeners.CombatListener;
 import info.faceland.strife.listeners.DataListener;
 import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.HealthListener;
+import info.faceland.strife.listeners.InventoryListener;
+import info.faceland.strife.listeners.LoginListener;
 import info.faceland.strife.listeners.LootListener;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
@@ -187,6 +189,8 @@ public class StrifePlugin extends FacePlugin {
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new LoginListener(this), this);
         if (Bukkit.getPluginManager().getPlugin("Loot") != null) {
             Bukkit.getPluginManager().registerEvents(new LootListener(this), this);
         }
