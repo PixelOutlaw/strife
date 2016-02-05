@@ -51,7 +51,7 @@ public class InventoryListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getInventory() instanceof PlayerInventory)) {
-            Bukkit.getLogger().info("EVENT INVENTORY NOT PLAYER INVENTORY");
+            Bukkit.getLogger().info("EVENT INVENTORY NOT PLAYER INVENTORY: " + event.getInventory().getClass().getSimpleName());
             return;
         }
         PlayerInventory playerInventory = (PlayerInventory) event.getInventory();
