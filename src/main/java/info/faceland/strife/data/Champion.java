@@ -226,6 +226,10 @@ public class Champion {
         return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : def;
     }
 
+    public double getCacheAttribute(StrifeAttribute attribute) {
+        return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : attribute.getBaseValue();
+    }
+
     public void setStatCacheAttribue(StrifeAttribute attribute, double value) {
         attributeStatCache.put(attribute, value);
     }
