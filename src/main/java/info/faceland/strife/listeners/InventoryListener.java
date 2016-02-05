@@ -29,7 +29,6 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -54,10 +53,6 @@ public class InventoryListener implements Listener {
         InventoryView inventoryView = event.getView();
         if (!(inventoryView.getTopInventory() instanceof PlayerInventory) && !(inventoryView.getBottomInventory()
                 instanceof PlayerInventory)) {
-            Bukkit.getLogger().info("TOP INVENTORY NOT PLAYER INVENTORY: " + inventoryView.getTopInventory().getClass()
-                    .getSimpleName());
-            Bukkit.getLogger().info("BOTTOM INVENTORY NOT PLAYER INVENTORY: " + inventoryView.getBottomInventory()
-                    .getClass().getSimpleName());
             return;
         }
         PlayerInventory playerInventory;
@@ -68,10 +63,12 @@ public class InventoryListener implements Listener {
         }
         HumanEntity humanEntity = playerInventory.getHolder();
         if (!(humanEntity instanceof Player)) {
-            Bukkit.getLogger().info("HUMAN ENTITY NOT PLAYER");
             return;
         }
         Player player = (Player) humanEntity;
+        if (player.isDead() || player.getHealth() <= 0D) {
+            return;
+        }
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getAttributeValues(true);
         boolean spam = false;
