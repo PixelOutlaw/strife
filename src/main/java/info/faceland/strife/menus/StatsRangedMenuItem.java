@@ -53,6 +53,8 @@ public class StatsRangedMenuItem extends MenuItem {
     @Override
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        champion.getWeaponAttributeValues();
+        champion.recombineCache();
         ItemStack itemStack = new ItemStack(Material.BOW);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
