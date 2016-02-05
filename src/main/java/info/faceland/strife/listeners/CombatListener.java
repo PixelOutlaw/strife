@@ -109,7 +109,7 @@ public class CombatListener implements Listener {
             return;
         }
         double chance = plugin.getChampionManager().getChampion(event.getEntity().getKiller().getUniqueId())
-                .getAttributeCache().get(StrifeAttribute.HEAD_DROP);
+                .getCacheAttribute(StrifeAttribute.HEAD_DROP, StrifeAttribute.HEAD_DROP.getBaseValue());
         if (chance == 0) {
             return;
         }
@@ -191,11 +191,15 @@ public class CombatListener implements Listener {
         if (aPlayer) {
             Player aP = (Player) a;
             Champion champA = plugin.getChampionManager().getChampion(aP.getUniqueId());
+            champA.getWeaponAttributeValues();
+            champA.recombineCache();
             Map<StrifeAttribute, Double> valsA = champA.getAttributeCache();
             if (bPlayer) {
                 //////////////////////////////////////////////////////////////////// PLAYER V PLAYER COMBAT ///
                 Player bP = (Player) b;
                 Champion champB = plugin.getChampionManager().getChampion(bP.getUniqueId());
+                champB.getWeaponAttributeValues();
+                champB.recombineCache();
                 Map<StrifeAttribute, Double> valsB = champB.getAttributeCache();
                 double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
 
