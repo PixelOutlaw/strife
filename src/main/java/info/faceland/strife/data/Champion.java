@@ -1,24 +1,18 @@
 /**
- * The MIT License
- * Copyright (c) 2015 Teal Cube Games
+ * The MIT License Copyright (c) 2015 Teal Cube Games
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package info.faceland.strife.data;
 
@@ -125,7 +119,7 @@ public class Champion {
         attributeWeaponCache.clear();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
-        if (itemStack == null || itemStack.getType() == Material.AIR) {
+        if (itemStack == null || itemStack.getType() == Material.AIR || isArmor(itemStack.getType())) {
             attributeWeaponCache.putAll(attributeDoubleMap);
             return attributeWeaponCache;
         }
@@ -244,5 +238,11 @@ public class Champion {
 
     public void setCacheAttribute(StrifeAttribute attribute, double value) {
         attributeCache.put(attribute, value);
+    }
+
+    private boolean isArmor(Material material) {
+        String name = material.name();
+        return name.contains("HELMET") || name.contains("CHESTPLATE") || name.contains("LEGGINGS") ||
+                name.contains("BOOTS");
     }
 }
