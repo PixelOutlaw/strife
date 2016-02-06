@@ -313,7 +313,7 @@ public class CombatListener implements Listener {
             damagingPlayer.sendMessage("==> timeLeft: " + timeLeft);
             damagingPlayer.sendMessage("==> timeToSet: " + timeToSet);
             if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * (timeLeft / timeToSet), 0.0);
+                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.0);
                 damagingPlayer.sendMessage("==> attackSpeedMult: " + attackSpeedMult);
             }
             plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
@@ -474,7 +474,7 @@ public class CombatListener implements Listener {
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
             if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * (timeLeft / timeToSet), 0.0);
+                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.0);
             }
             plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
