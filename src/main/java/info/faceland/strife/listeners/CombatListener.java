@@ -174,7 +174,7 @@ public class CombatListener implements Listener {
 
         // pass information to a new calculator
         double newBaseDamage = handleDamageCalculations(damagedLivingEntity, damagingLivingEntity, damagingEntity,
-                oldBaseDamage, melee);
+                oldBaseDamage, melee, event.getCause());
 
         // set the base damage of the event
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newBaseDamage);
@@ -184,7 +184,8 @@ public class CombatListener implements Listener {
                                             LivingEntity damagingLivingEntity,
                                             Entity damagingEntity,
                                             double oldBaseDamage,
-                                            boolean melee) {
+                                            boolean melee,
+                                            EntityDamageEvent.DamageCause cause) {
         double retDamage = 0D;
         // four branches: PvP, PvE, EvP, EvE
         if (damagedLivingEntity instanceof Player && damagingLivingEntity instanceof Player) {
@@ -202,7 +203,7 @@ public class CombatListener implements Listener {
         } else {
             // EvE branch
             retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
-                    damagingEntity, melee);
+                    damagingEntity, oldBaseDamage, cause);
         }
         return retDamage;
     }
@@ -210,8 +211,15 @@ public class CombatListener implements Listener {
     private double handleEnvironmentVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
                                                                  LivingEntity damagingLivingEntity,
                                                                  Entity damagingEntity,
-                                                                 boolean melee) {
-        return 0;
+                                                                 double oldBaseDamage,
+                                                                 EntityDamageEvent.DamageCause cause) {
+        double damage;
+        if (damagingLivingEntity.hasMetadata("DAMAGE")) {
+            damage = getDamageFromMeta(damagingLivingEntity, damagedLivingEntity, cause);
+        } else {
+            damage = oldBaseDamage;
+        }
+        return damage;
     }
 
     private double handleEnvironmentVersusPlayerCalculation(Player damagedPlayer,
