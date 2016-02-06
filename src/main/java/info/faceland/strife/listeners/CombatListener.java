@@ -193,12 +193,39 @@ public class CombatListener implements Listener {
                     (Player) damagingLivingEntity, damagingEntity, melee);
         } else if (!(damagedLivingEntity instanceof Player) && damagingLivingEntity instanceof Player) {
             // PvE branch
+            retDamage = handlePlayerVersusEnvironmentCalculation(damagedLivingEntity, (Player) damagingLivingEntity,
+                    damagingEntity, melee);
         } else if (damagedLivingEntity instanceof Player) {
             // EvP branch
+            retDamage = handleEnvironmentVersusPlayerCalculation((Player) damagedLivingEntity, damagingLivingEntity,
+                    damagingEntity, melee);
         } else {
             // EvE branch
+            retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
+                    damagingEntity, melee);
         }
         return retDamage;
+    }
+
+    private double handleEnvironmentVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
+                                                                 LivingEntity damagingLivingEntity,
+                                                                 Entity damagingEntity,
+                                                                 boolean melee) {
+        return 0;
+    }
+
+    private double handleEnvironmentVersusPlayerCalculation(Player damagedPlayer,
+                                                            LivingEntity damagingLivingEntity,
+                                                            Entity damagingEntity,
+                                                            boolean melee) {
+        return 0;
+    }
+
+    private double handlePlayerVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
+                                                            Player damagingPlayer,
+                                                            Entity damagingEntity,
+                                                            boolean melee) {
+        return 0;
     }
 
     private double handlePlayerVersusPlayerCalculation(Player damagedPlayer,
