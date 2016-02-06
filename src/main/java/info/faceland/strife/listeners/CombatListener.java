@@ -20,6 +20,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
@@ -297,7 +298,7 @@ public class CombatListener implements Listener {
         if (lightningDamage > 0D) {
             double shockCalc = damagingChampion.getCacheAttribute(StrifeAttribute.SHOCK_CHANCE) * (0.25 + attackSpeedMult * 0.75);
             if (random.nextDouble() < shockCalc) {
-                trueDamage += lightningDamage * 0.75D;
+                trueDamage += lightningDamage * 1.5D;
                 damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
             }
         }
@@ -566,7 +567,7 @@ public class CombatListener implements Listener {
             a.getWorld().playSound(a.getEyeLocation(), Sound.FALL_BIG, 2f, 0.8f);
             return damage - 1.0;
         }
-        return 1.0;
+        return 0;
     }
 
 }
