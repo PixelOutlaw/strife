@@ -308,14 +308,15 @@ public class CombatListener implements Listener {
                     .getCacheAttribute(StrifeAttribute.ATTACK_SPEED)));
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-            if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * (timeLeft / timeToSet), 0.0);
-            }
-            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
             damagingPlayer.sendMessage("=> attack speed debug (PvE)");
             damagingPlayer.sendMessage("==> attackSpeed: " + attackSpeed);
             damagingPlayer.sendMessage("==> timeLeft: " + timeLeft);
             damagingPlayer.sendMessage("==> timeToSet: " + timeToSet);
+            if (timeLeft > 0) {
+                attackSpeedMult = Math.max(1.0 - 1.0 * (timeLeft / timeToSet), 0.0);
+                damagingPlayer.sendMessage("==> attackSpeedMult: " + attackSpeedMult);
+            }
+            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
             retDamage = damagingChampion.getCacheAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
         } else {
