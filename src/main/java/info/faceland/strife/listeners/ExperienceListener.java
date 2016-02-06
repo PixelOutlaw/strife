@@ -39,6 +39,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 
 import be.maximvdw.titlemotd.ui.Title;
 import me.desht.dhutils.ExperienceManager;
@@ -54,16 +55,19 @@ public class ExperienceListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDeath(PlayerDeathEvent event) {
         event.setKeepLevel(true);
-        event.setDroppedExp(1);
-        if (plugin.getSettings().getStringList("config.penalty-free-worlds").contains(event.getEntity().getWorld()
-                .getName())) {
-            event.setDroppedExp(1 + event.getEntity().getLevel() / 2);
+        event.setDroppedExp(1 + event.getEntity().getLevel() / 2);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        Player p = event.getPlayer();
+        if (plugin.getSettings().getStringList("config.penalty-free-worlds").contains(p.getWorld().getName())) {
             return;
         }
-        double lostXP = Math.min(plugin.getLevelingRate().get(event.getEntity().getLevel()) * 0.025, plugin
-                .getLevelingRate().get(event.getEntity().getLevel()) * event.getEntity().getExp());
-        MessageUtils.sendMessage(event.getEntity(), "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
-        event.getEntity().setExp(Math.max(event.getEntity().getExp() - 0.025f, 0.001f));
+        double lostXP = Math.min(plugin.getLevelingRate().get(p.getLevel()) * 0.025, plugin.getLevelingRate()
+                .get(p.getLevel()) * p.getExp());
+        MessageUtils.sendMessage(p, "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
+        p.setExp(Math.max(p.getExp() - 0.025f, 0.001f));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
