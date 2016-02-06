@@ -233,7 +233,127 @@ public class CombatListener implements Listener {
                                                             Player damagingPlayer,
                                                             Entity damagingEntity,
                                                             boolean melee) {
-        return 0;
+        double retDamage;
+
+        // get the champions
+        Champion damagingChampion = plugin.getChampionManager().getChampion(damagingPlayer.getUniqueId());
+
+        // ensure that they have the correct caches
+        damagingChampion.getWeaponAttributeValues();
+        damagingChampion.recombineCache();
+
+        // calculating attack speed and velocity
+        double attackSpeedMult = 1D;
+        double velocityMult = 1D;
+        if (melee) {
+            double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
+                    .getCacheAttribute(StrifeAttribute.ATTACK_SPEED)));
+            long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
+            long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+            if (timeLeft > 0) {
+                attackSpeedMult = Math.max(1.0 - 1.0 * (timeLeft / timeToSet), 0.0);
+            }
+            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
+
+            retDamage = damagingChampion.getCacheAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
+        } else {
+            velocityMult = Math.min(damagingEntity.getVelocity().lengthSquared() / 9D, 1);
+            retDamage = damagingChampion.getCacheAttribute(StrifeAttribute.RANGED_DAMAGE) * velocityMult;
+        }
+
+        // critical damage time!
+        double critBonus = retDamage * getCritBonus(damagingChampion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE),
+                damagingChampion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE), damagingPlayer);
+
+        // overbonus time!
+        double overBonus = 0D;
+        if (melee) {
+            if (attackSpeedMult > 0.94) {
+                overBonus = damagingChampion.getCacheAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
+            }
+        } else {
+            if (velocityMult > 0.94) {
+                overBonus = damagingChampion.getCacheAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
+            }
+        }
+
+        // adding critBonus and overBonus to damage
+        retDamage += critBonus;
+        retDamage += overBonus;
+
+        // elements calculations
+        double trueDamage = 0D;
+        double fireDamage = damagingChampion.getCacheAttribute(StrifeAttribute.FIRE_DAMAGE);
+        double lightningDamage = damagingChampion.getCacheAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
+        double iceDamage = damagingChampion.getCacheAttribute(StrifeAttribute.ICE_DAMAGE);
+        if (fireDamage > 0D) {
+            double igniteCalc = damagingChampion.getCacheAttribute(StrifeAttribute.IGNITE_CHANCE) * (0.25 + attackSpeedMult * 0.75);
+            if (random.nextDouble() < igniteCalc) {
+                trueDamage += fireDamage * 0.10D;
+                damagedLivingEntity.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedLivingEntity.getFireTicks()));
+                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+            }
+        }
+        if (lightningDamage > 0D) {
+            double shockCalc = damagingChampion.getCacheAttribute(StrifeAttribute.SHOCK_CHANCE) * (0.25 + attackSpeedMult * 0.75);
+            if (random.nextDouble() < shockCalc) {
+                trueDamage += lightningDamage * 0.75D;
+                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+            }
+        }
+        if (iceDamage > 0D) {
+            double freezeCalc = damagingChampion.getCacheAttribute(StrifeAttribute.FREEZE_CHANCE) * (0.25 + attackSpeedMult * 0.75);
+            if (random.nextDouble() < freezeCalc) {
+                retDamage += iceDamage + iceDamage * (damagedLivingEntity.getMaxHealth() / 300);
+                damagedLivingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
+                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.GLASS, 1f, 1f);
+            }
+        }
+
+        // potion effects mults
+        double potionMult = 1D;
+        if (damagedLivingEntity.hasPotionEffect(PotionEffectType.WITHER)) {
+            potionMult += 0.1D;
+        }
+        if (damagedLivingEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+            potionMult -= 0.1D;
+        }
+        if (melee) {
+            if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                potionMult += 0.1D;
+            }
+            if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+                potionMult -= 0.1D;
+            }
+        } else {
+            double snareChance = damagingChampion.getCacheAttribute(StrifeAttribute.SNARE_CHANCE);
+            if (snareChance > 0) {
+                if (random.nextDouble() < snareChance) {
+                    damagedLivingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
+                    damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                }
+            }
+        }
+
+        // combine!
+        retDamage *= potionMult;
+        retDamage += trueDamage;
+
+        // life steal
+        double lifeSteal = damagingChampion.getCacheAttribute(StrifeAttribute.LIFE_STEAL);
+        if (lifeSteal > 0) {
+            double lifeStolen = retDamage * lifeSteal;
+            lifeStolen *= Math.min(damagingPlayer.getFoodLevel() / 7.0D, 1.0D);
+            if (damagingPlayer.hasPotionEffect(PotionEffectType.POISON)) {
+                lifeStolen *= 0.34;
+            }
+            if (damagingPlayer.getHealth() > 0) {
+                damagingPlayer.setHealth(Math.min(damagingPlayer.getHealth() + lifeStolen,
+                        damagingPlayer.getMaxHealth()));
+            }
+        }
+
+        return retDamage;
     }
 
     private double handlePlayerVersusPlayerCalculation(Player damagedPlayer,
@@ -408,7 +528,7 @@ public class CombatListener implements Listener {
         double lifeSteal = damagingChampion.getCacheAttribute(StrifeAttribute.LIFE_STEAL);
         if (lifeSteal > 0) {
             double lifeStolen = retDamage * lifeSteal;
-            lifeStolen *= Math.min(damagedPlayer.getFoodLevel() / 7.0D, 1.0D);
+            lifeStolen *= Math.min(damagingPlayer.getFoodLevel() / 7.0D, 1.0D);
             if (damagingPlayer.hasPotionEffect(PotionEffectType.POISON)) {
                 lifeStolen *= 0.34;
             }
