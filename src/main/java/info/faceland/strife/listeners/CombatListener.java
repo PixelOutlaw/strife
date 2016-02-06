@@ -16,6 +16,8 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
@@ -409,6 +411,15 @@ public class CombatListener implements Listener {
             }
         }
 
+        String msg;
+        if (damagedLivingEntity.getHealth() > retDamage) {
+            msg = "&c&lHealth: &f" + (int) (damagedLivingEntity.getHealth() - retDamage) + "&7/&f" + (int)
+                    (damagedLivingEntity.getMaxHealth());
+        } else {
+            msg = "&c&lHealth: &fDEAD &7/ &fKILLED";
+        }
+        ActionBarMessage.send(damagingPlayer, msg);
+
         return retDamage;
     }
 
@@ -597,6 +608,15 @@ public class CombatListener implements Listener {
                         damagingPlayer.getMaxHealth()));
             }
         }
+
+        String msg;
+        if (damagedPlayer.getHealth() > retDamage) {
+            msg = "&c&lHealth: &f" + (int) (damagedPlayer.getHealth() - retDamage) + "&7/&f" + (int)
+                    (damagedPlayer.getMaxHealth());
+        } else {
+            msg = "&c&lHealth: &fDEAD &7/ &fKILLED";
+        }
+        ActionBarMessage.send(damagingPlayer, msg);
 
         return retDamage;
     }
