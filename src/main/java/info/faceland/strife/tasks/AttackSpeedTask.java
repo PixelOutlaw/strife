@@ -22,6 +22,10 @@
  */
 package info.faceland.strife.tasks;
 
+import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
@@ -43,6 +47,10 @@ public class AttackSpeedTask extends BukkitRunnable {
         while (iterator.hasNext()) {
             Map.Entry<UUID, Long> entry = iterator.next();
             if (entry.getValue() < 1L) {
+                Player p = Bukkit.getPlayer(entry.getKey());
+                if (p != null && p.isOnline()) {
+                    ActionBarMessage.send(p, "<yellow>Attack Recharged!");
+                }
                 iterator.remove();
                 continue;
             }
