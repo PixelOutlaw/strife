@@ -72,7 +72,8 @@ public class StatsRangedMenuItem extends MenuItem {
             lore.add(ChatColor.YELLOW + "Snare Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion.getCacheAttribute(
                     StrifeAttribute.SNARE_CHANCE)) + "%");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 || champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 1.3) {
+        if (champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
+                champion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
             lore.add(ChatColor.YELLOW + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
                     champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                     champion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
