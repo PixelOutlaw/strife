@@ -69,7 +69,8 @@ public class StatsMeleeMenuItem extends MenuItem {
             lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion.getCacheAttribute(
                     StrifeAttribute.ACCURACY)) + "%");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 || champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 1.3) {
+        if (champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
+                champion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
             lore.add(ChatColor.RED + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
                     champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                     champion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
