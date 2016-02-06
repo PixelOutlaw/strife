@@ -284,6 +284,7 @@ public class CombatListener implements Listener {
             }
             damage *= 1 - (damagedChampion.getCacheAttribute(StrifeAttribute.BLOCK));
         }
+        damage *= getArmorMult(damagedChampion.getCacheAttribute(StrifeAttribute.ARMOR), 0);
         return damage;
     }
 
