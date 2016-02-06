@@ -20,7 +20,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
@@ -30,7 +29,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Skeleton;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -238,6 +236,8 @@ public class CombatListener implements Listener {
             damage = oldBaseDamage;
         }
         Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
+        damagedChampion.getWeaponAttributeValues();
+        damagedChampion.recombineCache();
 
         double evadeChance = damagedChampion.getCacheAttribute(StrifeAttribute.EVASION);
         if (evadeChance > 0) {
