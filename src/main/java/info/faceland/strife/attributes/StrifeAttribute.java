@@ -42,7 +42,7 @@ public enum StrifeAttribute {
     ARMOR_PENETRATION("Armor Penetration", 0, true),
     ACCURACY("Accuracy", 0, true),
     CRITICAL_RATE("Critical Rate", 0.05, true),
-    CRITICAL_DAMAGE("Critical Damage", 1.3D, true),
+    CRITICAL_DAMAGE("Critical Damage", 1.5D, true),
     FIRE_DAMAGE("Fire Damage", 0, false),
     LIGHTNING_DAMAGE("Lightning Damage", 0, false),
     ICE_DAMAGE("Ice Damage", 0, false),
