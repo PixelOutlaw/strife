@@ -30,6 +30,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -175,7 +176,7 @@ public class CombatListener implements Listener {
 
         // pass information to a new calculator
         double newBaseDamage = handleDamageCalculations(damagedLivingEntity, damagingLivingEntity, damagingEntity,
-                oldBaseDamage, melee, event.getCause());
+                oldBaseDamage, melee, event.getCause(), event);
 
         // set the base damage of the event
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newBaseDamage);
@@ -186,13 +187,14 @@ public class CombatListener implements Listener {
                                             Entity damagingEntity,
                                             double oldBaseDamage,
                                             boolean melee,
-                                            EntityDamageEvent.DamageCause cause) {
+                                            EntityDamageEvent.DamageCause cause,
+                                            EntityDamageEvent event) {
         double retDamage = 0D;
         // four branches: PvP, PvE, EvP, EvE
         if (damagedLivingEntity instanceof Player && damagingLivingEntity instanceof Player) {
             // PvP branch
             retDamage = handlePlayerVersusPlayerCalculation((Player) damagedLivingEntity,
-                    (Player) damagingLivingEntity, damagingEntity, melee);
+                    (Player) damagingLivingEntity, damagingEntity, melee, event);
         } else if (!(damagedLivingEntity instanceof Player) && damagingLivingEntity instanceof Player) {
             // PvE branch
             retDamage = handlePlayerVersusEnvironmentCalculation(damagedLivingEntity, (Player) damagingLivingEntity,
@@ -200,7 +202,7 @@ public class CombatListener implements Listener {
         } else if (damagedLivingEntity instanceof Player) {
             // EvP branch
             retDamage = handleEnvironmentVersusPlayerCalculation((Player) damagedLivingEntity, damagingLivingEntity,
-                    damagingEntity, melee);
+                    damagingEntity, oldBaseDamage, melee, event);
         } else {
             // EvE branch
             retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
@@ -226,8 +228,61 @@ public class CombatListener implements Listener {
     private double handleEnvironmentVersusPlayerCalculation(Player damagedPlayer,
                                                             LivingEntity damagingLivingEntity,
                                                             Entity damagingEntity,
-                                                            boolean melee) {
-        return 0;
+                                                            double oldBaseDamage,
+                                                            boolean melee,
+                                                            EntityDamageEvent event) {
+        double damage;
+        if (damagingLivingEntity.hasMetadata("DAMAGE")) {
+            damage = getDamageFromMeta(damagingLivingEntity, damagedPlayer, event.getCause());
+        } else {
+            damage = oldBaseDamage;
+        }
+        Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
+
+        double evadeChance = damagedChampion.getCacheAttribute(StrifeAttribute.EVASION);
+        if (evadeChance > 0) {
+            double evasionCalc = 1 - (100 / (100 + (Math.pow(evadeChance * 100, 1.1))));
+            if (random.nextDouble() < evasionCalc) {
+                if (damagingEntity instanceof Projectile) {
+                    damagingEntity.remove();
+                }
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                event.setCancelled(true);
+                return 0D;
+            }
+        }
+
+        if (damagedPlayer.isBlocking()) {
+            if (random.nextDouble() < damagedChampion.getCacheAttribute(StrifeAttribute.ABSORB_CHANCE)) {
+                if (damagingEntity instanceof Projectile) {
+                    damagingEntity.remove();
+                }
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 25),
+                        damagedPlayer.getMaxHealth()));
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                event.setCancelled(true);
+                return 0D;
+            }
+            if (melee) {
+                if (random.nextDouble() < damagedChampion.getCacheAttribute(StrifeAttribute.PARRY)) {
+                    damagingLivingEntity.damage(damage * 0.2);
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    event.setCancelled(true);
+                    return 0D;
+                }
+            } else {
+                if (random.nextDouble() < 2 * damagedChampion.getCacheAttribute(StrifeAttribute.PARRY)) {
+                    if (damagingEntity instanceof Projectile) {
+                        damagingEntity.remove();
+                    }
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    event.setCancelled(true);
+                    return 0D;
+                }
+            }
+            damage *= 1 - (damagedChampion.getCacheAttribute(StrifeAttribute.BLOCK));
+        }
+        return damage;
     }
 
     private double handlePlayerVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
@@ -360,7 +415,8 @@ public class CombatListener implements Listener {
     private double handlePlayerVersusPlayerCalculation(Player damagedPlayer,
                                                        Player damagingPlayer,
                                                        Entity damagingEntity,
-                                                       boolean melee) {
+                                                       boolean melee,
+                                                       EntityDamageEvent event) {
         double retDamage;
 
         // get the champions
@@ -388,6 +444,7 @@ public class CombatListener implements Listener {
                     damagingEntity.remove();
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                event.setCancelled(true);
                 return 0D;
             }
         }
@@ -420,12 +477,14 @@ public class CombatListener implements Listener {
                 damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 25),
                         damagedPlayer.getMaxHealth()));
                 damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                event.setCancelled(true);
                 return 0D;
             }
             if (melee) {
                 if (random.nextDouble() < damagedChampion.getCacheAttribute(StrifeAttribute.PARRY)) {
                     damagingPlayer.damage(retDamage * 0.2 * pvpMult);
                     damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    event.setCancelled(true);
                     return 0D;
                 }
             } else {
@@ -433,8 +492,8 @@ public class CombatListener implements Listener {
                     if (damagingEntity instanceof Projectile) {
                         damagingEntity.remove();
                     }
-                    damagingPlayer.damage(retDamage * 0.2 * pvpMult);
                     damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    event.setCancelled(true);
                     return 0D;
                 }
             }
