@@ -1,5 +1,6 @@
 version: "0.0.3"
 verbose: false
+
 menu:
   num-of-rows: 6
   unused-marker-x: 0
@@ -7,8 +8,12 @@ menu:
   close-marker-x: 8
   close-marker-y: 5
 pvp-multiplier: 0.5
+
+## NOTE: XP penalty exempt world applies to the world the
+## player RESPAWNS in, as that is when xp is lost!
 penalty-free-worlds:
 - WeenieWorld
+
 leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
 
