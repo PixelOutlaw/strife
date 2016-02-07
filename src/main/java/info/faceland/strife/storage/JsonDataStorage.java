@@ -23,8 +23,8 @@
 package info.faceland.strife.storage;
 
 import com.tealcube.minecraft.bukkit.config.SmartYamlConfiguration;
+
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
@@ -65,18 +65,6 @@ public class JsonDataStorage implements DataStorage {
             configuration.set(champ.getUniqueId().toString() + ".unused-stat-points", champ.getUnusedStatPoints());
             configuration
                 .set(champ.getUniqueId().toString() + ".highest-reached-level", champ.getHighestReachedLevel());
-            for (Map.Entry<StrifeAttribute, Double> entry : champ.getAttributeStatCache().entrySet()) {
-                configuration.set(champ.getUniqueId().toString() + ".cache.stat." + entry.getKey().name(),
-                        entry.getValue());
-            }
-            for (Map.Entry<StrifeAttribute, Double> entry : champ.getAttributeWeaponCache().entrySet()) {
-                configuration.set(champ.getUniqueId().toString() + ".cache.weapon." + entry.getKey().name(),
-                        entry.getValue());
-            }
-            for (Map.Entry<StrifeAttribute, Double> entry : champ.getAttributeArmorCache().entrySet()) {
-                configuration.set(champ.getUniqueId().toString() + ".cache.armor." + entry.getKey().name(),
-                        entry.getValue());
-            }
         }
         configuration.save();
     }
@@ -101,37 +89,6 @@ public class JsonDataStorage implements DataStorage {
             }
             champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
             champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
-            if (section.isConfigurationSection("cache.stats")) {
-                ConfigurationSection cacheStatsSection = section.getConfigurationSection("cache.stats");
-                for (String k : section.getConfigurationSection("cache.stats").getKeys(false)) {
-                    StrifeAttribute attribute = StrifeAttribute.fromName(k);
-                    if (attribute == null) {
-                        continue;
-                    }
-                    champion.setStatCacheAttribue(attribute, cacheStatsSection.getDouble(attribute.name()));
-                }
-            }
-            if (section.isConfigurationSection("cache.armor")) {
-                ConfigurationSection cacheArmorSection = section.getConfigurationSection("cache.armor");
-                for (String k : section.getConfigurationSection("cache.armor").getKeys(false)) {
-                    StrifeAttribute attribute = StrifeAttribute.fromName(k);
-                    if (attribute == null) {
-                        continue;
-                    }
-                    champion.setArmorCacheAttribue(attribute, cacheArmorSection.getDouble(attribute.name()));
-                }
-            }
-            if (section.isConfigurationSection("cache.weapon")) {
-                ConfigurationSection cacheWeaponSection = section.getConfigurationSection("cache.weapon");
-                for (String k : section.getConfigurationSection("cache.weapon").getKeys(false)) {
-                    StrifeAttribute attribute = StrifeAttribute.fromName(k);
-                    if (attribute == null) {
-                        continue;
-                    }
-                    champion.setWeaponCacheAttribue(attribute, cacheWeaponSection.getDouble(attribute.name()));
-                }
-            }
-            champion.recombineCache();
             collection.add(champion);
         }
         return collection;

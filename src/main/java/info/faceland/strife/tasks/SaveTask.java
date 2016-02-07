@@ -40,6 +40,10 @@ public class SaveTask extends BukkitRunnable {
         plugin.getStorage().save(plugin.getChampionManager().getChampions());
         plugin.getChampionManager().clear();
         for (Champion champion : plugin.getStorage().load()) {
+            if (champion.getPlayer().isOnline()) {
+                champion.getAttributeValues(true);
+                champion.recombineCache();
+            }
             plugin.getChampionManager().addChampion(champion);
         }
     }
