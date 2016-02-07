@@ -132,8 +132,9 @@ public class Champion {
         }
         for (StrifeAttribute attr : StrifeAttribute.values()) {
             double val = AttributeHandler.getValue(itemStack, attr);
+            double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
             attributeDoubleMap.put(attr,
-                    attr.getCap() > 0D ? Math.min(attr.getCap(), val) : val);
+                    attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
         }
         attributeWeaponCache.putAll(attributeDoubleMap);
         return attributeDoubleMap;
