@@ -60,11 +60,19 @@ public class JsonDataStorage implements DataStorage {
     public void save(Collection<Champion> champions) {
         for (Champion champ : champions) {
             for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
-                configuration.set(champ.getUniqueId().toString() + "." + entry.getKey().getKey(), entry.getValue());
+                configuration.set(
+                        champ.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
+                        entry.getValue()
+                );
             }
-            configuration.set(champ.getUniqueId().toString() + ".unused-stat-points", champ.getUnusedStatPoints());
-            configuration
-                .set(champ.getUniqueId().toString() + ".highest-reached-level", champ.getHighestReachedLevel());
+            configuration.set(
+                    champ.getUniqueId().toString() + ".unused-stat-points",
+                    champ.getUnusedStatPoints()
+            );
+            configuration.set(
+                    champ.getUniqueId().toString() + ".highest-reached-level",
+                    champ.getHighestReachedLevel()
+            );
         }
         configuration.save();
     }
@@ -80,17 +88,37 @@ public class JsonDataStorage implements DataStorage {
             ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
             Champion champion = new Champion(uuid);
-            for (String k : configuration.getConfigurationSection(key).getKeys(false)) {
-                StrifeStat stat = plugin.getStatManager().getStat(k);
-                if (stat == null) {
-                    continue;
+            if (section.isConfigurationSection("stats")) {
+                ConfigurationSection statsSection = section.getConfigurationSection("stats");
+                for (String k : statsSection.getKeys(false)) {
+                    StrifeStat stat = plugin.getStatManager().getStat(k);
+                    if (stat == null) {
+                        continue;
+                    }
+                    champion.setLevel(stat, section.getInt(k));
                 }
-                champion.setLevel(stat, configuration.getConfigurationSection(key).getInt(k));
+            } else {
+                for (String k : section.getKeys(false)) {
+                    StrifeStat stat = plugin.getStatManager().getStat(k);
+                    if (stat == null) {
+                        continue;
+                    }
+                    section.set("stats." + stat.getKey(), section.getInt(k));
+                    champion.setLevel(stat, section.getInt(k));
+                }
             }
             champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
             champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
             collection.add(champion);
+            for (String k : section.getKeys(false)) {
+                if (k.equals("stats") || k.equals("unused-stat-points") || k.equals("highest-reached-level") ||
+                        k.equals("cache")) {
+                    continue;
+                }
+                section.set(k, null);
+            }
         }
+        configuration.save();
         return collection;
     }
 
