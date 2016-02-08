@@ -29,6 +29,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.File;
@@ -110,18 +111,22 @@ public class JsonDataStorage implements DataStorage {
             if (section.isConfigurationSection("stats")) {
                 ConfigurationSection statsSection = section.getConfigurationSection("stats");
                 for (String k : statsSection.getKeys(false)) {
+                    Bukkit.getLogger().info(key + " : " + k);
                     StrifeStat stat = plugin.getStatManager().getStat(k);
                     if (stat == null) {
                         continue;
                     }
+                    Bukkit.getLogger().info("stat: " + stat.getName());
                     champion.setLevel(stat, section.getInt(k));
                 }
             } else {
                 for (String k : section.getKeys(false)) {
+                    Bukkit.getLogger().info(key + " : " + k);
                     StrifeStat stat = plugin.getStatManager().getStat(k);
                     if (stat == null) {
                         continue;
                     }
+                    Bukkit.getLogger().info("stat: " + stat.getName());
                     section.set("stats." + stat.getKey(), section.getInt(k));
                     champion.setLevel(stat, section.getInt(k));
                 }
