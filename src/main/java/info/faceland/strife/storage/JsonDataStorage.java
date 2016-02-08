@@ -169,6 +169,7 @@ public class JsonDataStorage implements DataStorage {
                         k.equals("cache")) {
                     continue;
                 }
+                Bukkit.getLogger().info("clearing " + key + "." + k);
                 section.set(k, null);
             }
         }
