@@ -126,6 +126,36 @@ public class JsonDataStorage implements DataStorage {
                     champion.setLevel(stat, section.getInt(k));
                 }
             }
+            if (section.isConfigurationSection("cache")) {
+                ConfigurationSection cacheSection = section.getConfigurationSection("cache");
+                if (cacheSection.isConfigurationSection("stat")) {
+                    for (String k : cacheSection.getConfigurationSection("stat").getKeys(false)) {
+                        StrifeAttribute attr = StrifeAttribute.fromName(k);
+                        if (attr == null) {
+                            continue;
+                        }
+                        champion.setStatCacheAttribue(attr, cacheSection.getDouble("stat." + k));
+                    }
+                }
+                if (cacheSection.isConfigurationSection("armor")) {
+                    for (String k : cacheSection.getConfigurationSection("armor").getKeys(false)) {
+                        StrifeAttribute attr = StrifeAttribute.fromName(k);
+                        if (attr == null) {
+                            continue;
+                        }
+                        champion.setArmorCacheAttribue(attr, cacheSection.getDouble("armor." + k));
+                    }
+                }
+                if (cacheSection.isConfigurationSection("weapon")) {
+                    for (String k : cacheSection.getConfigurationSection("weapon").getKeys(false)) {
+                        StrifeAttribute attr = StrifeAttribute.fromName(k);
+                        if (attr == null) {
+                            continue;
+                        }
+                        champion.setWeaponCacheAttribue(attr, cacheSection.getDouble("weapon." + k));
+                    }
+                }
+            }
             champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
             champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
             collection.add(champion);
