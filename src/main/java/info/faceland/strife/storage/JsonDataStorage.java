@@ -29,7 +29,6 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.File;
@@ -37,6 +36,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class JsonDataStorage implements DataStorage {
 
@@ -111,22 +111,22 @@ public class JsonDataStorage implements DataStorage {
             if (section.isConfigurationSection("stats")) {
                 ConfigurationSection statsSection = section.getConfigurationSection("stats");
                 for (String k : statsSection.getKeys(false)) {
-                    Bukkit.getLogger().info(key + " : " + k);
+                    plugin.debug(Level.INFO, key + " : " + k);
                     StrifeStat stat = plugin.getStatManager().getStat(k);
                     if (stat == null) {
                         continue;
                     }
-                    Bukkit.getLogger().info("stat: " + stat.getName());
+                    plugin.debug(Level.INFO, "stat: " + stat.getName());
                     champion.setLevel(stat, section.getInt(k));
                 }
             } else {
                 for (String k : section.getKeys(false)) {
-                    Bukkit.getLogger().info(key + " : " + k);
+                    plugin.debug(Level.INFO, key + " : " + k);
                     StrifeStat stat = plugin.getStatManager().getStat(k);
                     if (stat == null) {
                         continue;
                     }
-                    Bukkit.getLogger().info("stat: " + stat.getName());
+                    plugin.debug(Level.INFO, "stat: " + stat.getName());
                     section.set("stats." + stat.getKey(), section.getInt(k));
                     champion.setLevel(stat, section.getInt(k));
                 }
@@ -169,7 +169,7 @@ public class JsonDataStorage implements DataStorage {
                         k.equals("cache")) {
                     continue;
                 }
-                Bukkit.getLogger().info("clearing " + key + "." + k);
+                plugin.debug(Level.INFO, "clearing " + key + "." + k);
                 section.set(k, null);
             }
         }
