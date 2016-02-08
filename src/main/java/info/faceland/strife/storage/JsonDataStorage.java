@@ -117,7 +117,7 @@ public class JsonDataStorage implements DataStorage {
                         continue;
                     }
                     plugin.debug(Level.INFO, "stat: " + stat.getName());
-                    champion.setLevel(stat, section.getInt(k));
+                    champion.setLevel(stat, statsSection.getInt(k));
                 }
             } else {
                 for (String k : section.getKeys(false)) {
