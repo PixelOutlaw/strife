@@ -183,7 +183,10 @@ public class StrifePlugin extends FacePlugin {
             levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
         }
 
-        saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
+        saveTask.runTaskTimer(this,
+                20L * 60,//0,
+                20L * 60//0
+        );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
