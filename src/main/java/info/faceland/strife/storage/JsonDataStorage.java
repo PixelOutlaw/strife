@@ -25,6 +25,7 @@ package info.faceland.strife.storage;
 import com.tealcube.minecraft.bukkit.config.SmartYamlConfiguration;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
@@ -73,6 +74,24 @@ public class JsonDataStorage implements DataStorage {
                     champ.getUniqueId().toString() + ".highest-reached-level",
                     champ.getHighestReachedLevel()
             );
+            for (Map.Entry<StrifeAttribute, Double> entry : champ.getAttributeStatCache().entrySet()) {
+                configuration.set(
+                        champ.getUniqueId().toString() + ".cache.stat." + entry.getKey().name(),
+                        entry.getValue()
+                );
+            }
+            for (Map.Entry<StrifeAttribute, Double> entry : champ.getAttributeArmorCache().entrySet()) {
+                configuration.set(
+                        champ.getUniqueId().toString() + ".cache.armor." + entry.getKey().name(),
+                        entry.getValue()
+                );
+            }
+            for (Map.Entry<StrifeAttribute, Double> entry : champ.getAttributeWeaponCache().entrySet()) {
+                configuration.set(
+                        champ.getUniqueId().toString() + ".cache.weapon." + entry.getKey().name(),
+                        entry.getValue()
+                );
+            }
         }
         configuration.save();
     }
