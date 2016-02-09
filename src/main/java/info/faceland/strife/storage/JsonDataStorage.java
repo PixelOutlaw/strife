@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 
 public class JsonDataStorage implements DataStorage {
 
@@ -108,6 +107,7 @@ public class JsonDataStorage implements DataStorage {
             ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
             Champion champion = new Champion(uuid);
+            boolean hadReset = true;
             if (section.isConfigurationSection("stats")) {
                 ConfigurationSection statsSection = section.getConfigurationSection("stats");
                 for (String k : statsSection.getKeys(false)) {
@@ -117,15 +117,7 @@ public class JsonDataStorage implements DataStorage {
                     }
                     champion.setLevel(stat, statsSection.getInt(k));
                 }
-            } else {
-                for (String k : section.getKeys(false)) {
-                    StrifeStat stat = plugin.getStatManager().getStat(k);
-                    if (stat == null) {
-                        continue;
-                    }
-                    section.set("stats." + stat.getKey(), section.getInt(k));
-                    champion.setLevel(stat, section.getInt(k));
-                }
+                hadReset = false;
             }
             if (section.isConfigurationSection("cache")) {
                 ConfigurationSection cacheSection = section.getConfigurationSection("cache");
@@ -157,16 +149,13 @@ public class JsonDataStorage implements DataStorage {
                     }
                 }
             }
-            champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
             champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
-            collection.add(champion);
-            for (String k : section.getKeys(false)) {
-                if (k.equals("stats") || k.equals("unused-stat-points") || k.equals("highest-reached-level") ||
-                        k.equals("cache")) {
-                    continue;
-                }
-                section.set(k, null);
+            if (hadReset) {
+                champion.setUnusedStatPoints(champion.getHighestReachedLevel());
+            } else {
+                champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
             }
+            collection.add(champion);
         }
         configuration.save();
         return collection;
