@@ -119,9 +119,10 @@ public class Champion {
             }
         }
         if (spam) {
-            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your" +
-                    " armor! It will not give you any stats while equipped!");
+            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your " +
+                    "armor! It will not give you any stats while equipped!");
         }
+
         cache.setAttributeArmorCache(attributeDoubleMap);
         return attributeDoubleMap;
     }
