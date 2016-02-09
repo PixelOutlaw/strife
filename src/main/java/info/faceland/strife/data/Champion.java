@@ -118,10 +118,10 @@ public class Champion {
                 attributeDoubleMap.put(attr,
                         attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
             }
-            if (spam) {
-                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your" +
-                        " armor! It will not give you any stats while equipped!");
-            }
+        }
+        if (spam) {
+            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your" +
+                    " armor! It will not give you any stats while equipped!");
         }
         cache.setAttributeArmorCache(attributeDoubleMap);
         return attributeDoubleMap;
