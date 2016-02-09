@@ -24,8 +24,16 @@ package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.ChampionCache;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
 
 public class SaveTask extends BukkitRunnable {
 
@@ -37,12 +45,17 @@ public class SaveTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        plugin.debug(Level.INFO, "Running save task");
+        Map<UUID, ChampionCache> championCacheMap = new HashMap<>();
+        for (Champion champion : plugin.getChampionManager().getChampions()) {
+            championCacheMap.put(champion.getUniqueId(), champion.getCache());
+        }
         plugin.getStorage().save(plugin.getChampionManager().getChampions());
         plugin.getChampionManager().clear();
-        for (Champion champion : plugin.getStorage().load()) {
-            if (champion.getPlayer().isOnline()) {
-                champion.getAttributeValues(true);
-                champion.recombineCache();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Champion champion = plugin.getStorage().load(player.getUniqueId());
+            if (championCacheMap.containsKey(champion.getUniqueId())) {
+                champion.setCache(championCacheMap.get(champion.getUniqueId()));
             }
             plugin.getChampionManager().addChampion(champion);
         }

@@ -56,49 +56,49 @@ public class StatsMeleeMenuItem extends MenuItem {
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getWeaponAttributeValues();
-        champion.recombineCache();
+        champion.getCache().recombine();
         ItemStack itemStack = new ItemStack(Material.IRON_SWORD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCacheAttribute(StrifeAttribute.MELEE_DAMAGE)));
-        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCacheAttribute(StrifeAttribute.ATTACK_SPEED)))
+        lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE)));
+        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)))
                 + "s");
-        if (champion.getCacheAttribute(StrifeAttribute.ACCURACY) > 0) {
-            lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion.getCacheAttribute(
+        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) > 0) {
+            lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(
                     StrifeAttribute.ACCURACY)) + "%");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
-                champion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
+        if (champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
+                champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
             lore.add(ChatColor.RED + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
-                    champion.getCacheAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
-                    champion.getCacheAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
+                    champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
+                    champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.ARMOR_PENETRATION) > 0) {
+        if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) > 0) {
             lore.add(ChatColor.RED + "Armor Penetration: " + ChatColor.WHITE
-                    + DECIMAL_FORMAT.format(champion.getCacheAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
+                    + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.OVERCHARGE) != 0.1) {
-            lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCacheAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
+        if (champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) != 0.1) {
+            lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCacheAttribute(
-                    StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCacheAttribute(
+        if (champion.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
+            lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
+                    StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                     StrifeAttribute.IGNITE_CHANCE) * 100) + "%)");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCacheAttribute(
-                    StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCacheAttribute(
+        if (champion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
+            lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
+                    StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                     StrifeAttribute.SHOCK_CHANCE) * 100) + "%)");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCacheAttribute(
-                    StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCacheAttribute(
+        if (champion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
+            lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
+                    StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                     StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCacheAttribute(StrifeAttribute.LIFE_STEAL) * 100)
+        if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
+            lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) * 100)
                     + "%");
         }
         itemMeta.setLore(lore);

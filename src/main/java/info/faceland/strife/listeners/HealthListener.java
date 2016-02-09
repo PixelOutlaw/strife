@@ -53,9 +53,8 @@ public class HealthListener implements Listener {
                 Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
                 champion.getAttributeValues(true);
                 AttributeHandler.updateHealth(champion.getPlayer(),
-                        champion.getCacheAttribute(StrifeAttribute.HEALTH, StrifeAttribute.HEALTH.getBaseValue()));
-                double perc = champion.getCacheAttribute(StrifeAttribute.MOVEMENT_SPEED, StrifeAttribute
-                        .MOVEMENT_SPEED.getBaseValue()) / 100D;
+                        champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+                double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
                 float speed = 0.2F * (float) perc;
                 player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
                 player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
@@ -73,8 +72,7 @@ public class HealthListener implements Listener {
         }
         Player player = (Player) event.getEntity();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        double amount = champion.getCacheAttribute(StrifeAttribute.REGENERATION,
-                StrifeAttribute.REGENERATION.getBaseValue());
+        double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION);
         if (player.hasPotionEffect(PotionEffectType.POISON)) {
             amount *= 0.33;
         }

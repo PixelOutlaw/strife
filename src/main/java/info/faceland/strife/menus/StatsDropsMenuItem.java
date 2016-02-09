@@ -54,7 +54,7 @@ public class StatsDropsMenuItem extends MenuItem {
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getWeaponAttributeValues();
-        champion.recombineCache();
+        champion.getCache().recombine();
         ItemStack itemStack = new ItemStack(Material.EMERALD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
@@ -76,14 +76,14 @@ public class StatsDropsMenuItem extends MenuItem {
             mult = 1.0D;
         }
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((champion.getCacheAttribute(StrifeAttribute.XP_GAIN) + mult) * 100) + "%");
+                .format((champion.getCache().getAttribute(StrifeAttribute.XP_GAIN) + mult) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(champion.getCacheAttribute(StrifeAttribute.ITEM_DISCOVERY) * 100) + "%");
+                .format(champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(champion.getCacheAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
-        if (champion.getCacheAttribute(StrifeAttribute.HEAD_DROP) > 0) {
+                .format(champion.getCache().getAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
+        if (champion.getCache().getAttribute(StrifeAttribute.HEAD_DROP) > 0) {
             lore.add(ChatColor.YELLOW + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                    .format(champion.getCacheAttribute(StrifeAttribute.HEAD_DROP) * 100) + "%");
+                    .format(champion.getCache().getAttribute(StrifeAttribute.HEAD_DROP) * 100) + "%");
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);

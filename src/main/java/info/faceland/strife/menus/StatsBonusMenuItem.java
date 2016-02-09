@@ -54,14 +54,14 @@ public class StatsBonusMenuItem extends MenuItem {
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getWeaponAttributeValues();
-        champion.recombineCache();
+        champion.getCache().recombine();
         ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion
-                .getCacheAttribute(StrifeAttribute.MOVEMENT_SPEED)));
-        if (champion.getCacheAttribute(StrifeAttribute.DOGE) > 0) {
+        lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
+                champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
+        if (champion.getCache().getAttribute(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
             lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
         }

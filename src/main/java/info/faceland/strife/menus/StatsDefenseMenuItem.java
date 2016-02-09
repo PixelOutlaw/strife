@@ -55,49 +55,49 @@ public class StatsDefenseMenuItem extends MenuItem {
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getWeaponAttributeValues();
-        champion.recombineCache();
+        champion.getCache().recombine();
         ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCacheAttribute(StrifeAttribute.HEALTH)));
-        if (champion.getCacheAttribute(StrifeAttribute.REGENERATION) > 1) {
-            lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + champion.getCacheAttribute(StrifeAttribute.REGENERATION));
+        lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.HEALTH)));
+        if (champion.getCache().getAttribute(StrifeAttribute.REGENERATION) > 1) {
+            lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute.REGENERATION));
         }
-        double armor = 100 * (1 - (100 / (100 + (Math.pow((champion.getCacheAttribute(StrifeAttribute.ARMOR) * 100), 1.2)))));
+        double armor = 100 * (1 - (100 / (100 + (Math.pow((champion.getCache().getAttribute(StrifeAttribute.ARMOR) * 100), 1.2)))));
         lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE +
-                DECIMAL_FORMAT.format(100 * champion.getCacheAttribute(StrifeAttribute.ARMOR)) +
+                DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
-        if (champion.getCacheAttribute(StrifeAttribute.EVASION) > 0) {
-            double evasion = 100 * (1 - (100 / (100 + (Math.pow((champion.getCacheAttribute(StrifeAttribute.EVASION) * 100), 1.1)))));
+        if (champion.getCache().getAttribute(StrifeAttribute.EVASION) > 0) {
+            double evasion = 100 * (1 - (100 / (100 + (Math.pow((champion.getCache().getAttribute(StrifeAttribute.EVASION) * 100), 1.1)))));
             lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE +
-                    DECIMAL_FORMAT.format(100 * champion.getCacheAttribute(StrifeAttribute.EVASION)) +
+                    DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
                     ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.RESISTANCE) > 0) {
+        if (champion.getCache().getAttribute(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
-                    ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion.getCacheAttribute(StrifeAttribute.RESISTANCE)) + "%");
+                    ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");
         }
-        if (champion.getCacheAttribute(StrifeAttribute.ABSORB_CHANCE) > 0) {
-            if (champion.getCacheAttribute(StrifeAttribute.ABSORB_CHANCE) < 0.35) {
+        if (champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) > 0) {
+            if (champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) < 0.35) {
                 lore.add(ChatColor.BLUE + "Absorb Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCacheAttribute(StrifeAttribute.ABSORB_CHANCE) * 100) + "%");
+                        .format(champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) * 100) + "%");
             } else {
                 lore.add(ChatColor.BLUE + "Absorb Chance: " + ChatColor.WHITE + "35% " + ChatColor.GRAY + "(Max)");
             }
         }
-        if (champion.getCacheAttribute(StrifeAttribute.PARRY) > 0) {
-            if (champion.getCacheAttribute(StrifeAttribute.PARRY) < 0.75) {
+        if (champion.getCache().getAttribute(StrifeAttribute.PARRY) > 0) {
+            if (champion.getCache().getAttribute(StrifeAttribute.PARRY) < 0.75) {
                 lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCacheAttribute(StrifeAttribute.PARRY) * 100) + "%");
+                        .format(champion.getCache().getAttribute(StrifeAttribute.PARRY) * 100) + "%");
             } else {
                 lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + "75% " + ChatColor.GRAY + "(Max)");
             }
         }
-        if (champion.getCacheAttribute(StrifeAttribute.BLOCK) != 0.1) {
-            if (champion.getCacheAttribute(StrifeAttribute.BLOCK) < 0.85) {
+        if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) != 0.1) {
+            if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) < 0.85) {
                 lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCacheAttribute(StrifeAttribute.BLOCK) * 100) + "%");
+                        .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
             } else {
                 lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
             }

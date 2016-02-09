@@ -22,6 +22,7 @@
  */
 package info.faceland.strife.managers;
 
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 
 import java.util.Collection;
@@ -32,9 +33,11 @@ import java.util.UUID;
 
 public class ChampionManager {
 
+    private final StrifePlugin plugin;
     private Map<UUID, Champion> championMap;
 
-    public ChampionManager() {
+    public ChampionManager(StrifePlugin plugin) {
+        this.plugin = plugin;
         championMap = new HashMap<>();
     }
 
@@ -43,6 +46,11 @@ public class ChampionManager {
             return null;
         }
         if (!hasChampion(uuid)) {
+            Champion champion = plugin.getStorage().load(uuid);
+            if (champion != null) {
+                championMap.put(uuid, champion);
+                return champion;
+            }
             return createChampion(uuid);
         }
         return championMap.get(uuid);

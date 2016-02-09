@@ -84,10 +84,8 @@ public class InventoryListener implements Listener {
             MessageUtils.sendMessage(player,
                     "<red>You don't meet the requirement for one of your items! It will not give any stats!");
         }
-        AttributeHandler.updateHealth(player, champion.getCacheAttribute(StrifeAttribute.HEALTH,
-                StrifeAttribute.HEALTH.getBaseValue()));
-        double perc = champion.getCacheAttribute(StrifeAttribute.MOVEMENT_SPEED,
-                StrifeAttribute.MOVEMENT_SPEED.getBaseValue()) / 100D;
+        AttributeHandler.updateHealth(player, champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));

@@ -112,7 +112,7 @@ public class StrifePlugin extends FacePlugin {
 
         storage = new JsonDataStorage(this);
 
-        championManager = new ChampionManager();
+        championManager = new ChampionManager(this);
 
         commandHandler = new CommandHandler(this);
 

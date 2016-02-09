@@ -69,8 +69,7 @@ public class LevelUpCommand {
         MessageUtils
             .sendMessage(sender, "<green>You leveled up <white>%stat%<green>.",
                          new String[][]{{"%stat%", stat.getName()}});
-        AttributeHandler.updateHealth(champion.getPlayer(),
-                champion.getCacheAttribute(StrifeAttribute.HEALTH, StrifeAttribute.HEALTH.getBaseValue()));
+        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
     }
 
 }

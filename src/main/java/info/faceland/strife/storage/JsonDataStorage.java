@@ -35,15 +35,18 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class JsonDataStorage implements DataStorage {
 
     private final StrifePlugin plugin;
     private SmartYamlConfiguration configuration;
+    private long lastLoaded;
 
     public JsonDataStorage(StrifePlugin plugin) {
         this.plugin = plugin;
         this.configuration = new SmartYamlConfiguration(new File(plugin.getDataFolder(), "data.json"));
+        this.lastLoaded = System.currentTimeMillis();
     }
 
     @Override
@@ -54,6 +57,25 @@ public class JsonDataStorage implements DataStorage {
     @Override
     public void shutdown() {
         // do nothing
+    }
+
+    @Override
+    public void save(Champion champion) {
+        for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
+            configuration.set(
+                    champion.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
+                    entry.getValue()
+            );
+        }
+        configuration.set(
+                champion.getUniqueId().toString() + ".unused-stat-points",
+                champion.getUnusedStatPoints()
+        );
+        configuration.set(
+                champion.getUniqueId().toString() + ".highest-reached-level",
+                champion.getHighestReachedLevel()
+        );
+        configuration.save();
     }
 
     @Override
@@ -79,7 +101,9 @@ public class JsonDataStorage implements DataStorage {
 
     @Override
     public Collection<Champion> load() {
-        configuration.load();
+        if (loadIfAble()) {
+            plugin.debug(Level.FINE, "Loading data.json");
+        }
         Collection<Champion> collection = new HashSet<>();
         for (String key : configuration.getKeys(false)) {
             if (!configuration.isConfigurationSection(key)) {
@@ -88,18 +112,7 @@ public class JsonDataStorage implements DataStorage {
             ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
             Champion champion = new Champion(uuid);
-            boolean hadReset = true;
-            if (section.isConfigurationSection("stats")) {
-                ConfigurationSection statsSection = section.getConfigurationSection("stats");
-                for (String k : statsSection.getKeys(false)) {
-                    StrifeStat stat = plugin.getStatManager().getStat(k);
-                    if (stat == null) {
-                        continue;
-                    }
-                    champion.setLevel(stat, statsSection.getInt(k));
-                }
-                hadReset = false;
-            }
+            boolean hadReset = checkResetAndSetLevels(section, champion, true);
             champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
             if (hadReset) {
                 champion.setUnusedStatPoints(champion.getHighestReachedLevel());
@@ -109,6 +122,54 @@ public class JsonDataStorage implements DataStorage {
             collection.add(champion);
         }
         return collection;
+    }
+
+    @Override
+    public Champion load(UUID uuid) {
+        if (loadIfAble()) {
+            plugin.debug(Level.FINE, "Loading data.json");
+        }
+        if (!configuration.isConfigurationSection(uuid.toString())) {
+            plugin.debug(Level.FINER, "Unable to find player with UUID " + uuid.toString());
+            return null;
+        }
+        String key = uuid.toString();
+        ConfigurationSection section = configuration.getConfigurationSection(key);
+        Champion champion = new Champion(uuid);
+        boolean hadReset = checkResetAndSetLevels(section, champion, true);
+        champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
+        if (hadReset) {
+            champion.setUnusedStatPoints(champion.getHighestReachedLevel());
+        } else {
+            champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
+        }
+        return champion;
+    }
+
+    private boolean checkResetAndSetLevels(ConfigurationSection section, Champion champion, boolean hadReset) {
+        if (section.isConfigurationSection("stats")) {
+            ConfigurationSection statsSection = section.getConfigurationSection("stats");
+            for (String k : statsSection.getKeys(false)) {
+                StrifeStat stat = plugin.getStatManager().getStat(k);
+                if (stat == null) {
+                    continue;
+                }
+                champion.setLevel(stat, statsSection.getInt(k));
+            }
+            hadReset = false;
+        }
+        return hadReset;
+    }
+
+    private boolean loadIfAble() {
+        long now = System.currentTimeMillis();
+        long diff = now - lastLoaded;
+        if (diff >= plugin.getSettings().getInt("config.configuration-load-period", 30)) {
+            configuration.load();
+            lastLoaded = now;
+            return true;
+        }
+        return false;
     }
 
 }

@@ -29,13 +29,17 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.logging.Level;
 
 public class LoginListener implements Listener {
 
@@ -63,13 +67,38 @@ public class LoginListener implements Listener {
             MessageUtils.sendMessage(player,
                     "<red>You don't meet the requirement for one of your items! It will not give any stats!");
         }
-        AttributeHandler.updateHealth(player, champion.getCacheAttribute(StrifeAttribute.HEALTH,
-                StrifeAttribute.HEALTH.getBaseValue()));
-        double perc = champion.getCacheAttribute(StrifeAttribute.MOVEMENT_SPEED,
-                StrifeAttribute.MOVEMENT_SPEED.getBaseValue()) / 100D;
+        AttributeHandler.updateHealth(player, champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new QuitRunnable(plugin, champion), 20L * 30);
+    }
+
+    class QuitRunnable implements Runnable {
+        StrifePlugin plugin;
+        Champion champion;
+
+        QuitRunnable(StrifePlugin plugin, Champion champion) {
+            this.plugin = plugin;
+            this.champion = champion;
+        }
+
+        @Override
+        public void run() {
+            if (champion.getPlayer() != null && champion.getPlayer().isOnline()) {
+                return;
+            }
+            plugin.debug(Level.FINE, "Saving data for " + champion.getUniqueId().toString());
+            plugin.getStorage().save(champion);
+            plugin.getChampionManager().removeChampion(champion.getUniqueId());
+        }
     }
 
 }

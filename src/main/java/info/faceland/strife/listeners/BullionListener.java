@@ -50,8 +50,7 @@ public class BullionListener implements Listener {
             return;
         }
         Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        double amount = event.getAmount() + event.getAmount() * champion.getCacheAttribute(StrifeAttribute.GOLD_FIND,
-                StrifeAttribute.GOLD_FIND.getBaseValue());
+        double amount = event.getAmount() + event.getAmount() * champion.getCache().getAttribute(StrifeAttribute.GOLD_FIND);
         event.setAmount(amount);
     }
 

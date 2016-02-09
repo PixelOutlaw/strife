@@ -145,8 +145,7 @@ public class ExperienceListener implements Listener {
             mult = 1.0D;
         }
 
-        double bonusMult = 1 + champion.getCacheAttribute(StrifeAttribute.XP_GAIN,
-                StrifeAttribute.XP_GAIN.getBaseValue()) + mult;
+        double bonusMult = 1 + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN) + mult;
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
         double exact = amount * bonusMult * factor;
         if (plugin.getSettings().getBoolean("config.verbose")) {
