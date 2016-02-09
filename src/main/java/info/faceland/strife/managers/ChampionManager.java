@@ -47,14 +47,11 @@ public class ChampionManager {
             return null;
         }
         if (!hasChampion(uuid)) {
-            plugin.debug(Level.FINER, "Champion not in manager...");
             Champion champion = plugin.getStorage().load(uuid);
             if (champion != null) {
-                plugin.debug(Level.FINER, "Loading champion from storage...");
                 championMap.put(uuid, champion);
                 return champion;
             }
-            plugin.debug(Level.FINER, "Champion not in storage...");
             return createChampion(uuid);
         }
         return championMap.get(uuid);
