@@ -164,7 +164,8 @@ public class JsonDataStorage implements DataStorage {
     private boolean loadIfAble() {
         long now = System.currentTimeMillis();
         long diff = now - lastLoaded;
-        if (diff >= plugin.getSettings().getInt("config.configuration-load-period", 30)) {
+        plugin.debug(Level.FINER, "Loading data.json...");
+        if (diff >= plugin.getSettings().getInt("config.configuration-load-period", 10)) {
             configuration.load();
             lastLoaded = now;
             return true;

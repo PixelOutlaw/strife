@@ -17,4 +17,4 @@ penalty-free-worlds:
 leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
 
-configuration-load-period: 30
+configuration-load-period: 10
