@@ -22,6 +22,8 @@
  */
 package info.faceland.strife.data;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
@@ -100,8 +102,13 @@ public class Champion {
     public Map<StrifeAttribute, Double> getArmorAttributeValues() {
         cache.clearArmorCache();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        boolean spam = false;
         for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
+                continue;
+            }
+            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
+                spam = true;
                 continue;
             }
             for (StrifeAttribute attr : StrifeAttribute.values()) {
@@ -109,6 +116,10 @@ public class Champion {
                 double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
                 attributeDoubleMap.put(attr,
                         attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+            }
+            if (spam) {
+                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your" +
+                        " armor! It will not give you any stats while equipped!");
             }
         }
         cache.setAttributeArmorCache(attributeDoubleMap);
@@ -120,6 +131,11 @@ public class Champion {
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
         if (itemStack == null || itemStack.getType() == Material.AIR || isArmor(itemStack.getType())) {
+            return attributeDoubleMap;
+        }
+        if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
+            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your weapon!" +
+                    " It will not give you any stats when used!");
             return attributeDoubleMap;
         }
         for (StrifeAttribute attr : StrifeAttribute.values()) {

@@ -71,19 +71,6 @@ public class InventoryListener implements Listener {
         }
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getAttributeValues(true);
-        boolean spam = false;
-        for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
-            if (itemStack == null || itemStack.getType() == Material.AIR) {
-                continue;
-            }
-            if (!AttributeHandler.meetsLevelRequirement(player, itemStack)) {
-                spam = true;
-            }
-        }
-        if (spam) {
-            MessageUtils.sendMessage(player,
-                    "<red>You don't meet the requirement for one of your items! It will not give any stats!");
-        }
         AttributeHandler.updateHealth(player, champion.getCache().getAttribute(StrifeAttribute.HEALTH));
         double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
