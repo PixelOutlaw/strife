@@ -126,8 +126,8 @@ public class ChampionCache {
     public String[] dumpCaches() {
         return new String[] {
                 "Stat cache size: " + attributeStatCache.size(),
-                "Armor cache size: " + attributeStatCache.size(),
-                "Weapon cache size: " + attributeStatCache.size(),
+                "Armor cache size: " + attributeArmorCache.size(),
+                "Weapon cache size: " + attributeWeaponCache.size(),
         };
     }
 
