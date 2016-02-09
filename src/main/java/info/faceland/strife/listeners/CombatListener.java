@@ -258,14 +258,14 @@ public class CombatListener implements Listener {
         Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
 
         for (String string : damagedChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST, "EvP: " +  damagedChampion.getUniqueId().toString() + string);
         }
 
         damagedChampion.getWeaponAttributeValues();
         damagedChampion.getCache().recombine();
 
         for (String string : damagedChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST, "EvP: " +  damagedChampion.getUniqueId().toString() + string);
         }
 
         double evadeChance = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
@@ -325,7 +325,7 @@ public class CombatListener implements Listener {
         Champion damagingChampion = plugin.getChampionManager().getChampion(damagingPlayer.getUniqueId());
 
         for (String string : damagingChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST,  "PvE: " +  damagingChampion.getUniqueId().toString() + " " + string);
         }
 
         // ensure that they have the correct caches
@@ -333,7 +333,7 @@ public class CombatListener implements Listener {
         damagingChampion.getCache().recombine();
 
         for (String string : damagingChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST, "PvE: " + damagingChampion.getUniqueId().toString() + string);
         }
 
         // calculating attack speed and velocity
@@ -471,10 +471,10 @@ public class CombatListener implements Listener {
         Champion damagingChampion = plugin.getChampionManager().getChampion(damagingPlayer.getUniqueId());
 
         for (String string : damagingChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST, "PvP: " + damagingChampion.getUniqueId().toString() + " " + string);
         }
         for (String string : damagedChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST, "PvP: " +  damagedChampion.getUniqueId().toString() + " " + string);
         }
 
         // ensure that they have the correct caches
