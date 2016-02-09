@@ -54,6 +54,7 @@ public class ChampionManager {
                 championMap.put(uuid, champion);
                 return champion;
             }
+            plugin.debug(Level.FINER, "Champion not in storage...");
             return createChampion(uuid);
         }
         return championMap.get(uuid);
