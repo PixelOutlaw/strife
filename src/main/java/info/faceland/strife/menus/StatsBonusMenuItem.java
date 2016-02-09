@@ -53,8 +53,6 @@ public class StatsBonusMenuItem extends MenuItem {
     @Override
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        champion.getWeaponAttributeValues();
-        champion.getCache().recombine();
         ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
