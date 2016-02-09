@@ -51,6 +51,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Random;
+import java.util.logging.Level;
 
 public class CombatListener implements Listener {
 
@@ -255,8 +256,17 @@ public class CombatListener implements Listener {
             damage = oldBaseDamage;
         }
         Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
+
+        for (String string : damagedChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+        }
+
         damagedChampion.getWeaponAttributeValues();
         damagedChampion.getCache().recombine();
+
+        for (String string : damagedChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+        }
 
         double evadeChance = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
         if (evadeChance > 0) {
@@ -314,9 +324,17 @@ public class CombatListener implements Listener {
         // get the champions
         Champion damagingChampion = plugin.getChampionManager().getChampion(damagingPlayer.getUniqueId());
 
+        for (String string : damagingChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+        }
+
         // ensure that they have the correct caches
         damagingChampion.getWeaponAttributeValues();
         damagingChampion.getCache().recombine();
+
+        for (String string : damagingChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+        }
 
         // calculating attack speed and velocity
         double attackSpeedMult = 1D;
@@ -452,11 +470,25 @@ public class CombatListener implements Listener {
         Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
         Champion damagingChampion = plugin.getChampionManager().getChampion(damagingPlayer.getUniqueId());
 
+        for (String string : damagingChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+        }
+        for (String string : damagedChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+        }
+
         // ensure that they have the correct caches
         damagedChampion.getWeaponAttributeValues();
         damagedChampion.getCache().recombine();
         damagingChampion.getWeaponAttributeValues();
         damagingChampion.getCache().recombine();
+
+        for (String string : damagingChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
+        }
+        for (String string : damagedChampion.getCache().dumpCaches()) {
+            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+        }
 
         // get the PvP damage multiplier
         double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);

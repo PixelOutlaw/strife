@@ -123,6 +123,14 @@ public class ChampionCache {
         attributeWeaponCache.clear();
     }
 
+    public String[] dumpCaches() {
+        return new String[] {
+                "Stat cache size: " + attributeStatCache.size(),
+                "Armor cache size: " + attributeStatCache.size(),
+                "Weapon cache size: " + attributeStatCache.size(),
+        };
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
