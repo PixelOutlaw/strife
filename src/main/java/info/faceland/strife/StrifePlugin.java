@@ -184,8 +184,8 @@ public class StrifePlugin extends FacePlugin {
         }
 
         saveTask.runTaskTimer(this,
-                20L * 60,//0,
-                20L * 60//0
+                20L * 660,//0,
+                20L * 600//0
         );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);

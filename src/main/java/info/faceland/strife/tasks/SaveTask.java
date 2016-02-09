@@ -22,12 +22,9 @@
  */
 package info.faceland.strife.tasks;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class SaveTask extends BukkitRunnable {
@@ -40,7 +37,6 @@ public class SaveTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        Bukkit.broadcastMessage(TextUtils.color("<yellow>SAVING STRIFE!"));
         plugin.getStorage().save(plugin.getChampionManager().getChampions());
         plugin.getChampionManager().clear();
         for (Champion champion : plugin.getStorage().load()) {

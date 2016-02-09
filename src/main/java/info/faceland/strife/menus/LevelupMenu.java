@@ -36,11 +36,8 @@ public class LevelupMenu extends ItemMenu {
         super(ChatColor.BLACK + "Levelup Menu", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
               plugin);
 
-        plugin.debug(Level.INFO, "LevelupMenu size = " + getSize().name());
-
         for (StrifeStat stat : stats) {
             int counter = stat.getMenuY() * 9 + stat.getMenuX();
-            plugin.debug(Level.INFO, "Adding stat " + stat.getName() + " to LevelupMenu at " + counter);
             setItem(counter, new LevelupMenuItem(plugin, stat));
         }
 

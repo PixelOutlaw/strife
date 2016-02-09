@@ -111,22 +111,18 @@ public class JsonDataStorage implements DataStorage {
             if (section.isConfigurationSection("stats")) {
                 ConfigurationSection statsSection = section.getConfigurationSection("stats");
                 for (String k : statsSection.getKeys(false)) {
-                    plugin.debug(Level.INFO, key + " : " + k);
                     StrifeStat stat = plugin.getStatManager().getStat(k);
                     if (stat == null) {
                         continue;
                     }
-                    plugin.debug(Level.INFO, "stat: " + stat.getName());
                     champion.setLevel(stat, statsSection.getInt(k));
                 }
             } else {
                 for (String k : section.getKeys(false)) {
-                    plugin.debug(Level.INFO, key + " : " + k);
                     StrifeStat stat = plugin.getStatManager().getStat(k);
                     if (stat == null) {
                         continue;
                     }
-                    plugin.debug(Level.INFO, "stat: " + stat.getName());
                     section.set("stats." + stat.getKey(), section.getInt(k));
                     champion.setLevel(stat, section.getInt(k));
                 }
@@ -169,7 +165,6 @@ public class JsonDataStorage implements DataStorage {
                         k.equals("cache")) {
                     continue;
                 }
-                plugin.debug(Level.INFO, "clearing " + key + "." + k);
                 section.set(k, null);
             }
         }

@@ -31,6 +31,7 @@ import info.faceland.strife.data.Champion;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -75,19 +76,25 @@ public class CombatListener implements Listener {
         }
         if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
             double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 25;
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
+                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            }
             event.setDamage(1 + hpdmg);
             return;
         }
         if (event.getCause() == EntityDamageEvent.DamageCause.FIRE) {
             double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 25;
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
+                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            }
             event.setDamage(1 + hpdmg);
             return;
         }
         if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
             double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 20;
-            event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
+                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            }
             event.setDamage(1 + hpdmg);
         }
     }
@@ -146,6 +153,10 @@ public class CombatListener implements Listener {
         // check if the damaged entity is a living entity
         // if it isn't, we do nothing
         if (!(damagedEntity instanceof LivingEntity)) {
+            return;
+        }
+
+        if (damagedEntity instanceof ArmorStand) {
             return;
         }
         // check if the entity is an NPC
