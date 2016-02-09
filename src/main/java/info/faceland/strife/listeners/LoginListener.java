@@ -78,7 +78,7 @@ public class LoginListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new QuitRunnable(plugin, champion), 20L * 30);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new QuitRunnable(plugin, champion), 20L * 10);
     }
 
     class QuitRunnable implements Runnable {

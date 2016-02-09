@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class ChampionManager {
 
@@ -46,8 +47,10 @@ public class ChampionManager {
             return null;
         }
         if (!hasChampion(uuid)) {
+            plugin.debug(Level.FINER, "Champion not in manager...");
             Champion champion = plugin.getStorage().load(uuid);
             if (champion != null) {
+                plugin.debug(Level.FINER, "Loading champion from storage...");
                 championMap.put(uuid, champion);
                 return champion;
             }
