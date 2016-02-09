@@ -88,10 +88,9 @@ public class Champion {
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap
-                        .put(attr, attr.getCap() > 0D ? Math
-                                .min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
-                                : val + entry.getKey().getAttribute(attr) * entry.getValue());
+                attributeDoubleMap.put(attr, attr.getCap() > 0D ?
+                        Math.min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap()) :
+                        val + entry.getKey().getAttribute(attr) * entry.getValue());
             }
         }
         cache.setAttributeStatCache(attributeDoubleMap);
