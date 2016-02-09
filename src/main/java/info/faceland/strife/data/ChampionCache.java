@@ -165,6 +165,6 @@ public class ChampionCache {
         if (map == null) {
             return;
         }
-        attributeArmorCache.putAll(map);
+        attributeWeaponCache.putAll(map);
     }
 }
