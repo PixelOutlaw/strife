@@ -261,13 +261,6 @@ public class CombatListener implements Listener {
             plugin.debug(Level.FINEST, "EvP: " +  damagedChampion.getUniqueId().toString() + string);
         }
 
-        damagedChampion.getWeaponAttributeValues();
-        damagedChampion.getCache().recombine();
-
-        for (String string : damagedChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, "EvP: " +  damagedChampion.getUniqueId().toString() + string);
-        }
-
         double evadeChance = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
         if (evadeChance > 0) {
             double evasionCalc = 1 - (100 / (100 + (Math.pow(evadeChance * 100, 1.1))));
@@ -473,21 +466,12 @@ public class CombatListener implements Listener {
         for (String string : damagingChampion.getCache().dumpCaches()) {
             plugin.debug(Level.FINEST, "PvP: " + damagingChampion.getUniqueId().toString() + " " + string);
         }
-        for (String string : damagedChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, "PvP: " +  damagedChampion.getUniqueId().toString() + " " + string);
-        }
-
         // ensure that they have the correct caches
-        damagedChampion.getWeaponAttributeValues();
-        damagedChampion.getCache().recombine();
         damagingChampion.getWeaponAttributeValues();
         damagingChampion.getCache().recombine();
 
         for (String string : damagingChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagingChampion.getUniqueId().toString() + string);
-        }
-        for (String string : damagedChampion.getCache().dumpCaches()) {
-            plugin.debug(Level.FINEST, damagedChampion.getUniqueId().toString() + string);
+            plugin.debug(Level.FINEST, "PvP: " + damagingChampion.getUniqueId().toString() + string);
         }
 
         // get the PvP damage multiplier
