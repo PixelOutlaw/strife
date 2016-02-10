@@ -115,7 +115,7 @@ public class JsonDataStorage implements DataStorage {
             boolean hadReset = checkResetAndSetLevels(section, champion, true);
             champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
             if (hadReset) {
-                champion.setUnusedStatPoints(champion.getHighestReachedLevel());
+                champion.setUnusedStatPoints(champion.getHighestReachedLevel() * 2);
             } else {
                 champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
             }
@@ -139,7 +139,7 @@ public class JsonDataStorage implements DataStorage {
         boolean hadReset = checkResetAndSetLevels(section, champion, true);
         champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
         if (hadReset) {
-            champion.setUnusedStatPoints(champion.getHighestReachedLevel());
+            champion.setUnusedStatPoints(champion.getHighestReachedLevel() * 2);
         } else {
             champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
         }
