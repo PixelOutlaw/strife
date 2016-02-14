@@ -28,6 +28,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
@@ -163,6 +164,9 @@ public class CombatListener implements Listener {
         // check if the entity is an NPC
         // if it is, we do nothing
         if (damagedEntity.hasMetadata("NPC")) {
+            if (damagingEntity instanceof Projectile) {
+                damagingEntity.remove();
+            }
             return;
         }
 
@@ -265,6 +269,7 @@ public class CombatListener implements Listener {
                     damagingEntity.remove();
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Dodge!");
                 event.setCancelled(true);
                 return 0D;
             }
@@ -285,6 +290,7 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
                     damagingLivingEntity.damage(damage * 0.2);
                     damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
                     event.setCancelled(true);
                     return 0D;
                 }
@@ -294,6 +300,7 @@ public class CombatListener implements Listener {
                         damagingEntity.remove();
                     }
                     damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
                     event.setCancelled(true);
                     return 0D;
                 }
@@ -470,6 +477,8 @@ public class CombatListener implements Listener {
                     damagingEntity.remove();
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Dodge!");
+                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Miss!");
                 event.setCancelled(true);
                 return 0D;
             }
@@ -510,6 +519,8 @@ public class CombatListener implements Listener {
                 if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
                     damagingPlayer.damage(retDamage * 0.2 * pvpMult);
                     damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
+                    ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
                     event.setCancelled(true);
                     return 0D;
                 }
@@ -519,6 +530,8 @@ public class CombatListener implements Listener {
                         damagingEntity.remove();
                     }
                     damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
+                    ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
                     event.setCancelled(true);
                     return 0D;
                 }
