@@ -382,7 +382,7 @@ public class CombatListener implements Listener {
         double lightningDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
         double iceDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE);
         if (fireDamage > 0D) {
-            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * (0.25 + attackSpeedMult * 0.75);
+            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < igniteCalc) {
                 trueDamage += fireDamage * 0.10D;
                 damagedLivingEntity.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedLivingEntity.getFireTicks()));
@@ -390,14 +390,14 @@ public class CombatListener implements Listener {
             }
         }
         if (lightningDamage > 0D) {
-            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * (0.25 + attackSpeedMult * 0.75);
+            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < shockCalc) {
                 trueDamage += lightningDamage * 1.5D;
                 damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
             }
         }
         if (iceDamage > 0D) {
-            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * (0.25 + attackSpeedMult * 0.75);
+            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < freezeCalc) {
                 retDamage += iceDamage + iceDamage * (damagedLivingEntity.getMaxHealth() / 300);
                 damagedLivingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
@@ -577,27 +577,28 @@ public class CombatListener implements Listener {
         double lightningDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
         double iceDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE);
         if (fireDamage > 0D) {
-            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * (0.25 +
-                    attackSpeedMult * 0.75) * (1 - damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE));
+            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < igniteCalc) {
-                trueDamage += fireDamage * 0.10D;
+                trueDamage += fireDamage * 0.10D * (1 - damagedChampion.getCache().getAttribute(StrifeAttribute
+                        .RESISTANCE));
+                fireDamage *= 1 - damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
                 damagedPlayer.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedPlayer.getFireTicks()));
                 damagedPlayer.playSound(damagedPlayer.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
             }
         }
         if (lightningDamage > 0D) {
-            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * (0.25 +
-                    attackSpeedMult * 0.75) * (1 - damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE));
+            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < shockCalc) {
-                trueDamage += lightningDamage * 0.75D;
+                trueDamage += lightningDamage * 0.75D * (1 - damagedChampion.getCache().getAttribute(StrifeAttribute
+                        .RESISTANCE));
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
             }
         }
         if (iceDamage > 0D) {
-            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * (0.25 +
-                    attackSpeedMult * 0.75) * (1 - damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE));
+            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < freezeCalc) {
-                retDamage += iceDamage + iceDamage * (damagedPlayer.getMaxHealth() / 300);
+                retDamage += iceDamage + iceDamage * (damagedPlayer.getMaxHealth() / 300) * (1 - damagedChampion
+                        .getCache().getAttribute(StrifeAttribute.RESISTANCE));
                 damagedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GLASS, 1f, 1f);
             }
