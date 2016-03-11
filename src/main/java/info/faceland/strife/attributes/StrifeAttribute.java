@@ -26,7 +26,7 @@ public enum StrifeAttribute {
 
     // modify any attributes here
     HEALTH("Health", 20, false),
-    REGENERATION("Regeneration", 1, false),
+    REGENERATION("Regeneration", 1.0, true),
     ARMOR("Armor", 0, true),
     RESISTANCE("Resistance", 0, true),
     BLOCK("Block", 0.1, true, 0.85),
