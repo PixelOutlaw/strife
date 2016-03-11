@@ -37,7 +37,7 @@ public enum StrifeAttribute {
     MELEE_DAMAGE("Melee Damage", 1, false),
     RANGED_DAMAGE("Ranged Damage", 3, false),
     SNARE_CHANCE("Snare Chance", 0, true),
-    ATTACK_SPEED("Attack Speed", 2D, true),
+    ATTACK_SPEED("Attack Speed", 1.5D, true),
     OVERCHARGE("Overcharge", 0.1, true),
     ARMOR_PENETRATION("Armor Penetration", 0, true),
     ACCURACY("Accuracy", 0, true),
