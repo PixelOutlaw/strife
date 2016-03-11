@@ -42,10 +42,12 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
@@ -99,6 +101,18 @@ public class CombatListener implements Listener {
             }
             event.setDamage(1 + hpdmg);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onSwing(PlayerInteractEvent event) {
+        if (event.getAction() != Action.LEFT_CLICK_AIR) {
+            return;
+        }
+        Champion playerChamp = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + playerChamp.getCache()
+                .getAttribute(StrifeAttribute.ATTACK_SPEED)));
+        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+        plugin.getAttackSpeedTask().setTimeLeft(event.getPlayer().getUniqueId(), timeToSet);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -333,9 +347,8 @@ public class CombatListener implements Listener {
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
             if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.0);
+                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
             }
-            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
             retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
         } else {
@@ -493,9 +506,8 @@ public class CombatListener implements Listener {
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
             if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.0);
+                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
             }
-            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
             retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
         } else {
