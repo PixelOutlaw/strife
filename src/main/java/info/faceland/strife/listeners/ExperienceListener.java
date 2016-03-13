@@ -24,7 +24,6 @@ package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -43,6 +42,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 
 import be.maximvdw.titlemotd.ui.Title;
 import me.desht.dhutils.ExperienceManager;
+import mkremins.fanciful.FancyMessage;
 
 public class ExperienceListener implements Listener {
 

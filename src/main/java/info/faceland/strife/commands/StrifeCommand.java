@@ -23,7 +23,6 @@
 package info.faceland.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
@@ -39,6 +38,7 @@ import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
 
 import me.desht.dhutils.ExperienceManager;
+import mkremins.fanciful.FancyMessage;
 
 public class StrifeCommand {
 
