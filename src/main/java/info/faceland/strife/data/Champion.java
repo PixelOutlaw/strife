@@ -130,20 +130,32 @@ public class Champion {
     public Map<StrifeAttribute, Double> getWeaponAttributeValues() {
         cache.clearWeaponCache();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-        ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
-        if (itemStack == null || itemStack.getType() == Material.AIR || isArmor(itemStack.getType())) {
+        ItemStack mainHandItemStack = getPlayer().getEquipment().getItemInMainHand();
+        ItemStack offHandItemStack = getPlayer().getEquipment().getItemInOffHand();
+        if (mainHandItemStack == null || mainHandItemStack.getType() == Material.AIR ||
+                isArmor(mainHandItemStack.getType())) {
             return attributeDoubleMap;
         }
-        if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
+        if (!AttributeHandler.meetsLevelRequirement(getPlayer(), mainHandItemStack)) {
             MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your weapon!" +
                     " It will not give you any stats when used!");
             return attributeDoubleMap;
         }
         for (StrifeAttribute attr : StrifeAttribute.values()) {
-            double val = AttributeHandler.getValue(itemStack, attr);
+            double val = AttributeHandler.getValue(mainHandItemStack, attr);
             double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
             attributeDoubleMap.put(attr,
                     attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+        }
+        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR &&
+                !isArmor(offHandItemStack.getType())) {
+            boolean isShield = isShield(offHandItemStack.getType());
+            for (StrifeAttribute attr : StrifeAttribute.values()) {
+                double val = AttributeHandler.getValue(offHandItemStack, attr) * (isShield ? 1.0 : 0.25);
+                double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
+                attributeDoubleMap.put(attr,
+                        attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+            }
         }
         cache.setAttributeWeaponCache(attributeDoubleMap);
         return attributeDoubleMap;
@@ -209,6 +221,11 @@ public class Champion {
         String name = material.name();
         return name.contains("HELMET") || name.contains("CHESTPLATE") || name.contains("LEGGINGS") ||
                 name.contains("BOOTS");
+    }
+
+    private boolean isShield(Material material) {
+        String name = material.name();
+        return name.contains("SHIELD");
     }
 
 }

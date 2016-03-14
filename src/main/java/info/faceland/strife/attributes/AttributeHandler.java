@@ -25,9 +25,9 @@ package info.faceland.strife.attributes;
 import com.tealcube.minecraft.bukkit.hilt.HiltItemStack;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -37,15 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 public class AttributeHandler {
-
-    public static double getValue(LivingEntity livingEntity, StrifeAttribute attribute) {
-        double amount = 0D;
-        for (ItemStack itemStack : livingEntity.getEquipment().getArmorContents()) {
-            amount += getValue(itemStack, attribute);
-        }
-        amount += getValue(livingEntity.getEquipment().getItemInHand(), attribute);
-        return amount;
-    }
 
     public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
         return getValue(new HiltItemStack(itemStack), attribute);

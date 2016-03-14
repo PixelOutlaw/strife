@@ -54,7 +54,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Random;
-import java.util.logging.Level;
 
 public class CombatListener implements Listener {
 
@@ -282,7 +281,8 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT,
+                        0.5f, 2f);
                 ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Dodge!");
                 event.setCancelled(true);
                 return 0D;
@@ -296,14 +296,14 @@ public class CombatListener implements Listener {
                 }
                 damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 25),
                         damagedPlayer.getMaxHealth()));
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
                 return 0D;
             }
             if (melee) {
                 if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
                     damagingLivingEntity.damage(damage * 0.2);
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                     ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
                     event.setCancelled(true);
                     return 0D;
@@ -313,7 +313,7 @@ public class CombatListener implements Listener {
                     if (damagingEntity instanceof Projectile) {
                         damagingEntity.remove();
                     }
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                     ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
                     event.setCancelled(true);
                     return 0D;
@@ -386,14 +386,14 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < igniteCalc) {
                 trueDamage += fireDamage * 0.10D;
                 damagedLivingEntity.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedLivingEntity.getFireTicks()));
-                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
             }
         }
         if (lightningDamage > 0D) {
             double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < shockCalc) {
                 trueDamage += lightningDamage * 1.5D;
-                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 1.5f);
             }
         }
         if (iceDamage > 0D) {
@@ -401,7 +401,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < freezeCalc) {
                 retDamage += iceDamage + iceDamage * (damagedLivingEntity.getMaxHealth() / 300);
                 damagedLivingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
-                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
             }
         }
 
@@ -425,7 +425,7 @@ public class CombatListener implements Listener {
             if (snareChance > 0) {
                 if (random.nextDouble() < snareChance) {
                     damagedLivingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
-                    damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
                 }
             }
         }
@@ -489,7 +489,7 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GHAST_FIREBALL, 0.5f, 2f);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
                 ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Dodge!");
                 ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Miss!");
                 event.setCancelled(true);
@@ -523,14 +523,14 @@ public class CombatListener implements Listener {
                 }
                 damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 25),
                         damagedPlayer.getMaxHealth()));
-                damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.BLAZE_HIT, 1f, 2f);
+                damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
                 return 0D;
             }
             if (melee) {
                 if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
                     damagingPlayer.damage(retDamage * 0.2 * pvpMult);
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                     ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
                     ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
                     event.setCancelled(true);
@@ -541,7 +541,7 @@ public class CombatListener implements Listener {
                     if (damagingEntity instanceof Projectile) {
                         damagingEntity.remove();
                     }
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ANVIL_LAND, 1f, 2f);
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                     ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
                     ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
                     event.setCancelled(true);
@@ -583,7 +583,7 @@ public class CombatListener implements Listener {
                         .RESISTANCE));
                 fireDamage *= 1 - damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
                 damagedPlayer.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedPlayer.getFireTicks()));
-                damagedPlayer.playSound(damagedPlayer.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                damagedPlayer.playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
             }
         }
         if (lightningDamage > 0D) {
@@ -591,7 +591,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < shockCalc) {
                 trueDamage += lightningDamage * 0.75D * (1 - damagedChampion.getCache().getAttribute(StrifeAttribute
                         .RESISTANCE));
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.AMBIENCE_THUNDER, 1f, 1.5f);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 1.5f);
             }
         }
         if (iceDamage > 0D) {
@@ -600,7 +600,7 @@ public class CombatListener implements Listener {
                 retDamage += iceDamage + iceDamage * (damagedPlayer.getMaxHealth() / 300) * (1 - damagedChampion
                         .getCache().getAttribute(StrifeAttribute.RESISTANCE));
                 damagedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.GLASS, 1f, 1f);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
             }
         }
 
@@ -624,7 +624,7 @@ public class CombatListener implements Listener {
             if (snareChance > 0) {
                 if (random.nextDouble() < snareChance) {
                     damagedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.FIRE_IGNITE, 1f, 1f);
+                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
                 }
             }
         }
@@ -684,7 +684,7 @@ public class CombatListener implements Listener {
 
     private double getCritBonus(double rate, double damage, Player a) {
         if (random.nextDouble() < rate) {
-            a.getWorld().playSound(a.getEyeLocation(), Sound.FALL_BIG, 2f, 0.8f);
+            a.getWorld().playSound(a.getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
             return damage - 1.0;
         }
         return 0;
