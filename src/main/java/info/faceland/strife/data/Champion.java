@@ -229,8 +229,7 @@ public class Champion {
 
     private boolean isWeapon(Material material) {
         String name = material.name();
-        return name.contains("SHIELD") || name.contains("SWORD") || name.contains("AXE") || name.contains("HOE") ||
-                name.contains("SPADE") || material == Material.BONE || material == Material.BLAZE_ROD;
+        return name.contains("SWORD") || name.contains("AXE") || name.contains("HOE") || material == Material.BLAZE_ROD;
     }
 
 }

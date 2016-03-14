@@ -57,7 +57,7 @@ public enum StrifeAttribute {
     HEAD_DROP("Head Drop", 0D, true),
     LEVEL_REQUIREMENT("Level Requirement", 0, false),
     DOGE("Doge Chance", 0D, true, 100D),
-    DUAL_WIELD_EFFICIENCY("Dual Wield Efficiency", 0D, true);
+    DUAL_WIELD_EFFICIENCY("Dual Wield Efficiency", 0.25D, true);
 
     private final String name;
     private final double baseValue;
