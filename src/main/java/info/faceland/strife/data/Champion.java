@@ -147,11 +147,15 @@ public class Champion {
             attributeDoubleMap.put(attr,
                     attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
         }
+        double dualWieldEfficiency = attributeDoubleMap.get(StrifeAttribute.DUAL_WIELD_EFFICIENCY);
         if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR &&
                 !isArmor(offHandItemStack.getType())) {
             boolean isShield = isShield(offHandItemStack.getType());
             for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = AttributeHandler.getValue(offHandItemStack, attr) * (isShield ? 1.0 : 0.25);
+                if (attr == StrifeAttribute.DUAL_WIELD_EFFICIENCY) {
+                    continue;
+                }
+                double val = AttributeHandler.getValue(offHandItemStack, attr) * (isShield ? 1.0 : dualWieldEfficiency);
                 double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
                 attributeDoubleMap.put(attr,
                         attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);

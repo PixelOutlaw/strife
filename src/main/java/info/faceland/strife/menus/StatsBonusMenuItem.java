@@ -59,6 +59,8 @@ public class StatsBonusMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
                 champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
+        lore.add(ChatColor.DARK_AQUA + "Dual Wield Efficiency: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
+                champion.getCache().getAttribute(StrifeAttribute.DUAL_WIELD_EFFICIENCY)));
         if (champion.getCache().getAttribute(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
             lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");

@@ -56,7 +56,8 @@ public enum StrifeAttribute {
     GOLD_FIND("Gold Find", 0D, true),
     HEAD_DROP("Head Drop", 0D, true),
     LEVEL_REQUIREMENT("Level Requirement", 0, false),
-    DOGE("Doge Chance", 0D, true, 100D);
+    DOGE("Doge Chance", 0D, true, 100D),
+    DUAL_WIELD_EFFICIENCY("Dual Wield Efficiency", 0D, true);
 
     private final String name;
     private final double baseValue;
