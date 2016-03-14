@@ -155,7 +155,7 @@ public class Champion {
                 if (attr == StrifeAttribute.DUAL_WIELD_EFFICIENCY) {
                     continue;
                 }
-                double val = AttributeHandler.getValue(offHandItemStack, attr) * (isWeapon ? 1.0 : dualWieldEfficiency);
+                double val = AttributeHandler.getValue(offHandItemStack, attr) * (!isWeapon ? 1.0 : dualWieldEfficiency);
                 double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
                 attributeDoubleMap.put(attr,
                         attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
