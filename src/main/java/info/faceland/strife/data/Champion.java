@@ -150,12 +150,12 @@ public class Champion {
         double dualWieldEfficiency = attributeDoubleMap.get(StrifeAttribute.DUAL_WIELD_EFFICIENCY);
         if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR &&
                 !isArmor(offHandItemStack.getType())) {
-            boolean isShield = isShield(offHandItemStack.getType());
+            boolean isWeapon = isWeapon(offHandItemStack.getType());
             for (StrifeAttribute attr : StrifeAttribute.values()) {
                 if (attr == StrifeAttribute.DUAL_WIELD_EFFICIENCY) {
                     continue;
                 }
-                double val = AttributeHandler.getValue(offHandItemStack, attr) * (isShield ? 1.0 : dualWieldEfficiency);
+                double val = AttributeHandler.getValue(offHandItemStack, attr) * (isWeapon ? 1.0 : dualWieldEfficiency);
                 double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
                 attributeDoubleMap.put(attr,
                         attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
@@ -227,9 +227,10 @@ public class Champion {
                 name.contains("BOOTS");
     }
 
-    private boolean isShield(Material material) {
+    private boolean isWeapon(Material material) {
         String name = material.name();
-        return name.contains("SHIELD");
+        return name.contains("SHIELD") || name.contains("SWORD") || name.contains("AXE") || name.contains("HOE") ||
+                name.contains("SPADE") || material == Material.BONE || material == Material.BLAZE_ROD;
     }
 
 }
