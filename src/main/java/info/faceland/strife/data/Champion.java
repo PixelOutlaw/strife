@@ -118,25 +118,11 @@ public class Champion {
                         attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
             }
         }
-        ItemStack itemStack = getPlayer().getEquipment().getItemInOffHand();
-        if (itemStack != null && itemStack.getType() != Material.AIR) {
-            if (itemStack.getType() == Material.SHIELD) {
-                if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
-                    spam = true;
-                } else {
-                    for (StrifeAttribute attr : StrifeAttribute.values()) {
-                        double val = AttributeHandler.getValue(itemStack, attr);
-                        double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                        attributeDoubleMap.put(attr,
-                                attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
-                    }
-                }
-            }
-            if (spam) {
-                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your " +
-                        "armor! It will not give you any stats while equipped!");
-            }
+        if (spam) {
+            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your " +
+                    "armor! It will not give you any stats while equipped!");
         }
+
         cache.setAttributeArmorCache(attributeDoubleMap);
         return attributeDoubleMap;
     }
@@ -146,40 +132,40 @@ public class Champion {
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         ItemStack mainHandItemStack = getPlayer().getEquipment().getItemInMainHand();
         ItemStack offHandItemStack = getPlayer().getEquipment().getItemInOffHand();
-        if (mainHandItemStack == null || mainHandItemStack.getType() == Material.AIR ||
-                isArmor(mainHandItemStack.getType())) {
-            if (AttributeHandler.meetsLevelRequirement(getPlayer(), mainHandItemStack)) {
+        boolean update = false;
+        if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !isArmor(mainHandItemStack.getType())) {
+            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), mainHandItemStack)) {
+                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your weapon! It " +
+                        "will not give you any stats when used!");
+            } else {
                 for (StrifeAttribute attr : StrifeAttribute.values()) {
                     double val = AttributeHandler.getValue(mainHandItemStack, attr);
                     double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
-                    attributeDoubleMap.put(attr,
-                            attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+                    update = true;
                 }
-            } else {
-                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your weapon!" +
-                        " It will not give you any stats when used!");
             }
         }
-        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR &&
-                !isArmor(offHandItemStack.getType())) {
-            if (AttributeHandler.meetsLevelRequirement(getPlayer(), mainHandItemStack)) {
-                double dualWieldEfficiency = attributeDoubleMap.get(StrifeAttribute.DUAL_WIELD_EFFICIENCY);
-                boolean isWeapon = isWeapon(offHandItemStack.getType());
+        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !isArmor(offHandItemStack.getType())) {
+            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), offHandItemStack)) {
+                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your offhand " +
+                        "item! It will not give you any stats when used!");
+            } else {
+                double dualWieldEfficiency = 1.0;
+                if (isWeapon(offHandItemStack.getType())) {
+                    dualWieldEfficiency = 0.25;
+                }
                 for (StrifeAttribute attr : StrifeAttribute.values()) {
-                    if (attr == StrifeAttribute.DUAL_WIELD_EFFICIENCY) {
-                        continue;
-                    }
-                    double val = AttributeHandler.getValue(offHandItemStack, attr) * (!isWeapon ? 1.0 : dualWieldEfficiency);
+                    double val = AttributeHandler.getValue(offHandItemStack, attr) * dualWieldEfficiency;
                     double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
-                    attributeDoubleMap.put(attr,
-                            attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+                    update = true;
                 }
-            } else {
-                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your " +
-                        "secondary weapon! It will not give you any stats when used!");
             }
         }
-        cache.setAttributeWeaponCache(attributeDoubleMap);
+        if (update) {
+            cache.setAttributeWeaponCache(attributeDoubleMap);
+        }
         return attributeDoubleMap;
     }
 
