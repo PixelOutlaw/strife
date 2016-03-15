@@ -30,6 +30,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -57,6 +58,7 @@ public class StatsDefenseMenuItem extends MenuItem {
         ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
+        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.HEALTH)));
         if (champion.getCache().getAttribute(StrifeAttribute.REGENERATION) > 1) {
@@ -72,9 +74,18 @@ public class StatsDefenseMenuItem extends MenuItem {
                     DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
                     ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
         }
+        if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) != 0.0) {
+            if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) < 0.85) {
+                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
+                        .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
+            } else {
+                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
+            }
+        }
         if (champion.getCache().getAttribute(StrifeAttribute.RESISTANCE) > 0) {
             lore.add(
-                    ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");
+                    ChatColor.BLUE + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion
+                            .getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) > 0) {
             if (champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) < 0.35) {
@@ -90,14 +101,6 @@ public class StatsDefenseMenuItem extends MenuItem {
                         .format(champion.getCache().getAttribute(StrifeAttribute.PARRY) * 100) + "%");
             } else {
                 lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + "75% " + ChatColor.GRAY + "(Max)");
-            }
-        }
-        if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) != 0.1) {
-            if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) < 0.85) {
-                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
-            } else {
-                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
             }
         }
         itemMeta.setLore(lore);
