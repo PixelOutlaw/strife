@@ -119,23 +119,24 @@ public class Champion {
             }
         }
         ItemStack itemStack = getPlayer().getEquipment().getItemInOffHand();
-        if (itemStack.getType() == Material.SHIELD) {
-            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
-                spam = true;
-            } else {
-                for (StrifeAttribute attr : StrifeAttribute.values()) {
-                    double val = AttributeHandler.getValue(itemStack, attr);
-                    double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                    attributeDoubleMap.put(attr,
-                            attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+        if (itemStack != null && itemStack.getType() != Material.AIR) {
+            if (itemStack.getType() == Material.SHIELD) {
+                if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
+                    spam = true;
+                } else {
+                    for (StrifeAttribute attr : StrifeAttribute.values()) {
+                        double val = AttributeHandler.getValue(itemStack, attr);
+                        double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
+                        attributeDoubleMap.put(attr,
+                                attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+                    }
                 }
             }
+            if (spam) {
+                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your " +
+                        "armor! It will not give you any stats while equipped!");
+            }
         }
-        if (spam) {
-            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your " +
-                    "armor! It will not give you any stats while equipped!");
-        }
-
         cache.setAttributeArmorCache(attributeDoubleMap);
         return attributeDoubleMap;
     }
