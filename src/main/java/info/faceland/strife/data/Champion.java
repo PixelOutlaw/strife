@@ -154,6 +154,8 @@ public class Champion {
                 double dualWieldEfficiency = 1.0;
                 if (isWeapon(offHandItemStack.getType())) {
                     dualWieldEfficiency = 0.25;
+                } else if (offHandItemStack.getType() == Material.BOW) {
+                    dualWieldEfficiency = 0.0;
                 }
                 for (StrifeAttribute attr : StrifeAttribute.values()) {
                     double val = AttributeHandler.getValue(offHandItemStack, attr) * dualWieldEfficiency;
