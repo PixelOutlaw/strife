@@ -133,7 +133,9 @@ public class Champion {
         ItemStack mainHandItemStack = getPlayer().getEquipment().getItemInMainHand();
         ItemStack offHandItemStack = getPlayer().getEquipment().getItemInOffHand();
         boolean update = false;
+        boolean nullMainHand = true;
         if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !isArmor(mainHandItemStack.getType())) {
+            nullMainHand = false;
             if (!AttributeHandler.meetsLevelRequirement(getPlayer(), mainHandItemStack)) {
                 MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your weapon! It " +
                         "will not give you any stats when used!");
@@ -152,10 +154,14 @@ public class Champion {
                         "item! It will not give you any stats when used!");
             } else {
                 double dualWieldEfficiency = 1.0;
-                if (isWeapon(offHandItemStack.getType())) {
-                    dualWieldEfficiency = 0.25;
-                } else if (offHandItemStack.getType() == Material.BOW) {
-                    dualWieldEfficiency = 0.0;
+                if (!nullMainHand) {
+                    if (isWeapon(offHandItemStack.getType())) {
+                        dualWieldEfficiency = 0.25;
+                    } else if (offHandItemStack.getType() == Material.BOW && mainHandItemStack.getType() == Material.BOW) {
+                        dualWieldEfficiency = 0.0;
+                        MessageUtils.sendMessage(getPlayer(), "<red>Dual wielding bows does not give you any stats " +
+                                "from the off in the offhand slot. Mostly because its so silly.");
+                    }
                 }
                 for (StrifeAttribute attr : StrifeAttribute.values()) {
                     double val = AttributeHandler.getValue(offHandItemStack, attr) * dualWieldEfficiency;
