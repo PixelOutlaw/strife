@@ -160,7 +160,7 @@ public class Champion {
                     } else if (offHandItemStack.getType() == Material.BOW && mainHandItemStack.getType() == Material.BOW) {
                         dualWieldEfficiency = 0.0;
                         MessageUtils.sendMessage(getPlayer(), "<red>Dual wielding bows does not give you any stats " +
-                                "from the off in the offhand slot. Mostly because its so silly.");
+                                "from the bow in the offhand slot. Mostly because its so silly.");
                     }
                 }
                 for (StrifeAttribute attr : StrifeAttribute.values()) {
@@ -241,7 +241,8 @@ public class Champion {
 
     private boolean isWeapon(Material material) {
         String name = material.name();
-        return name.contains("SWORD") || name.contains("AXE") || name.contains("HOE") || material == Material.BLAZE_ROD;
+        return name.contains("SWORD") || name.contains("AXE") || name.contains("HOE") || material == Material
+                .BLAZE_ROD || material == Material.BOW;
     }
 
 }
