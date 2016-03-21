@@ -346,6 +346,7 @@ public class CombatListener implements Listener {
                     .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
             if (timeLeft > 0) {
                 attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
             }
@@ -505,6 +506,7 @@ public class CombatListener implements Listener {
                     .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
             long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
             long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
             if (timeLeft > 0) {
                 attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
             }
