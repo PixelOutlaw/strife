@@ -75,7 +75,7 @@ public class StatsDefenseMenuItem extends MenuItem {
                     ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) != 0.0) {
-            if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) < 0.85) {
+            if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) <= 0.85) {
                 lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
                         .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
             } else {

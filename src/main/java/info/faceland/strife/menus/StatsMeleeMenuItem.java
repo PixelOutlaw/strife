@@ -61,8 +61,13 @@ public class StatsMeleeMenuItem extends MenuItem {
         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE)));
-        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)))
-                + "s " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)*10) + "%)");
+        if (champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED) != 0) {
+            lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)))
+                    + "s " + ChatColor.GRAY + "(+" + DECIMAL_FORMAT.format(champion.getCache().getAttribute
+                    (StrifeAttribute.ATTACK_SPEED) * 100) + "%)");
+        } else {
+            lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + "2.0s");
+        }
         if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) > 0) {
             lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(
                     StrifeAttribute.ACCURACY)) + "%");
@@ -96,8 +101,12 @@ public class StatsMeleeMenuItem extends MenuItem {
                     StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) * 100)
-                    + "%");
+            if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) <= 0.65) {
+                lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                        .getAttribute(StrifeAttribute.LIFE_STEAL) * 100) + "%");
+            } else {
+                lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + "65% " + ChatColor.GRAY + "(Max)");
+            }
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);

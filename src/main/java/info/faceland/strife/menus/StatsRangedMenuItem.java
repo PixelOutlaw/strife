@@ -96,9 +96,12 @@ public class StatsRangedMenuItem extends MenuItem {
                     StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            lore.add(
-                    ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) * 100)
-                            + "%");
+            if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) <= 0.65) {
+                lore.add(ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                        .getAttribute(StrifeAttribute.LIFE_STEAL) * 100) + "%");
+            } else {
+                lore.add(ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + "65% " + ChatColor.GRAY + "(Max)");
+            }
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
