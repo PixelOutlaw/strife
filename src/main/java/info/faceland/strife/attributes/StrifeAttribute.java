@@ -50,7 +50,7 @@ public enum StrifeAttribute {
     IGNITE_CHANCE("Ignite Chance", 0.15, true),
     SHOCK_CHANCE("Shock Chance", 0.15, true),
     FREEZE_CHANCE("Freeze Chance", 0.15, true),
-    LIFE_STEAL("Life Steal", 0, true),
+    LIFE_STEAL("Life Steal", 0.0, true, 0.65),
     XP_GAIN("Experience Gain", 0D, true),
     ITEM_DISCOVERY("Item Discovery", 0D, true),
     GOLD_FIND("Gold Find", 0D, true),
