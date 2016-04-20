@@ -48,6 +48,9 @@ public class LevelupPointsMenuItem extends MenuItem {
         ItemStack itemStack = super.getFinalIcon(player);
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         int stacks = champion.getUnusedStatPoints();
+        String name = ChatColor.WHITE + "Unused Levelpoints (" + stacks + ")";
+        itemStack.getItemMeta().setDisplayName(name);
+        stacks = Math.min(stacks, 64);
         itemStack.setAmount(stacks);
         return itemStack;
     }

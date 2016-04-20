@@ -7,7 +7,11 @@ menu:
   unused-marker-y: 5
   close-marker-x: 8
   close-marker-y: 5
+
 pvp-multiplier: 0.5
+
+xp-bonus: 0.0
+drops-bonus: 0.0
 
 ## NOTE: XP penalty exempt world applies to the world the
 ## player RESPAWNS in, as that is when xp is lost!

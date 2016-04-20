@@ -28,17 +28,24 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.Snowball;
+import org.bukkit.entity.WitherSkull;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -50,6 +57,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -102,23 +110,119 @@ public class CombatListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerShoot(ProjectileLaunchEvent event) {
+        if (!(event.getEntity().getShooter() instanceof Player)) {
+            return;
+        }
+        Player p = (Player) event.getEntity().getShooter();
+        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
+        playerChamp.getAttributeValues(true);
+        Projectile projectile = event.getEntity();
+        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE);
+        double critBonus = damage * getCritBonus(playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE),
+                playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE), null);
+        damage += critBonus;
+        projectile.setMetadata("handled", new FixedMetadataValue(plugin, true));
+        projectile.setMetadata("damage", new FixedMetadataValue(plugin, damage));
+        projectile.setMetadata("armorPen", new FixedMetadataValue(plugin, playerChamp.getCache()
+                .getAttribute(StrifeAttribute.ARMOR_PENETRATION)));
+        projectile.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
+                .getAttribute(StrifeAttribute.ACCURACY)));
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
+                projectile.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                        .getAttribute(StrifeAttribute.FIRE_DAMAGE)));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
+                projectile.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                        .getAttribute(StrifeAttribute.ICE_DAMAGE)));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
+                projectile.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
+            projectile.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
+                    .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
+        }
+
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSwing(PlayerInteractEvent event) {
         if (event.getAction() != Action.LEFT_CLICK_AIR) {
             return;
         }
-        Champion playerChamp = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+        Player p = event.getPlayer();
+        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
         double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + playerChamp.getCache()
                 .getAttribute(StrifeAttribute.ATTACK_SPEED)));
         long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        plugin.getAttackSpeedTask().setTimeLeft(event.getPlayer().getUniqueId(), timeToSet);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onProjectileLaunch(ProjectileLaunchEvent event) {
-        if (event.getEntity().getShooter() instanceof Entity) {
-            event.getEntity().setVelocity(event.getEntity().getVelocity().add(((Entity) event.getEntity()
-                    .getShooter()).getVelocity()));
+        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(p.getUniqueId());
+        double attackSpeedMult = 1.0D;
+        if (timeLeft > 0) {
+            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
+        }
+        plugin.getAttackSpeedTask().setTimeLeft(p.getUniqueId(), timeToSet);
+        if (p.getEquipment().getItemInMainHand().getType() != Material.WOOD_SWORD) {
+            return;
+        }
+        if (!p.getEquipment().getItemInMainHand().getItemMeta().getLore().get(1).endsWith("Wand")) {
+            return;
+        }
+        if (attackSpeedMult < 0.3) {
+            ActionBarMessage.send(p, ChatColor.WHITE + "Not Charged Enough!");
+            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.8f, 0.8f);
+            return;
+        }
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1.0f, 2f);
+        playerChamp.getAttributeValues(true);
+        playerChamp.getWeaponAttributeValues();
+        playerChamp.getCache().recombine();
+        ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation(), ShulkerBullet.class);
+        magicProj.setShooter(p);
+        magicProj.setVelocity(p.getLocation().getDirection().multiply(1.9));
+        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
+        double overBonus = 0;
+        if (attackSpeedMult == 1.0D) {
+            overBonus = damage * playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
+        }
+        double critBonus = damage * getCritBonus(playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE),
+                playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE), p);
+        damage = damage + critBonus + overBonus;
+        magicProj.setMetadata("handled", new FixedMetadataValue(plugin, true));
+        magicProj.setMetadata("damage", new FixedMetadataValue(plugin, damage));
+        magicProj.setMetadata("armorPen", new FixedMetadataValue(plugin, playerChamp.getCache()
+                .getAttribute(StrifeAttribute.ARMOR_PENETRATION)));
+        magicProj.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
+                .getAttribute(StrifeAttribute.ACCURACY)));
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
+                magicProj.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                        .getAttribute(StrifeAttribute.FIRE_DAMAGE)));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
+                magicProj.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                        .getAttribute(StrifeAttribute.ICE_DAMAGE)));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
+                magicProj.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
+            magicProj.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
+                    .getAttribute(StrifeAttribute.LIFE_STEAL)));
         }
     }
 
@@ -186,13 +290,15 @@ public class CombatListener implements Listener {
         // find the living entities and if this is melee
         LivingEntity damagedLivingEntity = (LivingEntity) damagedEntity;
         LivingEntity damagingLivingEntity;
-        boolean melee = true;
+        Projectile damagingProjectile = null;
         if (damagingEntity instanceof LivingEntity) {
             damagingLivingEntity = (LivingEntity) damagingEntity;
         } else if (damagingEntity instanceof Projectile && ((Projectile) damagingEntity).getShooter() instanceof
                 LivingEntity) {
             damagingLivingEntity = (LivingEntity) ((Projectile) damagingEntity).getShooter();
-            melee = false;
+            if (damagingEntity.hasMetadata("handled")) {
+                damagingProjectile = (Projectile) damagingEntity;
+            }
         } else {
             // there are no living entities, back out of this shit
             // we ain't doin' nothin'
@@ -211,7 +317,7 @@ public class CombatListener implements Listener {
 
         // pass information to a new calculator
         double newBaseDamage = handleDamageCalculations(damagedLivingEntity, damagingLivingEntity, damagingEntity,
-                oldBaseDamage, melee, event.getCause(), event);
+                oldBaseDamage, damagingProjectile, event.getCause(), event);
 
         // set the base damage of the event
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newBaseDamage);
@@ -221,34 +327,219 @@ public class CombatListener implements Listener {
                                             LivingEntity damagingLivingEntity,
                                             Entity damagingEntity,
                                             double oldBaseDamage,
-                                            boolean melee,
+                                            Projectile damagingProjectile,
                                             EntityDamageEvent.DamageCause cause,
                                             EntityDamageEvent event) {
         double retDamage = 0D;
-        // four branches: PvP, PvE, EvP, EvE
-        if (damagedLivingEntity instanceof Player && damagingLivingEntity instanceof Player) {
+        // Five branches: PvP, PvE, EvP, EvE, Projectile
+        if (damagingProjectile != null) {
+            // Projectile branch
+            retDamage = handleProjectileCalculation(damagedLivingEntity, damagingProjectile, event);
+        } else if (damagedLivingEntity instanceof Player && damagingLivingEntity instanceof Player) {
             // PvP branch
             retDamage = handlePlayerVersusPlayerCalculation((Player) damagedLivingEntity,
-                    (Player) damagingLivingEntity, damagingEntity, melee, event);
+                    (Player) damagingLivingEntity, damagingEntity, event);
         } else if (!(damagedLivingEntity instanceof Player) && damagingLivingEntity instanceof Player) {
             // PvE branch
             retDamage = handlePlayerVersusEnvironmentCalculation(damagedLivingEntity, (Player) damagingLivingEntity,
-                    damagingEntity, melee);
+                    damagingEntity);
         } else if (damagedLivingEntity instanceof Player) {
             // EvP branch
             retDamage = handleEnvironmentVersusPlayerCalculation((Player) damagedLivingEntity, damagingLivingEntity,
-                    damagingEntity, oldBaseDamage, melee, event);
+                    damagingEntity, oldBaseDamage, event);
         } else {
             // EvE branch
             retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
-                    damagingEntity, oldBaseDamage, cause);
+                    oldBaseDamage, cause);
+        }
+        return retDamage;
+    }
+
+    private double handleProjectileCalculation(LivingEntity damagedEntity, Projectile damagingProjectile, EntityDamageEvent event) {
+        double retDamage = 0;
+
+        // Decide if its against a player or a non-player
+        if (damagedEntity instanceof Player) {
+            LivingEntity attacker = (LivingEntity) damagingProjectile.getShooter();
+            Player defender = (Player) damagedEntity;
+            double pvpMult = 1.0;
+            double velocityMult = 1.0;
+            double arrowOvercharge = 0;
+            if (attacker instanceof Player) {
+                pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
+                if (damagingProjectile instanceof Arrow) {
+                    velocityMult = Math.min(damagingProjectile.getVelocity().lengthSquared() / 9D, 1);
+                    if (velocityMult > 0.9) {
+                        Champion attackingChampion = plugin.getChampionManager().getChampion(attacker.getUniqueId());
+                        arrowOvercharge = attackingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
+                    }
+                } else if (damagingProjectile instanceof ShulkerBullet) {
+                    damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 2, 5, true, false));
+                }
+            }
+
+            Champion defendingChampion = plugin.getChampionManager().getChampion(defender.getUniqueId());
+
+            double evadeChance = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
+            if (evadeChance > 0) {
+                double evasionCalc = 1 - (100 / (100 + (Math.pow(evadeChance * 100, 1.1))));
+                double accuracy = 1.0;
+                accuracy = 1 - damagingProjectile.getMetadata("accuracy").get(0).asDouble();
+                evasionCalc *= accuracy;
+                if (random.nextDouble() < evasionCalc) {
+                    damagingProjectile.remove();
+                    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
+                    ActionBarMessage.send(defender, ChatColor.WHITE + "Dodge!");
+                    if (attacker instanceof Player) {
+                        ActionBarMessage.send((Player) attacker, ChatColor.WHITE + "Miss!");
+                    }
+                    event.setCancelled(true);
+                    return 0D;
+                }
+            }
+
+            retDamage = damagingProjectile.getMetadata("damage").get(0).asDouble();
+            retDamage *= velocityMult;
+            if (velocityMult > 0.85) {
+                retDamage += retDamage * arrowOvercharge;
+            }
+
+            double trueDamage = 0D;
+            if (damagingProjectile.hasMetadata("fireDamage")) {
+                double fireDamage = damagingProjectile.getMetadata("fireDamage").get(0).asDouble();
+                trueDamage += fireDamage * 0.10D;
+                damagedEntity.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedEntity.getFireTicks()));
+                damagedEntity.getWorld().playSound(damagedEntity.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
+            }
+            if (damagingProjectile.hasMetadata("lightningDamage")) {
+                double lightningDamage = damagingProjectile.getMetadata("lightningDamage").get(0).asDouble();
+                trueDamage += lightningDamage * 0.75D;
+                damagedEntity.getWorld().playSound(damagedEntity.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 1.5f);
+            }
+            if (damagingProjectile.hasMetadata("iceDamage")) {
+                double iceDamage = damagingProjectile.getMetadata("iceDamage").get(0).asDouble();
+                retDamage += iceDamage + iceDamage * (damagedEntity.getMaxHealth() / 300);
+                damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
+                damagedEntity.getWorld().playSound(damagedEntity.getLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
+            }
+
+            double armorPen = damagingProjectile.getMetadata("armorPen").get(0).asDouble();
+
+            retDamage *= getArmorMult(defendingChampion.getCache().getAttribute(StrifeAttribute.ARMOR), armorPen);
+            retDamage += trueDamage;
+            double potionMult = 1D;
+            if (damagedEntity.hasPotionEffect(PotionEffectType.WITHER)) {
+                potionMult += 0.2D;
+            }
+            if (damagedEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                potionMult -= 0.1D;
+            }
+            retDamage *= potionMult;
+
+            retDamage *= pvpMult;
+            if (damagingProjectile.hasMetadata("lifeSteal")) {
+                double lifeSteal = damagingProjectile.getMetadata("lifeSteal").get(0).asDouble();
+                double lifeStolen = retDamage * lifeSteal;
+                if (attacker instanceof Player) {
+                    lifeStolen *= Math.min(((Player) attacker).getFoodLevel() / 7.0D, 1.0D);
+                }
+                if (attacker.hasPotionEffect(PotionEffectType.POISON)) {
+                    lifeStolen *= 0.34;
+                }
+                if (attacker.getHealth() > 0) {
+                    attacker.setHealth(Math.min(attacker.getHealth() + lifeStolen, attacker.getMaxHealth()));
+                }
+            }
+            if (attacker instanceof Player) {
+                String msg;
+                if (damagedEntity.getHealth() > retDamage) {
+                    msg = "&c&lHealth: &f" + (int) (damagedEntity.getHealth() - retDamage) + "&7/&f" + (int) (damagedEntity.getMaxHealth());
+                } else {
+                    msg = "&c&lHealth: &fDEAD &7/ &fKILLED";
+                }
+                ActionBarMessage.send((Player) attacker, msg);
+            }
+        } else {
+            retDamage = damagingProjectile.getMetadata("damage").get(0).asDouble();
+            LivingEntity attacker = (LivingEntity) damagingProjectile.getShooter();
+
+            double velocityMult = 1.0;
+            double arrowOvercharge = 0;
+            if (attacker instanceof Player) {
+                if (damagingProjectile instanceof Arrow) {
+                    velocityMult = Math.min(damagingProjectile.getVelocity().lengthSquared() / 9D, 1);
+                    if (velocityMult > 0.9) {
+                        Champion attackingChampion = plugin.getChampionManager().getChampion(attacker.getUniqueId());
+                        arrowOvercharge = attackingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
+                    }
+                } else if (damagingProjectile instanceof ShulkerBullet) {
+                    damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 2, 5, true, false));
+                }
+            }
+
+            retDamage = damagingProjectile.getMetadata("damage").get(0).asDouble();
+            retDamage *= velocityMult;
+            if (velocityMult > 0.85) {
+                retDamage += retDamage * arrowOvercharge;
+            }
+
+            // elements calculations
+            double trueDamage = 0D;
+            if (damagingProjectile.hasMetadata("fireDamage")) {
+                double fireDamage = damagingProjectile.getMetadata("fireDamage").get(0).asDouble();
+                trueDamage += fireDamage * 0.10D;
+                damagedEntity.setFireTicks(Math.max(10 + (int) Math.round(fireDamage * 20), damagedEntity.getFireTicks()));
+                damagedEntity.getWorld().playSound(damagedEntity.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
+            }
+            if (damagingProjectile.hasMetadata("lightningDamage")) {
+                double lightningDamage = damagingProjectile.getMetadata("lightningDamage").get(0).asDouble();
+                trueDamage += lightningDamage * 1.5D;
+                damagedEntity.getWorld().playSound(damagedEntity.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 1.5f);
+            }
+            if (damagingProjectile.hasMetadata("iceDamage")) {
+                double iceDamage = damagingProjectile.getMetadata("iceDamage").get(0).asDouble();
+                retDamage += iceDamage + iceDamage * (damagedEntity.getMaxHealth() / 300);
+                damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 5 + (int) iceDamage * 3, 1));
+                damagedEntity.getWorld().playSound(damagedEntity.getLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
+            }
+            retDamage += trueDamage;
+            double potionMult = 1D;
+            if (damagedEntity.hasPotionEffect(PotionEffectType.WITHER)) {
+                potionMult += 0.2D;
+            }
+            if (damagedEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                potionMult -= 0.1D;
+            }
+            retDamage *= potionMult;
+
+            if (damagingProjectile.hasMetadata("lifeSteal")) {
+                double lifeSteal = damagingProjectile.getMetadata("lifeSteal").get(0).asDouble();
+                double lifeStolen = retDamage * lifeSteal;
+                if (attacker instanceof Player) {
+                    lifeStolen *= Math.min(((Player) attacker).getFoodLevel() / 7.0D, 1.0D);
+                }
+                if (attacker.hasPotionEffect(PotionEffectType.POISON)) {
+                    lifeStolen *= 0.34;
+                }
+                if (attacker.getHealth() > 0) {
+                    attacker.setHealth(Math.min(attacker.getHealth() + lifeStolen, attacker.getMaxHealth()));
+                }
+            }
+            if (attacker instanceof Player) {
+                String msg;
+                if (damagedEntity.getHealth() > retDamage) {
+                    msg = "&c&lHealth: &f" + (int) (damagedEntity.getHealth() - retDamage) + "&7/&f" + (int) (damagedEntity.getMaxHealth());
+                } else {
+                    msg = "&c&lHealth: &fDEAD &7/ &fKILLED";
+                }
+                ActionBarMessage.send((Player) attacker, msg);
+            }
         }
         return retDamage;
     }
 
     private double handleEnvironmentVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
                                                                  LivingEntity damagingLivingEntity,
-                                                                 Entity damagingEntity,
                                                                  double oldBaseDamage,
                                                                  EntityDamageEvent.DamageCause cause) {
         double damage;
@@ -264,7 +555,6 @@ public class CombatListener implements Listener {
                                                             LivingEntity damagingLivingEntity,
                                                             Entity damagingEntity,
                                                             double oldBaseDamage,
-                                                            boolean melee,
                                                             EntityDamageEvent event) {
         double damage;
         if (damagingLivingEntity.hasMetadata("DAMAGE")) {
@@ -300,24 +590,12 @@ public class CombatListener implements Listener {
                 event.setCancelled(true);
                 return 0D;
             }
-            if (melee) {
-                if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
-                    damagingLivingEntity.damage(damage * 0.2);
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
-                    event.setCancelled(true);
-                    return 0D;
-                }
-            } else {
-                if (random.nextDouble() < 2 * damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
-                    if (damagingEntity instanceof Projectile) {
-                        damagingEntity.remove();
-                    }
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
-                    event.setCancelled(true);
-                    return 0D;
-                }
+            if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
+                damagingLivingEntity.damage(damage * 0.2);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
+                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
+                event.setCancelled(true);
+                return 0D;
             }
             damage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.BLOCK));
         }
@@ -327,8 +605,7 @@ public class CombatListener implements Listener {
 
     private double handlePlayerVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
                                                             Player damagingPlayer,
-                                                            Entity damagingEntity,
-                                                            boolean melee) {
+                                                            Entity damagingEntity) {
         double retDamage;
 
         // get the champions
@@ -341,21 +618,15 @@ public class CombatListener implements Listener {
         // calculating attack speed and velocity
         double attackSpeedMult = 1D;
         double velocityMult = 1D;
-        if (melee) {
-            double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
-                    .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
-            long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
-            long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
-            if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
-            }
-
-            retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
-        } else {
-            velocityMult = Math.min(damagingEntity.getVelocity().lengthSquared() / 9D, 1);
-            retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * velocityMult;
+        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
+                .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
+        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
+        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
+        if (timeLeft > 0) {
+            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
+        retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
         // critical damage time!
         double critBonus = retDamage * getCritBonus(damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE),
@@ -363,14 +634,8 @@ public class CombatListener implements Listener {
 
         // overbonus time!
         double overBonus = 0D;
-        if (melee) {
-            if (attackSpeedMult > 0.94) {
-                overBonus = damagingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
-            }
-        } else {
-            if (velocityMult > 0.94) {
-                overBonus = damagingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
-            }
+        if (attackSpeedMult > 0.94) {
+            overBonus = damagingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
         }
 
         // adding critBonus and overBonus to damage
@@ -409,26 +674,16 @@ public class CombatListener implements Listener {
         // potion effects mults
         double potionMult = 1D;
         if (damagedLivingEntity.hasPotionEffect(PotionEffectType.WITHER)) {
-            potionMult += 0.1D;
+            potionMult += 0.20D;
         }
         if (damagedLivingEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             potionMult -= 0.1D;
         }
-        if (melee) {
-            if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-                potionMult += 0.1D;
-            }
-            if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
-                potionMult -= 0.1D;
-            }
-        } else {
-            double snareChance = damagingChampion.getCache().getAttribute(StrifeAttribute.SNARE_CHANCE);
-            if (snareChance > 0) {
-                if (random.nextDouble() < snareChance) {
-                    damagedLivingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
-                    damagedLivingEntity.getWorld().playSound(damagedLivingEntity.getEyeLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
-                }
-            }
+        if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+            potionMult += 0.1D;
+        }
+        if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+            potionMult -= 0.1D;
         }
 
         // combine!
@@ -464,7 +719,6 @@ public class CombatListener implements Listener {
     private double handlePlayerVersusPlayerCalculation(Player damagedPlayer,
                                                        Player damagingPlayer,
                                                        Entity damagingEntity,
-                                                       boolean melee,
                                                        EntityDamageEvent event) {
         double retDamage;
 
@@ -501,21 +755,15 @@ public class CombatListener implements Listener {
         // calculating attack speed and velocity
         double attackSpeedMult = 1D;
         double velocityMult = 1D;
-        if (melee) {
-            double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
-                    .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
-            long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
-            long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-            plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
-            if (timeLeft > 0) {
-                attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
-            }
-
-            retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
-        } else {
-            velocityMult = Math.min(damagingEntity.getVelocity().lengthSquared() / 9D, 1);
-            retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * velocityMult;
+        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
+                .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
+        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
+        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
+        if (timeLeft > 0) {
+            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
+        retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
         // check if damaged player is blocking
         if (damagedPlayer.isBlocking()) {
@@ -529,44 +777,26 @@ public class CombatListener implements Listener {
                 event.setCancelled(true);
                 return 0D;
             }
-            if (melee) {
-                if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
-                    damagingPlayer.damage(retDamage * 0.2 * pvpMult);
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
-                    ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
-                    event.setCancelled(true);
-                    return 0D;
-                }
-            } else {
-                if (random.nextDouble() < 2 * damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
-                    if (damagingEntity instanceof Projectile) {
-                        damagingEntity.remove();
-                    }
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                    ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
-                    ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
-                    event.setCancelled(true);
-                    return 0D;
-                }
+            if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
+                damagingPlayer.damage(retDamage * 0.2 * pvpMult);
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
+                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
+                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
+                event.setCancelled(true);
+                return 0D;
             }
+
             retDamage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.BLOCK));
         }
 
         // critical damage time!
         double critBonus = retDamage * getCritBonus(damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE),
-                damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE), damagingPlayer);
+                damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE), damagedPlayer);
 
         // overbonus time!
         double overBonus = 0D;
-        if (melee) {
-            if (attackSpeedMult > 0.94) {
-                overBonus = damagingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
-            }
-        } else {
-            if (velocityMult > 0.94) {
-                overBonus = damagingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
-            }
+        if (attackSpeedMult > 0.94) {
+            overBonus = damagingChampion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) * retDamage;
         }
 
         // adding critBonus and overBonus to damage
@@ -609,26 +839,16 @@ public class CombatListener implements Listener {
         // potion effects mults
         double potionMult = 1D;
         if (damagedPlayer.hasPotionEffect(PotionEffectType.WITHER)) {
-            potionMult += 0.1D;
+            potionMult += 0.2D;
         }
         if (damagedPlayer.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             potionMult -= 0.1D;
         }
-        if (melee) {
-            if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-                potionMult += 0.1D;
-            }
-            if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
-                potionMult -= 0.1D;
-            }
-        } else {
-            double snareChance = damagingChampion.getCache().getAttribute(StrifeAttribute.SNARE_CHANCE);
-            if (snareChance > 0) {
-                if (random.nextDouble() < snareChance) {
-                    damagedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 5));
-                    damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_FIRE_AMBIENT, 1f, 1f);
-                }
-            }
+        if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+            potionMult += 0.1D;
+        }
+        if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
+            potionMult -= 0.1D;
         }
 
         // combine!
@@ -684,9 +904,11 @@ public class CombatListener implements Listener {
         }
     }
 
-    private double getCritBonus(double rate, double damage, Player a) {
+    private double getCritBonus(double rate, double damage, Player p) {
         if (random.nextDouble() < rate) {
-            a.getWorld().playSound(a.getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
+            if (p != null) {
+                p.getWorld().playSound(p.getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
+            }
             return damage - 1.0;
         }
         return 0;

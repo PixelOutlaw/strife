@@ -57,26 +57,12 @@ public class StatsDropsMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         List<String> lore = new ArrayList<>(getLore());
-        double mult = 0D;
-        if (player.hasPermission("strife.mult.75")) {
-            mult = -0.25D;
-        }
-        if (player.hasPermission("strife.mult.125")) {
-            mult = 0.25D;
-        }
-        if (player.hasPermission("strife.mult.150")) {
-            mult = 0.5D;
-        }
-        if (player.hasPermission("strife.mult.175")) {
-            mult = 0.75D;
-        }
-        if (player.hasPermission("strife.mult.200")) {
-            mult = 1.0D;
-        }
+        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0);
+        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0);
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((champion.getCache().getAttribute(StrifeAttribute.XP_GAIN) + mult) * 100) + "%");
+                .format((xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN)) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY) * 100) + "%");
+                .format((dropMult + champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY)) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
                 .format(champion.getCache().getAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
         if (champion.getCache().getAttribute(StrifeAttribute.HEAD_DROP) > 0) {

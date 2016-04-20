@@ -101,7 +101,7 @@ public class StatsMeleeMenuItem extends MenuItem {
                     StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) <= 0.65) {
+            if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) < 0.65) {
                 lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
                         .getAttribute(StrifeAttribute.LIFE_STEAL) * 100) + "%");
             } else {

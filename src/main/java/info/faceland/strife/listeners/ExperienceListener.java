@@ -128,24 +128,9 @@ public class ExperienceListener implements Listener {
             return;
         }
 
-        double mult = 0D;
-        if (player.hasPermission("strife.mult.75")) {
-            mult = -0.25D;
-        }
-        if (player.hasPermission("strife.mult.125")) {
-            mult = 0.25D;
-        }
-        if (player.hasPermission("strife.mult.150")) {
-            mult = 0.5D;
-        }
-        if (player.hasPermission("strife.mult.175")) {
-            mult = 0.75D;
-        }
-        if (player.hasPermission("strife.mult.200")) {
-            mult = 1.0D;
-        }
+        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0);
 
-        double bonusMult = 1 + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN) + mult;
+        double bonusMult = 1 + xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN);
         double factor = (double) defaultLevelUp / (double) desiredLevelUp;
         double exact = amount * bonusMult * factor;
         if (plugin.getSettings().getBoolean("config.verbose")) {

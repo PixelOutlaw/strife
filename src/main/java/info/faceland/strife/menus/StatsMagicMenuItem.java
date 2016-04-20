@@ -30,6 +30,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -40,63 +41,78 @@ import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 
-public class StatsRangedMenuItem extends MenuItem {
+public class StatsMagicMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
+    private static final DecimalFormat AS_FORMAT = new DecimalFormat("#.##");
 
-    public StatsRangedMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Ranged Stats", new ItemStack(Material.BOW));
+    public StatsMagicMenuItem(StrifePlugin plugin) {
+        super(ChatColor.WHITE + "Magic Stats", new ItemStack(Material.BLAZE_ROD));
         this.plugin = plugin;
     }
 
     @Override
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        ItemStack itemStack = new ItemStack(Material.BOW);
+        ItemStack itemStack = new ItemStack(Material.BLAZE_ROD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
+        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.YELLOW + "Ranged Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
-                StrifeAttribute.RANGED_DAMAGE)));
-        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) > 0) {
-            lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(
-                    StrifeAttribute.ACCURACY)) + "%");
+        lore.add(ChatColor.AQUA + "Magic Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                .getAttribute(StrifeAttribute.MAGIC_DAMAGE)));
+        if (champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED) != 0) {
+            lore.add(ChatColor.AQUA + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCache()
+                    .getAttribute(StrifeAttribute.ATTACK_SPEED)))
+                    + "s " + ChatColor.GRAY + "(+" + DECIMAL_FORMAT.format(champion.getCache().getAttribute
+                    (StrifeAttribute.ATTACK_SPEED) * 100) + "%)");
+        } else {
+            lore.add(ChatColor.AQUA + "Attack Speed: " + ChatColor.WHITE + "2.0s");
         }
-        if (champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) != 0.1) {
-            lore.add(ChatColor.YELLOW + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
+        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) > 0) {
+            lore.add(ChatColor.AQUA + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion
+                    .getCache().getAttribute(
+                    StrifeAttribute.ACCURACY)) + "%");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
                 champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
-            lore.add(ChatColor.YELLOW + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
+            lore.add(ChatColor.AQUA + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) > 0) {
-            lore.add(ChatColor.YELLOW + "Armor Penetration: " + ChatColor.WHITE
+            lore.add(ChatColor.AQUA + "Armor Penetration: " + ChatColor.WHITE
                     + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
         }
+        if (champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) != 0.1) {
+            lore.add(ChatColor.AQUA + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCache()
+                    .getAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
+        }
         if (champion.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
+            lore.add(ChatColor.AQUA + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                    .getAttribute(
                     StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                     StrifeAttribute.IGNITE_CHANCE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
+            lore.add(ChatColor.AQUA + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                    .getAttribute(
                     StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                     StrifeAttribute.SHOCK_CHANCE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            lore.add(ChatColor.YELLOW + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
+            lore.add(ChatColor.AQUA + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                    .getAttribute(
                     StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                     StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
             if (champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) < 0.65) {
-                lore.add(ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
+                lore.add(ChatColor.AQUA + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
                         .getAttribute(StrifeAttribute.LIFE_STEAL) * 100) + "%");
             } else {
-                lore.add(ChatColor.YELLOW + "Life Steal: " + ChatColor.WHITE + "65% " + ChatColor.GRAY + "(Max)");
+                lore.add(ChatColor.AQUA + "Life Steal: " + ChatColor.WHITE + "65% " + ChatColor.GRAY + "(Max)");
             }
         }
         itemMeta.setLore(lore);

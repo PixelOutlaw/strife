@@ -46,7 +46,8 @@ public class LootListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onLootDetermineChance(LootDetermineChanceEvent event) {
         Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        double dropBonus = champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY);
+        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0);
+        double dropBonus = 1 + dropMult + champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY);
         event.setChance(dropBonus);
     }
 
