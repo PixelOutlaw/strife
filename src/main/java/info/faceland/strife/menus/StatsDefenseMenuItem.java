@@ -82,7 +82,7 @@ public class StatsDefenseMenuItem extends MenuItem {
                 lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
             }
         }
-        if (champion.getCache().getAttribute(StrifeAttribute.RESISTANCE) > 0) {
+        if (champion.getCache().getAttribute(StrifeAttribute.RESISTANCE) > 0.2) {
             lore.add(
                     ChatColor.BLUE + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion
                             .getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");

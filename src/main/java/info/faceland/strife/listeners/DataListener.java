@@ -42,7 +42,7 @@ public class DataListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(final PlayerJoinEvent event) {
         if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
             Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());

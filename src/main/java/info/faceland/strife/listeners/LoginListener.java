@@ -41,7 +41,7 @@ public class LoginListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());

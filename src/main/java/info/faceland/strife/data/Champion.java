@@ -158,10 +158,12 @@ public class Champion {
                     if (isWeapon(offHandItemStack.getType())) {
                         dualWieldEfficiency = 0.25;
                     }
-                    if (offHandItemStack.getType() == Material.BOW && mainHandItemStack.getType() == Material.BOW) {
-                        dualWieldEfficiency = 0.0;
-                        MessageUtils.sendMessage(getPlayer(), "<red>Dual wielding bows does not give you any stats " +
-                                "from the bow in the offhand slot. Mostly because its so silly.");
+                    if (mainHandItemStack.getType() == Material.BOW) {
+                        if (offHandItemStack.getType() == Material.BOW) {
+                            dualWieldEfficiency = 0.0;
+                            MessageUtils.sendMessage(getPlayer(), "<red>Dual wielding bows does not give you any stats " +
+                                    "from the bow in the offhand slot. Mostly because its so silly.");
+                        }
                     }
                 }
                 for (StrifeAttribute attr : StrifeAttribute.values()) {

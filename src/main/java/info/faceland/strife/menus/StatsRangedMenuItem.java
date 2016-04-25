@@ -67,7 +67,7 @@ public class StatsRangedMenuItem extends MenuItem {
             lore.add(ChatColor.YELLOW + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
-                champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
+                champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.7) {
             lore.add(ChatColor.YELLOW + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");

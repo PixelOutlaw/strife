@@ -31,7 +31,6 @@ import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 
-import info.faceland.beast.BeastPlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
@@ -86,7 +85,6 @@ public class StrifePlugin extends FacePlugin {
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
-    private BeastPlugin beastPlugin;
     private LevelupMenu levelupMenu;
     private StatsMenu statsMenu;
 
@@ -117,8 +115,6 @@ public class StrifePlugin extends FacePlugin {
         commandHandler = new CommandHandler(this);
 
         MenuListener.getInstance().register(this);
-
-        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
 
         if (statsYAML.update()) {
             getLogger().info("Updating stats.yml");
@@ -242,10 +238,6 @@ public class StrifePlugin extends FacePlugin {
 
     public MasterConfiguration getSettings() {
         return settings;
-    }
-
-    public BeastPlugin getBeastPlugin() {
-        return beastPlugin;
     }
 
     public LevelupMenu getLevelupMenu() {
