@@ -179,7 +179,10 @@ public class Champion {
     }
 
     public Map<StrifeAttribute, Double> getAttributeValues(boolean refresh) {
-        Map<StrifeAttribute, Double> attributeDoubleMap;
+        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        if (getPlayer() == null || getPlayer().getEquipment() == null) {
+            return attributeDoubleMap;
+        }
         if (refresh) {
             cache.clear();
             attributeDoubleMap = AttributeHandler.combineMaps(
