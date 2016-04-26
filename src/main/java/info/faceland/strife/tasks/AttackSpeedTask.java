@@ -23,7 +23,6 @@
 package info.faceland.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;

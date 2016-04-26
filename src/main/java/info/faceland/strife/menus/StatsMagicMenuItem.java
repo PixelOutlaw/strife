@@ -25,7 +25,8 @@ package info.faceland.strife.menus;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -37,9 +38,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import ninja.amp.ampmenus.events.ItemClickEvent;
-import ninja.amp.ampmenus.items.MenuItem;
 
 public class StatsMagicMenuItem extends MenuItem {
 

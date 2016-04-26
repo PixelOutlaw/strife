@@ -23,11 +23,9 @@
 package info.faceland.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

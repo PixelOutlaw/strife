@@ -24,7 +24,6 @@ package info.faceland.strife.commands;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
-
 import org.bukkit.entity.Player;
 import se.ranzdo.bukkit.methodcommand.Command;
 

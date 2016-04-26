@@ -25,12 +25,7 @@ package info.faceland.strife.managers;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Level;
+import java.util.*;
 
 public class ChampionManager {
 

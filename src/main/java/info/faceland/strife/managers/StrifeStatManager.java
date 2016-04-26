@@ -24,11 +24,7 @@ package info.faceland.strife.managers;
 
 import info.faceland.strife.stats.StrifeStat;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StrifeStatManager {
 

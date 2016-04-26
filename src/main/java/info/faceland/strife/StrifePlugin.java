@@ -30,20 +30,12 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
-
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.listeners.BullionListener;
-import info.faceland.strife.listeners.CombatListener;
-import info.faceland.strife.listeners.DataListener;
-import info.faceland.strife.listeners.ExperienceListener;
-import info.faceland.strife.listeners.HealthListener;
-import info.faceland.strife.listeners.InventoryListener;
-import info.faceland.strife.listeners.LoginListener;
-import info.faceland.strife.listeners.LootListener;
+import info.faceland.strife.listeners.*;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.LevelupMenu;
@@ -53,24 +45,17 @@ import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.SaveTask;
-
+import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
-
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
-
-import ninja.amp.ampmenus.MenuListener;
 
 public class StrifePlugin extends FacePlugin {
 

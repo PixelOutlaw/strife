@@ -22,13 +22,14 @@
  */
 package info.faceland.strife.listeners;
 
+import be.maximvdw.titlemotd.ui.Title;
 import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-
+import me.desht.dhutils.ExperienceManager;
+import mkremins.fanciful.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -39,10 +40,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-
-import be.maximvdw.titlemotd.ui.Title;
-import me.desht.dhutils.ExperienceManager;
-import mkremins.fanciful.FancyMessage;
 
 public class ExperienceListener implements Listener {
 

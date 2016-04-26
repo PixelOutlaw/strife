@@ -23,11 +23,9 @@
 package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.bullion.GoldDropEvent;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

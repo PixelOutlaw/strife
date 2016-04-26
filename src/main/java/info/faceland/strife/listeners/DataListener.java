@@ -24,15 +24,13 @@ package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
-
+import mkremins.fanciful.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-
-import mkremins.fanciful.FancyMessage;
 
 public class DataListener implements Listener {
 

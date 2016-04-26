@@ -23,13 +23,13 @@
 package info.faceland.strife.menus;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -39,9 +39,6 @@ import org.bukkit.material.Wool;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import ninja.amp.ampmenus.events.ItemClickEvent;
-import ninja.amp.ampmenus.items.MenuItem;
 
 public class LevelupMenuItem extends MenuItem {
 

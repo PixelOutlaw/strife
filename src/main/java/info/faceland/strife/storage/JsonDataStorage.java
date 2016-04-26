@@ -23,11 +23,9 @@
 package info.faceland.strife.storage;
 
 import com.tealcube.minecraft.bukkit.config.SmartYamlConfiguration;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.File;

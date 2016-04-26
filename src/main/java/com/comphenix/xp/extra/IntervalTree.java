@@ -25,11 +25,7 @@ package com.comphenix.xp.extra;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.Objects;
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.Range;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Represents a generic store of intervals and associated values. No two intervals can overlap in this representation.

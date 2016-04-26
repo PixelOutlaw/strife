@@ -28,7 +28,6 @@ import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.ChatColor;
 
 import java.util.List;
-import java.util.logging.Level;
 
 public class LevelupMenu extends ItemMenu {
 

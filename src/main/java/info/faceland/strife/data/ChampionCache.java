@@ -23,7 +23,6 @@
 package info.faceland.strife.data;
 
 import com.google.common.base.Objects;
-
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 
