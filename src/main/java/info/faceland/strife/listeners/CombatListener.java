@@ -173,10 +173,14 @@ public class CombatListener implements Listener {
             attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
         plugin.getAttackSpeedTask().setTimeLeft(p.getUniqueId(), timeToSet);
-        if (p.getEquipment().getItemInMainHand().getType() != Material.WOOD_SWORD) {
+        ItemStack wand = p.getEquipment().getItemInMainHand();
+        if (wand.getType() != Material.WOOD_SWORD) {
             return;
         }
-        if (!p.getEquipment().getItemInMainHand().getItemMeta().getLore().get(1).endsWith("Wand")) {
+        if (wand.getItemMeta().getLore().size() < 2) {
+            return;
+        }
+        if (!wand.getItemMeta().getLore().get(1).endsWith("Wand")) {
             return;
         }
         if (attackSpeedMult < 0.3) {
