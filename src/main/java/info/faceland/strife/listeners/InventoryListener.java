@@ -30,6 +30,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,8 +49,11 @@ public class InventoryListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClose(InventoryCloseEvent event) {
+        if (!((OfflinePlayer) event.getPlayer()).isOnline()) {
+            return;
+        }
         InventoryView inventoryView = event.getView();
         if (!(inventoryView.getTopInventory() instanceof PlayerInventory) && !(inventoryView.getBottomInventory()
                 instanceof PlayerInventory)) {
@@ -71,11 +75,15 @@ public class InventoryListener implements Listener {
         }
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         champion.getAttributeValues(true);
-        AttributeHandler.updateHealth(player, champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        double maxHealth = champion.getCache().getAttribute(StrifeAttribute.HEALTH);
+        AttributeHandler.updateHealth(player, maxHealth);
+        player.setHealth(Math.min(player.getHealth(), maxHealth));
         double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        //double attackSpeed = 1 / (2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
         float speed = 0.2F * (float) perc;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
+        //player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(attackSpeed);
     }
 
 }
