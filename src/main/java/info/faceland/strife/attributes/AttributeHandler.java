@@ -69,15 +69,12 @@ public class AttributeHandler {
     }
 
     public static void updateHealth(Player player, double healthValue) {
-        double oldHealth = player.getHealth();
         if (player.getHealth() > healthValue) {
-            double tempHealth = Math.min(healthValue, player.getMaxHealth()) / 2;
-            player.setHealth(tempHealth);
+            player.setHealth(healthValue);
         }
         player.setMaxHealth(healthValue);
         player.setHealthScaled(true);
         player.setHealthScale(player.getMaxHealth());
-        player.setHealth(Math.min(oldHealth, player.getMaxHealth()));
     }
 
     public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {

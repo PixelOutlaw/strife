@@ -89,8 +89,7 @@ public class ExperienceListener implements Listener {
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD).send(event
                 .getPlayer());
-        Title title = new Title("<green>LEVEL UP!", "<green>You reached level <white>" + event.getNewLevel() +
-                "<green>!", 1, 1, 1);
+        Title title = new Title("§aLEVEL UP!", "&aYou gained §f2 §aLevelpoints!", 1, 1, 1);
         title.setTimingsToSeconds();
         title.send(event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {

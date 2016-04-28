@@ -72,7 +72,6 @@ public class InventoryListener implements Listener {
         champion.getAttributeValues(true);
         double maxHealth = champion.getCache().getAttribute(StrifeAttribute.HEALTH);
         AttributeHandler.updateHealth(player, maxHealth);
-        player.setHealth(Math.min(player.getHealth(), maxHealth));
         double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         //double attackSpeed = 1 / (2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
         float speed = 0.2F * (float) perc;
