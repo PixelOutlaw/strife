@@ -38,6 +38,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -173,7 +174,7 @@ public class CombatListener implements Listener {
         if (!wand.getItemMeta().getLore().get(1).endsWith("Wand")) {
             return;
         }
-        if (attackSpeedMult < 0.3) {
+        if (attackSpeedMult <= 0.375) {
             ActionBarMessage.send(p, ChatColor.WHITE + "Not Charged Enough!");
             p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.8f, 0.8f);
             return;
@@ -184,7 +185,7 @@ public class CombatListener implements Listener {
         playerChamp.getCache().recombine();
         ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation(), ShulkerBullet.class);
         magicProj.setShooter(p);
-        magicProj.setVelocity(p.getLocation().getDirection().multiply(1.7));
+        magicProj.setVelocity(p.getLocation().getDirection().multiply(1.6));
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
         double critMult = 0;
         double overMult = 0;
@@ -203,19 +204,19 @@ public class CombatListener implements Listener {
         magicProj.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
                 .getAttribute(StrifeAttribute.ACCURACY)));
         if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * attackSpeedMult) {
                 magicProj.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
                         .getAttribute(StrifeAttribute.FIRE_DAMAGE)));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult) {
                 magicProj.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
                         .getAttribute(StrifeAttribute.ICE_DAMAGE)));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult) {
                 magicProj.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
                         .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
             }
