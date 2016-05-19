@@ -44,6 +44,21 @@ public class StrifeCommand {
         this.plugin = plugin;
     }
 
+    @Command(identifier = "strife togglehp", permissions = "strife.command.strife.togglehp", onlyPlayers = true)
+    public void hpScaleCommand(CommandSender sender) {
+        Player p = (Player) sender;
+        Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
+        champion.toggleHealthDisplay();
+        if (champion.trueHealthDisplay()) {
+            MessageUtils.sendMessage(p, "<green>Your healthbar is no longer scaled!");
+        } else {
+            MessageUtils.sendMessage(p, "<green>Your healthbar is now scaled! Each heart is 10%!");
+        }
+        AttributeHandler.updateHealth(p, champion.getCache().getAttribute(StrifeAttribute.HEALTH),
+                champion.trueHealthDisplay());
+        p.setHealth(p.getHealth());
+    }
+
     @Command(identifier = "strife profile", permissions = "strife.command.strife.profile", onlyPlayers = false)
     public void profileCommand(CommandSender sender, @Arg(name = "target") Player target) {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
@@ -76,7 +91,8 @@ public class StrifeCommand {
         message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them!").send(target);
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH),
+                champion.trueHealthDisplay());
     }
 
     @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -94,7 +110,8 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<green>You cleared <white>%player%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}});
         MessageUtils.sendMessage(target, "<green>Your stats have been cleared.");
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH),
+                champion.trueHealthDisplay());
     }
 
     @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -114,7 +131,8 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         MessageUtils.sendMessage(target, "<green>Your level has been raised.");
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH),
+                champion.trueHealthDisplay());
     }
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
