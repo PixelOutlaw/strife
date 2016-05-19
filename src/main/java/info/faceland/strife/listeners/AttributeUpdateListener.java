@@ -26,22 +26,37 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.PlayerInventory;
 
-public class InventoryListener implements Listener {
+public class AttributeUpdateListener implements Listener {
 
     private final StrifePlugin plugin;
 
-    public InventoryListener(StrifePlugin plugin) {
+    public AttributeUpdateListener(StrifePlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerRespawn(final PlayerRespawnEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                updateAttributes(event.getPlayer());
+            }
+        }, 20L);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -68,16 +83,27 @@ public class InventoryListener implements Listener {
         if (player.isDead() || player.getHealth() <= 0D) {
             return;
         }
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        updateAttributes(player);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        updateAttributes(event.getPlayer());
+    }
+
+    public void updateAttributes(Player p) {
+        Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
         champion.getAttributeValues(true);
         double maxHealth = champion.getCache().getAttribute(StrifeAttribute.HEALTH);
-        AttributeHandler.updateHealth(player, maxHealth);
+        AttributeHandler.updateHealth(p, maxHealth, champion.trueHealthDisplay());
         double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-        //double attackSpeed = 1 / (2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
         float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-        player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
-        //player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(attackSpeed);
+        p.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+        p.setFlySpeed(Math.min(Math.max(-1F, speed / 2), 1F));
+        p.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
+        p.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(6.5);
     }
+
+
 
 }

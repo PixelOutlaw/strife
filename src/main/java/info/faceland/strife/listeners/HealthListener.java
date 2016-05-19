@@ -27,6 +27,7 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,32 +44,9 @@ public class HealthListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerRespawn(final PlayerRespawnEvent event) {
-        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-            @Override
-            public void run() {
-                Player player = event.getPlayer();
-                Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-                champion.getAttributeValues(true);
-                double maxHealth = champion.getCache().getAttribute(StrifeAttribute.HEALTH);
-                AttributeHandler.updateHealth(player, maxHealth);
-                double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-                //double attackSpeed = 1 / (2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
-                float speed = 0.2F * (float) perc;
-                player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-                player.setFlySpeed(Math.min(Math.max(-1F, speed), 1F));
-                //player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(attackSpeed);
-            }
-        }, 20L);
-    }
-
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-        if (!(event.getEntity() instanceof Player) ||
-                !(event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN ||
-                        event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) ||
-                event.isCancelled()) {
+        if (!(event.getEntity() instanceof Player) || event.isCancelled()) {
             return;
         }
         Player player = (Player) event.getEntity();

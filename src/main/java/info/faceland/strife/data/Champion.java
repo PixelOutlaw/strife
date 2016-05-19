@@ -41,6 +41,7 @@ public class Champion {
     private Map<StrifeStat, Integer> levelMap;
     private int unusedStatPoints;
     private int highestReachedLevel;
+    private boolean trueHealthDisplay;
     private ChampionCache cache;
 
     public Champion(UUID uniqueId) {
@@ -236,6 +237,10 @@ public class Champion {
     public void setCache(ChampionCache cache) {
         this.cache = cache;
     }
+
+    public void toggleHealthDisplay() { this.trueHealthDisplay = !this.trueHealthDisplay; }
+
+    public boolean trueHealthDisplay() {return !trueHealthDisplay;}
 
     private boolean isArmor(Material material) {
         String name = material.name();

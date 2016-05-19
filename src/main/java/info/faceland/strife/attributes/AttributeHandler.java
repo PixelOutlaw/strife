@@ -25,6 +25,9 @@ package info.faceland.strife.attributes;
 import com.tealcube.minecraft.bukkit.hilt.HiltItemStack;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
+
+import info.faceland.strife.data.Champion;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -68,13 +71,18 @@ public class AttributeHandler {
         return stripped;
     }
 
-    public static void updateHealth(Player player, double healthValue) {
+    public static void updateHealth(Player player, double healthValue, boolean trueHP) {
         if (player.getHealth() > healthValue) {
             player.setHealth(healthValue);
         }
         player.setMaxHealth(healthValue);
-        player.setHealthScaled(true);
-        player.setHealthScale(player.getMaxHealth());
+        if (trueHP) {
+            player.setHealthScale(healthValue);
+            player.setHealthScaled(false);
+        } else {
+            player.setHealthScale(20);
+            player.setHealthScaled(true);
+        }
     }
 
     public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {
