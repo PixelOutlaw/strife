@@ -38,7 +38,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -164,7 +163,9 @@ public class CombatListener implements Listener {
             attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
         plugin.getAttackSpeedTask().setTimeLeft(p.getUniqueId(), timeToSet);
+
         ItemStack wand = p.getEquipment().getItemInMainHand();
+
         if (wand.getType() != Material.WOOD_SWORD) {
             return;
         }
@@ -174,11 +175,16 @@ public class CombatListener implements Listener {
         if (!wand.getItemMeta().getLore().get(1).endsWith("Wand")) {
             return;
         }
-        if (attackSpeedMult <= 0.375) {
+        if (attackSpeedMult <= 0.25) {
             ActionBarMessage.send(p, ChatColor.WHITE + "Not Charged Enough!");
             p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.8f, 0.8f);
             return;
         }
+
+        // 1.5x attackspeed penalty for wands
+        attackSpeedMult *= (attackSpeedMult + 1) / 2;
+        attackSpeedMult = Math.max(0.2, attackSpeedMult);
+
         p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.9f, 2f);
         playerChamp.getAttributeValues(true);
         playerChamp.getWeaponAttributeValues();
@@ -454,6 +460,9 @@ public class CombatListener implements Listener {
             damageStats.append(ChatColor.GRAY + " +" + ONE_DECIMAL.format(lightningDamage * pvpMult) + "⚡");
             damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER,
                     0.7f, 1.5f);
+            if (damagedEntity instanceof Creeper) {
+                ((Creeper) damagedEntity).setPowered(true);
+            }
         }
         if (damagingProjectile.hasMetadata("iceDamage")) {
             double iceDamage = damagingProjectile.getMetadata("iceDamage").get(0).asDouble();
@@ -644,6 +653,9 @@ public class CombatListener implements Listener {
                 damageDetails = true;
                 damageStats.append(ChatColor.GRAY + " +" + ONE_DECIMAL.format(lightningDamage) + "⚡");
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 1.5f);
+                if (damagedEntity instanceof Creeper) {
+                    ((Creeper) damagedEntity).setPowered(true);
+                }
             }
         }
         if (iceDamage > 0D) {
@@ -784,7 +796,7 @@ public class CombatListener implements Listener {
 
         // critical damage time!
         double critBonus = 0D;
-        if (random.nextDouble() >= damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
+        if (random.nextDouble() <= damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
             critBonus = (damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1) * retDamage;
             damageStats.append(ChatColor.RED + " +" + ONE_DECIMAL.format(critBonus * armorMult) + "✶");
             damageDetails = true;
@@ -896,7 +908,11 @@ public class CombatListener implements Listener {
     private double getDamageFromMeta(LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
         double damage = a.getMetadata("DAMAGE").get(0).asDouble();
         if (d == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-            damage = damage * Math.max(0.3, 2.5 / (a.getLocation().distanceSquared(b.getLocation()) + 1));
+            if (((Creeper) a).isPowered()) {
+                damage = damage * Math.max(0.3, 3 - (a.getLocation().distance(b.getLocation()) / 2));
+            } else {
+                damage = damage * Math.max(0.3, 1 - (a.getLocation().distance(b.getLocation()) / 3));
+            }
         }
         return damage;
     }
