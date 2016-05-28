@@ -26,6 +26,7 @@ import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
@@ -47,6 +48,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.text.DecimalFormat;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Random;
 
 public class CombatListener implements Listener {
@@ -142,7 +145,7 @@ public class CombatListener implements Listener {
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
             projectile.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
+                    .getAttribute(StrifeAttribute.LIFE_STEAL)));
         }
 
     }
@@ -348,7 +351,8 @@ public class CombatListener implements Listener {
                     (Player) damagingLivingEntity, damagingEntity, event);
         } else if (!(damagedLivingEntity instanceof Player) && damagingLivingEntity instanceof Player) {
             // PvE branch
-            retDamage = handlePlayerVersusEnvironmentCalculation(damagedLivingEntity, (Player) damagingLivingEntity);
+            retDamage = handlePlayerVersusEnvironmentCalculation(event, damagedLivingEntity, (Player)
+                    damagingLivingEntity);
         } else if (damagedLivingEntity instanceof Player) {
             // EvP branch
             retDamage = handleEnvironmentVersusPlayerCalculation((Player) damagedLivingEntity, damagingLivingEntity,
@@ -386,21 +390,19 @@ public class CombatListener implements Listener {
             }
         }
 
-        double evadeChance = 0;
+        double evasion = 0;
         double armor = 0;
         if (damagedEntity instanceof Player) {
             Champion defendingChampion = plugin.getChampionManager().getChampion(((Player)damagedEntity).getUniqueId());
-            evadeChance = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
+            evasion = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
             armor = defendingChampion.getCache().getAttribute(StrifeAttribute.ARMOR);
             resist = defendingChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
         }
 
-        if (evadeChance > 0) {
-            double evasionCalc = 1 - (100 / (100 + (Math.pow(evadeChance * 100, 1.1))));
+        if (evasion > 0) {
             double accuracy = 1.0;
-            accuracy = 1 - damagingProjectile.getMetadata("accuracy").get(0).asDouble();
-            evasionCalc *= accuracy;
-            if (random.nextDouble() < evasionCalc) {
+            accuracy = damagingProjectile.getMetadata("accuracy").get(0).asDouble();
+            if (getEvadeChance(evasion, accuracy)) {
                 damagingProjectile.remove();
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
                 ActionBarMessage.send((Player) damagedEntity, ChatColor.WHITE + "Dodge!");
@@ -475,18 +477,39 @@ public class CombatListener implements Listener {
             damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
         }
 
-        retDamage *= armorMult;
-        retDamage += trueDamage;
-
         double potionMult = 1D;
-        if (damagedEntity.hasPotionEffect(PotionEffectType.WITHER)) {
-            potionMult += 0.2D;
+        Collection<PotionEffect> attackerEffects = damagingEntity.getActivePotionEffects();
+        Collection<PotionEffect> defenderEffects = damagedEntity.getActivePotionEffects();
+        for (PotionEffect effect : attackerEffects) {
+            if (effect.getType() == PotionEffectType.INCREASE_DAMAGE) {
+                potionMult += 0.1 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType() == PotionEffectType.WEAKNESS) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
         }
-        if (damagedEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-            potionMult -= 0.1D;
+
+        for (PotionEffect effect : defenderEffects) {
+            if (effect.getType() == PotionEffectType.WITHER) {
+                potionMult += 0.2 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType() == PotionEffectType.DAMAGE_RESISTANCE) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
+        }
+
+        if (potionMult <= 0) {
+            if (damagingEntity instanceof Player) {
+                ActionBarMessage.send((Player)damagingEntity, ChatColor.WHITE + "Invulnerable!");
+            }
+            event.setCancelled(true);
+            return 0D;
         }
 
         retDamage *= potionMult;
+        retDamage *= armorMult;
+        retDamage += trueDamage;
+
         retDamage *= pvpMult;
 
         if (damagingProjectile.hasMetadata("lifeSteal")) {
@@ -539,10 +562,9 @@ public class CombatListener implements Listener {
         }
         Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
 
-        double evadeChance = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
-        if (evadeChance > 0) {
-            double evasionCalc = 1 - (100 / (100 + (Math.pow(evadeChance * 100, 1.1))));
-            if (random.nextDouble() < evasionCalc) {
+        double evasion = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
+        if (evasion > 0) {
+            if (getEvadeChance(evasion, 0)) {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
@@ -578,7 +600,8 @@ public class CombatListener implements Listener {
         return damage;
     }
 
-    private double handlePlayerVersusEnvironmentCalculation(LivingEntity damagedEntity,
+    private double handlePlayerVersusEnvironmentCalculation(EntityDamageEvent event,
+                                                            LivingEntity damagedEntity,
                                                             Player damagingPlayer) {
         double retDamage;
 
@@ -595,10 +618,13 @@ public class CombatListener implements Listener {
                 .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
         long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
         long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
+        if (timeLeft == timeToSet){
+            return 0;
+        }
         if (timeLeft > 0) {
             attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
+        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
         retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
@@ -674,17 +700,30 @@ public class CombatListener implements Listener {
 
         // potion effects mults
         double potionMult = 1D;
-        if (damagedEntity.hasPotionEffect(PotionEffectType.WITHER)) {
-            potionMult += 0.20D;
+        Collection<PotionEffect> attackerEffects = damagingPlayer.getActivePotionEffects();
+        Collection<PotionEffect> defenderEffects = damagedEntity.getActivePotionEffects();
+        for (PotionEffect effect : attackerEffects) {
+            if (effect.getType() == PotionEffectType.INCREASE_DAMAGE) {
+                potionMult += 0.1 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType() == PotionEffectType.WEAKNESS) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
         }
-        if (damagedEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-            potionMult -= 0.1D;
+
+        for (PotionEffect effect : defenderEffects) {
+            if (effect.getType() == PotionEffectType.WITHER) {
+                potionMult += 0.2 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType() == PotionEffectType.DAMAGE_RESISTANCE) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
         }
-        if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-            potionMult += 0.1D;
-        }
-        if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
-            potionMult -= 0.1D;
+
+        if (potionMult <= 0) {
+            ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Invulnerable!");
+            event.setCancelled(true);
+            return 0D;
         }
 
         // combine!
@@ -732,13 +771,11 @@ public class CombatListener implements Listener {
         double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
 
         // get the evasion chance of the damaged champion and check if evaded
-        double evadeChance = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
-        if (evadeChance > 0) {
+        double evasion = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
+        if (evasion > 0) {
             // get the accuracy of the damaging champion and check if still hits
             double accuracy =  damagingChampion.getCache().getAttribute(StrifeAttribute.ACCURACY);
-            double normalizedEvadeChance = Math.max(evadeChance * (1 - accuracy), 0);
-            double evasionCalc = 1 - (100 / (100 + (Math.pow(normalizedEvadeChance * 100, 1.1))));
-            if (random.nextDouble() < evasionCalc) {
+            if (getEvadeChance(evasion, accuracy)) {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
@@ -759,10 +796,13 @@ public class CombatListener implements Listener {
                 .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
         long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
         long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
+        if (timeLeft == timeToSet){
+            return 0;
+        }
         if (timeLeft > 0) {
             attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
+        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
         retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
@@ -862,22 +902,36 @@ public class CombatListener implements Listener {
 
         // potion effects mults
         double potionMult = 1D;
-        if (damagedPlayer.hasPotionEffect(PotionEffectType.WITHER)) {
-            potionMult += 0.2D;
+        Collection<PotionEffect> attackerEffects = damagingPlayer.getActivePotionEffects();
+        Collection<PotionEffect> defenderEffects = damagedPlayer.getActivePotionEffects();
+        for (PotionEffect effect : attackerEffects) {
+            if (effect.getType() == PotionEffectType.INCREASE_DAMAGE) {
+                potionMult += 0.1 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType() == PotionEffectType.WEAKNESS) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
         }
-        if (damagedPlayer.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-            potionMult -= 0.1D;
+
+        for (PotionEffect effect : defenderEffects) {
+            if (effect.getType() == PotionEffectType.WITHER) {
+                potionMult += 0.2 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType() == PotionEffectType.DAMAGE_RESISTANCE) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
         }
-        if (damagingPlayer.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-            potionMult += 0.1D;
-        }
-        if (damagingPlayer.hasPotionEffect(PotionEffectType.WEAKNESS)) {
-            potionMult -= 0.1D;
+
+        if (potionMult <= 0) {
+            ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Invulnerable!");
+            event.setCancelled(true);
+            return 0D;
         }
 
         // combine!
         retDamage *= potionMult;
         retDamage *= armorMult;
+        retDamage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE) / 2);
         retDamage += trueDamage;
         retDamage *= pvpMult;
 
@@ -919,13 +973,20 @@ public class CombatListener implements Listener {
 
     private double getArmorMult(double armor, double apen) {
         if (armor > 0) {
-            if (apen < 1) {
-                return 100 / (100 + (Math.pow(((armor * (1 - apen)) * 100), 1.2)));
-            } else {
-                return 1 + ((apen - 1) / 5);
+            double adjustedArmor = armor * (1 - apen);
+            if (adjustedArmor > 0) {
+                return 420 / (420 + Math.pow(adjustedArmor, 1.5));
             }
-        } else {
-            return 1 + (apen / 5);
         }
+        return 1 + (apen / 5);
+    }
+
+    private boolean getEvadeChance(double evasion, double accuacy) {
+        double evadeChance = 1 - (420 / (420 + Math.pow(evasion, 1.45)));
+        evadeChance *= 1 - accuacy;
+        if (random.nextDouble() <= evadeChance) {
+            return true;
+        }
+        return false;
     }
 }
