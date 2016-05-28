@@ -975,14 +975,14 @@ public class CombatListener implements Listener {
         if (armor > 0) {
             double adjustedArmor = armor * (1 - apen);
             if (adjustedArmor > 0) {
-                return 420 / (420 + Math.pow(adjustedArmor, 1.5));
+                return 420 / (420 + Math.pow(adjustedArmor, 1.55));
             }
         }
         return 1 + (apen / 5);
     }
 
     private boolean getEvadeChance(double evasion, double accuacy) {
-        double evadeChance = 1 - (420 / (420 + Math.pow(evasion, 1.45)));
+        double evadeChance = 1 - (420 / (420 + Math.pow(evasion, 1.5)));
         evadeChance *= 1 - accuacy;
         if (random.nextDouble() <= evadeChance) {
             return true;
