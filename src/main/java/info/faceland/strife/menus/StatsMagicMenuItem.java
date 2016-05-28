@@ -77,7 +77,7 @@ public class StatsMagicMenuItem extends MenuItem {
             }
         }
         if (champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
-                champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.7) {
+                champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.5) {
             lore.add(ChatColor.AQUA + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
