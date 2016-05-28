@@ -68,10 +68,13 @@ public class StatsMagicMenuItem extends MenuItem {
         } else {
             lore.add(ChatColor.AQUA + "Attack Speed: " + ChatColor.WHITE + "2.0s");
         }
-        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) > 0) {
-            lore.add(ChatColor.AQUA + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion
-                    .getCache().getAttribute(
-                    StrifeAttribute.ACCURACY)) + "%");
+        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) != 0.2) {
+            if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) < 0.85) {
+                lore.add(ChatColor.AQUA + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion
+                        .getCache().getAttribute(StrifeAttribute.ACCURACY)) + "%");
+            } else {
+                lore.add(ChatColor.AQUA + "Accuracy: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
+            }
         }
         if (champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) > 0.05 ||
                 champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) > 1.7) {
@@ -79,13 +82,17 @@ public class StatsMagicMenuItem extends MenuItem {
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
         }
-        if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) > 0) {
-            lore.add(ChatColor.AQUA + "Armor Penetration: " + ChatColor.WHITE
-                    + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
-        }
         if (champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) != 0.1) {
             lore.add(ChatColor.AQUA + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCache()
                     .getAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
+        }
+        if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) > 0) {
+            if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) < 0.7) {
+                lore.add(ChatColor.AQUA + "Armor Penetration: " + ChatColor.WHITE
+                        + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
+            } else {
+                lore.add(ChatColor.AQUA + "Armor Penetration: " + ChatColor.WHITE + "70% " + ChatColor.GRAY + "(Max)");
+            }
         }
         if (champion.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
             lore.add(ChatColor.AQUA + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()

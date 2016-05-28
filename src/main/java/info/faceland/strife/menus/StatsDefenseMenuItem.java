@@ -62,14 +62,15 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (champion.getCache().getAttribute(StrifeAttribute.REGENERATION) > 1) {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute.REGENERATION));
         }
-        double armor = 100 * (1 - (100 / (100 + (Math.pow((champion.getCache().getAttribute(StrifeAttribute.ARMOR) * 100), 1.2)))));
+        double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.5))));
         lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE +
-                DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
+                DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
         if (champion.getCache().getAttribute(StrifeAttribute.EVASION) > 0) {
-            double evasion = 100 * (1 - (100 / (100 + (Math.pow((champion.getCache().getAttribute(StrifeAttribute.EVASION) * 100), 1.1)))));
+            double evasion = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute
+                    .EVASION), 1.45))));
             lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE +
-                    DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
+                    DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
                     ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) != 0.0) {

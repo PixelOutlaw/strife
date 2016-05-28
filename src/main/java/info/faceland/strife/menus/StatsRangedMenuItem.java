@@ -57,9 +57,13 @@ public class StatsRangedMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>(getLore());
         lore.add(ChatColor.YELLOW + "Ranged Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                 StrifeAttribute.RANGED_DAMAGE)));
-        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) > 0) {
-            lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion.getCache().getAttribute(
-                    StrifeAttribute.ACCURACY)) + "%");
+        if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) != 0.2) {
+            if (champion.getCache().getAttribute(StrifeAttribute.ACCURACY) < 0.85) {
+                lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion
+                        .getCache().getAttribute(StrifeAttribute.ACCURACY)) + "%");
+            } else {
+                lore.add(ChatColor.YELLOW + "Accuracy: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
+            }
         }
         if (champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) != 0.1) {
             lore.add(ChatColor.YELLOW + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT.format((champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) + 1) * 100) + "%");
@@ -71,8 +75,12 @@ public class StatsRangedMenuItem extends MenuItem {
                     champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
         }
         if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) > 0) {
-            lore.add(ChatColor.YELLOW + "Armor Penetration: " + ChatColor.WHITE
-                    + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
+            if (champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) < 0.7) {
+                lore.add(ChatColor.YELLOW + "Armor Penetration: " + ChatColor.WHITE
+                        + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
+            } else {
+                lore.add(ChatColor.YELLOW + "Armor Penetration: " + ChatColor.WHITE + "70% " + ChatColor.GRAY + "" + "(Max)");
+            }
         }
         if (champion.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
             lore.add(ChatColor.YELLOW + "Fire Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
