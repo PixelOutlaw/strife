@@ -27,23 +27,22 @@ public enum StrifeAttribute {
     // modify any attributes here
     HEALTH("Health", 20, false),
     REGENERATION("Regeneration", 1.0, true),
-    ARMOR("Armor", 0, true),
+    ARMOR("Armor", 0, false),
     RESISTANCE("Elemental Resist", 0.2, true),
     BLOCK("Block", 0.0, true, 0.85),
     ABSORB_CHANCE("Absorb Chance", 0, true, 0.35),
     PARRY("Parry Chance", 0, true, 0.75),
-    EVASION("Evasion", 0, true),
+    EVASION("Evasion", 0, false),
     MOVEMENT_SPEED("Movement Speed", 100, false),
     MELEE_DAMAGE("Melee Damage", 1, false),
     RANGED_DAMAGE("Ranged Damage", 3, false),
     MAGIC_DAMAGE("Magic Damage", 1, false),
     ATTACK_SPEED("Attack Speed", 2.0D, true),
     OVERCHARGE("Overcharge", 0.1, true),
-    ARMOR_PENETRATION("Armor Penetration", 0, true),
-    ACCURACY("Accuracy", 0, true),
+    ARMOR_PENETRATION("Armor Penetration", 0, true, 0.7),
+    ACCURACY("Accuracy", 0.2, true, 0.85),
     CRITICAL_RATE("Critical Rate", 0.05, true),
-    CRITICAL_DAMAGE("Critical Damage", 1.7D, true),
-    MULTISHOT("Multishot", 0, true),
+    CRITICAL_DAMAGE("Critical Damage", 1.5D, true),
     FIRE_DAMAGE("Fire Damage", 0, false),
     LIGHTNING_DAMAGE("Lightning Damage", 0, false),
     ICE_DAMAGE("Ice Damage", 0, false),
@@ -56,8 +55,7 @@ public enum StrifeAttribute {
     GOLD_FIND("Gold Find", 0D, true),
     HEAD_DROP("Head Drop", 0D, true),
     LEVEL_REQUIREMENT("Level Requirement", 0, false),
-    DOGE("Doge Chance", 0D, true, 100D),
-    DUAL_WIELD_EFFICIENCY("Dual Wield Efficiency", 0.25D, true);
+    DOGE("Doge Chance", 0D, true, 100D);
 
     private final String name;
     private final double baseValue;
