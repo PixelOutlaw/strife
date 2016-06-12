@@ -49,7 +49,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Random;
 
 public class CombatListener implements Listener {
@@ -374,6 +373,7 @@ public class CombatListener implements Listener {
         double velocityMult = 1.0;
         double resist = 0;
         boolean overcharge = true;
+        boolean magic = false;
         if (damagingEntity instanceof Player) {
             if (damagedEntity instanceof Player) {
                 pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
@@ -386,6 +386,7 @@ public class CombatListener implements Listener {
             } else {
                 if (damagingProjectile instanceof ShulkerBullet) {
                     damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 2, 5, true, false));
+                    magic = true;
                 }
             }
         }
@@ -477,37 +478,25 @@ public class CombatListener implements Listener {
             damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
         }
 
-        double potionMult = 1D;
-        Collection<PotionEffect> attackerEffects = damagingEntity.getActivePotionEffects();
-        Collection<PotionEffect> defenderEffects = damagedEntity.getActivePotionEffects();
-        for (PotionEffect effect : attackerEffects) {
-            if (effect.getType() == PotionEffectType.INCREASE_DAMAGE) {
-                potionMult += 0.1 * (effect.getAmplifier() + 1);
-            }
-            if (effect.getType() == PotionEffectType.WEAKNESS) {
-                potionMult -= 0.1 * (effect.getAmplifier() + 1);
-            }
-        }
+        double potionMult = getPotionMult(damagingEntity, damagedEntity);
+        String multiplierString = "";
 
-        for (PotionEffect effect : defenderEffects) {
-            if (effect.getType() == PotionEffectType.WITHER) {
-                potionMult += 0.2 * (effect.getAmplifier() + 1);
+        if (potionMult != 1.0) {
+            multiplierString = " x" + ONE_DECIMAL.format(potionMult);
+            if (potionMult <= 0) {
+                if (damagingEntity instanceof Player) {
+                    ActionBarMessage.send((Player)damagingEntity, ChatColor.WHITE + "0 Damage!");
+                }
+                event.setCancelled(true);
+                return 0D;
             }
-            if (effect.getType() == PotionEffectType.DAMAGE_RESISTANCE) {
-                potionMult -= 0.1 * (effect.getAmplifier() + 1);
-            }
-        }
-
-        if (potionMult <= 0) {
-            if (damagingEntity instanceof Player) {
-                ActionBarMessage.send((Player)damagingEntity, ChatColor.WHITE + "Invulnerable!");
-            }
-            event.setCancelled(true);
-            return 0D;
         }
 
         retDamage *= potionMult;
         retDamage *= armorMult;
+        if (magic) {
+            retDamage *= 1 - (resist / 2);
+        }
         retDamage += trueDamage;
 
         retDamage *= pvpMult;
@@ -528,9 +517,10 @@ public class CombatListener implements Listener {
         if (damagingEntity instanceof Player) {
             if (damageDetails) {
                 damageStats.append(ChatColor.RESET + ")");
+                damageStats.append(multiplierString);
                 ActionBarMessage.send((Player) damagingEntity, "&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
             } else {
-                ActionBarMessage.send((Player) damagingEntity, "&f&l" + INT.format(retDamage) + " Damage!");
+                ActionBarMessage.send((Player) damagingEntity, "&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
             }
         }
         return retDamage;
@@ -596,6 +586,7 @@ public class CombatListener implements Listener {
             }
             damage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.BLOCK));
         }
+        damage *= getPotionMult(damagingLivingEntity, damagedPlayer);
         damage *= getArmorMult(damagedChampion.getCache().getAttribute(StrifeAttribute.ARMOR), 0);
         return damage;
     }
@@ -699,31 +690,16 @@ public class CombatListener implements Listener {
         }
 
         // potion effects mults
-        double potionMult = 1D;
-        Collection<PotionEffect> attackerEffects = damagingPlayer.getActivePotionEffects();
-        Collection<PotionEffect> defenderEffects = damagedEntity.getActivePotionEffects();
-        for (PotionEffect effect : attackerEffects) {
-            if (effect.getType() == PotionEffectType.INCREASE_DAMAGE) {
-                potionMult += 0.1 * (effect.getAmplifier() + 1);
-            }
-            if (effect.getType() == PotionEffectType.WEAKNESS) {
-                potionMult -= 0.1 * (effect.getAmplifier() + 1);
-            }
-        }
+        double potionMult = getPotionMult(damagingPlayer, damagedEntity);
+        String multiplierString = "";
 
-        for (PotionEffect effect : defenderEffects) {
-            if (effect.getType() == PotionEffectType.WITHER) {
-                potionMult += 0.2 * (effect.getAmplifier() + 1);
+        if (potionMult != 1.0) {
+            multiplierString = " x" + ONE_DECIMAL.format(potionMult);
+            if (potionMult <= 0) {
+                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "0 Damage!");
+                event.setCancelled(true);
+                return 0D;
             }
-            if (effect.getType() == PotionEffectType.DAMAGE_RESISTANCE) {
-                potionMult -= 0.1 * (effect.getAmplifier() + 1);
-            }
-        }
-
-        if (potionMult <= 0) {
-            ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Invulnerable!");
-            event.setCancelled(true);
-            return 0D;
         }
 
         // combine!
@@ -745,11 +721,11 @@ public class CombatListener implements Listener {
         }
         if (damageDetails) {
             damageStats.append(ChatColor.RESET + ")");
+            damageStats.append(multiplierString);
             ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
         } else {
-            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage!");
+            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
         }
-
         return retDamage;
     }
 
@@ -901,37 +877,22 @@ public class CombatListener implements Listener {
         }
 
         // potion effects mults
-        double potionMult = 1D;
-        Collection<PotionEffect> attackerEffects = damagingPlayer.getActivePotionEffects();
-        Collection<PotionEffect> defenderEffects = damagedPlayer.getActivePotionEffects();
-        for (PotionEffect effect : attackerEffects) {
-            if (effect.getType() == PotionEffectType.INCREASE_DAMAGE) {
-                potionMult += 0.1 * (effect.getAmplifier() + 1);
-            }
-            if (effect.getType() == PotionEffectType.WEAKNESS) {
-                potionMult -= 0.1 * (effect.getAmplifier() + 1);
-            }
-        }
+        double potionMult = getPotionMult(damagingPlayer, damagedPlayer);
 
-        for (PotionEffect effect : defenderEffects) {
-            if (effect.getType() == PotionEffectType.WITHER) {
-                potionMult += 0.2 * (effect.getAmplifier() + 1);
-            }
-            if (effect.getType() == PotionEffectType.DAMAGE_RESISTANCE) {
-                potionMult -= 0.1 * (effect.getAmplifier() + 1);
-            }
-        }
+        String multiplierString = "";
 
-        if (potionMult <= 0) {
-            ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Invulnerable!");
-            event.setCancelled(true);
-            return 0D;
+        if (potionMult != 1.0) {
+            multiplierString = " x" + ONE_DECIMAL.format(potionMult);
+            if (potionMult <= 0) {
+                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "0 Damage!");
+                event.setCancelled(true);
+                return 0D;
+            }
         }
 
         // combine!
         retDamage *= potionMult;
         retDamage *= armorMult;
-        retDamage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE) / 2);
         retDamage += trueDamage;
         retDamage *= pvpMult;
 
@@ -951,9 +912,10 @@ public class CombatListener implements Listener {
 
         if (damageDetails) {
             damageStats.append(ChatColor.RESET + ")");
+            damageStats.append(multiplierString);
             ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
         } else {
-            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage!");
+            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
         }
 
         return retDamage;
@@ -975,7 +937,7 @@ public class CombatListener implements Listener {
         if (armor > 0) {
             double adjustedArmor = armor * (1 - apen);
             if (adjustedArmor > 0) {
-                return 420 / (420 + Math.pow(adjustedArmor, 1.55));
+                return 420 / (420 + Math.pow(adjustedArmor, 1.6));
             }
         }
         return 1 + (apen / 5);
@@ -988,5 +950,29 @@ public class CombatListener implements Listener {
             return true;
         }
         return false;
+    }
+
+    private double getPotionMult(LivingEntity attacker, LivingEntity defender) {
+        double potionMult = 1.0;
+        Collection<PotionEffect> attackerEffects = attacker.getActivePotionEffects();
+        Collection<PotionEffect> defenderEffects = defender.getActivePotionEffects();
+        for (PotionEffect effect : attackerEffects) {
+            if (effect.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+                potionMult += 0.1 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType().equals(PotionEffectType.WEAKNESS)) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
+        }
+
+        for (PotionEffect effect : defenderEffects) {
+            if (effect.getType().equals(PotionEffectType.WITHER)) {
+                potionMult += 0.1 * (effect.getAmplifier() + 1);
+            }
+            if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE)) {
+                potionMult -= 0.1 * (effect.getAmplifier() + 1);
+            }
+        }
+        return potionMult;
     }
 }
