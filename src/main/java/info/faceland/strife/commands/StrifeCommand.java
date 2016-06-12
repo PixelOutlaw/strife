@@ -22,6 +22,7 @@
  */
 package info.faceland.strife.commands;
 
+import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
@@ -30,6 +31,8 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 import me.desht.dhutils.ExperienceManager;
 import mkremins.fanciful.FancyMessage;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -136,11 +139,37 @@ public class StrifeCommand {
     }
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
-    public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") int amount) {
-        ExperienceManager manager = new ExperienceManager(player);
-        manager.changeExp(amount);
-        MessageUtils.sendMessage(sender, "<green>You gave <white>%player% %amount%<green> experience.",
-                new String[][]{{"%player%", player.getDisplayName()}, {"%amount%", "" + amount}});
-    }
+    public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") double amount) {
+        if (player.getLevel() >= 100) {
+            return;
+        }
 
+        // Get all the values!
+        Integer maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
+        double displayedExpGained = amount;
+        double currentExpPercent = player.getExp();
+        double faceExpToLevel;
+
+        if (maxFaceExp == null || maxFaceExp == 0) {
+            return;
+        }
+
+        faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
+
+        while (amount > faceExpToLevel) {
+            player.setExp(0);
+            amount -= faceExpToLevel;
+            currentExpPercent = 0;
+            player.setLevel(player.getLevel() + 1);
+            maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
+            faceExpToLevel = maxFaceExp;
+        }
+
+        player.setExp(player.getExp() + (float) (amount / maxFaceExp));
+
+        double remainingExp = amount + (currentExpPercent * maxFaceExp);
+        String msg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) faceExpToLevel + " XP &a&l)";
+        ActionBarMessage.send(player, msg);
+        MessageUtils.sendMessage(player, "&aYou gained &f" + (int) displayedExpGained + " &aXP!");
+    }
 }
