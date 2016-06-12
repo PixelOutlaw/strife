@@ -28,6 +28,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+
 import me.desht.dhutils.ExperienceManager;
 import mkremins.fanciful.FancyMessage;
 import org.bukkit.Bukkit;
@@ -79,8 +80,9 @@ public class ExperienceListener implements Listener {
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
         }
+        int points = 2 * (event.getNewLevel() - event.getOldLevel());
         champion.setHighestReachedLevel(event.getNewLevel());
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 2);
+        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(player, "<green>You have leveled up!");
@@ -89,7 +91,7 @@ public class ExperienceListener implements Listener {
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD).send(event
                 .getPlayer());
-        Title title = new Title("§aLEVEL UP!", "&aYou gained §f2 §aLevelpoints!", 1, 1, 1);
+        Title title = new Title("§aLEVEL UP!", "&aYou gained §f" + points + " §aLevelpoints!", 1, 1, 1);
         title.setTimingsToSeconds();
         title.send(event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {
@@ -107,52 +109,45 @@ public class ExperienceListener implements Listener {
             event.setAmount(0);
             return;
         }
-        double amount = Math.max(event.getAmount(), 1);
 
-        ExperienceManager experienceManager = new ExperienceManager(player);
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        // Get all the values!
+        Integer maxFaceExpInt = plugin.getLevelingRate().get(player.getLevel());
+        Integer maxVanillaExp = player.getExpToLevel();
+        double amount = event.getAmount();
+        double currentExpPercent = player.getExp();
+        double faceExpToLevel;
 
-        Integer desiredLevelUp = plugin.getLevelingRate().get(player.getLevel());
-        Integer defaultLevelUp = player.getExpToLevel();
-
-        if (desiredLevelUp == null || desiredLevelUp == 0) {
-            return;
-        }
-
-        if (desiredLevelUp.intValue() == defaultLevelUp.intValue()) {
+        if (maxFaceExpInt == null || maxFaceExpInt == 0) {
             event.setAmount(0);
             return;
         }
 
+        // Apply bonuses and limits to the amount
+        double maxFaceExp = maxFaceExpInt;
+        ExperienceManager experienceManager = new ExperienceManager(player);
+        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0);
-
         double bonusMult = 1 + xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN);
-        double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = amount * bonusMult * factor;
-        if (plugin.getSettings().getBoolean("config.verbose")) {
-            Bukkit.getLogger().info("Incoming Orb Value: " + event.getAmount());
-            Bukkit.getLogger().info("Strife XP to level: " + desiredLevelUp);
-            Bukkit.getLogger().info("Vanilla XP to level: " + event.getPlayer().getExpToLevel());
-            Bukkit.getLogger().info("Pre-Cap Orb Value: " + exact);
-        }
-        exact = Math.min(exact, (defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.62) + 1)) * bonusMult);
-        if (plugin.getSettings().getBoolean("config.verbose")) {
-            Bukkit.getLogger().info("Max Rate: " + defaultLevelUp / (Math.pow(event.getPlayer().getLevel(), 1.62) + 1));
-            Bukkit.getLogger().info("Minimum Orbs: " + defaultLevelUp / (defaultLevelUp / (Math.pow(event.getPlayer()
-                    .getLevel(), 1.62) + 1)));
-            Bukkit.getLogger().info("Final Orb Value: " + exact);
-            Bukkit.getLogger().info("Final Orb Percentage: " + (exact / defaultLevelUp) * 100 + "%");
+
+        amount *= bonusMult;
+        amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)) * bonusMult);
+
+        faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
+
+        if (amount > faceExpToLevel) {
+            player.setExp(0);
+            amount -= faceExpToLevel;
+            currentExpPercent = 0;
+            player.setLevel(player.getLevel() + 1);
+            maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
         }
 
-        int newXp = (int) exact;
-        event.setAmount(newXp);
+        double remainingExp = amount + (currentExpPercent * maxFaceExp);
+        String msg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) maxFaceExp + " XP &a&l)";
+        ActionBarMessage.send(event.getPlayer(), msg);
 
-        double remainingXp = amount + desiredLevelUp * event.getPlayer().getExp();
-        ActionBarMessage.send(event.getPlayer(), "&a&l( &f&l" + (int) remainingXp + " &a&l/ &f&l" + desiredLevelUp +
-                " XP &a&l)");
-
-        if (exact > newXp) {
-            experienceManager.changeExp(exact);
-        }
+        double gainedExpPercent = amount * (maxVanillaExp / maxFaceExp);
+        event.setAmount(0);
+        experienceManager.changeExp(gainedExpPercent);
     }
 }
