@@ -62,7 +62,7 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (champion.getCache().getAttribute(StrifeAttribute.REGENERATION) > 1) {
             lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute.REGENERATION));
         }
-        double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.55))));
+        double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.6))));
         lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
