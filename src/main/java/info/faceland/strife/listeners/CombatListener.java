@@ -27,6 +27,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
@@ -316,6 +317,11 @@ public class CombatListener implements Listener {
 
         // save the old base damage in case we need it
         double oldBaseDamage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
+        boolean isBlocked = false;
+
+        if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
+            isBlocked = true;
+        }
 
         // cancel out all damage from the old event
         for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
@@ -326,7 +332,7 @@ public class CombatListener implements Listener {
 
         // pass information to a new calculator
         double newBaseDamage = handleDamageCalculations(damagedLivingEntity, damagingLivingEntity, damagingEntity,
-                oldBaseDamage, damagingProjectile, event.getCause(), event);
+                oldBaseDamage, damagingProjectile, isBlocked, event.getCause(), event);
 
         // set the base damage of the event
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newBaseDamage);
@@ -337,17 +343,18 @@ public class CombatListener implements Listener {
                                             Entity damagingEntity,
                                             double oldBaseDamage,
                                             Projectile damagingProjectile,
+                                            boolean isBlocked,
                                             EntityDamageEvent.DamageCause cause,
                                             EntityDamageEvent event) {
         double retDamage = 0D;
         // Five branches: PvP, PvE, EvP, EvE, Projectile
         if (damagingProjectile != null) {
             // Projectile branch
-            retDamage = handleProjectileCalculation(damagedLivingEntity, damagingProjectile, event);
+            retDamage = handleProjectileCalculation(damagedLivingEntity, damagingProjectile, isBlocked, event);
         } else if (damagedLivingEntity instanceof Player && damagingLivingEntity instanceof Player) {
             // PvP branch
             retDamage = handlePlayerVersusPlayerCalculation((Player) damagedLivingEntity,
-                    (Player) damagingLivingEntity, damagingEntity, event);
+                    (Player) damagingLivingEntity, damagingEntity, isBlocked, event);
         } else if (!(damagedLivingEntity instanceof Player) && damagingLivingEntity instanceof Player) {
             // PvE branch
             retDamage = handlePlayerVersusEnvironmentCalculation(event, damagedLivingEntity, (Player)
@@ -355,7 +362,7 @@ public class CombatListener implements Listener {
         } else if (damagedLivingEntity instanceof Player) {
             // EvP branch
             retDamage = handleEnvironmentVersusPlayerCalculation((Player) damagedLivingEntity, damagingLivingEntity,
-                    damagingEntity, oldBaseDamage, event);
+                    damagingEntity, oldBaseDamage, isBlocked, event);
         } else {
             // EvE branch
             retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
@@ -364,7 +371,16 @@ public class CombatListener implements Listener {
         return retDamage;
     }
 
-    private double handleProjectileCalculation(LivingEntity damagedEntity, Projectile damagingProjectile, EntityDamageEvent event) {
+    private double handleProjectileCalculation(LivingEntity damagedEntity, Projectile damagingProjectile, boolean
+            isBlocked, EntityDamageEvent event) {
+        if (isBlocked) {
+            if (damagingProjectile.getShooter() instanceof Player) {
+                ActionBarMessage.send((Player) damagingProjectile.getShooter(), ChatColor.WHITE + "Blocked!");
+            }
+            damagingProjectile.remove();
+            event.setDamage(0);
+            event.setCancelled(true);
+        }
         double retDamage = 0;
 
         LivingEntity damagingEntity = (LivingEntity) damagingProjectile.getShooter();
@@ -543,6 +559,7 @@ public class CombatListener implements Listener {
                                                             LivingEntity damagingLivingEntity,
                                                             Entity damagingEntity,
                                                             double oldBaseDamage,
+                                                            boolean isBlocked,
                                                             EntityDamageEvent event) {
         double damage;
         if (damagingLivingEntity.hasMetadata("DAMAGE")) {
@@ -566,7 +583,7 @@ public class CombatListener implements Listener {
             }
         }
 
-        if (damagedPlayer.isBlocking()) {
+        if (isBlocked) {
             if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE)) {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
@@ -732,6 +749,7 @@ public class CombatListener implements Listener {
     private double handlePlayerVersusPlayerCalculation(Player damagedPlayer,
                                                        Player damagingPlayer,
                                                        Entity damagingEntity,
+                                                       boolean isBlocked,
                                                        EntityDamageEvent event) {
         double retDamage;
 
@@ -783,7 +801,7 @@ public class CombatListener implements Listener {
         retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
         // check if damaged player is blocking
-        if (damagedPlayer.isBlocking()) {
+        if (isBlocked) {
             if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE)) {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
