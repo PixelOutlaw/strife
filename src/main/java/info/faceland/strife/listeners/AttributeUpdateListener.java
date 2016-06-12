@@ -99,9 +99,10 @@ public class AttributeUpdateListener implements Listener {
         double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
         p.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-        p.setFlySpeed(Math.min(Math.max(-1F, speed / 2), 1F));
+        p.setFlySpeed(Math.min(Math.max(-1F, speed / 1.5f), 1F));
         p.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
-        p.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(6.5);
+        p.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+        p.setCollidable(false);
     }
 
 
