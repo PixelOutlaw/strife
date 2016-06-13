@@ -380,6 +380,7 @@ public class CombatListener implements Listener {
             damagingProjectile.remove();
             event.setDamage(0);
             event.setCancelled(true);
+            return 0D;
         }
         double retDamage = 0;
 
