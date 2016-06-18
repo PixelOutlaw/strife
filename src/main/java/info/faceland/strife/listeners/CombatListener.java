@@ -110,6 +110,9 @@ public class CombatListener implements Listener {
         Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
         playerChamp.getAttributeValues(true);
         Projectile projectile = event.getEntity();
+        Bukkit.getLogger().info("Velocity: " + projectile.getVelocity());
+        Bukkit.getLogger().info("Velo.getLen: " + projectile.getVelocity().length());
+        projectile.setVelocity(p.getLocation().getDirection().multiply(1.3));
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE);
         double critMult = 0;
         double overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
@@ -400,11 +403,12 @@ public class CombatListener implements Listener {
                 if (velocityMult < 0.85) {
                     overcharge = false;
                 }
-            } else {
-                if (damagingProjectile instanceof ShulkerBullet) {
-                    damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 2, 5, true, false));
-                    magic = true;
-                }
+            }
+        }
+        if (damagingProjectile instanceof ShulkerBullet) {
+            magic = true;
+            if (!(damagingProjectile.getShooter() instanceof Shulker)) {
+                damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 2, 5, true, false));
             }
         }
 
@@ -765,6 +769,20 @@ public class CombatListener implements Listener {
         // get the PvP damage multiplier
         double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
 
+        // calculating attack speed
+        double attackSpeedMult = 1D;
+        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
+                .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
+        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
+        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
+        if (timeLeft == timeToSet){
+            return 0;
+        }
+        if (timeLeft > 0) {
+            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
+        }
+        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
+
         // get the evasion chance of the damaged champion and check if evaded
         double evasion = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
         if (evasion > 0) {
@@ -784,20 +802,6 @@ public class CombatListener implements Listener {
 
         double armorMult = getArmorMult(damagedChampion.getCache().getAttribute(StrifeAttribute.ARMOR), damagingChampion
                 .getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION));
-
-        // calculating attack speed
-        double attackSpeedMult = 1D;
-        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + damagingChampion
-                .getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)));
-        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(damagingPlayer.getUniqueId());
-        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        if (timeLeft == timeToSet){
-            return 0;
-        }
-        if (timeLeft > 0) {
-            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
-        }
-        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
         retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
