@@ -23,6 +23,8 @@
 package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
+
+import info.faceland.loot.api.math.Vec3;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
@@ -47,6 +49,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -110,12 +113,19 @@ public class CombatListener implements Listener {
         Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
         playerChamp.getAttributeValues(true);
         Projectile projectile = event.getEntity();
-        Bukkit.getLogger().info("Velocity: " + projectile.getVelocity());
-        Bukkit.getLogger().info("Velo.getLen: " + projectile.getVelocity().length());
-        projectile.setVelocity(p.getLocation().getDirection().multiply(1.3));
-        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE);
+
+        double attackSpeedMult = 0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED);
+        double shotPower = projectile.getVelocity().length();
+        double shotMult = attackSpeedMult + ((1 - attackSpeedMult) * Math.min(shotPower / 2.9, 1.0));
+        Vector vec = p.getLocation().getDirection();
+        projectile.setVelocity(new Vector(vec.getX() * 2, vec.getY() * 2.5, vec.getZ() * 2));
+
+        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotPower;
         double critMult = 0;
-        double overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
+        double overMult = 0;
+        if (shotMult == 1.0) {
+            overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
+        }
         if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
             critMult = playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1;
         }
