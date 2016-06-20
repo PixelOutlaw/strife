@@ -23,8 +23,10 @@
 package info.faceland.strife.listeners;
 
 import be.maximvdw.titlemotd.ui.Title;
-import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
+import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
@@ -73,9 +75,11 @@ public class ExperienceListener implements Listener {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         if (event.getOldLevel() < event.getNewLevel()) {
-            ActionBarMessage.send(event.getPlayer(), "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)");
+            ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage("&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)");
+            xpBarMsg.send(player);
         } else {
-            ActionBarMessage.send(event.getPlayer(), "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)");
+            ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage("&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)");
+            xpBarMsg.send(player);
         }
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
@@ -143,8 +147,9 @@ public class ExperienceListener implements Listener {
         }
 
         double remainingExp = amount + (currentExpPercent * maxFaceExp);
-        String msg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) maxFaceExp + " XP &a&l)";
-        ActionBarMessage.send(event.getPlayer(), msg);
+        String xpMsg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) maxFaceExp + " XP &a&l)";
+        ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage(xpMsg);
+        xpBarMsg.send(player);
 
         double gainedExpPercent = amount * (maxVanillaExp / maxFaceExp);
         event.setAmount(0);

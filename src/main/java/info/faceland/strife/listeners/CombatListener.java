@@ -22,14 +22,14 @@
  */
 package info.faceland.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
+import com.tealcube.minecraft.bukkit.TextUtils;
+import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
+import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
-import info.faceland.loot.api.math.Vec3;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
@@ -57,14 +57,30 @@ import java.util.Random;
 
 public class CombatListener implements Listener {
 
+    private final StrifePlugin plugin;
+    private final Random random;
+
+    private static final String ATTACK_UNCHARGED = TextUtils.color("<white>Not charged enough!");
+    private static final String ATTACK_MISSED = TextUtils.color("<white>Miss!!");
+    private static final String ATTACK_DODGED = TextUtils.color("<white>Attack Dodged!");
+    private static final String ATTACK_PARRIED = TextUtils.color("<white>Attack Parried!");
+    private static final String ATTACK_BLOCKED = TextUtils.color("<white>Blocked!");
+    private static final String ATTACK_NO_DAMAGE = TextUtils.color("<white>0 Damage!");
+
+    private static final ActionBarMessage notCharged = ActionBarMessager.createActionBarMessage(ATTACK_UNCHARGED);
+    private static final ActionBarMessage missed = ActionBarMessager.createActionBarMessage(ATTACK_MISSED);
+    private static final ActionBarMessage dodged = ActionBarMessager.createActionBarMessage(ATTACK_DODGED);
+    private static final ActionBarMessage parried = ActionBarMessager.createActionBarMessage(ATTACK_PARRIED);
+    private static final ActionBarMessage blocked = ActionBarMessager.createActionBarMessage(ATTACK_BLOCKED);
+    private static final ActionBarMessage noDamage = ActionBarMessager.createActionBarMessage(ATTACK_NO_DAMAGE);
+
+    private static final DecimalFormat INT = new DecimalFormat("#");
+    private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
+
     private static final String[] DOGE_MEMES =
             {"<aqua>wow", "<green>wow", "<light purple>wow", "<aqua>much pain", "<green>much pain",
                     "<light purple>much pain", "<aqua>many disrespects", "<green>many disrespects",
                     "<light purple>many disrespects", "<red>no u", "<red>2damage4me"};
-    private final StrifePlugin plugin;
-    private final Random random;
-    private static final DecimalFormat INT = new DecimalFormat("#");
-    private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
 
     public CombatListener(StrifePlugin plugin) {
         this.plugin = plugin;
@@ -192,7 +208,7 @@ public class CombatListener implements Listener {
             return;
         }
         if (attackSpeedMult <= 0.25) {
-            ActionBarMessage.send(p, ChatColor.WHITE + "Not Charged Enough!");
+            notCharged.send(p);
             p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.8f, 0.8f);
             return;
         }
@@ -388,7 +404,7 @@ public class CombatListener implements Listener {
             isBlocked, EntityDamageEvent event) {
         if (isBlocked) {
             if (damagingProjectile.getShooter() instanceof Player) {
-                ActionBarMessage.send((Player) damagingProjectile.getShooter(), ChatColor.WHITE + "Blocked!");
+                blocked.send((Player) damagingProjectile.getShooter());
             }
             damagingProjectile.remove();
             event.setDamage(0);
@@ -437,9 +453,9 @@ public class CombatListener implements Listener {
             if (getEvadeChance(evasion, accuracy)) {
                 damagingProjectile.remove();
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-                ActionBarMessage.send((Player) damagedEntity, ChatColor.WHITE + "Dodge!");
+                dodged.send((Player) damagedEntity);
                 if (damagingEntity instanceof Player) {
-                    ActionBarMessage.send((Player) damagingEntity, ChatColor.WHITE + "Miss!");
+                    missed.send((Player) damagingEntity);
                 }
                 event.setCancelled(true);
                 return 0D;
@@ -516,7 +532,7 @@ public class CombatListener implements Listener {
             multiplierString = " x" + ONE_DECIMAL.format(potionMult);
             if (potionMult <= 0) {
                 if (damagingEntity instanceof Player) {
-                    ActionBarMessage.send((Player)damagingEntity, ChatColor.WHITE + "0 Damage!");
+                    noDamage.send((Player) damagingEntity);
                 }
                 event.setCancelled(true);
                 return 0D;
@@ -549,9 +565,13 @@ public class CombatListener implements Listener {
             if (damageDetails) {
                 damageStats.append(ChatColor.RESET + ")");
                 damageStats.append(multiplierString);
-                ActionBarMessage.send((Player) damagingEntity, "&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
+                String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
+                ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
+                combatMsg.send((Player) damagingEntity);
             } else {
-                ActionBarMessage.send((Player) damagingEntity, "&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
+                String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
+                ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
+                combatMsg.send((Player) damagingEntity);
             }
         }
         return retDamage;
@@ -592,7 +612,7 @@ public class CombatListener implements Listener {
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT,
                         0.5f, 2f);
-                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Dodge!");
+                dodged.send(damagedPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -612,7 +632,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
                 damagingLivingEntity.damage(damage * 0.2);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
+                parried.send(damagedPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -728,7 +748,7 @@ public class CombatListener implements Listener {
         if (potionMult != 1.0) {
             multiplierString = " x" + ONE_DECIMAL.format(potionMult);
             if (potionMult <= 0) {
-                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "0 Damage!");
+                noDamage.send(damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -754,9 +774,13 @@ public class CombatListener implements Listener {
         if (damageDetails) {
             damageStats.append(ChatColor.RESET + ")");
             damageStats.append(multiplierString);
-            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
+            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
+            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
+            combatMsg.send(damagingPlayer);
         } else {
-            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
+            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
+            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
+            combatMsg.send(damagingPlayer);
         }
         return retDamage;
     }
@@ -803,8 +827,8 @@ public class CombatListener implements Listener {
                     damagingEntity.remove();
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Dodge!");
-                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Miss!");
+                dodged.send(damagedPlayer);
+                missed.send(damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -830,8 +854,8 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
                 damagingPlayer.damage(retDamage * 0.2 * pvpMult);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                ActionBarMessage.send(damagedPlayer, ChatColor.WHITE + "Parry!");
-                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "Parried!");
+                parried.send(damagedPlayer);
+                blocked.send(damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -917,7 +941,7 @@ public class CombatListener implements Listener {
         if (potionMult != 1.0) {
             multiplierString = " x" + ONE_DECIMAL.format(potionMult);
             if (potionMult <= 0) {
-                ActionBarMessage.send(damagingPlayer, ChatColor.WHITE + "0 Damage!");
+                noDamage.send(damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -946,9 +970,13 @@ public class CombatListener implements Listener {
         if (damageDetails) {
             damageStats.append(ChatColor.RESET + ")");
             damageStats.append(multiplierString);
-            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
+            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
+            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
+            combatMsg.send((Player) damagingEntity);
         } else {
-            ActionBarMessage.send(damagingPlayer, "&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
+            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
+            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
+            combatMsg.send((Player) damagingEntity);
         }
 
         return retDamage;
