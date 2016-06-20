@@ -22,7 +22,9 @@
  */
 package info.faceland.strife.tasks;
 
-import com.tealcube.minecraft.bukkit.facecore.ui.ActionBarMessage;
+import com.tealcube.minecraft.bukkit.TextUtils;
+import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
+import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -33,6 +35,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class AttackSpeedTask extends BukkitRunnable {
+
+    private static final String ATTACK_RECHARGED = TextUtils.color("<yellow>Attack Recharged!");
 
     private Map<UUID, Long> timeLeftMap;
 
@@ -48,7 +52,8 @@ public class AttackSpeedTask extends BukkitRunnable {
             if (entry.getValue() < 1L) {
                 Player p = Bukkit.getPlayer(entry.getKey());
                 if (p != null && p.isOnline()) {
-                    ActionBarMessage.send(p, "<yellow>Attack Recharged!");
+                    ActionBarMessage actionBarMessage = ActionBarMessager.createActionBarMessage(ATTACK_RECHARGED);
+                    actionBarMessage.send(p);
                 }
                 iterator.remove();
                 continue;
