@@ -102,7 +102,6 @@ public class AttributeUpdateListener implements Listener {
         p.setFlySpeed(Math.min(Math.max(-1F, speed / 1.5f), 1F));
         p.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
         p.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-        p.setCollidable(false);
     }
 
 
