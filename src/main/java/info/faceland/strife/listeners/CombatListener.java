@@ -30,7 +30,9 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.Sound;
@@ -348,8 +350,10 @@ public class CombatListener implements Listener {
         double oldBaseDamage = event.getDamage(EntityDamageEvent.DamageModifier.BASE);
         boolean isBlocked = false;
 
-        if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
-            isBlocked = true;
+        if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
+            if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
+                isBlocked = true;
+            }
         }
 
         // cancel out all damage from the old event
@@ -402,33 +406,16 @@ public class CombatListener implements Listener {
 
     private double handleProjectileCalculation(LivingEntity damagedEntity, Projectile damagingProjectile, boolean
             isBlocked, EntityDamageEvent event) {
-        if (isBlocked) {
-            if (damagingProjectile.getShooter() instanceof Player) {
-                blocked.send((Player) damagingProjectile.getShooter());
-            }
-            damagingProjectile.remove();
-            event.setDamage(0);
-            event.setCancelled(true);
-            return 0D;
-        }
-        double retDamage = 0;
+        double retDamage = damagingProjectile.getMetadata("damage").get(0).asDouble();
 
         LivingEntity damagingEntity = (LivingEntity) damagingProjectile.getShooter();
         double armorMult = 1.0;
         double pvpMult = 1.0;
-        double velocityMult = 1.0;
-        double resist = 0;
         boolean overcharge = true;
         boolean magic = false;
         if (damagingEntity instanceof Player) {
             if (damagedEntity instanceof Player) {
                 pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
-            }
-            if (damagingProjectile instanceof Arrow) {
-                velocityMult = Math.min(damagingProjectile.getVelocity().lengthSquared() / 9D, 1);
-                if (velocityMult < 0.85) {
-                    overcharge = false;
-                }
             }
         }
         if (damagingProjectile instanceof ShulkerBullet) {
@@ -440,11 +427,18 @@ public class CombatListener implements Listener {
 
         double evasion = 0;
         double armor = 0;
+        double resist = 0;
+        double parry = 0;
+        double absorb = 0;
+        double block = 0;
         if (damagedEntity instanceof Player) {
             Champion defendingChampion = plugin.getChampionManager().getChampion(((Player)damagedEntity).getUniqueId());
             evasion = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
             armor = defendingChampion.getCache().getAttribute(StrifeAttribute.ARMOR);
             resist = defendingChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
+            parry = defendingChampion.getCache().getAttribute(StrifeAttribute.PARRY);
+            absorb = defendingChampion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE);
+            block = defendingChampion.getCache().getAttribute(StrifeAttribute.BLOCK);
         }
 
         if (evasion > 0) {
@@ -462,29 +456,68 @@ public class CombatListener implements Listener {
             }
         }
 
-        double armorPen = damagingProjectile.getMetadata("armorPen").get(0).asDouble();
-        armorMult = getArmorMult(armor, armorPen);
+        if (isBlocked) {
+            if (random.nextDouble() < absorb) {
+                damagingEntity.setHealth(Math.min(damagedEntity.getHealth() + (damagedEntity.getMaxHealth() / 20),
+                        damagedEntity.getMaxHealth()));
+                damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
+                damagingProjectile.remove();
+                event.setDamage(0);
+                event.setCancelled(true);
+                return 0D;
+            }
+            if (random.nextDouble() < parry) {
+                damagedEntity.damage(retDamage * 0.2);
+                damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
+                if (damagedEntity instanceof Player) {
+                    parried.send((Player)damagedEntity);
+                }
+                damagingProjectile.remove();
+                event.setDamage(0);
+                event.setCancelled(true);
+                return 0D;
+            }
+            retDamage *= 1 - block;
+            if (!(damagingProjectile instanceof ShulkerBullet)) {
+                if (damagingProjectile.getShooter() instanceof Player) {
+                    blocked.send((Player) damagingProjectile.getShooter());
+                }
+                damagingProjectile.remove();
+                event.setDamage(0);
+                event.setCancelled(true);
+                return 0D;
+            }
+        }
 
-        retDamage = damagingProjectile.getMetadata("damage").get(0).asDouble();
-        retDamage *= velocityMult;
+        double armorPen = 0;
+        if (damagingProjectile.hasMetadata("armorPen")) {
+            armorPen = damagingProjectile.getMetadata("armorPen").get(0).asDouble();
+        }
+        armorMult = getArmorMult(armor, armorPen);
 
         StringBuffer damageStats = new StringBuffer();
         damageStats.append(ChatColor.RESET + "(" + ONE_DECIMAL.format(retDamage * armorMult * pvpMult));
         boolean damageDetails = false;
 
-        double critBonus = damagingProjectile.getMetadata("critical").get(0).asDouble();
-        if (critBonus > 0) {
-            critBonus = retDamage * critBonus;
-            damageStats.append(ChatColor.RED + " +" + ONE_DECIMAL.format(critBonus * velocityMult * armorMult * pvpMult) + "✶");
-            damageDetails = true;
-            damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
+        double critBonus = 0;
+        if (damagingProjectile.hasMetadata("critical")) {
+            critBonus = damagingProjectile.getMetadata("critical").get(0).asDouble();
+            if (critBonus > 0) {
+                critBonus = retDamage * critBonus;
+                damageStats.append(ChatColor.RED + " +" + ONE_DECIMAL.format(critBonus * armorMult * pvpMult) + "✶");
+                damageDetails = true;
+                damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
+            }
         }
 
-        double overBonus = damagingProjectile.getMetadata("overcharge").get(0).asDouble();
-        if (overBonus > 0 && overcharge) {
-            overBonus = retDamage * overBonus;
-            damageStats.append(ChatColor.YELLOW + " +" + ONE_DECIMAL.format(overBonus * armorMult * pvpMult) + "✦");
-            damageDetails = true;
+        double overBonus = 0;
+        if (damagingProjectile.hasMetadata("overcharge")) {
+            overBonus = damagingProjectile.getMetadata("overcharge").get(0).asDouble();
+            if (overBonus > 0 && overcharge) {
+                overBonus = retDamage * overBonus;
+                damageStats.append(ChatColor.YELLOW + " +" + ONE_DECIMAL.format(overBonus * armorMult * pvpMult) + "✦");
+                damageDetails = true;
+            }
         }
 
         retDamage += critBonus;
@@ -985,6 +1018,9 @@ public class CombatListener implements Listener {
     private double getDamageFromMeta(LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
         double damage = a.getMetadata("DAMAGE").get(0).asDouble();
         if (d == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+            if (a.getFireTicks() > 0) {
+                b.setFireTicks(b.getFireTicks() + 45);
+            }
             if (((Creeper) a).isPowered()) {
                 damage = damage * Math.max(0.3, 3 - (a.getLocation().distance(b.getLocation()) / 2));
             } else {
