@@ -22,6 +22,7 @@
  */
 package info.faceland.strife.listeners;
 
+import com.sun.corba.se.spi.activation.ServerHolder;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
 import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
@@ -132,13 +133,14 @@ public class CombatListener implements Listener {
         playerChamp.getAttributeValues(true);
         Projectile projectile = event.getEntity();
 
-        double attackSpeedMult = 0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED);
+        double attackSpeedMult = Math.min(0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED), 1.0);
         double shotPower = projectile.getVelocity().length();
         double shotMult = attackSpeedMult + ((1 - attackSpeedMult) * Math.min(shotPower / 2.9, 1.0));
         Vector vec = p.getLocation().getDirection();
-        projectile.setVelocity(new Vector(vec.getX() * 2, vec.getY() * 2.5, vec.getZ() * 2));
+        projectile.setVelocity(new Vector(vec.getX() * 2 * (shotMult/5), vec.getY() * 2.5 * (shotMult/10), vec.getZ
+                () * 2 *(shotMult/5)));
 
-        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotPower;
+        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotMult;
         double critMult = 0;
         double overMult = 0;
         if (shotMult == 1.0) {
