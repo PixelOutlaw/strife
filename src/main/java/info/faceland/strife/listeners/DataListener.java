@@ -22,9 +22,9 @@
  */
 package info.faceland.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
-import mkremins.fanciful.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
