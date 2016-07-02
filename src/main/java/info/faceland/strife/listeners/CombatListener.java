@@ -136,9 +136,9 @@ public class CombatListener implements Listener {
         double attackSpeedMult = Math.min(0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED), 1.0);
         double shotPower = projectile.getVelocity().length();
         double shotMult = attackSpeedMult + ((1 - attackSpeedMult) * Math.min(shotPower / 2.9, 1.0));
+        double vBonus = 1 + (shotMult/5);
         Vector vec = p.getLocation().getDirection();
-        projectile.setVelocity(new Vector(vec.getX() * 2 * (shotMult/5), vec.getY() * 2.5 * (shotMult/10), vec.getZ
-                () * 2 *(shotMult/5)));
+        projectile.setVelocity(new Vector(vec.getX() * 2 * vBonus, vec.getY() * 2.5 * vBonus, vec.getZ() * 2 *vBonus));
 
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotMult;
         double critMult = 0;
