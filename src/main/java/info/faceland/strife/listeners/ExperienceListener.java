@@ -24,6 +24,7 @@ package info.faceland.strife.listeners;
 
 import be.maximvdw.titlemotd.ui.Title;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
 import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
@@ -32,7 +33,6 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import me.desht.dhutils.ExperienceManager;
-import mkremins.fanciful.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
