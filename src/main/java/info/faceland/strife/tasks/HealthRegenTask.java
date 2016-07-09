@@ -43,7 +43,7 @@ public class HealthRegenTask extends BukkitRunnable {
     public void run() {
         for (Player p : Bukkit.getOnlinePlayers()) {
             Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
-            double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) / 5;
+            double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) / 4;
             if (p.hasPotionEffect(PotionEffectType.POISON)) {
                 amount *= 0.33;
             }

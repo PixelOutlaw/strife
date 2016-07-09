@@ -172,7 +172,7 @@ public class StrifePlugin extends FacePlugin {
                 20L * 600//0
         );
         regenTask.runTaskTimer(this,
-                20L * 10,
+                20L * 8,
                 20L * 2
         );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
