@@ -22,19 +22,11 @@
  */
 package info.faceland.strife.listeners;
 
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
-import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.potion.PotionEffectType;
 
 public class HealthListener implements Listener {
 
