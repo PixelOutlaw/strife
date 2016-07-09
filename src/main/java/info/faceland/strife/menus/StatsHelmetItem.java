@@ -25,38 +25,40 @@ package info.faceland.strife.menus;
 import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
-import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.ChatColor;
+import info.faceland.strife.menus.StatsMenu;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class StatsMenu extends ItemMenu {
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
 
-    public StatsMenu(StrifePlugin plugin) {
-        super(TextUtils.color("&0&lStats!"), Size.fit(36), plugin);
+public class StatsHelmetItem extends MenuItem {
 
-        setItem(0, new StatsHelmetItem(plugin));
-        setItem(9, new StatsChestItem(plugin));
-        setItem(18, new StatsLegsItem(plugin));
-        setItem(27, new StatsBootsItem(plugin));
-        setItem(1, new StatsMainHandItem(plugin));
-        setItem(10, new StatsOffHandItem(plugin));
+    private final StrifePlugin plugin;
 
-        setItem(13, new StatsOffenseMenuItem(plugin));
-        setItem(15, new StatsDefenseMenuItem(plugin));
-        setItem(22, new StatsMiscMenuItem(plugin));
-        setItem(24, new StatsBonusMenuItem(plugin));
+    public StatsHelmetItem(StrifePlugin plugin) {
+        super(TextUtils.color("&eNo Helmet"), new ItemStack(Material.BARRIER));
+        this.plugin = plugin;
+    }
+
+    @Override
+    public ItemStack getFinalIcon(Player player) {
+        ItemStack helm = player.getEquipment().getHelmet();
+        if (helm == null || helm.getType() == Material.AIR) {
+            helm = new ItemStack(this.getIcon());
+            ItemMeta im = helm.getItemMeta();
+            im.setDisplayName(this.getDisplayName());
+            helm.setItemMeta(im);
+        }
+        return helm;
+    }
+
+    @Override
+    public void onItemClick(ItemClickEvent event) {
+        super.onItemClick(event);
     }
 
 }
-
-/*
-00 01 02 03 04 05 06 07 08
-09 10 11 12 13 14 15 16 17
-18 19 20 21 22 23 24 25 26
-27 28 29 30 31 32 33 34 35
-36 37 38 39 40 41 42 43 44
-45 46 47 48 49 50 51 52 53
-*/

@@ -128,6 +128,9 @@ public class CombatListener implements Listener {
         if (!(event.getEntity().getShooter() instanceof Player)) {
             return;
         }
+        if (!(event.getEntity() instanceof Arrow)) {
+            return;
+        }
         Player p = (Player) event.getEntity().getShooter();
         Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
         playerChamp.getAttributeValues(true);
@@ -136,9 +139,10 @@ public class CombatListener implements Listener {
         double attackSpeedMult = Math.min(0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED), 1.0);
         double shotPower = projectile.getVelocity().length();
         double shotMult = attackSpeedMult + ((1 - attackSpeedMult) * Math.min(shotPower / 2.9, 1.0));
-        double vBonus = 1 + (shotMult/5);
+        double vBonus = 1 + shotMult * 2;
         Vector vec = p.getLocation().getDirection();
-        projectile.setVelocity(new Vector(vec.getX() * 2 * vBonus, vec.getY() * 2.5 * vBonus, vec.getZ() * 2 *vBonus));
+        projectile.setVelocity(new Vector(vec.getX() * 1.2 * vBonus, vec.getY() * 1.3 * vBonus, vec.getZ() * 1.2 *
+                vBonus));
 
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotMult;
         double critMult = 0;

@@ -22,6 +22,8 @@
  */
 package info.faceland.strife.menus;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
@@ -44,9 +46,10 @@ public class StatsDefenseMenuItem extends MenuItem {
     private final StrifePlugin plugin;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
     private static final DecimalFormat REDUCER_FORMAT = new DecimalFormat("#.#");
+    private static final String breakLine = TextUtils.color("&7&m--------------------");
 
     public StatsDefenseMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Defensive Stats", new ItemStack(Material.IRON_CHESTPLATE));
+        super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
         this.plugin = plugin;
     }
 
@@ -57,51 +60,46 @@ public class StatsDefenseMenuItem extends MenuItem {
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.HEALTH)));
-        if (champion.getCache().getAttribute(StrifeAttribute.REGENERATION) > 1) {
-            lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute.REGENERATION));
-        }
+        List<String> lore = new ArrayList<>();
+        lore.add(breakLine);
+
+        lore.add(ChatColor.YELLOW + "Health: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute
+                (StrifeAttribute.HEALTH)));
+        lore.add(ChatColor.YELLOW + "Regeneration: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute
+                .REGENERATION));
+
+        lore.add(breakLine);
+
         double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.6))));
-        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE +
+        lore.add(ChatColor.YELLOW + "Armor: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
-        if (champion.getCache().getAttribute(StrifeAttribute.EVASION) > 0) {
-            double evasion = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute
-                    .EVASION), 1.5))));
-            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE +
-                    DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
-                    ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
-        }
-        if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) != 0.0) {
-            if (champion.getCache().getAttribute(StrifeAttribute.BLOCK) <= 0.85) {
-                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
-            } else {
-                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
-            }
-        }
-        if (champion.getCache().getAttribute(StrifeAttribute.RESISTANCE) > 0.2) {
-            lore.add(
-                    ChatColor.BLUE + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion
-                            .getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");
-        }
-        if (champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) > 0) {
-            if (champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) < 0.35) {
-                lore.add(ChatColor.BLUE + "Absorb Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) * 100) + "%");
-            } else {
-                lore.add(ChatColor.BLUE + "Absorb Chance: " + ChatColor.WHITE + "35% " + ChatColor.GRAY + "(Max)");
-            }
-        }
-        if (champion.getCache().getAttribute(StrifeAttribute.PARRY) > 0) {
-            if (champion.getCache().getAttribute(StrifeAttribute.PARRY) < 0.75) {
-                lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                        .format(champion.getCache().getAttribute(StrifeAttribute.PARRY) * 100) + "%");
-            } else {
-                lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + "75% " + ChatColor.GRAY + "(Max)");
-            }
-        }
+        double evasion = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute
+                .EVASION), 1.5))));
+        lore.add(ChatColor.YELLOW + "Evasion: " + ChatColor.WHITE +
+                DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
+                ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
+
+        lore.add(breakLine);
+
+        lore.add(ChatColor.YELLOW + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
+
+        lore.add(ChatColor.YELLOW + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(StrifeAttribute.PARRY) * 100) + "%");
+
+        lore.add(ChatColor.YELLOW + "Absorb Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) * 100) + "%");
+
+        lore.add(breakLine);
+
+        lore.add(ChatColor.YELLOW + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion
+                .getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");
+
+        lore.add(breakLine);
+
+        lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
