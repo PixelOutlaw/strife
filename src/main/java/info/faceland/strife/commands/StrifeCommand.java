@@ -127,8 +127,6 @@ public class StrifeCommand {
         target.setExp(0f);
         target.setLevel(newLevel);
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
-        int diff = newLevel - oldLevel;
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + diff * 2 - 2);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
