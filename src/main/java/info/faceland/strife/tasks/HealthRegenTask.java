@@ -20,34 +20,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
-public class HealthListener implements Listener {
+public class HealthRegenTask extends BukkitRunnable {
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-        if (!(event.getEntity() instanceof Player) || event.isCancelled()) {
-            return;
-        }
-        if (event.getRegainReason() != EntityRegainHealthEvent.RegainReason.SATIATED && event.getRegainReason() !=
-                EntityRegainHealthEvent.RegainReason.EATING ) {
-            return;
-        }
-        event.setAmount(0);
+    private final StrifePlugin plugin;
+
+    public HealthRegenTask(StrifePlugin plugin) {
+        this.plugin = plugin;
     }
 
+    @Override
+    public void run() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
+            double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) / 5;
+            if (p.hasPotionEffect(PotionEffectType.POISON)) {
+                amount *= 0.33;
+            }
+            if (p.getFoodLevel() <= 6) {
+                amount *= p.getFoodLevel() / 6;
+            }
+            p.setHealth(Math.min(p.getHealth() + amount, p.getMaxHealth()));
+        }
+    }
 }

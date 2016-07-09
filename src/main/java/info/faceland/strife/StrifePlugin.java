@@ -44,6 +44,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
+import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
 import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
@@ -66,6 +67,7 @@ public class StrifePlugin extends FacePlugin {
     private DataStorage storage;
     private ChampionManager championManager;
     private SaveTask saveTask;
+    private HealthRegenTask regenTask;
     private AttackSpeedTask attackSpeedTask;
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
@@ -150,6 +152,7 @@ public class StrifePlugin extends FacePlugin {
         }
 
         saveTask = new SaveTask(this);
+        regenTask = new HealthRegenTask(this);
         attackSpeedTask = new AttackSpeedTask();
 
         commandHandler.registerCommands(new AttributesCommand(this));
@@ -168,9 +171,13 @@ public class StrifePlugin extends FacePlugin {
                 20L * 660,//0,
                 20L * 600//0
         );
+        regenTask.runTaskTimer(this,
+                20L * 10,
+                20L * 2
+        );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
         Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
@@ -190,6 +197,7 @@ public class StrifePlugin extends FacePlugin {
     public void disable() {
         debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
         saveTask.cancel();
+        regenTask.cancel();
         HandlerList.unregisterAll(this);
         storage.save(championManager.getChampions());
         configYAML = null;
@@ -198,6 +206,7 @@ public class StrifePlugin extends FacePlugin {
         storage = null;
         championManager = null;
         saveTask = null;
+        regenTask = null;
         commandHandler = null;
         settings = null;
     }
