@@ -168,12 +168,12 @@ public class StrifePlugin extends FacePlugin {
         }
 
         saveTask.runTaskTimer(this,
-                20L * 660,//0,
-                20L * 600//0
+                20L * 660, // Start save after 11 minutes
+                20L * 600 // Run every 10 minutes after that
         );
         regenTask.runTaskTimer(this,
-                20L * 8,
-                20L * 2
+                20L * 10, // Start timer after 10s
+                20L * 2 // Run it every 2 seconds after //
         );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);

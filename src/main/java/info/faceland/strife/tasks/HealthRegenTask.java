@@ -43,7 +43,10 @@ public class HealthRegenTask extends BukkitRunnable {
     public void run() {
         for (Player p : Bukkit.getOnlinePlayers()) {
             Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
-            double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) / 4;
+            // Restore 40% of your regen per 2s tick (This task runs every 2s)
+            // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
+            double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) * 0.4;
+            // These are not 'penalties', they're 'mechanics' :^)
             if (p.hasPotionEffect(PotionEffectType.POISON)) {
                 amount *= 0.33;
             }
