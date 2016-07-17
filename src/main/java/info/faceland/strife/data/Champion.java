@@ -162,12 +162,18 @@ public class Champion {
                             dualWieldEfficiency = 0.0;
                             MessageUtils.sendMessage(getPlayer(), "<red>Dual wielding bows does not give you any stats " +
                                     "from the bow in the offhand slot. Mostly because its so silly.");
-                        }
-                        if (offHandItemStack.getType() == Material.FISHING_ROD) {
+                        } else if (offHandItemStack.getType() == Material.FISHING_ROD) {
                             MessageUtils.sendMessage(getPlayer(), "<red>Fishing Rods do not add the the ranged damage" +
                                     " of bows!");
                             dualWieldEfficiency = 0.0;
+                        } else if (offHandItemStack.getType() == Material.SHIELD) {
+                            dualWieldEfficiency = 0.0;
+                            MessageUtils.sendMessage(getPlayer(), "<red>Shields do not give any stats when a bow is" +
+                                    "wielded in the main hand!");
                         }
+                    } else if (mainHandItemStack.getType() == Material.FISHING_ROD) {
+                        dualWieldEfficiency = 0.0;
+                        MessageUtils.sendMessage(getPlayer(), "<red> :I");
                     }
                 }
                 for (StrifeAttribute attr : StrifeAttribute.values()) {

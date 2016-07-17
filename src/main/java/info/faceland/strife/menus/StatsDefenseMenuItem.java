@@ -70,12 +70,12 @@ public class StatsDefenseMenuItem extends MenuItem {
 
         lore.add(breakLine);
 
-        double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.6))));
+        double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.65))));
         lore.add(ChatColor.YELLOW + "Armor: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
         double evasion = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute
-                .EVASION), 1.5))));
+                .EVASION), 1.55))));
         lore.add(ChatColor.YELLOW + "Evasion: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");

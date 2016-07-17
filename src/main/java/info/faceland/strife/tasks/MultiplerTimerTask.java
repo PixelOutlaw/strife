@@ -20,34 +20,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.tasks;
 
-import info.faceland.loot.events.LootDetermineChanceEvent;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 
-public class LootListener implements Listener {
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+
+public class MultiplerTimerTask extends BukkitRunnable {
 
     private final StrifePlugin plugin;
 
-    public LootListener(StrifePlugin plugin) {
+    public MultiplerTimerTask(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
-    public StrifePlugin getPlugin() {
-        return plugin;
+    @Override
+    public void run() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
+            // Restore 40% of your regen per 2s tick (This task runs every 2s)
+            // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
+            double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) * 0.4;
+            // These are not 'penalties', they're 'mechanics' :^)
+            if (p.hasPotionEffect(PotionEffectType.POISON)) {
+                amount *= 0.33;
+            }
+            if (p.getFoodLevel() <= 6) {
+                amount *= p.getFoodLevel() / 6;
+            }
+            p.setHealth(Math.min(p.getHealth() + amount, p.getMaxHealth()));
+        }
     }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onLootDetermineChance(LootDetermineChanceEvent event) {
-        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin.getMultiplierManager().getDropMult();
-        double dropBonus = 1 + dropMult + champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY);
-        event.setChance(dropBonus);
-    }
-
 }

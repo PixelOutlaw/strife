@@ -36,6 +36,7 @@ import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.listeners.*;
+import info.faceland.strife.managers.MultiplierManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.LevelupMenu;
@@ -64,6 +65,7 @@ public class StrifePlugin extends FacePlugin {
     private VersionedSmartYamlConfiguration configYAML;
     private VersionedSmartYamlConfiguration statsYAML;
     private StrifeStatManager statManager;
+    private MultiplierManager multiplierManager;
     private DataStorage storage;
     private ChampionManager championManager;
     private SaveTask saveTask;
@@ -94,6 +96,8 @@ public class StrifePlugin extends FacePlugin {
                                                          VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
+
+        multiplierManager = new MultiplierManager();
 
         storage = new JsonDataStorage(this);
 
@@ -203,6 +207,7 @@ public class StrifePlugin extends FacePlugin {
         configYAML = null;
         statsYAML = null;
         statManager = null;
+        multiplierManager = null;
         storage = null;
         championManager = null;
         saveTask = null;
@@ -213,6 +218,10 @@ public class StrifePlugin extends FacePlugin {
 
     public StrifeStatManager getStatManager() {
         return statManager;
+    }
+
+    public MultiplierManager getMultiplierManager() {
+        return multiplierManager;
     }
 
     public void debug(Level level, String... messages) {

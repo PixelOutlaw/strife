@@ -130,7 +130,7 @@ public class ExperienceListener implements Listener {
         double maxFaceExp = maxFaceExpInt;
         ExperienceManager experienceManager = new ExperienceManager(player);
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0);
+        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0) + plugin.getMultiplierManager().getExpMult();
         double bonusMult = 1 + xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN);
 
         amount *= bonusMult;

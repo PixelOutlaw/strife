@@ -23,6 +23,7 @@
 package info.faceland.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
 import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
@@ -31,7 +32,6 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
-import mkremins.fanciful.FancyMessage;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -170,5 +170,20 @@ public class StrifeCommand {
         ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage(xpMsg);
         xpBarMsg.send(player);
         MessageUtils.sendMessage(player, "&aYou gained &f" + (int) displayedExpGained + " &aXP!");
+    }
+
+    @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)
+    public void setExpMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
+        plugin.getMultiplierManager().setExpMult(amount);
+    }
+
+    @Command(identifier = "strife dropmult", permissions = "strife.command.strife.dropmult", onlyPlayers = false)
+    public void setDropMultCommand(CommandSender sender, @Arg(name = "amount") double amount,
+                                   @Arg(name = "reason") String reason, @Arg(name = "seconds") int seconds) {
+        if (plugin.getMultiplierManager().getDropMult() != 0) {
+            plugin.getMultiplierManager().setDropMult(amount);
+        } else {
+            MessageUtils.sendMessage(sender, "A drop multipler is already in effect!");
+        }
     }
 }
