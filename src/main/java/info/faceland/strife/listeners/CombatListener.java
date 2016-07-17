@@ -405,7 +405,7 @@ public class CombatListener implements Listener {
         } else {
             // EvE branch
             retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
-                    oldBaseDamage, cause);
+                    oldBaseDamage);
         }
         return retDamage;
     }
@@ -618,11 +618,10 @@ public class CombatListener implements Listener {
 
     private double handleEnvironmentVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
                                                                  LivingEntity damagingLivingEntity,
-                                                                 double oldBaseDamage,
-                                                                 EntityDamageEvent.DamageCause cause) {
+                                                                 double oldBaseDamage) {
         double damage;
         if (damagingLivingEntity.hasMetadata("DAMAGE")) {
-            damage = getDamageFromMeta(damagingLivingEntity, damagedLivingEntity, cause);
+            damage = getDamageFromMeta(damagingLivingEntity, damagedLivingEntity);
         } else {
             damage = oldBaseDamage;
         }
@@ -637,7 +636,7 @@ public class CombatListener implements Listener {
                                                             EntityDamageEvent event) {
         double damage;
         if (damagingLivingEntity.hasMetadata("DAMAGE")) {
-            damage = getDamageFromMeta(damagingLivingEntity, damagedPlayer, event.getCause());
+            damage = getDamageFromMeta(damagingLivingEntity, damagedPlayer);
         } else {
             damage = oldBaseDamage;
         }
@@ -1021,11 +1020,11 @@ public class CombatListener implements Listener {
         return retDamage;
     }
 
-    private double getDamageFromMeta(LivingEntity a, LivingEntity b, EntityDamageEvent.DamageCause d) {
+    private double getDamageFromMeta(LivingEntity a, LivingEntity b) {
         double damage = a.getMetadata("DAMAGE").get(0).asDouble();
-        if (d == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+        if (a instanceof Creeper) {
             if (a.getFireTicks() > 0) {
-                b.setFireTicks(b.getFireTicks() + 45);
+                b.setFireTicks(b.getFireTicks() + 100);
             }
             if (((Creeper) a).isPowered()) {
                 damage = damage * Math.max(0.3, 3 - (a.getLocation().distance(b.getLocation()) / 2));
@@ -1040,14 +1039,14 @@ public class CombatListener implements Listener {
         if (armor > 0) {
             double adjustedArmor = armor * (1 - apen);
             if (adjustedArmor > 0) {
-                return 420 / (420 + Math.pow(adjustedArmor, 1.6));
+                return 420 / (420 + Math.pow(adjustedArmor, 1.65));
             }
         }
         return 1 + (apen / 5);
     }
 
     private boolean getEvadeChance(double evasion, double accuacy) {
-        double evadeChance = 1 - (420 / (420 + Math.pow(evasion, 1.5)));
+        double evadeChance = 1 - (420 / (420 + Math.pow(evasion, 1.55)));
         evadeChance *= 1 - accuacy;
         if (random.nextDouble() <= evadeChance) {
             return true;
