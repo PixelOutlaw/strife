@@ -169,15 +169,15 @@ public class StrifeCommand {
 
     @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)
     public void setExpMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-        MessageUtils.sendMessage(sender, "&aBonus XP mult changed to " + amount + "x from " + plugin
-                .getMultiplierManager().getExpMult() + 1 +"x!");
+        MessageUtils.sendMessage(sender, "&aBonus XP mult changed to " + amount + "x from " + (plugin
+                .getMultiplierManager().getExpMult() + 1) +"x!");
         plugin.getMultiplierManager().setExpMult(amount);
     }
 
     @Command(identifier = "strife dropmult", permissions = "strife.command.strife.dropmult", onlyPlayers = false)
     public void setDropMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-        MessageUtils.sendMessage(sender, "&aBonus drop mult changed to " + amount + "x from " + plugin
-                .getMultiplierManager().getDropMult() +"x!");
+        MessageUtils.sendMessage(sender, "&aBonus drop mult changed to " + amount + "x from " + (plugin
+                .getMultiplierManager().getDropMult() + 1) +"x!");
         plugin.getMultiplierManager().setDropMult(amount);
     }
 }
