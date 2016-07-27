@@ -50,10 +50,15 @@ public class HealthRegenTask extends BukkitRunnable {
             if (p.hasPotionEffect(PotionEffectType.POISON)) {
                 amount *= 0.33;
             }
+            if (p.getSaturation() > 0.1) {
+                amount *= 1.2;
+            }
             if (p.getFoodLevel() <= 6) {
                 amount *= p.getFoodLevel() / 6;
             }
-            p.setHealth(Math.min(p.getHealth() + amount, p.getMaxHealth()));
+            if (p.getHealth() > 0) {
+                p.setHealth(Math.min(p.getHealth() + amount, p.getMaxHealth()));
+            }
         }
     }
 }
