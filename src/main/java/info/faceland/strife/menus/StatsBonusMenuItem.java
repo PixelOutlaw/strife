@@ -61,8 +61,10 @@ public class StatsBonusMenuItem extends MenuItem {
 
         lore.add(breakLine);
 
-        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0);
-        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0);
+        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0) + plugin
+                .getMultiplierManager().getExpMult();
+        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
+                .getMultiplierManager().getDropMult();
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
                 .format((xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN)) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
