@@ -95,7 +95,7 @@ public class AttributeUpdateListener implements Listener {
         Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
         champion.getAttributeValues(true);
         double maxHealth = champion.getCache().getAttribute(StrifeAttribute.HEALTH);
-        AttributeHandler.updateHealth(p, maxHealth, champion.trueHealthDisplay());
+        AttributeHandler.updateHealth(p, maxHealth);
         double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) perc;
         p.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));

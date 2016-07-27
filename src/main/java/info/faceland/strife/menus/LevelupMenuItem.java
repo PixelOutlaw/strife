@@ -90,8 +90,7 @@ public class LevelupMenuItem extends MenuItem {
         plugin.getChampionManager().addChampion(champion);
         champion.getStatAttributeValues();
         champion.getCache().recombine();
-        AttributeHandler.updateHealth(champion.getPlayer(),
-                champion.getCache().getAttribute(StrifeAttribute.HEALTH), champion.trueHealthDisplay());
+        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
         event.setWillUpdate(true);
     }
 

@@ -69,17 +69,13 @@ public class AttributeHandler {
         return stripped;
     }
 
-    public static void updateHealth(Player player, double healthValue, boolean trueHP) {
-        if (player.getHealth() > healthValue) {
-            player.setHealth(healthValue);
+    public static void updateHealth(Player player, double maxHealth) {
+        if (player.getHealth() > maxHealth) {
+            player.setHealth(maxHealth);
         }
-        player.setMaxHealth(healthValue);
-        if (trueHP) {
-            player.setHealthScale(healthValue);
-            player.setHealthScaled(false);
-        } else {
+        player.setMaxHealth(maxHealth);
+        if (player.isHealthScaled()) {
             player.setHealthScale(20);
-            player.setHealthScaled(true);
         }
     }
 
