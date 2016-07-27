@@ -371,7 +371,7 @@ public class CombatListener implements Listener {
 
         // pass information to a new calculator
         double newBaseDamage = handleDamageCalculations(damagedLivingEntity, damagingLivingEntity, damagingEntity,
-                oldBaseDamage, damagingProjectile, isBlocked, event.getCause(), event);
+                oldBaseDamage, damagingProjectile, isBlocked, event);
 
         // set the base damage of the event
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newBaseDamage);
@@ -383,7 +383,6 @@ public class CombatListener implements Listener {
                                             double oldBaseDamage,
                                             Projectile damagingProjectile,
                                             boolean isBlocked,
-                                            EntityDamageEvent.DamageCause cause,
                                             EntityDamageEvent event) {
         double retDamage = 0D;
         // Five branches: PvP, PvE, EvP, EvE, Projectile
