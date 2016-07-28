@@ -472,7 +472,6 @@ public class CombatListener implements Listener {
                 return 0D;
             }
             if (random.nextDouble() < parry) {
-                damagedEntity.damage(retDamage * 0.2);
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                 if (damagedEntity instanceof Player) {
                     parried.send((Player)damagedEntity);
@@ -660,13 +659,16 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 25),
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 40),
                         damagedPlayer.getMaxHealth()));
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
                 return 0D;
             }
             if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
+                if (damagingEntity instanceof Projectile) {
+                    damagingEntity.remove();
+                }
                 damagingLivingEntity.damage(damage * 0.2);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                 parried.send(damagedPlayer);
@@ -882,13 +884,16 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 25),
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 40),
                         damagedPlayer.getMaxHealth()));
                 damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
                 return 0D;
             }
             if (random.nextDouble() < damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
+                if (damagingEntity instanceof Projectile) {
+                    damagingEntity.remove();
+                }
                 damagingPlayer.damage(retDamage * 0.2 * pvpMult);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                 parried.send(damagedPlayer);
