@@ -463,7 +463,7 @@ public class CombatListener implements Listener {
 
         if (isBlocked) {
             if (random.nextDouble() < absorb) {
-                damagingEntity.setHealth(Math.min(damagedEntity.getHealth() + (damagedEntity.getMaxHealth() / 20),
+                damagedEntity.setHealth(Math.min(damagedEntity.getHealth() + (damagedEntity.getMaxHealth() / 20),
                         damagedEntity.getMaxHealth()));
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 damagingProjectile.remove();
