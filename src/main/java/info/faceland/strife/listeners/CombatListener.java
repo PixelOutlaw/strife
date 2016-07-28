@@ -1045,8 +1045,8 @@ public class CombatListener implements Listener {
     }
 
     private double getLightningDamage(double lightningDamage, LivingEntity target, double pvpMult, double resist) {
-        double missingHp = -1 * ((target.getHealth() * 2) - target.getMaxHealth());
-        lightningDamage = Math.max(lightningDamage, lightningDamage * (missingHp / 150)) * (1 - resist);
+        double missingHp = -1 * ((target.getHealth() * 3) - target.getMaxHealth());
+        lightningDamage = Math.max(lightningDamage, lightningDamage * ((300 + missingHp) / 300)) * (1 - resist);
         target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 1.5f);
         target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int)lightningDamage/2,
                 0.8,0.8,0.8, 0.1);
