@@ -23,6 +23,7 @@
 package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
 import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
@@ -31,7 +32,6 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.SkullType;
@@ -87,6 +87,18 @@ public class CombatListener implements Listener {
     public CombatListener(StrifePlugin plugin) {
         this.plugin = plugin;
         random = new Random(System.currentTimeMillis());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onDogeProc(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+        Champion playerChamp = plugin.getChampionManager().getChampion(event.getEntity().getUniqueId());
+        if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.DOGE)) {
+            MessageUtils.sendMessage(event.getEntity(), TextUtils.color(DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]));
+        }
+
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -1027,15 +1039,17 @@ public class CombatListener implements Listener {
         fireDamage = Math.max(fireDamage, fireDamage * (target.getHealth() / 250)) * (1 - resist);
         target.setFireTicks(Math.max(fireTicks, target.getFireTicks()));
         target.getWorld().playSound(target.getEyeLocation(),Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
-        target.getWorld().spawnParticle(Particle.FLAME, target.getLocation(), 5 + (int)fireDamage/2, 0.1, 0.1, 0.1, 0.5);
+        target.getWorld().spawnParticle(Particle.FLAME, target.getEyeLocation(), 6 + (int)fireDamage/2, 0.3, 0.3, 0.3,
+                0.1);
         return fireDamage * pvpMult;
     }
 
     private double getLightningDamage(double lightningDamage, LivingEntity target, double pvpMult, double resist) {
-        double hpMult = 2 - (target.getHealth() / target.getMaxHealth());
-        lightningDamage = lightningDamage * hpMult * (1 - resist);
+        double missingHp = -1 * ((target.getHealth() * 2) - target.getMaxHealth());
+        lightningDamage = Math.max(lightningDamage, lightningDamage * (missingHp / 150)) * (1 - resist);
         target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 1.5f);
-        target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getLocation(), 5 + (int)lightningDamage/2, 0.6, 0.6, 0.6, 0.1);
+        target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int)lightningDamage/2,
+                0.8,0.8,0.8, 0.1);
         if (target instanceof Creeper) {
             ((Creeper) target).setPowered(true);
         }
@@ -1047,7 +1061,7 @@ public class CombatListener implements Listener {
         iceDamage = Math.max(iceDamage, iceDamage * (target.getMaxHealth() / 400)) * (1 - resist);
         target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slowDuration, 2));
         target.getWorld().playSound(target.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
-        target.getWorld().spawnParticle(Particle.SNOWBALL, target.getLocation(), 1, 0, 0, 0, 0.1);
+        target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 3, 0.2, 0.2, 0.2, 0.1);
         return iceDamage * pvpMult;
     }
 
