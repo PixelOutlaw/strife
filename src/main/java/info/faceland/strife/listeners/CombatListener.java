@@ -96,7 +96,7 @@ public class CombatListener implements Listener {
         }
         Champion playerChamp = plugin.getChampionManager().getChampion(event.getEntity().getUniqueId());
         if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.DOGE)) {
-            MessageUtils.sendMessage(event.getEntity(), TextUtils.color(DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]));
+            MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
         }
 
     }
