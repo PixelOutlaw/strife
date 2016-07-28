@@ -70,6 +70,7 @@ public class StatsDefenseMenuItem extends MenuItem {
 
         lore.add(breakLine);
 
+        double statCap;
         double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.65))));
         lore.add(ChatColor.YELLOW + "Armor: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
@@ -82,19 +83,23 @@ public class StatsDefenseMenuItem extends MenuItem {
 
         lore.add(breakLine);
 
-        lore.add(ChatColor.YELLOW + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.BLOCK) * 100) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.BLOCK),
+                StrifeAttribute.BLOCK.getCap());
+        lore.add(ChatColor.YELLOW + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
-        lore.add(ChatColor.YELLOW + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.PARRY) * 100) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.PARRY),
+                StrifeAttribute.PARRY.getCap());
+        lore.add(ChatColor.YELLOW + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
-        lore.add(ChatColor.YELLOW + "Absorb Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE) * 100) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE),
+                StrifeAttribute.ABSORB_CHANCE.getCap());
+        lore.add(ChatColor.YELLOW + "Absorb Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
         lore.add(breakLine);
 
-        lore.add(ChatColor.YELLOW + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * champion
-                .getCache().getAttribute(StrifeAttribute.RESISTANCE)) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.RESISTANCE),
+                StrifeAttribute.RESISTANCE.getCap());
+        lore.add(ChatColor.YELLOW + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
         lore.add(breakLine);
 

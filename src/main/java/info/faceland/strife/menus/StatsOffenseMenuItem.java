@@ -89,6 +89,7 @@ public class StatsOffenseMenuItem extends MenuItem {
                 itemStack.setType(Material.BLAZE_ROD);
                 break;
         }
+        double statCap;
         lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED)))
                 + "s " + ChatColor.GRAY + "(+" + DECIMAL_FORMAT.format(champion.getCache().getAttribute
                 (StrifeAttribute.ATTACK_SPEED) * 100) + "%)");
@@ -99,8 +100,9 @@ public class StatsOffenseMenuItem extends MenuItem {
                 champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE) * 100) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT.format(
                 champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) * 100) + "%)");
 
-        lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache()
-                .getAttribute(StrifeAttribute.LIFE_STEAL) * 100) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL),
+                StrifeAttribute.LIFE_STEAL.getCap());
+        lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap) + "%");
 
         lore.add(breakLine);
 
@@ -118,11 +120,13 @@ public class StatsOffenseMenuItem extends MenuItem {
 
         lore.add(breakLine);
 
-        lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(100 * champion
-                .getCache().getAttribute(StrifeAttribute.ACCURACY)) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.ACCURACY),
+                StrifeAttribute.ACCURACY.getCap());
+        lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
-        lore.add(ChatColor.RED + "Armor Penetration: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
-                champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION) * 100) + "%");
+        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION),
+                StrifeAttribute.ARMOR_PENETRATION.getCap());
+        lore.add(ChatColor.RED + "Armor Penetration: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
         lore.add(breakLine);
 
