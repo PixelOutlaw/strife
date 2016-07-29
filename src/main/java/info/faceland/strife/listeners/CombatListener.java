@@ -555,7 +555,7 @@ public class CombatListener implements Listener {
         }
         if (damagingProjectile.hasMetadata("iceDamage")) {
             double iceDamage = damagingProjectile.getMetadata("iceDamage").get(0).asDouble();
-            iceDamage = getIceDamage(iceDamage, damagedEntity, pvpMult, resist);
+            iceDamage = getIceDamage(iceDamage, damagingEntity, damagedEntity, pvpMult, resist);
             damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
             damageDetails = true;
             trueDamage += iceDamage;
@@ -760,7 +760,7 @@ public class CombatListener implements Listener {
         if (iceDamage > 0D) {
             double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < freezeCalc) {
-                iceDamage = getIceDamage(iceDamage, damagedEntity, 1.0D, 0D);
+                iceDamage = getIceDamage(iceDamage, damagingPlayer, damagedEntity, 1.0D, 0D);
                 damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
                 damageDetails = true;
                 trueDamage += iceDamage;
@@ -944,7 +944,7 @@ public class CombatListener implements Listener {
         if (iceDamage > 0D) {
             double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult;
             if (random.nextDouble() < freezeCalc) {
-                iceDamage = getIceDamage(iceDamage, damagedPlayer, pvpMult, resist);
+                iceDamage = getIceDamage(iceDamage, damagingPlayer, damagedPlayer, pvpMult, resist);
                 damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
                 damageDetails = true;
                 trueDamage += iceDamage;
@@ -1036,19 +1036,20 @@ public class CombatListener implements Listener {
 
     private double getFireDamage(double fireDamage, LivingEntity target, double pvpMult, double resist) {
         int fireTicks = 30 + (int) fireDamage * 5;
-        fireDamage = Math.max(fireDamage, fireDamage * (target.getHealth() / 250)) * (1 - resist);
+        double currentHpMult = 4 * (target.getHealth() / target.getMaxHealth()) - 1.5;
+        fireDamage = Math.max(fireDamage, fireDamage * currentHpMult) * (1 - resist);
         target.setFireTicks(Math.max(fireTicks, target.getFireTicks()));
         target.getWorld().playSound(target.getEyeLocation(),Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
-        target.getWorld().spawnParticle(Particle.FLAME, target.getEyeLocation(), 6 + (int)fireDamage/2, 0.3, 0.3, 0.3,
-                0.1);
+        target.getWorld().spawnParticle(Particle.FLAME, target.getEyeLocation(), 6 + (int) fireDamage / 2,
+                0.3, 0.3, 0.3, 0.03);
         return fireDamage * pvpMult;
     }
 
     private double getLightningDamage(double lightningDamage, LivingEntity target, double pvpMult, double resist) {
-        double missingHp = -1 * ((target.getHealth() * 3) - target.getMaxHealth());
-        lightningDamage = Math.max(lightningDamage, lightningDamage * ((300 + missingHp) / 300)) * (1 - resist);
+        double missingHpMult = 3.5 * (1 - (3 * target.getHealth()) / target.getMaxHealth());
+        lightningDamage = Math.max(lightningDamage, lightningDamage * missingHpMult) * (1 - resist);
         target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 1.5f);
-        target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int)lightningDamage/2,
+        target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int) lightningDamage / 2,
                 0.8,0.8,0.8, 0.1);
         if (target instanceof Creeper) {
             ((Creeper) target).setPowered(true);
@@ -1056,12 +1057,14 @@ public class CombatListener implements Listener {
         return lightningDamage * pvpMult;
     }
 
-    private double getIceDamage(double iceDamage, LivingEntity target, double pvpMult, double resist) {
-        int slowDuration = 6 + (int) iceDamage * 2;
-        iceDamage = Math.max(iceDamage, iceDamage * (target.getMaxHealth() / 400)) * (1 - resist);
+    private double getIceDamage(double iceDamage, LivingEntity attacker, LivingEntity target, double pvpMult, double
+            resist) {
+        int slowDuration = 6 + (int) iceDamage;
+        iceDamage = (iceDamage + (attacker.getMaxHealth() - 20) * 0.02 * iceDamage) * (1 - resist);
         target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slowDuration, 2));
         target.getWorld().playSound(target.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
-        target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 3, 0.2, 0.2, 0.2, 0.1);
+        target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 4 + (int) iceDamage / 3,
+                0.3, 0.3, 0.2, 0.0);
         return iceDamage * pvpMult;
     }
 
