@@ -102,7 +102,7 @@ public class StatsOffenseMenuItem extends MenuItem {
 
         statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL),
                 StrifeAttribute.LIFE_STEAL.getCap());
-        lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap) + "%");
+        lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
         lore.add(breakLine);
 
