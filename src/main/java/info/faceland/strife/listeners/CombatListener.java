@@ -176,19 +176,19 @@ public class CombatListener implements Listener {
         if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
             if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
                 projectile.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.FIRE_DAMAGE)));
+                        .getAttribute(StrifeAttribute.FIRE_DAMAGE) * shotMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
             if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
                 projectile.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.ICE_DAMAGE)));
+                        .getAttribute(StrifeAttribute.ICE_DAMAGE) * shotMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
             if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
                 projectile.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
+                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * shotMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
@@ -261,21 +261,21 @@ public class CombatListener implements Listener {
         magicProj.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
                 .getAttribute(StrifeAttribute.ACCURACY)));
         if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * attackSpeedMult) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
                 magicProj.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.FIRE_DAMAGE)));
+                        .getAttribute(StrifeAttribute.FIRE_DAMAGE) * attackSpeedMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
                 magicProj.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.ICE_DAMAGE)));
+                        .getAttribute(StrifeAttribute.ICE_DAMAGE) * attackSpeedMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
                 magicProj.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)));
+                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * attackSpeedMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
@@ -739,28 +739,28 @@ public class CombatListener implements Listener {
         double lightningDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
         double iceDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE);
 
-        if (fireDamage > 0D) {
-            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * attackSpeedMult;
+        if (fireDamage * attackSpeedMult > 0D) {
+            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE);
             if (random.nextDouble() < igniteCalc) {
-                fireDamage = getFireDamage(fireDamage, damagedEntity, 1.0D, 0D);
+                fireDamage = getFireDamage(fireDamage * attackSpeedMult, damagedEntity, 1.0D, 0D);
                 damageStats.append(ChatColor.GOLD + " +" + ONE_DECIMAL.format(fireDamage) + "☀");
                 damageDetails = true;
                 trueDamage += fireDamage;
             }
         }
-        if (lightningDamage > 0D) {
-            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult;
+        if (lightningDamage * attackSpeedMult > 0D) {
+            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE);
             if (random.nextDouble() < shockCalc) {
-                lightningDamage = getLightningDamage(lightningDamage, damagedEntity, 1.0D, 0D);
+                lightningDamage = getLightningDamage(lightningDamage * attackSpeedMult, damagedEntity, 1.0D, 0D);
                 damageStats.append(ChatColor.GRAY + " +" + ONE_DECIMAL.format(lightningDamage) + "⚡");
                 damageDetails = true;
                 trueDamage += lightningDamage;
             }
         }
-        if (iceDamage > 0D) {
-            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult;
+        if (iceDamage * attackSpeedMult > 0D) {
+            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE);
             if (random.nextDouble() < freezeCalc) {
-                iceDamage = getIceDamage(iceDamage, damagingPlayer, damagedEntity, 1.0D, 0D);
+                iceDamage = getIceDamage(iceDamage * attackSpeedMult, damagingPlayer, damagedEntity, 1.0D, 0D);
                 damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
                 damageDetails = true;
                 trueDamage += iceDamage;
@@ -923,28 +923,28 @@ public class CombatListener implements Listener {
         double lightningDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
         double iceDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE);
         double resist = damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
-        if (fireDamage > 0D) {
-            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE) * attackSpeedMult;
+        if (fireDamage * attackSpeedMult > 0D) {
+            double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE);
             if (random.nextDouble() < igniteCalc) {
-                fireDamage = getFireDamage(fireDamage, damagedPlayer, pvpMult, resist);
+                fireDamage = getFireDamage(fireDamage * attackSpeedMult, damagedPlayer, pvpMult, resist);
                 damageStats.append(ChatColor.GOLD + " +" + ONE_DECIMAL.format(fireDamage) + "☀");
                 damageDetails = true;
                 trueDamage += fireDamage;
             }
         }
-        if (lightningDamage > 0D) {
-            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE) * attackSpeedMult;
+        if (lightningDamage * attackSpeedMult > 0D) {
+            double shockCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE);
             if (random.nextDouble() < shockCalc) {
-                lightningDamage = getLightningDamage(lightningDamage, damagedPlayer, pvpMult, resist);
+                lightningDamage = getLightningDamage(lightningDamage * attackSpeedMult, damagedPlayer, pvpMult, resist);
                 damageStats.append(ChatColor.GRAY + " +" + ONE_DECIMAL.format(lightningDamage) + "⚡");
                 damageDetails = true;
                 trueDamage += lightningDamage;
             }
         }
-        if (iceDamage > 0D) {
-            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE) * attackSpeedMult;
+        if (iceDamage * attackSpeedMult > 0D) {
+            double freezeCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE);
             if (random.nextDouble() < freezeCalc) {
-                iceDamage = getIceDamage(iceDamage, damagingPlayer, damagedPlayer, pvpMult, resist);
+                iceDamage = getIceDamage(iceDamage * attackSpeedMult, damagingPlayer, damagedPlayer, pvpMult, resist);
                 damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
                 damageDetails = true;
                 trueDamage += iceDamage;
@@ -1046,7 +1046,7 @@ public class CombatListener implements Listener {
     }
 
     private double getLightningDamage(double lightningDamage, LivingEntity target, double pvpMult, double resist) {
-        double missingHpMult = 3.5 * (1 - (3 * target.getHealth()) / target.getMaxHealth());
+        double missingHpMult = -0.7 + Math.min((target.getMaxHealth() / target.getHealth()), 6.7);
         lightningDamage = Math.max(lightningDamage, lightningDamage * missingHpMult) * (1 - resist);
         target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 1.5f);
         target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int) lightningDamage / 2,
@@ -1060,7 +1060,7 @@ public class CombatListener implements Listener {
     private double getIceDamage(double iceDamage, LivingEntity attacker, LivingEntity target, double pvpMult, double
             resist) {
         int slowDuration = 6 + (int) iceDamage;
-        iceDamage = (iceDamage + (attacker.getMaxHealth() - 20) * 0.02 * iceDamage) * (1 - resist);
+        iceDamage = (iceDamage + attacker.getMaxHealth() * 0.01 * iceDamage) * (1 - resist);
         target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slowDuration, 2));
         target.getWorld().playSound(target.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
         target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 4 + (int) iceDamage / 3,
