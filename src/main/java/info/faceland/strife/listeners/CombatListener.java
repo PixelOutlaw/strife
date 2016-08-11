@@ -63,9 +63,9 @@ public class CombatListener implements Listener {
     private final Random random;
 
     private static final String ATTACK_UNCHARGED = TextUtils.color("<white>Not charged enough!");
-    private static final String ATTACK_MISSED = TextUtils.color("<white>Miss!!");
-    private static final String ATTACK_DODGED = TextUtils.color("<white>Attack Dodged!");
-    private static final String ATTACK_PARRIED = TextUtils.color("<white>Attack Parried!");
+    private static final String ATTACK_MISSED = TextUtils.color("<white>Miss!");
+    private static final String ATTACK_DODGED = TextUtils.color("<white>Dodge!");
+    private static final String ATTACK_PARRIED = TextUtils.color("<white>Parry!");
     private static final String ATTACK_BLOCKED = TextUtils.color("<white>Blocked!");
     private static final String ATTACK_NO_DAMAGE = TextUtils.color("<white>0 Damage!");
 
@@ -240,9 +240,10 @@ public class CombatListener implements Listener {
         playerChamp.getAttributeValues(true);
         playerChamp.getWeaponAttributeValues();
         playerChamp.getCache().recombine();
-        ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation(), ShulkerBullet.class);
+        ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
         magicProj.setShooter(p);
-        magicProj.setVelocity(p.getLocation().getDirection().multiply(1.6));
+        Vector vec = p.getLocation().getDirection();
+        magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.22, vec.getZ() * 1.2));
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
         double critMult = 0;
         double overMult = 0;
@@ -437,7 +438,7 @@ public class CombatListener implements Listener {
         if (damagingProjectile instanceof ShulkerBullet) {
             magic = true;
             if (!(damagingProjectile.getShooter() instanceof Shulker)) {
-                damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 2, 5, true, false));
+                damagedEntity.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 1, 2, true, false));
             }
         }
 
