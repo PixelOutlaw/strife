@@ -31,6 +31,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -232,9 +233,9 @@ public class CombatListener implements Listener {
             return;
         }
 
-        // 1.5x attackspeed penalty for wands
-        attackSpeedMult *= (attackSpeedMult + 1) / 2;
-        attackSpeedMult = Math.max(0.2, attackSpeedMult);
+        // double attackspeed penalty for wands
+        attackSpeedMult *= attackSpeedMult;
+        attackSpeedMult = Math.max(0.15, attackSpeedMult);
 
         p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.9f, 2f);
         playerChamp.getAttributeValues(true);
@@ -243,7 +244,7 @@ public class CombatListener implements Listener {
         ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
         magicProj.setShooter(p);
         Vector vec = p.getLocation().getDirection();
-        magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.22, vec.getZ() * 1.2));
+        magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.255, vec.getZ() * 1.2));
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
         double critMult = 0;
         double overMult = 0;
@@ -377,6 +378,9 @@ public class CombatListener implements Listener {
         // cancel out all damage from the old event
         for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
             if (event.isApplicable(modifier)) {
+                if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
+                    continue;
+                }
                 event.setDamage(modifier, 0D);
             }
         }
@@ -386,6 +390,9 @@ public class CombatListener implements Listener {
                 oldBaseDamage, damagingProjectile, isBlocked, event);
 
         // set the base damage of the event
+        if (event.getDamage(EntityDamageEvent.DamageModifier.ABSORPTION) != 0) {
+            event.setDamage(EntityDamageEvent.DamageModifier.ABSORPTION, -newBaseDamage);
+        }
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newBaseDamage);
     }
 
@@ -433,6 +440,12 @@ public class CombatListener implements Listener {
         if (damagingEntity instanceof Player) {
             if (damagedEntity instanceof Player) {
                 pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
+                double attackerLevelAdv = ((Player) damagingEntity).getLevel() - ((Player) damagedEntity).getLevel();
+                if (attackerLevelAdv > 0) {
+                    pvpMult *= 1 - (0.008 * attackerLevelAdv);
+                } else {
+                    pvpMult += 0.005 * (-attackerLevelAdv);
+                }
             }
         }
         if (damagingProjectile instanceof ShulkerBullet) {
@@ -447,7 +460,6 @@ public class CombatListener implements Listener {
         double resist = 0;
         double parry = 0;
         double absorb = 0;
-        double block = 0;
         if (damagedEntity instanceof Player) {
             Champion defendingChampion = plugin.getChampionManager().getChampion(((Player) damagedEntity).getUniqueId());
             evasion = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
@@ -455,7 +467,6 @@ public class CombatListener implements Listener {
             resist = defendingChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
             parry = defendingChampion.getCache().getAttribute(StrifeAttribute.PARRY);
             absorb = defendingChampion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE);
-            block = defendingChampion.getCache().getAttribute(StrifeAttribute.BLOCK);
         }
 
         if (evasion > 0) {
@@ -474,8 +485,8 @@ public class CombatListener implements Listener {
         }
 
         if (isBlocked) {
-            if (random.nextDouble() < absorb) {
-                damagedEntity.setHealth(Math.min(damagedEntity.getHealth() + (damagedEntity.getMaxHealth() / 20),
+            if (random.nextDouble() < absorb * 2) {
+                damagedEntity.setHealth(Math.min(damagedEntity.getHealth() + (damagedEntity.getMaxHealth() * 0.025),
                         damagedEntity.getMaxHealth()));
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 damagingProjectile.remove();
@@ -483,7 +494,7 @@ public class CombatListener implements Listener {
                 event.setCancelled(true);
                 return 0D;
             }
-            if (random.nextDouble() < parry) {
+            if (random.nextDouble() < parry * 2) {
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                 if (damagedEntity instanceof Player) {
                     parried.send((Player) damagedEntity);
@@ -493,16 +504,8 @@ public class CombatListener implements Listener {
                 event.setCancelled(true);
                 return 0D;
             }
-            retDamage *= 1 - block;
-            if (!(damagingProjectile instanceof ShulkerBullet)) {
-                if (damagingProjectile.getShooter() instanceof Player) {
-                    blocked.send((Player) damagingProjectile.getShooter());
-                }
-                damagingProjectile.remove();
-                event.setDamage(0);
-                event.setCancelled(true);
-                return 0D;
-            }
+            blocked.send((Player) damagingProjectile.getShooter());
+            return 0D;
         }
 
         double armorPen = 0;
@@ -511,7 +514,7 @@ public class CombatListener implements Listener {
         }
         armorMult = getArmorMult(armor, armorPen);
 
-        StringBuffer damageStats = new StringBuffer();
+        StringBuilder damageStats = new StringBuilder();
         damageStats.append(ChatColor.RESET + "(" + ONE_DECIMAL.format(retDamage * armorMult * pvpMult));
         boolean damageDetails = false;
 
@@ -594,7 +597,7 @@ public class CombatListener implements Listener {
             if (damagingEntity.hasPotionEffect(PotionEffectType.POISON)) {
                 lifeStolen *= 0.34;
             }
-            if (damagingEntity.getHealth() > 0) {
+            if (damagingEntity.getHealth() > 0 && !damagingEntity.isDead()) {
                 damagingEntity.setHealth(Math.min(damagingEntity.getHealth() + lifeStolen, damagingEntity.getMaxHealth()));
             }
         }
@@ -659,7 +662,7 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 40),
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() * 0.025),
                         damagedPlayer.getMaxHealth()));
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
@@ -710,7 +713,7 @@ public class CombatListener implements Listener {
 
         retDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE) * attackSpeedMult;
 
-        StringBuffer damageStats = new StringBuffer();
+        StringBuilder damageStats = new StringBuilder();
         damageStats.append(ChatColor.RESET + "(" + ONE_DECIMAL.format(retDamage));
         boolean damageDetails = false;
 
@@ -793,7 +796,7 @@ public class CombatListener implements Listener {
             if (damagingPlayer.hasPotionEffect(PotionEffectType.POISON)) {
                 lifeStolen *= 0.34;
             }
-            if (damagingPlayer.getHealth() > 0) {
+            if (damagingPlayer.getHealth() > 0 && !damagingPlayer.isDead()) {
                 damagingPlayer.setHealth(Math.min(damagingPlayer.getHealth() + lifeStolen,
                         damagingPlayer.getMaxHealth()));
             }
@@ -829,6 +832,12 @@ public class CombatListener implements Listener {
 
         // get the PvP damage multiplier
         double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
+        double attackerLevelAdv = damagingPlayer.getLevel() - damagedPlayer.getLevel();
+        if (attackerLevelAdv > 0) {
+            pvpMult *= 1 - (0.008 * attackerLevelAdv);
+        } else {
+            pvpMult += 0.005 * (-attackerLevelAdv);
+        }
 
         // calculating attack speed
         double attackSpeedMult = 1D;
@@ -842,7 +851,6 @@ public class CombatListener implements Listener {
         if (timeLeft > 0) {
             attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
         }
-        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
         // get the evasion chance of the damaged champion and check if evaded
         double evasion = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
@@ -856,10 +864,12 @@ public class CombatListener implements Listener {
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
                 dodged.send(damagedPlayer);
                 missed.send(damagingPlayer);
+                plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), Math.max(timeToSet / 2, timeLeft));
                 event.setCancelled(true);
                 return 0D;
             }
         }
+        plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), timeToSet);
 
         double armorMult = getArmorMult(damagedChampion.getCache().getAttribute(StrifeAttribute.ARMOR), damagingChampion
                 .getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION));
@@ -872,7 +882,7 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() / 40),
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() * 0.025),
                         damagedPlayer.getMaxHealth()));
                 damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
@@ -893,7 +903,7 @@ public class CombatListener implements Listener {
             retDamage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.BLOCK));
         }
 
-        StringBuffer damageStats = new StringBuffer();
+        StringBuilder damageStats = new StringBuilder();
         damageStats.append(ChatColor.RESET + "(" + ONE_DECIMAL.format(retDamage * armorMult));
         boolean damageDetails = false;
 
@@ -980,7 +990,7 @@ public class CombatListener implements Listener {
             if (damagingPlayer.hasPotionEffect(PotionEffectType.POISON)) {
                 lifeStolen *= 0.34;
             }
-            if (damagingPlayer.getHealth() > 0) {
+            if (damagingPlayer.getHealth() > 0 && !damagingPlayer.isDead()) {
                 damagingPlayer.setHealth(Math.min(damagingPlayer.getHealth() + lifeStolen,
                         damagingPlayer.getMaxHealth()));
             }
@@ -997,7 +1007,6 @@ public class CombatListener implements Listener {
             ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
             combatMsg.send((Player) damagingEntity);
         }
-
         return retDamage;
     }
 
@@ -1027,8 +1036,8 @@ public class CombatListener implements Listener {
     }
 
     private boolean getEvadeChance(double evasion, double accuacy) {
+        evasion *= 1 - accuacy;
         double evadeChance = 1 - (420 / (420 + Math.pow(evasion, 1.55)));
-        evadeChance *= 1 - accuacy;
         if (random.nextDouble() <= evadeChance) {
             return true;
         }
@@ -1060,9 +1069,8 @@ public class CombatListener implements Listener {
 
     private double getIceDamage(double iceDamage, LivingEntity attacker, LivingEntity target, double pvpMult, double
             resist) {
-        int slowDuration = 6 + (int) iceDamage;
         iceDamage = (iceDamage + attacker.getMaxHealth() * 0.01 * iceDamage) * (1 - resist);
-        target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slowDuration, 2));
+        target.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 10, 2));
         target.getWorld().playSound(target.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
         target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 4 + (int) iceDamage / 3,
                 0.3, 0.3, 0.2, 0.0);
