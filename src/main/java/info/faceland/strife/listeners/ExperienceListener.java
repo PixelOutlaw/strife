@@ -35,6 +35,7 @@ import info.faceland.strife.data.Champion;
 import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,6 +44,8 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class ExperienceListener implements Listener {
 
@@ -62,6 +65,27 @@ public class ExperienceListener implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player p = event.getPlayer();
         if (plugin.getSettings().getStringList("config.penalty-free-worlds").contains(p.getWorld().getName())) {
+            return;
+        }
+        if (p.getLevel() >= 100) {
+            return;
+        }
+        PlayerInventory inv = p.getInventory();
+        for (int i = 0; i < inv.getContents().length; i++) {
+            ItemStack is = inv.getItem(i);
+            if (is == null || is.getType() != Material.QUARTZ) {
+                continue;
+            }
+            if (!is.getItemMeta().getDisplayName().equals(ChatColor.WHITE + "Soul Shard")) {
+                continue;
+            }
+            if (is.getAmount() > 1) {
+                is.setAmount(is.getAmount() - 1);
+                inv.setItem(i, is);
+            } else {
+                inv.setItem(i, null);
+            }
+            MessageUtils.sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
             return;
         }
         double lostXP = Math.min(plugin.getLevelingRate().get(p.getLevel()) * 0.025, plugin.getLevelingRate()
