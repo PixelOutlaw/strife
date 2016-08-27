@@ -56,7 +56,7 @@ public class HealthRegenTask extends BukkitRunnable {
             if (p.getFoodLevel() <= 6) {
                 amount *= p.getFoodLevel() / 6;
             }
-            if (p.getHealth() > 0) {
+            if (p.getHealth() > 0 && !p.isDead()) {
                 p.setHealth(Math.min(p.getHealth() + amount, p.getMaxHealth()));
             }
         }
