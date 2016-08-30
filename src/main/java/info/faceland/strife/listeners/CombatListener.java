@@ -31,7 +31,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -110,16 +109,30 @@ public class CombatListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
             return;
         }
+        LivingEntity le = (LivingEntity) event.getEntity();
         if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
-            double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 28;
-            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
+            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
+                if (event.isApplicable(modifier)) {
+                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
+                        continue;
+                    }
+                    event.setDamage(modifier, 0D);
+                }
             }
+            double hpdmg = le.getHealth() * 0.025 * getResistPotionMult(le);
             event.setDamage(1 + hpdmg);
             return;
         }
         if (event.getCause() == EntityDamageEvent.DamageCause.FIRE) {
-            double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 40;
+            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
+                if (event.isApplicable(modifier)) {
+                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
+                        continue;
+                    }
+                    event.setDamage(modifier, 0D);
+                }
+            }
+            double hpdmg = le.getHealth() * 0.035 * getResistPotionMult(le);
             if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
             }
@@ -127,7 +140,15 @@ public class CombatListener implements Listener {
             return;
         }
         if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
-            double hpdmg = ((LivingEntity) event.getEntity()).getHealth() / 20;
+            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
+                if (event.isApplicable(modifier)) {
+                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
+                        continue;
+                    }
+                    event.setDamage(modifier, 0D);
+                }
+            }
+            double hpdmg = le.getHealth() * 0.05 * getResistPotionMult(le);
             if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
             }
@@ -485,16 +506,19 @@ public class CombatListener implements Listener {
         }
 
         if (isBlocked) {
-            if (random.nextDouble() < absorb * 2) {
-                damagedEntity.setHealth(Math.min(damagedEntity.getHealth() + (damagedEntity.getMaxHealth() * 0.025),
-                        damagedEntity.getMaxHealth()));
+            if (random.nextDouble() < absorb * 1.25) {
+                double healAmount = retDamage * 0.3 + damagedEntity.getMaxHealth() * 0.015;
+                if (damagedEntity.hasPotionEffect(PotionEffectType.POISON)) {
+                    healAmount *= 0.33;
+                }
+                damagedEntity.setHealth(Math.min(damagedEntity.getHealth() + healAmount, damagedEntity.getMaxHealth()));
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 damagingProjectile.remove();
                 event.setDamage(0);
                 event.setCancelled(true);
                 return 0D;
             }
-            if (random.nextDouble() < parry * 2) {
+            if (random.nextDouble() < parry * 1.5) {
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                 if (damagedEntity instanceof Player) {
                     parried.send((Player) damagedEntity);
@@ -620,13 +644,7 @@ public class CombatListener implements Listener {
     private double handleEnvironmentVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
                                                                  LivingEntity damagingLivingEntity,
                                                                  double oldBaseDamage) {
-        double damage;
-        if (damagingLivingEntity.hasMetadata("DAMAGE")) {
-            damage = getDamageFromMeta(damagingLivingEntity, damagedLivingEntity);
-        } else {
-            damage = oldBaseDamage;
-        }
-        return damage;
+        return oldBaseDamage;
     }
 
     private double handleEnvironmentVersusPlayerCalculation(Player damagedPlayer,
@@ -635,12 +653,8 @@ public class CombatListener implements Listener {
                                                             double oldBaseDamage,
                                                             boolean isBlocked,
                                                             EntityDamageEvent event) {
-        double damage;
-        if (damagingLivingEntity.hasMetadata("DAMAGE")) {
-            damage = getDamageFromMeta(damagingLivingEntity, damagedPlayer);
-        } else {
-            damage = oldBaseDamage;
-        }
+        double damage = oldBaseDamage;
+
         Champion damagedChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
 
         double evasion = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
@@ -662,8 +676,11 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() * 0.025),
-                        damagedPlayer.getMaxHealth()));
+                double healAmount = damage * 0.3 + damagedPlayer.getMaxHealth() * 0.015;
+                if (damagedPlayer.hasPotionEffect(PotionEffectType.POISON)) {
+                    healAmount *= 0.33;
+                }
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + healAmount, damagedPlayer.getMaxHealth()));
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
                 return 0D;
@@ -882,8 +899,12 @@ public class CombatListener implements Listener {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + (damagedPlayer.getMaxHealth() * 0.025),
-                        damagedPlayer.getMaxHealth()));
+                double healAmount = retDamage * 0.3 + damagedPlayer.getMaxHealth() * 0.015;
+                if (damagedPlayer.hasPotionEffect(PotionEffectType.POISON)) {
+                    healAmount *= 0.33;
+                }
+                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + healAmount, damagedPlayer.getMaxHealth()));
+                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
                 event.setCancelled(true);
                 return 0D;
@@ -1010,21 +1031,6 @@ public class CombatListener implements Listener {
         return retDamage;
     }
 
-    private double getDamageFromMeta(LivingEntity a, LivingEntity b) {
-        double damage = a.getMetadata("DAMAGE").get(0).asDouble();
-        if (a instanceof Creeper) {
-            if (a.getFireTicks() > 0) {
-                b.setFireTicks(b.getFireTicks() + 100);
-            }
-            if (((Creeper) a).isPowered()) {
-                damage = damage * Math.max(0.3, 3 - (a.getLocation().distance(b.getLocation()) / 2));
-            } else {
-                damage = damage * Math.max(0.3, 1 - (a.getLocation().distance(b.getLocation()) / 3));
-            }
-        }
-        return damage;
-    }
-
     private double getArmorMult(double armor, double apen) {
         if (armor > 0) {
             double adjustedArmor = armor * (1 - apen);
@@ -1103,5 +1109,17 @@ public class CombatListener implements Listener {
             }
         }
         return potionMult;
+    }
+
+    private double getResistPotionMult(LivingEntity defender) {
+        double mult = 1.0;
+        Collection<PotionEffect> defenderEffects = defender.getActivePotionEffects();
+        for (PotionEffect effect : defenderEffects) {
+            if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE)) {
+                mult -= 0.1 * (effect.getAmplifier() + 1);
+                continue;
+            }
+        }
+        return mult;
     }
 }
