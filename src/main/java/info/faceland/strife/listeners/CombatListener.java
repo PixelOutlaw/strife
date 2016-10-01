@@ -851,9 +851,8 @@ public class CombatListener implements Listener {
         double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
         double attackerLevelAdv = damagingPlayer.getLevel() - damagedPlayer.getLevel();
         if (attackerLevelAdv > 0) {
-            pvpMult *= 1 - (0.008 * attackerLevelAdv);
-        } else {
-            pvpMult += 0.005 * (-attackerLevelAdv);
+            pvpMult *= 1 - ((attackerLevelAdv - 5) / 95);
+            pvpMult = Math.max(pvpMult, 0.1);
         }
 
         // calculating attack speed
