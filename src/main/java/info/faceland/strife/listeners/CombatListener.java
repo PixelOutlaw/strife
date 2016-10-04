@@ -462,8 +462,8 @@ public class CombatListener implements Listener {
             if (damagedEntity instanceof Player) {
                 pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
                 double attackerLevelAdv = ((Player) damagingEntity).getLevel() - ((Player) damagedEntity).getLevel();
-                if (attackerLevelAdv > 0) {
-                    pvpMult *= 1 - ((attackerLevelAdv - 10) / 95);
+                if (attackerLevelAdv > 5) {
+                    pvpMult *= 1 - ((attackerLevelAdv - 5) / 90);
                     pvpMult = Math.max(pvpMult, 0.15);
                 }
             }
@@ -849,8 +849,8 @@ public class CombatListener implements Listener {
         // get the PvP damage multiplier
         double pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
         double attackerLevelAdv = damagingPlayer.getLevel() - damagedPlayer.getLevel();
-        if (attackerLevelAdv > 0) {
-            pvpMult *= 1 - ((attackerLevelAdv - 10) / 95);
+        if (attackerLevelAdv > 5) {
+            pvpMult *= 1 - ((attackerLevelAdv - 5) / 90);
             pvpMult = Math.max(pvpMult, 0.15);
         }
 
