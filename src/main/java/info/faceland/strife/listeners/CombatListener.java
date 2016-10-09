@@ -119,7 +119,7 @@ public class CombatListener implements Listener {
                     event.setDamage(modifier, 0D);
                 }
             }
-            double hpdmg = le.getHealth() * 0.025 * getResistPotionMult(le);
+            double hpdmg = le.getHealth() * 0.03 * getResistPotionMult(le);
             event.setDamage(1 + hpdmg);
             return;
         }
@@ -132,7 +132,7 @@ public class CombatListener implements Listener {
                     event.setDamage(modifier, 0D);
                 }
             }
-            double hpdmg = le.getHealth() * 0.035 * getResistPotionMult(le);
+            double hpdmg = le.getHealth() * 0.05 * getResistPotionMult(le);
             if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
             }
@@ -148,7 +148,7 @@ public class CombatListener implements Listener {
                     event.setDamage(modifier, 0D);
                 }
             }
-            double hpdmg = le.getHealth() * 0.05 * getResistPotionMult(le);
+            double hpdmg = le.getHealth() * 0.1 * getResistPotionMult(le);
             if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
             }
@@ -465,7 +465,7 @@ public class CombatListener implements Listener {
                 attackerLevelAdv -= 5;
                 if (attackerLevelAdv > 0) {
                     pvpMult -= (attackerLevelAdv / 100);
-                    pvpMult = Math.max(pvpMult, 0.15);
+                    pvpMult = Math.max(pvpMult, 0.2);
                 }
             }
         }
@@ -853,7 +853,7 @@ public class CombatListener implements Listener {
         attackerLevelAdv -= 5;
         if (attackerLevelAdv > 0) {
             pvpMult -= (attackerLevelAdv / 100);
-            pvpMult = Math.max(pvpMult, 0.15);
+            pvpMult = Math.max(pvpMult, 0.2);
         }
 
         // calculating attack speed
