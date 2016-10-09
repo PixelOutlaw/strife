@@ -133,9 +133,6 @@ public class CombatListener implements Listener {
                 }
             }
             double hpdmg = le.getHealth() * 0.05 * getResistPotionMult(le);
-            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            }
             event.setDamage(1 + hpdmg);
             return;
         }
@@ -149,9 +146,6 @@ public class CombatListener implements Listener {
                 }
             }
             double hpdmg = le.getHealth() * 0.1 * getResistPotionMult(le);
-            if (event.isApplicable(EntityDamageEvent.DamageModifier.ARMOR)) {
-                event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, 0);
-            }
             event.setDamage(1 + hpdmg);
         }
     }
