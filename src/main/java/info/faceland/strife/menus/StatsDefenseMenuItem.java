@@ -71,12 +71,11 @@ public class StatsDefenseMenuItem extends MenuItem {
         lore.add(breakLine);
 
         double statCap;
-        double armor = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute.ARMOR), 1.65))));
+        double armor = 100 * (1 - getArmorMult(champion.getCache().getAttribute(StrifeAttribute.ARMOR)));
         lore.add(ChatColor.YELLOW + "Armor: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
-        double evasion = 100 * (1 - (420 / (420 + Math.pow(champion.getCache().getAttribute(StrifeAttribute
-                .EVASION), 1.55))));
+        double evasion = 100 * (1 - getEvadeChance(champion.getCache().getAttribute(StrifeAttribute.EVASION)));
         lore.add(ChatColor.YELLOW + "Evasion: " + ChatColor.WHITE +
                 DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
                 ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
@@ -113,6 +112,14 @@ public class StatsDefenseMenuItem extends MenuItem {
     @Override
     public void onItemClick(ItemClickEvent event) {
         super.onItemClick(event);
+    }
+
+    private double getArmorMult(double armor) {
+        return Math.pow(100 / (100 + armor), 1.6);
+    }
+
+    private double getEvadeChance(double evasion) {
+        return Math.pow(100 / (100 + evasion), 1.5);
     }
 
 }

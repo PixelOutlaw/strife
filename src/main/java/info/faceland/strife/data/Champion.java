@@ -150,37 +150,33 @@ public class Champion {
             if (!AttributeHandler.meetsLevelRequirement(getPlayer(), offHandItemStack)) {
                 MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your offhand " +
                         "item! It will not give you any stats when used!");
-            } else {
-                double dualWieldEfficiency = 1.0;
-                if (!nullMainHand) {
-                    if (isWeapon(offHandItemStack.getType())) {
-                        dualWieldEfficiency = 0.25;
+                return attributeDoubleMap;
+            }
+            double dualWieldEfficiency = 1.0;
+            if (!nullMainHand) {
+                if (isWand(mainHandItemStack)) {
+                    dualWieldEfficiency = 0.0;
+                    if (offHandItemStack.getType() == Material.BOOK || offHandItemStack.getType() == Material.SHIELD) {
+                        dualWieldEfficiency = 1.0;
                     }
-                    if (mainHandItemStack.getType() == Material.BOW) {
-                        if (offHandItemStack.getType() == Material.BOW) {
-                            dualWieldEfficiency = 0.0;
-                            MessageUtils.sendMessage(getPlayer(), "<red>Dual wielding bows does not give you any stats " +
-                                    "from the bow in the offhand slot. Mostly because its so silly.");
-                        } else if (offHandItemStack.getType() == Material.FISHING_ROD) {
-                            MessageUtils.sendMessage(getPlayer(), "<red>Fishing Rods do not add the the ranged damage" +
-                                    " of bows!");
-                            dualWieldEfficiency = 0.0;
-                        } else if (offHandItemStack.getType() == Material.SHIELD) {
-                            dualWieldEfficiency = 0.0;
-                            MessageUtils.sendMessage(getPlayer(), "<red>Shields do not give any stats when a bow is" +
-                                    "wielded in the main hand!");
-                        }
-                    } else if (mainHandItemStack.getType() == Material.FISHING_ROD) {
-                        dualWieldEfficiency = 0.0;
-                        MessageUtils.sendMessage(getPlayer(), "<red> :I");
+                } else if (isMeleeWeapon(mainHandItemStack.getType())) {
+                    if (isMeleeWeapon(offHandItemStack.getType())) {
+                        dualWieldEfficiency = 0.3;
+                    } else if (offHandItemStack.getType() == Material.BOW) {
+                        dualWieldEfficiency = 0.3;
+                    }
+                } else if (mainHandItemStack.getType() == Material.BOW) {
+                    dualWieldEfficiency = 0.0;
+                    if (offHandItemStack.getType() == Material.ARROW) {
+                        dualWieldEfficiency = 1.0;
                     }
                 }
-                for (StrifeAttribute attr : StrifeAttribute.values()) {
-                    double val = AttributeHandler.getValue(offHandItemStack, attr) * dualWieldEfficiency;
-                    double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
-                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
-                    update = true;
-                }
+            }
+            for (StrifeAttribute attr : StrifeAttribute.values()) {
+                double val = AttributeHandler.getValue(offHandItemStack, attr) * dualWieldEfficiency;
+                double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
+                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
+                update = true;
             }
         }
         if (update) {
@@ -254,9 +250,22 @@ public class Champion {
                 name.contains("BOOTS");
     }
 
-    private boolean isWeapon(Material material) {
+    private boolean isMeleeWeapon(Material material) {
         String name = material.name();
-        return name.contains("SWORD") || name.contains("AXE") || name.contains("HOE") || material == Material.BOW;
+        return name.endsWith("SWORD") || name.endsWith("AXE") || name.endsWith("HOE");
+    }
+
+    private boolean isWand(ItemStack is) {
+        if (is.getType() != Material.WOOD_SWORD) {
+            return false;
+        }
+        if (!is.hasItemMeta()) {
+            return false;
+        }
+        if (is.getItemMeta().getLore().get(1) == null) {
+            return false;
+        }
+        return is.getItemMeta().getLore().get(1).endsWith("Wand");
     }
 
 }

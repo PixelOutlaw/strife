@@ -45,6 +45,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
+import info.faceland.strife.tasks.BlockTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
 import ninja.amp.ampmenus.MenuListener;
@@ -71,6 +72,7 @@ public class StrifePlugin extends FacePlugin {
     private SaveTask saveTask;
     private HealthRegenTask regenTask;
     private AttackSpeedTask attackSpeedTask;
+    private BlockTask blockTask;
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
@@ -83,6 +85,9 @@ public class StrifePlugin extends FacePlugin {
 
     public AttackSpeedTask getAttackSpeedTask() {
         return attackSpeedTask;
+    }
+    public BlockTask getBlockTask() {
+        return blockTask;
     }
 
     @Override
@@ -158,6 +163,7 @@ public class StrifePlugin extends FacePlugin {
         saveTask = new SaveTask(this);
         regenTask = new HealthRegenTask(this);
         attackSpeedTask = new AttackSpeedTask();
+        blockTask = new BlockTask();
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new LevelUpCommand(this));
@@ -180,6 +186,7 @@ public class StrifePlugin extends FacePlugin {
                 20L * 2 // Run it every 2 seconds after //
         );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
+        blockTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
