@@ -47,19 +47,6 @@ public class StrifeCommand {
         this.plugin = plugin;
     }
 
-    @Command(identifier = "strife togglehp", permissions = "strife.command.strife.togglehp", onlyPlayers = true)
-    public void hpScaleCommand(Player p) {
-        Champion champion = plugin.getChampionManager().getChampion(p.getUniqueId());
-        p.setHealthScaled(!p.isHealthScaled());
-        if (p.isHealthScaled()) {
-            MessageUtils.sendMessage(p, "<green>Your healthbar is now scaled! Each heart is 10%!");
-        } else {
-            MessageUtils.sendMessage(p, "<green>Your healthbar is no longer scaled!");
-        }
-        AttributeHandler.updateHealth(p, champion.getCache().getAttribute(StrifeAttribute.HEALTH));
-        p.setHealth(p.getHealth());
-    }
-
     @Command(identifier = "strife profile", permissions = "strife.command.strife.profile", onlyPlayers = false)
     public void profileCommand(CommandSender sender, @Arg(name = "target") Player target) {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());

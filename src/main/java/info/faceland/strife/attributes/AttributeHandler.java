@@ -74,9 +74,13 @@ public class AttributeHandler {
             player.setHealth(maxHealth);
         }
         player.setMaxHealth(maxHealth);
-        if (player.isHealthScaled()) {
-            player.setHealthScale(20);
+        double hearts = maxHealth / 4;
+        if (hearts % 1 != 0) {
+            hearts -= hearts % 1;
+            hearts += 1;
         }
+        player.setHealthScaled(true);
+        player.setHealthScale(hearts * 2);
     }
 
     public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {

@@ -156,7 +156,8 @@ public class Champion {
             if (!nullMainHand) {
                 if (isWand(mainHandItemStack)) {
                     dualWieldEfficiency = 0.0;
-                    if (offHandItemStack.getType() == Material.BOOK || offHandItemStack.getType() == Material.SHIELD) {
+                    if (offHandItemStack.getType() == Material.BOOK || offHandItemStack.getType() == Material.SHIELD
+                            || offHandItemStack.getType() == Material.POTATO_ITEM) {
                         dualWieldEfficiency = 1.0;
                     }
                 } else if (isMeleeWeapon(mainHandItemStack.getType())) {
