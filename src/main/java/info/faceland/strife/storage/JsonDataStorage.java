@@ -22,10 +22,10 @@
  */
 package info.faceland.strife.storage;
 
-import com.tealcube.minecraft.bukkit.config.SmartYamlConfiguration;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
+import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.File;

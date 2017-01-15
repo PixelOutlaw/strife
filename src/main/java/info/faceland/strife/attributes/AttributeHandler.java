@@ -22,10 +22,10 @@
  */
 package info.faceland.strife.attributes;
 
-import com.tealcube.minecraft.bukkit.hilt.HiltItemStack;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 
+import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

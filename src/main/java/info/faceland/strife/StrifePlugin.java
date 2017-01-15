@@ -23,9 +23,6 @@
 package info.faceland.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
-import com.tealcube.minecraft.bukkit.config.MasterConfiguration;
-import com.tealcube.minecraft.bukkit.config.VersionedConfiguration;
-import com.tealcube.minecraft.bukkit.config.VersionedSmartYamlConfiguration;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
@@ -48,6 +45,9 @@ import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.BlockTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
+import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
+import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
+import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
