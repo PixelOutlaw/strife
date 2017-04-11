@@ -39,18 +39,13 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
 
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -88,56 +83,6 @@ public class CombatListener implements Listener {
         Champion playerChamp = plugin.getChampionManager().getChampion(event.getEntity().getUniqueId());
         if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.DOGE)) {
             MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
-        }
-
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityBurnEvent(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity)) {
-            return;
-        }
-        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
-            return;
-        }
-        LivingEntity le = (LivingEntity) event.getEntity();
-        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
-            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-                if (event.isApplicable(modifier)) {
-                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                        continue;
-                    }
-                    event.setDamage(modifier, 0D);
-                }
-            }
-            double hpdmg = le.getHealth() * 0.03 * getResistPotionMult(le);
-            event.setDamage(1 + hpdmg);
-            return;
-        }
-        if (event.getCause() == EntityDamageEvent.DamageCause.FIRE) {
-            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-                if (event.isApplicable(modifier)) {
-                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                        continue;
-                    }
-                    event.setDamage(modifier, 0D);
-                }
-            }
-            double hpdmg = le.getHealth() * 0.05 * getResistPotionMult(le);
-            event.setDamage(1 + hpdmg);
-            return;
-        }
-        if (event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
-            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-                if (event.isApplicable(modifier)) {
-                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                        continue;
-                    }
-                    event.setDamage(modifier, 0D);
-                }
-            }
-            double hpdmg = le.getHealth() * 0.1 * getResistPotionMult(le);
-            event.setDamage(1 + hpdmg);
         }
     }
 
@@ -969,7 +914,7 @@ public class CombatListener implements Listener {
         return potionMult;
     }
 
-    private double getResistPotionMult(LivingEntity defender) {
+    public static double getResistPotionMult(LivingEntity defender) {
         double mult = 1.0;
         Collection<PotionEffect> defenderEffects = defender.getActivePotionEffects();
         for (PotionEffect effect : defenderEffects) {
