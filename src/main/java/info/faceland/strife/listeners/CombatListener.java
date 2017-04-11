@@ -24,9 +24,8 @@ package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
-import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
+import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
@@ -62,19 +61,11 @@ public class CombatListener implements Listener {
     private final StrifePlugin plugin;
     private final Random random;
 
-    private static final String ATTACK_UNCHARGED = TextUtils.color("<white>Not charged enough!");
-    private static final String ATTACK_MISSED = TextUtils.color("<red>Miss!");
-    private static final String ATTACK_DODGED = TextUtils.color("<white>Dodge!");
-    private static final String ATTACK_PARRIED = TextUtils.color("<white>Parry!");
-    private static final String ATTACK_BLOCKED = TextUtils.color("<red>Blocked!");
-    private static final String ATTACK_NO_DAMAGE = TextUtils.color("<yellow>Invulnerable!");
-
-    private static final ActionBarMessage notCharged = ActionBarMessager.createActionBarMessage(ATTACK_UNCHARGED);
-    private static final ActionBarMessage missed = ActionBarMessager.createActionBarMessage(ATTACK_MISSED);
-    private static final ActionBarMessage dodged = ActionBarMessager.createActionBarMessage(ATTACK_DODGED);
-    private static final ActionBarMessage parried = ActionBarMessager.createActionBarMessage(ATTACK_PARRIED);
-    private static final ActionBarMessage blocked = ActionBarMessager.createActionBarMessage(ATTACK_BLOCKED);
-    private static final ActionBarMessage noDamage = ActionBarMessager.createActionBarMessage(ATTACK_NO_DAMAGE);
+    private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
+    private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
+    private static final String ATTACK_PARRIED = TextUtils.color("&f&lParry!");
+    private static final String ATTACK_BLOCKED = TextUtils.color("&e&lBlocked!");
+    private static final String ATTACK_NO_DAMAGE = TextUtils.color("&b&lInvulnerable!");
 
     private static final DecimalFormat INT = new DecimalFormat("#");
     private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
@@ -148,158 +139,6 @@ public class CombatListener implements Listener {
             double hpdmg = le.getHealth() * 0.1 * getResistPotionMult(le);
             event.setDamage(1 + hpdmg);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPlayerShoot(ProjectileLaunchEvent event) {
-        if (!(event.getEntity().getShooter() instanceof Player)) {
-            return;
-        }
-        if (!(event.getEntity() instanceof Arrow)) {
-            return;
-        }
-        Player p = (Player) event.getEntity().getShooter();
-        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
-        playerChamp.getAttributeValues(true);
-        Projectile projectile = event.getEntity();
-
-        double attackSpeedMult = Math.min(0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED), 1.0);
-        double shotPower = projectile.getVelocity().length();
-        double shotMult = attackSpeedMult + ((1 - attackSpeedMult) * Math.min(shotPower / 2.9, 1.0));
-        double vBonus = 1 + shotMult * 2;
-        Vector vec = p.getLocation().getDirection();
-        projectile.setVelocity(new Vector(vec.getX() * 1.2 * vBonus, vec.getY() * 1.3 * vBonus, vec.getZ() * 1.2 *
-                vBonus));
-
-        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotMult;
-        double critMult = 0;
-        double overMult = 0;
-        if (shotMult == 1.0) {
-            overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
-        }
-        if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
-            critMult = playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1;
-        }
-
-        projectile.setMetadata("handled", new FixedMetadataValue(plugin, true));
-        projectile.setMetadata("damage", new FixedMetadataValue(plugin, damage));
-        projectile.setMetadata("overcharge", new FixedMetadataValue(plugin, overMult));
-        projectile.setMetadata("critical", new FixedMetadataValue(plugin, critMult));
-        projectile.setMetadata("armorPen", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ARMOR_PENETRATION)));
-        projectile.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ACCURACY)));
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
-                projectile.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.FIRE_DAMAGE) * shotMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
-                projectile.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.ICE_DAMAGE) * shotMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
-                projectile.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * shotMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            projectile.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIFE_STEAL)));
-        }
-
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onSwing(PlayerInteractEvent event) {
-        if (event.getAction() != Action.LEFT_CLICK_AIR) {
-            return;
-        }
-        Player p = event.getPlayer();
-        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
-        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ATTACK_SPEED)));
-        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(p.getUniqueId());
-        double attackSpeedMult = 1.0D;
-        if (timeLeft > 0) {
-            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
-        }
-        plugin.getAttackSpeedTask().setTimeLeft(p.getUniqueId(), timeToSet);
-
-        ItemStack wand = p.getEquipment().getItemInMainHand();
-
-        if (wand.getType() != Material.WOOD_SWORD) {
-            return;
-        }
-        if (wand.getItemMeta().getLore().size() < 2) {
-            return;
-        }
-        if (!wand.getItemMeta().getLore().get(1).endsWith("Wand")) {
-            return;
-        }
-        if (attackSpeedMult <= 0.25) {
-            notCharged.send(p);
-            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.8f, 0.8f);
-            return;
-        }
-
-        // double attackspeed penalty for wands
-        attackSpeedMult *= attackSpeedMult;
-        attackSpeedMult = Math.max(0.15, attackSpeedMult);
-
-        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.9f, 2f);
-        playerChamp.getAttributeValues(true);
-        playerChamp.getWeaponAttributeValues();
-        playerChamp.getCache().recombine();
-        ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
-        magicProj.setShooter(p);
-        Vector vec = p.getLocation().getDirection();
-        magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.255, vec.getZ() * 1.2));
-        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
-        double critMult = 0;
-        double overMult = 0;
-        if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
-            critMult = playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1;
-        }
-        if (attackSpeedMult == 1.0D) {
-            overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
-        }
-        magicProj.setMetadata("handled", new FixedMetadataValue(plugin, true));
-        magicProj.setMetadata("damage", new FixedMetadataValue(plugin, damage));
-        magicProj.setMetadata("overcharge", new FixedMetadataValue(plugin, overMult));
-        magicProj.setMetadata("critical", new FixedMetadataValue(plugin, critMult));
-        magicProj.setMetadata("armorPen", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ARMOR_PENETRATION)));
-        magicProj.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ACCURACY)));
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
-                magicProj.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.FIRE_DAMAGE) * attackSpeedMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
-                magicProj.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.ICE_DAMAGE) * attackSpeedMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
-                magicProj.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * attackSpeedMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            magicProj.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIFE_STEAL)));
-        }
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -493,9 +332,9 @@ public class CombatListener implements Listener {
             if (getEvadeChance(evasion, accuracy)) {
                 damagingProjectile.remove();
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-                dodged.send((Player) damagedEntity);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, (Player) damagedEntity);
                 if (damagingEntity instanceof Player) {
-                    missed.send((Player) damagingEntity);
+                    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_MISSED, (Player) damagingEntity);
                 }
                 event.setCancelled(true);
                 return 0D;
@@ -525,7 +364,7 @@ public class CombatListener implements Listener {
             if (random.nextDouble() < parry * 1.5 * blockMult) {
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
                 if (damagedEntity instanceof Player) {
-                    parried.send((Player) damagedEntity);
+                    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, (Player) damagedEntity);
                 }
                 damagingProjectile.remove();
                 event.setDamage(0);
@@ -533,7 +372,7 @@ public class CombatListener implements Listener {
                 return 0D;
             }
             if (blockMult == 0) {
-                blocked.send((Player) damagingProjectile.getShooter());
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) damagingProjectile.getShooter());
                 return 0D;
             }
             finalBlockMult = 1 - (block * blockMult);
@@ -603,7 +442,7 @@ public class CombatListener implements Listener {
             multiplierString = " x" + ONE_DECIMAL.format(potionMult);
             if (potionMult <= 0) {
                 if (damagingEntity instanceof Player) {
-                    noDamage.send((Player) damagingEntity);
+                    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_NO_DAMAGE, (Player) damagingEntity);
                 }
                 event.setCancelled(true);
                 return 0D;
@@ -638,12 +477,10 @@ public class CombatListener implements Listener {
                 damageStats.append(ChatColor.RESET + ")");
                 damageStats.append(multiplierString);
                 String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
-                ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
-                combatMsg.send((Player) damagingEntity);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
             } else {
                 String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
-                ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
-                combatMsg.send((Player) damagingEntity);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
             }
         }
         return retDamage;
@@ -673,7 +510,7 @@ public class CombatListener implements Listener {
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT,
                         0.5f, 2f);
-                dodged.send(damagedPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, damagedPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -706,7 +543,7 @@ public class CombatListener implements Listener {
                 }
                 damagingLivingEntity.damage(damage * 0.2);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                parried.send(damagedPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, damagedPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -810,7 +647,7 @@ public class CombatListener implements Listener {
         if (potionMult != 1.0) {
             multiplierString = " x" + ONE_DECIMAL.format(potionMult);
             if (potionMult <= 0) {
-                noDamage.send(damagingPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_NO_DAMAGE, damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -837,12 +674,10 @@ public class CombatListener implements Listener {
             damageStats.append(ChatColor.RESET + ")");
             damageStats.append(multiplierString);
             String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
-            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
-            combatMsg.send(damagingPlayer);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, damagingPlayer);
         } else {
             String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
-            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
-            combatMsg.send(damagingPlayer);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, damagingPlayer);
         }
         return retDamage;
     }
@@ -894,8 +729,8 @@ public class CombatListener implements Listener {
                     damagingEntity.remove();
                 }
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-                dodged.send(damagedPlayer);
-                missed.send(damagingPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, damagedPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_MISSED, damagingPlayer);
                 plugin.getAttackSpeedTask().setTimeLeft(damagingPlayer.getUniqueId(), Math.max(timeToSet / 2, timeLeft));
                 event.setCancelled(true);
                 return 0D;
@@ -939,8 +774,8 @@ public class CombatListener implements Listener {
                 }
                 damagingPlayer.damage(retDamage * 0.2 * pvpMult);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                parried.send(damagedPlayer);
-                blocked.send(damagingPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, damagedPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -1015,7 +850,7 @@ public class CombatListener implements Listener {
         if (potionMult != 1.0) {
             multiplierString = " x" + ONE_DECIMAL.format(potionMult);
             if (potionMult <= 0) {
-                noDamage.send(damagingPlayer);
+                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_NO_DAMAGE, damagingPlayer);
                 event.setCancelled(true);
                 return 0D;
             }
@@ -1046,12 +881,10 @@ public class CombatListener implements Listener {
             damageStats.append(ChatColor.RESET + ")");
             damageStats.append(multiplierString);
             String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
-            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
-            combatMsg.send((Player) damagingEntity);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
         } else {
             String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
-            ActionBarMessage combatMsg = ActionBarMessager.createActionBarMessage(combatString);
-            combatMsg.send((Player) damagingEntity);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
         }
         return retDamage;
     }

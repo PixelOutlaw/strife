@@ -23,11 +23,11 @@
 package info.faceland.strife.listeners;
 
 import be.maximvdw.titlemotd.ui.Title;
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
-import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
+import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
@@ -50,6 +50,9 @@ import org.bukkit.inventory.PlayerInventory;
 public class ExperienceListener implements Listener {
 
     private final StrifePlugin plugin;
+
+    private static final String LEVEL_UP = "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)";
+    private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
 
     public ExperienceListener(StrifePlugin plugin) {
         this.plugin = plugin;
@@ -99,11 +102,9 @@ public class ExperienceListener implements Listener {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         if (event.getOldLevel() < event.getNewLevel()) {
-            ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage("&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)");
-            xpBarMsg.send(player);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, LEVEL_UP, player);
         } else {
-            ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage("&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)");
-            xpBarMsg.send(player);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, LEVEL_DOWN, player);
         }
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
@@ -162,18 +163,21 @@ public class ExperienceListener implements Listener {
 
         faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
 
-        if (amount > faceExpToLevel) {
+        while (amount > faceExpToLevel) {
+            if (player.getLevel() >= 100) {
+                continue;
+            }
             player.setExp(0);
             amount -= faceExpToLevel;
             currentExpPercent = 0;
             player.setLevel(player.getLevel() + 1);
             maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
+            faceExpToLevel = maxFaceExp;
         }
 
         double remainingExp = amount + (currentExpPercent * maxFaceExp);
         String xpMsg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) maxFaceExp + " XP &a&l)";
-        ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage(xpMsg);
-        xpBarMsg.send(player);
+        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg), player);
 
         double gainedExpPercent = amount * (maxVanillaExp / maxFaceExp);
         event.setAmount(0);

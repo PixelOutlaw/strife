@@ -22,11 +22,11 @@
  */
 package info.faceland.strife.commands;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
-import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
 
+import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -137,6 +137,9 @@ public class StrifeCommand {
         faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
 
         while (amount > faceExpToLevel) {
+            if (player.getLevel() >= 100) {
+                continue;
+            }
             player.setExp(0);
             amount -= faceExpToLevel;
             currentExpPercent = 0;
@@ -149,8 +152,7 @@ public class StrifeCommand {
 
         double remainingExp = amount + (currentExpPercent * maxFaceExp);
         String xpMsg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) faceExpToLevel + " XP &a&l)";
-        ActionBarMessage xpBarMsg = ActionBarMessager.createActionBarMessage(xpMsg);
-        xpBarMsg.send(player);
+        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg), player);
         MessageUtils.sendMessage(player, "&aYou gained &f" + (int) displayedExpGained + " &aXP!");
     }
 

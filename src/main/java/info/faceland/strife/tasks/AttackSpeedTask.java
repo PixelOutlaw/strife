@@ -23,8 +23,7 @@
 package info.faceland.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcubegames.minecraft.spigot.versions.actionbars.ActionBarMessager;
-import com.tealcubegames.minecraft.spigot.versions.api.actionbars.ActionBarMessage;
+import gyurix.spigotlib.ChatAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -52,8 +51,7 @@ public class AttackSpeedTask extends BukkitRunnable {
             if (entry.getValue() < 1L) {
                 Player p = Bukkit.getPlayer(entry.getKey());
                 if (p != null && p.isOnline()) {
-                    ActionBarMessage actionBarMessage = ActionBarMessager.createActionBarMessage(ATTACK_RECHARGED);
-                    actionBarMessage.send(p);
+                    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_RECHARGED, p);
                 }
                 iterator.remove();
                 continue;
