@@ -903,7 +903,7 @@ public class CombatListener implements Listener {
 
         for (PotionEffect effect : defenderEffects) {
             if (effect.getType().equals(PotionEffectType.WITHER)) {
-                potionMult += 0.1 * (effect.getAmplifier() + 1);
+                potionMult += 0.15 * (effect.getAmplifier() + 1);
                 continue;
             }
             if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE)) {
