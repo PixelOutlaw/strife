@@ -61,6 +61,7 @@ public class CombatListener implements Listener {
     private static final String ATTACK_PARRIED = TextUtils.color("&f&lParry!");
     private static final String ATTACK_BLOCKED = TextUtils.color("&e&lBlocked!");
     private static final String ATTACK_NO_DAMAGE = TextUtils.color("&b&lInvulnerable!");
+    private static final String PERFECT_GUARD = TextUtils.color("&b&lPerfect Block! &e&lAttack Recharged!");
 
     private static final DecimalFormat INT = new DecimalFormat("#");
     private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
@@ -203,7 +204,7 @@ public class CombatListener implements Listener {
                                             Projectile damagingProjectile,
                                             boolean isBlocked,
                                             EntityDamageEvent event) {
-        double retDamage = 0D;
+        double retDamage;
         // Five branches: PvP, PvE, EvP, EvE, Projectile
         if (damagingProjectile != null) {
             // Projectile branch
@@ -262,7 +263,7 @@ public class CombatListener implements Listener {
         double parry = 0;
         double absorb = 0;
         if (damagedEntity instanceof Player) {
-            Champion defendingChampion = plugin.getChampionManager().getChampion(((Player) damagedEntity).getUniqueId());
+            Champion defendingChampion = plugin.getChampionManager().getChampion((damagedEntity).getUniqueId());
             evasion = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
             armor = defendingChampion.getCache().getAttribute(StrifeAttribute.ARMOR);
             block = defendingChampion.getCache().getAttribute(StrifeAttribute.BLOCK);
@@ -287,40 +288,7 @@ public class CombatListener implements Listener {
         }
         double finalBlockMult = 1.0;
         if (isBlocked) {
-            double blockMult = 1.0;
-            double blockTimeLeft = plugin.getBlockTask().getTimeLeft(damagedEntity.getUniqueId());
-            if (blockTimeLeft > 0) {
-                blockMult = Math.max(1 - (blockTimeLeft / 6), 0.25);
-            }
-            plugin.getBlockTask().setTimeLeft(damagedEntity.getUniqueId(), 6L);
-
-            if (random.nextDouble() < absorb * 1.25 * blockMult) {
-                double healAmount = retDamage * 0.3 + damagedEntity.getMaxHealth() * 0.015;
-                if (damagedEntity.hasPotionEffect(PotionEffectType.POISON)) {
-                    healAmount *= 0.33;
-                }
-                damagedEntity.setHealth(Math.min(damagedEntity.getHealth() + healAmount, damagedEntity.getMaxHealth()));
-                damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-                damagingProjectile.remove();
-                event.setDamage(0);
-                event.setCancelled(true);
-                return 0D;
-            }
-            if (random.nextDouble() < parry * 1.5 * blockMult) {
-                damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                if (damagedEntity instanceof Player) {
-                    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, (Player) damagedEntity);
-                }
-                damagingProjectile.remove();
-                event.setDamage(0);
-                event.setCancelled(true);
-                return 0D;
-            }
-            if (blockMult == 0) {
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) damagingProjectile.getShooter());
-                return 0D;
-            }
-            finalBlockMult = 1 - (block * blockMult);
+            finalBlockMult = blockCalculations((Player)damagedEntity, damagingProjectile, retDamage, event);
         }
 
         double armorPen = 0;
@@ -462,37 +430,7 @@ public class CombatListener implements Listener {
         }
 
         if (isBlocked) {
-            double blockMult = 1.0;
-            double blockTimeLeft = plugin.getBlockTask().getTimeLeft(damagedPlayer.getUniqueId());
-            if (blockTimeLeft > 0) {
-                blockMult = Math.max(1 - (blockTimeLeft / 6), 0.25);
-            }
-            plugin.getBlockTask().setTimeLeft(damagedPlayer.getUniqueId(), 6L);
-            if (random.nextDouble() < blockMult * damagedChampion.getCache().getAttribute(StrifeAttribute
-                    .ABSORB_CHANCE)) {
-                if (damagingEntity instanceof Projectile) {
-                    damagingEntity.remove();
-                }
-                double healAmount = damage * 0.3 + damagedPlayer.getMaxHealth() * 0.015;
-                if (damagedPlayer.hasPotionEffect(PotionEffectType.POISON)) {
-                    healAmount *= 0.33;
-                }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + healAmount, damagedPlayer.getMaxHealth()));
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-                event.setCancelled(true);
-                return 0D;
-            }
-            if (random.nextDouble() < blockMult * damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
-                if (damagingEntity instanceof Projectile) {
-                    damagingEntity.remove();
-                }
-                damagingLivingEntity.damage(damage * 0.2);
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, damagedPlayer);
-                event.setCancelled(true);
-                return 0D;
-            }
-            damage *= 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.BLOCK) * blockMult);
+            damage *= blockCalculations(damagedPlayer, damagingLivingEntity, damage, event);
         }
         damage *= getPotionMult(damagingLivingEntity, damagedPlayer);
         damage *= getArmorMult(damagedChampion.getCache().getAttribute(StrifeAttribute.ARMOR), 0);
@@ -691,41 +629,7 @@ public class CombatListener implements Listener {
         // check if damaged player is blocking
         double finalBlockMult = 1.0;
         if (isBlocked) {
-            double blockMult = 1.0;
-            double blockTimeLeft = plugin.getBlockTask().getTimeLeft(damagedPlayer.getUniqueId());
-            if (blockTimeLeft > 0) {
-                damagedPlayer.sendMessage("t1: " + (blockTimeLeft / 6));
-                blockMult = Math.max(1 - (blockTimeLeft / 6), 0.25);
-            }
-            plugin.getBlockTask().setTimeLeft(damagedPlayer.getUniqueId(), 6L);
-            if (random.nextDouble() < blockMult * damagedChampion.getCache().getAttribute(StrifeAttribute
-                    .ABSORB_CHANCE)) {
-                if (damagingEntity instanceof Projectile) {
-                    damagingEntity.remove();
-                }
-                double healAmount = retDamage * 0.3 + damagedPlayer.getMaxHealth() * 0.015;
-                if (damagedPlayer.hasPotionEffect(PotionEffectType.POISON)) {
-                    healAmount *= 0.33;
-                }
-                damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + healAmount, damagedPlayer.getMaxHealth()));
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-                damagedPlayer.getWorld().playSound(damagingPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-                event.setCancelled(true);
-                return 0D;
-            }
-            if (random.nextDouble() < blockMult * damagedChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
-                if (damagingEntity instanceof Projectile) {
-                    damagingEntity.remove();
-                }
-                damagingPlayer.damage(retDamage * 0.2 * pvpMult);
-                damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, damagedPlayer);
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, damagingPlayer);
-                event.setCancelled(true);
-                return 0D;
-            }
-
-            finalBlockMult = 1 - (damagedChampion.getCache().getAttribute(StrifeAttribute.BLOCK) * blockMult);
+            finalBlockMult = blockCalculations(damagedPlayer, damagingPlayer, retDamage, event);
         }
 
         StringBuilder damageStats = new StringBuilder();
@@ -854,10 +758,11 @@ public class CombatListener implements Listener {
     }
 
     private double getFireDamage(double fireDamage, LivingEntity target, double pvpMult, double resist) {
-        int fireTicks = 30 + (int) fireDamage * 5;
-        double currentHpMult = 4 * (target.getHealth() / target.getMaxHealth()) - 1.5;
-        fireDamage = Math.max(fireDamage, fireDamage * currentHpMult) * (1 - resist);
-        target.setFireTicks(Math.max(fireTicks, target.getFireTicks()));
+        if (target.getFireTicks() > 0) {
+            fireDamage *= 2;
+        }
+        fireDamage *= 1 - resist;
+        target.setFireTicks(Math.max(35, target.getFireTicks()));
         target.getWorld().playSound(target.getEyeLocation(),Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
         target.getWorld().spawnParticle(Particle.FLAME, target.getEyeLocation(), 6 + (int) fireDamage / 2,
                 0.3, 0.3, 0.3, 0.03);
@@ -867,7 +772,7 @@ public class CombatListener implements Listener {
     private double getLightningDamage(double lightningDamage, LivingEntity target, double pvpMult, double resist) {
         double missingHpMult = -0.7 + Math.min((target.getMaxHealth() / target.getHealth()), 6.7);
         lightningDamage = Math.max(lightningDamage, lightningDamage * missingHpMult) * (1 - resist);
-        target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 1.5f);
+        target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 2f);
         target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int) lightningDamage / 2,
                 0.8,0.8,0.8, 0.1);
         if (target instanceof Creeper) {
@@ -884,6 +789,45 @@ public class CombatListener implements Listener {
         target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 4 + (int) iceDamage / 3,
                 0.3, 0.3, 0.2, 0.0);
         return iceDamage * pvpMult;
+    }
+
+    private double blockCalculations (Player damagedPlayer, Entity damagingEntity, double damage, EntityDamageEvent event) {
+        double blockMult = 1.0;
+        double blockTimeLeft = plugin.getBlockTask().getTimeLeft(damagedPlayer.getUniqueId());
+        Champion playerChampion = plugin.getChampionManager().getChampion(damagedPlayer.getUniqueId());
+        if (blockTimeLeft > 0) {
+            blockMult = Math.max(1 - (blockTimeLeft / 6), 0.25);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, damagedPlayer);
+        } else {
+            plugin.getAttackSpeedTask().setTimeLeft(damagedPlayer.getUniqueId(), 0L);
+            plugin.getAttackSpeedTask().endTask(damagedPlayer.getUniqueId());
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, PERFECT_GUARD, damagedPlayer);
+        }
+        plugin.getBlockTask().setTimeLeft(damagedPlayer.getUniqueId(), 6L);
+        if (random.nextDouble() < blockMult * playerChampion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE)) {
+            if (damagingEntity instanceof Projectile) {
+                damagingEntity.remove();
+            }
+            double healAmount = damage * 0.3 + damagedPlayer.getMaxHealth() * 0.015;
+            if (damagedPlayer.hasPotionEffect(PotionEffectType.POISON)) {
+                healAmount *= 0.33;
+            }
+            damagedPlayer.setHealth(Math.min(damagedPlayer.getHealth() + healAmount, damagedPlayer.getMaxHealth()));
+            damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
+            return 0D;
+        }
+        if (random.nextDouble() < blockMult * playerChampion.getCache().getAttribute(StrifeAttribute.PARRY)) {
+            if (damagingEntity instanceof Projectile) {
+                damagingEntity.remove();
+            } else if (damagingEntity instanceof LivingEntity){
+                ((LivingEntity) damagingEntity).damage(damage * 0.2);
+            }
+            damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.BLOCK_ANVIL_LAND, 1f, 2f);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_PARRIED, damagedPlayer);
+            event.setCancelled(true);
+            return 0D;
+        }
+        return 1 - (playerChampion.getCache().getAttribute(StrifeAttribute.BLOCK) * blockMult);
     }
 
     private double getPotionMult(LivingEntity attacker, LivingEntity defender) {

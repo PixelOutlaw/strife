@@ -60,6 +60,10 @@ public class AttackSpeedTask extends BukkitRunnable {
         }
     }
 
+    public void endTask(UUID uuid) {
+        timeLeftMap.remove(uuid);
+    }
+
     public void setTimeLeft(UUID uuid, long timeToSet) {
         timeLeftMap.put(uuid, timeToSet);
     }
