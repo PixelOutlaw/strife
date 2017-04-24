@@ -35,7 +35,7 @@ import java.util.UUID;
 
 public class AttackSpeedTask extends BukkitRunnable {
 
-    private static final String ATTACK_RECHARGED = TextUtils.color("<yellow>Attack Recharged!");
+    private static final String ATTACK_RECHARGED = TextUtils.color("&e&lAttack Recharged!");
 
     private Map<UUID, Long> timeLeftMap;
 
