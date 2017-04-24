@@ -190,6 +190,9 @@ public class StrifePlugin extends FacePlugin {
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
         Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
         if (Bukkit.getPluginManager().getPlugin("Loot") != null) {

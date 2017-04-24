@@ -31,9 +31,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.SkullType;
 import org.bukkit.Sound;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -41,15 +39,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.Random;
+import java.util.*;
 
 public class CombatListener implements Listener {
 
@@ -84,39 +78,6 @@ public class CombatListener implements Listener {
         Champion playerChamp = plugin.getChampionManager().getChampion(event.getEntity().getUniqueId());
         if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.DOGE)) {
             MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEntityDeath(EntityDeathEvent event) {
-        if (event.getEntity() == null || event.getEntity().getKiller() == null) {
-            return;
-        }
-        double chance = plugin.getChampionManager().getChampion(event.getEntity().getKiller().getUniqueId())
-                .getCache().getAttribute(StrifeAttribute.HEAD_DROP);
-        if (chance == 0) {
-            return;
-        }
-        if (random.nextDouble() < chance) {
-            LivingEntity e = event.getEntity();
-            if (e.getType() == EntityType.SKELETON) {
-                if (((Skeleton) e).getSkeletonType() == Skeleton.SkeletonType.NORMAL) {
-                    ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 0);
-                    e.getWorld().dropItemNaturally(e.getLocation(), skull);
-                }
-            } else if ((e.getType() == EntityType.ZOMBIE)) {
-                ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 2);
-                e.getWorld().dropItemNaturally(e.getLocation(), skull);
-            } else if ((e.getType() == EntityType.CREEPER)) {
-                ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 4);
-                e.getWorld().dropItemNaturally(e.getLocation(), skull);
-            } else if ((e.getType() == EntityType.PLAYER)) {
-                ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) SkullType.PLAYER.ordinal());
-                SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-                skullMeta.setOwner(event.getEntity().getName());
-                skull.setItemMeta(skullMeta);
-                e.getWorld().dropItemNaturally(e.getLocation(), skull);
-            }
         }
     }
 
@@ -374,28 +335,13 @@ public class CombatListener implements Listener {
 
         if (damagingProjectile.hasMetadata("lifeSteal")) {
             double lifeSteal = damagingProjectile.getMetadata("lifeSteal").get(0).asDouble();
-            double lifeStolen = retDamage * lifeSteal;
-            if (damagingEntity instanceof Player) {
-                lifeStolen *= Math.min(((Player) damagingEntity).getFoodLevel() / 7.0D, 1.0D);
-            }
-            if (damagingEntity.hasPotionEffect(PotionEffectType.POISON)) {
-                lifeStolen *= 0.34;
-            }
-            if (damagingEntity.getHealth() > 0 && !damagingEntity.isDead()) {
-                damagingEntity.setHealth(Math.min(damagingEntity.getHealth() + lifeStolen, damagingEntity.getMaxHealth()));
-            }
+            applyLifesteal(damagingEntity, retDamage, lifeSteal);
         }
+
         if (damagingEntity instanceof Player) {
-            if (damageDetails) {
-                damageStats.append(ChatColor.RESET + ")");
-                damageStats.append(multiplierString);
-                String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
-            } else {
-                String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
-            }
+            sendDamageOutput((Player) damagingEntity, retDamage, damageStats, multiplierString, damageDetails);
         }
+
         return retDamage;
     }
 
@@ -540,28 +486,11 @@ public class CombatListener implements Listener {
         retDamage *= potionMult;
         retDamage += trueDamage;
 
-        // life steal
         double lifeSteal = damagingChampion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL);
-        if (lifeSteal > 0) {
-            double lifeStolen = retDamage * lifeSteal;
-            lifeStolen *= Math.min(damagingPlayer.getFoodLevel() / 7.0D, 1.0D);
-            if (damagingPlayer.hasPotionEffect(PotionEffectType.POISON)) {
-                lifeStolen *= 0.34;
-            }
-            if (damagingPlayer.getHealth() > 0 && !damagingPlayer.isDead()) {
-                damagingPlayer.setHealth(Math.min(damagingPlayer.getHealth() + lifeStolen,
-                        damagingPlayer.getMaxHealth()));
-            }
-        }
-        if (damageDetails) {
-            damageStats.append(ChatColor.RESET + ")");
-            damageStats.append(multiplierString);
-            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, damagingPlayer);
-        } else {
-            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, damagingPlayer);
-        }
+        applyLifesteal(damagingPlayer, retDamage, lifeSteal);
+
+        sendDamageOutput(damagingPlayer, retDamage, damageStats, multiplierString, damageDetails);
+
         return retDamage;
     }
 
@@ -712,29 +641,11 @@ public class CombatListener implements Listener {
         retDamage *= finalBlockMult;
         retDamage *= pvpMult;
 
-        // life steal
         double lifeSteal = damagingChampion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL);
-        if (lifeSteal > 0) {
-            double lifeStolen = retDamage * lifeSteal;
-            lifeStolen *= Math.min(damagingPlayer.getFoodLevel() / 7.0D, 1.0D);
-            if (damagingPlayer.hasPotionEffect(PotionEffectType.POISON)) {
-                lifeStolen *= 0.34;
-            }
-            if (damagingPlayer.getHealth() > 0 && !damagingPlayer.isDead()) {
-                damagingPlayer.setHealth(Math.min(damagingPlayer.getHealth() + lifeStolen,
-                        damagingPlayer.getMaxHealth()));
-            }
-        }
+        applyLifesteal(damagingPlayer, retDamage, lifeSteal);
 
-        if (damageDetails) {
-            damageStats.append(ChatColor.RESET + ")");
-            damageStats.append(multiplierString);
-            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage! " + damageStats);
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
-        } else {
-            String combatString = TextUtils.color("&f&l" + INT.format(retDamage) + " Damage!" + multiplierString);
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, (Player) damagingEntity);
-        }
+        sendDamageOutput(damagingPlayer, retDamage, damageStats, multiplierString, damageDetails);
+
         return retDamage;
     }
 
@@ -868,5 +779,31 @@ public class CombatListener implements Listener {
             }
         }
         return mult;
+    }
+
+    private void applyLifesteal (LivingEntity attacker, double damage, double lifeSteal) {
+        if (lifeSteal <= 0 || attacker.getHealth() <= 0 || attacker.isDead()) {
+            return;
+        }
+        double lifeStolen = damage * lifeSteal;
+        if (attacker instanceof Player) {
+            lifeStolen *= Math.min(((Player)attacker).getFoodLevel() / 7.0D, 1.0D);
+        }
+        if (attacker.hasPotionEffect(PotionEffectType.POISON)) {
+            lifeStolen *= 0.34;
+        }
+        attacker.setHealth(Math.min(attacker.getHealth() + lifeStolen, attacker.getMaxHealth()));
+    }
+
+    private void sendDamageOutput(Player player, double damage, StringBuilder stats, String mult, boolean details) {
+        if (details) {
+            stats.append(ChatColor.RESET).append(")");
+            stats.append(mult);
+            String combatString = TextUtils.color("&f&l" + INT.format(damage) + " Damage! " + stats);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, player);
+        } else {
+            String combatString = TextUtils.color("&f&l" + INT.format(damage) + " Damage!" + mult);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, player);
+        }
     }
 }
