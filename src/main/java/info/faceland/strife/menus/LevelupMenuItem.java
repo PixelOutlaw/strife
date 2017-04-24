@@ -32,6 +32,7 @@ import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -56,7 +57,12 @@ public class LevelupMenuItem extends MenuItem {
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         int level = champion.getLevel(stat);
-        ItemStack itemStack = new Wool(stat.getDyeColor()).toItemStack(level);
+        ItemStack itemStack;
+        if (level != 0) {
+            itemStack = new Wool(stat.getDyeColor()).toItemStack(Math.min(level, 64));
+        } else {
+            itemStack = new Wool(DyeColor.GRAY).toItemStack(1);
+        }
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName() + " [" + level + "/" + champion.getMaximumStatLevel() + "]");
         List<String> lore = new ArrayList<>(getLore());

@@ -27,6 +27,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
+import gyurix.api.TitleAPI;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -102,9 +103,9 @@ public class ExperienceListener implements Listener {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         if (event.getOldLevel() < event.getNewLevel()) {
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, LEVEL_UP, player);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_UP), player);
         } else {
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, LEVEL_DOWN, player);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_DOWN), player);
         }
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
@@ -120,9 +121,7 @@ public class ExperienceListener implements Listener {
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD).send(event
                 .getPlayer());
-        Title title = new Title("§aLEVEL UP!", "&aYou gained §f" + points + " §aLevelpoints!", 1, 1, 1);
-        title.setTimingsToSeconds();
-        title.send(event.getPlayer());
+        TitleAPI.set("§aLEVEL UP!", "&aYou gained §f" + points + " §aLevelpoints!", 15 , 20, 10, event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 MessageUtils.sendMessage(p, "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" +

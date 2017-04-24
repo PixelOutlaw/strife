@@ -30,6 +30,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
+import info.faceland.strife.data.StatContainer;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -335,7 +336,7 @@ public class CombatListener implements Listener {
 
         if (damagingProjectile.hasMetadata("lifeSteal")) {
             double lifeSteal = damagingProjectile.getMetadata("lifeSteal").get(0).asDouble();
-            applyLifesteal(damagingEntity, retDamage, lifeSteal);
+            applyLifeSteal(damagingEntity, retDamage, lifeSteal);
         }
 
         if (damagingEntity instanceof Player) {
@@ -487,7 +488,7 @@ public class CombatListener implements Listener {
         retDamage += trueDamage;
 
         double lifeSteal = damagingChampion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL);
-        applyLifesteal(damagingPlayer, retDamage, lifeSteal);
+        applyLifeSteal(damagingPlayer, retDamage, lifeSteal);
 
         sendDamageOutput(damagingPlayer, retDamage, damageStats, multiplierString, damageDetails);
 
@@ -642,11 +643,23 @@ public class CombatListener implements Listener {
         retDamage *= pvpMult;
 
         double lifeSteal = damagingChampion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL);
-        applyLifesteal(damagingPlayer, retDamage, lifeSteal);
+        applyLifeSteal(damagingPlayer, retDamage, lifeSteal);
 
         sendDamageOutput(damagingPlayer, retDamage, damageStats, multiplierString, damageDetails);
 
         return retDamage;
+    }
+
+    private StatContainer bottlePlayerStats(Champion playerChampion) {
+        return new StatContainer();
+    }
+
+    private StatContainer bottleMonsterStats(LivingEntity entity) {
+        return new StatContainer();
+    }
+
+    private StatContainer bottleProjectileStats(Projectile projectile) {
+        return new StatContainer();
     }
 
     private double getArmorMult(double armor, double apen) {
@@ -781,7 +794,7 @@ public class CombatListener implements Listener {
         return mult;
     }
 
-    private void applyLifesteal (LivingEntity attacker, double damage, double lifeSteal) {
+    private void applyLifeSteal(LivingEntity attacker, double damage, double lifeSteal) {
         if (lifeSteal <= 0 || attacker.getHealth() <= 0 || attacker.isDead()) {
             return;
         }
