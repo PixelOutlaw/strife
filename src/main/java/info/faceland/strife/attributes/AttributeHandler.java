@@ -28,6 +28,7 @@ import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -70,17 +71,9 @@ public class AttributeHandler {
     }
 
     public static void updateHealth(Player player, double maxHealth) {
-        if (player.getHealth() > maxHealth) {
-            player.setHealth(maxHealth);
-        }
-        player.setMaxHealth(maxHealth);
-        double hearts = maxHealth / 4;
-        if (hearts % 1 != 0) {
-            hearts -= hearts % 1;
-            hearts += 1;
-        }
+        player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
         player.setHealthScaled(true);
-        player.setHealthScale(hearts * 2);
+        player.setHealthScale(Math.ceil(maxHealth / 2));
     }
 
     public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {
