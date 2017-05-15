@@ -31,6 +31,9 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import info.faceland.strife.data.StatContainer;
+import info.faceland.strife.events.CriticalEvent;
+import info.faceland.strife.events.EvadeEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -185,8 +188,7 @@ public class CombatListener implements Listener {
                     damagingEntity, oldBaseDamage, isBlocked, event);
         } else {
             // EvE branch
-            retDamage = handleEnvironmentVersusEnvironmentCalculation(damagedLivingEntity, damagingLivingEntity,
-                    oldBaseDamage);
+            retDamage = handleEnvironmentVersusEnvironmentCalculation(oldBaseDamage);
         }
         return retDamage;
     }
@@ -198,7 +200,6 @@ public class CombatListener implements Listener {
         LivingEntity damagingEntity = (LivingEntity) damagingProjectile.getShooter();
         double armorMult = 1.0;
         double pvpMult = 1.0;
-        boolean overcharge = true;
         boolean magic = false;
         if (damagingEntity instanceof Player) {
             if (damagedEntity instanceof Player) {
@@ -220,24 +221,19 @@ public class CombatListener implements Listener {
 
         double evasion = 0;
         double armor = 0;
-        double block = 0;
         double resist = 0;
-        double parry = 0;
-        double absorb = 0;
         if (damagedEntity instanceof Player) {
             Champion defendingChampion = plugin.getChampionManager().getChampion((damagedEntity).getUniqueId());
             evasion = defendingChampion.getCache().getAttribute(StrifeAttribute.EVASION);
             armor = defendingChampion.getCache().getAttribute(StrifeAttribute.ARMOR);
-            block = defendingChampion.getCache().getAttribute(StrifeAttribute.BLOCK);
             resist = defendingChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
-            parry = defendingChampion.getCache().getAttribute(StrifeAttribute.PARRY);
-            absorb = defendingChampion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE);
         }
 
         if (evasion > 0) {
             double accuracy = 1.0;
             accuracy = damagingProjectile.getMetadata("accuracy").get(0).asDouble();
-            if (getEvadeChance(evasion, accuracy)) {
+            if (isEvaded(evasion, accuracy)) {
+                callEvadeEvent(damagedEntity, damagingEntity);
                 damagingProjectile.remove();
                 damagedEntity.getWorld().playSound(damagedEntity.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
                 ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, (Player) damagedEntity);
@@ -267,6 +263,7 @@ public class CombatListener implements Listener {
         if (damagingProjectile.hasMetadata("critical")) {
             critBonus = damagingProjectile.getMetadata("critical").get(0).asDouble();
             if (critBonus > 0) {
+                callCritEvent(damagingEntity, damagedEntity);
                 critBonus = retDamage * critBonus;
                 damageStats.append(ChatColor.RED + " +" + ONE_DECIMAL.format(critBonus * armorMult * pvpMult) + "✶");
                 damageDetails = true;
@@ -277,7 +274,7 @@ public class CombatListener implements Listener {
         double overBonus = 0;
         if (damagingProjectile.hasMetadata("overcharge")) {
             overBonus = damagingProjectile.getMetadata("overcharge").get(0).asDouble();
-            if (overBonus > 0 && overcharge) {
+            if (overBonus > 0) {
                 overBonus = retDamage * overBonus;
                 damageStats.append(ChatColor.YELLOW + " +" + ONE_DECIMAL.format(overBonus * armorMult * pvpMult) + "✦");
                 damageDetails = true;
@@ -346,9 +343,7 @@ public class CombatListener implements Listener {
         return retDamage;
     }
 
-    private double handleEnvironmentVersusEnvironmentCalculation(LivingEntity damagedLivingEntity,
-                                                                 LivingEntity damagingLivingEntity,
-                                                                 double oldBaseDamage) {
+    private double handleEnvironmentVersusEnvironmentCalculation(double oldBaseDamage) {
         return oldBaseDamage;
     }
 
@@ -364,10 +359,11 @@ public class CombatListener implements Listener {
 
         double evasion = damagedChampion.getCache().getAttribute(StrifeAttribute.EVASION);
         if (evasion > 0) {
-            if (getEvadeChance(evasion, 0)) {
+            if (isEvaded(evasion, 0)) {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
+                callEvadeEvent(damagedPlayer, damagingLivingEntity);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT,
                         0.5f, 2f);
                 ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, damagedPlayer);
@@ -419,6 +415,7 @@ public class CombatListener implements Listener {
         // critical damage time!
         double critBonus = 0D;
         if (random.nextDouble() <= damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
+            callCritEvent(damagingPlayer, damagedEntity);
             critBonus = (damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1) * retDamage;
             damageStats.append(ChatColor.RED + " +" + ONE_DECIMAL.format(critBonus) + "✶");
             damageDetails = true;
@@ -537,10 +534,11 @@ public class CombatListener implements Listener {
         if (evasion > 0) {
             // get the accuracy of the damaging champion and check if still hits
             double accuracy = damagingChampion.getCache().getAttribute(StrifeAttribute.ACCURACY);
-            if (getEvadeChance(evasion, accuracy)) {
+            if (isEvaded(evasion, accuracy)) {
                 if (damagingEntity instanceof Projectile) {
                     damagingEntity.remove();
                 }
+                callEvadeEvent(damagedPlayer, damagingPlayer);
                 damagedPlayer.getWorld().playSound(damagedPlayer.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
                 ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, damagedPlayer);
                 ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_MISSED, damagingPlayer);
@@ -569,6 +567,7 @@ public class CombatListener implements Listener {
         // critical damage time!
         double critBonus = 0D;
         if (random.nextDouble() <= damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
+            callCritEvent(damagingPlayer, damagedPlayer);
             critBonus = (damagingChampion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1) * retDamage;
             damageStats.append(ChatColor.RED + " +" + ONE_DECIMAL.format(critBonus * armorMult) + "✶");
             damageDetails = true;
@@ -672,13 +671,10 @@ public class CombatListener implements Listener {
         return 1 + (apen / 5);
     }
 
-    private boolean getEvadeChance(double evasion, double accuacy) {
-        evasion *= 1 - accuacy;
+    private boolean isEvaded(double evasion, double accuracy) {
+        evasion *= 1 - accuracy;
         double evadeChance = 1 - Math.pow(100 / (100 + evasion), 1.5);
-        if (random.nextDouble() <= evadeChance) {
-            return true;
-        }
-        return false;
+        return random.nextDouble() <= evadeChance;
     }
 
     private double getFireDamage(double fireDamage, LivingEntity target, double pvpMult, double resist) {
@@ -686,7 +682,7 @@ public class CombatListener implements Listener {
             fireDamage *= 2;
         }
         fireDamage *= 1 - resist;
-        target.setFireTicks(Math.max(35, target.getFireTicks()));
+        target.setFireTicks(Math.max(55, target.getFireTicks()));
         target.getWorld().playSound(target.getEyeLocation(),Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
         target.getWorld().spawnParticle(Particle.FLAME, target.getEyeLocation(), 6 + (int) fireDamage / 2,
                 0.3, 0.3, 0.3, 0.03);
@@ -694,7 +690,7 @@ public class CombatListener implements Listener {
     }
 
     private double getLightningDamage(double lightningDamage, LivingEntity target, double pvpMult, double resist) {
-        double missingHpMult = -0.7 + Math.min((target.getMaxHealth() / target.getHealth()), 6.7);
+        double missingHpMult = -2 + 5 * (target.getHealth() / target.getMaxHealth());
         lightningDamage = Math.max(lightningDamage, lightningDamage * missingHpMult) * (1 - resist);
         target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 2f);
         target.getWorld().spawnParticle(Particle.CRIT_MAGIC, target.getEyeLocation(), 6 + (int) lightningDamage / 2,
@@ -708,8 +704,13 @@ public class CombatListener implements Listener {
     private double getIceDamage(double iceDamage, LivingEntity attacker, LivingEntity target, double pvpMult, double
             resist) {
         iceDamage = (iceDamage + attacker.getMaxHealth() * 0.01 * iceDamage) * (1 - resist);
-        target.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 10, 2));
-        target.getWorld().playSound(target.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1f);
+        if (!target.hasPotionEffect(PotionEffectType.SLOW)) {
+            target.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 20, 1));
+        }
+        if (!target.hasPotionEffect(PotionEffectType.SLOW_DIGGING)) {
+            target.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW_DIGGING, 200, 0));
+        }
+        target.getWorld().playSound(target.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.0f);
         target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 4 + (int) iceDamage / 3,
                 0.3, 0.3, 0.2, 0.0);
         return iceDamage * pvpMult;
@@ -818,5 +819,15 @@ public class CombatListener implements Listener {
             String combatString = TextUtils.color("&f&l" + INT.format(damage) + " Damage!" + mult);
             ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, combatString, player);
         }
+    }
+
+    private void callCritEvent(LivingEntity attacker, LivingEntity victim) {
+        CriticalEvent c = new CriticalEvent(attacker, victim);
+        Bukkit.getPluginManager().callEvent(c);
+    }
+
+    private void callEvadeEvent(LivingEntity evader, LivingEntity attacker) {
+        EvadeEvent ev = new EvadeEvent(evader, attacker);
+        Bukkit.getPluginManager().callEvent(ev);
     }
 }
