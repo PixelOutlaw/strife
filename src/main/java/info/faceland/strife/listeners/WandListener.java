@@ -84,7 +84,7 @@ public class WandListener implements Listener{
         }
         if (attackSpeedMult <= 0.25) {
             ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, p);
-            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.8f, 0.8f);
+            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
             return;
         }
 
@@ -92,8 +92,8 @@ public class WandListener implements Listener{
         attackSpeedMult *= attackSpeedMult;
         attackSpeedMult = Math.max(0.15, attackSpeedMult);
 
-        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.9f, 2f);
-        playerChamp.getAttributeValues(true);
+        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
+        playerChamp.getAttributeValues(false);
         playerChamp.getWeaponAttributeValues();
         playerChamp.getCache().recombine();
         ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
