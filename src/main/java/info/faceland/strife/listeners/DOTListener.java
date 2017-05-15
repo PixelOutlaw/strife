@@ -33,7 +33,7 @@ import static info.faceland.strife.listeners.CombatListener.getResistPotionMult;
 public class DOTListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onEntityBurnEvent(EntityDamageEvent event) {
+    public void onEntityDOTEvent(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
