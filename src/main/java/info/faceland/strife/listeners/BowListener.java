@@ -57,7 +57,10 @@ public class BowListener implements Listener {
         }
         Player p = (Player) event.getEntity().getShooter();
         Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
-        playerChamp.getAttributeValues(true);
+
+        playerChamp.getWeaponAttributeValues();
+        playerChamp.getCache().recombine();
+
         Projectile projectile = event.getEntity();
 
         double attackSpeedMult = Math.min(0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED), 1.0);
