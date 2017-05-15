@@ -121,7 +121,7 @@ public class ExperienceListener implements Listener {
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD).send(event
                 .getPlayer());
-        TitleAPI.set("§aLEVEL UP!", "&aYou gained §f" + points + " §aLevelpoints!", 15 , 20, 10, event.getPlayer());
+        TitleAPI.set("§aLEVEL UP!", "§aYou gained §f" + points + " §aLevelpoints!", 15 , 20, 10, event.getPlayer());
         if (event.getNewLevel() % 5 == 0) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 MessageUtils.sendMessage(p, "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" +
