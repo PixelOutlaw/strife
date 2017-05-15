@@ -32,6 +32,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class DataListener implements Listener {
 
@@ -59,6 +61,16 @@ public class DataListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerKick(final PlayerKickEvent event) {
+        plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()).setCache(null);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerLeave(final PlayerQuitEvent event) {
+        plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()).setCache(null);
+    }
+
     private void notifyUnusedPoints(final Player player) {
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
             @Override
@@ -71,5 +83,4 @@ public class DataListener implements Listener {
             }
         }, 20L * 2);
     }
-
 }
