@@ -65,8 +65,8 @@ public class StatsDefenseMenuItem extends MenuItem {
 
         lore.add(ChatColor.YELLOW + "Health: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute
                 (StrifeAttribute.HEALTH)));
-        lore.add(ChatColor.YELLOW + "Regeneration: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute
-                .REGENERATION));
+        lore.add(ChatColor.YELLOW + "Regen: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute
+                .REGENERATION) + ChatColor.GRAY + "HP/5s");
 
         lore.add(breakLine);
 
