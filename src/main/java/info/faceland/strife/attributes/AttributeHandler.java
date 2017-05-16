@@ -73,7 +73,7 @@ public class AttributeHandler {
     public static void updateHealth(Player player, double maxHealth) {
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
         player.setHealthScaled(true);
-        player.setHealthScale(Math.ceil(maxHealth / 2));
+        player.setHealthScale(2 * Math.ceil(maxHealth / 4));
     }
 
     public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {
