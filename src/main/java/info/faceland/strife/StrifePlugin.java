@@ -178,7 +178,7 @@ public class StrifePlugin extends FacePlugin {
         }
 
         saveTask.runTaskTimer(this,
-                20L * 660, // Start save after 11 minutes
+                20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
                 20L * 600 // Run every 10 minutes after that
         );
         regenTask.runTaskTimer(this,
