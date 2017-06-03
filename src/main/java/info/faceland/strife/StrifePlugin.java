@@ -183,7 +183,7 @@ public class StrifePlugin extends FacePlugin {
         );
         regenTask.runTaskTimer(this,
                 20L * 10, // Start timer after 10s
-                20L * 2 // Run it every 2 seconds after //
+                20L * 2 // Run it every 2s after
         );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         blockTask.runTaskTimer(this, 5L, 5L);

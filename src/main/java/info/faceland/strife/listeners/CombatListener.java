@@ -37,6 +37,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -703,7 +704,9 @@ public class CombatListener implements Listener {
 
     private double getIceDamage(double iceDamage, LivingEntity attacker, LivingEntity target, double pvpMult, double
             resist) {
-        iceDamage = (iceDamage + attacker.getMaxHealth() * 0.01 * iceDamage) * (1 - resist);
+        double bonusHp = attacker.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() - 20;
+        double healthDamage = bonusHp * (0.1 + (iceDamage * 0.01));
+        iceDamage = (iceDamage + healthDamage) * (1 - resist);
         if (!target.hasPotionEffect(PotionEffectType.SLOW)) {
             target.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 20, 1));
         }
