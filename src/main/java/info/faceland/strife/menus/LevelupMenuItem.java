@@ -73,7 +73,7 @@ public class LevelupMenuItem extends MenuItem {
         } else {
             lore.add(ChatColor.YELLOW + "Click to upgrade!");
             if (champion.getUnusedStatPoints() >= 10 && (level + 10 <= champion.getMaximumStatLevel())) {
-                lore.add(ChatColor.YELLOW + "Click to upgrade by 10 points!");
+                lore.add(ChatColor.YELLOW + "Shift-click to upgrade by 10 points!");
             }
         }
         itemMeta.setLore(lore);
