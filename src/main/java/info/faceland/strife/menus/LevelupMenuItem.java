@@ -72,9 +72,6 @@ public class LevelupMenuItem extends MenuItem {
             lore.add(ChatColor.RED + "Point cap reached.");
         } else {
             lore.add(ChatColor.YELLOW + "Click to upgrade!");
-            if (champion.getUnusedStatPoints() >= 10 && (level + 10 <= champion.getMaximumStatLevel())) {
-                lore.add(ChatColor.YELLOW + "Click to upgrade by 10 points!");
-            }
         }
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
@@ -86,16 +83,15 @@ public class LevelupMenuItem extends MenuItem {
         super.onItemClick(event);
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        int points = event.isShiftClick() ? 10 : 1;
-        if (champion.getUnusedStatPoints() < points) {
+        if (champion.getUnusedStatPoints() < 1) {
             return;
         }
         int currentLevel = champion.getLevel(stat);
-        if (currentLevel + points > champion.getMaximumStatLevel()) {
+        if (currentLevel + 1 > champion.getMaximumStatLevel()) {
             return;
         }
-        champion.setLevel(stat, currentLevel + points);
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() - points);
+        champion.setLevel(stat, currentLevel + 1);
+        champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         champion.getStatAttributeValues();
