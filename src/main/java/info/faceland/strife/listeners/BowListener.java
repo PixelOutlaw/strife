@@ -104,7 +104,13 @@ public class BowListener implements Listener {
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
             if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
                 projectile.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * shotMult));
+                    .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * shotMult));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.CORRUPT_CHANCE)) {
+                projectile.setMetadata("darkDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                    .getAttribute(StrifeAttribute.DARK_DAMAGE) * shotMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {

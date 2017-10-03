@@ -43,6 +43,7 @@ import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
 import info.faceland.strife.tasks.BlockTask;
+import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
@@ -71,6 +72,7 @@ public class StrifePlugin extends FacePlugin {
     private ChampionManager championManager;
     private SaveTask saveTask;
     private HealthRegenTask regenTask;
+    private DarknessReductionTask darkTask;
     private AttackSpeedTask attackSpeedTask;
     private BlockTask blockTask;
     private CommandHandler commandHandler;
@@ -162,6 +164,7 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask = new SaveTask(this);
         regenTask = new HealthRegenTask(this);
+        darkTask = new DarknessReductionTask();
         attackSpeedTask = new AttackSpeedTask();
         blockTask = new BlockTask();
 
@@ -182,8 +185,12 @@ public class StrifePlugin extends FacePlugin {
                 20L * 600 // Run every 10 minutes after that
         );
         regenTask.runTaskTimer(this,
-                20L * 10, // Start timer after 10s
-                20L * 2 // Run it every 2s after
+            20L * 10, // Start timer after 10s
+            20L * 2 // Run it every 2s after
+        );
+        darkTask.runTaskTimer(this,
+            20L * 10, // Start timer after 10s
+            10L  // Run it every 0.5s after
         );
         attackSpeedTask.runTaskTimer(this, 5L, 5L);
         blockTask.runTaskTimer(this, 5L, 5L);
@@ -213,6 +220,7 @@ public class StrifePlugin extends FacePlugin {
         debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
         saveTask.cancel();
         regenTask.cancel();
+        darkTask.cancel();
         HandlerList.unregisterAll(this);
         storage.save(championManager.getChampions());
         configYAML = null;
@@ -223,6 +231,7 @@ public class StrifePlugin extends FacePlugin {
         championManager = null;
         saveTask = null;
         regenTask = null;
+        darkTask = null;
         commandHandler = null;
         settings = null;
     }

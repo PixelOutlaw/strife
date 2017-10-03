@@ -110,13 +110,29 @@ public class StatsOffenseMenuItem extends MenuItem {
                 StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
                 StrifeAttribute.IGNITE_CHANCE) * 100) + "%)");
 
-        lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
-                StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
-                StrifeAttribute.SHOCK_CHANCE) * 100) + "%)");
+        if (champion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
+            lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(
+                    StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(
+                    StrifeAttribute.SHOCK_CHANCE) * 100) + "%)");
+        }
 
-        lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
-                StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT.format(champion.getCache().getAttribute(
-                StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
+        if (champion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
+            lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(
+                    StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(
+                    StrifeAttribute.FREEZE_CHANCE) * 100) + "%)");
+        }
+
+        if (champion.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE) > 0) {
+            lore.add(ChatColor.RED + "Shadow Damage: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(
+                    StrifeAttribute.DARK_DAMAGE)) + ChatColor.GRAY + " (" + DECIMAL_FORMAT
+                .format(champion.getCache().getAttribute(
+                    StrifeAttribute.CORRUPT_CHANCE) * 100) + "%)");
+        }
 
         lore.add(breakLine);
 

@@ -33,6 +33,7 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.StatContainer;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.managers.DarknessManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
@@ -307,6 +308,13 @@ public class CombatListener implements Listener {
             damageDetails = true;
             trueDamage += iceDamage;
         }
+        if (damagingProjectile.hasMetadata("darkDamage")) {
+            double darkDamage = damagingProjectile.getMetadata("darkDamage").get(0).asDouble();
+            darkDamage = getDarkDamage(darkDamage, damagedEntity, pvpMult, resist);
+            damageStats.append(ChatColor.DARK_GRAY + " +" + ONE_DECIMAL.format(darkDamage) + "❂");
+            damageDetails = true;
+            trueDamage += darkDamage;
+        }
 
         double potionMult = getPotionMult(damagingEntity, damagedEntity);
         String multiplierString = "";
@@ -439,6 +447,7 @@ public class CombatListener implements Listener {
         double fireDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE);
         double lightningDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
         double iceDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE);
+        double darkDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE);
 
         if (fireDamage * attackSpeedMult > 0D) {
             double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE);
@@ -465,6 +474,15 @@ public class CombatListener implements Listener {
                 damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
                 damageDetails = true;
                 trueDamage += iceDamage;
+            }
+        }
+        if (darkDamage * attackSpeedMult > 0D) {
+            double darkCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.CORRUPT_CHANCE);
+            if (random.nextDouble() < darkCalc) {
+                darkDamage = getDarkDamage(darkDamage * attackSpeedMult, damagedEntity, 1.0D, 0D);
+                damageStats.append(ChatColor.DARK_GRAY + " +" + ONE_DECIMAL.format(darkDamage) + "❂");
+                damageDetails = true;
+                trueDamage += darkDamage;
             }
         }
 
@@ -592,6 +610,7 @@ public class CombatListener implements Listener {
         double fireDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE);
         double lightningDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
         double iceDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE);
+        double darkDamage = damagingChampion.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE);
         double resist = damagedChampion.getCache().getAttribute(StrifeAttribute.RESISTANCE);
         if (fireDamage * attackSpeedMult > 0D) {
             double igniteCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE);
@@ -618,6 +637,15 @@ public class CombatListener implements Listener {
                 damageStats.append(ChatColor.AQUA + " +" + ONE_DECIMAL.format(iceDamage) + "❊");
                 damageDetails = true;
                 trueDamage += iceDamage;
+            }
+        }
+        if (darkDamage * attackSpeedMult > 0D) {
+            double darkCalc = damagingChampion.getCache().getAttribute(StrifeAttribute.CORRUPT_CHANCE);
+            if (random.nextDouble() < darkCalc) {
+                darkDamage = getDarkDamage(darkDamage * attackSpeedMult, damagedPlayer, pvpMult, resist);
+                damageStats.append(ChatColor.DARK_GRAY + " +" + ONE_DECIMAL.format(darkDamage) + "❂");
+                damageDetails = true;
+                trueDamage += darkDamage;
             }
         }
 
@@ -717,6 +745,14 @@ public class CombatListener implements Listener {
         target.getWorld().spawnParticle(Particle.SNOWBALL, target.getEyeLocation(), 4 + (int) iceDamage / 3,
                 0.3, 0.3, 0.2, 0.0);
         return iceDamage * pvpMult;
+    }
+
+    private double getDarkDamage(double damage, LivingEntity target, double pvpMult, double resist) {
+        double darknessCounters = damage * (1 - resist);
+        damage *= (1 + DarknessManager.getEntity(target) / 100);
+        target.getWorld().playSound(target.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
+        DarknessManager.updateEntity(target, darknessCounters);
+        return damage * pvpMult;
     }
 
     private double blockCalculations (Player damagedPlayer, Entity damagingEntity, double damage, EntityDamageEvent event) {

@@ -132,7 +132,13 @@ public class WandListener implements Listener{
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
             if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
                 magicProj.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * attackSpeedMult));
+                    .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * attackSpeedMult));
+            }
+        }
+        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
+            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
+                magicProj.setMetadata("darkDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
+                    .getAttribute(StrifeAttribute.DARK_DAMAGE) * attackSpeedMult));
             }
         }
         if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
