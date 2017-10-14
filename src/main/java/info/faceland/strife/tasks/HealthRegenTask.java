@@ -27,6 +27,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -46,18 +47,19 @@ public class HealthRegenTask extends BukkitRunnable {
             // Restore 40% of your regen per 2s tick (This task runs every 2s)
             // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
             double amount = champion.getCache().getAttribute(StrifeAttribute.REGENERATION) * 0.4;
+            // Bonus for players that have just eaten
+            if (p.getSaturation() > 0.1) {
+                amount *= 1.6;
+            }
             // These are not 'penalties', they're 'mechanics' :^)
             if (p.hasPotionEffect(PotionEffectType.POISON)) {
-                amount *= 0.33;
-            }
-            if (p.getSaturation() > 0.1) {
-                amount *= 1.2;
+                amount *= 0.35;
             }
             if (p.getFoodLevel() <= 6) {
                 amount *= p.getFoodLevel() / 6;
             }
             if (p.getHealth() > 0 && !p.isDead()) {
-                p.setHealth(Math.min(p.getHealth() + amount, p.getMaxHealth()));
+                p.setHealth(Math.min(p.getHealth() + amount, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
             }
         }
     }
