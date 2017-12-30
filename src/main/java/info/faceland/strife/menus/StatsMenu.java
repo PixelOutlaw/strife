@@ -50,6 +50,22 @@ public class StatsMenu extends ItemMenu {
         setItem(24, new StatsBonusMenuItem(plugin));
     }
 
+    public StatsMenu(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&0&lStats!"), Size.fit(36), plugin);
+
+        setItem(0, new StatsHelmetItem(plugin, player));
+        setItem(9, new StatsChestItem(plugin, player));
+        setItem(18, new StatsLegsItem(plugin, player));
+        setItem(27, new StatsBootsItem(plugin, player));
+        setItem(1, new StatsMainHandItem(plugin, player));
+        setItem(10, new StatsOffHandItem(plugin, player));
+
+        setItem(13, new StatsOffenseMenuItem(plugin, player));
+        setItem(15, new StatsDefenseMenuItem(plugin, player));
+        setItem(22, new StatsMiscMenuItem(plugin, player));
+        setItem(24, new StatsBonusMenuItem(plugin, player));
+    }
+
 }
 
 /*

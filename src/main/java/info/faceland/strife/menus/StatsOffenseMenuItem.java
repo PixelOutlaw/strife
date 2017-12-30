@@ -44,9 +44,16 @@ import java.util.List;
 public class StatsOffenseMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
     private static final DecimalFormat AS_FORMAT = new DecimalFormat("#.##");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
+
+    public StatsOffenseMenuItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&c&lOffensive Stats"), new ItemStack(Material.IRON_SWORD));
+        this.player = player;
+        this.plugin = plugin;
+    }
 
     public StatsOffenseMenuItem(StrifePlugin plugin) {
         super(TextUtils.color("&c&lOffensive Stats"), new ItemStack(Material.IRON_SWORD));
@@ -55,6 +62,9 @@ public class StatsOffenseMenuItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
+        if (this.player != null) {
+            player = this.player;
+        }
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         // CombatStyle determines what stat type to use, as well as the icon
         // 0 = melee, 1 = ranged, 2 = magic

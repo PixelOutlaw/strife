@@ -44,8 +44,15 @@ import java.util.List;
 public class StatsMiscMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
+
+    public StatsMiscMenuItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
+        this.player = player;
+        this.plugin = plugin;
+    }
 
     public StatsMiscMenuItem(StrifePlugin plugin) {
         super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
@@ -54,6 +61,9 @@ public class StatsMiscMenuItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
+        if (this.player != null) {
+            player = this.player;
+        }
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
