@@ -26,6 +26,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -39,9 +40,17 @@ public class Champion {
 
     private UUID uniqueId;
     private Map<StrifeStat, Integer> levelMap;
+    private Map<StrifeAttribute, Double> currentBaseStats;
     private int unusedStatPoints;
     private int highestReachedLevel;
     private ChampionCache cache;
+
+    private final static String LVL_REQ_MAIN_WEAPON = "<red>You do not meet the level requirement for your weapon! " +
+        "It will not give you any stats when used!";
+    private final static String LVL_REQ_OFF_WEAPON = "<red>You do not meet the level requirement for your offhand " +
+        "item! It will not give you any stats when used!";
+    private final static String LVL_REQ_ARMOR = "<red>You do not meet the level requirement for a piece of your " +
+        "armor! It will not give you any stats while equipped!";
 
     public Champion(UUID uniqueId) {
         this.uniqueId = uniqueId;
@@ -79,18 +88,22 @@ public class Champion {
         levelMap.put(stat, level);
     }
 
-    public Map<StrifeAttribute, Double> getStatAttributeValues() {
+    public Map<StrifeAttribute, Double> getEntityAttributeValues() {
+        cache.clearBaseStatCache();
+        cache.setBaseStatCache(currentBaseStats);
+        return currentBaseStats;
+    }
+
+    public Map<StrifeAttribute, Double> getLevelpointAttributeValues() {
         cache.clearStatCache();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-        for (StrifeAttribute attr : StrifeAttribute.values()) {
-            attributeDoubleMap.put(attr, attr != StrifeAttribute.ATTACK_SPEED ? attr.getBaseValue() : 0);
-        }
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ?
-                        Math.min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap()) :
-                        val + entry.getKey().getAttribute(attr) * entry.getValue());
+            for (Map.Entry<StrifeAttribute, Double> pointSection : entry.getKey().getAttributeMap().entrySet()) {
+                double amount = pointSection.getValue() * entry.getValue();
+                if (attributeDoubleMap.containsKey(pointSection.getKey())) {
+                    amount += attributeDoubleMap.get(pointSection.getKey());
+                }
+                attributeDoubleMap.put(pointSection.getKey(), amount);
             }
         }
         cache.setAttributeStatCache(attributeDoubleMap);
@@ -105,20 +118,17 @@ public class Champion {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
                 continue;
             }
-            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), itemStack)) {
-                spam = true;
-                continue;
+            Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(itemStack);
+            if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT)) {
+                if (getPlayer().getLevel() < itemStatMap.get(StrifeAttribute.LEVEL_REQUIREMENT)) {
+                    spam = true;
+                    continue;
+                }
             }
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = AttributeHandler.getValue(itemStack, attr);
-                double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0;
-                attributeDoubleMap.put(attr,
-                        attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
-            }
+            attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
         }
         if (spam) {
-            MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for a piece of your " +
-                    "armor! It will not give you any stats while equipped!");
+            MessageUtils.sendMessage(getPlayer(), LVL_REQ_ARMOR);
         }
 
         cache.setAttributeArmorCache(attributeDoubleMap);
@@ -130,59 +140,27 @@ public class Champion {
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         ItemStack mainHandItemStack = getPlayer().getEquipment().getItemInMainHand();
         ItemStack offHandItemStack = getPlayer().getEquipment().getItemInOffHand();
-        boolean update = false;
-        boolean nullMainHand = true;
-        if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !isArmor(mainHandItemStack.getType())) {
-            nullMainHand = false;
-            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), mainHandItemStack)) {
-                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your weapon! It " +
-                        "will not give you any stats when used!");
+        if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !ItemTypeUtil.isArmor(mainHandItemStack.getType())) {
+            Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(mainHandItemStack);
+            if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && getPlayer().getLevel() < itemStatMap
+                .get(StrifeAttribute.LEVEL_REQUIREMENT)) {
+                MessageUtils.sendMessage(getPlayer(), LVL_REQ_MAIN_WEAPON);
             } else {
-                for (StrifeAttribute attr : StrifeAttribute.values()) {
-                    double val = AttributeHandler.getValue(mainHandItemStack, attr);
-                    double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
-                    attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
-                    update = true;
-                }
+                attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
             }
         }
-        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !isArmor(offHandItemStack.getType())) {
-            if (!AttributeHandler.meetsLevelRequirement(getPlayer(), offHandItemStack)) {
-                MessageUtils.sendMessage(getPlayer(), "<red>You do not meet the level requirement for your offhand " +
-                        "item! It will not give you any stats when used!");
-                return attributeDoubleMap;
-            }
-            double dualWieldEfficiency = 1.0;
-            if (!nullMainHand) {
-                if (isWand(mainHandItemStack)) {
-                    dualWieldEfficiency = 0.0;
-                    if (offHandItemStack.getType() == Material.BOOK || offHandItemStack.getType() == Material.SHIELD
-                            || offHandItemStack.getType() == Material.POTATO_ITEM) {
-                        dualWieldEfficiency = 1.0;
-                    }
-                } else if (isMeleeWeapon(mainHandItemStack.getType())) {
-                    if (isMeleeWeapon(offHandItemStack.getType())) {
-                        dualWieldEfficiency = 0.3;
-                    } else if (offHandItemStack.getType() == Material.BOW) {
-                        dualWieldEfficiency = 0.3;
-                    }
-                } else if (mainHandItemStack.getType() == Material.BOW) {
-                    dualWieldEfficiency = 0.0;
-                    if (offHandItemStack.getType() == Material.ARROW) {
-                        dualWieldEfficiency = 1.0;
-                    }
-                }
-            }
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = AttributeHandler.getValue(offHandItemStack, attr) * dualWieldEfficiency;
-                double curVal = attributeDoubleMap.containsKey(attr) ? attributeDoubleMap.get(attr) : 0D;
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math.min(attr.getCap(), val + curVal) : val + curVal);
-                update = true;
+        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !ItemTypeUtil.isArmor(offHandItemStack.getType())) {
+            double dualWieldEfficiency = ItemTypeUtil.getDualWieldEfficiency(mainHandItemStack, offHandItemStack);
+            Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(offHandItemStack, dualWieldEfficiency);
+            if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && getPlayer().getLevel() < itemStatMap
+                .get(StrifeAttribute.LEVEL_REQUIREMENT) / dualWieldEfficiency) {
+                MessageUtils.sendMessage(getPlayer(), LVL_REQ_OFF_WEAPON);
+            } else {
+                attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
             }
         }
-        if (update) {
-            cache.setAttributeWeaponCache(attributeDoubleMap);
-        }
+        cache.setAttributeWeaponCache(attributeDoubleMap);
+        System.out.println("FINAL WEAPON STAT MAP: " + attributeDoubleMap);
         return attributeDoubleMap;
     }
 
@@ -194,15 +172,20 @@ public class Champion {
         if (refresh) {
             cache.clear();
             attributeDoubleMap = AttributeHandler.combineMaps(
-                    getStatAttributeValues(),
-                    getArmorAttributeValues(),
-                    getWeaponAttributeValues()
+                getEntityAttributeValues(),
+                getLevelpointAttributeValues(),
+                getArmorAttributeValues(),
+                getWeaponAttributeValues()
             );
             cache.recombine();
         } else {
             attributeDoubleMap = cache.getCache();
         }
         return attributeDoubleMap;
+    }
+
+    public void setCurrentBaseStats(Map<StrifeAttribute, Double> baseStatMap) {
+        currentBaseStats = baseStatMap;
     }
 
     public Map<StrifeStat, Integer> getLevelMap() {
@@ -244,29 +227,4 @@ public class Champion {
     public void setCache(ChampionCache cache) {
         this.cache = cache;
     }
-
-    private boolean isArmor(Material material) {
-        String name = material.name();
-        return name.contains("HELMET") || name.contains("CHESTPLATE") || name.contains("LEGGINGS") ||
-                name.contains("BOOTS");
-    }
-
-    private boolean isMeleeWeapon(Material material) {
-        String name = material.name();
-        return name.endsWith("SWORD") || name.endsWith("AXE") || name.endsWith("HOE");
-    }
-
-    private boolean isWand(ItemStack is) {
-        if (is.getType() != Material.WOOD_SWORD) {
-            return false;
-        }
-        if (!is.hasItemMeta()) {
-            return false;
-        }
-        if (is.getItemMeta().getLore().get(1) == null) {
-            return false;
-        }
-        return is.getItemMeta().getLore().get(1).endsWith("Wand");
-    }
-
 }

@@ -32,7 +32,10 @@ import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.EntityStatCache;
+import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.listeners.*;
+import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.MultiplierManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.StrifeStatManager;
@@ -54,6 +57,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.HandlerList;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
@@ -66,10 +70,13 @@ public class StrifePlugin extends FacePlugin {
     private PluginLogger debugPrinter;
     private VersionedSmartYamlConfiguration configYAML;
     private VersionedSmartYamlConfiguration statsYAML;
+    private VersionedSmartYamlConfiguration baseStatsYAML;
     private StrifeStatManager statManager;
+    private MonsterManager monsterManager;
     private MultiplierManager multiplierManager;
     private DataStorage storage;
     private ChampionManager championManager;
+    private EntityStatCache entityStatCache;
     private SaveTask saveTask;
     private HealthRegenTask regenTask;
     private DarknessReductionTask darkTask;
@@ -92,17 +99,21 @@ public class StrifePlugin extends FacePlugin {
         return blockTask;
     }
 
+    final private static long attackTickRate = 2L;
+
     @Override
     public void enable() {
         debugPrinter = new PluginLogger(this);
+        baseStatsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "base-entity-stats.yml"),
+            getResource("base-entity-stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
         statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
-                                                        getResource("stats.yml"),
-                                                        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+            getResource("stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
         configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
-                                                         getResource("config.yml"),
-                                                         VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+            getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
+
+        monsterManager = new MonsterManager();
 
         multiplierManager = new MultiplierManager();
 
@@ -110,10 +121,15 @@ public class StrifePlugin extends FacePlugin {
 
         championManager = new ChampionManager(this);
 
+        entityStatCache = new EntityStatCache(this);
+
         commandHandler = new CommandHandler(this);
 
         MenuListener.getInstance().register(this);
 
+        if (baseStatsYAML.update()) {
+            getLogger().info("Updating base-entity-stats.yml");
+        }
         if (statsYAML.update()) {
             getLogger().info("Updating stats.yml");
         }
@@ -158,6 +174,36 @@ public class StrifePlugin extends FacePlugin {
         }
         debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
 
+        for (String entityKey : baseStatsYAML.getKeys(false)) {
+            if (!baseStatsYAML.isConfigurationSection(entityKey)) {
+                continue;
+            }
+            EntityType entityType = EntityType.valueOf(entityKey);
+            ConfigurationSection cs = baseStatsYAML.getConfigurationSection(entityKey);
+            EntityStatData data = new EntityStatData();
+            if (cs.isConfigurationSection("base-values")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.fromName(k);
+                    if (attr == null) {
+                        continue;
+                    }
+                    data.putBaseValue(attr, attrCS.getDouble(k));
+                }
+            }
+            if (cs.isConfigurationSection("per-level")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.fromName(k);
+                    if (attr == null) {
+                        continue;
+                    }
+                    data.putPerLevel(attr, attrCS.getDouble(k));
+                }
+            }
+            getMonsterManager().addEntityData(entityType, data);
+        }
+
         for (Champion champ : storage.load()) {
             championManager.addChampion(champ);
         }
@@ -165,7 +211,7 @@ public class StrifePlugin extends FacePlugin {
         saveTask = new SaveTask(this);
         regenTask = new HealthRegenTask(this);
         darkTask = new DarknessReductionTask();
-        attackSpeedTask = new AttackSpeedTask();
+        attackSpeedTask = new AttackSpeedTask(attackTickRate);
         blockTask = new BlockTask();
 
         commandHandler.registerCommands(new AttributesCommand(this));
@@ -174,8 +220,7 @@ public class StrifePlugin extends FacePlugin {
 
         levelingRate = new LevelingRate();
         Expression expr = new ExpressionBuilder(settings.getString("config.leveling.formula",
-                                                                   "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL")
-            .build();
+            "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
         for (int i = 0; i < 100; i++) {
             levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
         }
@@ -192,7 +237,7 @@ public class StrifePlugin extends FacePlugin {
             20L * 10, // Start timer after 10s
             10L  // Run it every 0.5s after
         );
-        attackSpeedTask.runTaskTimer(this, 5L, 5L);
+        attackSpeedTask.runTaskTimer(this, 5L, attackTickRate);
         blockTask.runTaskTimer(this, 5L, 5L);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
@@ -224,11 +269,14 @@ public class StrifePlugin extends FacePlugin {
         HandlerList.unregisterAll(this);
         storage.save(championManager.getChampions());
         configYAML = null;
+        baseStatsYAML = null;
         statsYAML = null;
         statManager = null;
+        monsterManager = null;
         multiplierManager = null;
         storage = null;
         championManager = null;
+        entityStatCache = null;
         saveTask = null;
         regenTask = null;
         darkTask = null;
@@ -238,6 +286,10 @@ public class StrifePlugin extends FacePlugin {
 
     public StrifeStatManager getStatManager() {
         return statManager;
+    }
+
+    public MonsterManager getMonsterManager() {
+        return monsterManager;
     }
 
     public MultiplierManager getMultiplierManager() {
@@ -256,6 +308,10 @@ public class StrifePlugin extends FacePlugin {
 
     public ChampionManager getChampionManager() {
         return championManager;
+    }
+
+    public EntityStatCache getEntityStatCache() {
+        return entityStatCache;
     }
 
     public MasterConfiguration getSettings() {

@@ -32,6 +32,7 @@ import java.util.UUID;
 
 public class ChampionCache {
     private final UUID owner;
+    private final Map<StrifeAttribute, Double> baseStatCache;
     private final Map<StrifeAttribute, Double> attributeStatCache;
     private final Map<StrifeAttribute, Double> attributeArmorCache;
     private final Map<StrifeAttribute, Double> attributeWeaponCache;
@@ -39,6 +40,7 @@ public class ChampionCache {
 
     public ChampionCache(UUID owner) {
         this.owner = owner;
+        this.baseStatCache = new HashMap<>();
         this.attributeStatCache = new HashMap<>();
         this.attributeArmorCache = new HashMap<>();
         this.attributeWeaponCache = new HashMap<>();
@@ -49,7 +51,11 @@ public class ChampionCache {
         return owner;
     }
 
-    public Map<StrifeAttribute, Double> getStatCache() {
+    public Map<StrifeAttribute, Double> getBaseStatCache() {
+        return new HashMap<>(baseStatCache);
+    }
+
+    public Map<StrifeAttribute, Double> getLevelpointStatCache() {
         return new HashMap<>(attributeStatCache);
     }
 
@@ -66,21 +72,19 @@ public class ChampionCache {
     }
 
     public double getStatAttribute(StrifeAttribute attribute) {
-        return attributeStatCache.containsKey(attribute) ? attributeStatCache.get(attribute) : attribute.getBaseValue();
+        return attributeStatCache.containsKey(attribute) ? attributeStatCache.get(attribute) : 0D;
     }
 
     public double getArmorAttribute(StrifeAttribute attribute) {
-        return attributeArmorCache.containsKey(attribute) ? attributeArmorCache.get(attribute) :
-                attribute.getBaseValue();
+        return attributeArmorCache.containsKey(attribute) ? attributeArmorCache.get(attribute) : 0D;
     }
 
     public double getWeaponAttribute(StrifeAttribute attribute) {
-        return attributeWeaponCache.containsKey(attribute) ? attributeWeaponCache.get(attribute) :
-                attribute.getBaseValue();
+        return attributeWeaponCache.containsKey(attribute) ? attributeWeaponCache.get(attribute) : 0D;
     }
 
     public double getAttribute(StrifeAttribute attribute) {
-        return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : attribute.getBaseValue();
+        return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : 0D;
     }
 
     public void setStatAttribute(StrifeAttribute attribute, double value) {
@@ -93,6 +97,10 @@ public class ChampionCache {
 
     public void setWeaponAttribute(StrifeAttribute attribute, double value) {
         attributeWeaponCache.put(attribute, value);
+    }
+
+    public void clearBaseStatCache() {
+        attributeStatCache.clear();
     }
 
     public void clearStatCache() {
@@ -109,25 +117,20 @@ public class ChampionCache {
 
     public void recombine() {
         attributeCache.clear();
-        attributeCache.putAll(AttributeHandler.combineMaps(getStatCache(),
-                getArmorCache(),
-                getWeaponCache()
+        attributeCache.putAll(AttributeHandler.combineMaps(
+            getBaseStatCache(),
+            getLevelpointStatCache(),
+            getArmorCache(),
+            getWeaponCache()
         ));
     }
 
     public void clear() {
         attributeCache.clear();
+        baseStatCache.clear();
         attributeStatCache.clear();
         attributeArmorCache.clear();
         attributeWeaponCache.clear();
-    }
-
-    public String[] dumpCaches() {
-        return new String[] {
-                "Stat cache size: " + attributeStatCache.size(),
-                "Armor cache size: " + attributeArmorCache.size(),
-                "Weapon cache size: " + attributeWeaponCache.size(),
-        };
     }
 
     @Override
@@ -141,6 +144,14 @@ public class ChampionCache {
     @Override
     public int hashCode() {
         return Objects.hashCode(getOwner());
+    }
+
+    public void setBaseStatCache(Map<StrifeAttribute, Double> map) {
+        baseStatCache.clear();
+        if (map == null) {
+            return;
+        }
+        baseStatCache.putAll(map);
     }
 
     void setAttributeStatCache(Map<StrifeAttribute, Double> map) {

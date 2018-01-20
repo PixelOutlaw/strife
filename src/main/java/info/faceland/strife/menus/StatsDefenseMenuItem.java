@@ -26,6 +26,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -47,6 +48,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     private Player player;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
     private static final DecimalFormat REDUCER_FORMAT = new DecimalFormat("#.#");
+    private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#.##");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
 
     public StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
@@ -65,7 +67,7 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (this.player != null) {
             player = this.player;
         }
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        AttributedEntity pStats = plugin.getEntityStatCache().getEntity(player, false);
         ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
@@ -73,41 +75,24 @@ public class StatsDefenseMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>();
         lore.add(breakLine);
 
-        lore.add(ChatColor.YELLOW + "Health: " + ChatColor.WHITE + DECIMAL_FORMAT.format(champion.getCache().getAttribute
-                (StrifeAttribute.HEALTH)));
-        lore.add(ChatColor.YELLOW + "Regen: " + ChatColor.WHITE + champion.getCache().getAttribute(StrifeAttribute
-                .REGENERATION) + ChatColor.GRAY + " (HP/5s)");
+        lore.add(ChatColor.YELLOW + "Maximum Health: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.HEALTH)));
+        double regenAmount = pStats.getAttribute(StrifeAttribute.REGENERATION) * (1 + pStats.getAttribute(StrifeAttribute.REGEN_MULT) / 100);
+        lore.add(ChatColor.YELLOW + "Regeneration: " + ChatColor.WHITE + TWO_DECIMALS.format(regenAmount) + ChatColor.GRAY + " (HP/5s)");
 
         lore.add(breakLine);
 
         double statCap;
-        double armor = 100 * (1 - getArmorMult(champion.getCache().getAttribute(StrifeAttribute.ARMOR)));
-        lore.add(ChatColor.YELLOW + "Armor: " + ChatColor.WHITE +
-                DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.ARMOR)) +
-                ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)");
-        double evasion = 100 * (1 - getEvadeChance(champion.getCache().getAttribute(StrifeAttribute.EVASION)));
-        lore.add(ChatColor.YELLOW + "Evasion: " + ChatColor.WHITE +
-                DECIMAL_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.EVASION)) +
-                ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)");
+        lore.add(ChatColor.YELLOW + "Armor Rating: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.ARMOR)));
+        lore.add(ChatColor.YELLOW + "Evasion Rating: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.EVASION)));
 
         lore.add(breakLine);
 
-        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.BLOCK),
-                StrifeAttribute.BLOCK.getCap());
-        lore.add(ChatColor.YELLOW + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
-
-        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.PARRY),
-                StrifeAttribute.PARRY.getCap());
-        lore.add(ChatColor.YELLOW + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
-
-        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.ABSORB_CHANCE),
-                StrifeAttribute.ABSORB_CHANCE.getCap());
-        lore.add(ChatColor.YELLOW + "Absorb Chance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
+        lore.add(ChatColor.YELLOW + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.BLOCK)));
 
         lore.add(breakLine);
 
-        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.RESISTANCE),
-                StrifeAttribute.RESISTANCE.getCap());
+        statCap = Math.min(pStats.getAttribute(StrifeAttribute.RESISTANCE),
+                StrifeAttribute.RESISTANCE.getPlayerCap());
         lore.add(ChatColor.YELLOW + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
 
         lore.add(breakLine);
@@ -122,14 +107,6 @@ public class StatsDefenseMenuItem extends MenuItem {
     @Override
     public void onItemClick(ItemClickEvent event) {
         super.onItemClick(event);
-    }
-
-    private double getArmorMult(double armor) {
-        return Math.pow(100 / (100 + armor), 1.6);
-    }
-
-    private double getEvadeChance(double evasion) {
-        return Math.pow(100 / (100 + evasion), 1.5);
     }
 
 }

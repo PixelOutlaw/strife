@@ -94,7 +94,7 @@ public class LevelupMenuItem extends MenuItem {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        champion.getStatAttributeValues();
+        champion.getLevelpointAttributeValues();
         champion.getCache().recombine();
         AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
         event.setWillUpdate(true);

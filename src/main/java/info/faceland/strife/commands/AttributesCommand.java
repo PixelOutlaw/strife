@@ -38,6 +38,7 @@ public class AttributesCommand {
     @Command(identifier = "stats", permissions = "strife.command.stats")
     public void baseCommand(Player sender) {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
+        champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(sender.getType(), sender.getLevel()));
         champion.getAttributeValues(true);
         plugin.getStatsMenu().open(sender);
     }

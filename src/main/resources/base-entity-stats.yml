@@ -1,0 +1,26 @@
+version: "0.0.1"
+PLAYER:
+  base-values:
+    HEALTH: 30
+    ARMOR: 10
+    WARDING: 20
+    REGENERATION: 1
+    ARMOR: 10
+    WARDING: 20
+  per-level:
+    HEALTH: 1
+    BASE-REGEN: 0.04
+ZOMBIE:
+  base-values:
+    HEALTH: 25
+    ARMOR: 0
+    WARDING: -30
+    ARMOR_MULT: 1
+    WARD_MULT: 1
+  per-level:
+    HEALTH: 1
+    BASE-REGEN: 0.04
+    ARMOR: 1
+    ARMOR_MULT: 0.1
+    WARDING: 1
+    WARD_MULT: 0.1

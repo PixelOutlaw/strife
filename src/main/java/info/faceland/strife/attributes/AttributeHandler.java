@@ -39,27 +39,42 @@ import java.util.Map;
 
 public class AttributeHandler {
 
-    public static double getValue(ItemStack itemStack, StrifeAttribute attribute) {
-        return getValue(new HiltItemStack(itemStack), attribute);
+    public static Map<StrifeAttribute, Double> getItemStats(ItemStack stack) {
+        return getItemStats(stack, 1.0);
     }
 
-    public static double getValue(HiltItemStack itemStack, StrifeAttribute attribute) {
-        double amount = 0D;
-        if (itemStack == null || itemStack.getType() == Material.AIR || attribute == null) {
-            return amount;
+    public static Map<StrifeAttribute, Double> getItemStats(ItemStack stack, double multiplier) {
+        if (stack == null || stack.getType() == Material.AIR) {
+            return null;
         }
-        List<String> lore = itemStack.getLore();
+        HiltItemStack item = new HiltItemStack(stack);
+        Map<StrifeAttribute, Double> itemStats = new HashMap<>();
+
+        List<String> lore = item.getLore();
         List<String> strippedLore = stripColor(lore);
         for (String s : strippedLore) {
+            StrifeAttribute attribute = null;
+            double amount = 0;
             String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
-            if (retained.equals(attribute.getName().trim())) {
-                amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+            for (StrifeAttribute attr : StrifeAttribute.values()) {
+                if (attr.getName() == null) {
+                    continue;
+                }
+                if (retained.equals(attr.getName().trim())) {
+                    attribute = attr;
+                    amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+                    break;
+                }
+            }
+            if (attribute != null && amount > 0) {
+                amount *= multiplier;
+                if (itemStats.containsKey(attribute)) {
+                    amount += itemStats.get(attribute);
+                }
+                itemStats.put(attribute, amount);
             }
         }
-        if (attribute.isPercentage()) {
-            amount /= 100;
-        }
-        return attribute.getCap() > 0D ? Math.min(amount, attribute.getCap()) : amount;
+        return itemStats;
     }
 
     private static List<String> stripColor(List<String> strings) {
@@ -73,28 +88,20 @@ public class AttributeHandler {
     public static void updateHealth(Player player, double maxHealth) {
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
         player.setHealthScaled(true);
-        player.setHealthScale(2 * Math.ceil(maxHealth / 4));
-    }
-
-    public static boolean meetsLevelRequirement(Player player, ItemStack itemStack) {
-        return meetsLevelRequirement(player, new HiltItemStack(itemStack));
-    }
-
-    public static boolean meetsLevelRequirement(Player player, HiltItemStack hiltItemStack) {
-        return !(player == null || hiltItemStack == null) && player.getLevel() >= getValue(hiltItemStack, StrifeAttribute.LEVEL_REQUIREMENT);
+        player.setHealthScale(2 * Math.ceil(maxHealth / 10));
     }
 
     @SafeVarargs
     public static Map<StrifeAttribute, Double> combineMaps(Map<StrifeAttribute, Double>... maps) {
-        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+        Map<StrifeAttribute, Double> combinedMap = new HashMap<>();
         for (Map<StrifeAttribute, Double> map : maps) {
-            for (Map.Entry<StrifeAttribute, Double> ent : map.entrySet()) {
-                double val = attributeDoubleMap.containsKey(ent.getKey()) ? attributeDoubleMap.get(ent.getKey()) : 0;
-                double calculatedValue = val + ent.getValue();
-                attributeDoubleMap.put(ent.getKey(), calculatedValue);
+            for (Map.Entry<StrifeAttribute, Double> statMap : map.entrySet()) {
+                double old = combinedMap.containsKey(statMap.getKey()) ? combinedMap.get(statMap.getKey()) : 0D;
+                double combinedValue = old + statMap.getValue();
+                combinedMap.put(statMap.getKey(), combinedValue);
             }
         }
-        return attributeDoubleMap;
+        return combinedMap;
     }
 
 }

@@ -26,7 +26,9 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -59,32 +61,22 @@ public class WandListener implements Listener{
         if (event.getAction() != Action.LEFT_CLICK_AIR) {
             return;
         }
-        Player p = event.getPlayer();
-        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
-        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ATTACK_SPEED)));
-        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(p.getUniqueId());
-        double attackSpeedMult = 1.0D;
-        if (timeLeft > 0) {
-            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
-        }
-        plugin.getAttackSpeedTask().setTimeLeft(p.getUniqueId(), timeToSet);
+        Player playerEntity = event.getPlayer();
 
-        ItemStack wand = p.getEquipment().getItemInMainHand();
+        Champion playerChamp = plugin.getChampionManager().getChampion(playerEntity.getUniqueId());
 
-        if (wand.getType() != Material.WOOD_SWORD) {
+        AttributedEntity pStats = plugin.getEntityStatCache().getEntity(playerEntity, true);
+        double attackSpeedMult = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
+
+        ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
+
+        if (!ItemTypeUtil.isWand(wand)) {
             return;
         }
-        if (wand.getItemMeta().getLore().size() < 2) {
-            return;
-        }
-        if (!wand.getItemMeta().getLore().get(1).endsWith("Wand")) {
-            return;
-        }
+
         if (attackSpeedMult <= 0.25) {
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, p);
-            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, playerEntity);
+            playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
             return;
         }
 
@@ -92,13 +84,13 @@ public class WandListener implements Listener{
         attackSpeedMult *= attackSpeedMult;
         attackSpeedMult = Math.max(0.15, attackSpeedMult);
 
-        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
+        playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
         playerChamp.getAttributeValues(false);
         playerChamp.getWeaponAttributeValues();
         playerChamp.getCache().recombine();
-        ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
-        magicProj.setShooter(p);
-        Vector vec = p.getLocation().getDirection();
+        ShulkerBullet magicProj = playerEntity.getWorld().spawn(playerEntity.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
+        magicProj.setShooter(playerEntity);
+        Vector vec = playerEntity.getLocation().getDirection();
         magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.255, vec.getZ() * 1.2));
         double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
         double critMult = 0;
