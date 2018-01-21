@@ -32,6 +32,13 @@ public class ChampionManager {
     private final StrifePlugin plugin;
     private Map<UUID, Champion> championMap;
 
+    public final static String LVL_REQ_MAIN_WEAPON = "<red>You do not meet the level requirement for your weapon! " +
+        "It will not give you any stats when used!";
+    public final static String LVL_REQ_OFF_WEAPON = "<red>You do not meet the level requirement for your offhand " +
+        "item! It will not give you any stats when used!";
+    public final static String LVL_REQ_ARMOR = "<red>You do not meet the level requirement for a piece of your " +
+        "armor! It will not give you any stats while equipped!";
+
     public ChampionManager(StrifePlugin plugin) {
         this.plugin = plugin;
         championMap = new HashMap<>();
@@ -72,6 +79,31 @@ public class ChampionManager {
         if (hasChampion(uuid)) {
             championMap.remove(uuid);
         }
+    }
+
+    public static void updateChampionWeapons(StrifePlugin plugin, Champion champion) {
+        champion.updateWeapons();
+        plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCache().getCombinedCache());
+    }
+
+    public static void updateChampionArmor(StrifePlugin plugin, Champion champion) {
+        champion.updateArmor();
+        plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCache().getCombinedCache());
+    }
+
+    public static void updateChampionLevelPoints(StrifePlugin plugin, Champion champion) {
+        champion.updateLevelPoints();
+        plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCache().getCombinedCache());
+    }
+
+    public static void updateChampionBaseStats(StrifePlugin plugin, Champion champion) {
+        champion.updateBase();
+        plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCache().getCombinedCache());
+    }
+
+    public static void updateChampionStats(StrifePlugin plugin, Champion champion) {
+        champion.updateAll();
+        plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCache().getCombinedCache());
     }
 
     public Collection<Champion> getChampions() {

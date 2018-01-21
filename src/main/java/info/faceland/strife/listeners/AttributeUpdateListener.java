@@ -24,19 +24,18 @@ package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
 
+import info.faceland.strife.managers.ChampionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryView;
@@ -55,9 +54,24 @@ public class AttributeUpdateListener implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
             @Override
             public void run() {
-                updateAttributes(event.getPlayer());
+                Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+                champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(event.getPlayer().getType(), event.getPlayer().getLevel()));
+                ChampionManager.updateChampionStats(plugin, champion);
+                AttributeHandler.updateAttributes(plugin, event.getPlayer());
             }
         }, 20L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChangeHeldItem(PlayerItemHeldEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+                ChampionManager.updateChampionStats(plugin, champion);
+                AttributeHandler.updateAttributes(plugin, event.getPlayer());
+            }
+        }, 1L);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -84,30 +98,17 @@ public class AttributeUpdateListener implements Listener {
         if (player.isDead() || player.getHealth() <= 0D) {
             return;
         }
-        updateAttributes(player);
+        Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+        ChampionManager.updateChampionStats(plugin, champion);
+        AttributeHandler.updateAttributes(plugin, player);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        updateAttributes(event.getPlayer());
+        Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+        champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(event.getPlayer().getType(), event.getPlayer().getLevel()));
+        ChampionManager.updateChampionStats(plugin, champion);
+        AttributeHandler.updateAttributes(plugin, event.getPlayer());
     }
 
-    public void updateAttributes(Player player) {
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(player.getType(), player.getLevel()));
-        champion.getAttributeValues(true);
-
-        AttributedEntity playerStatEntity = plugin.getEntityStatCache().getEntity(player, false);
-
-        double maxHealth = Math.max(playerStatEntity.getAttribute(StrifeAttribute.HEALTH), 1);
-        AttributeHandler.updateHealth(player, maxHealth);
-
-        double perc = champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-        float speed = 0.2F * (float) perc;
-        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
-        player.setFlySpeed(Math.min(Math.max(-1F, speed / 1.5f), 1F));
-        player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
-        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(2);
-    }
 }

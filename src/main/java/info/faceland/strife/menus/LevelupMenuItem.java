@@ -25,8 +25,8 @@ package info.faceland.strife.menus;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.stats.StrifeStat;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -94,9 +94,8 @@ public class LevelupMenuItem extends MenuItem {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        champion.getLevelpointAttributeValues();
-        champion.getCache().recombine();
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        ChampionManager.updateChampionStats(plugin, champion);
+        AttributeHandler.updateAttributes(plugin, champion.getPlayer());
         event.setWillUpdate(true);
     }
 

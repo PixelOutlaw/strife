@@ -23,7 +23,9 @@
 package info.faceland.strife.commands;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.managers.ChampionManager;
 import org.bukkit.entity.Player;
 import se.ranzdo.bukkit.methodcommand.Command;
 
@@ -39,7 +41,8 @@ public class AttributesCommand {
     public void baseCommand(Player sender) {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(sender.getType(), sender.getLevel()));
-        champion.getAttributeValues(true);
+        ChampionManager.updateChampionStats(plugin, champion);
+        AttributeHandler.updateAttributes(plugin, sender);
         plugin.getStatsMenu().open(sender);
     }
 

@@ -29,14 +29,12 @@ import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
 
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.DarknessManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -82,8 +80,8 @@ public class CombatListener implements Listener {
             return;
         }
 
-        Champion playerChamp = plugin.getChampionManager().getChampion(event.getEntity().getUniqueId());
-        if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.DOGE)) {
+        AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity((LivingEntity)event.getEntity());
+        if (random.nextDouble() <= attacker.getAttribute(StrifeAttribute.DOGE) / 100) {
             MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
         }
     }
@@ -136,8 +134,8 @@ public class CombatListener implements Listener {
             }
         }
 
-        AttributedEntity attacker = plugin.getEntityStatCache().getEntity(attackEntity, true);
-        AttributedEntity defender = plugin.getEntityStatCache().getEntity(defendEntity, true);
+        AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity(attackEntity);
+        AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
 
         double evasionMult = getEvasionMult(attacker, defender);
 

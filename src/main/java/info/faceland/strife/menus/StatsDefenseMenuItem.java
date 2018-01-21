@@ -27,7 +27,6 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -67,7 +66,7 @@ public class StatsDefenseMenuItem extends MenuItem {
         if (this.player != null) {
             player = this.player;
         }
-        AttributedEntity pStats = plugin.getEntityStatCache().getEntity(player, false);
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());

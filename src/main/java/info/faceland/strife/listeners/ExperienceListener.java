@@ -22,7 +22,6 @@
  */
 package info.faceland.strife.listeners;
 
-import be.maximvdw.titlemotd.ui.Title;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
@@ -31,8 +30,10 @@ import gyurix.api.TitleAPI;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
 
+import info.faceland.strife.managers.ChampionManager;
 import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -128,6 +129,8 @@ public class ExperienceListener implements Listener {
                         +event.getNewLevel() + "&a!");
             }
         }
+        champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(player.getType(), event.getNewLevel()));
+        ChampionManager.updateChampionStats(plugin, champion);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -153,9 +156,9 @@ public class ExperienceListener implements Listener {
         // Apply bonuses and limits to the amount
         double maxFaceExp = maxFaceExpInt;
         ExperienceManager experienceManager = new ExperienceManager(player);
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0) + plugin.getMultiplierManager().getExpMult();
-        double bonusMult = 1 + xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN);
+        double bonusMult = 1 + xpMult + (1 + pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100);
 
         amount *= bonusMult;
         amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)) * bonusMult);

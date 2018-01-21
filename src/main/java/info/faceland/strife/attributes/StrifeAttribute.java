@@ -103,20 +103,6 @@ public enum StrifeAttribute {
         this.playerCap = -1D;
     }
 
-    public static StrifeAttribute fromName(String s) {
-        for (StrifeAttribute val : values()) {
-            if (val.name == null) {
-                continue;
-            }
-            if (val.name.equalsIgnoreCase(s) || val.name().equalsIgnoreCase(s) || val.name.replace(" ", "-")
-                .equalsIgnoreCase(s) ||
-                val.name().replace("_", "-").equalsIgnoreCase(s)) {
-                return val;
-            }
-        }
-        return null;
-    }
-
     public String getName() { return name; }
 
     public double getPlayerCap() {

@@ -31,32 +31,33 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ChampionCache {
+
     private final UUID owner;
-    private final Map<StrifeAttribute, Double> baseStatCache;
-    private final Map<StrifeAttribute, Double> attributeStatCache;
+    private final Map<StrifeAttribute, Double> attributeBase;
+    private final Map<StrifeAttribute, Double> attributeLevelPoint;
     private final Map<StrifeAttribute, Double> attributeArmorCache;
     private final Map<StrifeAttribute, Double> attributeWeaponCache;
-    private final Map<StrifeAttribute, Double> attributeCache;
+    private final Map<StrifeAttribute, Double> combinedAttributeCache;
 
     public ChampionCache(UUID owner) {
         this.owner = owner;
-        this.baseStatCache = new HashMap<>();
-        this.attributeStatCache = new HashMap<>();
+        this.attributeBase = new HashMap<>();
+        this.attributeLevelPoint = new HashMap<>();
         this.attributeArmorCache = new HashMap<>();
         this.attributeWeaponCache = new HashMap<>();
-        this.attributeCache = new HashMap<>();
+        this.combinedAttributeCache = new HashMap<>();
     }
 
     public UUID getOwner() {
         return owner;
     }
 
-    public Map<StrifeAttribute, Double> getBaseStatCache() {
-        return new HashMap<>(baseStatCache);
+    public Map<StrifeAttribute, Double> getBaseCache() {
+        return new HashMap<>(attributeBase);
     }
 
-    public Map<StrifeAttribute, Double> getLevelpointStatCache() {
-        return new HashMap<>(attributeStatCache);
+    public Map<StrifeAttribute, Double> getLevelpointCache() {
+        return new HashMap<>(attributeLevelPoint);
     }
 
     public Map<StrifeAttribute, Double> getArmorCache() {
@@ -67,70 +68,38 @@ public class ChampionCache {
         return new HashMap<>(attributeWeaponCache);
     }
 
-    public Map<StrifeAttribute, Double> getCache() {
-        return new HashMap<>(attributeCache);
+    public Map<StrifeAttribute, Double> getCombinedCache() {
+        return new HashMap<>(combinedAttributeCache);
     }
 
-    public double getStatAttribute(StrifeAttribute attribute) {
-        return attributeStatCache.containsKey(attribute) ? attributeStatCache.get(attribute) : 0D;
+    void clearBaseStatCache() {
+        attributeBase.clear();
     }
 
-    public double getArmorAttribute(StrifeAttribute attribute) {
-        return attributeArmorCache.containsKey(attribute) ? attributeArmorCache.get(attribute) : 0D;
+    void clearLevelPointCache() {
+        attributeLevelPoint.clear();
     }
 
-    public double getWeaponAttribute(StrifeAttribute attribute) {
-        return attributeWeaponCache.containsKey(attribute) ? attributeWeaponCache.get(attribute) : 0D;
-    }
-
-    public double getAttribute(StrifeAttribute attribute) {
-        return attributeCache.containsKey(attribute) ? attributeCache.get(attribute) : 0D;
-    }
-
-    public void setStatAttribute(StrifeAttribute attribute, double value) {
-        attributeStatCache.put(attribute, value);
-    }
-
-    public void setArmorAttribute(StrifeAttribute attribute, double value) {
-        attributeArmorCache.put(attribute, value);
-    }
-
-    public void setWeaponAttribute(StrifeAttribute attribute, double value) {
-        attributeWeaponCache.put(attribute, value);
-    }
-
-    public void clearBaseStatCache() {
-        attributeStatCache.clear();
-    }
-
-    public void clearStatCache() {
-        attributeStatCache.clear();
-    }
-
-    public void clearArmorCache() {
+    void clearArmorCache() {
         attributeArmorCache.clear();
     }
 
-    public void clearWeaponCache() {
+    void clearWeaponCache() {
         attributeWeaponCache.clear();
+    }
+
+    void clearCombinedCache() {
+        combinedAttributeCache.clear();
     }
 
     public void recombine() {
-        attributeCache.clear();
-        attributeCache.putAll(AttributeHandler.combineMaps(
-            getBaseStatCache(),
-            getLevelpointStatCache(),
+        clearCombinedCache();
+        combinedAttributeCache.putAll(AttributeHandler.combineMaps(
+            getBaseCache(),
+            getLevelpointCache(),
             getArmorCache(),
             getWeaponCache()
         ));
-    }
-
-    public void clear() {
-        attributeCache.clear();
-        baseStatCache.clear();
-        attributeStatCache.clear();
-        attributeArmorCache.clear();
-        attributeWeaponCache.clear();
     }
 
     @Override
@@ -146,20 +115,20 @@ public class ChampionCache {
         return Objects.hashCode(getOwner());
     }
 
-    public void setBaseStatCache(Map<StrifeAttribute, Double> map) {
-        baseStatCache.clear();
+    void setAttributeBaseCache(Map<StrifeAttribute, Double> map) {
+        attributeBase.clear();
         if (map == null) {
             return;
         }
-        baseStatCache.putAll(map);
+        attributeBase.putAll(map);
     }
 
-    void setAttributeStatCache(Map<StrifeAttribute, Double> map) {
-        attributeStatCache.clear();
+    void setAttributeLevelPointCache(Map<StrifeAttribute, Double> map) {
+        attributeLevelPoint.clear();
         if (map == null) {
             return;
         }
-        attributeStatCache.putAll(map);
+        attributeLevelPoint.putAll(map);
     }
 
     void setAttributeArmorCache(Map<StrifeAttribute, Double> map) {

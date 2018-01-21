@@ -158,10 +158,8 @@ public class StrifePlugin extends FacePlugin {
             if (cs.isConfigurationSection("attributes")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
                 for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.fromName(k);
-                    if (attr == null) {
-                        continue;
-                    }
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    System.out.println("aa: " + attr);
                     attributeMap.put(attr, attrCS.getDouble(k));
                 }
             }
@@ -184,20 +182,14 @@ public class StrifePlugin extends FacePlugin {
             if (cs.isConfigurationSection("base-values")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
                 for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.fromName(k);
-                    if (attr == null) {
-                        continue;
-                    }
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
                     data.putBaseValue(attr, attrCS.getDouble(k));
                 }
             }
             if (cs.isConfigurationSection("per-level")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
                 for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.fromName(k);
-                    if (attr == null) {
-                        continue;
-                    }
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
                     data.putPerLevel(attr, attrCS.getDouble(k));
                 }
             }

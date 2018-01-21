@@ -25,7 +25,7 @@ package info.faceland.strife.listeners;
 import info.faceland.loot.events.LootDetermineChanceEvent;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -44,9 +44,9 @@ public class LootListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onLootDetermineChance(LootDetermineChanceEvent event) {
-        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getKiller());
         double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin.getMultiplierManager().getDropMult();
-        double dropBonus = 1 + dropMult + champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY);
+        double dropBonus = 1 + dropMult + (1 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY) / 100);
         event.setChance(dropBonus);
     }
 

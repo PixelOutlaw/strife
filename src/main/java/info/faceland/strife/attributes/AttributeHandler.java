@@ -25,6 +25,8 @@ package info.faceland.strife.attributes;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 
+import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.AttributedEntity;
 import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -89,6 +91,21 @@ public class AttributeHandler {
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
         player.setHealthScaled(true);
         player.setHealthScale(2 * Math.ceil(maxHealth / 10));
+    }
+
+    public static void updateAttributes(StrifePlugin plugin, Player player) {
+        AttributedEntity playerStatEntity = plugin.getEntityStatCache().getAttributedEntity(player);
+
+        double maxHealth = Math.max(playerStatEntity.getAttribute(StrifeAttribute.HEALTH), 1);
+        AttributeHandler.updateHealth(player, maxHealth);
+
+        double perc = playerStatEntity.getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) perc;
+        player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+        player.setFlySpeed(Math.min(Math.max(-1F, speed / 1.5f), 1F));
+        player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
+        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(2);
     }
 
     @SafeVarargs

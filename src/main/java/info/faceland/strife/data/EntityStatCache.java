@@ -21,48 +21,41 @@ public class EntityStatCache {
     this.trackedEntities = new HashMap<>();
   }
 
-  public void updateEntity(LivingEntity entity) {
-    if (!entity.isValid()) {
-      removeEntity(entity);
-      return;
+  public Map<StrifeAttribute, Double> getEntityStats(LivingEntity entity) {
+    if (!trackedEntities.containsKey(entity.getUniqueId())) {
+      buildEntityStats(entity);
     }
-    AttributedEntity attributedEntity = new AttributedEntity(entity);
-    Map<StrifeAttribute, Double> statMap;
-    if (entity instanceof Player) {
-      Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
-      statMap = champion.getAttributeValues(true);
+    return trackedEntities.get(entity.getUniqueId()).getAttributes();
+  }
+
+  public AttributedEntity getAttributedEntity(LivingEntity entity) {
+    if (!trackedEntities.containsKey(entity.getUniqueId())) {
+      buildEntityStats(entity);
+    }
+    return trackedEntities.get(entity.getUniqueId());
+  }
+
+  public void buildEntityStats(LivingEntity entity) {
+    AttributedEntity attributedEntity;
+    if (!trackedEntities.containsKey(entity.getUniqueId())) {
+      attributedEntity = new AttributedEntity(entity);
     } else {
-      statMap = buildEntityStats(entity);
+      attributedEntity = trackedEntities.get(entity.getUniqueId());
     }
-    for (StrifeAttribute attr : statMap.keySet()) {
-      attributedEntity.setAttribute(attr, statMap.get(attr));
-    }
+    attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity.getType(), getEntityLevel(entity)));
     trackedEntities.put(entity.getUniqueId(), attributedEntity);
-    System.out.println(trackedEntities.toString());
+  }
+
+  public void setEntityStats(LivingEntity entity, Map<StrifeAttribute, Double> statMap) {
+    AttributedEntity attributedEntity = getAttributedEntity(entity);
+    attributedEntity.setAttributes(statMap);
+    trackedEntities.put(entity.getUniqueId(), attributedEntity);
   }
 
   public void removeEntity(LivingEntity entity) {
     if (trackedEntities.get(entity.getUniqueId()) != null) {
       trackedEntities.remove(entity.getUniqueId());
     }
-  }
-
-  public AttributedEntity getEntity(LivingEntity entity, boolean update) {
-    if (update || !trackedEntities.containsKey((entity.getUniqueId()))) {
-      updateEntity(entity);
-    }
-    return trackedEntities.get(entity.getUniqueId());
-  }
-
-  public double getStat(LivingEntity entity, StrifeAttribute attribute) {
-    if (!trackedEntities.containsKey(entity.getUniqueId())) {
-      updateEntity(entity);
-    }
-    return trackedEntities.get(entity.getUniqueId()).getAttribute(attribute);
-  }
-
-  public Map<StrifeAttribute, Double> buildEntityStats(LivingEntity entity) {
-    return plugin.getMonsterManager().getBaseStats(entity.getType(), getEntityLevel(entity));
   }
 
   private int getEntityLevel(LivingEntity entity) {

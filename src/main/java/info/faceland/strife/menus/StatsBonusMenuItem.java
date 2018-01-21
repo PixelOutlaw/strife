@@ -26,7 +26,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -63,7 +63,7 @@ public class StatsBonusMenuItem extends MenuItem {
         if (this.player != null) {
             player = this.player;
         }
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         ItemStack itemStack = new ItemStack(Material.EMERALD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
@@ -76,13 +76,13 @@ public class StatsBonusMenuItem extends MenuItem {
         double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
                 .getMultiplierManager().getDropMult();
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN)) * 100) + "%");
+                .format((xpMult + pStats.getAttribute(StrifeAttribute.XP_GAIN)) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((dropMult + champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY)) * 100) + "%");
+                .format((dropMult + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY)) * 100) + "%");
         lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
+                .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
         lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.HEAD_DROP) * 100) + "%");
+                .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP) * 100) + "%");
 
         lore.add(breakLine);
 

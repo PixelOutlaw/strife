@@ -14,10 +14,6 @@ public class AttributedEntity {
     this.livingEntity = livingEntity;
   }
 
-  public void setAttribute(StrifeAttribute attribute, double value) {
-    attributeCache.put(attribute, value);
-  }
-
   public double getAttribute(StrifeAttribute attribute) {
     if (attributeCache.get(attribute) == null) {
       System.out.println("Attribute " + attribute + " not found, returning 0");
@@ -28,5 +24,14 @@ public class AttributedEntity {
 
   public LivingEntity getEntity() {
     return livingEntity;
+  }
+
+  public Map<StrifeAttribute, Double> getAttributes() {
+    return attributeCache;
+  }
+
+  public void setAttributes(Map<StrifeAttribute, Double> attributes) {
+    attributeCache.clear();
+    attributeCache.putAll(attributes);
   }
 }

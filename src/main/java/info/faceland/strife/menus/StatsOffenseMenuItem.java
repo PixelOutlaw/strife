@@ -26,7 +26,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
@@ -65,7 +65,7 @@ public class StatsOffenseMenuItem extends MenuItem {
         if (this.player != null) {
             player = this.player;
         }
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         // CombatStyle determines what stat type to use, as well as the icon
         // 0 = melee, 1 = ranged, 2 = magic
         int combatStyle = 0;
@@ -85,71 +85,67 @@ public class StatsOffenseMenuItem extends MenuItem {
         switch (combatStyle) {
             case 0:
                 lore.add(ChatColor.RED + "Melee Damage: " + ChatColor.WHITE + INT_FORMAT.format(
-                        champion.getCache().getAttribute(StrifeAttribute.MELEE_DAMAGE)));
+                        pStats.getAttribute(StrifeAttribute.MELEE_DAMAGE)));
                 itemStack.setType(Material.IRON_SWORD);
                 break;
             case 1:
                 lore.add(ChatColor.RED + "Ranged Damage: " + ChatColor.WHITE + INT_FORMAT.format(
-                        champion.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE)));
+                        pStats.getAttribute(StrifeAttribute.RANGED_DAMAGE)));
                 itemStack.setType(Material.BOW);
                 break;
             case 2:
                 lore.add(ChatColor.RED + "Magic Damage: " + ChatColor.WHITE + INT_FORMAT.format(
-                        champion.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE)));
+                        pStats.getAttribute(StrifeAttribute.MAGIC_DAMAGE)));
                 itemStack.setType(Material.BLAZE_ROD);
                 break;
         }
         double statCap;
-        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + champion.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED) / 100))
-                + "s " + ChatColor.GRAY + "(+" + INT_FORMAT.format(champion.getCache().getAttribute
+        lore.add(ChatColor.RED + "Attack Speed: " + ChatColor.WHITE + AS_FORMAT.format(2 / (1 + pStats.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100))
+                + "s " + ChatColor.GRAY + "(+" + INT_FORMAT.format(pStats.getAttribute
                 (StrifeAttribute.ATTACK_SPEED)) + "%)");
 
         lore.add(ChatColor.RED + "Overcharge: " + ChatColor.WHITE + DECIMAL_FORMAT
-            .format(1 + champion.getCache().getAttribute(StrifeAttribute.OVERCHARGE) / 100) + "x");
+            .format(1 + pStats.getAttribute(StrifeAttribute.OVERCHARGE) / 100) + "x");
 
         lore.add(ChatColor.RED + "Critical Strike: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
-            champion.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT
-            .format(1 + champion.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) / 100) + "x)");
+            pStats.getAttribute(StrifeAttribute.CRITICAL_RATE)) + "% " + ChatColor.GRAY + "(" + DECIMAL_FORMAT
+            .format(1 + pStats.getAttribute(StrifeAttribute.CRITICAL_DAMAGE) / 100) + "x)");
 
-        lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + INT_FORMAT.format(champion.getCache().getAttribute(StrifeAttribute.LIFE_STEAL)) + "%");
+        lore.add(ChatColor.RED + "Life Steal: " + ChatColor.WHITE + INT_FORMAT.format(pStats.getAttribute(StrifeAttribute.LIFE_STEAL)) + "%");
 
         lore.add(breakLine);
 
-        lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + INT_FORMAT.format(champion.getCache().getAttribute(
-                StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT.format(champion.getCache().getAttribute(
+        lore.add(ChatColor.RED + "Fire Damage: " + ChatColor.WHITE + INT_FORMAT.format(pStats.getAttribute(
+                StrifeAttribute.FIRE_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT.format(pStats.getAttribute(
                 StrifeAttribute.IGNITE_CHANCE)) + "%)");
 
-        if (champion.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
+        if (pStats.getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Lightning Damage: " + ChatColor.WHITE + INT_FORMAT
-                .format(champion.getCache().getAttribute(
-                    StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT
-                .format(champion.getCache().getAttribute(
-                    StrifeAttribute.SHOCK_CHANCE)) + "%)");
+                .format(pStats.getAttribute(StrifeAttribute.LIGHTNING_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT
+                .format(pStats.getAttribute(StrifeAttribute.SHOCK_CHANCE)) + "%)");
         }
 
-        if (champion.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
+        if (pStats.getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Ice Damage: " + ChatColor.WHITE + INT_FORMAT
-                .format(champion.getCache().getAttribute(
-                    StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT
-                .format(champion.getCache().getAttribute(
-                    StrifeAttribute.FREEZE_CHANCE)) + "%)");
+                .format(pStats.getAttribute(StrifeAttribute.ICE_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT
+                .format(pStats.getAttribute(StrifeAttribute.FREEZE_CHANCE)) + "%)");
         }
 
-        if (champion.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE) > 0) {
+        if (pStats.getAttribute(StrifeAttribute.DARK_DAMAGE) > 0) {
             lore.add(ChatColor.RED + "Shadow Damage: " + ChatColor.WHITE + INT_FORMAT
-                .format(champion.getCache().getAttribute(
+                .format(pStats.getAttribute(
                     StrifeAttribute.DARK_DAMAGE)) + ChatColor.GRAY + " (" + INT_FORMAT
-                .format(champion.getCache().getAttribute(
+                .format(pStats.getAttribute(
                     StrifeAttribute.CORRUPT_CHANCE)) + "%)");
         }
 
         lore.add(breakLine);
 
-        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.ACCURACY),
+        statCap = Math.min(pStats.getAttribute(StrifeAttribute.ACCURACY),
                 StrifeAttribute.ACCURACY.getPlayerCap());
         lore.add(ChatColor.RED + "Accuracy: " + ChatColor.WHITE + "+" + INT_FORMAT.format(statCap * 100) + "%");
 
-        statCap = Math.min(champion.getCache().getAttribute(StrifeAttribute.ARMOR_PENETRATION),
+        statCap = Math.min(pStats.getAttribute(StrifeAttribute.ARMOR_PENETRATION),
                 StrifeAttribute.ARMOR_PENETRATION.getPlayerCap());
         lore.add(ChatColor.RED + "Armor Penetration: " + ChatColor.WHITE + INT_FORMAT.format(statCap * 100) + "%");
 

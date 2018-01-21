@@ -25,7 +25,6 @@ package info.faceland.strife.tasks;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
 
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
@@ -47,7 +46,7 @@ public class HealthRegenTask extends BukkitRunnable {
             if (p.getHealth() == p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
                 return;
             }
-            AttributedEntity player = plugin.getEntityStatCache().getEntity(p, false);
+            AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(p);
             // Restore 40% of your regen per 2s tick (This task runs every 2s)
             // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
             double amount = player.getAttribute(StrifeAttribute.REGENERATION) *

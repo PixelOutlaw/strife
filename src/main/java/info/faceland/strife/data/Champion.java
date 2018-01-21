@@ -25,6 +25,7 @@ package info.faceland.strife.data;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Bukkit;
@@ -44,13 +45,6 @@ public class Champion {
     private int unusedStatPoints;
     private int highestReachedLevel;
     private ChampionCache cache;
-
-    private final static String LVL_REQ_MAIN_WEAPON = "<red>You do not meet the level requirement for your weapon! " +
-        "It will not give you any stats when used!";
-    private final static String LVL_REQ_OFF_WEAPON = "<red>You do not meet the level requirement for your offhand " +
-        "item! It will not give you any stats when used!";
-    private final static String LVL_REQ_ARMOR = "<red>You do not meet the level requirement for a piece of your " +
-        "armor! It will not give you any stats while equipped!";
 
     public Champion(UUID uniqueId) {
         this.uniqueId = uniqueId;
@@ -88,14 +82,14 @@ public class Champion {
         levelMap.put(stat, level);
     }
 
-    public Map<StrifeAttribute, Double> getEntityAttributeValues() {
+    public Map<StrifeAttribute, Double> getBaseAttributes() {
         cache.clearBaseStatCache();
-        cache.setBaseStatCache(currentBaseStats);
+        cache.setAttributeBaseCache(currentBaseStats);
         return currentBaseStats;
     }
 
-    public Map<StrifeAttribute, Double> getLevelpointAttributeValues() {
-        cache.clearStatCache();
+    public Map<StrifeAttribute, Double> getLevelPointAttributes() {
+        cache.clearLevelPointCache();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
             for (Map.Entry<StrifeAttribute, Double> pointSection : entry.getKey().getAttributeMap().entrySet()) {
@@ -106,11 +100,11 @@ public class Champion {
                 attributeDoubleMap.put(pointSection.getKey(), amount);
             }
         }
-        cache.setAttributeStatCache(attributeDoubleMap);
+        cache.setAttributeLevelPointCache(attributeDoubleMap);
         return attributeDoubleMap;
     }
 
-    public Map<StrifeAttribute, Double> getArmorAttributeValues() {
+    public Map<StrifeAttribute, Double> getArmorAttributes() {
         cache.clearArmorCache();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         boolean spam = false;
@@ -128,14 +122,13 @@ public class Champion {
             attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
         }
         if (spam) {
-            MessageUtils.sendMessage(getPlayer(), LVL_REQ_ARMOR);
+            MessageUtils.sendMessage(getPlayer(), ChampionManager.LVL_REQ_ARMOR);
         }
-
         cache.setAttributeArmorCache(attributeDoubleMap);
         return attributeDoubleMap;
     }
 
-    public Map<StrifeAttribute, Double> getWeaponAttributeValues() {
+    public Map<StrifeAttribute, Double> getWeaponAttributes() {
         cache.clearWeaponCache();
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         ItemStack mainHandItemStack = getPlayer().getEquipment().getItemInMainHand();
@@ -144,7 +137,7 @@ public class Champion {
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(mainHandItemStack);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && getPlayer().getLevel() < itemStatMap
                 .get(StrifeAttribute.LEVEL_REQUIREMENT)) {
-                MessageUtils.sendMessage(getPlayer(), LVL_REQ_MAIN_WEAPON);
+                MessageUtils.sendMessage(getPlayer(), ChampionManager.LVL_REQ_MAIN_WEAPON);
             } else {
                 attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
             }
@@ -154,34 +147,45 @@ public class Champion {
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(offHandItemStack, dualWieldEfficiency);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && getPlayer().getLevel() < itemStatMap
                 .get(StrifeAttribute.LEVEL_REQUIREMENT) / dualWieldEfficiency) {
-                MessageUtils.sendMessage(getPlayer(), LVL_REQ_OFF_WEAPON);
+                MessageUtils.sendMessage(getPlayer(), ChampionManager.LVL_REQ_OFF_WEAPON);
             } else {
                 attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
             }
         }
         cache.setAttributeWeaponCache(attributeDoubleMap);
-        System.out.println("FINAL WEAPON STAT MAP: " + attributeDoubleMap);
         return attributeDoubleMap;
     }
 
-    public Map<StrifeAttribute, Double> getAttributeValues(boolean refresh) {
-        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-        if (getPlayer() == null || getPlayer().getEquipment() == null) {
-            return attributeDoubleMap;
-        }
-        if (refresh) {
-            cache.clear();
-            attributeDoubleMap = AttributeHandler.combineMaps(
-                getEntityAttributeValues(),
-                getLevelpointAttributeValues(),
-                getArmorAttributeValues(),
-                getWeaponAttributeValues()
-            );
-            cache.recombine();
-        } else {
-            attributeDoubleMap = cache.getCache();
-        }
-        return attributeDoubleMap;
+    public void updateWeapons() {
+        cache.clearWeaponCache();
+        cache.setAttributeWeaponCache(getWeaponAttributes());
+        cache.recombine();
+    }
+
+    public void updateArmor() {
+        cache.clearArmorCache();
+        cache.setAttributeArmorCache(getArmorAttributes());
+        cache.recombine();
+    }
+
+    public void updateLevelPoints() {
+        cache.clearLevelPointCache();
+        cache.setAttributeLevelPointCache(getLevelPointAttributes());
+        cache.recombine();
+    }
+
+    public void updateBase() {
+        cache.clearBaseStatCache();
+        cache.setAttributeBaseCache(getBaseAttributes());
+        cache.recombine();
+    }
+
+    public void updateAll() {
+        cache.setAttributeWeaponCache(getWeaponAttributes());
+        cache.setAttributeArmorCache(getArmorAttributes());
+        cache.setAttributeLevelPointCache(getLevelPointAttributes());
+        cache.setAttributeBaseCache(getBaseAttributes());
+        cache.recombine();
     }
 
     public void setCurrentBaseStats(Map<StrifeAttribute, Double> baseStatMap) {
