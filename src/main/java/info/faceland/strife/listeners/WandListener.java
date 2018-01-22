@@ -25,17 +25,24 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Shulker;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
@@ -43,11 +50,13 @@ import java.util.Random;
 public class WandListener implements Listener{
 
     private final StrifePlugin plugin;
+    private final Random random;
 
     private static final String ATTACK_UNCHARGED = TextUtils.color("&e&lNot charged enough!");
 
     public WandListener(StrifePlugin plugin) {
         this.plugin = plugin;
+        this.random = new Random(System.currentTimeMillis());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -73,10 +82,63 @@ public class WandListener implements Listener{
         }
 
         playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-        ShulkerBullet magicProj = playerEntity.getWorld().spawn(playerEntity.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
-        magicProj.setShooter(playerEntity);
-        Vector vec = playerEntity.getLocation().getDirection();
-        magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.255, vec.getZ() * 1.2));
+
+        double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
+        createMagicMissile(playerEntity, attackSpeedMult, projectileSpeed);
+
+        double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
+        if (multiShot > 0) {
+            int bonusProjectiles = (int) (multiShot - (multiShot % 1));
+            if (multiShot % 1 >= random.nextDouble()) {
+                bonusProjectiles++;
+            }
+            double splitMult = Math.max(1 - (0.1 * bonusProjectiles), 0.3D);
+            for (int i = bonusProjectiles; i > 0; i--) {
+                createMagicMissile(playerEntity, randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
+                    randomOffset(bonusProjectiles), attackSpeedMult, splitMult, projectileSpeed);
+            }
+        }
         event.setCancelled(true);
+    }
+
+    private void createMagicMissile(LivingEntity shooter, double attackMult, double power) {
+        createMagicMissile(shooter, 0, 0, 0, attackMult, 1D, power);
+    }
+
+    private void createMagicMissile(LivingEntity shooter, double attackMult, double splitMult, double power) {
+        createMagicMissile(shooter, 0, 0, 0, attackMult, splitMult, power);
+    }
+
+    private void createMagicMissile(LivingEntity shooter, double xOff, double yOff, double zOff,  double attackMult,
+        double splitMult, double power) {
+        ShulkerBullet magicProj = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
+        magicProj.setShooter(shooter);
+
+        Vector vec = shooter.getLocation().getDirection();
+        xOff = vec.getX() * power + xOff;
+        yOff = vec.getY() * power + yOff + 0.25;
+        zOff = vec.getZ() * power + zOff;
+        magicProj.setVelocity(new Vector(xOff, yOff, zOff));
+        magicProj.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
+        magicProj.setMetadata("SP_MULT", new FixedMetadataValue(plugin, splitMult));
+    }
+
+    private double randomOffset(double magnitude) {
+        magnitude = 0.05 + magnitude * 0.01;
+        return (random.nextDouble() * magnitude * 2) - magnitude;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onHit(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof ShulkerBullet)) {
+            return;
+        }
+        if (((ShulkerBullet) event.getDamager()).getShooter() instanceof Shulker) {
+            return;
+        }
+        if (!(event.getEntity() instanceof LivingEntity)) {
+            return;
+        }
+        ((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 1, 3));
     }
 }

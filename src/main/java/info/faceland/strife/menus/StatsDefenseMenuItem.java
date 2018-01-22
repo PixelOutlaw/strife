@@ -27,6 +27,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -45,10 +46,11 @@ public class StatsDefenseMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private Player player;
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
-    private static final DecimalFormat REDUCER_FORMAT = new DecimalFormat("#.#");
+    private static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
+    private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
     private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#.##");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
+    private static final String hpPerFive = TextUtils.color("&8 (HP/5s)");
 
     public StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
         super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
@@ -72,30 +74,26 @@ public class StatsDefenseMenuItem extends MenuItem {
         itemMeta.setDisplayName(getDisplayName());
         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>();
-        lore.add(breakLine);
-
-        lore.add(ChatColor.YELLOW + "Maximum Health: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.HEALTH)));
-        double regenAmount = pStats.getAttribute(StrifeAttribute.REGENERATION) * (1 + pStats.getAttribute(StrifeAttribute.REGEN_MULT) / 100);
-        lore.add(ChatColor.YELLOW + "Regeneration: " + ChatColor.WHITE + TWO_DECIMALS.format(regenAmount) + ChatColor.GRAY + " (HP/5s)");
 
         lore.add(breakLine);
-
-        double statCap;
-        lore.add(ChatColor.YELLOW + "Armor Rating: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.ARMOR)));
-        lore.add(ChatColor.YELLOW + "Evasion Rating: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.EVASION)));
-
+        if (pStats.getAttribute(StrifeAttribute.BARRIER) > 0) {
+            lore.add(addStat("Maximum Barrier: ", pStats.getAttribute(StrifeAttribute.BARRIER), INT_FORMAT));
+            lore.add(addStat("Barrier Recharge Time: ", StatUtil.getBarrierTime(pStats), "s",TWO_DECIMALS));
+        }
+        lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
+        lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMALS));
         lore.add(breakLine);
-
-        lore.add(ChatColor.YELLOW + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT.format(pStats.getAttribute(StrifeAttribute.BLOCK)));
-
+        lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
+        lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
+        lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(pStats), INT_FORMAT));
         lore.add(breakLine);
-
-        statCap = Math.min(pStats.getAttribute(StrifeAttribute.RESISTANCE),
-                StrifeAttribute.RESISTANCE.getPlayerCap());
-        lore.add(ChatColor.YELLOW + "Elemental Resist: " + ChatColor.WHITE + DECIMAL_FORMAT.format(statCap * 100) + "%");
-
+        lore.add(addStat("Block: ", pStats.getAttribute(StrifeAttribute.EVASION), INT_FORMAT));
         lore.add(breakLine);
-
+        lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
+        lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));
+        lore.add(addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
+        lore.add(addStat("Shadow Resistance: ", StatUtil.getShadowResist(pStats), "%", INT_FORMAT));
+        lore.add(breakLine);
         lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
 
         itemMeta.setLore(lore);
@@ -108,4 +106,11 @@ public class StatsDefenseMenuItem extends MenuItem {
         super.onItemClick(event);
     }
 
+    private String addStat(String name, double value, DecimalFormat format) {
+        return ChatColor.YELLOW + name + ChatColor.WHITE + format.format(value);
+    }
+
+    private String addStat(String name, double value, String extra, DecimalFormat format) {
+        return ChatColor.YELLOW + name + ChatColor.WHITE + format.format(value) + extra;
+    }
 }

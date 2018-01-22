@@ -23,9 +23,9 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
+import info.faceland.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
@@ -49,16 +49,14 @@ public class HealthRegenTask extends BukkitRunnable {
             AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(p);
             // Restore 40% of your regen per 2s tick (This task runs every 2s)
             // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
-            double amount = player.getAttribute(StrifeAttribute.REGENERATION) *
-                (1 + player.getAttribute(StrifeAttribute.REGEN_MULT) / 100);
-            amount *= 0.4;
+            double amount = StatUtil.getRegen(player) * 0.4;
             // Bonus for players that have just eaten
             if (p.getSaturation() > 0.1) {
                 amount *= 1.6;
             }
             // These are not 'penalties', they're 'mechanics' :^)
             if (p.hasPotionEffect(PotionEffectType.POISON)) {
-                amount *= 0.35;
+                amount *= 0.3;
             }
             if (p.getFoodLevel() <= 6) {
                 amount *= p.getFoodLevel() / 6;
