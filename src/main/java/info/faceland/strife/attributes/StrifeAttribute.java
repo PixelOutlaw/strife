@@ -69,6 +69,9 @@ public enum StrifeAttribute {
     SHOCK_CHANCE("Shock Chance"),
     FREEZE_CHANCE("Freeze Chance"),
     CORRUPT_CHANCE("Corrupt Chance"),
+    MAX_EARTH_RUNES("Maximum Earth Runes"),
+
+    BLEED_CHANCE("Bleed Chance"),
 
     LIFE_STEAL("Life Steal"),
     HP_ON_HIT("Health On Hit"),
