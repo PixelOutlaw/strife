@@ -27,6 +27,7 @@ import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -96,7 +97,7 @@ public class AttributeHandler {
     public static void updateAttributes(StrifePlugin plugin, Player player) {
         AttributedEntity playerStatEntity = plugin.getEntityStatCache().getAttributedEntity(player);
 
-        double maxHealth = Math.max(playerStatEntity.getAttribute(StrifeAttribute.HEALTH), 1);
+        double maxHealth = Math.max(StatUtil.getHealth(playerStatEntity), 1);
         AttributeHandler.updateHealth(player, maxHealth);
 
         double perc = playerStatEntity.getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
