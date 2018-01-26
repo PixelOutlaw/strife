@@ -46,6 +46,9 @@ public class HealthRegenTask extends BukkitRunnable {
             if (p.getHealth() == p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
                 return;
             }
+            if (p.getHealth() <= 0 || p.isDead()) {
+                return;
+            }
             AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(p);
             // Restore 40% of your regen per 2s tick (This task runs every 2s)
             // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
@@ -61,9 +64,7 @@ public class HealthRegenTask extends BukkitRunnable {
             if (p.getFoodLevel() <= 6) {
                 amount *= p.getFoodLevel() / 6;
             }
-            if (p.getHealth() > 0 && !p.isDead()) {
-                p.setHealth(Math.min(p.getHealth() + amount, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
-            }
+            p.setHealth(Math.min(p.getHealth() + amount, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
         }
     }
 }
