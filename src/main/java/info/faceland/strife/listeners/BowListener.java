@@ -63,7 +63,7 @@ public class BowListener implements Listener {
         AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
         double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
         double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
-        double projectileSpeed = 1.5 + (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
+        double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
 
         Location location = event.getEntity().getLocation().clone();
 
