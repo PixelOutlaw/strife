@@ -23,23 +23,65 @@
 package info.faceland.strife.stats;
 
 import info.faceland.strife.attributes.StrifeAttribute;
-import org.bukkit.ChatColor;
+import java.util.List;
 import org.bukkit.DyeColor;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class StrifeStat implements Comparable<StrifeStat> {
+public class StrifeStat {
 
     private final String key;
     private String name;
-    private String description;
-    private Map<StrifeAttribute, Double> attributeMap;
-    private int order;
+    private List<String> description;
     private DyeColor dyeColor;
-    private ChatColor chatColor;
-    private int menuX;
-    private int menuY;
+    private int slot;
+    private int startCap;
+    private int maxCap;
+    private int levelsToRaiseCap;
+    private Map<String, Integer> baseStatRequirements;
+    private Map<String, Integer> statIncreaseIncrements;
+    private Map<StrifeAttribute, Double> attributeMap;
+
+    public int getLevelsToRaiseCap() {
+        return levelsToRaiseCap;
+    }
+
+    public void setLevelsToRaiseCap(int levelsToRaiseCap) {
+        this.levelsToRaiseCap = levelsToRaiseCap;
+    }
+
+    public int getStartCap() {
+        return startCap;
+    }
+
+    public void setStartCap(int startCap) {
+        this.startCap = startCap;
+    }
+
+    public int getMaxCap() {
+        return maxCap;
+    }
+
+    public void setMaxCap(int maxCap) {
+        this.maxCap = maxCap;
+    }
+
+    public Map<String, Integer> getBaseStatRequirements() {
+        return baseStatRequirements;
+    }
+
+    public void setBaseStatRequirements(Map<String, Integer> baseStatRequirements) {
+        this.baseStatRequirements = baseStatRequirements;
+    }
+
+    public Map<String, Integer> getStatIncreaseIncrements() {
+        return statIncreaseIncrements;
+    }
+
+    public void setStatIncreaseIncrements(Map<String, Integer> statIncreaseIncrements) {
+        this.statIncreaseIncrements = statIncreaseIncrements;
+    }
 
     public StrifeStat(String key) {
         this.key = key;
@@ -57,11 +99,11 @@ public class StrifeStat implements Comparable<StrifeStat> {
         this.name = name;
     }
 
-    public String getDescription() {
+    public List<String> getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(List<String> description) {
         this.description = description;
     }
 
@@ -99,22 +141,6 @@ public class StrifeStat implements Comparable<StrifeStat> {
         return !(key != null ? !key.equals(that.key) : that.key != null);
     }
 
-    @Override
-    public int compareTo(StrifeStat o) {
-        if (o == null) {
-            return 1;
-        }
-        return Integer.compare(getOrder(), o.getOrder());
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
     public DyeColor getDyeColor() {
         return dyeColor;
     }
@@ -123,28 +149,12 @@ public class StrifeStat implements Comparable<StrifeStat> {
         this.dyeColor = dyeColor;
     }
 
-    public ChatColor getChatColor() {
-        return chatColor;
+    public int getSlot() {
+        return slot;
     }
 
-    public void setChatColor(ChatColor chatColor) {
-        this.chatColor = chatColor;
-    }
-
-    public int getMenuX() {
-        return menuX;
-    }
-
-    public void setMenuX(int menuX) {
-        this.menuX = menuX;
-    }
-
-    public int getMenuY() {
-        return menuY;
-    }
-
-    public void setMenuY(int menuY) {
-        this.menuY = menuY;
+    public void setSlot(int slot) {
+        this.slot = slot;
     }
 
 }

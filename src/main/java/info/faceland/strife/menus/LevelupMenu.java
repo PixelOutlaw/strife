@@ -36,13 +36,12 @@ public class LevelupMenu extends ItemMenu {
               plugin);
 
         for (StrifeStat stat : stats) {
-            int counter = stat.getMenuY() * 9 + stat.getMenuX();
-            setItem(counter, new LevelupMenuItem(plugin, stat));
+            int slot = stat.getSlot();
+            setItem(slot, new LevelupMenuItem(plugin, stat));
         }
 
-        int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
-        counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
-        setItem(counter, new LevelupPointsMenuItem(plugin));
+        int slot = plugin.getSettings().getInt("config.menu.unused-slot");
+        setItem(slot, new LevelupPointsMenuItem(plugin));
     }
 
 }

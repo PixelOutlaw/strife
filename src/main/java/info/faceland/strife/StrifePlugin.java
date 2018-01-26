@@ -148,21 +148,36 @@ public class StrifePlugin extends FacePlugin {
             ConfigurationSection cs = statsYAML.getConfigurationSection(key);
             StrifeStat stat = new StrifeStat(key);
             stat.setName(cs.getString("name"));
-            stat.setOrder(cs.getInt("order"));
-            stat.setDescription(cs.getString("description"));
+            stat.setDescription(cs.getStringList("description"));
             stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
-            stat.setChatColor(ChatColor.valueOf(cs.getString("chat-color", "WHITE")));
-            stat.setMenuX(cs.getInt("menu-x"));
-            stat.setMenuY(cs.getInt("menu-y"));
+            stat.setSlot(cs.getInt("slot"));
+            stat.setStartCap(cs.getInt("starting-cap", 0));
+            stat.setMaxCap(cs.getInt("maximum-cap", 100));
+            stat.setLevelsToRaiseCap(cs.getInt("levels-to-raise-cap", -1));
+            Map<String, Integer> baseStatRequirements = new HashMap<>();
+            if (cs.isConfigurationSection("base-attribute-requirements")) {
+                ConfigurationSection reqs = cs.getConfigurationSection("base-attribute-requirements");
+                for (String k : reqs.getKeys(false)) {
+                    baseStatRequirements.put(k, reqs.getInt(k));
+                }
+            }
+            Map<String, Integer> raiseStatCapAttributes = new HashMap<>();
+            if (cs.isConfigurationSection("attributes-to-raise-cap")) {
+                ConfigurationSection raiseReqs = cs.getConfigurationSection("attributes-to-raise-cap");
+                for (String k : raiseReqs.getKeys(false)) {
+                    raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
+                }
+            }
             Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
             if (cs.isConfigurationSection("attributes")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
                 for (String k : attrCS.getKeys(false)) {
                     StrifeAttribute attr = StrifeAttribute.valueOf(k);
-                    System.out.println("aa: " + attr);
                     attributeMap.put(attr, attrCS.getDouble(k));
                 }
             }
+            stat.setStatIncreaseIncrements(raiseStatCapAttributes);
+            stat.setBaseStatRequirements(baseStatRequirements);
             stat.setAttributeMap(attributeMap);
             stats.add(stat);
             loadedStats.add(stat.getKey());

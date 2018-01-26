@@ -22,13 +22,19 @@
  */
 package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 public class StrifeStatManager {
 
-    private Map<String, StrifeStat> statMap;
+    private static Map<String, StrifeStat> statMap;
+    private static final String upgradeAvailable = TextUtils.color("&a&lCLICK TO UPGRADE!");
+    private static final String pointCapReached = TextUtils.color("&f&lMaxed Out!");
+    private static final String noUnspentPoints = TextUtils.color("&f&lNo Unspent Points");
 
     public StrifeStatManager() {
         statMap = new LinkedHashMap<>();
@@ -54,9 +60,7 @@ public class StrifeStatManager {
     }
 
     public List<StrifeStat> getStats() {
-        List<StrifeStat> list = new ArrayList<>(statMap.values());
-        Collections.sort(list);
-        return list;
+        return new ArrayList<>(statMap.values());
     }
 
     public StrifeStat getStatByName(String name) {
@@ -66,6 +70,86 @@ public class StrifeStatManager {
             }
         }
         return null;
+    }
+
+    public int getStatCap(StrifeStat stat, Champion champion) {
+
+        int statCap = stat.getMaxCap();
+        if (stat.getLevelsToRaiseCap() > 0) {
+            double levelCap = stat.getStartCap() + (double) champion.getPlayer().getLevel() / stat.getLevelsToRaiseCap();
+            statCap = Math.max(stat.getStartCap(), (int) Math.floor(levelCap));
+        }
+
+        for (Entry<String, Integer> baseEntry : stat.getBaseStatRequirements().entrySet()) {
+            StrifeStat requirementStat = getStat(baseEntry.getKey());
+            int requirementStatValue = champion.getLevel(requirementStat);
+            int unlockRequirement = baseEntry.getValue();
+            int statIncrement = stat.getStatIncreaseIncrements().get(baseEntry.getKey());
+
+            if (requirementStatValue < unlockRequirement) {
+                return 0;
+            }
+
+            int newStatCap = stat.getStartCap();
+            newStatCap += (requirementStatValue - unlockRequirement) / statIncrement;
+            statCap = Math.min(statCap, newStatCap);
+        }
+        return Math.min(statCap, stat.getMaxCap());
+    }
+
+    public List<String> generateRequirementString(StrifeStat stat, Champion champion, int cap) {
+        List<String> requirementList = new ArrayList<>();
+
+        int levelRequirement = getLevelRequirement(stat, champion);
+        int allocatedPoints = champion.getLevel(stat);
+        if (levelRequirement > champion.getPlayer().getLevel() && allocatedPoints < stat.getMaxCap() &&
+            allocatedPoints == cap) {
+            requirementList.add(increaseString("Level", levelRequirement));
+        }
+        for (Entry<String, Integer> entry : stat.getBaseStatRequirements().entrySet()) {
+            int statRequirement = getStatRequirement(stat, entry.getKey(), champion);
+            StrifeStat requirementStat = getStat(entry.getKey());
+            if (allocatedPoints < stat.getMaxCap() && allocatedPoints == cap &&
+                champion.getLevel(requirementStat) < statRequirement) {
+                requirementList.add(increaseString(requirementStat.getName(), statRequirement));
+            }
+        }
+        if (requirementList.isEmpty()) {
+            if (allocatedPoints == stat.getMaxCap()) {
+                requirementList.add(pointCapReached);
+            } else if (champion.getUnusedStatPoints() == 0) {
+                requirementList.add(noUnspentPoints);
+            } else {
+                requirementList.add(upgradeAvailable);
+            }
+        }
+        return requirementList;
+    }
+
+    private String increaseString(String name, int value) {
+        return TextUtils.color("&f&lCap Increase: " + name + " " + value);
+    }
+
+    private int getLevelRequirement(StrifeStat stat, Champion champion) {
+        if (stat.getLevelsToRaiseCap() <= 0) {
+            return 0;
+        }
+        int requirementIncrease = champion.getPlayer().getLevel() / stat.getLevelsToRaiseCap();
+        return stat.getLevelsToRaiseCap() + requirementIncrease * stat.getLevelsToRaiseCap();
+    }
+
+    private int getStatRequirement(StrifeStat stat, String requiredStatName, Champion champion) {
+        StrifeStat requirementStat = getStat(requiredStatName);
+        int baseRequirement = stat.getBaseStatRequirements().get(requiredStatName);
+        int statIncrement = stat.getStatIncreaseIncrements().get(requiredStatName);
+        if (baseRequirement > champion.getLevel(requirementStat)) {
+            return stat.getBaseStatRequirements().get(requiredStatName);
+        }
+        if (baseRequirement + statIncrement * champion.getLevel(stat) <= champion.getLevel(requirementStat)) {
+            return -1;
+        }
+        int nextRank = (champion.getLevel(requirementStat) - baseRequirement) / statIncrement;
+        return stat.getBaseStatRequirements().get(requiredStatName) + (nextRank + 1) * statIncrement;
     }
 
 }
