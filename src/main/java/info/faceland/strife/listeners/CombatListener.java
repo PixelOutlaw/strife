@@ -22,6 +22,7 @@
  */
 package info.faceland.strife.listeners;
 
+import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
@@ -34,6 +35,7 @@ import info.faceland.strife.data.AttributedEntity;
 
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.event.EventHandler;
@@ -218,6 +220,12 @@ public class CombatListener implements Listener {
             standardDamage = 0;
         } else {
             blockAmount = 0;
+            if (attacker.getAttribute(BLEED_CHANCE) / 100 >= rollDouble()) {
+                double bleedAmount = physicalBaseDamage * 0.1 * attackMultiplier * pvpMult;
+                if (bleedAmount > 0) {
+                    BleedManager.applyBleed(defendEntity, bleedAmount, 20);
+                }
+            }
         }
 
         standardDamage *= pvpMult;

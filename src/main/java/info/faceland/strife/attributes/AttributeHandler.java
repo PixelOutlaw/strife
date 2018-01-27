@@ -107,6 +107,7 @@ public class AttributeHandler {
         player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
         player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
         player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(2);
+        System.out.println("ar: " + player.getAttribute(Attribute.GENERIC_ARMOR));
     }
 
     @SafeVarargs

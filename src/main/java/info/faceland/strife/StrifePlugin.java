@@ -45,6 +45,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
+import info.faceland.strife.tasks.BleedTask;
 import info.faceland.strife.tasks.BlockTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.HealthRegenTask;
@@ -54,7 +55,6 @@ import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -79,6 +79,7 @@ public class StrifePlugin extends FacePlugin {
     private EntityStatCache entityStatCache;
     private SaveTask saveTask;
     private HealthRegenTask regenTask;
+    private BleedTask bleedTask;
     private DarknessReductionTask darkTask;
     private AttackSpeedTask attackSpeedTask;
     private BlockTask blockTask;
@@ -217,6 +218,7 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask = new SaveTask(this);
         regenTask = new HealthRegenTask(this);
+        bleedTask = new BleedTask();
         darkTask = new DarknessReductionTask();
         attackSpeedTask = new AttackSpeedTask(attackTickRate);
         blockTask = new BlockTask();
@@ -239,6 +241,10 @@ public class StrifePlugin extends FacePlugin {
         regenTask.runTaskTimer(this,
             20L * 10, // Start timer after 10s
             20L * 2 // Run it every 2s after
+        );
+        bleedTask.runTaskTimer(this,
+            20L * 10, // Start timer after 10s
+            4L // Run it every 1/5th of a second after
         );
         darkTask.runTaskTimer(this,
             20L * 10, // Start timer after 10s
@@ -272,6 +278,7 @@ public class StrifePlugin extends FacePlugin {
         debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
         saveTask.cancel();
         regenTask.cancel();
+        bleedTask.cancel();
         darkTask.cancel();
         HandlerList.unregisterAll(this);
         storage.save(championManager.getChampions());
@@ -286,6 +293,7 @@ public class StrifePlugin extends FacePlugin {
         entityStatCache = null;
         saveTask = null;
         regenTask = null;
+        bleedTask = null;
         darkTask = null;
         commandHandler = null;
         settings = null;
