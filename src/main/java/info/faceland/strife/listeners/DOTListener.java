@@ -22,6 +22,9 @@
  */
 package info.faceland.strife.listeners;
 
+import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.StatUtil;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -32,6 +35,12 @@ import static info.faceland.strife.listeners.CombatListener.getResistPotionMult;
 
 public class DOTListener implements Listener {
 
+    private final StrifePlugin plugin;
+
+    public DOTListener(StrifePlugin plugin) {
+        this.plugin = plugin;
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDOTEvent(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof LivingEntity)) {
@@ -40,39 +49,44 @@ public class DOTListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
             return;
         }
-        LivingEntity le = (LivingEntity) event.getEntity();
-        double bonusDamage = 0;
+        LivingEntity entity = (LivingEntity) event.getEntity();
+        AttributedEntity statEntity = plugin.getEntityStatCache().getAttributedEntity(entity);
+
+        double damage = 0;
         boolean isHandled = false;
+        boolean barrierEffect = false;
         switch (event.getCause()) {
             case FIRE_TICK:
-                bonusDamage = le.getHealth() * 0.03 * getResistPotionMult(le);
+                damage = entity.getHealth() * 0.04 * getResistPotionMult(entity) * StatUtil.getFireResist(statEntity);
                 isHandled = true;
+                barrierEffect = true;
                 break;
             case FIRE:
-                bonusDamage = le.getHealth() * 0.05 * getResistPotionMult(le);
+                damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) * StatUtil.getFireResist(statEntity);
                 isHandled = true;
                 break;
             case LAVA:
-                bonusDamage = le.getHealth() * 0.05 * getResistPotionMult(le);
+                damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) * StatUtil.getFireResist(statEntity);
                 isHandled = true;
                 break;
             case WITHER:
-                bonusDamage = le.getMaxHealth() * 0.02 * getResistPotionMult(le);
+                damage = entity.getMaxHealth() * 0.02 * getResistPotionMult(entity);
                 isHandled = true;
                 break;
         }
+        damage++;
 
         if (isHandled) {
             for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
                 if (event.isApplicable(modifier)) {
-                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                        continue;
-                    }
                     event.setDamage(modifier, 0D);
                 }
             }
-            le.setNoDamageTicks(Math.max(1, le.getNoDamageTicks()));
-            event.setDamage(1 + bonusDamage);
+            if (barrierEffect) {
+                damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
+            }
+            entity.setNoDamageTicks(Math.max(1, entity.getNoDamageTicks()));
+            event.setDamage(damage);
         }
 
     }
