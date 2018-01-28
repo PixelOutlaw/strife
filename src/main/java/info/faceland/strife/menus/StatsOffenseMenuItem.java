@@ -101,18 +101,38 @@ public class StatsOffenseMenuItem extends MenuItem {
         }
         lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
         lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x", TWO_DECIMAL));
-        lore.add(addStat("Critical Strike: ", pStats.getAttribute(CRITICAL_RATE), critMultString(pStats), INT_FORMAT));
+        lore.add(breakLine);
+        lore.add(addStat("Critical Rate: ", pStats.getAttribute(CRITICAL_RATE), "%", INT_FORMAT));
+        lore.add(addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
+        if (pStats.getAttribute(BLEED_CHANCE) > 0) {
+            lore.add(breakLine);
+            lore.add(addStat("Bleed Chance: ", pStats.getAttribute(BLEED_CHANCE), "%", INT_FORMAT));
+        }
         if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0) {
             lore.add(breakLine);
             if (pStats.getAttribute(HP_ON_HIT) > 0) {
                 lore.add(addStat("Health On Hit: ", pStats.getAttribute(HP_ON_HIT), INT_FORMAT));
             }
             if (pStats.getAttribute(LIFE_STEAL) > 0) {
-                lore.add(addStat("Life Steal: ", pStats.getAttribute(LIFE_STEAL), INT_FORMAT));
+                lore.add(addStat("Life Steal: ", pStats.getAttribute(LIFE_STEAL), "%", INT_FORMAT));
             }
         }
         lore.add(breakLine);
-        // TODO: ugh add elementalsz
+        lore.add(addStat("Fire Damage: ", StatUtil.getFireDamage(pStats), INT_FORMAT));
+        lore.add(addStat("Ignite Chance: ", pStats.getAttribute(IGNITE_CHANCE), "%", INT_FORMAT));
+        if (pStats.getAttribute(ICE_DAMAGE) > 0) {
+            lore.add(addStat("Ice Damage: ", StatUtil.getIceDamage(pStats), INT_FORMAT));
+            lore.add(addStat("Freeze Chance: ", pStats.getAttribute(FREEZE_CHANCE), "%", INT_FORMAT));
+        }
+        if (pStats.getAttribute(LIGHTNING_DAMAGE) > 0) {
+            lore.add(addStat("Lightning Damage: ", StatUtil.getLightningDamage(pStats), INT_FORMAT));
+            lore.add(addStat("Shock Chance: ", pStats.getAttribute(SHOCK_CHANCE), "%", INT_FORMAT));
+        }
+        if (pStats.getAttribute(DARK_DAMAGE) > 0) {
+            lore.add(addStat("Shadow Damage: ", StatUtil.getShadowDamage(pStats), INT_FORMAT));
+            lore.add(addStat("Corrupt Chance: ", pStats.getAttribute(CORRUPT_CHANCE), "%", INT_FORMAT));
+        }
+        lore.add(breakLine);
         lore.add(addStat("Armor Penetration: ", pStats.getAttribute(ARMOR_PENETRATION), INT_FORMAT));
         lore.add(addStat("Ward Penetration: ", pStats.getAttribute(WARD_PENETRATION), INT_FORMAT));
         lore.add(addStat("Accuracy: ", pStats.getAttribute(ACCURACY), INT_FORMAT));
@@ -135,10 +155,4 @@ public class StatsOffenseMenuItem extends MenuItem {
     private String addStat(String name, double value, String extra, DecimalFormat format) {
         return ChatColor.RED + name + ChatColor.WHITE + format.format(value) + extra;
     }
-
-    private String critMultString(AttributedEntity pStats) {
-        double multiplier = StatUtil.getCriticalMultiplier(pStats);
-        return ChatColor.WHITE + "%" +ChatColor.GRAY + " (" + ONE_DECIMAL.format(multiplier) + ")";
-    }
-
 }

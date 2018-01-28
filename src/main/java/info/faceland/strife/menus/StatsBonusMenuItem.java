@@ -76,13 +76,13 @@ public class StatsBonusMenuItem extends MenuItem {
         double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
                 .getMultiplierManager().getDropMult();
         lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((xpMult + pStats.getAttribute(StrifeAttribute.XP_GAIN)) * 100) + "%");
+                .format((xpMult * 100 + pStats.getAttribute(StrifeAttribute.XP_GAIN))) + "%");
         lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((dropMult + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY)) * 100) + "%");
+                .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
         lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
+                .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND)) + "%");
         lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP) * 100) + "%");
+                .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP)) + "%");
 
         lore.add(breakLine);
 

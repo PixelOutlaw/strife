@@ -50,7 +50,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
     private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#.##");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
-    private static final String hpPerFive = TextUtils.color("&8 (HP/5s)");
+    private static final String hpPerFive = TextUtils.color("&7 (HP/5s)");
 
     public StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
         super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
@@ -78,7 +78,7 @@ public class StatsDefenseMenuItem extends MenuItem {
         lore.add(breakLine);
         if (pStats.getAttribute(StrifeAttribute.BARRIER) > 0) {
             lore.add(addStat("Maximum Barrier: ", pStats.getAttribute(StrifeAttribute.BARRIER), INT_FORMAT));
-            lore.add(addStat("Barrier Recharge Time: ", StatUtil.getBarrierTime(pStats), "s",TWO_DECIMALS));
+            lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
         }
         lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
         lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMALS));
@@ -86,7 +86,6 @@ public class StatsDefenseMenuItem extends MenuItem {
         lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
         lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
         lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(pStats), INT_FORMAT));
-        lore.add(breakLine);
         lore.add(addStat("Block: ", pStats.getAttribute(StrifeAttribute.EVASION), INT_FORMAT));
         lore.add(breakLine);
         lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
