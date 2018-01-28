@@ -46,7 +46,7 @@ public class ItemTypeUtil {
       return isValidMageOffhand(offHandItemStack) ? 1D : 0D;
     }
     if (isMeleeWeapon(mainHandItemStack.getType())) {
-      if (offHandItemStack.getType() == Material.POTATO) {
+      if (offHandItemStack.getType() == Material.POTATO || offHandItemStack.getType() == Material.SHIELD) {
         return 1D;
       }
       if (isMeleeWeapon(offHandItemStack.getType()) || offHandItemStack.getType() == Material.BOW) {
