@@ -22,12 +22,8 @@
  */
 package info.faceland.strife.tasks;
 
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.BleedData;
-import info.faceland.strife.managers.BleedManager;
-import info.faceland.strife.managers.DarknessManager;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -37,13 +33,19 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BleedTask extends BukkitRunnable {
 
+    private StrifePlugin plugin;
+
+    public BleedTask(StrifePlugin plugin) {
+        this.plugin = plugin;
+    }
+
     @Override
     public void run() {
-        for (Entry<LivingEntity, BleedData> entry: BleedManager.getBleedMap().entrySet()) {
+        for (Entry<LivingEntity, BleedData> entry: plugin.getBleedManager().getBleedMap().entrySet()) {
             LivingEntity bleedingEntity = entry.getKey();
             BleedData bleedData = entry.getValue();
             if (!bleedingEntity.isValid()) {
-                BleedManager.removeEntity(bleedingEntity);
+                plugin.getBleedManager().removeEntity(bleedingEntity);
                 continue;
             }
 
@@ -64,7 +66,7 @@ public class BleedTask extends BukkitRunnable {
                 new MaterialData(Material.REDSTONE_BLOCK).getData()
             );
 
-            BleedManager.removeTick(bleedingEntity);
+            plugin.getBleedManager().removeTick(bleedingEntity);
         }
     }
 

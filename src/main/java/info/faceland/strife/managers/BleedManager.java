@@ -29,23 +29,23 @@ import org.bukkit.entity.LivingEntity;
 
 public class BleedManager {
 
-    private static Map<LivingEntity, BleedData> bleedMap = new HashMap<>();
+    private Map<LivingEntity, BleedData> bleedMap = new HashMap<>();
 
-    public static Map<LivingEntity, BleedData> getBleedMap() {
+    public Map<LivingEntity, BleedData> getBleedMap() {
         return bleedMap;
     }
 
-    public static BleedData getEntity(LivingEntity entity) {
+    public BleedData getEntity(LivingEntity entity) {
         return bleedMap.get(entity);
     }
 
-    public static void removeEntity(LivingEntity entity) {
+    public void removeEntity(LivingEntity entity) {
         if (bleedMap.containsKey(entity)) {
             bleedMap.remove(entity);
         }
     }
 
-    public static void applyBleed(LivingEntity livingEntity, double amount, int ticks) {
+    public void applyBleed(LivingEntity livingEntity, double amount, int ticks) {
         if (!livingEntity.isValid()) {
             return;
         }
@@ -57,14 +57,14 @@ public class BleedManager {
         bleedMap.get(livingEntity).setTicksRemaining(Math.max(bleedMap.get(livingEntity).getTicksRemaining(), ticks));
     }
 
-    public static void applyBleed(LivingEntity livingEntity, BleedData bleedData) {
+    public void applyBleed(LivingEntity livingEntity, BleedData bleedData) {
         if (!livingEntity.isValid()) {
             return;
         }
         bleedMap.put(livingEntity, bleedData);
     }
 
-    public static void removeTick(LivingEntity livingEntity) {
+    public void removeTick(LivingEntity livingEntity) {
         if (!bleedMap.containsKey(livingEntity)) {
             return;
         }
