@@ -26,11 +26,9 @@ import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 import static info.faceland.strife.attributes.StrifeAttribute.BARRIER_SPEED;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.Map.Entry;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BarrierTask extends BukkitRunnable {
@@ -52,7 +50,9 @@ public class BarrierTask extends BukkitRunnable {
             if (entry.getValue() >= player.getAttribute(BARRIER)) {
                 continue;
             }
-            double barrierGain = player.getAttribute(BARRIER) / 25 * (1 + (player.getAttribute(BARRIER_SPEED) / 100));
+            // Restore this amount per barrier tick (4 MC ticks, 0.2s)
+            // Restores 2.5% per 0.2s, 10% per 0.8s, 100% per 8.0s
+            double barrierGain = player.getAttribute(BARRIER) * 0.025 * (1 + (player.getAttribute(BARRIER_SPEED) / 100));
             double newBarrierValue = Math.min(entry.getValue() + barrierGain, player.getAttribute(BARRIER));
             plugin.getBarrierManager().setEntityBarrier(entry.getKey(), newBarrierValue);
             plugin.getBarrierManager().updateShieldDisplay(player);
