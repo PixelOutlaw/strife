@@ -26,13 +26,14 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.stats.StrifeStat;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Dye;
@@ -69,6 +70,10 @@ public class LevelupMenuItem extends MenuItem {
 
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName() + " [" + currentPoints + "/" + statCap + "]");
+        if (currentPoints != statCap && champion.getUnusedStatPoints() > 0) {
+            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        }
         List<String> lore = new ArrayList<>();
         List<String> reqList = plugin.getStatManager().generateRequirementString(stat, champion, statCap);
         if (!reqList.isEmpty()) {
@@ -81,6 +86,7 @@ public class LevelupMenuItem extends MenuItem {
         for (String desc : stat.getDescription()) {
             lore.add(TextUtils.color(desc));
         }
+        lore.add(breakLine);
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
@@ -102,7 +108,7 @@ public class LevelupMenuItem extends MenuItem {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        ChampionManager.updateChampionStats(plugin, champion);
+        plugin.getChampionManager().updateAll(champion);
         AttributeHandler.updateAttributes(plugin, champion.getPlayer());
         event.setWillUpdate(true);
     }
