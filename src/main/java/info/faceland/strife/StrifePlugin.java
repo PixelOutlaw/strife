@@ -32,6 +32,7 @@ import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.listeners.*;
@@ -219,11 +220,18 @@ public class StrifePlugin extends FacePlugin {
                     data.putPerLevel(attr, attrCS.getDouble(k));
                 }
             }
+            //if (cs.isConfigurationSection("per-bonus-level")) {
+            //    ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
+            //    for (String k : attrCS.getKeys(false)) {
+            //        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+            //        data.putPerLevel(attr, attrCS.getDouble(k));
+            //    }
+            //}
             getMonsterManager().addEntityData(entityType, data);
         }
 
-        for (Champion champ : storage.load()) {
-            championManager.addChampion(champ);
+        for (ChampionSaveData data : storage.load()) {
+            championManager.addChampion(new Champion(data));
         }
 
         saveTask = new SaveTask(this);
@@ -270,7 +278,7 @@ public class StrifePlugin extends FacePlugin {
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new DOTListener(), this);
+        Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
         Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
         Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
@@ -297,7 +305,7 @@ public class StrifePlugin extends FacePlugin {
         barrierTask.cancel();
         darkTask.cancel();
         HandlerList.unregisterAll(this);
-        storage.save(championManager.getChampions());
+        storage.save(championManager.getChampionSaveData());
         configYAML = null;
         baseStatsYAML = null;
         statsYAML = null;

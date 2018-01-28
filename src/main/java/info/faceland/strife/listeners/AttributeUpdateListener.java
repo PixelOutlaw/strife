@@ -55,8 +55,7 @@ public class AttributeUpdateListener implements Listener {
             @Override
             public void run() {
                 Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
-                champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(event.getPlayer().getType(), event.getPlayer().getLevel()));
-                ChampionManager.updateChampionStats(plugin, champion);
+                plugin.getChampionManager().updateAll(champion);
                 AttributeHandler.updateAttributes(plugin, event.getPlayer());
             }
         }, 20L);
@@ -68,7 +67,7 @@ public class AttributeUpdateListener implements Listener {
             @Override
             public void run() {
                 Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
-                ChampionManager.updateChampionStats(plugin, champion);
+                plugin.getChampionManager().updateAll(champion);
                 AttributeHandler.updateAttributes(plugin, event.getPlayer());
             }
         }, 1L);
@@ -99,15 +98,14 @@ public class AttributeUpdateListener implements Listener {
             return;
         }
         Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
-        ChampionManager.updateChampionStats(plugin, champion);
+        plugin.getChampionManager().updateAll(champion);
         AttributeHandler.updateAttributes(plugin, player);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
-        champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(event.getPlayer().getType(), event.getPlayer().getLevel()));
-        ChampionManager.updateChampionStats(plugin, champion);
+        plugin.getChampionManager().updateAll(champion);
         AttributeHandler.updateAttributes(plugin, event.getPlayer());
     }
 

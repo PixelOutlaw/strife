@@ -111,7 +111,7 @@ public class ExperienceListener implements Listener {
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
         }
-        int points = 2 * (event.getNewLevel() - event.getOldLevel());
+        int points = event.getNewLevel() - event.getOldLevel();
         champion.setHighestReachedLevel(event.getNewLevel());
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
@@ -129,8 +129,7 @@ public class ExperienceListener implements Listener {
                         +event.getNewLevel() + "&a!");
             }
         }
-        champion.setCurrentBaseStats(plugin.getMonsterManager().getBaseStats(player.getType(), event.getNewLevel()));
-        ChampionManager.updateChampionStats(plugin, champion);
+        plugin.getChampionManager().updateAll(champion);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -166,9 +165,6 @@ public class ExperienceListener implements Listener {
         faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
 
         while (amount > faceExpToLevel) {
-            if (player.getLevel() >= 100) {
-                continue;
-            }
             player.setExp(0);
             amount -= faceExpToLevel;
             currentExpPercent = 0;

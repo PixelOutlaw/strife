@@ -54,10 +54,7 @@ public class StrifeCommand {
                 new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
-            MessageUtils.sendMessage(sender,
-                    ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion
-                            .getMaximumStatLevel()
-                            + " ] " + stat.getName());
+            MessageUtils.sendMessage(sender, ChatColor.GRAY + " - " + champion.getLevel(stat));
         }
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
     }
@@ -68,7 +65,7 @@ public class StrifeCommand {
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
             champion.setLevel(stat, 0);
         }
-        champion.setUnusedStatPoints(target.getLevel() * 2);
+        champion.setUnusedStatPoints(target.getLevel());
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You reset <white>%player%<green>.",
@@ -136,9 +133,6 @@ public class StrifeCommand {
         faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
 
         while (amount > faceExpToLevel) {
-            if (player.getLevel() >= 100) {
-                continue;
-            }
             player.setExp(0);
             amount -= faceExpToLevel;
             currentExpPercent = 0;

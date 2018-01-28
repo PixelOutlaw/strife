@@ -16,7 +16,6 @@ public class AttributedEntity {
 
   public double getAttribute(StrifeAttribute attribute) {
     if (attributeCache.get(attribute) == null) {
-      System.out.println("Attribute " + attribute + " not found, returning 0");
       return 0;
     }
     return attributeCache.get(attribute);

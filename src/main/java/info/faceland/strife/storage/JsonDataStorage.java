@@ -24,6 +24,7 @@ package info.faceland.strife.storage;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -58,7 +59,7 @@ public class JsonDataStorage implements DataStorage {
     }
 
     @Override
-    public void save(Champion champion) {
+    public void save(ChampionSaveData champion) {
         for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
             configuration.set(
                     champion.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
@@ -77,8 +78,8 @@ public class JsonDataStorage implements DataStorage {
     }
 
     @Override
-    public void save(Collection<Champion> champions) {
-        for (Champion champ : champions) {
+    public void save(Collection<ChampionSaveData> champions) {
+        for (ChampionSaveData champ : champions) {
             for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
                 configuration.set(
                         champ.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
@@ -98,32 +99,32 @@ public class JsonDataStorage implements DataStorage {
     }
 
     @Override
-    public Collection<Champion> load() {
+    public Collection<ChampionSaveData> load() {
         if (loadIfAble()) {
             plugin.debug(Level.FINE, "Loading data.json");
         }
-        Collection<Champion> collection = new HashSet<>();
+        Collection<ChampionSaveData> collection = new HashSet<>();
         for (String key : configuration.getKeys(false)) {
             if (!configuration.isConfigurationSection(key)) {
                 continue;
             }
             ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
-            Champion champion = new Champion(uuid);
-            boolean hadReset = checkResetAndSetLevels(section, champion, true);
-            champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
+            ChampionSaveData saveData = new ChampionSaveData(uuid);
+            boolean hadReset = checkResetAndSetLevels(section, saveData, true);
+            saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
             if (hadReset) {
-                champion.setUnusedStatPoints(champion.getHighestReachedLevel() * 2);
+                saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
             } else {
-                champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
+                saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
             }
-            collection.add(champion);
+            collection.add(saveData);
         }
         return collection;
     }
 
     @Override
-    public Champion load(UUID uuid) {
+    public ChampionSaveData load(UUID uuid) {
         if (loadIfAble()) {
             plugin.debug(Level.FINE, "Loading data.json");
         }
@@ -133,18 +134,18 @@ public class JsonDataStorage implements DataStorage {
         }
         String key = uuid.toString();
         ConfigurationSection section = configuration.getConfigurationSection(key);
-        Champion champion = new Champion(uuid);
-        boolean hadReset = checkResetAndSetLevels(section, champion, true);
-        champion.setHighestReachedLevel(section.getInt("highest-reached-level"));
+        ChampionSaveData saveData = new ChampionSaveData(uuid);
+        boolean hadReset = checkResetAndSetLevels(section, saveData, true);
+        saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
         if (hadReset) {
-            champion.setUnusedStatPoints(champion.getHighestReachedLevel() * 2);
+            saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
         } else {
-            champion.setUnusedStatPoints(section.getInt("unused-stat-points"));
+            saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
         }
-        return champion;
+        return saveData;
     }
 
-    private boolean checkResetAndSetLevels(ConfigurationSection section, Champion champion, boolean hadReset) {
+    private boolean checkResetAndSetLevels(ConfigurationSection section, ChampionSaveData champion, boolean hadReset) {
         if (section.isConfigurationSection("stats")) {
             ConfigurationSection statsSection = section.getConfigurationSection("stats");
             for (String k : statsSection.getKeys(false)) {

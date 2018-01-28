@@ -37,19 +37,8 @@ public class MonsterManager {
         entityStatDataMap = new HashMap<>();
     }
 
-    public EntityStatData getBaseStats(EntityType type) {
-        if (entityStatDataMap.containsKey(type)) {
-            return entityStatDataMap.get(type);
-        }
-        return null;
-    }
-
     public void addEntityData(EntityType type, EntityStatData data) {
         entityStatDataMap.put(type, data);
-    }
-
-    public Map<EntityType, EntityStatData> getEntityStatDataMap() {
-        return entityStatDataMap;
     }
 
     public Map<StrifeAttribute, Double> getBaseStats(EntityType type, int level) {
@@ -62,5 +51,4 @@ public class MonsterManager {
         }
         return AttributeHandler.combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelBasedStats);
     }
-
 }

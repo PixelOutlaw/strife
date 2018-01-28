@@ -21,13 +21,6 @@ public class EntityStatCache {
     this.trackedEntities = new HashMap<>();
   }
 
-  public Map<StrifeAttribute, Double> getEntityStats(LivingEntity entity) {
-    if (!trackedEntities.containsKey(entity.getUniqueId())) {
-      buildEntityStats(entity);
-    }
-    return trackedEntities.get(entity.getUniqueId()).getAttributes();
-  }
-
   public AttributedEntity getAttributedEntity(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       buildEntityStats(entity);
@@ -65,7 +58,6 @@ public class EntityStatCache {
       return ((Player) entity).getLevel();
     }
     if (entity.getCustomName() != null) {
-      System.out.println("LEVEL: " + CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())));
       return NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
     }
     return 0;

@@ -5,6 +5,7 @@ import com.tealcube.minecraft.bukkit.facecore.database.MySqlDatabasePool;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 
+import info.faceland.strife.data.ChampionSaveData;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -37,22 +38,22 @@ public class MySqlDataStorage implements DataStorage {
     }
 
     @Override
-    public void save(Champion champion) {
+    public void save(ChampionSaveData champion) {
 
     }
 
     @Override
-    public void save(Collection<Champion> champions) {
+    public void save(Collection<ChampionSaveData> champions) {
 
     }
 
     @Override
-    public Collection<Champion> load() {
+    public Collection<ChampionSaveData> load() {
         return null;
     }
 
     @Override
-    public Champion load(UUID uuid) {
+    public ChampionSaveData load(UUID uuid) {
         return null;
     }
 }
