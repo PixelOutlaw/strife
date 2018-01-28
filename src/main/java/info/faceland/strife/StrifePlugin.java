@@ -323,8 +323,8 @@ public class StrifePlugin extends FacePlugin {
     }
 
     public BarrierManager getBarrierManager() {
-    return barrierManager;
-  }
+      return barrierManager;
+    }
 
     public BleedManager getBleedManager() {
     return bleedManager;

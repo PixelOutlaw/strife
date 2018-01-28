@@ -64,7 +64,6 @@ public class BarrierManager {
     }
 
     public void setEntityBarrier(LivingEntity entity, double amount) {
-        System.out.println("BARRIER of: " + entity + " set to " + amount);
         barrierMap.put(entity, amount);
     }
 
@@ -104,26 +103,21 @@ public class BarrierManager {
     }
 
     public double damageBarrier(AttributedEntity attributedEntity, double amount) {
-        System.out.println("attemp barrier damager: " + attributedEntity.getEntity() + " for " + amount);
         LivingEntity entity = attributedEntity.getEntity();
         if (!(entity instanceof Player) || !attributedEntity.getEntity().isValid()) {
-            System.out.println("bep1");
             return amount;
         }
         if (!checkBarrier(attributedEntity)) {
-            System.out.println("bep2");
             return amount;
         }
 
         double remainingBarrier = barrierMap.get(entity) - amount;
-        System.out.println("remain: " + remainingBarrier);
         // Stat for lowering the delay to be added.
         // Task ticks once every 4 server ticks, so, 3s * 5 TPS = 15
         setDamaged(entity, 15);
 
         if (remainingBarrier > 0) {
             barrierMap.put(entity, remainingBarrier);
-            System.out.println("attak nullified");
             return 0;
         } else {
             barrierMap.put(entity, 0D);

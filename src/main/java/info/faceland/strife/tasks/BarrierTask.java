@@ -43,14 +43,13 @@ public class BarrierTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        System.out.println("reee: " + plugin.getBarrierManager().getBarrierMap().entrySet());
         for (Entry<LivingEntity, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
             if (plugin.getBarrierManager().getTickMap().containsKey(entry.getKey())) {
                 plugin.getBarrierManager().tickEntity(entry.getKey());
                 continue;
             }
             AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entry.getKey());
-            if (player.getAttribute(BARRIER) == entry.getValue()) {
+            if (entry.getValue() >= player.getAttribute(BARRIER)) {
                 continue;
             }
             double barrierGain = player.getAttribute(BARRIER) / 25 * (1 + (player.getAttribute(BARRIER_SPEED) / 100));

@@ -41,7 +41,7 @@ public class BleedTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Entry<LivingEntity, BleedData> entry: plugin.getBleedManager().getBleedMap().entrySet()) {
+        for (Entry<LivingEntity, BleedData> entry : plugin.getBleedManager().getBleedMap().entrySet()) {
             LivingEntity bleedingEntity = entry.getKey();
             BleedData bleedData = entry.getValue();
             if (!bleedingEntity.isValid()) {
