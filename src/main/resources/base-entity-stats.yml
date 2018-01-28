@@ -8,8 +8,11 @@ PLAYER:
     ARMOR: 10
     WARDING: 20
   per-level:
-    HEALTH: 1
-    BASE-REGEN: 0.04
+      HEALTH: 1
+      BASE-REGEN: 0.04
+  per-bonus-level:
+      HEALTH: 0.01
+      BASE-REGEN: 0.04
 ZOMBIE:
   base-values:
     HEALTH: 25
