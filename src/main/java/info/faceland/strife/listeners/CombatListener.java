@@ -22,7 +22,6 @@
  */
 package info.faceland.strife.listeners;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
 
@@ -211,6 +210,7 @@ public class CombatListener implements Listener {
         standardDamage *= attackMultiplier;
         standardDamage *= splitMultiplier;
         standardDamage *= potionMult;
+        standardDamage *= StatUtil.getDamageMult(attacker);
         standardDamage -= blockAmount;
 
         // Block is removed from standard damage first.
@@ -223,6 +223,7 @@ public class CombatListener implements Listener {
         }
 
         standardDamage *= pvpMult;
+
         applyLifeSteal(attacker, standardDamage);
         applyHealthOnHit(attacker, attackMultiplier);
 
@@ -230,14 +231,8 @@ public class CombatListener implements Listener {
         elementalDamage *= attackMultiplier;
         elementalDamage *= splitMultiplier;
         elementalDamage *= potionMult;
+        elementalDamage *= StatUtil.getDamageMult(attacker);
         elementalDamage -= blockAmount;
-
-        if (elementalDamage < 0) {
-            event.setDamage(0);
-            event.setCancelled(true);
-            return;
-        }
-
         elementalDamage *= pvpMult;
 
         double damageReduction = defender.getAttribute(StrifeAttribute.DAMAGE_REDUCTION) * pvpMult;
