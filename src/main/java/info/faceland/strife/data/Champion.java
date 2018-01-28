@@ -22,6 +22,9 @@
  */
 package info.faceland.strife.data;
 
+import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.wrappers.nbt.NbtCompound;
+import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -112,6 +115,7 @@ public class Champion {
             if (itemStack == null || itemStack.getType() == Material.AIR) {
                 continue;
             }
+            removeAttributes(itemStack);
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(itemStack);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT)) {
                 if (getPlayer().getLevel() < itemStatMap.get(StrifeAttribute.LEVEL_REQUIREMENT)) {
@@ -134,6 +138,7 @@ public class Champion {
         ItemStack mainHandItemStack = getPlayer().getEquipment().getItemInMainHand();
         ItemStack offHandItemStack = getPlayer().getEquipment().getItemInOffHand();
         if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !ItemTypeUtil.isArmor(mainHandItemStack.getType())) {
+            removeAttributes(mainHandItemStack);
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(mainHandItemStack);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && getPlayer().getLevel() < itemStatMap
                 .get(StrifeAttribute.LEVEL_REQUIREMENT)) {
@@ -143,6 +148,7 @@ public class Champion {
             }
         }
         if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !ItemTypeUtil.isArmor(offHandItemStack.getType())) {
+            removeAttributes(offHandItemStack);
             double dualWieldEfficiency = ItemTypeUtil.getDualWieldEfficiency(mainHandItemStack, offHandItemStack);
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(offHandItemStack, dualWieldEfficiency);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && getPlayer().getLevel() < itemStatMap
@@ -230,5 +236,14 @@ public class Champion {
 
     public void setCache(ChampionCache cache) {
         this.cache = cache;
+    }
+
+    private static ItemStack removeAttributes(ItemStack item) {
+        if (!MinecraftReflection.isCraftItemStack(item)) {
+            item = MinecraftReflection.getBukkitItemStack(item);
+        }
+        NbtCompound compound = (NbtCompound) NbtFactory.fromItemTag(item);
+        compound.put(NbtFactory.ofList("AttributeModifiers"));
+        return item;
     }
 }

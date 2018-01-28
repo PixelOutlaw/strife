@@ -35,6 +35,8 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.listeners.*;
+import info.faceland.strife.managers.BarrierManager;
+import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.MultiplierManager;
 import info.faceland.strife.managers.ChampionManager;
@@ -45,6 +47,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
+import info.faceland.strife.tasks.BarrierTask;
 import info.faceland.strife.tasks.BleedTask;
 import info.faceland.strife.tasks.BlockTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
@@ -72,6 +75,8 @@ public class StrifePlugin extends FacePlugin {
     private VersionedSmartYamlConfiguration statsYAML;
     private VersionedSmartYamlConfiguration baseStatsYAML;
     private StrifeStatManager statManager;
+    private BarrierManager barrierManager;
+    private BleedManager bleedManager;
     private MonsterManager monsterManager;
     private MultiplierManager multiplierManager;
     private DataStorage storage;
@@ -80,6 +85,7 @@ public class StrifePlugin extends FacePlugin {
     private SaveTask saveTask;
     private HealthRegenTask regenTask;
     private BleedTask bleedTask;
+    private BarrierTask barrierTask;
     private DarknessReductionTask darkTask;
     private AttackSpeedTask attackSpeedTask;
     private BlockTask blockTask;
@@ -113,6 +119,10 @@ public class StrifePlugin extends FacePlugin {
             getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
+
+        barrierManager = new BarrierManager();
+
+        bleedManager = new BleedManager();
 
         monsterManager = new MonsterManager();
 
@@ -218,7 +228,8 @@ public class StrifePlugin extends FacePlugin {
 
         saveTask = new SaveTask(this);
         regenTask = new HealthRegenTask(this);
-        bleedTask = new BleedTask();
+        bleedTask = new BleedTask(this);
+        barrierTask = new BarrierTask(this);
         darkTask = new DarknessReductionTask();
         attackSpeedTask = new AttackSpeedTask(attackTickRate);
         blockTask = new BlockTask();
@@ -244,6 +255,10 @@ public class StrifePlugin extends FacePlugin {
         );
         bleedTask.runTaskTimer(this,
             20L * 10, // Start timer after 10s
+           4L // Run it every 1/5th of a second after
+        );
+        barrierTask.runTaskTimer(this,
+            201L, // Start timer after 10.05s
             4L // Run it every 1/5th of a second after
         );
         darkTask.runTaskTimer(this,
@@ -279,6 +294,7 @@ public class StrifePlugin extends FacePlugin {
         saveTask.cancel();
         regenTask.cancel();
         bleedTask.cancel();
+        barrierTask.cancel();
         darkTask.cancel();
         HandlerList.unregisterAll(this);
         storage.save(championManager.getChampions());
@@ -287,12 +303,15 @@ public class StrifePlugin extends FacePlugin {
         statsYAML = null;
         statManager = null;
         monsterManager = null;
+        bleedManager = null;
+        barrierManager = null;
         multiplierManager = null;
         storage = null;
         championManager = null;
         entityStatCache = null;
         saveTask = null;
         regenTask = null;
+        bleedTask = null;
         bleedTask = null;
         darkTask = null;
         commandHandler = null;
@@ -303,9 +322,17 @@ public class StrifePlugin extends FacePlugin {
         return statManager;
     }
 
+    public BarrierManager getBarrierManager() {
+    return barrierManager;
+  }
+
+    public BleedManager getBleedManager() {
+    return bleedManager;
+  }
+
     public MonsterManager getMonsterManager() {
-        return monsterManager;
-    }
+    return monsterManager;
+  }
 
     public MultiplierManager getMultiplierManager() {
         return multiplierManager;

@@ -100,14 +100,17 @@ public class AttributeHandler {
         double maxHealth = Math.max(StatUtil.getHealth(playerStatEntity), 1);
         AttributeHandler.updateHealth(player, maxHealth);
 
-        double perc = playerStatEntity.getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
-        float speed = 0.2F * (float) perc;
+        double attacksPerSecond = 0.5 * (1 + playerStatEntity.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100D);
+        double speedMultiplier = playerStatEntity.getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
+        float speed = 0.2F * (float) speedMultiplier;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
         player.setFlySpeed(Math.min(Math.max(-1F, speed / 1.5f), 1F));
-        player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1000);
+        player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
         player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(2);
-        System.out.println("ar: " + player.getAttribute(Attribute.GENERIC_ARMOR));
+    }
+
+    public static void setPlayerArmor(Player player, double percent) {
+        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(20 * percent);
     }
 
     @SafeVarargs

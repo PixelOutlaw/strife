@@ -72,15 +72,15 @@ public class StatUtil {
   }
 
   public static double getArmor(AttributedEntity ae) {
-    return ae.getAttribute(ARMOR) * (1 + ae.getAttribute(ARMOR_MULT));
+    return ae.getAttribute(ARMOR) * (1 + ae.getAttribute(ARMOR_MULT) / 100);
   }
 
   public static double getWarding(AttributedEntity ae) {
-    return ae.getAttribute(WARDING) * (1 + ae.getAttribute(WARD_MULT));
+    return ae.getAttribute(WARDING) * (1 + ae.getAttribute(WARD_MULT) / 100);
   }
 
   public static double getEvasion(AttributedEntity ae) {
-    return ae.getAttribute(EVASION) * (1 + ae.getAttribute(EVASION_MULT));
+    return ae.getAttribute(EVASION) * (1 + ae.getAttribute(EVASION_MULT) / 100);
   }
 
   public static double getArmorMult(AttributedEntity attacker, AttributedEntity defender) {

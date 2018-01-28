@@ -32,7 +32,9 @@ public class EntityStatCache {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       buildEntityStats(entity);
     }
-    return trackedEntities.get(entity.getUniqueId());
+    AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
+    plugin.getBarrierManager().checkBarrier(attributedEntity);
+    return attributedEntity;
   }
 
   public void buildEntityStats(LivingEntity entity) {
