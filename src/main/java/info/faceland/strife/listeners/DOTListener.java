@@ -57,16 +57,19 @@ public class DOTListener implements Listener {
         boolean barrierEffect = false;
         switch (event.getCause()) {
             case FIRE_TICK:
-                damage = entity.getHealth() * 0.04 * getResistPotionMult(entity) * StatUtil.getFireResist(statEntity);
+                damage = entity.getHealth() * 0.04 * getResistPotionMult(entity) *
+                    (1 - StatUtil.getFireResist(statEntity) / 100);
                 isHandled = true;
                 barrierEffect = true;
                 break;
             case FIRE:
-                damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) * StatUtil.getFireResist(statEntity);
+                damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) *
+                    (1 - StatUtil.getFireResist(statEntity) / 100);
                 isHandled = true;
                 break;
             case LAVA:
-                damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) * StatUtil.getFireResist(statEntity);
+                damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) *
+                    (1 - StatUtil.getFireResist(statEntity) / 100);
                 isHandled = true;
                 break;
             case WITHER:
