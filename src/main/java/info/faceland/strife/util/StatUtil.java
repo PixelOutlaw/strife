@@ -85,12 +85,12 @@ public class StatUtil {
   }
 
   public static double getArmorMult(AttributedEntity attacker, AttributedEntity defender) {
-    double adjustedArmor = getArmor(defender) - attacker.getAttribute(ARMOR_PENETRATION);
+    double adjustedArmor = Math.max(getArmor(defender) - attacker.getAttribute(ARMOR_PENETRATION), 1);
     return Math.min(1, 100 / (100 + adjustedArmor));
   }
 
   public static double getWardingMult(AttributedEntity attacker, AttributedEntity defender) {
-    double adjustedWarding = getWarding(defender) - attacker.getAttribute(WARD_PENETRATION);
+    double adjustedWarding = Math.max(getWarding(defender) - attacker.getAttribute(WARD_PENETRATION), 1);
     return Math.min(1, 80 / (80 + adjustedWarding));
   }
 
@@ -124,6 +124,10 @@ public class StatUtil {
       amount = Math.min(amount, 80);
     }
     return amount;
+  }
+
+  public static double getLifestealPercentage(AttributedEntity attacker) {
+    return attacker.getAttribute(LIFE_STEAL) / 100;
   }
 
   public static double getFireDamage(AttributedEntity attacker) {
