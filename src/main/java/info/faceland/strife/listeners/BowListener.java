@@ -59,9 +59,17 @@ public class BowListener implements Listener {
         if (!(event.getEntity() instanceof Arrow)) {
             return;
         }
+
+        event.setCancelled(true);
+
         Player playerEntity = (Player) event.getEntity().getShooter();
         AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
         double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
+
+        if (attackMultiplier == 0) {
+            return;
+        }
+
         double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
         double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
 
@@ -81,7 +89,6 @@ public class BowListener implements Listener {
                     randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), projectileSpeed, shotMult);
             }
         }
-        event.setCancelled(true);
     }
 
     private void createArrow(LivingEntity shooter, Location location, double attackMult, double power, double shotMult) {
@@ -104,7 +111,7 @@ public class BowListener implements Listener {
     }
 
     private double randomOffset(double magnitude) {
-        magnitude = 0.05 + magnitude * 0.007;
+        magnitude = 0.07 + magnitude * 0.005;
         return (random.nextDouble() * magnitude * 2) - magnitude;
     }
 }

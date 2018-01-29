@@ -67,7 +67,12 @@ public class WandListener implements Listener{
         Player playerEntity = event.getPlayer();
 
         AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
-        double attackSpeedMult = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
+        double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
+
+        if (attackMultiplier == 0) {
+            event.setCancelled(true);
+            return;
+        }
 
         ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
 
@@ -75,7 +80,7 @@ public class WandListener implements Listener{
             return;
         }
 
-        if (attackSpeedMult <= 0.25) {
+        if (attackMultiplier <= 0.2) {
             ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, playerEntity);
             playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
             return;
@@ -84,7 +89,7 @@ public class WandListener implements Listener{
         playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
 
         double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
-        createMagicMissile(playerEntity, attackSpeedMult, projectileSpeed);
+        createMagicMissile(playerEntity, attackMultiplier, projectileSpeed);
 
         double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
         if (multiShot > 0) {
@@ -95,7 +100,7 @@ public class WandListener implements Listener{
             double splitMult = Math.max(1 - (0.1 * bonusProjectiles), 0.3D);
             for (int i = bonusProjectiles; i > 0; i--) {
                 createMagicMissile(playerEntity, randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
-                    randomOffset(bonusProjectiles), attackSpeedMult, splitMult, projectileSpeed);
+                    randomOffset(bonusProjectiles), attackMultiplier, splitMult, projectileSpeed);
             }
         }
         event.setCancelled(true);
@@ -124,7 +129,7 @@ public class WandListener implements Listener{
     }
 
     private double randomOffset(double magnitude) {
-        magnitude = 0.05 + magnitude * 0.01;
+        magnitude = 0.07 + magnitude * 0.0055;
         return (random.nextDouble() * magnitude * 2) - magnitude;
     }
 
