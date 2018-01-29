@@ -42,29 +42,29 @@ public class HealthRegenTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getHealth() == p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
-                return;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getHealth() <= 0 || player.isDead()) {
+                continue;
             }
-            if (p.getHealth() <= 0 || p.isDead()) {
-                return;
+            if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
+                continue;
             }
-            AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(p);
+            AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
             // Restore 40% of your regen per 2s tick (This task runs every 2s)
             // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
-            double amount = StatUtil.getRegen(player) * 0.4;
+            double amount = StatUtil.getRegen(pStats) * 0.4;
             // Bonus for players that have just eaten
-            if (p.getSaturation() > 0.1) {
+            if (player.getSaturation() > 0.1) {
                 amount *= 1.6;
             }
             // These are not 'penalties', they're 'mechanics' :^)
-            if (p.hasPotionEffect(PotionEffectType.POISON)) {
+            if (player.hasPotionEffect(PotionEffectType.POISON)) {
                 amount *= 0.3;
             }
-            if (p.getFoodLevel() <= 6) {
-                amount *= p.getFoodLevel() / 6;
+            if (player.getFoodLevel() <= 6) {
+                amount *= player.getFoodLevel() / 6;
             }
-            p.setHealth(Math.min(p.getHealth() + amount, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
+            player.setHealth(Math.min(player.getHealth() + amount, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
         }
     }
 }
