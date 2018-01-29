@@ -235,6 +235,9 @@ public class ChampionManager {
     }
 
     private static ItemStack removeAttributes(ItemStack item) {
+        if (item.getType().getMaxDurability() < 15) {
+            return item;
+        }
         if (!MinecraftReflection.isCraftItemStack(item)) {
             item = MinecraftReflection.getBukkitItemStack(item);
         }
