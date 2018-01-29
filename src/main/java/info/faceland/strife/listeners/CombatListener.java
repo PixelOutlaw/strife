@@ -47,6 +47,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -100,9 +101,10 @@ public class CombatListener implements Listener {
         LivingEntity attackEntity;
         Projectile projectile = null;
 
+        double explosionMult = 1.0;
         if (event.getDamager() instanceof Projectile) {
             projectile = (Projectile) event.getDamager();
-            if (event.getDamager() instanceof ShulkerBullet) {
+            if (event.getDamager() instanceof ShulkerBullet || event.getDamager() instanceof SmallFireball) {
                 damageType = DamageType.MAGIC;
             } else {
                 damageType = DamageType.RANGED;
@@ -115,6 +117,11 @@ public class CombatListener implements Listener {
             }
         } else {
             attackEntity = (LivingEntity) event.getDamager();
+        }
+        if (event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+            damageType = DamageType.EXPLOSION;
+            double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
+            explosionMult = Math.max(0.3, 4 / (distance + 3));
         }
 
         if (defendEntity.hasMetadata("NPC")) {
@@ -141,7 +148,8 @@ public class CombatListener implements Listener {
         double accuracyMultiplier = 1D;
         if (damageType == DamageType.MELEE) {
             attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(attacker);
-        } else {
+        }
+        if (damageType == DamageType.RANGED || damageType == DamageType.MAGIC) {
             if (projectile.hasMetadata("AS_MULT")) {
                 attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
             }
@@ -151,6 +159,12 @@ public class CombatListener implements Listener {
             if (projectile.hasMetadata("AC_MULT")) {
                 accuracyMultiplier = projectile.getMetadata("AC_MULT").get(0).asDouble();
             }
+        }
+
+        if (attackMultiplier == 0) {
+            event.setDamage(0);
+            event.setCancelled(true);
+            return;
         }
 
         double evasionMult = getEvasionMult(attacker, defender, accuracyMultiplier);
@@ -183,6 +197,9 @@ public class CombatListener implements Listener {
                 break;
             case MAGIC:
                 magicBaseDamage = StatUtil.getBaseMagicDamage(attacker, defender);
+                break;
+            case EXPLOSION:
+                physicalBaseDamage = StatUtil.getBaseMeleeDamage(attacker, defender);
         }
         double fireBaseDamage = StatUtil.getBaseFireDamage(attacker, defender);
         double iceBaseDamage = StatUtil.getBaseIceDamage(attacker, defender);
@@ -209,6 +226,7 @@ public class CombatListener implements Listener {
         standardDamage *= evasionMult;
         standardDamage *= attackMultiplier;
         standardDamage *= splitMultiplier;
+        standardDamage *= explosionMult;
         standardDamage *= potionMult;
         standardDamage *= StatUtil.getDamageMult(attacker);
         standardDamage -= blockAmount;
@@ -231,6 +249,7 @@ public class CombatListener implements Listener {
         elementalDamage *= attackMultiplier;
         elementalDamage *= splitMultiplier;
         elementalDamage *= potionMult;
+        elementalDamage *= explosionMult;
         elementalDamage *= StatUtil.getDamageMult(attacker);
         elementalDamage -= blockAmount;
         elementalDamage *= pvpMult;
@@ -448,7 +467,7 @@ public class CombatListener implements Listener {
     }
 
     private void applyLifeSteal(AttributedEntity attacker, double damage) {
-        double lifeSteal = attacker.getAttribute(StrifeAttribute.LIFE_STEAL) / 100;
+        double lifeSteal = StatUtil.getLifestealPercentage(attacker);
         if (lifeSteal <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
             return;
         }
@@ -495,6 +514,6 @@ public class CombatListener implements Listener {
     }
 
     private enum DamageType {
-        MELEE, RANGED, MAGIC, OTHER
+        MELEE, RANGED, MAGIC, EXPLOSION, OTHER
     }
 }
