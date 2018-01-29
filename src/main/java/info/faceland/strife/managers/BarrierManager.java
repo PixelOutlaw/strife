@@ -72,9 +72,11 @@ public class BarrierManager {
             return;
         }
         if (attributedEntity.getAttribute(BARRIER) == 0) {
+            AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
             return;
         }
         if (!barrierMap.containsKey(attributedEntity.getEntity())) {
+            AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
             return;
         }
         double percent = barrierMap.get(attributedEntity.getEntity()) / attributedEntity.getAttribute(BARRIER);
@@ -119,9 +121,8 @@ public class BarrierManager {
         if (remainingBarrier > 0) {
             barrierMap.put(entity, remainingBarrier);
             return 0;
-        } else {
-            barrierMap.put(entity, 0D);
-            return -remainingBarrier;
         }
+        barrierMap.put(entity, 0D);
+        return Math.abs(remainingBarrier);
     }
 }
