@@ -54,6 +54,7 @@ import info.faceland.strife.tasks.BlockTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
+import info.faceland.strife.tasks.TrackedPruneTask;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
@@ -84,6 +85,7 @@ public class StrifePlugin extends FacePlugin {
     private ChampionManager championManager;
     private EntityStatCache entityStatCache;
     private SaveTask saveTask;
+    private TrackedPruneTask trackedPruneTask;
     private HealthRegenTask regenTask;
     private BleedTask bleedTask;
     private BarrierTask barrierTask;
@@ -235,6 +237,7 @@ public class StrifePlugin extends FacePlugin {
         }
 
         saveTask = new SaveTask(this);
+        trackedPruneTask = new TrackedPruneTask(this);
         regenTask = new HealthRegenTask(this);
         bleedTask = new BleedTask(this);
         barrierTask = new BarrierTask(this);
@@ -253,9 +256,13 @@ public class StrifePlugin extends FacePlugin {
             levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
         }
 
+        trackedPruneTask.runTaskTimer(this,
+            20L * 61, // Start save after 1 minute, 1 second cuz yolo
+            20L * 60 // Run every 1 minute after that
+        );
         saveTask.runTaskTimer(this,
-                20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
-                20L * 600 // Run every 10 minutes after that
+            20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
+            20L * 600 // Run every 10 minutes after that
         );
         regenTask.runTaskTimer(this,
             20L * 10, // Start timer after 10s
@@ -300,6 +307,7 @@ public class StrifePlugin extends FacePlugin {
     public void disable() {
         debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
         saveTask.cancel();
+        trackedPruneTask.cancel();
         regenTask.cancel();
         bleedTask.cancel();
         barrierTask.cancel();
@@ -318,6 +326,7 @@ public class StrifePlugin extends FacePlugin {
         championManager = null;
         entityStatCache = null;
         saveTask = null;
+        trackedPruneTask = null;
         regenTask = null;
         bleedTask = null;
         bleedTask = null;

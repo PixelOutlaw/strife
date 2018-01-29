@@ -7,6 +7,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -21,6 +22,10 @@ public class EntityStatCache {
     this.trackedEntities = new HashMap<>();
   }
 
+  public Map<UUID, AttributedEntity> getTrackedEntities() {
+    return trackedEntities;
+  }
+
   public AttributedEntity getAttributedEntity(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       buildEntityStats(entity);
@@ -31,14 +36,11 @@ public class EntityStatCache {
   }
 
   public void buildEntityStats(LivingEntity entity) {
-    AttributedEntity attributedEntity;
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
-      attributedEntity = new AttributedEntity(entity);
-    } else {
-      attributedEntity = trackedEntities.get(entity.getUniqueId());
+      AttributedEntity attributedEntity = new AttributedEntity(entity);
+      attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity.getType(), getEntityLevel(entity)));
+      trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
-    attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity.getType(), getEntityLevel(entity)));
-    trackedEntities.put(entity.getUniqueId(), attributedEntity);
   }
 
   public void setEntityStats(LivingEntity entity, Map<StrifeAttribute, Double> statMap) {
@@ -50,6 +52,14 @@ public class EntityStatCache {
   public void removeEntity(LivingEntity entity) {
     if (trackedEntities.get(entity.getUniqueId()) != null) {
       trackedEntities.remove(entity.getUniqueId());
+    }
+  }
+
+  public void removeInvalidEntity(UUID uuid) {
+    if (trackedEntities.containsKey(uuid)) {
+      if (Bukkit.getEntity(uuid).isValid()) {
+        trackedEntities.remove(uuid);
+      }
     }
   }
 
