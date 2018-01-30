@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -31,7 +32,7 @@ public class EntityStatCache {
       buildEntityStats(entity);
     }
     AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
-    plugin.getBarrierManager().checkBarrier(attributedEntity);
+    plugin.getBarrierManager().createBarrierEntry(attributedEntity);
     return attributedEntity;
   }
 
@@ -50,17 +51,25 @@ public class EntityStatCache {
   }
 
   public void removeEntity(LivingEntity entity) {
-    if (trackedEntities.get(entity.getUniqueId()) != null) {
+    if (trackedEntities.containsKey(entity.getUniqueId())) {
       trackedEntities.remove(entity.getUniqueId());
     }
   }
 
-  public void removeInvalidEntity(UUID uuid) {
+  public void removeEntity(UUID uuid) {
     if (trackedEntities.containsKey(uuid)) {
-      if (Bukkit.getEntity(uuid).isValid()) {
-        trackedEntities.remove(uuid);
+      trackedEntities.remove(uuid);
+    }
+  }
+
+  public boolean isValid(UUID uuid) {
+    if (trackedEntities.containsKey(uuid)) {
+      Entity entity = Bukkit.getEntity(uuid);
+      if (entity == null || !entity.isValid()) {
+        return false;
       }
     }
+    return true;
   }
 
   private int getEntityLevel(LivingEntity entity) {

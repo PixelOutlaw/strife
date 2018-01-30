@@ -37,6 +37,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.PlayerInventory;
@@ -109,4 +111,13 @@ public class AttributeUpdateListener implements Listener {
         AttributeHandler.updateAttributes(plugin, event.getPlayer());
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        plugin.getEntityStatCache().removeEntity(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerKick(PlayerKickEvent event) {
+        plugin.getEntityStatCache().removeEntity(event.getPlayer());
+    }
 }

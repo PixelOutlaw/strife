@@ -28,6 +28,8 @@ import static info.faceland.strife.attributes.StrifeAttribute.BARRIER_SPEED;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.Map.Entry;
+import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -41,12 +43,13 @@ public class BarrierTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Entry<LivingEntity, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
+        for (Entry<UUID, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
             if (plugin.getBarrierManager().getTickMap().containsKey(entry.getKey())) {
                 plugin.getBarrierManager().tickEntity(entry.getKey());
                 continue;
             }
-            AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entry.getKey());
+            LivingEntity entity = (LivingEntity) Bukkit.getEntity(entry.getKey());
+            AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entity);
             if (entry.getValue() >= player.getAttribute(BARRIER)) {
                 continue;
             }
