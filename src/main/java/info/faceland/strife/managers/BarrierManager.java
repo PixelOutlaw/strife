@@ -92,6 +92,12 @@ public class BarrierManager {
         }
     }
 
+    public void removeEntity(UUID uuid) {
+        if (barrierMap.containsKey(uuid)) {
+            barrierMap.remove(uuid);
+        }
+    }
+
     public void setDamaged(LivingEntity entity, int ticks) {
         tickMap.put(entity.getUniqueId(), ticks);
     }

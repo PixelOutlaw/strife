@@ -49,6 +49,10 @@ public class BarrierTask extends BukkitRunnable {
                 continue;
             }
             LivingEntity entity = (LivingEntity) Bukkit.getEntity(entry.getKey());
+            if (entity == null || !entity.isValid()) {
+                plugin.getBarrierManager().removeEntity(entry.getKey());
+                continue;
+            }
             AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entity);
             if (entry.getValue() >= player.getAttribute(BARRIER)) {
                 continue;
