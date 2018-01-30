@@ -97,25 +97,23 @@ public class WandListener implements Listener{
             if (multiShot % 1 >= random.nextDouble()) {
                 bonusProjectiles++;
             }
-            double splitMult = Math.max(1 - (0.1 * bonusProjectiles), 0.3D);
             for (int i = bonusProjectiles; i > 0; i--) {
                 createMagicMissile(playerEntity, randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
-                    randomOffset(bonusProjectiles), attackMultiplier, splitMult, projectileSpeed);
+                    randomOffset(bonusProjectiles), attackMultiplier, projectileSpeed);
             }
         }
         event.setCancelled(true);
     }
 
     private void createMagicMissile(LivingEntity shooter, double attackMult, double power) {
-        createMagicMissile(shooter, 0, 0, 0, attackMult, 1D, power);
+        createMagicMissile(shooter, 0, 0, 0, attackMult, power);
     }
 
     private void createMagicMissile(LivingEntity shooter, double attackMult, double splitMult, double power) {
-        createMagicMissile(shooter, 0, 0, 0, attackMult, splitMult, power);
+        createMagicMissile(shooter, 0, 0, 0, attackMult, power);
     }
 
-    private void createMagicMissile(LivingEntity shooter, double xOff, double yOff, double zOff,  double attackMult,
-        double splitMult, double power) {
+    private void createMagicMissile(LivingEntity shooter, double xOff, double yOff, double zOff,  double attackMult, double power) {
         ShulkerBullet magicProj = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
         magicProj.setShooter(shooter);
 
@@ -125,7 +123,6 @@ public class WandListener implements Listener{
         zOff = vec.getZ() * power + zOff;
         magicProj.setVelocity(new Vector(xOff, yOff, zOff));
         magicProj.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
-        magicProj.setMetadata("SP_MULT", new FixedMetadataValue(plugin, splitMult));
     }
 
     private double randomOffset(double magnitude) {

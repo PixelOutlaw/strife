@@ -30,6 +30,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.Random;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -66,9 +67,12 @@ public class BowListener implements Listener {
         AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
         double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
 
-        if (attackMultiplier == 0) {
+        if (attackMultiplier <= 0.1) {
             return;
         }
+
+        double bowPitch = 0.9 + random.nextDouble() * 0.2;
+        playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
 
         double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
         double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
@@ -106,7 +110,6 @@ public class BowListener implements Listener {
         zOff = vector.getZ() * power + zOff;
         arrow.setVelocity(new Vector(xOff, yOff, zOff));
         arrow.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
-        arrow.setMetadata("SP_MULT", new FixedMetadataValue(plugin, splitMult));
         arrow.setMetadata("AC_MULT", new FixedMetadataValue(plugin, shotMult));
     }
 

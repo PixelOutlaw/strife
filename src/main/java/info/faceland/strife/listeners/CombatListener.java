@@ -144,7 +144,6 @@ public class CombatListener implements Listener {
         AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
 
         double attackMultiplier = 1D;
-        double splitMultiplier = 1D;
         double accuracyMultiplier = 1D;
         if (damageType == DamageType.MELEE) {
             attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(attacker);
@@ -153,15 +152,12 @@ public class CombatListener implements Listener {
             if (projectile.hasMetadata("AS_MULT")) {
                 attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
             }
-            if (projectile.hasMetadata("SP_MULT")) {
-                splitMultiplier = projectile.getMetadata("SP_MULT").get(0).asDouble();
-            }
             if (projectile.hasMetadata("AC_MULT")) {
                 accuracyMultiplier = projectile.getMetadata("AC_MULT").get(0).asDouble();
             }
         }
 
-        if (attackMultiplier == 0) {
+        if (attackMultiplier <= 0.1) {
             event.setDamage(0);
             event.setCancelled(true);
             return;
@@ -225,7 +221,6 @@ public class CombatListener implements Listener {
         standardDamage += bonusOverchargeDamage;
         standardDamage *= evasionMult;
         standardDamage *= attackMultiplier;
-        standardDamage *= splitMultiplier;
         standardDamage *= explosionMult;
         standardDamage *= potionMult;
         standardDamage *= StatUtil.getDamageMult(attacker);
@@ -247,7 +242,6 @@ public class CombatListener implements Listener {
 
         elementalDamage *= evasionMult;
         elementalDamage *= attackMultiplier;
-        elementalDamage *= splitMultiplier;
         elementalDamage *= potionMult;
         elementalDamage *= explosionMult;
         elementalDamage *= StatUtil.getDamageMult(attacker);
