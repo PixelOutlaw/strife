@@ -28,101 +28,100 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BarrierManager {
 
-    private Map<LivingEntity, Double> barrierMap = new HashMap<>();
-    private Map<LivingEntity, Integer> tickMap = new HashMap<>();
+    private Map<UUID, Double> barrierMap = new HashMap<>();
+    private Map<UUID, Integer> tickMap = new HashMap<>();
 
-    public Map<LivingEntity, Integer> getTickMap() {
+    public Map<UUID, Integer> getTickMap() {
         return tickMap;
     }
 
-    public Map<LivingEntity, Double> getBarrierMap() {
+    public Map<UUID, Double> getBarrierMap() {
         return barrierMap;
     }
 
-    public boolean checkBarrier(AttributedEntity attributedEntity) {
-        if (barrierMap.containsKey(attributedEntity.getEntity())) {
+    public boolean createBarrierEntry(AttributedEntity attributedEntity) {
+        if (!(attributedEntity.getEntity() instanceof Player)) {
+            return false;
+        }
+        if (attributedEntity.getAttribute(BARRIER) <= 0 || !attributedEntity.getEntity().isValid()) {
+            AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+            return false;
+        }
+        if (barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
             return true;
         }
-        if (attributedEntity.getAttribute(BARRIER) > 0) {
-            setEntityBarrier(attributedEntity.getEntity(), attributedEntity.getAttribute(BARRIER));
-            return true;
-        }
-        return false;
+        setEntityBarrier(attributedEntity.getEntity().getUniqueId(), attributedEntity.getAttribute(BARRIER));
+        return true;
     }
 
     public boolean hasBarrierUp(AttributedEntity attributedEntity) {
-        checkBarrier(attributedEntity);
-        if (barrierMap.containsKey(attributedEntity.getEntity()) && barrierMap.get(attributedEntity.getEntity()) > 0) {
-            return true;
+        if (!createBarrierEntry(attributedEntity)) {
+            return false;
         }
-        return false;
+        UUID uuid = attributedEntity.getEntity().getUniqueId();
+        return barrierMap.containsKey(uuid) && barrierMap.get(uuid) > 0;
     }
 
-    public void setEntityBarrier(LivingEntity entity, double amount) {
-        barrierMap.put(entity, amount);
+    public void setEntityBarrier(UUID uuid, double amount) {
+        barrierMap.put(uuid, amount);
     }
 
     public void updateShieldDisplay(AttributedEntity attributedEntity) {
-        if (!(attributedEntity.getEntity() instanceof Player)) {
+        if (!createBarrierEntry(attributedEntity)) {
             return;
         }
-        if (attributedEntity.getAttribute(BARRIER) == 0) {
+        AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+        if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
             AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
             return;
         }
-        if (!barrierMap.containsKey(attributedEntity.getEntity())) {
-            AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
-            return;
-        }
-        double percent = barrierMap.get(attributedEntity.getEntity()) / attributedEntity.getAttribute(BARRIER);
+        double percent = barrierMap.get(attributedEntity.getEntity().getUniqueId()) / attributedEntity.getAttribute(BARRIER);
         AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), percent);
     }
 
     public void removeEntity(LivingEntity entity) {
-        if (barrierMap.containsKey(entity)) {
-            barrierMap.remove(entity);
+        if (barrierMap.containsKey(entity.getUniqueId())) {
+            barrierMap.remove(entity.getUniqueId());
         }
     }
 
     public void setDamaged(LivingEntity entity, int ticks) {
-        tickMap.put(entity, ticks);
+        tickMap.put(entity.getUniqueId(), ticks);
     }
 
-    public void tickEntity(LivingEntity entity) {
-        if (!tickMap.containsKey(entity)) {
+    public void tickEntity(UUID uuid) {
+        if (!tickMap.containsKey(uuid)) {
             return;
         }
-        if (tickMap.get(entity) == 0) {
-            tickMap.remove(entity);
+        if (tickMap.get(uuid) == 0) {
+            tickMap.remove(uuid);
             return;
         }
-        tickMap.put(entity, tickMap.get(entity) - 1);
+        tickMap.put(uuid, tickMap.get(uuid) - 1);
     }
 
     public double damageBarrier(AttributedEntity attributedEntity, double amount) {
+        if (!hasBarrierUp(attributedEntity)) {
+            return amount;
+        }
         LivingEntity entity = attributedEntity.getEntity();
-        if (!(entity instanceof Player) || !attributedEntity.getEntity().isValid()) {
-            return amount;
-        }
-        if (!checkBarrier(attributedEntity)) {
-            return amount;
-        }
-
-        double remainingBarrier = barrierMap.get(entity) - amount;
+        double remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
         // Stat for lowering the delay to be added.
         // Task ticks once every 4 server ticks, so, 3s * 5 TPS = 15
         setDamaged(entity, 15);
 
         if (remainingBarrier > 0) {
-            barrierMap.put(entity, remainingBarrier);
+            setEntityBarrier(entity.getUniqueId(), remainingBarrier);
             return 0;
         }
-        barrierMap.put(entity, 0D);
+        setEntityBarrier(entity.getUniqueId(), 0);
         return Math.abs(remainingBarrier);
     }
 }
