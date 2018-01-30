@@ -27,7 +27,7 @@ public enum StrifeAttribute {
     LEVEL_REQUIREMENT("Level Requirement"),
 
     HEALTH("Health"),
-    REGENERATION("Regeneration"),
+    REGENERATION(),
 
     BARRIER("Maximum Barrier"),
     BARRIER_SPEED("Barrier Recharge Rate"),
@@ -88,7 +88,7 @@ public enum StrifeAttribute {
     DOGE("Doge Chance"),
 
     HEALTH_MULT(),
-    REGEN_MULT(),
+    REGEN_MULT("Regeneration"),
     ARMOR_MULT(),
     EVASION_MULT(),
     WARD_MULT(),
