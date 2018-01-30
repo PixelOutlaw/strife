@@ -56,14 +56,14 @@ public class BleedTask extends BukkitRunnable {
                 bleedingEntity.damage(bleedDamage);
             }
 
-            int particleAmount = 3 + (int)(bleedDamage);
+            int particleAmount = 10 + (int)(bleedDamage * 10);
 
             bleedingEntity.getWorld().spawnParticle(
                 Particle.BLOCK_CRACK,
                 bleedingEntity.getEyeLocation().clone().add(0, -0.7, 0),
                 particleAmount,
                 0.0, 0.0, 0.0,
-                new MaterialData(Material.REDSTONE_BLOCK).getData()
+                new MaterialData(Material.REDSTONE_WIRE)
             );
 
             plugin.getBleedManager().removeTick(bleedingEntity);
