@@ -27,6 +27,7 @@ import static info.faceland.strife.attributes.StrifeAttribute.BARRIER_SPEED;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
+import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -43,6 +44,7 @@ public class BarrierTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        ArrayList<UUID> playersPendingRemoval = new ArrayList<>();
         for (Entry<UUID, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
             if (plugin.getBarrierManager().getTickMap().containsKey(entry.getKey())) {
                 plugin.getBarrierManager().tickEntity(entry.getKey());
@@ -50,7 +52,7 @@ public class BarrierTask extends BukkitRunnable {
             }
             LivingEntity entity = (LivingEntity) Bukkit.getEntity(entry.getKey());
             if (entity == null || !entity.isValid()) {
-                plugin.getBarrierManager().removeEntity(entry.getKey());
+                playersPendingRemoval.add(entry.getKey());
                 continue;
             }
             AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entity);
@@ -63,6 +65,9 @@ public class BarrierTask extends BukkitRunnable {
             double newBarrierValue = Math.min(entry.getValue() + barrierGain, player.getAttribute(BARRIER));
             plugin.getBarrierManager().setEntityBarrier(entry.getKey(), newBarrierValue);
             plugin.getBarrierManager().updateShieldDisplay(player);
+        }
+        for (UUID uuid : playersPendingRemoval) {
+            plugin.getBarrierManager().removeEntity(uuid);
         }
     }
 }
