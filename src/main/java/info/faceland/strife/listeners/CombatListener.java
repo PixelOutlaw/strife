@@ -96,6 +96,11 @@ public class CombatListener implements Listener {
         if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
             return;
         }
+        if (event.getDamager() instanceof EvokerFangs) {
+            event.setDamage(((LivingEntity) event.getDamager()).getAttribute(
+                Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.15);
+            return;
+        }
 
         LivingEntity defendEntity = (LivingEntity) event.getEntity();
         LivingEntity attackEntity;
