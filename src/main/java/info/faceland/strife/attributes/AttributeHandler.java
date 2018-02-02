@@ -69,7 +69,7 @@ public class AttributeHandler {
                     break;
                 }
             }
-            if (attribute != null && amount > 0) {
+            if (attribute != null && amount != 0) {
                 amount *= multiplier;
                 if (itemStats.containsKey(attribute)) {
                     amount += itemStats.get(attribute);
