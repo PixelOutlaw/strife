@@ -12,6 +12,7 @@ public class EntityStatData {
   public EntityStatData() {
     baseValueMap = new HashMap<>();
     perLevelMap = new HashMap<>();
+    perBonusLevelMap = new HashMap<>();
   }
 
   public Map<StrifeAttribute, Double> getBaseValueMap() {

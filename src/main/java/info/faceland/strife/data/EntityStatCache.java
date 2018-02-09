@@ -39,7 +39,7 @@ public class EntityStatCache {
   public void buildEntityStats(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       AttributedEntity attributedEntity = new AttributedEntity(entity);
-      attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity.getType(), getEntityLevel(entity)));
+      attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity));
       trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
   }
@@ -70,15 +70,5 @@ public class EntityStatCache {
       }
     }
     return true;
-  }
-
-  private int getEntityLevel(LivingEntity entity) {
-    if (entity instanceof Player) {
-      return ((Player) entity).getLevel();
-    }
-    if (entity.getCustomName() != null) {
-      return NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
-    }
-    return 0;
   }
 }

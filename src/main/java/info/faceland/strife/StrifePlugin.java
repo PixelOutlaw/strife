@@ -41,6 +41,7 @@ import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.MultiplierManager;
 import info.faceland.strife.managers.ChampionManager;
+import info.faceland.strife.managers.StrifeExperienceManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
@@ -83,6 +84,7 @@ public class StrifePlugin extends FacePlugin {
     private MultiplierManager multiplierManager;
     private DataStorage storage;
     private ChampionManager championManager;
+    private StrifeExperienceManager experienceManager;
     private EntityStatCache entityStatCache;
     private SaveTask saveTask;
     private TrackedPruneTask trackedPruneTask;
@@ -122,21 +124,14 @@ public class StrifePlugin extends FacePlugin {
             getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
-
         barrierManager = new BarrierManager();
-
         bleedManager = new BleedManager();
-
-        monsterManager = new MonsterManager();
-
+        monsterManager = new MonsterManager(this);
         multiplierManager = new MultiplierManager();
-
         storage = new JsonDataStorage(this);
-
         championManager = new ChampionManager(this);
-
+        experienceManager = new StrifeExperienceManager(this);
         entityStatCache = new EntityStatCache(this);
-
         commandHandler = new CommandHandler(this);
 
         MenuListener.getInstance().register(this);
@@ -222,13 +217,13 @@ public class StrifePlugin extends FacePlugin {
                     data.putPerLevel(attr, attrCS.getDouble(k));
                 }
             }
-            //if (cs.isConfigurationSection("per-bonus-level")) {
-            //    ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
-            //    for (String k : attrCS.getKeys(false)) {
-            //        StrifeAttribute attr = StrifeAttribute.valueOf(k);
-            //        data.putPerLevel(attr, attrCS.getDouble(k));
-            //    }
-            //}
+            if (cs.isConfigurationSection("per-bonus-level")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putPerBonusLevel(attr, attrCS.getDouble(k));
+                }
+            }
             getMonsterManager().addEntityData(entityType, data);
         }
 
@@ -324,6 +319,7 @@ public class StrifePlugin extends FacePlugin {
         multiplierManager = null;
         storage = null;
         championManager = null;
+        experienceManager = null;
         entityStatCache = null;
         saveTask = null;
         trackedPruneTask = null;
@@ -348,8 +344,8 @@ public class StrifePlugin extends FacePlugin {
   }
 
     public MonsterManager getMonsterManager() {
-    return monsterManager;
-  }
+        return monsterManager;
+    }
 
     public MultiplierManager getMultiplierManager() {
         return multiplierManager;
@@ -367,6 +363,10 @@ public class StrifePlugin extends FacePlugin {
 
     public ChampionManager getChampionManager() {
         return championManager;
+    }
+
+    public StrifeExperienceManager getExpManager() {
+        return experienceManager;
     }
 
     public EntityStatCache getEntityStatCache() {

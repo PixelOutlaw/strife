@@ -62,17 +62,21 @@ public class JsonDataStorage implements DataStorage {
     public void save(ChampionSaveData champion) {
         for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
             configuration.set(
-                    champion.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
-                    entry.getValue()
+                champion.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
+                entry.getValue()
             );
         }
         configuration.set(
-                champion.getUniqueId().toString() + ".unused-stat-points",
-                champion.getUnusedStatPoints()
+            champion.getUniqueId().toString() + ".unused-stat-points",
+            champion.getUnusedStatPoints()
         );
         configuration.set(
-                champion.getUniqueId().toString() + ".highest-reached-level",
-                champion.getHighestReachedLevel()
+            champion.getUniqueId().toString() + ".highest-reached-level",
+            champion.getHighestReachedLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".bonus-levels",
+            champion.getBonusLevels()
         );
         configuration.save();
     }
@@ -82,17 +86,21 @@ public class JsonDataStorage implements DataStorage {
         for (ChampionSaveData champ : champions) {
             for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
                 configuration.set(
-                        champ.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
-                        entry.getValue()
+                    champ.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
+                    entry.getValue()
                 );
             }
             configuration.set(
-                    champ.getUniqueId().toString() + ".unused-stat-points",
-                    champ.getUnusedStatPoints()
+                champ.getUniqueId().toString() + ".unused-stat-points",
+                champ.getUnusedStatPoints()
             );
             configuration.set(
-                    champ.getUniqueId().toString() + ".highest-reached-level",
-                    champ.getHighestReachedLevel()
+                champ.getUniqueId().toString() + ".highest-reached-level",
+                champ.getHighestReachedLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".bonus-levels",
+                champ.getBonusLevels()
             );
         }
         configuration.save();
@@ -113,6 +121,7 @@ public class JsonDataStorage implements DataStorage {
             ChampionSaveData saveData = new ChampionSaveData(uuid);
             boolean hadReset = checkResetAndSetLevels(section, saveData, true);
             saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
+            saveData.setBonusLevels(section.getInt("bonus-levels"));
             if (hadReset) {
                 saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
             } else {
@@ -137,6 +146,7 @@ public class JsonDataStorage implements DataStorage {
         ChampionSaveData saveData = new ChampionSaveData(uuid);
         boolean hadReset = checkResetAndSetLevels(section, saveData, true);
         saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
+        saveData.setBonusLevels(section.getInt("bonus-levels"));
         if (hadReset) {
             saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
         } else {

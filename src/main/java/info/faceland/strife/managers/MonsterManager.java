@@ -22,33 +22,62 @@
  */
 package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
+import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityStatData;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 public class MonsterManager {
 
+    private final StrifePlugin plugin;
     private Map<EntityType, EntityStatData> entityStatDataMap;
 
-    public MonsterManager() {
-        entityStatDataMap = new HashMap<>();
+    public MonsterManager(StrifePlugin plugin) {
+        this.plugin = plugin;
+        this.entityStatDataMap = new HashMap<>();
     }
 
     public void addEntityData(EntityType type, EntityStatData data) {
         entityStatDataMap.put(type, data);
     }
 
-    public Map<StrifeAttribute, Double> getBaseStats(EntityType type, int level) {
-        Map<StrifeAttribute, Double> levelBasedStats = new HashMap<>();
+    public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity) {
+        Map<StrifeAttribute, Double> levelStats = new HashMap<>();
+        EntityType type = livingEntity.getType();
         if (!entityStatDataMap.containsKey(type)) {
-            return levelBasedStats;
+            return levelStats;
         }
+        int level = getEntityLevel(livingEntity);
+
         for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type).getPerLevelMap().entrySet()) {
-            levelBasedStats.put(stat.getKey(), stat.getValue() * level);
+            levelStats.put(stat.getKey(), stat.getValue() * level);
         }
-        return AttributeHandler.combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelBasedStats);
+        if (type == EntityType.PLAYER && level >= 100) {
+            int bonusLevel = plugin.getChampionManager().getChampion(livingEntity.getUniqueId()).getBonusLevels();
+            Map<StrifeAttribute, Double> bonusStats = new HashMap<>();
+            for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type).getPerBonusLevelMap().entrySet()) {
+                bonusStats.put(stat.getKey(), stat.getValue() * bonusLevel);
+            }
+            levelStats = AttributeHandler.combineMaps(levelStats, bonusStats);
+        }
+        return AttributeHandler.combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
+    }
+
+    private int getEntityLevel(LivingEntity entity) {
+        if (entity instanceof Player) {
+            return ((Player) entity).getLevel();
+        }
+        if (entity.getCustomName() != null) {
+            return NumberUtils.toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
+        }
+        return 0;
     }
 }

@@ -97,7 +97,7 @@ public enum StrifeAttribute {
     MAGIC_MULT(),
     DAMAGE_MULT(),
     PROJECTILE_SPEED("Projectile Speed"),
-    ELEMENTAL_MULT(),
+    ELEMENTAL_MULT("Elemental Damage"),
     ACCURACY_MULT(),
     APEN_MULT(),
     WPEN_MULT();

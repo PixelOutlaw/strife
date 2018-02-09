@@ -116,69 +116,12 @@ public class ExperienceListener implements Listener {
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(player, "<green>You have leveled up!");
-        FancyMessage message = new FancyMessage("");
-        message.then("You gained 2 levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
-                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD).send(event
-                .getPlayer());
-        TitleAPI.set("§aLEVEL UP!", "§aYou gained §f" + points + " §aLevelpoints!", 15 , 20, 10, event.getPlayer());
-        if (event.getNewLevel() % 5 == 0) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                MessageUtils.sendMessage(p, "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" +
-                        +event.getNewLevel() + "&a!");
-            }
-        }
         plugin.getChampionManager().updateAll(champion);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerExpChange(PlayerExpChangeEvent event) {
-        Player player = event.getPlayer();
-        if (player.getLevel() >= 100) {
-            event.setAmount(0);
-            return;
-        }
-
-        // Get all the values!
-        Integer maxFaceExpInt = plugin.getLevelingRate().get(player.getLevel());
-        Integer maxVanillaExp = player.getExpToLevel();
-        double amount = event.getAmount();
-        double currentExpPercent = player.getExp();
-        double faceExpToLevel;
-
-        if (maxFaceExpInt == null || maxFaceExpInt == 0) {
-            event.setAmount(0);
-            return;
-        }
-
-        // Apply bonuses and limits to the amount
-        double maxFaceExp = maxFaceExpInt;
-        ExperienceManager experienceManager = new ExperienceManager(player);
-        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
-        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0) + plugin.getMultiplierManager().getExpMult();
-        double bonusMult = 1 + xpMult + (1 + pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100);
-
-        amount *= bonusMult;
-        amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)) * bonusMult);
-
-        faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
-
-        while (amount > faceExpToLevel) {
-            player.setExp(0);
-            amount -= faceExpToLevel;
-            currentExpPercent = 0;
-            player.setLevel(player.getLevel() + 1);
-            maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
-            faceExpToLevel = maxFaceExp;
-        }
-
-        double remainingExp = amount + (currentExpPercent * maxFaceExp);
-        String xpMsg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) maxFaceExp + " XP &a&l)";
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg), player);
-
-        double gainedExpPercent = amount * (maxVanillaExp / maxFaceExp);
+        plugin.getExpManager().addExperience(event.getPlayer(), event.getAmount(), false);
         event.setAmount(0);
-        experienceManager.changeExp(gainedExpPercent);
     }
 }

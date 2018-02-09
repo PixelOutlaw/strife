@@ -13,6 +13,7 @@ public class ChampionSaveData {
   private Map<StrifeStat, Integer> levelMap;
   private int unusedStatPoints;
   private int highestReachedLevel;
+  private int bonusLevels;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
@@ -24,6 +25,14 @@ public class ChampionSaveData {
       return levelMap.get(stat);
     }
     return 0;
+  }
+
+  public int getBonusLevels() {
+    return bonusLevels;
+  }
+
+  public void setBonusLevels(int bonusLevels) {
+    this.bonusLevels = bonusLevels;
   }
 
   public int getUnusedStatPoints() {

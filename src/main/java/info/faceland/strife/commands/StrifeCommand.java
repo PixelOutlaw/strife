@@ -116,37 +116,8 @@ public class StrifeCommand {
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
     public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") double amount) {
-        if (player.getLevel() >= 100) {
-            return;
-        }
-
-        // Get all the values!
-        Integer maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
-        double displayedExpGained = amount;
-        double currentExpPercent = player.getExp();
-        double faceExpToLevel;
-
-        if (maxFaceExp == null || maxFaceExp == 0) {
-            return;
-        }
-
-        faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
-
-        while (amount > faceExpToLevel) {
-            player.setExp(0);
-            amount -= faceExpToLevel;
-            currentExpPercent = 0;
-            player.setLevel(player.getLevel() + 1);
-            maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
-            faceExpToLevel = maxFaceExp;
-        }
-
-        player.setExp(player.getExp() + (float) (amount / maxFaceExp));
-
-        double remainingExp = amount + (currentExpPercent * maxFaceExp);
-        String xpMsg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) faceExpToLevel + " XP &a&l)";
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg), player);
-        MessageUtils.sendMessage(player, "&aYou gained &f" + (int) displayedExpGained + " &aXP!");
+        plugin.getExpManager().addExperience(player, amount, true);
+        MessageUtils.sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
     }
 
     @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)

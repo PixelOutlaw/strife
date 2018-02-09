@@ -96,7 +96,7 @@ public class ChampionManager {
     }
 
     private void getBaseAttributes(Champion champion) {
-        champion.setAttributeBaseCache(plugin.getMonsterManager().getBaseStats(EntityType.PLAYER, champion.getPlayer().getLevel()));
+        champion.setAttributeBaseCache(plugin.getMonsterManager().getBaseStats(champion.getPlayer()));
     }
 
     public void getLevelPointAttributes(Champion champion) {

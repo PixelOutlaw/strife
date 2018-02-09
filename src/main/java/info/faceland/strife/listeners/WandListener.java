@@ -80,9 +80,10 @@ public class WandListener implements Listener{
             return;
         }
 
-        if (attackMultiplier <= 0.2) {
+        if (attackMultiplier <= 0.25) {
             ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, playerEntity);
             playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+            event.setCancelled(true);
             return;
         }
 
@@ -126,7 +127,7 @@ public class WandListener implements Listener{
     }
 
     private double randomOffset(double magnitude) {
-        magnitude = 0.07 + magnitude * 0.0055;
+        magnitude = 0.1 + magnitude * 0.005;
         return (random.nextDouble() * magnitude * 2) - magnitude;
     }
 

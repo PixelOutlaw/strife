@@ -168,10 +168,12 @@ public class CombatListener implements Listener {
             return;
         }
 
-        double evasionMult = getEvasionMult(attacker, defender, accuracyMultiplier);
-        if (evasionMult <= 0) {
-            event.setCancelled(true);
-            return;
+        double evasionMultiplier = StatUtil.getEvasionMultiplier(attacker, defender);
+        evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
+        if (evasionMultiplier <= 0.5) {
+          doEvasion(attackEntity, defendEntity);
+          event.setCancelled(true);
+          return;
         }
 
         double pvpMult = 1D;
@@ -224,7 +226,7 @@ public class CombatListener implements Listener {
         double bonusOverchargeDamage = getOverchargeDamage(attacker, standardDamage, attackMultiplier);
         standardDamage += bonusCriticalDamage;
         standardDamage += bonusOverchargeDamage;
-        standardDamage *= evasionMult;
+        standardDamage *= evasionMultiplier;
         standardDamage *= attackMultiplier;
         standardDamage *= explosionMult;
         standardDamage *= potionMult;
@@ -245,7 +247,7 @@ public class CombatListener implements Listener {
         applyLifeSteal(attacker, standardDamage);
         applyHealthOnHit(attacker, attackMultiplier);
 
-        elementalDamage *= evasionMult;
+        elementalDamage *= evasionMultiplier;
         elementalDamage *= attackMultiplier;
         elementalDamage *= potionMult;
         elementalDamage *= explosionMult;
@@ -320,25 +322,6 @@ public class CombatListener implements Listener {
         return random.nextDouble() <= chance;
     }
 
-    private double getEvasionMult(AttributedEntity attacker, AttributedEntity defender, double accuracyMultiplier) {
-        double accuracy = attacker.getAttribute(StrifeAttribute.ACCURACY) * accuracyMultiplier;
-        double evasion = Math.max(defender.getAttribute(StrifeAttribute.EVASION), 1);
-        double minimumMult = ((evasion * accuracy) / (evasion * evasion)) - 0.2;
-        double evasionMult = minimumMult + ((1 - minimumMult) * rollDouble(hasLuck(defender.getEntity())));
-        if (evasionMult <= 0.5) {
-            callEvadeEvent(defender.getEntity(), attacker.getEntity());
-            defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-            if (defender.getEntity() instanceof Player) {
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, (Player) defender.getEntity());
-            }
-            if (attacker.getEntity() instanceof Player) {
-                ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_MISSED, (Player) attacker.getEntity());
-            }
-            return -1;
-        }
-        return Math.min(evasionMult, 1.0);
-    }
-
     private double getCriticalDamage(AttributedEntity attacker, AttributedEntity defender, double damage) {
         if (attacker.getAttribute(StrifeAttribute.CRITICAL_RATE) / 100 >= rollDouble(hasLuck(attacker.getEntity()))) {
             callCritEvent(attacker.getEntity(), attacker.getEntity());
@@ -403,6 +386,17 @@ public class CombatListener implements Listener {
         defender.getWorld().spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10,0.4, 0.4, 0.5, 0.1);
         DarknessManager.updateEntity(defender, damage);
         return 1 + (damage * (1 + DarknessManager.getEntity(defender) / 50)) - damage;
+    }
+
+    private void doEvasion(LivingEntity attacker, LivingEntity defender) {
+        callEvadeEvent(defender, attacker);
+        defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
+        if (defender instanceof Player) {
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, (Player) defender);
+        }
+        if (attacker instanceof Player) {
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_MISSED, (Player) attacker);
+        }
     }
 
     private double getBlockAmount(AttributedEntity defender, EntityDamageEvent event) {

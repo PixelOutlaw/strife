@@ -114,7 +114,7 @@ public class BowListener implements Listener {
     }
 
     private double randomOffset(double magnitude) {
-        magnitude = 0.07 + magnitude * 0.005;
+        magnitude = 0.1 + magnitude * 0.0045;
         return (random.nextDouble() * magnitude * 2) - magnitude;
     }
 }

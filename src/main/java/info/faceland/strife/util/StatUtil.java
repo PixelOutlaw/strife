@@ -84,14 +84,31 @@ public class StatUtil {
     return ae.getAttribute(EVASION) * (1 + ae.getAttribute(EVASION_MULT) / 100);
   }
 
+  public static double getArmorPen(AttributedEntity ae) {
+    return ae.getAttribute(ARMOR_PENETRATION) * (1 + (ae.getAttribute(APEN_MULT) / 100));
+  }
+
+  public static double getWardPen(AttributedEntity ae) {
+    return ae.getAttribute(WARD_PENETRATION) * (1 + (ae.getAttribute(WPEN_MULT) / 100));
+  }
+
+  public static double getAccuracy(AttributedEntity ae) {
+    return ae.getAttribute(ACCURACY) * (1 + (ae.getAttribute(ACCURACY_MULT) / 100));
+  }
+
   public static double getArmorMult(AttributedEntity attacker, AttributedEntity defender) {
-    double adjustedArmor = Math.max(getArmor(defender) - attacker.getAttribute(ARMOR_PENETRATION), 1);
+    double adjustedArmor = Math.max(getArmor(defender) - getArmorPen(attacker), 1);
     return Math.min(1, 100 / (100 + adjustedArmor));
   }
 
   public static double getWardingMult(AttributedEntity attacker, AttributedEntity defender) {
-    double adjustedWarding = Math.max(getWarding(defender) - attacker.getAttribute(WARD_PENETRATION), 1);
+    double adjustedWarding = Math.max(getWarding(defender) - getWardPen(attacker), 1);
     return Math.min(1, 80 / (80 + adjustedWarding));
+  }
+
+  public static double getEvasionMultiplier(AttributedEntity attacker, AttributedEntity defender) {
+    double adjustedEvasion = Math.max(getEvasion(defender) - getAccuracy(attacker), 1);
+    return Math.min(1, 40 / (40 + adjustedEvasion));
   }
 
   public static double getFireResist(AttributedEntity ae) {

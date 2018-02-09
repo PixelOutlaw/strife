@@ -108,6 +108,14 @@ public class Champion {
         return saveData.getLevel(stat);
     }
 
+    public void setBonusLevels(int bonusLevels) {
+        saveData.setBonusLevels(bonusLevels);
+    }
+
+    public int getBonusLevels() {
+        return saveData.getBonusLevels();
+    }
+
     public int getUnusedStatPoints() {
         return saveData.getUnusedStatPoints();
     }
