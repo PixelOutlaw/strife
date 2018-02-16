@@ -24,6 +24,7 @@ package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.BleedData;
+import java.util.ArrayList;
 import java.util.Map.Entry;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -41,22 +42,23 @@ public class BleedTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        ArrayList<LivingEntity> pendingRemoval = new ArrayList<>();
         for (Entry<LivingEntity, BleedData> entry : plugin.getBleedManager().getBleedMap().entrySet()) {
             LivingEntity bleedingEntity = entry.getKey();
             BleedData bleedData = entry.getValue();
             if (!bleedingEntity.isValid()) {
-                plugin.getBleedManager().removeEntity(bleedingEntity);
+                pendingRemoval.add(bleedingEntity);
                 continue;
             }
 
-            double bleedDamage = bleedData.getBleedAmount() / 20;
+            double bleedDamage = bleedData.getBleedAmount() / 30;
             if (bleedingEntity.getHealth() > bleedDamage) {
                 bleedingEntity.setHealth(bleedingEntity.getHealth() - bleedDamage);
             } else {
                 bleedingEntity.damage(bleedDamage);
             }
 
-            int particleAmount = 10 + (int)(bleedDamage * 10);
+            int particleAmount = 10 + (int)(bleedDamage * 20);
 
             bleedingEntity.getWorld().spawnParticle(
                 Particle.BLOCK_CRACK,
@@ -65,10 +67,14 @@ public class BleedTask extends BukkitRunnable {
                 0.0, 0.0, 0.0,
                 new MaterialData(Material.REDSTONE_WIRE)
             );
-
-            plugin.getBleedManager().removeTick(bleedingEntity);
+            int ticksLeft = plugin.getBleedManager().removeTick(bleedingEntity);
+            if (ticksLeft < 1) {
+                pendingRemoval.add(bleedingEntity);
+            }
+        }
+        for (LivingEntity le : pendingRemoval) {
+            plugin.getBleedManager().removeEntity(le);
         }
     }
-
 
 }

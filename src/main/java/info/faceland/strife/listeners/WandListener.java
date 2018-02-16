@@ -29,9 +29,11 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Sound;
+import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Shulker;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -41,8 +43,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
@@ -75,6 +75,7 @@ public class WandListener implements Listener{
         }
 
         ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
+        ItemStack offhand = playerEntity.getEquipment().getItemInOffHand();
 
         if (!ItemTypeUtil.isWand(wand)) {
             return;
@@ -87,34 +88,32 @@ public class WandListener implements Listener{
             return;
         }
 
-        playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-
         double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
-        createMagicMissile(playerEntity, attackMultiplier, projectileSpeed);
-
         double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
+
+        if (pStats.getAttribute(StrifeAttribute.EXPLOSION_MAGIC) > 0.1) {
+            createGhastBall(playerEntity, attackMultiplier, projectileSpeed, multiShot);
+            event.setCancelled(true);
+            return;
+        }
+
+        createMagicMissile(playerEntity, attackMultiplier, projectileSpeed, 0, 0, 0);
+
         if (multiShot > 0) {
             int bonusProjectiles = (int) (multiShot - (multiShot % 1));
             if (multiShot % 1 >= random.nextDouble()) {
                 bonusProjectiles++;
             }
             for (int i = bonusProjectiles; i > 0; i--) {
-                createMagicMissile(playerEntity, randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
-                    randomOffset(bonusProjectiles), attackMultiplier, projectileSpeed);
+                createMagicMissile(playerEntity, attackMultiplier, projectileSpeed, randomOffset(bonusProjectiles),
+                    randomOffset(bonusProjectiles), randomOffset(bonusProjectiles));
             }
         }
         event.setCancelled(true);
     }
 
-    private void createMagicMissile(LivingEntity shooter, double attackMult, double power) {
-        createMagicMissile(shooter, 0, 0, 0, attackMult, power);
-    }
-
-    private void createMagicMissile(LivingEntity shooter, double attackMult, double splitMult, double power) {
-        createMagicMissile(shooter, 0, 0, 0, attackMult, power);
-    }
-
-    private void createMagicMissile(LivingEntity shooter, double xOff, double yOff, double zOff,  double attackMult, double power) {
+    private void createMagicMissile(LivingEntity shooter, double attackMult, double power, double xOff, double yOff, double zOff) {
+        shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
         ShulkerBullet magicProj = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
         magicProj.setShooter(shooter);
 
@@ -126,22 +125,36 @@ public class WandListener implements Listener{
         magicProj.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
     }
 
+    private void createGhastBall(LivingEntity shooter, double attackMult, double power, double radius) {
+        shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_GHAST_SHOOT, 0.7f, 1.1f);
+        Fireball fireball = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), Fireball.class);
+        fireball.setShooter(shooter);
+        fireball.setBounce(false);
+        fireball.setIsIncendiary(false);
+        fireball.setYield((float)(2 + radius * 0.5));
+
+        Vector vec = shooter.getLocation().getDirection().multiply(0.05 * power);
+        fireball.setVelocity(vec);
+        fireball.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
+    }
+
     private double randomOffset(double magnitude) {
         magnitude = 0.1 + magnitude * 0.005;
         return (random.nextDouble() * magnitude * 2) - magnitude;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onHit(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof ShulkerBullet)) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onGhastBallHit(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Fireball)) {
             return;
         }
-        if (((ShulkerBullet) event.getDamager()).getShooter() instanceof Shulker) {
+        Fireball fireball = (Fireball)event.getEntity();
+        if (fireball.getShooter() instanceof Ghast) {
             return;
         }
-        if (!(event.getEntity() instanceof LivingEntity)) {
-            return;
+        if (event.getDamager() instanceof Projectile) {
+            event.getDamager().remove();
         }
-        ((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 1, 3));
+        event.setCancelled(true);
     }
 }

@@ -38,30 +38,32 @@ public class StatUtil {
 
   public static double getBaseMeleeDamage(AttributedEntity attacker, AttributedEntity defender) {
     double rawDamage = getMeleeDamage(attacker);
-    if (rawDamage == 0) {
-      return 0D;
-    }
     return rawDamage * getArmorMult(attacker, defender);
   }
 
   public static double getBaseRangedDamage(AttributedEntity attacker, AttributedEntity defender) {
     double rawDamage = getRangedDamage(attacker);
-    if (rawDamage == 0) {
-      return 0D;
-    }
     return rawDamage * getArmorMult(attacker, defender);
   }
 
   public static double getBaseMagicDamage(AttributedEntity attacker, AttributedEntity defender) {
     double rawDamage = getMagicDamage(attacker);
-    if (rawDamage == 0) {
-      return 0D;
-    }
     return rawDamage * getWardingMult(attacker, defender);
   }
 
+  public static double getBaseExplosionDamage(AttributedEntity attacker, AttributedEntity defender) {
+    double rawDamage = getMagicDamage(attacker);
+    return rawDamage * getArmorMult(attacker, defender);
+  }
+
   public static double getAttackTime(AttributedEntity ae) {
-    return 2 / (1 + ae.getAttribute(ATTACK_SPEED) / 100);
+    double attackTime = 2;
+    if (ae.getAttribute(StrifeAttribute.ATTACK_SPEED) > 0) {
+      attackTime /= 1 + ae.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100;
+    } else {
+      attackTime *= 1 + Math.abs(ae.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100);
+    }
+    return attackTime;
   }
 
   public static double getOverchargeMultiplier(AttributedEntity ae) {

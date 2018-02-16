@@ -45,9 +45,11 @@ public class LootListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onLootDetermineChance(LootDetermineChanceEvent event) {
         AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getKiller());
-        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin.getMultiplierManager().getDropMult();
-        double dropBonus = 1 + dropMult + (1 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY) / 100);
-        event.setChance(dropBonus);
+        double dropBonus = plugin.getSettings().getDouble("config.drop-bonus", 0.0) +
+            plugin.getMultiplierManager().getDropMult() + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY) / 100;
+        double rarityBonus = pStats.getAttribute(StrifeAttribute.ITEM_RARITY) / 100;
+        event.setQuantityBonus(dropBonus);
+        event.setRarityBonus(rarityBonus);
     }
 
 }

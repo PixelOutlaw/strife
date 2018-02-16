@@ -86,7 +86,10 @@ public class StatsDefenseMenuItem extends MenuItem {
         lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
         lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
         lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(pStats), INT_FORMAT));
-        lore.add(addStat("Block: ", pStats.getAttribute(StrifeAttribute.EVASION), INT_FORMAT));
+        lore.add(addStat("Block: ", pStats.getAttribute(StrifeAttribute.BLOCK), INT_FORMAT));
+        if (pStats.getAttribute(StrifeAttribute.DAMAGE_REFLECT) > 0) {
+            lore.add(addStat("Reflected Damage: ", pStats.getAttribute(StrifeAttribute.DAMAGE_REFLECT), INT_FORMAT));
+        }
         lore.add(breakLine);
         lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
         lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));

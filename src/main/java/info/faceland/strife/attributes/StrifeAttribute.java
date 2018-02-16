@@ -45,6 +45,7 @@ public enum StrifeAttribute {
     BLOCK("Block"),
 
     DAMAGE_REDUCTION("Damage Reduction"),
+    DAMAGE_REFLECT("Reflected Damage"),
 
     MELEE_DAMAGE("Melee Damage"),
     RANGED_DAMAGE("Ranged Damage"),
@@ -69,7 +70,7 @@ public enum StrifeAttribute {
     SHOCK_CHANCE("Shock Chance"),
     FREEZE_CHANCE("Freeze Chance"),
     CORRUPT_CHANCE("Corrupt Chance"),
-    MAX_EARTH_RUNES("Maximum Earth Runes"),
+    MAX_EARTH_RUNES(),
 
     BLEED_CHANCE("Bleed Chance"),
 
@@ -82,6 +83,7 @@ public enum StrifeAttribute {
 
     XP_GAIN("Experience Gain"),
     ITEM_DISCOVERY("Item Discovery"),
+    ITEM_RARITY("Item Rarity"),
     GOLD_FIND("Gold Find"),
     HEAD_DROP("Head Drop"),
 
@@ -100,7 +102,9 @@ public enum StrifeAttribute {
     ELEMENTAL_MULT("Elemental Damage"),
     ACCURACY_MULT(),
     APEN_MULT(),
-    WPEN_MULT();
+    WPEN_MULT(),
+
+    EXPLOSION_MAGIC("Explosion Magic");
 
     private final String name;
 

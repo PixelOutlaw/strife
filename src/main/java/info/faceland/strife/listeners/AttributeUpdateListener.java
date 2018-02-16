@@ -40,6 +40,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -65,6 +66,18 @@ public class AttributeUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChangeHeldItem(PlayerItemHeldEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+                plugin.getChampionManager().updateAll(champion);
+                AttributeHandler.updateAttributes(plugin, event.getPlayer());
+            }
+        }, 1L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChangeHeldItem(PlayerSwapHandItemsEvent event) {
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
             @Override
             public void run() {

@@ -23,7 +23,10 @@
 package info.faceland.strife.listeners;
 
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_REFLECT;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
+import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
@@ -61,8 +64,6 @@ public class CombatListener implements Listener {
 
     private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
     private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
-    private static final String ATTACK_BLOCKED = TextUtils.color("&e&lBlocked!");
-    private static final String PERFECT_GUARD = TextUtils.color("&b&lPerfect Block! &e&lAttack Recharged!");
 
     private static final String[] DOGE_MEMES =
             {"<aqua>wow", "<green>wow", "<light purple>wow", "<aqua>much pain", "<green>much pain",
@@ -91,8 +92,6 @@ public class CombatListener implements Listener {
         if (event.isCancelled()) {
             return;
         }
-        DamageType damageType = DamageType.MELEE;
-
         if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
             return;
         }
@@ -104,17 +103,15 @@ public class CombatListener implements Listener {
 
         LivingEntity defendEntity = (LivingEntity) event.getEntity();
         LivingEntity attackEntity;
-        Projectile projectile = null;
 
-        double explosionMult = 1.0;
+        Projectile projectile = null;
         if (event.getDamager() instanceof Projectile) {
             projectile = (Projectile) event.getDamager();
-            if (event.getDamager() instanceof ShulkerBullet || event.getDamager() instanceof SmallFireball) {
-                damageType = DamageType.MAGIC;
-            } else {
-                damageType = DamageType.RANGED;
-            }
             ProjectileSource shooter = projectile.getShooter();
+            if (defendEntity.hasMetadata("NPC")) {
+                projectile.remove();
+                return;
+            }
             if (shooter instanceof LivingEntity) {
                 attackEntity = (LivingEntity) shooter;
             } else {
@@ -123,49 +120,52 @@ public class CombatListener implements Listener {
         } else {
             attackEntity = (LivingEntity) event.getDamager();
         }
+
+        double attackMultiplier = 1D;
+        double healMultiplier = 1D;
+        double explosionMult = 1D;
+
+        DamageType damageType = DamageType.MELEE;
         if (event.getCause() == DamageCause.ENTITY_EXPLOSION) {
             damageType = DamageType.EXPLOSION;
             double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
             explosionMult = Math.max(0.3, 4 / (distance + 3));
-        }
-
-        if (defendEntity.hasMetadata("NPC")) {
-            if (projectile != null) {
-                projectile.remove();
-            }
-            return;
-        }
-
-        for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-            if (event.isApplicable(modifier)) {
-                if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                    continue;
-                }
-                event.setDamage(modifier, 0D);
-            }
+            healMultiplier = 0.3D;
+        } else if (event.getDamager() instanceof ShulkerBullet || event.getDamager() instanceof SmallFireball ||
+            event.getDamager() instanceof WitherSkull) {
+            damageType = DamageType.MAGIC;
+        } else if (event.getDamager() instanceof Projectile) {
+            damageType = DamageType.RANGED;
         }
 
         AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity(attackEntity);
         AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
 
-        double attackMultiplier = 1D;
-        double accuracyMultiplier = 1D;
         if (damageType == DamageType.MELEE) {
             attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(attacker);
-        }
-        if (damageType == DamageType.RANGED || damageType == DamageType.MAGIC) {
-            if (projectile.hasMetadata("AS_MULT")) {
-                attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
-            }
-            if (projectile.hasMetadata("AC_MULT")) {
-                accuracyMultiplier = projectile.getMetadata("AC_MULT").get(0).asDouble();
-            }
+        } else if (projectile != null && projectile.hasMetadata("AS_MULT")) {
+            attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
         }
 
         if (attackMultiplier <= 0.1) {
             event.setDamage(0);
             event.setCancelled(true);
             return;
+        }
+
+        boolean blocked = false;
+        for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
+            if (event.isApplicable(modifier)) {
+                if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
+                    continue;
+                }
+                if (modifier == EntityDamageEvent.DamageModifier.BLOCKING) {
+                    if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
+                        blocked = true;
+                    }
+                }
+                event.setDamage(modifier, 0D);
+            }
         }
 
         double evasionMultiplier = StatUtil.getEvasionMultiplier(attacker, defender);
@@ -182,8 +182,8 @@ public class CombatListener implements Listener {
         }
 
         double blockAmount = 0D;
-        if (defendEntity instanceof Player) {
-            blockAmount = getBlockAmount(defender, event);
+        if (blocked && defendEntity instanceof Player) {
+            blockAmount = getBlockAmount(defender);
         }
 
         double potionMult = getPotionMult(attackEntity, defendEntity);
@@ -202,7 +202,7 @@ public class CombatListener implements Listener {
                 magicBaseDamage = StatUtil.getBaseMagicDamage(attacker, defender);
                 break;
             case EXPLOSION:
-                physicalBaseDamage = StatUtil.getBaseMeleeDamage(attacker, defender);
+                physicalBaseDamage = StatUtil.getBaseExplosionDamage(attacker, defender);
         }
         double fireBaseDamage = StatUtil.getBaseFireDamage(attacker, defender);
         double iceBaseDamage = StatUtil.getBaseIceDamage(attacker, defender);
@@ -219,13 +219,20 @@ public class CombatListener implements Listener {
         lightningBaseDamage += bonusLightningDamage;
         shadowBaseDamage += bonusShadowDamage;
 
+        double bonusCriticalMultiplier = 0;
+        double bonusOverchargeMultiplier = 0;
+
+        if (doCriticalHit(attacker, defender)) {
+            bonusCriticalMultiplier = attacker.getAttribute(CRITICAL_DAMAGE) / 100;
+        }
+        if (doOvercharge(attackMultiplier)) {
+            bonusOverchargeMultiplier = attacker.getAttribute(OVERCHARGE) / 100;
+        }
+
         double standardDamage = physicalBaseDamage + magicBaseDamage;
         double elementalDamage = fireBaseDamage + iceBaseDamage + lightningBaseDamage + shadowBaseDamage;
 
-        double bonusCriticalDamage = getCriticalDamage(attacker, defender, standardDamage);
-        double bonusOverchargeDamage = getOverchargeDamage(attacker, standardDamage, attackMultiplier);
-        standardDamage += bonusCriticalDamage;
-        standardDamage += bonusOverchargeDamage;
+        standardDamage += standardDamage * bonusCriticalMultiplier + standardDamage * bonusOverchargeMultiplier;
         standardDamage *= evasionMultiplier;
         standardDamage *= attackMultiplier;
         standardDamage *= explosionMult;
@@ -236,7 +243,7 @@ public class CombatListener implements Listener {
         // Block is removed from standard damage first.
         // The remainder is still needed for elemental.
         if (standardDamage < 0) {
-            blockAmount = -standardDamage;
+            blockAmount = Math.abs(standardDamage);
             standardDamage = 0;
         } else {
             blockAmount = 0;
@@ -244,8 +251,8 @@ public class CombatListener implements Listener {
 
         standardDamage *= pvpMult;
 
-        applyLifeSteal(attacker, standardDamage);
-        applyHealthOnHit(attacker, attackMultiplier);
+        applyLifeSteal(attacker, standardDamage, healMultiplier);
+        applyHealthOnHit(attacker, attackMultiplier * explosionMult, healMultiplier);
 
         elementalDamage *= evasionMultiplier;
         elementalDamage *= attackMultiplier;
@@ -258,16 +265,17 @@ public class CombatListener implements Listener {
         double damageReduction = defender.getAttribute(StrifeAttribute.DAMAGE_REDUCTION) * pvpMult;
         double finalDamage = Math.max(0D, standardDamage + elementalDamage - damageReduction);
 
-        sendActionbarDamage(attackEntity, finalDamage, bonusOverchargeDamage, bonusCriticalDamage, bonusFireDamage, bonusIceDamage,
-            bonusLightningDamage, bonusShadowDamage);
+        sendActionbarDamage(attackEntity, finalDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,
+            bonusFireDamage, bonusIceDamage, bonusLightningDamage, bonusShadowDamage);
 
         finalDamage = plugin.getBarrierManager().damageBarrier(defender, finalDamage);
         plugin.getBarrierManager().updateShieldDisplay(defender);
 
         if (physicalBaseDamage > 0 && attacker.getAttribute(BLEED_CHANCE) / 100 >= rollDouble()) {
-            double bleedAmount = physicalBaseDamage * 0.2 * attackMultiplier * pvpMult;
+            double bleedAmount = physicalBaseDamage * 0.1D * attackMultiplier * pvpMult;
+            bleedAmount += bleedAmount * bonusCriticalMultiplier;
             if (!plugin.getBarrierManager().hasBarrierUp(defender)) {
-                plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, 20);
+                plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, 30);
             }
         }
 
@@ -276,6 +284,17 @@ public class CombatListener implements Listener {
             event.setDamage(0);
             return;
         }
+
+        if (defender.getAttribute(DAMAGE_REFLECT) > 0.1) {
+            double reflectDamage = defender.getAttribute(DAMAGE_REFLECT);
+            reflectDamage = damageType == DamageType.MELEE ? reflectDamage : reflectDamage * 0.6D;
+            if (attackEntity.getHealth() > reflectDamage) {
+                attackEntity.setHealth(attackEntity.getHealth() - reflectDamage);
+            } else {
+                attackEntity.damage(reflectDamage);
+            }
+        }
+
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
     }
 
@@ -322,20 +341,22 @@ public class CombatListener implements Listener {
         return random.nextDouble() <= chance;
     }
 
-    private double getCriticalDamage(AttributedEntity attacker, AttributedEntity defender, double damage) {
+    private boolean doCriticalHit(AttributedEntity attacker, AttributedEntity defender) {
         if (attacker.getAttribute(StrifeAttribute.CRITICAL_RATE) / 100 >= rollDouble(hasLuck(attacker.getEntity()))) {
             callCritEvent(attacker.getEntity(), attacker.getEntity());
-            defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
-            return damage * (attacker.getAttribute(StrifeAttribute.CRITICAL_DAMAGE) / 100);
+            defender.getEntity().getWorld().playSound(
+                defender.getEntity().getEyeLocation(),
+                Sound.ENTITY_GENERIC_BIG_FALL,
+                2f,
+                0.8f
+            );
+            return true;
         }
-        return 0;
+        return false;
     }
 
-    private double getOverchargeDamage(AttributedEntity attacker, double damage, double attackSpeedMult) {
-        if (attackSpeedMult >= 0.99) {
-            return damage * (attacker.getAttribute(StrifeAttribute.OVERCHARGE) / 100);
-        }
-        return 0;
+    private boolean doOvercharge(double attackSpeedMult) {
+        return attackSpeedMult >= 0.99;
     }
 
     private double attemptIgnite(double damage, AttributedEntity attacker, LivingEntity defender) {
@@ -354,28 +375,28 @@ public class CombatListener implements Listener {
         if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.SHOCK_CHANCE) / 100) {
             return 0D;
         }
-        double hpMult = 4 - 7.5 * (defender.getHealth() / defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+        double hpMult = 10 - 20 * (defender.getHealth() / defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
         defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 2f);
         defender.getWorld().spawnParticle(Particle.CRIT_MAGIC, defender.getEyeLocation(), 10 + (int) damage / 2,
                 0.8,0.8,0.8, 0.1);
         if (defender instanceof Creeper) {
             ((Creeper) defender).setPowered(true);
         }
-        return Math.max(1.1 * damage, damage * hpMult) - damage;
+        return Math.max(1.5 * damage, damage * hpMult) - damage;
     }
 
     private double attemptFreeze(double damage, AttributedEntity attacker, LivingEntity defender) {
         if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.FREEZE_CHANCE) / 100) {
             return 0D;
         }
-        double bonusHp = StatUtil.getHealth(attacker) - 30;
+        double multiplier = 1.25 + (StatUtil.getHealth(attacker) / 500);
         if (!defender.hasPotionEffect(PotionEffectType.SLOW)) {
             defender.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 30, 1));
         }
         defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.0f);
         defender.getWorld().spawnParticle(Particle.SNOWBALL, defender.getEyeLocation(), 4 + (int) damage / 2,
                 0.3, 0.3, 0.2, 0.0);
-        return (damage * 1.2 + (bonusHp / 5)) - damage;
+        return damage * multiplier - damage;
     }
 
     private double attemptCorrupt(double damage, AttributedEntity attacker, LivingEntity defender) {
@@ -399,21 +420,16 @@ public class CombatListener implements Listener {
         }
     }
 
-    private double getBlockAmount(AttributedEntity defender, EntityDamageEvent event) {
-        if (!event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING) ||
-            event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) == 0) {
-            return 0;
-        }
-        double blockedAmount = 0;
+    private double getBlockAmount(AttributedEntity defender) {
+        double blockedAmount;
         double maxBlockAmount = defender.getAttribute(StrifeAttribute.BLOCK);
         double blockTimeLeft = plugin.getBlockTask().getTimeLeft(defender.getEntity().getUniqueId());
         if (blockTimeLeft > 0) {
-            blockedAmount = maxBlockAmount * Math.max(1 - (blockTimeLeft / 6), 0.25);
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) defender.getEntity());
+            blockedAmount = maxBlockAmount * Math.max(1 - (blockTimeLeft / 6), 0.1);
         } else {
+            blockedAmount = maxBlockAmount;
             plugin.getAttackSpeedTask().setTicksLeft(defender.getEntity().getUniqueId(), 0L);
             plugin.getAttackSpeedTask().endTask(defender.getEntity().getUniqueId());
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, PERFECT_GUARD, (Player) defender.getEntity());
         }
         plugin.getBlockTask().setTimeLeft(defender.getEntity().getUniqueId(), 6L);
         return blockedAmount;
@@ -459,7 +475,7 @@ public class CombatListener implements Listener {
         return mult;
     }
 
-    private void applyLifeSteal(AttributedEntity attacker, double damage) {
+    private void applyLifeSteal(AttributedEntity attacker, double damage, double healMultiplier) {
         double lifeSteal = StatUtil.getLifestealPercentage(attacker);
         if (lifeSteal <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
             return;
@@ -471,10 +487,10 @@ public class CombatListener implements Listener {
         if (attacker.getEntity().hasPotionEffect(PotionEffectType.POISON)) {
             lifeStolen *= 0.3;
         }
-        restoreHealth(attacker.getEntity(), lifeStolen);
+        restoreHealth(attacker.getEntity(), lifeStolen * healMultiplier);
     }
 
-    private void applyHealthOnHit(AttributedEntity attacker, double attackMultiplier) {
+    private void applyHealthOnHit(AttributedEntity attacker, double attackMultiplier, double healMultiplier) {
         double health = attacker.getAttribute(HP_ON_HIT) * attackMultiplier;
         if (health <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
             return;
@@ -485,7 +501,7 @@ public class CombatListener implements Listener {
         if (attacker.getEntity().hasPotionEffect(PotionEffectType.POISON)) {
             health *= 0.3;
         }
-        restoreHealth(attacker.getEntity(), health);
+        restoreHealth(attacker.getEntity(), health * healMultiplier);
     }
 
     private void callCritEvent(LivingEntity attacker, LivingEntity victim) {

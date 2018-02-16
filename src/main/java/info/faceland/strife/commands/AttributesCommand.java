@@ -22,11 +22,12 @@
  */
 package info.faceland.strife.commands;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.managers.ChampionManager;
 import org.bukkit.entity.Player;
+import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
 
 public class AttributesCommand {
@@ -42,6 +43,16 @@ public class AttributesCommand {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         plugin.getChampionManager().updateAll(champion);
         AttributeHandler.updateAttributes(plugin, sender);
+        plugin.getStatsMenu().open(sender);
+    }
+
+    @Command(identifier = "inspect", permissions = "strife.command.inspect")
+    public void inspectCommand(Player sender,  @Arg(name = "target") Player target) {
+        if (!target.isValid()) {
+            MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
+            return;
+        }
+        plugin.getStatsMenu().setTarget(target);
         plugin.getStatsMenu().open(sender);
     }
 

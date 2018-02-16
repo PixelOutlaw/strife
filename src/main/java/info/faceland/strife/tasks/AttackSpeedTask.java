@@ -87,7 +87,12 @@ public class AttackSpeedTask extends BukkitRunnable {
         if (!(attacker.getEntity() instanceof Player)) {
             return 1.0;
         }
-        double attacksPerSecond = 2 / (1 + attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100);
+        double attacksPerSecond = 2;
+        if (attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) > 0) {
+            attacksPerSecond /= 1 + attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100;
+        } else {
+            attacksPerSecond *= 1 + Math.abs(attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100);
+        }
         double attackMult = Math.min(1.0 - (getSecondsLeft(attacker.getEntity().getUniqueId()) / attacksPerSecond), 1.0);
 
         setSecondsLeft(attacker.getEntity().getUniqueId(), attacksPerSecond);

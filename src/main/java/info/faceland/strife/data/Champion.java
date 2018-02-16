@@ -40,6 +40,13 @@ public class Champion {
     private final Map<StrifeAttribute, Double> attributeWeaponCache;
     private final Map<StrifeAttribute, Double> combinedAttributeCache;
 
+    //private int mainHandHash;
+    //private int offHandHash;
+    //private int helmetHash;
+    //private int chestHash;
+    //private int legsHash;
+    //private int bootsHash;
+
     private ChampionSaveData saveData;
 
     public Champion(ChampionSaveData saveData) {
@@ -96,6 +103,22 @@ public class Champion {
         attributeWeaponCache.putAll(map);
     }
 
+    //public Map<StrifeAttribute, Double> getAttributeBaseCache() {
+    //    return attributeBase;
+    //}
+    //
+    //public Map<StrifeAttribute, Double> getAttributeLevelPointCache() {
+    //    return attributeLevelPoint;
+    //}
+    //
+    //public Map<StrifeAttribute, Double> getAttributeArmorCache() {
+    //    return attributeArmorCache;
+    //}
+    //
+    //public Map<StrifeAttribute, Double> getAttributeWeaponCache() {
+    //    return attributeWeaponCache;
+    //}
+
     public ChampionSaveData getSaveData() {
         return saveData;
     }
@@ -147,4 +170,31 @@ public class Champion {
     public Player getPlayer() {
         return Bukkit.getPlayer(getUniqueId());
     }
+
+    //public void updateHashedEquipment() {
+    //
+    //}
+    //
+    //public boolean checkHashedEquipment() {
+    //    PlayerInventory invy = getPlayer().getInventory();
+    //    if (invy.getItemInMainHand().hashCode() == mainHandHash) {
+    //        return false;
+    //    }
+    //    if (invy.getItemInOffHand().hashCode() == offHandHash) {
+    //        return false;
+    //    }
+    //    if (invy.getHelmet().hashCode() == helmetHash) {
+    //        return false;
+    //    }
+    //    if (invy.getChestplate().hashCode() == chestHash) {
+    //        return false;
+    //    }
+    //    if (invy.getLeggings().hashCode() == legsHash) {
+    //        return false;
+    //    }
+    //    if (invy.getBoots().hashCode() == bootsHash) {
+    //        return false;
+    //    }
+    //    return true;
+    //}
 }

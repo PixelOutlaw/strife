@@ -64,13 +64,11 @@ public class BleedManager {
         bleedMap.put(livingEntity, bleedData);
     }
 
-    public void removeTick(LivingEntity livingEntity) {
+    public int removeTick(LivingEntity livingEntity) {
         if (!bleedMap.containsKey(livingEntity)) {
-            return;
+            return 0;
         }
         bleedMap.get(livingEntity).setTicksRemaining(bleedMap.get(livingEntity).getTicksRemaining() - 1);
-        if (bleedMap.get(livingEntity).getTicksRemaining() < 1) {
-            removeEntity(livingEntity);
-        }
+        return bleedMap.get(livingEntity).getTicksRemaining();
     }
 }

@@ -75,11 +75,13 @@ public class StatsBonusMenuItem extends MenuItem {
                 .getMultiplierManager().getExpMult();
         double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
                 .getMultiplierManager().getDropMult();
-        lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+        lore.add(ChatColor.GREEN + "Experience Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
                 .format((xpMult * 100 + pStats.getAttribute(StrifeAttribute.XP_GAIN))) + "%");
-        lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
-        lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+        lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
+        lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            .format(pStats.getAttribute(StrifeAttribute.ITEM_RARITY)) + "%");
+        lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
                 .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND)) + "%");
         lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
                 .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP)) + "%");

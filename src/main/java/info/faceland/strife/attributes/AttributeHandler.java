@@ -100,7 +100,7 @@ public class AttributeHandler {
         double maxHealth = Math.max(StatUtil.getHealth(playerStatEntity), 1);
         AttributeHandler.updateHealth(player, maxHealth);
 
-        double attacksPerSecond = 0.5 * (1 + playerStatEntity.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100D);
+        double attacksPerSecond = 1 / StatUtil.getAttackTime(playerStatEntity);
         double speedMultiplier = playerStatEntity.getAttribute(StrifeAttribute.MOVEMENT_SPEED) / 100D;
         float speed = 0.2F * (float) speedMultiplier;
         player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));

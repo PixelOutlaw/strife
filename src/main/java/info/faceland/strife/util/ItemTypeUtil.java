@@ -1,15 +1,14 @@
 package info.faceland.strife.util;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemTypeUtil {
 
   public static boolean isArmor(Material material) {
     String name = material.name();
-    return name.contains("HELMET") || name.contains("CHESTPLATE") || name.contains("LEGGINGS") ||
-        name.contains("BOOTS");
+    return name.endsWith("HELMET") || name.endsWith("CHESTPLATE") || name.endsWith("LEGGINGS") ||
+        name.endsWith("BOOTS");
   }
 
   public static boolean isMeleeWeapon(Material material) {
@@ -22,6 +21,9 @@ public class ItemTypeUtil {
       return false;
     }
     if (!is.hasItemMeta()) {
+      return false;
+    }
+    if (!is.getItemMeta().hasLore()) {
       return false;
     }
     if (is.getItemMeta().getLore().get(1) == null) {
