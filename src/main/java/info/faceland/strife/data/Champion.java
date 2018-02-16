@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class Champion {
 
@@ -40,12 +42,12 @@ public class Champion {
     private final Map<StrifeAttribute, Double> attributeWeaponCache;
     private final Map<StrifeAttribute, Double> combinedAttributeCache;
 
-    //private int mainHandHash;
-    //private int offHandHash;
-    //private int helmetHash;
-    //private int chestHash;
-    //private int legsHash;
-    //private int bootsHash;
+    private int mainHandHash;
+    private int offHandHash;
+    private int helmetHash;
+    private int chestHash;
+    private int legsHash;
+    private int bootsHash;
 
     private ChampionSaveData saveData;
 
@@ -103,21 +105,21 @@ public class Champion {
         attributeWeaponCache.putAll(map);
     }
 
-    //public Map<StrifeAttribute, Double> getAttributeBaseCache() {
-    //    return attributeBase;
-    //}
-    //
-    //public Map<StrifeAttribute, Double> getAttributeLevelPointCache() {
-    //    return attributeLevelPoint;
-    //}
-    //
-    //public Map<StrifeAttribute, Double> getAttributeArmorCache() {
-    //    return attributeArmorCache;
-    //}
-    //
-    //public Map<StrifeAttribute, Double> getAttributeWeaponCache() {
-    //    return attributeWeaponCache;
-    //}
+    public Map<StrifeAttribute, Double> getAttributeBaseCache() {
+        return attributeBase;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeLevelPointCache() {
+        return attributeLevelPoint;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeArmorCache() {
+        return attributeArmorCache;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeWeaponCache() {
+        return attributeWeaponCache;
+    }
 
     public ChampionSaveData getSaveData() {
         return saveData;
@@ -171,30 +173,43 @@ public class Champion {
         return Bukkit.getPlayer(getUniqueId());
     }
 
-    //public void updateHashedEquipment() {
-    //
-    //}
-    //
-    //public boolean checkHashedEquipment() {
-    //    PlayerInventory invy = getPlayer().getInventory();
-    //    if (invy.getItemInMainHand().hashCode() == mainHandHash) {
-    //        return false;
-    //    }
-    //    if (invy.getItemInOffHand().hashCode() == offHandHash) {
-    //        return false;
-    //    }
-    //    if (invy.getHelmet().hashCode() == helmetHash) {
-    //        return false;
-    //    }
-    //    if (invy.getChestplate().hashCode() == chestHash) {
-    //        return false;
-    //    }
-    //    if (invy.getLeggings().hashCode() == legsHash) {
-    //        return false;
-    //    }
-    //    if (invy.getBoots().hashCode() == bootsHash) {
-    //        return false;
-    //    }
-    //    return true;
-    //}
+    public void updateHashedEquipment() {
+        PlayerInventory invy = getPlayer().getInventory();
+        mainHandHash = invy.getItemInMainHand() == null ? -1 : invy.getItemInMainHand().hashCode();
+        offHandHash = invy.getItemInOffHand() == null ? -1 : invy.getItemInOffHand().hashCode();
+        helmetHash = invy.getHelmet() == null ? -1 : invy.getHelmet().hashCode();
+        chestHash = invy.getChestplate() == null ? -1 : invy.getChestplate().hashCode();
+        legsHash = invy.getLeggings() == null ? -1 : invy.getLeggings().hashCode();
+        bootsHash = invy.getBoots() == null ? -1 : invy.getBoots().hashCode();
+    }
+
+    public boolean isEquipmentHashMatching() {
+        PlayerInventory invy = getPlayer().getInventory();
+        if (!itemStackHashMatch(invy.getItemInMainHand(), mainHandHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getItemInOffHand(), offHandHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getHelmet(), helmetHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getChestplate(), chestHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getLeggings(), legsHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getBoots(), bootsHash)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean itemStackHashMatch(ItemStack stack, int hash) {
+        if (stack == null) {
+            return hash == -1;
+        }
+        return stack.hashCode() == hash;
+  }
 }
