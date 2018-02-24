@@ -27,6 +27,7 @@ import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.Champion;
 import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Fireball;
@@ -59,6 +60,21 @@ public class WandListener implements Listener{
         this.random = new Random(System.currentTimeMillis());
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onGhastBallHit(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Fireball)) {
+            return;
+        }
+        Fireball fireball = (Fireball)event.getEntity();
+        if (fireball.getShooter() instanceof Ghast) {
+            return;
+        }
+        if (event.getDamager() instanceof Projectile) {
+            event.getDamager().remove();
+        }
+        event.setCancelled(true);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSwing(PlayerInteractEvent event) {
         if (event.getAction() != Action.LEFT_CLICK_AIR) {
@@ -75,7 +91,6 @@ public class WandListener implements Listener{
         }
 
         ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
-        ItemStack offhand = playerEntity.getEquipment().getItemInOffHand();
 
         if (!ItemTypeUtil.isWand(wand)) {
             return;
@@ -87,6 +102,8 @@ public class WandListener implements Listener{
             event.setCancelled(true);
             return;
         }
+
+        hashUpdates(playerEntity);
 
         double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
         double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
@@ -143,18 +160,15 @@ public class WandListener implements Listener{
         return (random.nextDouble() * magnitude * 2) - magnitude;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onGhastBallHit(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Fireball)) {
+    private void hashUpdates(LivingEntity entity) {
+        if (!(entity instanceof Player)) {
             return;
         }
-        Fireball fireball = (Fireball)event.getEntity();
-        if (fireball.getShooter() instanceof Ghast) {
+        Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
+        if (champion.isEquipmentHashMatching()) {
             return;
         }
-        if (event.getDamager() instanceof Projectile) {
-            event.getDamager().remove();
-        }
-        event.setCancelled(true);
+        champion.updateHashedEquipment();
+        plugin.getChampionManager().updateAll(champion);
     }
 }
