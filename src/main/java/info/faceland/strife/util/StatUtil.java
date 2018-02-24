@@ -17,7 +17,7 @@ public class StatUtil {
   }
 
   public static double getBarrierPerSecond(AttributedEntity ae) {
-    return ae.getAttribute(BARRIER) * 0.125 * (1 + (ae.getAttribute(BARRIER_SPEED) / 100));
+    return (4 + (ae.getAttribute(BARRIER) * 0.08)) * (1 + (ae.getAttribute(BARRIER_SPEED) / 100));
   }
 
   public static double getDamageMult(AttributedEntity ae) {
