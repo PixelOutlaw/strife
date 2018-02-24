@@ -35,9 +35,9 @@ public class DarknessReductionTask extends BukkitRunnable {
     @Override
     public void run() {
         for (LivingEntity le : DarknessManager.getDarkMap().keySet()) {
-            double particleAmount = 1 + Math.min(DarknessManager.getEntity(le) / 3, 30);
-            le.getWorld().spawnParticle(Particle.SMOKE_NORMAL, le.getEyeLocation(), (int) particleAmount,0.4, 0.4, 0.5, 0.03);
-            DarknessManager.updateEntity(le, -0.5f);
+            double particleAmount = Math.min(5 + DarknessManager.getCorruptionStacks(le) / 3, 30);
+            le.getWorld().spawnParticle(Particle.SMOKE_NORMAL, le.getEyeLocation(), (int) particleAmount, 0.4, 0.4, 0.5, 0.03);
+            DarknessManager.applyCorruptionStacks(le, -0.2f - (DarknessManager.getCorruptionStacks(le) * 0.025));
             if (!DarknessManager.isValidEntity(le) || !DarknessManager.isCorrupted(le)) {
                 toBeRemoved.add(le);
             }

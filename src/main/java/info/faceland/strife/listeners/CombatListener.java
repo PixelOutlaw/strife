@@ -160,9 +160,6 @@ public class CombatListener implements Listener {
         boolean blocked = false;
         for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
             if (event.isApplicable(modifier)) {
-                if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                    continue;
-                }
                 if (modifier == EntityDamageEvent.DamageModifier.BLOCKING) {
                     if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
                         blocked = true;
@@ -216,12 +213,12 @@ public class CombatListener implements Listener {
         double bonusFireDamage = attemptIgnite(fireBaseDamage, attacker, defendEntity);
         double bonusIceDamage = attemptFreeze(iceBaseDamage, attacker, defendEntity);
         double bonusLightningDamage = attemptShock(lightningBaseDamage, attacker, defendEntity);
-        double bonusShadowDamage = attemptCorrupt(shadowBaseDamage, attacker, defendEntity);
+        boolean corruptEffect = attemptCorrupt(shadowBaseDamage, attacker, defendEntity);
 
         fireBaseDamage += bonusFireDamage;
         iceBaseDamage += bonusIceDamage;
         lightningBaseDamage += bonusLightningDamage;
-        shadowBaseDamage += bonusShadowDamage;
+        shadowBaseDamage += shadowBaseDamage * (DarknessManager.getCorruptionStacks(defendEntity) * 0.02);
 
         double bonusCriticalMultiplier = 0;
         double bonusOverchargeMultiplier = 0;
@@ -267,26 +264,19 @@ public class CombatListener implements Listener {
         elementalDamage *= pvpMult;
 
         double damageReduction = defender.getAttribute(StrifeAttribute.DAMAGE_REDUCTION) * pvpMult;
-        double finalDamage = Math.max(0D, standardDamage + elementalDamage - damageReduction);
+        double rawDamage = Math.max(0D, standardDamage + elementalDamage - damageReduction);
 
-        sendActionbarDamage(attackEntity, finalDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,
-            bonusFireDamage, bonusIceDamage, bonusLightningDamage, bonusShadowDamage);
-
-        finalDamage = plugin.getBarrierManager().damageBarrier(defender, finalDamage);
+        double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
         plugin.getBarrierManager().updateShieldDisplay(defender);
 
+        double bleedAmount = 0;
         if (physicalBaseDamage > 0 && attacker.getAttribute(BLEED_CHANCE) / 100 >= rollDouble()) {
-            double bleedAmount = physicalBaseDamage * 0.1D * attackMultiplier * pvpMult;
+            bleedAmount = physicalBaseDamage * 0.5D * attackMultiplier * pvpMult;
             bleedAmount += bleedAmount * bonusCriticalMultiplier;
             if (!plugin.getBarrierManager().hasBarrierUp(defender)) {
                 plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, 30);
+                defendEntity.getWorld().playSound(defendEntity.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
             }
-        }
-
-        if (event.getDamage(EntityDamageEvent.DamageModifier.ABSORPTION) != 0) {
-            event.setDamage(EntityDamageEvent.DamageModifier.ABSORPTION, -finalDamage);
-            event.setDamage(0);
-            return;
         }
 
         if (defender.getAttribute(DAMAGE_REFLECT) > 0.1) {
@@ -299,11 +289,14 @@ public class CombatListener implements Listener {
             }
         }
 
+        sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,
+            bonusFireDamage, bonusIceDamage, bonusLightningDamage, corruptEffect, bleedAmount);
+
         event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
     }
 
     private void sendActionbarDamage(LivingEntity entity, double damage, double overBonus, double critBonus, double fireBonus,
-        double iceBonus, double lightningBonus, double shadowBonus) {
+        double iceBonus, double lightningBonus, boolean corrupt, double bleedBonus) {
         if (!(entity instanceof Player)) {
             return;
         }
@@ -323,8 +316,11 @@ public class CombatListener implements Listener {
         if (lightningBonus > 0) {
             damageString.append("&7⚡");
         }
-        if (shadowBonus > 0) {
+        if (corrupt) {
             damageString.append("&8❂");
+        }
+        if (bleedBonus > 0) {
+            damageString.append("&4♦");
         }
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(damageString.toString()), (Player) entity);
     }
@@ -403,14 +399,14 @@ public class CombatListener implements Listener {
         return damage * multiplier - damage;
     }
 
-    private double attemptCorrupt(double damage, AttributedEntity attacker, LivingEntity defender) {
+    private boolean attemptCorrupt(double damage, AttributedEntity attacker, LivingEntity defender) {
         if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.CORRUPT_CHANCE) / 100) {
-            return 0D;
+            return false;
         }
         defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
         defender.getWorld().spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10,0.4, 0.4, 0.5, 0.1);
-        DarknessManager.updateEntity(defender, damage);
-        return 1 + (damage * (1 + DarknessManager.getEntity(defender) / 50)) - damage;
+        DarknessManager.applyCorruptionStacks(defender, damage);
+        return true;
     }
 
     private void doEvasion(LivingEntity attacker, LivingEntity defender) {

@@ -25,4 +25,8 @@ public class BleedData {
   public void setTicksRemaining(int ticksRemaining) {
     this.ticksRemaining = ticksRemaining;
   }
+
+  public void bumpTicks(int ticksRemaining) {
+    setTicksRemaining(Math.max(this.ticksRemaining, ticksRemaining));
+  }
 }

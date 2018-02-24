@@ -53,8 +53,10 @@ public class BleedManager {
             bleedMap.put(livingEntity, new BleedData(amount, ticks));
             return;
         }
-        bleedMap.get(livingEntity).setBleedAmount(bleedMap.get(livingEntity).getBleedAmount() + amount);
-        bleedMap.get(livingEntity).setTicksRemaining(Math.max(bleedMap.get(livingEntity).getTicksRemaining(), ticks));
+        if (amount > bleedMap.get(livingEntity).getBleedAmount()) {
+            bleedMap.get(livingEntity).setBleedAmount(amount);
+        }
+        bleedMap.get(livingEntity).bumpTicks(ticks);
     }
 
     public void applyBleed(LivingEntity livingEntity, BleedData bleedData) {
