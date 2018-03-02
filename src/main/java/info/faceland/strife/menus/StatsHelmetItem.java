@@ -25,7 +25,6 @@ package info.faceland.strife.menus;
 import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.menus.StatsMenu;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -38,6 +37,13 @@ import ninja.amp.ampmenus.items.MenuItem;
 public class StatsHelmetItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
+
+    public StatsHelmetItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Helmet"), new ItemStack(Material.BARRIER));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsHelmetItem(StrifePlugin plugin) {
         super(TextUtils.color("&eNo Helmet"), new ItemStack(Material.BARRIER));
@@ -46,6 +52,9 @@ public class StatsHelmetItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
+        if (this.player != null) {
+            player = this.player;
+        }
         ItemStack helm = player.getEquipment().getHelmet();
         if (helm == null || helm.getType() == Material.AIR) {
             helm = new ItemStack(this.getIcon());

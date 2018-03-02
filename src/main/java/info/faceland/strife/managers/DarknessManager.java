@@ -41,7 +41,7 @@ public class DarknessManager {
         return darkMap.get(entity) >= 0;
     }
 
-    public static void updateEntity(LivingEntity entity, double amount) {
+    public static void applyCorruptionStacks(LivingEntity entity, double amount) {
         if (darkMap.get(entity) != null) {
             darkMap.put(entity, darkMap.get(entity) + amount);
             return;
@@ -49,7 +49,7 @@ public class DarknessManager {
         darkMap.put(entity, amount);
     }
 
-    public static double getEntity(LivingEntity entity) {
+    public static double getCorruptionStacks(LivingEntity entity) {
         if (darkMap.get(entity) != null) {
             return darkMap.get(entity);
         }

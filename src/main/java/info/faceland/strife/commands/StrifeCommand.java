@@ -29,7 +29,6 @@ import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
@@ -55,10 +54,7 @@ public class StrifeCommand {
                 new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
-            MessageUtils.sendMessage(sender,
-                    ChatColor.GRAY + " [ " + champion.getLevel(stat) + " / " + champion
-                            .getMaximumStatLevel()
-                            + " ] " + stat.getName());
+            MessageUtils.sendMessage(sender, ChatColor.GRAY + " - " + champion.getLevel(stat));
         }
         MessageUtils.sendMessage(sender, "<gold>----------------------------------");
     }
@@ -69,7 +65,7 @@ public class StrifeCommand {
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
             champion.setLevel(stat, 0);
         }
-        champion.setUnusedStatPoints(target.getLevel() * 2);
+        champion.setUnusedStatPoints(target.getLevel());
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         MessageUtils.sendMessage(sender, "<green>You reset <white>%player%<green>.",
@@ -79,7 +75,7 @@ public class StrifeCommand {
         message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
                 .color(ChatColor.WHITE).then(" to spend them!").send(target);
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        AttributeHandler.updateAttributes(plugin, champion.getPlayer());
     }
 
     @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -97,7 +93,7 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<green>You cleared <white>%player%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}});
         MessageUtils.sendMessage(target, "<green>Your stats have been cleared.");
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        AttributeHandler.updateAttributes(plugin, champion.getPlayer());
     }
 
     @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -115,45 +111,13 @@ public class StrifeCommand {
         MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         MessageUtils.sendMessage(target, "<green>Your level has been raised.");
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getCache().getAttribute(StrifeAttribute.HEALTH));
+        AttributeHandler.updateAttributes(plugin, champion.getPlayer());
     }
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
     public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") double amount) {
-        if (player.getLevel() >= 100) {
-            return;
-        }
-
-        // Get all the values!
-        Integer maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
-        double displayedExpGained = amount;
-        double currentExpPercent = player.getExp();
-        double faceExpToLevel;
-
-        if (maxFaceExp == null || maxFaceExp == 0) {
-            return;
-        }
-
-        faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
-
-        while (amount > faceExpToLevel) {
-            if (player.getLevel() >= 100) {
-                continue;
-            }
-            player.setExp(0);
-            amount -= faceExpToLevel;
-            currentExpPercent = 0;
-            player.setLevel(player.getLevel() + 1);
-            maxFaceExp = plugin.getLevelingRate().get(player.getLevel());
-            faceExpToLevel = maxFaceExp;
-        }
-
-        player.setExp(player.getExp() + (float) (amount / maxFaceExp));
-
-        double remainingExp = amount + (currentExpPercent * maxFaceExp);
-        String xpMsg = "&a&l( &f&l" + (int) remainingExp + " &a&l/ &f&l" + (int) faceExpToLevel + " XP &a&l)";
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg), player);
-        MessageUtils.sendMessage(player, "&aYou gained &f" + (int) displayedExpGained + " &aXP!");
+        plugin.getExpManager().addExperience(player, amount, true);
+        MessageUtils.sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
     }
 
     @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)

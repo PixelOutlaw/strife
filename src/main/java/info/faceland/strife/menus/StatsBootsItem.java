@@ -37,6 +37,13 @@ import ninja.amp.ampmenus.items.MenuItem;
 public class StatsBootsItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
+
+    public StatsBootsItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Boots"), new ItemStack(Material.BARRIER));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsBootsItem(StrifePlugin plugin) {
         super(TextUtils.color("&eNo Boots"), new ItemStack(Material.BARRIER));
@@ -45,6 +52,9 @@ public class StatsBootsItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
+        if (this.player != null) {
+            player = this.player;
+        }
         ItemStack chest = player.getEquipment().getBoots();
         if (chest == null || chest.getType() == Material.AIR) {
             chest = new ItemStack(this.getIcon());

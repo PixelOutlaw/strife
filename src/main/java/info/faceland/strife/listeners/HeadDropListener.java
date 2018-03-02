@@ -24,6 +24,7 @@ package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -50,8 +51,8 @@ public class HeadDropListener implements Listener {
         if (event.getEntity() == null || event.getEntity().getKiller() == null) {
             return;
         }
-        double chance = plugin.getChampionManager().getChampion(event.getEntity().getKiller().getUniqueId())
-                .getCache().getAttribute(StrifeAttribute.HEAD_DROP);
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getEntity().getKiller());
+        double chance = pStats.getAttribute(StrifeAttribute.HEAD_DROP) / 100;
         if (chance == 0) {
             return;
         }

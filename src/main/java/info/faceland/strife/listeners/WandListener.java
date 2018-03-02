@@ -26,15 +26,21 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
-import org.bukkit.Material;
+import info.faceland.strife.util.ItemTypeUtil;
 import org.bukkit.Sound;
+import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Ghast;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -51,7 +57,22 @@ public class WandListener implements Listener{
 
     public WandListener(StrifePlugin plugin) {
         this.plugin = plugin;
-        random = new Random(System.currentTimeMillis());
+        this.random = new Random(System.currentTimeMillis());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onGhastBallHit(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Fireball)) {
+            return;
+        }
+        Fireball fireball = (Fireball)event.getEntity();
+        if (fireball.getShooter() instanceof Ghast) {
+            return;
+        }
+        if (event.getDamager() instanceof Projectile) {
+            event.getDamager().remove();
+        }
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -59,92 +80,95 @@ public class WandListener implements Listener{
         if (event.getAction() != Action.LEFT_CLICK_AIR) {
             return;
         }
-        Player p = event.getPlayer();
-        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
-        double attackSpeed = StrifeAttribute.ATTACK_SPEED.getBaseValue() * (1 / (1 + playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ATTACK_SPEED)));
-        long timeToSet = Math.round(Math.max(4.0 * attackSpeed, 0D));
-        long timeLeft = plugin.getAttackSpeedTask().getTimeLeft(p.getUniqueId());
-        double attackSpeedMult = 1.0D;
-        if (timeLeft > 0) {
-            attackSpeedMult = Math.max(1.0 - 1.0 * ((timeLeft * 1D) / timeToSet), 0.1);
-        }
-        plugin.getAttackSpeedTask().setTimeLeft(p.getUniqueId(), timeToSet);
+        Player playerEntity = event.getPlayer();
 
-        ItemStack wand = p.getEquipment().getItemInMainHand();
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
+        double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
 
-        if (wand.getType() != Material.WOOD_SWORD) {
-            return;
-        }
-        if (wand.getItemMeta().getLore().size() < 2) {
-            return;
-        }
-        if (!wand.getItemMeta().getLore().get(1).endsWith("Wand")) {
-            return;
-        }
-        if (attackSpeedMult <= 0.25) {
-            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, p);
-            p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+        if (attackMultiplier == 0) {
+            event.setCancelled(true);
             return;
         }
 
-        // double attackspeed penalty for wands
-        attackSpeedMult *= attackSpeedMult;
-        attackSpeedMult = Math.max(0.15, attackSpeedMult);
+        ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
 
-        p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
-        playerChamp.getAttributeValues(false);
-        playerChamp.getWeaponAttributeValues();
-        playerChamp.getCache().recombine();
-        ShulkerBullet magicProj = p.getWorld().spawn(p.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
-        magicProj.setShooter(p);
-        Vector vec = p.getLocation().getDirection();
-        magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.255, vec.getZ() * 1.2));
-        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.MAGIC_DAMAGE) * attackSpeedMult;
-        double critMult = 0;
-        double overMult = 0;
-        if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
-            critMult = playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1;
+        if (!ItemTypeUtil.isWand(wand)) {
+            return;
         }
-        if (attackSpeedMult == 1.0D) {
-            overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
+
+        if (attackMultiplier <= 0.25) {
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, playerEntity);
+            playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+            event.setCancelled(true);
+            return;
         }
-        magicProj.setMetadata("handled", new FixedMetadataValue(plugin, true));
-        magicProj.setMetadata("damage", new FixedMetadataValue(plugin, damage));
-        magicProj.setMetadata("overcharge", new FixedMetadataValue(plugin, overMult));
-        magicProj.setMetadata("critical", new FixedMetadataValue(plugin, critMult));
-        magicProj.setMetadata("armorPen", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ARMOR_PENETRATION)));
-        magicProj.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ACCURACY)));
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
-                magicProj.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.FIRE_DAMAGE) * attackSpeedMult));
+
+        hashUpdates(playerEntity);
+
+        double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
+        double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
+
+        if (pStats.getAttribute(StrifeAttribute.EXPLOSION_MAGIC) > 0.1) {
+            createGhastBall(playerEntity, attackMultiplier, projectileSpeed, multiShot);
+            event.setCancelled(true);
+            return;
+        }
+
+        createMagicMissile(playerEntity, attackMultiplier, projectileSpeed, 0, 0, 0);
+
+        if (multiShot > 0) {
+            int bonusProjectiles = (int) (multiShot - (multiShot % 1));
+            if (multiShot % 1 >= random.nextDouble()) {
+                bonusProjectiles++;
             }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
-                magicProj.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.ICE_DAMAGE) * attackSpeedMult));
+            for (int i = bonusProjectiles; i > 0; i--) {
+                createMagicMissile(playerEntity, attackMultiplier, projectileSpeed, randomOffset(bonusProjectiles),
+                    randomOffset(bonusProjectiles), randomOffset(bonusProjectiles));
             }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
-                magicProj.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * attackSpeedMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.CORRUPT_CHANCE)) {
-                magicProj.setMetadata("darkDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.DARK_DAMAGE) * attackSpeedMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            magicProj.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIFE_STEAL)));
         }
         event.setCancelled(true);
+    }
+
+    private void createMagicMissile(LivingEntity shooter, double attackMult, double power, double xOff, double yOff, double zOff) {
+        shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
+        ShulkerBullet magicProj = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
+        magicProj.setShooter(shooter);
+
+        Vector vec = shooter.getLocation().getDirection();
+        xOff = vec.getX() * power + xOff;
+        yOff = vec.getY() * power + yOff + 0.25;
+        zOff = vec.getZ() * power + zOff;
+        magicProj.setVelocity(new Vector(xOff, yOff, zOff));
+        magicProj.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
+    }
+
+    private void createGhastBall(LivingEntity shooter, double attackMult, double power, double radius) {
+        shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_GHAST_SHOOT, 0.7f, 1.1f);
+        Fireball fireball = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), Fireball.class);
+        fireball.setShooter(shooter);
+        fireball.setBounce(false);
+        fireball.setIsIncendiary(false);
+        fireball.setYield((float)(2 + radius * 0.5));
+
+        Vector vec = shooter.getLocation().getDirection().multiply(0.05 * power);
+        fireball.setVelocity(vec);
+        fireball.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
+    }
+
+    private double randomOffset(double magnitude) {
+        magnitude = 0.1 + magnitude * 0.005;
+        return (random.nextDouble() * magnitude * 2) - magnitude;
+    }
+
+    private void hashUpdates(LivingEntity entity) {
+        if (!(entity instanceof Player)) {
+            return;
+        }
+        Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
+        if (champion.isEquipmentHashMatching()) {
+            return;
+        }
+        champion.updateHashedEquipment();
+        plugin.getChampionManager().updateAll(champion);
     }
 }

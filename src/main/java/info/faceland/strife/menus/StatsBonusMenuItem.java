@@ -26,7 +26,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -43,8 +43,15 @@ import java.util.List;
 public class StatsBonusMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
+
+    public StatsBonusMenuItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&a&lDrop Modifiers"), new ItemStack(Material.EMERALD));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsBonusMenuItem(StrifePlugin plugin) {
         super(TextUtils.color("&a&lDrop Modifiers"), new ItemStack(Material.EMERALD));
@@ -53,7 +60,10 @@ public class StatsBonusMenuItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        if (this.player != null) {
+            player = this.player;
+        }
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         ItemStack itemStack = new ItemStack(Material.EMERALD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
@@ -65,14 +75,16 @@ public class StatsBonusMenuItem extends MenuItem {
                 .getMultiplierManager().getExpMult();
         double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
                 .getMultiplierManager().getDropMult();
-        lore.add(ChatColor.GREEN + "Bonus Experience: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((xpMult + champion.getCache().getAttribute(StrifeAttribute.XP_GAIN)) * 100) + "%");
-        lore.add(ChatColor.GREEN + "Bonus Item Drop Rate: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format((dropMult + champion.getCache().getAttribute(StrifeAttribute.ITEM_DISCOVERY)) * 100) + "%");
-        lore.add(ChatColor.GREEN + "Bonus Cash Dropped: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.GOLD_FIND) * 100) + "%");
+        lore.add(ChatColor.GREEN + "Experience Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+                .format((xpMult * 100 + pStats.getAttribute(StrifeAttribute.XP_GAIN))) + "%");
+        lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
+        lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            .format(pStats.getAttribute(StrifeAttribute.ITEM_RARITY)) + "%");
+        lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+                .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND)) + "%");
         lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                .format(champion.getCache().getAttribute(StrifeAttribute.HEAD_DROP) * 100) + "%");
+                .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP)) + "%");
 
         lore.add(breakLine);
 

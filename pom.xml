@@ -28,7 +28,7 @@
     <parent>
         <groupId>io.pixeloutlaw</groupId>
         <artifactId>spigot-plugin-parent</artifactId>
-        <version>1.11.2.2</version>
+        <version>1.12.2.0</version>
     </parent>
 
     <artifactId>strife</artifactId>
@@ -46,11 +46,23 @@
         <tag>HEAD</tag>
     </scm>
 
+    <repositories>
+        <repository>
+            <id>dmulloy2-repo</id>
+            <url>http://repo.dmulloy2.net/nexus/repository/public/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib-API</artifactId>
+            <version>4.3.0</version>
+        </dependency>
         <dependency>
             <groupId>io.pixeloutlaw</groupId>
             <artifactId>facecore</artifactId>
-            <version>3.0.2-SNAPSHOT</version>
+            <version>3.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.pixeloutlaw</groupId>
@@ -100,7 +112,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.javaVersion>1.7</project.build.javaVersion>
+        <project.build.javaVersion>1.8</project.build.javaVersion>
     </properties>
 
 </project>

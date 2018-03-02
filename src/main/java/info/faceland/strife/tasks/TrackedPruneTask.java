@@ -20,30 +20,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.data;
+package info.faceland.strife.tasks;
 
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.StrifePlugin;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Map;
+public class TrackedPruneTask extends BukkitRunnable {
 
-public class StatContainer {
+    private final StrifePlugin plugin;
 
-    private Map<StrifeAttribute, Double> stats;
-
-    public StatContainer() {
-        this.stats = new HashMap<>();
+    public TrackedPruneTask(StrifePlugin plugin) {
+        this.plugin = plugin;
     }
 
-    public void updateAttribute(StrifeAttribute attribute, double value) {
-        this.stats.put(attribute, value);
-    }
-
-    public void setAttributes(Map<StrifeAttribute, Double> attributeMap) {
-        this.stats = attributeMap;
-    }
-
-    public double getAttribute(StrifeAttribute attribute) {
-        return this.stats.get(attribute) == null ? 0 : this.stats.get(attribute);
+    @Override
+    public void run() {
+        ArrayList<UUID> invalidEntities = new ArrayList<>();
+        for (UUID uuid : plugin.getEntityStatCache().getTrackedEntities().keySet()) {
+            if (plugin.getEntityStatCache().isValid(uuid)) {
+                continue;
+            }
+            invalidEntities.add(uuid);
+        }
+        System.out.println("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
+        for (UUID uuid : invalidEntities) {
+            plugin.getEntityStatCache().removeEntity(uuid);
+        }
     }
 }

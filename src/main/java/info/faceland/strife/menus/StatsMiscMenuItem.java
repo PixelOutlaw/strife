@@ -26,7 +26,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -44,8 +44,15 @@ import java.util.List;
 public class StatsMiscMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
     private static final String breakLine = TextUtils.color("&7&m--------------------");
+
+    public StatsMiscMenuItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
+        this.player = player;
+        this.plugin = plugin;
+    }
 
     public StatsMiscMenuItem(StrifePlugin plugin) {
         super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
@@ -54,7 +61,10 @@ public class StatsMiscMenuItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        if (this.player != null) {
+            player = this.player;
+        }
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
@@ -62,8 +72,8 @@ public class StatsMiscMenuItem extends MenuItem {
         List<String> lore = new ArrayList<>();
         lore.add(breakLine);
         lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
-                champion.getCache().getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
-        if (champion.getCache().getAttribute(StrifeAttribute.DOGE) > 0) {
+                pStats.getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
+        if (pStats.getAttribute(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
             lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
         }

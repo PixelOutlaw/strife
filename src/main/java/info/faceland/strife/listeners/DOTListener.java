@@ -22,15 +22,27 @@
  */
 package info.faceland.strife.listeners;
 
+import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.StatUtil;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import static info.faceland.strife.listeners.CombatListener.getResistPotionMult;
 
 public class DOTListener implements Listener {
+
+    private final StrifePlugin plugin;
+
+    public DOTListener(StrifePlugin plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDOTEvent(EntityDamageEvent event) {
@@ -40,40 +52,40 @@ public class DOTListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
             return;
         }
-        LivingEntity le = (LivingEntity) event.getEntity();
-        double bonusDamage = 0;
-        boolean isHandled = false;
-        switch (event.getCause()) {
-            case FIRE_TICK:
-                bonusDamage = le.getHealth() * 0.03 * getResistPotionMult(le);
-                isHandled = true;
-                break;
-            case FIRE:
-                bonusDamage = le.getHealth() * 0.05 * getResistPotionMult(le);
-                isHandled = true;
-                break;
-            case LAVA:
-                bonusDamage = le.getHealth() * 0.05 * getResistPotionMult(le);
-                isHandled = true;
-                break;
-            case WITHER:
-                bonusDamage = le.getMaxHealth() * 0.02 * getResistPotionMult(le);
-                isHandled = true;
-                break;
-        }
+        LivingEntity entity = (LivingEntity) event.getEntity();
+        AttributedEntity statEntity = plugin.getEntityStatCache().getAttributedEntity(entity);
 
-        if (isHandled) {
-            for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-                if (event.isApplicable(modifier)) {
-                    if (modifier == EntityDamageEvent.DamageModifier.ABSORPTION) {
-                        continue;
-                    }
-                    event.setDamage(modifier, 0D);
-                }
+        if (event.getCause() == DamageCause.FIRE_TICK) {
+            double damage = entity.getHealth() * 0.04 * getResistPotionMult(entity) * (1 - StatUtil.getFireResist(statEntity) / 100);
+            damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
+            entity.damage(damage);
+            event.setCancelled(true);
+            return;
+        }
+        if (event.getCause() == DamageCause.FIRE || event.getCause() == DamageCause.LAVA) {
+            double damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) * (1 - StatUtil.getFireResist(statEntity) / 100);
+            damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
+            event.setDamage(damage);
+            return;
+        }
+        if (event.getCause() == DamageCause.POISON) {
+            double damage = 1 + entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.005;
+            damage *= getResistPotionMult(entity);
+            entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_SPIDER_STEP, 1.0f, 1.5f);
+            entity.setHealth(Math.max(entity.getHealth() - damage, 1));
+            event.setCancelled(true);
+            return;
+        }
+        if (event.getCause() == DamageCause.WITHER) {
+            double damage = 1 + entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.005;
+            damage *= getResistPotionMult(entity);
+            entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WITHER_SHOOT, 1.0f, 0.75f);
+            if (entity.getHealth() > damage) {
+                entity.setHealth(Math.max(entity.getHealth() - damage, 1));
+            } else {
+                entity.damage(damage);
             }
-            le.setNoDamageTicks(Math.max(1, le.getNoDamageTicks()));
-            event.setDamage(1 + bonusDamage);
+            event.setCancelled(true);
         }
-
     }
 }

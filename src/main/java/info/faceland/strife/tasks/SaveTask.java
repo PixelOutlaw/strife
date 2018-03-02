@@ -24,7 +24,7 @@ package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.ChampionCache;
+import info.faceland.strife.data.ChampionSaveData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -45,24 +45,24 @@ public class SaveTask extends BukkitRunnable {
     @Override
     public void run() {
         plugin.debug(Level.INFO, "Running save task");
-        Map<UUID, ChampionCache> championCacheMap = new HashMap<>();
+        Map<UUID, ChampionSaveData> championDataMap = new HashMap<>();
         for (Champion champion : plugin.getChampionManager().getChampions()) {
-            championCacheMap.put(champion.getUniqueId(), champion.getCache());
+            championDataMap.put(champion.getUniqueId(), champion.getSaveData());
         }
-        plugin.getStorage().save(plugin.getChampionManager().getChampions());
+        plugin.getStorage().save(plugin.getChampionManager().getChampionSaveData());
         plugin.getChampionManager().clear();
-        for (Champion champion : plugin.getStorage().load()) {
-            if (championCacheMap.containsKey(champion.getUniqueId())) {
-                champion.setCache(championCacheMap.get(champion.getUniqueId()));
+        for (ChampionSaveData saveData : plugin.getStorage().load()) {
+            if (championDataMap.containsKey(saveData.getUniqueId())) {
+                saveData = championDataMap.get(saveData.getUniqueId());
             }
-            plugin.getChampionManager().addChampion(champion);
+            plugin.getChampionManager().addChampion(new Champion(saveData));
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
-            Champion champion = plugin.getStorage().load(player.getUniqueId());
-            if (championCacheMap.containsKey(champion.getUniqueId())) {
-                champion.setCache(championCacheMap.get(champion.getUniqueId()));
+            ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
+            if (championDataMap.containsKey(saveData.getUniqueId())) {
+                saveData = championDataMap.get(saveData.getUniqueId());
             }
-            plugin.getChampionManager().addChampion(champion);
+            plugin.getChampionManager().addChampion(new Champion(saveData));
         }
     }
 

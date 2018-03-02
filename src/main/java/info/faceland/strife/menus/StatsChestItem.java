@@ -37,6 +37,13 @@ import ninja.amp.ampmenus.items.MenuItem;
 public class StatsChestItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
+
+    public StatsChestItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Chestplate"), new ItemStack(Material.BARRIER));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsChestItem(StrifePlugin plugin) {
         super(TextUtils.color("&eNo Chestplate"), new ItemStack(Material.BARRIER));
@@ -45,6 +52,9 @@ public class StatsChestItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
+        if (this.player != null) {
+            player = this.player;
+        }
         ItemStack chest = player.getEquipment().getChestplate();
         if (chest == null || chest.getType() == Material.AIR) {
             chest = new ItemStack(this.getIcon());

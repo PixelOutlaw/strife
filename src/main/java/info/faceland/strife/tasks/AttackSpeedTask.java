@@ -24,6 +24,8 @@ package info.faceland.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
+import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -36,16 +38,17 @@ import java.util.UUID;
 public class AttackSpeedTask extends BukkitRunnable {
 
     private static final String ATTACK_RECHARGED = TextUtils.color("&e&lAttack Recharged!");
+    private Map<UUID, Long> attackTimeMap;
+    private long tickRate;
 
-    private Map<UUID, Long> timeLeftMap;
-
-    public AttackSpeedTask() {
-        timeLeftMap = new HashMap<>();
+    public AttackSpeedTask(long tickRate) {
+        this.attackTimeMap = new HashMap<>();
+        this.tickRate = tickRate;
     }
 
     @Override
     public void run() {
-        Iterator<Map.Entry<UUID, Long>> iterator = timeLeftMap.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Long>> iterator = attackTimeMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, Long> entry = iterator.next();
             if (entry.getValue() < 1L) {
@@ -61,15 +64,39 @@ public class AttackSpeedTask extends BukkitRunnable {
     }
 
     public void endTask(UUID uuid) {
-        timeLeftMap.remove(uuid);
+        attackTimeMap.remove(uuid);
     }
 
-    public void setTimeLeft(UUID uuid, long timeToSet) {
-        timeLeftMap.put(uuid, timeToSet);
+    public void setTicksLeft(UUID uuid, long ticks) {
+        attackTimeMap.put(uuid, ticks);
     }
 
-    public long getTimeLeft(UUID uuid) {
-        return timeLeftMap.containsKey(uuid) ? timeLeftMap.get(uuid) : 0;
+    public void setSecondsLeft(UUID uuid, double seconds) {
+        attackTimeMap.put(uuid, (long) (seconds * (20L / tickRate)));
     }
 
+    public long getTicksLeft(UUID uuid) {
+        return attackTimeMap.containsKey(uuid) ? attackTimeMap.get(uuid) : 0;
+    }
+
+    public double getSecondsLeft(UUID uuid) {
+        return (getTicksLeft(uuid) * tickRate) / (double) 20L;
+    }
+
+    public double getAttackMultiplier(AttributedEntity attacker) {
+        if (!(attacker.getEntity() instanceof Player)) {
+            return 1.0;
+        }
+        double attacksPerSecond = 2;
+        if (attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) > 0) {
+            attacksPerSecond /= 1 + attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100;
+        } else {
+            attacksPerSecond *= 1 + Math.abs(attacker.getAttribute(StrifeAttribute.ATTACK_SPEED) / 100);
+        }
+        double attackMult = Math.min(1.0 - (getSecondsLeft(attacker.getEntity().getUniqueId()) / attacksPerSecond), 1.0);
+
+        setSecondsLeft(attacker.getEntity().getUniqueId(), attacksPerSecond);
+
+        return attackMult;
+    }
 }

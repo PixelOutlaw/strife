@@ -37,6 +37,13 @@ import ninja.amp.ampmenus.items.MenuItem;
 public class StatsLegsItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
+
+    public StatsLegsItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Leggings"), new ItemStack(Material.BARRIER));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsLegsItem(StrifePlugin plugin) {
         super(TextUtils.color("&eNo Leggings"), new ItemStack(Material.BARRIER));
@@ -45,6 +52,9 @@ public class StatsLegsItem extends MenuItem {
 
     @Override
     public ItemStack getFinalIcon(Player player) {
+        if (this.player != null) {
+            player = this.player;
+        }
         ItemStack chest = player.getEquipment().getLeggings();
         if (chest == null || chest.getType() == Material.AIR) {
             chest = new ItemStack(this.getIcon());

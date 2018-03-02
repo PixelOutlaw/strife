@@ -24,6 +24,7 @@ package info.faceland.strife.storage;
 
 import info.faceland.strife.data.Champion;
 
+import info.faceland.strife.data.ChampionSaveData;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -33,12 +34,12 @@ public interface DataStorage {
 
     void shutdown();
 
-    void save(Champion champion);
+    void save(ChampionSaveData champion);
 
-    void save(Collection<Champion> champions);
+    void save(Collection<ChampionSaveData> champions);
 
-    Collection<Champion> load();
+    Collection<ChampionSaveData> load();
 
-    Champion load(UUID uuid);
+    ChampionSaveData load(UUID uuid);
 
 }

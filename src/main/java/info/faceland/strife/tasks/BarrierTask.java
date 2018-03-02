@@ -22,49 +22,51 @@
  */
 package info.faceland.strife.tasks;
 
+import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
-
 import info.faceland.strife.util.StatUtil;
+import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class HealthRegenTask extends BukkitRunnable {
+public class BarrierTask extends BukkitRunnable {
 
-    private final StrifePlugin plugin;
+    private StrifePlugin plugin;
 
-    public HealthRegenTask(StrifePlugin plugin) {
+    public BarrierTask(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void run() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getHealth() <= 0 || player.isDead()) {
+        ArrayList<UUID> playersPendingRemoval = new ArrayList<>();
+        for (Entry<UUID, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
+            if (plugin.getBarrierManager().getTickMap().containsKey(entry.getKey())) {
+                plugin.getBarrierManager().tickEntity(entry.getKey());
                 continue;
             }
-            if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
+            LivingEntity entity = (LivingEntity) Bukkit.getEntity(entry.getKey());
+            if (entity == null || !entity.isValid()) {
+                playersPendingRemoval.add(entry.getKey());
                 continue;
             }
-            AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
-            // Restore 40% of your regen per 2s tick (This task runs every 2s)
-            // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
-            double amount = StatUtil.getRegen(pStats) * 0.4;
-            // Bonus for players that have just eaten
-            if (player.getSaturation() > 0.1) {
-                amount *= 1.6;
+            AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entity);
+            if (entry.getValue() >= player.getAttribute(BARRIER)) {
+                continue;
             }
-            // These are not 'penalties', they're 'mechanics' :^)
-            if (player.hasPotionEffect(PotionEffectType.POISON)) {
-                amount *= 0.3;
-            }
-            if (player.getFoodLevel() <= 6) {
-                amount *= player.getFoodLevel() / 6;
-            }
-            player.setHealth(Math.min(player.getHealth() + amount, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
+            // Restore this amount per barrier tick (4 MC ticks, 0.2s)
+            double barrierGain = StatUtil.getBarrierPerSecond(player) / 5;
+            double newBarrierValue = Math.min(entry.getValue() + barrierGain, player.getAttribute(BARRIER));
+            plugin.getBarrierManager().setEntityBarrier(entry.getKey(), newBarrierValue);
+            plugin.getBarrierManager().updateShieldDisplay(player);
+        }
+        for (UUID uuid : playersPendingRemoval) {
+            plugin.getBarrierManager().removeEntity(uuid);
         }
     }
 }

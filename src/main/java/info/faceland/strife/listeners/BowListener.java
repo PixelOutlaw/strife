@@ -22,10 +22,18 @@
  */
 package info.faceland.strife.listeners;
 
+import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
+import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_SPEED;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
+import java.util.Random;
+import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -35,8 +43,6 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
-import java.util.Random;
-
 public class BowListener implements Listener {
 
     private final StrifePlugin plugin;
@@ -44,7 +50,7 @@ public class BowListener implements Listener {
 
     public BowListener(StrifePlugin plugin) {
         this.plugin = plugin;
-        random = new Random(System.currentTimeMillis());
+        this.random = new Random(System.currentTimeMillis());
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -55,68 +61,75 @@ public class BowListener implements Listener {
         if (!(event.getEntity() instanceof Arrow)) {
             return;
         }
-        Player p = (Player) event.getEntity().getShooter();
-        Champion playerChamp = plugin.getChampionManager().getChampion(p.getUniqueId());
 
-        playerChamp.getWeaponAttributeValues();
-        playerChamp.getCache().recombine();
+        event.setCancelled(true);
 
-        Projectile projectile = event.getEntity();
+        Player playerEntity = (Player) event.getEntity().getShooter();
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
+        double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
 
-        double attackSpeedMult = Math.min(0.1 * playerChamp.getCache().getAttribute(StrifeAttribute.ATTACK_SPEED), 1.0);
-        double shotPower = projectile.getVelocity().length();
-        double shotMult = attackSpeedMult + ((1 - attackSpeedMult) * Math.min(shotPower / 2.9, 1.0));
-        double vBonus = 1 + shotMult * 2;
-        Vector vec = p.getLocation().getDirection();
-        projectile.setVelocity(new Vector(vec.getX() * 1.2 * vBonus, vec.getY() * 1.3 * vBonus, vec.getZ() * 1.2 *
-                vBonus));
-
-        double damage = playerChamp.getCache().getAttribute(StrifeAttribute.RANGED_DAMAGE) * shotMult;
-        double critMult = 0;
-        double overMult = 0;
-        if (shotMult == 1.0) {
-            overMult = playerChamp.getCache().getAttribute(StrifeAttribute.OVERCHARGE);
-        }
-        if (random.nextDouble() <= playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_RATE)) {
-            critMult = playerChamp.getCache().getAttribute(StrifeAttribute.CRITICAL_DAMAGE) - 1;
+        if (attackMultiplier <= 0.1) {
+            return;
         }
 
-        projectile.setMetadata("handled", new FixedMetadataValue(plugin, true));
-        projectile.setMetadata("damage", new FixedMetadataValue(plugin, damage));
-        projectile.setMetadata("overcharge", new FixedMetadataValue(plugin, overMult));
-        projectile.setMetadata("critical", new FixedMetadataValue(plugin, critMult));
-        projectile.setMetadata("armorPen", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ARMOR_PENETRATION)));
-        projectile.setMetadata("accuracy", new FixedMetadataValue(plugin, playerChamp.getCache()
-                .getAttribute(StrifeAttribute.ACCURACY)));
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.FIRE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.IGNITE_CHANCE)) {
-                projectile.setMetadata("fireDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.FIRE_DAMAGE) * shotMult));
+        hashUpdates(playerEntity);
+
+        double bowPitch = 0.9 + random.nextDouble() * 0.2;
+        playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
+
+        double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
+        double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
+
+        Location location = event.getEntity().getLocation().clone();
+
+        createArrow(playerEntity, location, attackMultiplier, projectileSpeed, shotMult);
+
+        double multiShot = pStats.getAttribute(MULTISHOT) / 100;
+        if (multiShot > 0) {
+            int bonusProjectiles = (int) (multiShot - (multiShot % 1));
+            if (multiShot % 1 >= random.nextDouble()) {
+                bonusProjectiles++;
+            }
+            double splitMult = Math.max(1 - (0.1 * bonusProjectiles), 0.3D);
+            for (int i = bonusProjectiles; i > 0; i--) {
+                createArrow(playerEntity, location, attackMultiplier, splitMult, randomOffset(bonusProjectiles),
+                    randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), projectileSpeed, shotMult);
             }
         }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.ICE_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.FREEZE_CHANCE)) {
-                projectile.setMetadata("iceDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                        .getAttribute(StrifeAttribute.ICE_DAMAGE) * shotMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.SHOCK_CHANCE)) {
-                projectile.setMetadata("lightningDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * shotMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.DARK_DAMAGE) > 0) {
-            if (random.nextDouble() < playerChamp.getCache().getAttribute(StrifeAttribute.CORRUPT_CHANCE)) {
-                projectile.setMetadata("darkDamage", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.DARK_DAMAGE) * shotMult));
-            }
-        }
-        if (playerChamp.getCache().getAttribute(StrifeAttribute.LIFE_STEAL) > 0) {
-            projectile.setMetadata("lifeSteal", new FixedMetadataValue(plugin, playerChamp.getCache()
-                    .getAttribute(StrifeAttribute.LIFE_STEAL)));
-        }
+    }
 
+    private void createArrow(LivingEntity shooter, Location location, double attackMult, double power, double shotMult) {
+        createArrow(shooter, location, attackMult, 1D, 0,0,0, power, shotMult);
+    }
+
+    private void createArrow(LivingEntity shooter, Location location, double attackMult, double splitMult, double xOff,
+        double yOff, double zOff, double power, double shotMult) {
+        Arrow arrow = shooter.getWorld().spawn(location.clone(), Arrow.class);
+        arrow.setShooter(shooter);
+
+        Vector vector = shooter.getLocation().getDirection();
+        xOff = vector.getX() * power + xOff;
+        yOff = vector.getY() * power + 0.19 + yOff;
+        zOff = vector.getZ() * power + zOff;
+        arrow.setVelocity(new Vector(xOff, yOff, zOff));
+        arrow.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
+        arrow.setMetadata("AC_MULT", new FixedMetadataValue(plugin, shotMult));
+    }
+
+    private double randomOffset(double magnitude) {
+        magnitude = 0.1 + magnitude * 0.0045;
+        return (random.nextDouble() * magnitude * 2) - magnitude;
+    }
+
+    private void hashUpdates(LivingEntity entity) {
+        if (!(entity instanceof Player)) {
+            return;
+        }
+        Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
+        if (champion.isEquipmentHashMatching()) {
+            return;
+        }
+        champion.updateHashedEquipment();
+        plugin.getChampionManager().updateAll(champion);
     }
 }
