@@ -97,7 +97,7 @@ public class CombatListener implements Listener {
             return;
         }
         if (event.getDamager() instanceof EvokerFangs) {
-            event.setDamage(((LivingEntity) event.getDamager()).getAttribute(
+            event.setDamage(((LivingEntity) event.getEntity()).getAttribute(
                 Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.15);
             return;
         }
@@ -169,7 +169,7 @@ public class CombatListener implements Listener {
             }
         }
 
-        double evasionMultiplier = StatUtil.getEvasionMultiplier(attacker, defender);
+        double evasionMultiplier = StatUtil.getEvasion(attacker, defender);
         evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
         if (evasionMultiplier <= 0.5) {
           doEvasion(attackEntity, defendEntity);

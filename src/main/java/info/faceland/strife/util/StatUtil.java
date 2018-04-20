@@ -108,10 +108,22 @@ public class StatUtil {
     return Math.min(1, 80 / (80 + adjustedWarding));
   }
 
-  public static double getEvasionMultiplier(AttributedEntity attacker, AttributedEntity defender) {
-    double adjustedEvasion = Math.max(getEvasion(defender) - getAccuracy(attacker), 1);
-    return Math.min(1, 40 / (40 + adjustedEvasion));
+  //public static double getEvasionMultiplier(AttributedEntity attacker, AttributedEntity defender) {
+  //  double adjustedEvasion = Math.max(getEvasion(defender) - getAccuracy(attacker), 1);
+  //  return Math.min(1, 40 / (40 + adjustedEvasion));
+  //}
+
+  public static double getEvasion(AttributedEntity attacker, AttributedEntity defender) {
+    double evasion = getEvasion(defender);
+    double accuracy = getAccuracy(attacker);
+    double minimumDamage = 0.8 - 0.65 * ((evasion - accuracy) / (1 + accuracy));
+    return Math.min(1, minimumDamage);
   }
+
+  //public static double getEvasionChance(AttributedEntity attacker, AttributedEntity defender) {
+  //  double evasionAdvantage = Math.max(getEvasion(defender) - getAccuracy(attacker), 1);
+  //  return Math.min(1, 100 / (100 + evasionAdvantage));
+  //}
 
   public static double getFireResist(AttributedEntity ae) {
     double amount = ae.getAttribute(StrifeAttribute.FIRE_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);

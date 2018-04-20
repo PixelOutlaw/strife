@@ -29,11 +29,12 @@ import info.faceland.strife.data.AttributedEntity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BarrierManager {
+    
+    private static final int BASE_BARRIER_TICKS = 15;
 
     private Map<UUID, Double> barrierMap = new HashMap<>();
     private Map<UUID, Integer> tickMap = new HashMap<>();
@@ -98,8 +99,15 @@ public class BarrierManager {
         }
     }
 
-    public void setDamaged(LivingEntity entity, int ticks) {
+    public void interruptBarrier(LivingEntity entity, int ticks) {
+        if (!barrierMap.containsKey(entity.getUniqueId())) {
+            return;
+        }
         tickMap.put(entity.getUniqueId(), ticks);
+    }
+
+    public void interruptBarrier(LivingEntity entity) {
+        interruptBarrier(entity, BASE_BARRIER_TICKS);
     }
 
     public void tickEntity(UUID uuid) {
@@ -119,10 +127,7 @@ public class BarrierManager {
         }
         LivingEntity entity = attributedEntity.getEntity();
         double remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
-        // Stat for lowering the delay to be added.
-        // Task ticks once every 4 server ticks, so, 3s * 5 TPS = 15
-        setDamaged(entity, 15);
-
+        interruptBarrier(entity);
         if (remainingBarrier > 0) {
             setEntityBarrier(entity.getUniqueId(), remainingBarrier);
             return 0;

@@ -56,19 +56,25 @@ public class DOTListener implements Listener {
         AttributedEntity statEntity = plugin.getEntityStatCache().getAttributedEntity(entity);
 
         if (event.getCause() == DamageCause.FIRE_TICK) {
-            double damage = entity.getHealth() * 0.04 * getResistPotionMult(entity) * (1 - StatUtil.getFireResist(statEntity) / 100);
+            double damage = (1 + entity.getHealth() * 0.04) * getResistPotionMult(entity) * (1 - StatUtil.getFireResist(statEntity) / 100);
             damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
-            entity.damage(damage);
+            entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 0.5f, 0.75f);
+            if (entity.getHealth() > damage) {
+                entity.setHealth(Math.max(entity.getHealth() - damage, 1));
+            } else {
+                entity.damage(damage);
+            }
             event.setCancelled(true);
             return;
         }
         if (event.getCause() == DamageCause.FIRE || event.getCause() == DamageCause.LAVA) {
-            double damage = entity.getHealth() * 0.1 * getResistPotionMult(entity) * (1 - StatUtil.getFireResist(statEntity) / 100);
+            double damage = (2 + entity.getHealth() * 0.1) * getResistPotionMult(entity) * (1 - StatUtil.getFireResist(statEntity) / 100);
             damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
             event.setDamage(damage);
             return;
         }
         if (event.getCause() == DamageCause.POISON) {
+            plugin.getBarrierManager().interruptBarrier(entity);
             double damage = 1 + entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.005;
             damage *= getResistPotionMult(entity);
             entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_SPIDER_STEP, 1.0f, 1.5f);
@@ -77,11 +83,12 @@ public class DOTListener implements Listener {
             return;
         }
         if (event.getCause() == DamageCause.WITHER) {
+            plugin.getBarrierManager().interruptBarrier(entity);
             double damage = 1 + entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.005;
             damage *= getResistPotionMult(entity);
-            entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WITHER_SHOOT, 1.0f, 0.75f);
+            entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WITHER_SHOOT, 0.2f, 0.5f);
             if (entity.getHealth() > damage) {
-                entity.setHealth(Math.max(entity.getHealth() - damage, 1));
+                entity.setHealth(entity.getHealth() - damage);
             } else {
                 entity.damage(damage);
             }
