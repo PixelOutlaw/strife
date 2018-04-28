@@ -78,6 +78,14 @@ public class JsonDataStorage implements DataStorage {
             champion.getUniqueId().toString() + ".bonus-levels",
             champion.getBonusLevels()
         );
+        configuration.set(
+            champion.getUniqueId().toString() + ".crafting-level",
+            champion.getCraftingLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".crafting-exp",
+            champion.getCraftingExp()
+        );
         configuration.save();
     }
 
@@ -102,6 +110,14 @@ public class JsonDataStorage implements DataStorage {
                 champ.getUniqueId().toString() + ".bonus-levels",
                 champ.getBonusLevels()
             );
+            configuration.set(
+                champ.getUniqueId().toString() + ".crafting-level",
+                champ.getCraftingLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".crafting-exp",
+                champ.getCraftingExp()
+            );
         }
         configuration.save();
     }
@@ -122,6 +138,8 @@ public class JsonDataStorage implements DataStorage {
             boolean hadReset = checkResetAndSetLevels(section, saveData, true);
             saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
             saveData.setBonusLevels(section.getInt("bonus-levels"));
+            saveData.setCraftingLevel(section.getInt("crafting-level"));
+            saveData.setCraftingExp((float)section.getDouble("crafting-exp"));
             if (hadReset) {
                 saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
             } else {
@@ -147,6 +165,8 @@ public class JsonDataStorage implements DataStorage {
         boolean hadReset = checkResetAndSetLevels(section, saveData, true);
         saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
         saveData.setBonusLevels(section.getInt("bonus-levels"));
+        saveData.setCraftingLevel(section.getInt("crafting-level"));
+        saveData.setCraftingExp((float)section.getDouble("crafting-exp"));
         if (hadReset) {
             saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
         } else {

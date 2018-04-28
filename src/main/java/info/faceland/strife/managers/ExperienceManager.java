@@ -28,19 +28,19 @@ import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import gyurix.api.TitleAPI;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
-import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public class StrifeExperienceManager {
+public class ExperienceManager implements StrifeExperienceManager {
 
     private final StrifePlugin plugin;
 
-    public StrifeExperienceManager(StrifePlugin plugin) {
+    public ExperienceManager(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -85,7 +85,7 @@ public class StrifeExperienceManager {
         player.setExp((float) newExpPercent);
     }
 
-    private Integer getMaxFaceExp(int level) {
+    public Integer getMaxFaceExp(int level) {
         if (level == 100) {
             return 10000000;
         }

@@ -27,6 +27,8 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
+import info.faceland.strife.api.StrifeCraftExperienceManager;
+import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
@@ -41,7 +43,8 @@ import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.MultiplierManager;
 import info.faceland.strife.managers.ChampionManager;
-import info.faceland.strife.managers.StrifeExperienceManager;
+import info.faceland.strife.managers.CraftExperienceManager;
+import info.faceland.strife.managers.ExperienceManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
@@ -56,6 +59,7 @@ import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
 import info.faceland.strife.tasks.TrackedPruneTask;
+import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
@@ -82,9 +86,11 @@ public class StrifePlugin extends FacePlugin {
     private BleedManager bleedManager;
     private MonsterManager monsterManager;
     private MultiplierManager multiplierManager;
+    private PlayerDataUtil playerDataUtil;
     private DataStorage storage;
     private ChampionManager championManager;
     private StrifeExperienceManager experienceManager;
+    private StrifeCraftExperienceManager craftExperienceManager;
     private EntityStatCache entityStatCache;
     private SaveTask saveTask;
     private TrackedPruneTask trackedPruneTask;
@@ -97,11 +103,16 @@ public class StrifePlugin extends FacePlugin {
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
+    private LevelingRate craftingRate;
     private LevelupMenu levelupMenu;
     private StatsMenu statsMenu;
 
     public LevelingRate getLevelingRate() {
         return levelingRate;
+    }
+
+    public LevelingRate getCraftingRate() {
+        return craftingRate;
     }
 
     public AttackSpeedTask getAttackSpeedTask() {
@@ -128,9 +139,11 @@ public class StrifePlugin extends FacePlugin {
         bleedManager = new BleedManager();
         monsterManager = new MonsterManager(this);
         multiplierManager = new MultiplierManager();
+        playerDataUtil = new PlayerDataUtil(this);
         storage = new JsonDataStorage(this);
         championManager = new ChampionManager(this);
-        experienceManager = new StrifeExperienceManager(this);
+        experienceManager = new ExperienceManager(this);
+        craftExperienceManager = new CraftExperienceManager(this);
         entityStatCache = new EntityStatCache(this);
         commandHandler = new CommandHandler(this);
 
@@ -245,11 +258,19 @@ public class StrifePlugin extends FacePlugin {
         commandHandler.registerCommands(new StrifeCommand(this));
 
         levelingRate = new LevelingRate();
-        Expression expr = new ExpressionBuilder(settings.getString("config.leveling.formula",
+        Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
             "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-        for (int i = 0; i < 100; i++) {
-            levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
+        for (int i = 0; i < 200; i++) {
+            levelingRate.put(i, i, (int) Math.round(normalExpr.setVariable("LEVEL", i).evaluate()));
         }
+
+        craftingRate = new LevelingRate();
+        Expression craftExpr = new ExpressionBuilder(settings.getString("config.leveling.crafting",
+            "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+        for (int i = 0; i < 60; i++) {
+            craftingRate.put(i, i, (int) Math.round(craftExpr.setVariable("LEVEL", i).evaluate()));
+        }
+
 
         trackedPruneTask.runTaskTimer(this,
             20L * 61, // Start save after 1 minute, 1 second cuz yolo
@@ -317,9 +338,11 @@ public class StrifePlugin extends FacePlugin {
         bleedManager = null;
         barrierManager = null;
         multiplierManager = null;
+        playerDataUtil = null;
         storage = null;
         championManager = null;
         experienceManager = null;
+        craftExperienceManager = null;
         entityStatCache = null;
         saveTask = null;
         trackedPruneTask = null;
@@ -351,6 +374,18 @@ public class StrifePlugin extends FacePlugin {
         return multiplierManager;
     }
 
+    public StrifeCraftExperienceManager getCraftExperienceManager() {
+        return craftExperienceManager;
+    }
+
+    public StrifeExperienceManager getExperienceManager() {
+        return experienceManager;
+    }
+
+    public PlayerDataUtil getPlayerDataUtil() {
+        return playerDataUtil;
+    }
+
     public void debug(Level level, String... messages) {
         if (debugPrinter != null) {
             debugPrinter.log(level, Arrays.asList(messages));
@@ -363,10 +398,6 @@ public class StrifePlugin extends FacePlugin {
 
     public ChampionManager getChampionManager() {
         return championManager;
-    }
-
-    public StrifeExperienceManager getExpManager() {
-        return experienceManager;
     }
 
     public EntityStatCache getEntityStatCache() {

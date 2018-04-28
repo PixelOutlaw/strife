@@ -116,7 +116,7 @@ public class StrifeCommand {
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
     public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") double amount) {
-        plugin.getExpManager().addExperience(player, amount, true);
+        plugin.getExperienceManager().addExperience(player, amount, true);
         MessageUtils.sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
     }
 

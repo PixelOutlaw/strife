@@ -15,6 +15,12 @@ public class ChampionSaveData {
   private int highestReachedLevel;
   private int bonusLevels;
 
+  private int craftingLevel;
+  private float craftingExp;
+
+  private int fishingLevel;
+  private float fishingExp;
+
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
@@ -33,6 +39,38 @@ public class ChampionSaveData {
 
   public void setBonusLevels(int bonusLevels) {
     this.bonusLevels = bonusLevels;
+  }
+
+  public int getCraftingLevel() {
+    return craftingLevel;
+  }
+
+  public void setCraftingLevel(int craftingLevel) {
+    this.craftingLevel = craftingLevel;
+  }
+
+  public float getCraftingExp() {
+    return craftingExp;
+  }
+
+  public void setCraftingExp(float craftingExp) {
+    this.craftingExp = craftingExp;
+  }
+
+  public int getFishingLevel() {
+    return fishingLevel;
+  }
+
+  public void setFishingLevel(int fishingLevel) {
+    this.fishingLevel = fishingLevel;
+  }
+
+  public float getFishingExp() {
+    return fishingExp;
+  }
+
+  public void setFishingExp(float fishingExp) {
+    this.fishingExp = fishingExp;
   }
 
   public int getUnusedStatPoints() {

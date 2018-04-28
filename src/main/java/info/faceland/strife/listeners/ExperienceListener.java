@@ -33,6 +33,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
 
+import info.faceland.strife.events.StrifeCraftEvent;
 import info.faceland.strife.managers.ChampionManager;
 import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
@@ -121,7 +122,12 @@ public class ExperienceListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerExpChange(PlayerExpChangeEvent event) {
-        plugin.getExpManager().addExperience(event.getPlayer(), event.getAmount(), false);
+        plugin.getExperienceManager().addExperience(event.getPlayer(), event.getAmount(), false);
         event.setAmount(0);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onCraftExpChange(StrifeCraftEvent event) {
+        plugin.getCraftExperienceManager().addCraftExperience(event.getPlayer(), event.getAmount());
     }
 }
