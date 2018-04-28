@@ -321,37 +321,48 @@ public class StrifePlugin extends FacePlugin {
 
     @Override
     public void disable() {
-        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
+        storage.save(championManager.getChampionSaveData());
+        HandlerList.unregisterAll(this);
+
         saveTask.cancel();
         trackedPruneTask.cancel();
         regenTask.cancel();
         bleedTask.cancel();
         barrierTask.cancel();
         darkTask.cancel();
-        HandlerList.unregisterAll(this);
-        storage.save(championManager.getChampionSaveData());
+        attackSpeedTask.cancel();
+        blockTask.cancel();
+
         configYAML = null;
         baseStatsYAML = null;
         statsYAML = null;
+
         statManager = null;
         monsterManager = null;
         bleedManager = null;
         barrierManager = null;
         multiplierManager = null;
+
         playerDataUtil = null;
         storage = null;
         championManager = null;
         experienceManager = null;
         craftExperienceManager = null;
         entityStatCache = null;
+
         saveTask = null;
         trackedPruneTask = null;
         regenTask = null;
         bleedTask = null;
         bleedTask = null;
         darkTask = null;
+        attackSpeedTask = null;
+        blockTask = null;
+
         commandHandler = null;
         settings = null;
+
+        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
     }
 
     public StrifeStatManager getStatManager() {

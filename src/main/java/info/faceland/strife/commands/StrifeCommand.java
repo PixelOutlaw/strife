@@ -22,11 +22,10 @@
  */
 package info.faceland.strife.commands;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
-import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
@@ -46,17 +45,24 @@ public class StrifeCommand {
         this.plugin = plugin;
     }
 
+    @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
+    public void reloadCommand(CommandSender sender) {
+        plugin.disable();
+        plugin.enable();
+        sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
+    }
+
     @Command(identifier = "strife profile", permissions = "strife.command.strife.profile", onlyPlayers = false)
     public void profileCommand(CommandSender sender, @Arg(name = "target") Player target) {
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
-        MessageUtils.sendMessage(sender, "<gold>----------------------------------");
-        MessageUtils.sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
+        sendMessage(sender, "<gold>----------------------------------");
+        sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
                 new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
-        MessageUtils.sendMessage(sender, "<gold>----------------------------------");
+        sendMessage(sender, "<gold>----------------------------------");
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
-            MessageUtils.sendMessage(sender, ChatColor.GRAY + " - " + champion.getLevel(stat));
+            sendMessage(sender, ChatColor.GRAY + " - " + champion.getLevel(stat));
         }
-        MessageUtils.sendMessage(sender, "<gold>----------------------------------");
+        sendMessage(sender, "<gold>----------------------------------");
     }
 
     @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
@@ -68,9 +74,9 @@ public class StrifeCommand {
         champion.setUnusedStatPoints(target.getLevel());
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(sender, "<green>You reset <white>%player%<green>.",
+        sendMessage(sender, "<green>You reset <white>%player%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}});
-        MessageUtils.sendMessage(target, "<green>Your stats have been reset.");
+        sendMessage(target, "<green>Your stats have been reset.");
         FancyMessage message = new FancyMessage("");
         message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
                 .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
@@ -90,9 +96,9 @@ public class StrifeCommand {
         champion.setHighestReachedLevel(0);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(sender, "<green>You cleared <white>%player%<green>.",
+        sendMessage(sender, "<green>You cleared <white>%player%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}});
-        MessageUtils.sendMessage(target, "<green>Your stats have been cleared.");
+        sendMessage(target, "<green>Your stats have been cleared.");
         AttributeHandler.updateAttributes(plugin, champion.getPlayer());
     }
 
@@ -101,35 +107,35 @@ public class StrifeCommand {
                              @Arg(name = "level") int newLevel) {
         int oldLevel = target.getLevel();
         if (newLevel <= oldLevel) {
-            MessageUtils.sendMessage(sender, "<red>New level must be higher than old level.");
+            sendMessage(sender, "<red>New level must be higher than old level.");
         }
         target.setExp(0f);
         target.setLevel(newLevel);
         Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
+        sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
                 new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
-        MessageUtils.sendMessage(target, "<green>Your level has been raised.");
+        sendMessage(target, "<green>Your level has been raised.");
         AttributeHandler.updateAttributes(plugin, champion.getPlayer());
     }
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
     public void addXpCommand(CommandSender sender, @Arg(name = "target") Player player, @Arg(name = "amount") double amount) {
         plugin.getExperienceManager().addExperience(player, amount, true);
-        MessageUtils.sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
+        sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
     }
 
     @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)
     public void setExpMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-        MessageUtils.sendMessage(sender, "&aBonus XP mult changed to " + amount + "x from " + (plugin
+        sendMessage(sender, "&aBonus XP mult changed to " + amount + "x from " + (plugin
                 .getMultiplierManager().getExpMult() + 1) +"x!");
         plugin.getMultiplierManager().setExpMult(amount);
     }
 
     @Command(identifier = "strife dropmult", permissions = "strife.command.strife.dropmult", onlyPlayers = false)
     public void setDropMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-        MessageUtils.sendMessage(sender, "&aBonus drop mult changed to " + amount + "x from " + (plugin
+        sendMessage(sender, "&aBonus drop mult changed to " + amount + "x from " + (plugin
                 .getMultiplierManager().getDropMult() + 1) +"x!");
         plugin.getMultiplierManager().setDropMult(amount);
     }
