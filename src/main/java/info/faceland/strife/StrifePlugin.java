@@ -298,6 +298,7 @@ public class StrifePlugin extends FacePlugin {
         );
         attackSpeedTask.runTaskTimer(this, 5L, attackTickRate);
         blockTask.runTaskTimer(this, 5L, 5L);
+        Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
