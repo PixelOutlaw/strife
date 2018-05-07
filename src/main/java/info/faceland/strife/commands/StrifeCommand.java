@@ -123,7 +123,7 @@ public class StrifeCommand {
     @Command(identifier = "strife setskill", permissions = "strife.command.strife.setskill", onlyPlayers = false)
     public void skillCommand(CommandSender sender, @Arg(name = "target") Player target,
         @Arg(name = "skill") String skill, @Arg(name = "level") int newLevel) {
-        if (newLevel > 60 || newLevel < 0) {
+        if (!target.hasPermission("strife.weirdlevels") && (newLevel > 60 || newLevel < 0)) {
             sendMessage(sender, "<red>Skill must be between level 0 and 60.");
             return;
         }
@@ -162,4 +162,5 @@ public class StrifeCommand {
                 .getMultiplierManager().getDropMult() + 1) +"x!");
         plugin.getMultiplierManager().setDropMult(amount);
     }
+
 }

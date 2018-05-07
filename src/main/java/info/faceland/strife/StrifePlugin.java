@@ -284,9 +284,8 @@ public class StrifePlugin extends FacePlugin {
         Expression enchantExpr = new ExpressionBuilder(settings.getString("config.leveling.enchanting",
             "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
         for (int i = 0; i < 60; i++) {
-            enchantRate.put(i, i, (int) Math.round(craftExpr.setVariable("LEVEL", i).evaluate()));
+            enchantRate.put(i, i, (int) Math.round(enchantExpr.setVariable("LEVEL", i).evaluate()));
         }
-
 
         trackedPruneTask.runTaskTimer(this,
             20L * 61, // Start save after 1 minute, 1 second cuz yolo
@@ -368,7 +367,6 @@ public class StrifePlugin extends FacePlugin {
         saveTask = null;
         trackedPruneTask = null;
         regenTask = null;
-        bleedTask = null;
         bleedTask = null;
         darkTask = null;
         attackSpeedTask = null;
