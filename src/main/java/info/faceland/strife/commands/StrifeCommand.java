@@ -104,7 +104,7 @@ public class StrifeCommand {
 
     @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
     public void raiseCommand(CommandSender sender, @Arg(name = "target") Player target,
-                             @Arg(name = "level") int newLevel) {
+        @Arg(name = "level") int newLevel) {
         int oldLevel = target.getLevel();
         if (newLevel <= oldLevel) {
             sendMessage(sender, "<red>New level must be higher than old level.");
@@ -115,9 +115,32 @@ public class StrifeCommand {
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
         sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
-                new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
+            new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
         sendMessage(target, "<green>Your level has been raised.");
         AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    }
+
+    @Command(identifier = "strife setskill", permissions = "strife.command.strife.setskill", onlyPlayers = false)
+    public void skillCommand(CommandSender sender, @Arg(name = "target") Player target,
+        @Arg(name = "skill") String skill, @Arg(name = "level") int newLevel) {
+        if (newLevel > 60 || newLevel < 0) {
+            sendMessage(sender, "<red>Skill must be between level 0 and 60.");
+            return;
+        }
+        if (skill.equalsIgnoreCase("crafting")) {
+            Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+            champion.getSaveData().setCraftingLevel(newLevel);
+            sendMessage(target, "<green>Your skill in crafting is now " + newLevel);
+            sendMessage(sender, "<green>Set crafting level of " + target + " to " + newLevel);
+            return;
+        } else if (skill.equalsIgnoreCase("enchanting")) {
+            Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+            champion.getSaveData().setEnchantLevel(newLevel);
+            sendMessage(target, "<green>Your skill in enchanting is now " + newLevel);
+            sendMessage(sender, "<green>Set enchanting level of " + target + " to " + newLevel);
+            return;
+        }
+        sendMessage(sender, "<red>Cannot set level of unknown skill '" + skill + "'.");
     }
 
     @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
