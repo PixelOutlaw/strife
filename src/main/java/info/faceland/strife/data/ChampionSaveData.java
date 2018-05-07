@@ -21,6 +21,9 @@ public class ChampionSaveData {
   private int fishingLevel;
   private float fishingExp;
 
+  private int enchantLevel;
+  private float enchantExp;
+
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
@@ -71,6 +74,22 @@ public class ChampionSaveData {
 
   public void setFishingExp(float fishingExp) {
     this.fishingExp = fishingExp;
+  }
+
+  public int getEnchantLevel() {
+    return enchantLevel;
+  }
+
+  public void setEnchantLevel(int enchantLevel) {
+    this.enchantLevel = enchantLevel;
+  }
+
+  public float getEnchantExp() {
+    return enchantExp;
+  }
+
+  public void setEnchantExp(float enchantExp) {
+    this.enchantExp = enchantExp;
   }
 
   public int getUnusedStatPoints() {

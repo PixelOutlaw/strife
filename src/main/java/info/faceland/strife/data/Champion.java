@@ -149,6 +149,14 @@ public class Champion {
         return saveData.getCraftingExp();
     }
 
+    public int getEnchantLevel() {
+        return saveData.getEnchantLevel();
+    }
+
+    public float getEnchantExp() {
+        return saveData.getEnchantExp();
+    }
+
     public int getUnusedStatPoints() {
         return saveData.getUnusedStatPoints();
     }

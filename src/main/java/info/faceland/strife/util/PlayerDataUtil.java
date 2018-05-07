@@ -11,7 +11,7 @@ public class PlayerDataUtil {
   }
 
   public int getCraftLevel(Player player) {
-    return plugin.getChampionManager().getChampion(player.getUniqueId()).getSaveData().getCraftingLevel();
+    return plugin.getChampionManager().getChampion(player.getUniqueId()).getCraftingLevel();
   }
 
   public int getMaxItemDestroyLevel(Player player) {
@@ -28,5 +28,9 @@ public class PlayerDataUtil {
 
   public int getMaxCraftItemLevel(int craftLvl) {
     return 5 + (int)Math.floor((double)craftLvl/5) * 8;
+  }
+
+  public int getEnchantLevel(Player player) {
+    return plugin.getChampionManager().getChampion(player.getUniqueId()).getEnchantLevel();
   }
 }

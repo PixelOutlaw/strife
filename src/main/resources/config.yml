@@ -22,5 +22,6 @@ leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
   crafting: 50 + (LEVEL * 25) + (LEVEL^3)
   fishing: 50 + (LEVEL * 25) + (LEVEL^3)
+  enchanting: 50 + (LEVEL * 25) + (LEVEL^3)
 
 configuration-load-period: 10
