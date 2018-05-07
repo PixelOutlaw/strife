@@ -86,6 +86,14 @@ public class JsonDataStorage implements DataStorage {
             champion.getUniqueId().toString() + ".crafting-exp",
             champion.getCraftingExp()
         );
+        configuration.set(
+            champion.getUniqueId().toString() + ".enchant-level",
+            champion.getEnchantLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".enchant-exp",
+            champion.getEnchantExp()
+        );
         configuration.save();
     }
 
@@ -118,6 +126,14 @@ public class JsonDataStorage implements DataStorage {
                 champ.getUniqueId().toString() + ".crafting-exp",
                 champ.getCraftingExp()
             );
+            configuration.set(
+                champ.getUniqueId().toString() + ".enchant-level",
+                champ.getEnchantLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".enchant-exp",
+                champ.getEnchantExp()
+            );
         }
         configuration.save();
     }
@@ -140,6 +156,8 @@ public class JsonDataStorage implements DataStorage {
             saveData.setBonusLevels(section.getInt("bonus-levels"));
             saveData.setCraftingLevel(section.getInt("crafting-level"));
             saveData.setCraftingExp((float)section.getDouble("crafting-exp"));
+            saveData.setEnchantLevel(section.getInt("enchant-level"));
+            saveData.setEnchantExp((float)section.getDouble("enchant-exp"));
             if (hadReset) {
                 saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
             } else {
@@ -167,6 +185,8 @@ public class JsonDataStorage implements DataStorage {
         saveData.setBonusLevels(section.getInt("bonus-levels"));
         saveData.setCraftingLevel(section.getInt("crafting-level"));
         saveData.setCraftingExp((float)section.getDouble("crafting-exp"));
+        saveData.setEnchantLevel(section.getInt("enchant-level"));
+        saveData.setEnchantExp((float)section.getDouble("enchant-exp"));
         if (hadReset) {
             saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
         } else {
