@@ -375,28 +375,34 @@ public class CombatListener implements Listener {
         if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.SHOCK_CHANCE) / 100) {
             return 0D;
         }
-        double hpMult = 10 - 20 * (defender.getHealth() / defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+        double multiplier = 0.5;
+        double percentHealth = defender.getHealth() / defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        if (percentHealth < 0.5) {
+            multiplier = 1 / Math.max(0.16, percentHealth * 2);
+        }
+        double particles = damage * multiplier * 0.5;
+        double particleRange = 0.8 + multiplier * 0.2;
         defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 2f);
-        defender.getWorld().spawnParticle(Particle.CRIT_MAGIC, defender.getEyeLocation(), 10 + (int) damage / 2,
-                0.8,0.8,0.8, 0.1);
+        defender.getWorld().spawnParticle(Particle.CRIT_MAGIC, defender.getEyeLocation(), 10 + (int) particles,
+                particleRange, particleRange, particleRange, 0.12);
         if (defender instanceof Creeper) {
             ((Creeper) defender).setPowered(true);
         }
-        return Math.max(1.5 * damage, damage * hpMult) - damage;
+        return damage * multiplier;
     }
 
     private double attemptFreeze(double damage, AttributedEntity attacker, LivingEntity defender) {
         if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.FREEZE_CHANCE) / 100) {
             return 0D;
         }
-        double multiplier = 1.25 + (StatUtil.getHealth(attacker) / 500);
+        double multiplier = 0.3 + StatUtil.getHealth(attacker) * 0.2;
         if (!defender.hasPotionEffect(PotionEffectType.SLOW)) {
             defender.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 30, 1));
         }
         defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.0f);
         defender.getWorld().spawnParticle(Particle.SNOWBALL, defender.getEyeLocation(), 4 + (int) damage / 2,
                 0.3, 0.3, 0.2, 0.0);
-        return damage * multiplier - damage;
+        return damage * multiplier;
     }
 
     private boolean attemptCorrupt(double damage, AttributedEntity attacker, LivingEntity defender) {
