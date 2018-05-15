@@ -157,6 +157,14 @@ public class Champion {
         return saveData.getEnchantExp();
     }
 
+    public int getFishingLevel() {
+        return saveData.getFishingLevel();
+    }
+
+    public float getFishingExp() {
+        return saveData.getFishingExp();
+    }
+
     public int getUnusedStatPoints() {
         return saveData.getUnusedStatPoints();
     }
