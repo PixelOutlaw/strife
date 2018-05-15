@@ -69,7 +69,7 @@ public class CraftExperienceManager implements StrifeCraftExperienceManager {
 
     private void pushLevelUpSpam(Player player, int level, boolean announce) {
         MessageUtils.sendMessage(player, "&eSkill Up! Your &fCrafting &elevel has increased to &f" + level + "&e!");
-        TitleAPI.set("§eSKILL UP!", "§eCrafting Level §f" + level, 15 , 20, 10, player);
+        TitleAPI.set("§eSKILL UP!", "§eCrafting Level §f" + level, 10 , 40, 20, player);
         if (announce) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 MessageUtils.sendMessage(p, "&e&lSkillUp! &f" + player.getDisplayName() +

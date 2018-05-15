@@ -69,7 +69,7 @@ public class EnchantExperienceManager implements StrifeEnchantExperienceManager 
 
     private void pushLevelUpSpam(Player player, int level, boolean announce) {
         MessageUtils.sendMessage(player, "&dSkill Up! Your &fEnchanting &dlevel has increased to &f" + level + "&d!");
-        TitleAPI.set("§dSKILL UP!", "§dEnchanting Level §f" + level, 15 , 20, 10, player);
+        TitleAPI.set("§dSKILL UP!", "§dEnchanting Level §f" + level, 10 , 40, 20, player);
         if (announce) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 MessageUtils.sendMessage(p, "&d&lSkillUp! &f" + player.getDisplayName() +

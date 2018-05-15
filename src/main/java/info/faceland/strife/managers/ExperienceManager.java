@@ -98,7 +98,7 @@ public class ExperienceManager implements StrifeExperienceManager {
         message.then("You gained a Levelpoint! ").color(ChatColor.GOLD).then("CLICK HERE").command("/levelup")
             .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
             .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD).send(player);
-        TitleAPI.set("§aLEVEL UP!", "§aOh dang, you got stronger!", 15 , 20, 10, player);
+        TitleAPI.set("§aLEVEL UP!", "§aOh dang, you got stronger!", 10 , 40, 20, player);
         if (announce) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 MessageUtils.sendMessage(p, "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" +
