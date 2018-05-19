@@ -59,7 +59,7 @@ public class JsonDataStorage implements DataStorage {
     }
 
     @Override
-    public void updateChampion(ChampionSaveData champion, boolean save) {
+    public void save(ChampionSaveData champion) {
         for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
             configuration.set(
                 champion.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
@@ -102,15 +102,54 @@ public class JsonDataStorage implements DataStorage {
             champion.getUniqueId().toString() + ".fishing-exp",
             champion.getFishingExp()
         );
-        if (save) {
-            configuration.save();
-        }
+        configuration.save();
     }
 
     @Override
     public void save(Collection<ChampionSaveData> champions) {
         for (ChampionSaveData champ : champions) {
-            updateChampion(champ, false);
+            for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
+                configuration.set(
+                    champ.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
+                    entry.getValue()
+                );
+            }
+            configuration.set(
+                champ.getUniqueId().toString() + ".unused-stat-points",
+                champ.getUnusedStatPoints()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".highest-reached-level",
+                champ.getHighestReachedLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".bonus-levels",
+                champ.getBonusLevels()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".crafting-level",
+                champ.getCraftingLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".crafting-exp",
+                champ.getCraftingExp()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".enchant-level",
+                champ.getEnchantLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".enchant-exp",
+                champ.getEnchantExp()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".fishing-level",
+                champ.getFishingLevel()
+            );
+            configuration.set(
+                champ.getUniqueId().toString() + ".fishing-exp",
+                champ.getFishingExp()
+            );
         }
         configuration.save();
     }
@@ -127,7 +166,21 @@ public class JsonDataStorage implements DataStorage {
             }
             ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
-            ChampionSaveData saveData = load(uuid);
+            ChampionSaveData saveData = new ChampionSaveData(uuid);
+            boolean hadReset = checkResetAndSetLevels(section, saveData, true);
+            saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
+            saveData.setBonusLevels(section.getInt("bonus-levels"));
+            saveData.setCraftingLevel(section.getInt("crafting-level"));
+            saveData.setCraftingExp((float)section.getDouble("crafting-exp"));
+            saveData.setEnchantLevel(section.getInt("enchant-level"));
+            saveData.setEnchantExp((float)section.getDouble("enchant-exp"));
+            saveData.setFishingLevel(section.getInt("fishing-level"));
+            saveData.setFishingExp((float)section.getDouble("fishing-exp"));
+            if (hadReset) {
+                saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
+            } else {
+                saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+            }
             collection.add(saveData);
         }
         return collection;

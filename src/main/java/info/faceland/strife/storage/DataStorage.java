@@ -32,7 +32,7 @@ public interface DataStorage {
 
     void shutdown();
 
-    void updateChampion(ChampionSaveData champion, boolean save);
+    void save(ChampionSaveData champion);
 
     void save(Collection<ChampionSaveData> champions);
 

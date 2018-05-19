@@ -38,7 +38,7 @@ public class MySqlDataStorage implements DataStorage {
     }
 
     @Override
-    public void updateChampion(ChampionSaveData champion, boolean save) {
+    public void save(ChampionSaveData champion) {
 
     }
 
