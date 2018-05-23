@@ -23,21 +23,32 @@
 package info.faceland.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
-import com.tealcube.minecraft.bukkit.config.MasterConfiguration;
-import com.tealcube.minecraft.bukkit.config.VersionedConfiguration;
-import com.tealcube.minecraft.bukkit.config.VersionedSmartYamlConfiguration;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
-import info.faceland.beast.BeastPlugin;
+import info.faceland.strife.api.StrifeCraftExperienceManager;
+import info.faceland.strife.api.StrifeEnchantExperienceManager;
+import info.faceland.strife.api.StrifeExperienceManager;
+import info.faceland.strife.api.StrifeFishExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.EntityStatCache;
+import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.listeners.*;
+import info.faceland.strife.managers.BarrierManager;
+import info.faceland.strife.managers.BleedManager;
+import info.faceland.strife.managers.EnchantExperienceManager;
+import info.faceland.strife.managers.FishExperienceManager;
+import info.faceland.strife.managers.MonsterManager;
+import info.faceland.strife.managers.MultiplierManager;
 import info.faceland.strife.managers.ChampionManager;
+import info.faceland.strife.managers.CraftExperienceManager;
+import info.faceland.strife.managers.ExperienceManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
@@ -45,13 +56,21 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.AttackSpeedTask;
-import info.faceland.strife.tasks.HealthMovementTask;
+import info.faceland.strife.tasks.BarrierTask;
+import info.faceland.strife.tasks.BleedTask;
+import info.faceland.strife.tasks.BlockTask;
+import info.faceland.strife.tasks.DarknessReductionTask;
+import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.SaveTask;
+import info.faceland.strife.tasks.TrackedPruneTask;
+import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
+import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
+import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.HandlerList;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
@@ -61,52 +80,88 @@ import java.util.logging.Level;
 
 public class StrifePlugin extends FacePlugin {
 
+    private static StrifePlugin instance;
+
     private PluginLogger debugPrinter;
     private VersionedSmartYamlConfiguration configYAML;
     private VersionedSmartYamlConfiguration statsYAML;
+    private VersionedSmartYamlConfiguration baseStatsYAML;
     private StrifeStatManager statManager;
+    private BarrierManager barrierManager;
+    private BleedManager bleedManager;
+    private MonsterManager monsterManager;
+    private MultiplierManager multiplierManager;
     private DataStorage storage;
     private ChampionManager championManager;
+    private StrifeExperienceManager experienceManager;
+    private StrifeCraftExperienceManager craftExperienceManager;
+    private StrifeEnchantExperienceManager enchantExperienceManager;
+    private StrifeFishExperienceManager fishExperienceManager;
+    private EntityStatCache entityStatCache;
     private SaveTask saveTask;
+    private TrackedPruneTask trackedPruneTask;
+    private HealthRegenTask regenTask;
+    private BleedTask bleedTask;
+    private BarrierTask barrierTask;
+    private DarknessReductionTask darkTask;
     private AttackSpeedTask attackSpeedTask;
+    private BlockTask blockTask;
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
-    private BeastPlugin beastPlugin;
-    private HealthMovementTask healthMovementTask;
+    private LevelingRate craftingRate;
+    private LevelingRate enchantRate;
+    private LevelingRate fishRate;
     private LevelupMenu levelupMenu;
     private StatsMenu statsMenu;
 
-    public LevelingRate getLevelingRate() {
-        return levelingRate;
+    public static void setInstance(StrifePlugin plugin) {
+        instance = plugin;
+    }
+
+    public static StrifePlugin getInstance() {
+        return instance;
     }
 
     public AttackSpeedTask getAttackSpeedTask() {
         return attackSpeedTask;
     }
+    public BlockTask getBlockTask() {
+        return blockTask;
+    }
+
+    final private static long attackTickRate = 2L;
 
     @Override
     public void enable() {
+        setInstance(this);
         debugPrinter = new PluginLogger(this);
+        baseStatsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "base-entity-stats.yml"),
+            getResource("base-entity-stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
         statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
-                                                        getResource("stats.yml"),
-                                                        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+            getResource("stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
         configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
-                                                         getResource("config.yml"),
-                                                         VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+            getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
-
+        barrierManager = new BarrierManager();
+        bleedManager = new BleedManager();
+        monsterManager = new MonsterManager(this);
+        multiplierManager = new MultiplierManager();
         storage = new JsonDataStorage(this);
-
-        championManager = new ChampionManager();
-
+        championManager = new ChampionManager(this);
+        experienceManager = new ExperienceManager(this);
+        craftExperienceManager = new CraftExperienceManager(this);
+        enchantExperienceManager = new EnchantExperienceManager(this);
+        fishExperienceManager = new FishExperienceManager(this);
+        entityStatCache = new EntityStatCache(this);
         commandHandler = new CommandHandler(this);
 
         MenuListener.getInstance().register(this);
 
-        beastPlugin = (BeastPlugin) Bukkit.getPluginManager().getPlugin("Beast");
-
+        if (baseStatsYAML.update()) {
+            getLogger().info("Updating base-entity-stats.yml");
+        }
         if (statsYAML.update()) {
             getLogger().info("Updating stats.yml");
         }
@@ -125,23 +180,36 @@ public class StrifePlugin extends FacePlugin {
             ConfigurationSection cs = statsYAML.getConfigurationSection(key);
             StrifeStat stat = new StrifeStat(key);
             stat.setName(cs.getString("name"));
-            stat.setOrder(cs.getInt("order"));
-            stat.setDescription(cs.getString("description"));
+            stat.setDescription(cs.getStringList("description"));
             stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
-            stat.setChatColor(ChatColor.valueOf(cs.getString("chat-color", "WHITE")));
-            stat.setMenuX(cs.getInt("menu-x"));
-            stat.setMenuY(cs.getInt("menu-y"));
+            stat.setSlot(cs.getInt("slot"));
+            stat.setStartCap(cs.getInt("starting-cap", 0));
+            stat.setMaxCap(cs.getInt("maximum-cap", 100));
+            stat.setLevelsToRaiseCap(cs.getInt("levels-to-raise-cap", -1));
+            Map<String, Integer> baseStatRequirements = new HashMap<>();
+            if (cs.isConfigurationSection("base-attribute-requirements")) {
+                ConfigurationSection reqs = cs.getConfigurationSection("base-attribute-requirements");
+                for (String k : reqs.getKeys(false)) {
+                    baseStatRequirements.put(k, reqs.getInt(k));
+                }
+            }
+            Map<String, Integer> raiseStatCapAttributes = new HashMap<>();
+            if (cs.isConfigurationSection("attributes-to-raise-cap")) {
+                ConfigurationSection raiseReqs = cs.getConfigurationSection("attributes-to-raise-cap");
+                for (String k : raiseReqs.getKeys(false)) {
+                    raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
+                }
+            }
             Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
             if (cs.isConfigurationSection("attributes")) {
                 ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
                 for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.fromName(k);
-                    if (attr == null) {
-                        continue;
-                    }
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
                     attributeMap.put(attr, attrCS.getDouble(k));
                 }
             }
+            stat.setStatIncreaseIncrements(raiseStatCapAttributes);
+            stat.setBaseStatRequirements(baseStatRequirements);
             stat.setAttributeMap(attributeMap);
             stats.add(stat);
             loadedStats.add(stat.getKey());
@@ -151,36 +219,118 @@ public class StrifePlugin extends FacePlugin {
         }
         debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
 
-        for (Champion champ : storage.load()) {
-            championManager.addChampion(champ);
+        for (String entityKey : baseStatsYAML.getKeys(false)) {
+            if (!baseStatsYAML.isConfigurationSection(entityKey)) {
+                continue;
+            }
+            EntityType entityType = EntityType.valueOf(entityKey);
+            ConfigurationSection cs = baseStatsYAML.getConfigurationSection(entityKey);
+            EntityStatData data = new EntityStatData();
+            if (cs.isConfigurationSection("base-values")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putBaseValue(attr, attrCS.getDouble(k));
+                }
+            }
+            if (cs.isConfigurationSection("per-level")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putPerLevel(attr, attrCS.getDouble(k));
+                }
+            }
+            if (cs.isConfigurationSection("per-bonus-level")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putPerBonusLevel(attr, attrCS.getDouble(k));
+                }
+            }
+            getMonsterManager().addEntityData(entityType, data);
+        }
+
+        for (ChampionSaveData data : storage.load()) {
+            championManager.addChampion(new Champion(data));
         }
 
         saveTask = new SaveTask(this);
-        attackSpeedTask = new AttackSpeedTask();
-        healthMovementTask = new HealthMovementTask(this);
+        trackedPruneTask = new TrackedPruneTask(this);
+        regenTask = new HealthRegenTask(this);
+        bleedTask = new BleedTask(this);
+        barrierTask = new BarrierTask(this);
+        darkTask = new DarknessReductionTask();
+        attackSpeedTask = new AttackSpeedTask(attackTickRate);
+        blockTask = new BlockTask();
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new LevelUpCommand(this));
         commandHandler.registerCommands(new StrifeCommand(this));
 
         levelingRate = new LevelingRate();
-        Expression expr = new ExpressionBuilder(settings.getString("config.leveling.formula",
-                                                                   "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL")
-            .build();
-        for (int i = 0; i < 100; i++) {
-            levelingRate.put(i, i, (int) Math.round(expr.setVariable("LEVEL", i).evaluate()));
+        Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
+            "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+        for (int i = 0; i < 200; i++) {
+            levelingRate.put(i, i, (int) Math.round(normalExpr.setVariable("LEVEL", i).evaluate()));
         }
 
-        saveTask.runTaskTimer(this, 20L * 600, 20L * 600);
-        attackSpeedTask.runTaskTimer(this, 5L, 5L);
-        healthMovementTask.runTaskTimer(this, 20L * 10, 20L * 10);
-        Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new HealthListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
-        if (Bukkit.getPluginManager().getPlugin("Loot") != null) {
-            Bukkit.getPluginManager().registerEvents(new LootListener(this), this);
+        craftingRate = new LevelingRate();
+        Expression craftExpr = new ExpressionBuilder(settings.getString("config.leveling.crafting",
+            "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+        for (int i = 0; i < 60; i++) {
+            craftingRate.put(i, i, (int) Math.round(craftExpr.setVariable("LEVEL", i).evaluate()));
         }
+
+        enchantRate = new LevelingRate();
+        Expression enchantExpr = new ExpressionBuilder(settings.getString("config.leveling.enchanting",
+            "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+        for (int i = 0; i < 60; i++) {
+            enchantRate.put(i, i, (int) Math.round(enchantExpr.setVariable("LEVEL", i).evaluate()));
+        }
+
+        fishRate = new LevelingRate();
+        Expression fishExpr = new ExpressionBuilder(settings.getString("config.leveling.fishing",
+            "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+        for (int i = 0; i < 60; i++) {
+            fishRate.put(i, i, (int) Math.round(fishExpr.setVariable("LEVEL", i).evaluate()));
+        }
+
+        trackedPruneTask.runTaskTimer(this,
+            20L * 61, // Start save after 1 minute, 1 second cuz yolo
+            20L * 60 // Run every 1 minute after that
+        );
+        saveTask.runTaskTimer(this,
+            20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
+            20L * 600 // Run every 10 minutes after that
+        );
+        regenTask.runTaskTimer(this,
+            20L * 10, // Start timer after 10s
+            20L * 2 // Run it every 2s after
+        );
+        bleedTask.runTaskTimer(this,
+            20L * 10, // Start timer after 10s
+           4L // Run it every 1/5th of a second after
+        );
+        barrierTask.runTaskTimer(this,
+            201L, // Start timer after 10.05s
+            4L // Run it every 1/5th of a second after
+        );
+        darkTask.runTaskTimer(this,
+            20L * 10, // Start timer after 10s
+            10L  // Run it every 0.5s after
+        );
+        attackSpeedTask.runTaskTimer(this, 5L, attackTickRate);
+        blockTask.runTaskTimer(this, 5L, 5L);
+        Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
+        Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
         if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
             Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
         }
@@ -192,22 +342,88 @@ public class StrifePlugin extends FacePlugin {
 
     @Override
     public void disable() {
-        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
-        saveTask.cancel();
+        storage.save(championManager.getChampionSaveData());
         HandlerList.unregisterAll(this);
-        storage.save(championManager.getChampions());
+
+        saveTask.cancel();
+        trackedPruneTask.cancel();
+        regenTask.cancel();
+        bleedTask.cancel();
+        barrierTask.cancel();
+        darkTask.cancel();
+        attackSpeedTask.cancel();
+        blockTask.cancel();
+
         configYAML = null;
+        baseStatsYAML = null;
         statsYAML = null;
+
+        craftingRate = null;
+        enchantRate = null;
+        fishRate = null;
+
         statManager = null;
+        monsterManager = null;
+        bleedManager = null;
+        barrierManager = null;
+        multiplierManager = null;
+
         storage = null;
         championManager = null;
+        experienceManager = null;
+        craftExperienceManager = null;
+        enchantExperienceManager = null;
+        fishExperienceManager = null;
+        entityStatCache = null;
+
         saveTask = null;
+        trackedPruneTask = null;
+        regenTask = null;
+        bleedTask = null;
+        darkTask = null;
+        attackSpeedTask = null;
+        blockTask = null;
+
         commandHandler = null;
         settings = null;
+
+        debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
     }
 
     public StrifeStatManager getStatManager() {
         return statManager;
+    }
+
+    public BarrierManager getBarrierManager() {
+      return barrierManager;
+    }
+
+    public BleedManager getBleedManager() {
+    return bleedManager;
+  }
+
+    public MonsterManager getMonsterManager() {
+        return monsterManager;
+    }
+
+    public MultiplierManager getMultiplierManager() {
+        return multiplierManager;
+    }
+
+    public StrifeCraftExperienceManager getCraftExperienceManager() {
+        return craftExperienceManager;
+    }
+
+    public StrifeEnchantExperienceManager getEnchantExperienceManager() {
+        return enchantExperienceManager;
+    }
+
+    public StrifeFishExperienceManager getFishExperienceManager() {
+        return fishExperienceManager;
+    }
+
+    public StrifeExperienceManager getExperienceManager() {
+        return experienceManager;
     }
 
     public void debug(Level level, String... messages) {
@@ -224,12 +440,12 @@ public class StrifePlugin extends FacePlugin {
         return championManager;
     }
 
-    public MasterConfiguration getSettings() {
-        return settings;
+    public EntityStatCache getEntityStatCache() {
+        return entityStatCache;
     }
 
-    public BeastPlugin getBeastPlugin() {
-        return beastPlugin;
+    public MasterConfiguration getSettings() {
+        return settings;
     }
 
     public LevelupMenu getLevelupMenu() {
@@ -237,4 +453,17 @@ public class StrifePlugin extends FacePlugin {
     }
 
     public StatsMenu getStatsMenu() { return statsMenu; }
+
+    public LevelingRate getLevelingRate() {
+        return levelingRate;
+    }
+    public LevelingRate getCraftingRate() {
+        return craftingRate;
+    }
+    public LevelingRate getEnchantRate() {
+        return enchantRate;
+    }
+    public LevelingRate getFishRate() {
+        return fishRate;
+    }
 }

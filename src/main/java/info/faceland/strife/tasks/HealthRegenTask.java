@@ -23,36 +23,48 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 
+import info.faceland.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Map;
-
-public class HealthMovementTask extends BukkitRunnable {
+public class HealthRegenTask extends BukkitRunnable {
 
     private final StrifePlugin plugin;
 
-    public HealthMovementTask(StrifePlugin plugin) {
+    public HealthRegenTask(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-            Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-            if (player.getHealth() > 0D) {
-                AttributeHandler.updateHealth(player, attributeDoubleMap);
+            if (player.getHealth() <= 0 || player.isDead()) {
+                continue;
             }
-            Double val = attributeDoubleMap.get(StrifeAttribute.MOVEMENT_SPEED);
-            double perc = (val != null ? val : 100D) / 100D;
-            float speed = 0.2F * (float) perc;
-            player.setWalkSpeed(Math.min(Math.max(-1F, speed), 1F));
+            if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
+                continue;
+            }
+            AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+            // Restore 40% of your regen per 2s tick (This task runs every 2s)
+            // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
+            double amount = StatUtil.getRegen(pStats) * 0.4;
+            // Bonus for players that have just eaten
+            if (player.getSaturation() > 0.1) {
+                amount *= 1.6;
+            }
+            // These are not 'penalties', they're 'mechanics' :^)
+            if (player.hasPotionEffect(PotionEffectType.POISON)) {
+                amount *= 0.3;
+            }
+            if (player.getFoodLevel() <= 6) {
+                amount *= player.getFoodLevel() / 6;
+            }
+            player.setHealth(Math.min(player.getHealth() + amount, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
         }
     }
 }

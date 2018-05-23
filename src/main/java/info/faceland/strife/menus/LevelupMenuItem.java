@@ -30,11 +30,13 @@ import info.faceland.strife.stats.StrifeStat;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Wool;
+import org.bukkit.material.Dye;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +46,10 @@ public class LevelupMenuItem extends MenuItem {
     private final StrifePlugin plugin;
     private final StrifeStat stat;
 
+    private static final String breakLine = TextUtils.color("&7&m---------------------------");
+
     public LevelupMenuItem(StrifePlugin plugin, StrifeStat strifeStat) {
-        super(strifeStat.getChatColor() + strifeStat.getName(), new Wool().toItemStack(),
-              TextUtils.color(strifeStat.getDescription()).split("/n"));
+        super(TextUtils.color(strifeStat.getName()), new Dye().toItemStack());
         this.plugin = plugin;
         this.stat = strifeStat;
     }
@@ -54,18 +57,36 @@ public class LevelupMenuItem extends MenuItem {
     @Override
     public ItemStack getFinalIcon(Player player) {
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        int level = champion.getLevel(stat);
-        ItemStack itemStack = new Wool(stat.getDyeColor()).toItemStack(level);
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
-        itemMeta.setDisplayName(getDisplayName() + " [" + level + "/" + champion.getMaximumStatLevel() + "]");
-        List<String> lore = new ArrayList<>(getLore());
-        if (champion.getUnusedStatPoints() == 0) {
-            lore.add(ChatColor.RED + "No unused points.");
-        } else if (level >= champion.getMaximumStatLevel()) {
-            lore.add(ChatColor.RED + "Point cap reached.");
+        int currentPoints = champion.getLevel(stat);
+        int statCap = plugin.getStatManager().getStatCap(stat, champion);
+
+        ItemStack itemStack;
+
+        if (currentPoints != 0) {
+            itemStack = new Dye(stat.getDyeColor()).toItemStack(Math.min(currentPoints, 64));
         } else {
-            lore.add(ChatColor.YELLOW + "Click to upgrade!");
+            itemStack = new Dye(DyeColor.GRAY).toItemStack(1);
         }
+
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+        itemMeta.setDisplayName(getDisplayName() + " [" + currentPoints + "/" + statCap + "]");
+        if (currentPoints != statCap && champion.getUnusedStatPoints() > 0) {
+            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        }
+        List<String> lore = new ArrayList<>();
+        List<String> reqList = plugin.getStatManager().generateRequirementString(stat, champion, statCap);
+        if (!reqList.isEmpty()) {
+            lore.add(breakLine);
+        }
+        for (String req : reqList) {
+            lore.add(req);
+        }
+        lore.add(breakLine);
+        for (String desc : stat.getDescription()) {
+            lore.add(TextUtils.color(desc));
+        }
+        lore.add(breakLine);
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
@@ -80,14 +101,15 @@ public class LevelupMenuItem extends MenuItem {
             return;
         }
         int currentLevel = champion.getLevel(stat);
-        if (currentLevel + 1 > champion.getMaximumStatLevel()) {
+        if (currentLevel + 1 > plugin.getStatManager().getStatCap(stat, champion)) {
             return;
         }
         champion.setLevel(stat, currentLevel + 1);
         champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        AttributeHandler.updateHealth(champion.getPlayer(), champion.getAttributeValues());
+        plugin.getChampionManager().updateAll(champion);
+        AttributeHandler.updateAttributes(plugin, champion.getPlayer());
         event.setWillUpdate(true);
     }
 

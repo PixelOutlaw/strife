@@ -27,14 +27,17 @@ import info.faceland.strife.data.Champion;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Wool;
 
 public class LevelupPointsMenuItem extends MenuItem {
 
     private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
-    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.WOOL);
+    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.NETHER_STAR);
     private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
     private final StrifePlugin plugin;
 
@@ -48,6 +51,9 @@ public class LevelupPointsMenuItem extends MenuItem {
         ItemStack itemStack = super.getFinalIcon(player);
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
         int stacks = champion.getUnusedStatPoints();
+        String name = ChatColor.WHITE + "Unused Levelpoints (" + stacks + ")";
+        itemStack.getItemMeta().setDisplayName(name);
+        stacks = Math.min(stacks, 64);
         itemStack.setAmount(stacks);
         return itemStack;
     }

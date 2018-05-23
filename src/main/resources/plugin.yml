@@ -1,12 +1,14 @@
 name: Strife
 version: ${project.version}
 main: info.faceland.strife.StrifePlugin
-depend: [Facecore, Beast]
-softdepend: [Loot, Bullion]
+depend: [Facecore, ProtocolLib]
+softdepend: [Loot, Bullion, Beast]
 
 commands:
   stats:
     aliases: [st]
+  inspect:
+    aliases: [look]
   levelup:
     aliases: [lu]
   strife:
@@ -27,9 +29,13 @@ permissions:
     default: op
   strife.xp:
     default: false
-  strife.mult.half:
+  strife.mult.75:
     default: false
-  strife.mult.two:
+  strife.mult.125:
     default: false
-  strife.mult.three:
+  strife.mult.150:
+    default: false
+  strife.mult.175:
+    default: false
+  strife.mult.200:
     default: false

@@ -22,18 +22,25 @@
  */
 package info.faceland.strife.listeners;
 
-import be.maximvdw.titlemotd.ui.Title;
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
-import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
+
+import gyurix.api.TitleAPI;
+import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
+
+import info.faceland.strife.events.StrifeCraftEvent;
+import info.faceland.strife.events.StrifeEnchantEvent;
+import info.faceland.strife.events.StrifeFishEvent;
+import info.faceland.strife.managers.ChampionManager;
 import me.desht.dhutils.ExperienceManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Entity;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -41,114 +48,83 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
-
-import java.util.Map;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class ExperienceListener implements Listener {
 
     private final StrifePlugin plugin;
-    private final Expression expCapExpr;
+
+    private static final String LEVEL_UP = "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)";
+    private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
 
     public ExperienceListener(StrifePlugin plugin) {
         this.plugin = plugin;
-        this.expCapExpr = new ExpressionBuilder(plugin.getSettings().getString("config.leveling.formula")).variable("LEVEL").build();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDeath(PlayerDeathEvent event) {
         event.setKeepLevel(true);
-        event.setDroppedExp(0);
-        event.getEntity().setExp(Math.max(event.getEntity().getExp() - 0.1f, 0f));
+        event.setDroppedExp(1 + event.getEntity().getLevel() / 2);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        Player p = event.getPlayer();
+        if (plugin.getSettings().getStringList("config.penalty-free-worlds").contains(p.getWorld().getName())) {
+            return;
+        }
+        if (p.getLevel() >= 100) {
+            return;
+        }
+        PlayerInventory inv = p.getInventory();
+        for (int i = 0; i < inv.getContents().length; i++) {
+            ItemStack is = inv.getItem(i);
+            if (is == null || is.getType() != Material.QUARTZ) {
+                continue;
+            }
+            if (!is.getItemMeta().getDisplayName().equals(ChatColor.WHITE + "Soul Shard")) {
+                continue;
+            }
+            if (is.getAmount() > 1) {
+                is.setAmount(is.getAmount() - 1);
+                inv.setItem(i, is);
+            } else {
+                inv.setItem(i, null);
+            }
+            MessageUtils.sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
+            return;
+        }
+        double lostXP = Math.min(plugin.getLevelingRate().get(p.getLevel()) * 0.025, plugin.getLevelingRate()
+                .get(p.getLevel()) * p.getExp());
+        MessageUtils.sendMessage(p, "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
+        p.setExp(Math.max(p.getExp() - 0.025f, 0.001f));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerLevelChange(PlayerLevelChangeEvent event) {
         Player player = event.getPlayer();
         Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+        if (event.getOldLevel() < event.getNewLevel()) {
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_UP), player);
+        } else {
+            ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_DOWN), player);
+        }
         if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
             return;
         }
+        int points = event.getNewLevel() - event.getOldLevel();
         champion.setHighestReachedLevel(event.getNewLevel());
-        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + 1);
+        champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
-        MessageUtils.sendMessage(player, "<green>You have leveled up!");
-        FancyMessage message = new FancyMessage("");
-        message.then("You gained a levelup point! ").color(ChatColor.GOLD).then("Click here").command("/levelup")
-                .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                .color(ChatColor.WHITE).then(" to use it!").color(ChatColor.GOLD).send(event.getPlayer());
-        Title title = new Title("<green>LEVEL UP!", "<green>You reached level <white>" + event.getNewLevel() +
-                "<green>!", 1, 1, 1);
-        title.setTimingsToSeconds();
-        title.send(event.getPlayer());
-        if (event.getNewLevel() % 5 == 0) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                MessageUtils
-                        .sendMessage(p, "<green>[Levelup!] <white>%player%<green> has reached level <white>%level%<green>!",
-                                new String[][]{{"%player%", player.getDisplayName()},
-                                        {"%level%", "" + event.getNewLevel()}});
-            }
-        }
+        plugin.getChampionManager().updateAll(champion);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerExpChange(PlayerExpChangeEvent event) {
-        Player player = event.getPlayer();
-        double amount = event.getAmount();
-
-        ExperienceManager experienceManager = new ExperienceManager(player);
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-
-        Integer desiredLevelUp = plugin.getLevelingRate().get(player.getLevel());
-        Integer defaultLevelUp = player.getExpToLevel();
-
-        if (desiredLevelUp == null || desiredLevelUp == 0) {
-            return;
-        }
-
-        if (desiredLevelUp.intValue() == defaultLevelUp.intValue()) {
-            event.setAmount(0);
-            return;
-        }
-
-        double mult = 1D;
-        if (player.hasPermission("strife.mult.half")) {
-            mult = 0.5D;
-        }
-        if (player.hasPermission("strife.mult.two")) {
-            mult = 2D;
-        }
-        if (player.hasPermission("strife.mult.three")) {
-            mult = 3D;
-        }
-
-        double factor = (double) defaultLevelUp / (double) desiredLevelUp;
-        double exact = Math.min(amount + amount * attributeDoubleMap.get(StrifeAttribute.XP_GAIN),
-                expCapExpr.setVariable("LEVEL", player.getLevel() + 1).evaluate() * desiredLevelUp)
-                * factor
-                * mult;
-
-        int newXp = (int) exact;
-
-        if (player.hasPermission("strife.xp")) {
-            MessageUtils.sendMessage(player, "XP Orb value: " + event.getAmount() + " | Adjusted amount: " + newXp);
-        }
-
-        event.setAmount(newXp);
-
-        if (exact > newXp) {
-            experienceManager.changeExp(exact - newXp);
-        }
-
-        double perc = 0.2;
-        for (Entity e : player.getNearbyEntities(8, 8, 8)) {
-            if (!(e instanceof Player)) {
-                continue;
-            }
-            ExperienceManager manager = new ExperienceManager((Player) e);
-            manager.changeExp(perc * exact);
-        }
+        plugin.getExperienceManager().addExperience(event.getPlayer(), event.getAmount(), false);
+        event.setAmount(0);
     }
-
 }

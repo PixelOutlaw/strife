@@ -25,9 +25,9 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -41,43 +41,32 @@ public class DataListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(final PlayerJoinEvent event) {
+        Champion champion;
         if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
-            Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+            champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
             champion.setHighestReachedLevel(event.getPlayer().getLevel());
             champion.setUnusedStatPoints(event.getPlayer().getLevel());
+            champion.setBonusLevels(0);
             plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
             plugin.getChampionManager().addChampion(champion);
-            if (event.getPlayer().getLevel() > 0) {
-                Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        FancyMessage message = new FancyMessage("");
-                        message.then("Your stats have been reset! ").color(ChatColor.GOLD).then("Click here")
-                            .command("/levelup")
-                            .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                            .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD)
-                            .send(event.getPlayer());
-                    }
-                }, 20L * 2);
-            }
-        } else {
-            Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
-            if (champion.getUnusedStatPoints() > 0) {
-                Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        FancyMessage message = new FancyMessage("");
-                        message.then("You have unspent levelup points. ").color(ChatColor.GOLD).then("Click here")
-                            .command("/levelup")
-                            .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-                            .color(ChatColor.WHITE).then(" to spend them.").color(ChatColor.GOLD)
-                            .send(event.getPlayer());
-                    }
-                }, 20L * 2);
-            }
+        }
+        if (plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()).getUnusedStatPoints() > 0) {
+            notifyUnusedPoints(event.getPlayer());
         }
     }
 
+    private void notifyUnusedPoints(final Player player) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                FancyMessage message = new FancyMessage("");
+                message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE")
+                    .command("/levelup").color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD)
+                    .then("/levelup").color(ChatColor.WHITE).then(" to spend them and raise your stats!").color
+                    (ChatColor.GOLD).send(player);
+            }
+        }, 20L * 2);
+    }
 }

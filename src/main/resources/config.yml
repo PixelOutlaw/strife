@@ -1,11 +1,27 @@
 version: "0.0.3"
+verbose: false
+
 menu:
   num-of-rows: 6
   unused-marker-x: 0
   unused-marker-y: 5
   close-marker-x: 8
   close-marker-y: 5
+
+pvp-multiplier: 0.5
+
+xp-bonus: 0.0
+drops-bonus: 0.0
+
+## NOTE: XP penalty exempt world applies to the world the
+## player RESPAWNS in, as that is when xp is lost!
+penalty-free-worlds:
+- WeenieWorld
+
 leveling:
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
-  gain-cap: 1/LEVEL
+  crafting: 50 + (LEVEL * 25) + (LEVEL^3)
+  fishing: 50 + (LEVEL * 25) + (LEVEL^3)
+  enchanting: 50 + (LEVEL * 25) + (LEVEL^3)
 
+configuration-load-period: 10

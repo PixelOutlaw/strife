@@ -22,96 +22,100 @@
  */
 package info.faceland.strife.attributes;
 
-import org.bukkit.ChatColor;
-
 public enum StrifeAttribute {
 
-    // modify any attributes here
-    HEALTH("Health", ChatColor.BLUE, "Maximum Health. Two Health = One Heart.", 20, false),
-    REGENERATION("Regeneration", ChatColor.BLUE, "How much health you recover per natural regeneration tick.", 1, false),
-    ARMOR("Armor", ChatColor.BLUE, "Damage reduction from normal attacks.", 0, true),
-    RESISTANCE("Resistance", ChatColor.BLUE, "[PVP ONLY] Reduces the probability of status effects.", 0, true),
-    BLOCK("Block", ChatColor.BLUE, "Percent by which incoming damage is reduced when blocking.", 0.1, true, 0.85),
-    PARRY("Parry Chance", ChatColor.BLUE, "Chance to take no damage and reflect damage when blocking.", 0, true, 0.85),
-    EVASION("Evasion", ChatColor.BLUE, "Chance to dodge an attack entirely.", 0, true),
-    DAMAGE_REFLECT("Damage Reflect", ChatColor.BLUE, "Percentage of damage taken reflected back at your attacker.", 0, true, 0.3),
-    MOVEMENT_SPEED("Movement Speed", ChatColor.BLUE, "Player's movement speed, base is 100, 200 is double.", 100, false),
-    MELEE_DAMAGE("Melee Damage", ChatColor.YELLOW, "Base melee damage dealt.", 1, false),
-    RANGED_DAMAGE("Ranged Damage", ChatColor.YELLOW, "Maximum damage dealt by fired arrows.", 3, false),
-    SNARE_CHANCE("Snare Chance", ChatColor.YELLOW, "Chance to snare enemies struck by your arrows for 2s", 0, true),
-    ATTACK_SPEED("Attack Speed", ChatColor.YELLOW, "How quickly your melee damage recharges inbetween attacks", 2D, true),
-    OVERCHARGE("Overcharge", ChatColor.YELLOW, "Bonus damage dealt when your attacks are fully recharged", 0.1, true),
-    ARMOR_PENETRATION("Armor Penetration", ChatColor.YELLOW, "Percentage of enemy armor that is ignored.", 0, true),
-    ACCURACY("Accuracy", ChatColor.YELLOW, "Percent that enemy's evasion is reduced", 0, true),
-    CRITICAL_RATE("Critical Rate", ChatColor.YELLOW, "Chance of landing a critical strike, dealing bonus damage.", 0, true),
-    CRITICAL_DAMAGE("Critical Damage", ChatColor.YELLOW, "Bonus Damage on crit", 1.3D, true),
-    FIRE_DAMAGE("Fire Damage", ChatColor.YELLOW, "On Ignite: Burns target for X fire ticks.", 0, false),
-    LIGHTNING_DAMAGE("Lightning Damage", ChatColor.YELLOW, "On Shock: Deals X bonus true damage.", 0, false),
-    ICE_DAMAGE("Ice Damage", ChatColor.YELLOW, "On Freeze: Deals X% health damage and slows.", 0, false),
-    IGNITE_CHANCE("Ignite Chance", ChatColor.YELLOW, "Chance to ignite target on hit.", 0.15, true),
-    SHOCK_CHANCE("Shock Chance", ChatColor.YELLOW, "Chance to shock target on hit.", 0.15, true),
-    FREEZE_CHANCE("Freeze Chance", ChatColor.YELLOW, "Chance to freeze target on hit.", 0.15, true),
-    LIFE_STEAL("Life Steal", ChatColor.YELLOW, "Percentage of damage dealt recovered as health.", 0, true),
-    XP_GAIN("Experience Gain", ChatColor.GREEN, "Bonus xp gained", 0D, true),
-    ITEM_DISCOVERY("Item Discovery", ChatColor.GREEN, "Bonus drop rate", 0D, true),
-    GOLD_FIND("Gold Find", ChatColor.GREEN, "Bonus Bits dropped", 0D, true),
-    DOGE("Doge Chance", ChatColor.AQUA, "wow", 0D, true, 100D);
+    LEVEL_REQUIREMENT("Level Requirement"),
+
+    HEALTH("Health"),
+    REGENERATION(),
+
+    BARRIER("Maximum Barrier"),
+    BARRIER_SPEED("Barrier Recharge Rate"),
+
+    ARMOR("Armor"),
+    WARDING("Warding"),
+    EVASION("Evasion"),
+
+    FIRE_RESIST("Fire Resistance"),
+    ICE_RESIST("Ice Resistance"),
+    LIGHTNING_RESIST("Lightning Resistance"),
+    DARK_RESIST("Shadow Resistance"),
+    ALL_RESIST("Elemental Resist"),
+
+    BLOCK("Block"),
+
+    DAMAGE_REDUCTION("Damage Reduction"),
+    DAMAGE_REFLECT("Reflected Damage"),
+
+    MELEE_DAMAGE("Melee Damage"),
+    RANGED_DAMAGE("Ranged Damage"),
+    MAGIC_DAMAGE("Magic Damage"),
+
+    ATTACK_SPEED("Attack Speed"),
+    OVERCHARGE("Overcharge"),
+
+    CRITICAL_RATE("Critical Rate"),
+    CRITICAL_DAMAGE("Critical Damage"),
+
+    ARMOR_PENETRATION("Armor Penetration"),
+    WARD_PENETRATION("Ward Penetration"),
+    ACCURACY("Accuracy"),
+
+    FIRE_DAMAGE("Fire Damage"),
+    LIGHTNING_DAMAGE("Lightning Damage"),
+    ICE_DAMAGE("Ice Damage"),
+    DARK_DAMAGE("Shadow Damage"),
+
+    IGNITE_CHANCE("Ignite Chance"),
+    SHOCK_CHANCE("Shock Chance"),
+    FREEZE_CHANCE("Freeze Chance"),
+    CORRUPT_CHANCE("Corrupt Chance"),
+    MAX_EARTH_RUNES(),
+
+    BLEED_CHANCE("Bleed Chance"),
+
+    LIFE_STEAL("Life Steal"),
+    HP_ON_HIT("Health On Hit"),
+
+    MULTISHOT("Multishot"),
+
+    MOVEMENT_SPEED("Movement Speed"),
+
+    XP_GAIN("Experience Gain"),
+    ITEM_DISCOVERY("Item Discovery"),
+    ITEM_RARITY("Item Rarity"),
+    GOLD_FIND("Gold Find"),
+    HEAD_DROP("Head Drop"),
+
+    DOGE("Doge Chance"),
+
+    HEALTH_MULT(),
+    REGEN_MULT("Regeneration"),
+    ARMOR_MULT(),
+    EVASION_MULT(),
+    WARD_MULT(),
+    MELEE_MULT(),
+    RANGED_MULT(),
+    MAGIC_MULT(),
+    DAMAGE_MULT(),
+    PROJECTILE_SPEED("Projectile Speed"),
+    ELEMENTAL_MULT("Elemental Damage"),
+    ACCURACY_MULT(),
+    APEN_MULT(),
+    WPEN_MULT(),
+
+    EXPLOSION_MAGIC("Explosion Magic");
 
     private final String name;
-    private final ChatColor displayColor;
-    private final String description;
-    private final double baseValue;
-    private final boolean percentage;
-    private final double cap;
 
-    StrifeAttribute(String name, ChatColor displayColor, String description, double baseValue,
-                    boolean percentage) {
-        this(name, displayColor, description, baseValue, percentage, -1D);
-    }
-
-    StrifeAttribute(String name, ChatColor displayColor, String description, double baseValue, boolean percentage,
-                    double cap) {
+    StrifeAttribute(String name) {
         this.name = name;
-        this.displayColor = displayColor;
-        this.description = description;
-        this.baseValue = baseValue;
-        this.percentage = percentage;
-        this.cap = cap;
     }
 
-    public static StrifeAttribute fromName(String s) {
-        for (StrifeAttribute val : values()) {
-            if (val.name.equalsIgnoreCase(s) || val.name().equalsIgnoreCase(s) || val.name.replace(" ", "-")
-                .equalsIgnoreCase(s) ||
-                val.name().replace("_", "-").equalsIgnoreCase(s)) {
-                return val;
-            }
-        }
-        return null;
+    StrifeAttribute() {
+        this.name = null;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public double getBaseValue() {
-        return baseValue;
-    }
-
-    public boolean isPercentage() {
-        return percentage;
-    }
-
-    public ChatColor getDisplayColor() {
-        return displayColor;
-    }
-
-    public double getCap() {
-        return cap;
-    }
+    public String getName() { return name; }
 
 }

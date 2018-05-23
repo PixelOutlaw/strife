@@ -22,9 +22,11 @@
  */
 package info.faceland.strife.menus;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -37,39 +39,57 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class StatsBonusMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
+    private Player player;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
+    private static final String breakLine = TextUtils.color("&7&m--------------------");
+
+    public StatsBonusMenuItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&a&lDrop Modifiers"), new ItemStack(Material.EMERALD));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsBonusMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Misc. Stats", new ItemStack(Material.DIAMOND_BOOTS));
+        super(TextUtils.color("&a&lDrop Modifiers"), new ItemStack(Material.EMERALD));
         this.plugin = plugin;
     }
 
     @Override
     public ItemStack getFinalIcon(Player player) {
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
-        ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
+        if (this.player != null) {
+            player = this.player;
+        }
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+        ItemStack itemStack = new ItemStack(Material.EMERALD);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
-        List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.MOVEMENT_SPEED)));
-        if (valueMap.get(StrifeAttribute.DAMAGE_REFLECT) > 0) {
-            if (valueMap.get(StrifeAttribute.DAMAGE_REFLECT) < 0.3) {
-                lore.add(ChatColor.DARK_AQUA + "Damage Reflect: " + ChatColor.WHITE + DECIMAL_FORMAT
-                    .format(valueMap.get(StrifeAttribute.DAMAGE_REFLECT) * 100) + "%");
-            } else {
-                lore.add(ChatColor.DARK_AQUA + "Damage Reflect: " + ChatColor.WHITE + "30% " + ChatColor.GRAY + "(Max)");
-            }
-        }
-        if (valueMap.get(StrifeAttribute.DOGE) > 0) {
-            lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
-            lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
-        }
+        List<String> lore = new ArrayList<>();
+
+        lore.add(breakLine);
+
+        double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0) + plugin
+                .getMultiplierManager().getExpMult();
+        double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
+                .getMultiplierManager().getDropMult();
+        lore.add(ChatColor.GREEN + "Experience Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+                .format((xpMult * 100 + pStats.getAttribute(StrifeAttribute.XP_GAIN))) + "%");
+        lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
+        lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+            .format(pStats.getAttribute(StrifeAttribute.ITEM_RARITY)) + "%");
+        lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + DECIMAL_FORMAT
+                .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND)) + "%");
+        lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
+                .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP)) + "%");
+
+        lore.add(breakLine);
+
+        lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;

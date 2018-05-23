@@ -28,7 +28,6 @@ import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.ChatColor;
 
 import java.util.List;
-import java.util.logging.Level;
 
 public class LevelupMenu extends ItemMenu {
 
@@ -36,17 +35,13 @@ public class LevelupMenu extends ItemMenu {
         super(ChatColor.BLACK + "Levelup Menu", Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
               plugin);
 
-        plugin.debug(Level.INFO, "LevelupMenu size = " + getSize().name());
-
         for (StrifeStat stat : stats) {
-            int counter = stat.getMenuY() * 9 + stat.getMenuX();
-            plugin.debug(Level.INFO, "Adding stat " + stat.getName() + " to LevelupMenu at " + counter);
-            setItem(counter, new LevelupMenuItem(plugin, stat));
+            int slot = stat.getSlot();
+            setItem(slot, new LevelupMenuItem(plugin, stat));
         }
 
-        int counter = plugin.getSettings().getInt("config.menu.unused-marker-y") * 9;
-        counter += plugin.getSettings().getInt("config.menu.unused-marker-x");
-        setItem(counter, new LevelupPointsMenuItem(plugin));
+        int slot = plugin.getSettings().getInt("config.menu.unused-slot");
+        setItem(slot, new LevelupPointsMenuItem(plugin));
     }
 
 }

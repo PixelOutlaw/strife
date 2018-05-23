@@ -22,25 +22,30 @@
  */
 package info.faceland.strife.storage;
 
-import com.tealcube.minecraft.bukkit.config.SmartYamlConfiguration;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
+import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class JsonDataStorage implements DataStorage {
 
     private final StrifePlugin plugin;
     private SmartYamlConfiguration configuration;
+    private long lastLoaded;
 
     public JsonDataStorage(StrifePlugin plugin) {
         this.plugin = plugin;
         this.configuration = new SmartYamlConfiguration(new File(plugin.getDataFolder(), "data.json"));
+        this.lastLoaded = System.currentTimeMillis();
     }
 
     @Override
@@ -54,40 +59,134 @@ public class JsonDataStorage implements DataStorage {
     }
 
     @Override
-    public void save(Collection<Champion> champions) {
-        for (Champion champ : champions) {
-            for (Map.Entry<StrifeStat, Integer> entry : champ.getLevelMap().entrySet()) {
-                configuration.set(champ.getUniqueId().toString() + "." + entry.getKey().getKey(), entry.getValue());
-            }
-            configuration.set(champ.getUniqueId().toString() + ".unused-stat-points", champ.getUnusedStatPoints());
-            configuration
-                .set(champ.getUniqueId().toString() + ".highest-reached-level", champ.getHighestReachedLevel());
+    public void updateChampion(ChampionSaveData champion, boolean save) {
+        for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
+            configuration.set(
+                champion.getUniqueId().toString() + ".stats." + entry.getKey().getKey(),
+                entry.getValue()
+            );
+        }
+        configuration.set(
+            champion.getUniqueId().toString() + ".unused-stat-points",
+            champion.getUnusedStatPoints()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".highest-reached-level",
+            champion.getHighestReachedLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".bonus-levels",
+            champion.getBonusLevels()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".crafting-level",
+            champion.getCraftingLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".crafting-exp",
+            champion.getCraftingExp()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".enchant-level",
+            champion.getEnchantLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".enchant-exp",
+            champion.getEnchantExp()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".fishing-level",
+            champion.getFishingLevel()
+        );
+        configuration.set(
+            champion.getUniqueId().toString() + ".fishing-exp",
+            champion.getFishingExp()
+        );
+        if (save) {
+            configuration.save();
+        }
+    }
+
+    @Override
+    public void save(Collection<ChampionSaveData> champions) {
+        for (ChampionSaveData champ : champions) {
+            updateChampion(champ, false);
         }
         configuration.save();
     }
 
     @Override
-    public Collection<Champion> load() {
-        configuration.load();
-        Collection<Champion> collection = new HashSet<>();
+    public Collection<ChampionSaveData> load() {
+        if (loadIfAble()) {
+            plugin.debug(Level.FINE, "Loading data.json");
+        }
+        Collection<ChampionSaveData> collection = new HashSet<>();
         for (String key : configuration.getKeys(false)) {
             if (!configuration.isConfigurationSection(key)) {
                 continue;
             }
+            ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
-            Champion champion = new Champion(uuid);
-            for (String k : configuration.getConfigurationSection(key).getKeys(false)) {
+            ChampionSaveData saveData = load(uuid);
+            collection.add(saveData);
+        }
+        return collection;
+    }
+
+    @Override
+    public ChampionSaveData load(UUID uuid) {
+        if (loadIfAble()) {
+            plugin.debug(Level.FINE, "Loading data.json");
+        }
+        if (!configuration.isConfigurationSection(uuid.toString())) {
+            plugin.debug(Level.FINER, "Unable to find player with UUID " + uuid.toString());
+            return null;
+        }
+        String key = uuid.toString();
+        ConfigurationSection section = configuration.getConfigurationSection(key);
+        ChampionSaveData saveData = new ChampionSaveData(uuid);
+        boolean hadReset = checkResetAndSetLevels(section, saveData, true);
+        saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
+        saveData.setBonusLevels(section.getInt("bonus-levels"));
+        saveData.setCraftingLevel(section.getInt("crafting-level"));
+        saveData.setCraftingExp((float)section.getDouble("crafting-exp"));
+        saveData.setEnchantLevel(section.getInt("enchant-level"));
+        saveData.setEnchantExp((float)section.getDouble("enchant-exp"));
+        saveData.setFishingLevel(section.getInt("fishing-level"));
+        saveData.setFishingExp((float)section.getDouble("fishing-exp"));
+        if (hadReset) {
+            saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
+        } else {
+            saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+        }
+        return saveData;
+    }
+
+    private boolean checkResetAndSetLevels(ConfigurationSection section, ChampionSaveData champion, boolean hadReset) {
+        if (section.isConfigurationSection("stats")) {
+            ConfigurationSection statsSection = section.getConfigurationSection("stats");
+            for (String k : statsSection.getKeys(false)) {
                 StrifeStat stat = plugin.getStatManager().getStat(k);
                 if (stat == null) {
                     continue;
                 }
-                champion.setLevel(stat, configuration.getConfigurationSection(key).getInt(k));
+                champion.setLevel(stat, statsSection.getInt(k));
             }
-            champion.setUnusedStatPoints(configuration.getConfigurationSection(key).getInt("unused-stat-points"));
-            champion.setHighestReachedLevel(configuration.getConfigurationSection(key).getInt("highest-reached-level"));
-            collection.add(champion);
+            hadReset = false;
         }
-        return collection;
+        return hadReset;
+    }
+
+    private boolean loadIfAble() {
+        long now = System.currentTimeMillis();
+        long diff = now - lastLoaded;
+        plugin.debug(Level.FINER, "Loading data.json...");
+        if (diff >= plugin.getSettings().getInt("config.configuration-load-period", 10)) {
+            configuration.load();
+            lastLoaded = now;
+            return true;
+        }
+        return false;
     }
 
 }

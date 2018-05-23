@@ -20,37 +20,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.managers;
 
-import info.faceland.loot.events.LootDetermineChanceEvent;
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+public class MultiplierManager {
 
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+    private double bonusExperienceMultipler;
+    private double bonusDropsMultipler;
 
-import java.util.Map;
-
-public class LootListener implements Listener {
-
-    private final StrifePlugin plugin;
-
-    public LootListener(StrifePlugin plugin) {
-        this.plugin = plugin;
+    public MultiplierManager() {
+        this.bonusExperienceMultipler = 0.0;
+        this.bonusDropsMultipler = 0.0;
     }
 
-    public StrifePlugin getPlugin() {
-        return plugin;
+    public void setExpMult(double amount) {
+        this.bonusExperienceMultipler = amount;
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onLootDetermineChance(LootDetermineChanceEvent event) {
-        Champion champion = plugin.getChampionManager().getChampion(event.getKiller().getUniqueId());
-        Map<StrifeAttribute, Double> attributeDoubleMap = champion.getAttributeValues();
-        double chance = event.getChance() + event.getChance() * attributeDoubleMap.get(StrifeAttribute.ITEM_DISCOVERY);
-        event.setChance(chance);
+    public void setDropMult(double amount) {
+        this.bonusDropsMultipler = amount;
+    }
+
+    public double getExpMult() {
+        return this.bonusExperienceMultipler;
+    }
+
+    public double getDropMult() {
+        return this.bonusDropsMultipler;
     }
 
 }

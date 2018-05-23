@@ -22,75 +22,82 @@
  */
 package info.faceland.strife.menus;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
-    private static final DecimalFormat REDUCER_FORMAT = new DecimalFormat("#.#");
+    private Player player;
+    private static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
+    private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
+    private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#.##");
+    private static final String breakLine = TextUtils.color("&7&m--------------------");
+    private static final String hpPerFive = TextUtils.color("&7 (HP/5s)");
+
+    public StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
+        this.plugin = plugin;
+        this.player = player;
+    }
 
     public StatsDefenseMenuItem(StrifePlugin plugin) {
-        super(ChatColor.WHITE + "Defensive Stats", new ItemStack(Material.IRON_CHESTPLATE));
+        super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
         this.plugin = plugin;
     }
 
     @Override
     public ItemStack getFinalIcon(Player player) {
-        Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
-        Map<StrifeAttribute, Double> valueMap = champion.getAttributeValues();
+        if (this.player != null) {
+            player = this.player;
+        }
+        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
         ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMeta.setDisplayName(getDisplayName());
-        List<String> lore = new ArrayList<>(getLore());
-        lore.add(ChatColor.BLUE + "Hitpoints: " + ChatColor.WHITE + DECIMAL_FORMAT.format(valueMap.get(StrifeAttribute.HEALTH)));
-        if (valueMap.get(StrifeAttribute.REGENERATION) > 1) {
-            lore.add(ChatColor.BLUE + "Regeneration: " + ChatColor.WHITE + valueMap.get(StrifeAttribute.REGENERATION));
-        }
-        double armor = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.ARMOR) * 100), 1.3)))));
-        lore.add(ChatColor.BLUE + "Armor: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
-            .get(StrifeAttribute.ARMOR)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(armor) + "%)" );
-        if (valueMap.get(StrifeAttribute.EVASION) > 0) {
-            double evasion = 100 * (1-(100/(100 + (Math.pow((valueMap.get(StrifeAttribute.EVASION) * 100), 1.25)))));
-            lore.add(ChatColor.BLUE + "Evasion: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100 * valueMap
-                .get(StrifeAttribute.EVASION)) + ChatColor.GRAY + " (" + REDUCER_FORMAT.format(evasion) + "%)" );
-        }
-        if (valueMap.get(StrifeAttribute.RESISTANCE) > 0) {
-            lore.add(
-                ChatColor.BLUE + "Resistance: " + ChatColor.WHITE + DECIMAL_FORMAT.format(100*valueMap.get(StrifeAttribute.RESISTANCE)) + "%");
-        }
-        if (valueMap.get(StrifeAttribute.PARRY) > 0) {
-            if (valueMap.get(StrifeAttribute.PARRY) < 0.85) {
-                lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + DECIMAL_FORMAT
-                    .format(valueMap.get(StrifeAttribute.PARRY) * 100) + "%");
-            } else {
-                lore.add(ChatColor.BLUE + "Parry Chance: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
-            }
+        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        List<String> lore = new ArrayList<>();
 
+        lore.add(breakLine);
+        if (pStats.getAttribute(StrifeAttribute.BARRIER) > 0) {
+            lore.add(addStat("Maximum Barrier: ", pStats.getAttribute(StrifeAttribute.BARRIER), INT_FORMAT));
+            lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
         }
-        if (valueMap.get(StrifeAttribute.BLOCK) != 0.1) {
-            if (valueMap.get(StrifeAttribute.BLOCK) < 0.85) {
-                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + DECIMAL_FORMAT
-                    .format(valueMap.get(StrifeAttribute.BLOCK) * 100) + "%");
-            } else {
-                lore.add(ChatColor.BLUE + "Block: " + ChatColor.WHITE + "85% " + ChatColor.GRAY + "(Max)");
-            }
+        lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
+        lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMALS));
+        lore.add(breakLine);
+        lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
+        lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
+        lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(pStats), INT_FORMAT));
+        lore.add(addStat("Block: ", pStats.getAttribute(StrifeAttribute.BLOCK), INT_FORMAT));
+        if (pStats.getAttribute(StrifeAttribute.DAMAGE_REFLECT) > 0) {
+            lore.add(addStat("Reflected Damage: ", pStats.getAttribute(StrifeAttribute.DAMAGE_REFLECT), INT_FORMAT));
         }
+        lore.add(breakLine);
+        lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
+        lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));
+        lore.add(addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
+        lore.add(addStat("Shadow Resistance: ", StatUtil.getShadowResist(pStats), "%", INT_FORMAT));
+        lore.add(breakLine);
+        lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
@@ -101,4 +108,11 @@ public class StatsDefenseMenuItem extends MenuItem {
         super.onItemClick(event);
     }
 
+    private String addStat(String name, double value, DecimalFormat format) {
+        return ChatColor.YELLOW + name + ChatColor.WHITE + format.format(value);
+    }
+
+    private String addStat(String name, double value, String extra, DecimalFormat format) {
+        return ChatColor.YELLOW + name + ChatColor.WHITE + format.format(value) + extra;
+    }
 }

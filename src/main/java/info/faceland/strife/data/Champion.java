@@ -24,137 +24,216 @@ package info.faceland.strife.data;
 
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
+
 import info.faceland.strife.stats.StrifeStat;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class Champion {
 
-    private UUID uniqueId;
-    private Map<StrifeStat, Integer> levelMap;
-    private int unusedStatPoints;
-    private int highestReachedLevel;
+    private final Map<StrifeAttribute, Double> attributeBase;
+    private final Map<StrifeAttribute, Double> attributeLevelPoint;
+    private final Map<StrifeAttribute, Double> attributeArmorCache;
+    private final Map<StrifeAttribute, Double> attributeWeaponCache;
+    private final Map<StrifeAttribute, Double> combinedAttributeCache;
 
-    public Champion(UUID uniqueId) {
-        this.uniqueId = uniqueId;
-        this.levelMap = new HashMap<>();
+    private int mainHandHash;
+    private int offHandHash;
+    private int helmetHash;
+    private int chestHash;
+    private int legsHash;
+    private int bootsHash;
+
+    private ChampionSaveData saveData;
+
+    public Champion(ChampionSaveData saveData) {
+        this.attributeBase = new HashMap<>();
+        this.attributeLevelPoint = new HashMap<>();
+        this.attributeArmorCache = new HashMap<>();
+        this.attributeWeaponCache = new HashMap<>();
+        this.combinedAttributeCache = new HashMap<>();
+        this.saveData = saveData;
     }
 
-    @Override
-    public int hashCode() {
-        return uniqueId != null ? uniqueId.hashCode() : 0;
+    public Map<StrifeAttribute, Double> getCombinedCache() {
+        return new HashMap<>(combinedAttributeCache);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Champion)) {
-            return false;
-        }
+    private void clearCombinedCache() {
+        combinedAttributeCache.clear();
+    }
 
-        Champion champion = (Champion) o;
+    private void clearAttributeCaches() {
+        attributeBase.clear();
+        attributeLevelPoint.clear();
+        attributeArmorCache.clear();
+        attributeWeaponCache.clear();
+    }
 
-        return !(uniqueId != null ? !uniqueId.equals(champion.uniqueId) : champion.uniqueId != null);
+    public void recombineCache() {
+        clearCombinedCache();
+        combinedAttributeCache.putAll(AttributeHandler.combineMaps(
+            attributeBase,
+            attributeLevelPoint,
+            attributeWeaponCache,
+            attributeArmorCache
+        ));
+    }
+
+    public void setAttributeBaseCache(Map<StrifeAttribute, Double> map) {
+        attributeBase.clear();
+        attributeBase.putAll(map);
+    }
+
+    public void setAttributeLevelPointCache(Map<StrifeAttribute, Double> map) {
+        attributeLevelPoint.clear();
+        attributeLevelPoint.putAll(map);
+    }
+
+    public void setAttributeArmorCache(Map<StrifeAttribute, Double> map) {
+        attributeArmorCache.clear();
+        attributeArmorCache.putAll(map);
+    }
+
+    public void setAttributeWeaponCache(Map<StrifeAttribute, Double> map) {
+        attributeWeaponCache.clear();
+        attributeWeaponCache.putAll(map);
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeBaseCache() {
+        return attributeBase;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeLevelPointCache() {
+        return attributeLevelPoint;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeArmorCache() {
+        return attributeArmorCache;
+    }
+
+    public Map<StrifeAttribute, Double> getAttributeWeaponCache() {
+        return attributeWeaponCache;
+    }
+
+    public ChampionSaveData getSaveData() {
+        return saveData;
+    }
+
+    public void setSaveData(ChampionSaveData data) {
+        this.saveData = data;
     }
 
     public int getLevel(StrifeStat stat) {
-        if (levelMap.containsKey(stat)) {
-            return levelMap.get(stat);
-        }
-        return 0;
+        return saveData.getLevel(stat);
+    }
+
+    public void setBonusLevels(int bonusLevels) {
+        saveData.setBonusLevels(bonusLevels);
+    }
+
+    public int getBonusLevels() {
+        return saveData.getBonusLevels();
+    }
+
+    public int getCraftingLevel() {
+        return saveData.getCraftingLevel();
+    }
+
+    public float getCraftingExp() {
+        return saveData.getCraftingExp();
+    }
+
+    public int getEnchantLevel() {
+        return saveData.getEnchantLevel();
+    }
+
+    public float getEnchantExp() {
+        return saveData.getEnchantExp();
+    }
+
+    public int getFishingLevel() {
+        return saveData.getFishingLevel();
+    }
+
+    public float getFishingExp() {
+        return saveData.getFishingExp();
+    }
+
+    public int getUnusedStatPoints() {
+        return saveData.getUnusedStatPoints();
+    }
+
+    public void setUnusedStatPoints(int unusedStatPoints) {
+        saveData.setUnusedStatPoints(unusedStatPoints);
+    }
+
+    public int getHighestReachedLevel() {
+        return saveData.getHighestReachedLevel();
+    }
+
+    public void setHighestReachedLevel(int highestReachedLevel) {
+        saveData.setHighestReachedLevel(highestReachedLevel);
+    }
+
+    public UUID getUniqueId() {
+        return saveData.getUniqueId();
     }
 
     public void setLevel(StrifeStat stat, int level) {
-        levelMap.put(stat, level);
-    }
-
-    public Map<StrifeAttribute, Double> getAttributeValues() {
-        Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-        for (StrifeAttribute attr : StrifeAttribute.values()) {
-            attributeDoubleMap.put(attr, attr != StrifeAttribute.ATTACK_SPEED ? attr.getBaseValue() : 0);
-        }
-        for (Map.Entry<StrifeStat, Integer> entry : getLevelMap().entrySet()) {
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap
-                    .put(attr, attr.getCap() > 0D ? Math
-                        .min(val + entry.getKey().getAttribute(attr) * entry.getValue(), attr.getCap())
-                                                  : val + entry.getKey().getAttribute(attr) * entry.getValue());
-            }
-        }
-        if (getPlayer().getEquipment() == null) {
-            return attributeDoubleMap;
-        }
-        for (ItemStack itemStack : getPlayer().getEquipment().getArmorContents()) {
-            if (itemStack == null || itemStack.getType() == Material.AIR) {
-                continue;
-            }
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
-                    .min(attr.getCap(), val + AttributeHandler.getValue(itemStack, attr))
-                                                                : val + AttributeHandler.getValue(itemStack, attr));
-            }
-        }
-        if (getPlayer().getEquipment().getItemInHand() != null
-            && getPlayer().getEquipment().getItemInHand().getType() != Material.AIR) {
-            ItemStack itemStack = getPlayer().getEquipment().getItemInHand();
-            for (StrifeAttribute attr : StrifeAttribute.values()) {
-                if (attr == StrifeAttribute.ARMOR || attr == StrifeAttribute.DAMAGE_REFLECT
-                    || attr == StrifeAttribute.EVASION
-                    || attr == StrifeAttribute.HEALTH || attr == StrifeAttribute.REGENERATION || attr ==
-                                                                                                 StrifeAttribute.MOVEMENT_SPEED
-                    || attr == StrifeAttribute.XP_GAIN) {
-                    continue;
-                }
-                double val = attributeDoubleMap.get(attr);
-                attributeDoubleMap.put(attr, attr.getCap() > 0D ? Math
-                    .min(val + AttributeHandler.getValue(itemStack, attr), attr.getCap())
-                                                                : val + AttributeHandler.getValue(itemStack, attr));
-            }
-        }
-        return attributeDoubleMap;
+        saveData.setLevel(stat, level);
     }
 
     public Map<StrifeStat, Integer> getLevelMap() {
-        return new HashMap<>(levelMap);
+        return saveData.getLevelMap();
     }
 
     public Player getPlayer() {
         return Bukkit.getPlayer(getUniqueId());
     }
 
-    public UUID getUniqueId() {
-        return uniqueId;
+    public void updateHashedEquipment() {
+        PlayerInventory invy = getPlayer().getInventory();
+        mainHandHash = invy.getItemInMainHand() == null ? -1 : invy.getItemInMainHand().hashCode();
+        offHandHash = invy.getItemInOffHand() == null ? -1 : invy.getItemInOffHand().hashCode();
+        helmetHash = invy.getHelmet() == null ? -1 : invy.getHelmet().hashCode();
+        chestHash = invy.getChestplate() == null ? -1 : invy.getChestplate().hashCode();
+        legsHash = invy.getLeggings() == null ? -1 : invy.getLeggings().hashCode();
+        bootsHash = invy.getBoots() == null ? -1 : invy.getBoots().hashCode();
     }
 
-    public int getUnusedStatPoints() {
-        return unusedStatPoints;
+    public boolean isEquipmentHashMatching() {
+        PlayerInventory invy = getPlayer().getInventory();
+        if (!itemStackHashMatch(invy.getItemInMainHand(), mainHandHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getItemInOffHand(), offHandHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getHelmet(), helmetHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getChestplate(), chestHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getLeggings(), legsHash)) {
+            return false;
+        }
+        if (!itemStackHashMatch(invy.getBoots(), bootsHash)) {
+            return false;
+        }
+        return true;
     }
 
-    public void setUnusedStatPoints(int unusedStatPoints) {
-        this.unusedStatPoints = unusedStatPoints;
-    }
-
-    public int getMaximumStatLevel() {
-        return 5 + (getHighestReachedLevel() / 5);
-    }
-
-    public int getHighestReachedLevel() {
-        return highestReachedLevel;
-    }
-
-    public void setHighestReachedLevel(int highestReachedLevel) {
-        this.highestReachedLevel = highestReachedLevel;
-    }
-
+    private boolean itemStackHashMatch(ItemStack stack, int hash) {
+        if (stack == null) {
+            return hash == -1;
+        }
+        return stack.hashCode() == hash;
+  }
 }
