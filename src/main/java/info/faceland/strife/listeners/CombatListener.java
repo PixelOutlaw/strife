@@ -395,7 +395,7 @@ public class CombatListener implements Listener {
         if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.FREEZE_CHANCE) / 100) {
             return 0D;
         }
-        double multiplier = 0.3 + StatUtil.getHealth(attacker) * 0.2;
+        double multiplier = 0.25 + 0.25 * (StatUtil.getHealth(attacker) / 100);
         if (!defender.hasPotionEffect(PotionEffectType.SLOW)) {
             defender.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 30, 1));
         }
