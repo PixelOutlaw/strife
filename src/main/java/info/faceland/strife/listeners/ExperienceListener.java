@@ -81,20 +81,19 @@ public class ExperienceListener implements Listener {
         PlayerInventory inv = p.getInventory();
         for (int i = 0; i < inv.getContents().length; i++) {
             ItemStack is = inv.getItem(i);
-            if (is == null || is.getType() != Material.QUARTZ) {
+            if (is == null) {
                 continue;
             }
-            if (!is.getItemMeta().getDisplayName().equals(ChatColor.WHITE + "Soul Shard")) {
-                continue;
+            if (isSoulShard(is)) {
+                if (is.getAmount() > 1) {
+                    is.setAmount(is.getAmount() - 1);
+                    inv.setItem(i, is);
+                } else {
+                    inv.setItem(i, null);
+                }
+                MessageUtils.sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
+                return;
             }
-            if (is.getAmount() > 1) {
-                is.setAmount(is.getAmount() - 1);
-                inv.setItem(i, is);
-            } else {
-                inv.setItem(i, null);
-            }
-            MessageUtils.sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
-            return;
         }
         double lostXP = Math.min(plugin.getLevelingRate().get(p.getLevel()) * 0.025, plugin.getLevelingRate()
                 .get(p.getLevel()) * p.getExp());
@@ -126,5 +125,15 @@ public class ExperienceListener implements Listener {
     public void onPlayerExpChange(PlayerExpChangeEvent event) {
         plugin.getExperienceManager().addExperience(event.getPlayer(), event.getAmount(), false);
         event.setAmount(0);
+    }
+
+    private boolean isSoulShard(ItemStack itemStack) {
+        if (itemStack.getType() != Material.QUARTZ) {
+            return false;
+        }
+        if (!itemStack.hasItemMeta() || !itemStack.getItemMeta().hasDisplayName()) {
+            return false;
+        }
+        return itemStack.getItemMeta().getDisplayName().equals(ChatColor.WHITE + "Soul Shard");
     }
 }
