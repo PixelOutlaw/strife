@@ -22,12 +22,6 @@
  */
 package info.faceland.strife.listeners;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_REFLECT;
-import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
-import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
-
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 
@@ -57,6 +51,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
+
+import static info.faceland.strife.attributes.StrifeAttribute.*;
 
 public class CombatListener implements Listener {
 
@@ -271,7 +267,7 @@ public class CombatListener implements Listener {
 
         double bleedAmount = 0;
         if (physicalBaseDamage > 0 && attacker.getAttribute(BLEED_CHANCE) / 100 >= rollDouble()) {
-            bleedAmount = physicalBaseDamage * 0.5D * attackMultiplier * pvpMult;
+            bleedAmount = physicalBaseDamage * 0.5D * attackMultiplier * pvpMult * (1 + attacker.getAttribute(BLEED_DAMAGE));
             bleedAmount += bleedAmount * bonusCriticalMultiplier;
             if (!plugin.getBarrierManager().hasBarrierUp(defender)) {
                 plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, 30);
