@@ -52,7 +52,7 @@ public class BleedTask extends BukkitRunnable {
             }
 
             plugin.getBarrierManager().interruptBarrier(bleedingEntity);
-            double bleedDamage = bleedData.getBleedAmount() / 30;
+            double bleedDamage = bleedData.getBleedAmount() / 10;
             if (bleedingEntity.getHealth() > bleedDamage) {
                 bleedingEntity.setHealth(bleedingEntity.getHealth() - bleedDamage);
             } else {
