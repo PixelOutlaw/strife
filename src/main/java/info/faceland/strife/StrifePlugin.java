@@ -71,6 +71,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
@@ -250,8 +251,16 @@ public class StrifePlugin extends FacePlugin {
             getMonsterManager().addEntityData(entityType, data);
         }
 
-        for (ChampionSaveData data : storage.load()) {
-            championManager.addChampion(new Champion(data));
+        //Backup old loading from data.json
+        //for (ChampionSaveData saveData : storage.oldLoad()) {
+        //    championManager.addChampion(new Champion(saveData));
+        //}
+        //storage.saveAll();
+        //championManager.clear();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            ChampionSaveData saveData = storage.load(player.getUniqueId());
+            championManager.addChampion(new Champion(saveData));
         }
 
         saveTask = new SaveTask(this);
@@ -309,7 +318,7 @@ public class StrifePlugin extends FacePlugin {
         );
         bleedTask.runTaskTimer(this,
             20L * 10, // Start timer after 10s
-           4L // Run it every 1/5th of a second after
+           12L // Run it about every half second
         );
         barrierTask.runTaskTimer(this,
             201L, // Start timer after 10.05s
@@ -342,7 +351,7 @@ public class StrifePlugin extends FacePlugin {
 
     @Override
     public void disable() {
-        storage.save(championManager.getChampionSaveData());
+        storage.saveAll();
         HandlerList.unregisterAll(this);
 
         saveTask.cancel();

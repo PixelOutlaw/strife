@@ -25,6 +25,7 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.ChampionSaveData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -43,14 +44,9 @@ public class DataListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(final PlayerJoinEvent event) {
-        Champion champion;
         if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
-            champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
-            champion.setHighestReachedLevel(event.getPlayer().getLevel());
-            champion.setUnusedStatPoints(event.getPlayer().getLevel());
-            champion.setBonusLevels(0);
-            plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
-            plugin.getChampionManager().addChampion(champion);
+            ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
+            plugin.getChampionManager().addChampion(new Champion(saveData));
         }
         if (plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()).getUnusedStatPoints() > 0) {
             notifyUnusedPoints(event.getPlayer());

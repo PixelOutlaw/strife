@@ -25,6 +25,8 @@ package info.faceland.strife.tasks;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -45,23 +47,10 @@ public class SaveTask extends BukkitRunnable {
     @Override
     public void run() {
         plugin.debug(Level.INFO, "Running save task");
-        Map<UUID, ChampionSaveData> championDataMap = new HashMap<>();
-        for (Champion champion : plugin.getChampionManager().getChampions()) {
-            championDataMap.put(champion.getUniqueId(), champion.getSaveData());
-        }
-        plugin.getStorage().save(plugin.getChampionManager().getChampionSaveData());
+        plugin.getStorage().saveAll();
         plugin.getChampionManager().clear();
-        for (ChampionSaveData saveData : plugin.getStorage().load()) {
-            if (championDataMap.containsKey(saveData.getUniqueId())) {
-                saveData = championDataMap.get(saveData.getUniqueId());
-            }
-            plugin.getChampionManager().addChampion(new Champion(saveData));
-        }
         for (Player player : Bukkit.getOnlinePlayers()) {
             ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
-            if (championDataMap.containsKey(saveData.getUniqueId())) {
-                saveData = championDataMap.get(saveData.getUniqueId());
-            }
             plugin.getChampionManager().addChampion(new Champion(saveData));
         }
     }
