@@ -34,10 +34,10 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemTypeUtil;
-import java.util.*;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.*;
 
 public class ChampionManager {
 
