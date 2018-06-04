@@ -35,6 +35,7 @@ import info.faceland.strife.api.StrifeFishExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
+import info.faceland.strife.commands.SpawnerCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.commands.UniqueEntityCommand;
 import info.faceland.strife.data.*;
@@ -47,14 +48,17 @@ import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.*;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
+import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -77,12 +81,14 @@ public class StrifePlugin extends FacePlugin {
     private VersionedSmartYamlConfiguration baseStatsYAML;
     private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
     private VersionedSmartYamlConfiguration equipmentYAML;
+    private SmartYamlConfiguration spawnerYAML;
     private StrifeStatManager statManager;
     private BarrierManager barrierManager;
     private BleedManager bleedManager;
     private MonsterManager monsterManager;
     private UniqueEntityManager uniqueEntityManager;
     private EntityEquipmentManager equipmentManager;
+    private SpawnerManager spawnerManager;
     private MultiplierManager multiplierManager;
     private DataStorage storage;
     private ChampionManager championManager;
@@ -101,6 +107,8 @@ public class StrifePlugin extends FacePlugin {
     private BlockTask blockTask;
     private UniquePruneTask uniquePruneTask;
     private UniqueParticleTask uniqueParticleTask;
+    private SpawnerSpawnTask spawnerSpawnTask;
+    private SpawnerLeashTask spawnerLeashTask;
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
@@ -134,6 +142,7 @@ public class StrifePlugin extends FacePlugin {
                 getResource("unique-enemies.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
         equipmentYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "equipment.yml"),
                 getResource("equipment.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
         statManager = new StrifeStatManager();
         barrierManager = new BarrierManager();
@@ -141,6 +150,7 @@ public class StrifePlugin extends FacePlugin {
         monsterManager = new MonsterManager(this);
         uniqueEntityManager = new UniqueEntityManager(this);
         equipmentManager = new EntityEquipmentManager();
+        spawnerManager = new SpawnerManager(uniqueEntityManager);
         multiplierManager = new MultiplierManager();
         storage = new JsonDataStorage(this);
         championManager = new ChampionManager(this);
@@ -175,6 +185,7 @@ public class StrifePlugin extends FacePlugin {
         buildLevelpointStats();
         buildBaseStats();
         buildUniqueEnemies();
+        loadSpawners();
 
         //Backup old loading from data.json
         //for (ChampionSaveData saveData : storage.oldLoad()) {
@@ -198,11 +209,14 @@ public class StrifePlugin extends FacePlugin {
         blockTask = new BlockTask();
         uniquePruneTask = new UniquePruneTask(this);
         uniqueParticleTask = new UniqueParticleTask(this);
+        spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
+        spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new LevelUpCommand(this));
         commandHandler.registerCommands(new StrifeCommand(this));
         commandHandler.registerCommands(new UniqueEntityCommand(this));
+        commandHandler.registerCommands(new SpawnerCommand(this));
 
         levelingRate = new LevelingRate();
         Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
@@ -256,10 +270,30 @@ public class StrifePlugin extends FacePlugin {
             20L * 10, // Start timer after 10s
             10L  // Run it every 0.5s after
         );
-        attackSpeedTask.runTaskTimer(this, 5L, attackTickRate);
-        blockTask.runTaskTimer(this, 5L, 5L);
-        uniquePruneTask.runTaskTimer(this, 30 * 20L, 30 * 20L);
-        uniqueParticleTask.runTaskTimer(this, 20* 20L, 2L);
+        attackSpeedTask.runTaskTimer(this,
+            5L,
+            attackTickRate
+        );
+        blockTask.runTaskTimer(this,
+            5L,
+            5L
+        );
+        uniquePruneTask.runTaskTimer(this,
+            30 * 20L,
+            30 * 20L
+        );
+        uniqueParticleTask.runTaskTimer(this,
+            20* 20L,
+            2L
+        );
+        spawnerSpawnTask.runTaskTimer(this,
+            20 * 20L, // Start timer after 20s
+            6 * 20L // Run it every 6 seconds
+        );
+        spawnerLeashTask.runTaskTimer(this,
+            20 * 20L, // Start timer after 20s
+            5 * 20L // Run it every 5s
+        );
         Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
@@ -281,6 +315,7 @@ public class StrifePlugin extends FacePlugin {
 
     @Override
     public void disable() {
+        saveSpawners();
         storage.saveAll();
         uniqueEntityManager.killAllSpawnedUniques();
         HandlerList.unregisterAll(this);
@@ -293,6 +328,10 @@ public class StrifePlugin extends FacePlugin {
         darkTask.cancel();
         attackSpeedTask.cancel();
         blockTask.cancel();
+        uniqueParticleTask.cancel();
+        uniquePruneTask.cancel();
+        spawnerLeashTask.cancel();
+        spawnerSpawnTask.cancel();
 
         configYAML = null;
         baseStatsYAML = null;
@@ -309,6 +348,7 @@ public class StrifePlugin extends FacePlugin {
         bleedManager = null;
         barrierManager = null;
         multiplierManager = null;
+        spawnerManager = null;
 
         storage = null;
         championManager = null;
@@ -325,6 +365,10 @@ public class StrifePlugin extends FacePlugin {
         darkTask = null;
         attackSpeedTask = null;
         blockTask = null;
+        uniqueParticleTask = null;
+        uniquePruneTask = null;
+        spawnerSpawnTask = null;
+        spawnerLeashTask = null;
 
         commandHandler = null;
         settings = null;
@@ -452,7 +496,6 @@ public class StrifePlugin extends FacePlugin {
 
     private void buildUniqueEnemies() {
         for (String entityNameKey : uniqueEnemiesYAML.getKeys(false)) {
-            getLogger().info("Attempting to load unique: " + entityNameKey);
             if (!uniqueEnemiesYAML.isConfigurationSection(entityNameKey)) {
                 continue;
             }
@@ -468,12 +511,12 @@ public class StrifePlugin extends FacePlugin {
                 continue;
             }
 
+            uniqueEntity.setId(entityNameKey);
             uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
 
             ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
             Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
             for (String k : attrCS.getKeys(false)) {
-                getLogger().info("Setting attr " + k + " for unique " + entityNameKey);
                 StrifeAttribute attr = StrifeAttribute.valueOf(k);
                 attributeMap.put(attr, attrCS.getDouble(k));
             }
@@ -503,9 +546,48 @@ public class StrifePlugin extends FacePlugin {
                 uniqueEntity.setParticle(null);
             }
 
-            getLogger().info("Loaded unique: " + entityNameKey);
             uniqueEntityManager.addUniqueEntity(entityNameKey, uniqueEntity);
         }
+    }
+
+    private void loadSpawners() {
+        Map<String, Spawner> spawners = new HashMap<>();
+        for (String spawnerId : spawnerYAML.getKeys(false)) {
+            if (!spawnerYAML.isConfigurationSection(spawnerId)) {
+                continue;
+            }
+            ConfigurationSection cs = spawnerYAML.getConfigurationSection(spawnerId);
+
+            String uniqueId = cs.getString("unique");
+            UniqueEntity uniqueEntity = uniqueEntityManager.getLoadedUniquesMap().get(uniqueId);
+
+            int respawnSeconds = cs.getInt("respawn-delay", 30);
+            double leashRange = cs.getDouble("leash-dist", 10);
+
+            double xPos = cs.getDouble("location.x");
+            double yPos = cs.getDouble("location.y");
+            double zPos = cs.getDouble("location.z");
+            World world = Bukkit.getWorld(cs.getString("location.world"));
+
+            Location location = new Location(world, xPos, yPos, zPos);
+
+            spawners.put(spawnerId, new Spawner(uniqueEntity, location, respawnSeconds, leashRange));
+            spawnerManager.setSpawnerMap(spawners);
+        }
+    }
+
+    private void saveSpawners() {
+        for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
+            Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
+            spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
+            spawnerYAML.set(spawnerId + ".respawn-delay", spawner.getRespawnSeconds());
+            spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
+            spawnerYAML.set(spawnerId + ".location.world", spawner.getLocation().getWorld().getName());
+            spawnerYAML.set(spawnerId + ".location.x", spawner.getLocation().getX());
+            spawnerYAML.set(spawnerId + ".location.y", spawner.getLocation().getY());
+            spawnerYAML.set(spawnerId + ".location.z", spawner.getLocation().getZ());
+        }
+        spawnerYAML.save();
     }
 
     public AttackSpeedTask getAttackSpeedTask() {
@@ -534,6 +616,10 @@ public class StrifePlugin extends FacePlugin {
 
     public UniqueEntityManager getUniqueEntityManager() {
         return uniqueEntityManager;
+    }
+
+    public SpawnerManager getSpawnerManager() {
+        return spawnerManager;
     }
 
     public MultiplierManager getMultiplierManager() {

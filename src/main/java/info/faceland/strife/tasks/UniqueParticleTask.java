@@ -49,7 +49,9 @@ public class UniqueParticleTask extends BukkitRunnable {
             location.getWorld().spawnParticle(
                     ue.getParticle(),
                     location,
-                    ue.getParticleCount()
+                    ue.getParticleCount(),
+                    ue.getParticleRadius(), ue.getParticleRadius(), ue.getParticleRadius(),
+                    0.05f
             );
         }
     }

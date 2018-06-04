@@ -59,7 +59,7 @@ public class DataListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityDeath(final EntityDeathEvent event) {
-        plugin.getUniqueEntityManager().removeEntity(event.getEntity());
+        plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -69,7 +69,7 @@ public class DataListener implements Listener {
                 continue;
             }
             if (plugin.getUniqueEntityManager().getLiveUniquesMap().containsKey(ent)) {
-                plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent);
+                plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
                 ent.remove();
             }
         }

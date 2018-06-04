@@ -9,123 +9,132 @@ import java.util.Map;
 
 public class UniqueEntity {
 
-    private EntityType type;
-    private String name;
-    private Map<StrifeAttribute, Double> attributeMap;
-    private EntityAbilitySet abilitySet;
+  private String id;
+  private EntityType type;
+  private String name;
+  private Map<StrifeAttribute, Double> attributeMap;
+  private EntityAbilitySet abilitySet;
 
-    private ItemStack mainHandItem = null;
-    private ItemStack offHandItem = null;
-    private ItemStack helmetItem = null;
-    private ItemStack chestItem = null;
-    private ItemStack legsItem = null;
-    private ItemStack bootsItem = null;
+  private ItemStack mainHandItem = null;
+  private ItemStack offHandItem = null;
+  private ItemStack helmetItem = null;
+  private ItemStack chestItem = null;
+  private ItemStack legsItem = null;
+  private ItemStack bootsItem = null;
 
-    private Particle particle;
-    private int particleCount;
-    private float particleRadius;
+  private Particle particle;
+  private int particleCount;
+  private float particleRadius;
 
-    public EntityType getType() {
-        return type;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setType(EntityType type) {
-        this.type = type;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public EntityType getType() {
+    return type;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setType(EntityType type) {
+    this.type = type;
+  }
 
-    public Map<StrifeAttribute, Double> getAttributeMap() {
-        return attributeMap;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setAttributeMap(Map<StrifeAttribute, Double> attributeMap) {
-        this.attributeMap = attributeMap;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public EntityAbilitySet getAbilitySet() {
-        return abilitySet;
-    }
+  public Map<StrifeAttribute, Double> getAttributeMap() {
+    return attributeMap;
+  }
 
-    public void setAbilitySet(EntityAbilitySet abilitySet) {
-        this.abilitySet = abilitySet;
-    }
+  public void setAttributeMap(Map<StrifeAttribute, Double> attributeMap) {
+    this.attributeMap = attributeMap;
+  }
 
-    public ItemStack getMainHandItem() {
-        return mainHandItem;
-    }
+  public EntityAbilitySet getAbilitySet() {
+    return abilitySet;
+  }
 
-    public void setMainHandItem(ItemStack mainHandItem) {
-        this.mainHandItem = mainHandItem;
-    }
+  public void setAbilitySet(EntityAbilitySet abilitySet) {
+    this.abilitySet = abilitySet;
+  }
 
-    public ItemStack getOffHandItem() {
-        return offHandItem;
-    }
+  public ItemStack getMainHandItem() {
+    return mainHandItem;
+  }
 
-    public void setOffHandItem(ItemStack offHandItem) {
-        this.offHandItem = offHandItem;
-    }
+  public void setMainHandItem(ItemStack mainHandItem) {
+    this.mainHandItem = mainHandItem;
+  }
 
-    public ItemStack getHelmetItem() {
-        return helmetItem;
-    }
+  public ItemStack getOffHandItem() {
+    return offHandItem;
+  }
 
-    public void setHelmetItem(ItemStack helmetItem) {
-        this.helmetItem = helmetItem;
-    }
+  public void setOffHandItem(ItemStack offHandItem) {
+    this.offHandItem = offHandItem;
+  }
 
-    public ItemStack getChestItem() {
-        return chestItem;
-    }
+  public ItemStack getHelmetItem() {
+    return helmetItem;
+  }
 
-    public void setChestItem(ItemStack chestItem) {
-        this.chestItem = chestItem;
-    }
+  public void setHelmetItem(ItemStack helmetItem) {
+    this.helmetItem = helmetItem;
+  }
 
-    public ItemStack getLegsItem() {
-        return legsItem;
-    }
+  public ItemStack getChestItem() {
+    return chestItem;
+  }
 
-    public void setLegsItem(ItemStack legsItem) {
-        this.legsItem = legsItem;
-    }
+  public void setChestItem(ItemStack chestItem) {
+    this.chestItem = chestItem;
+  }
 
-    public ItemStack getBootsItem() {
-        return bootsItem;
-    }
+  public ItemStack getLegsItem() {
+    return legsItem;
+  }
 
-    public void setBootsItem(ItemStack bootsItem) {
-        this.bootsItem = bootsItem;
-    }
+  public void setLegsItem(ItemStack legsItem) {
+    this.legsItem = legsItem;
+  }
 
-    public Particle getParticle() {
-        return particle;
-    }
+  public ItemStack getBootsItem() {
+    return bootsItem;
+  }
 
-    public void setParticle(Particle particle) {
-        this.particle = particle;
-    }
+  public void setBootsItem(ItemStack bootsItem) {
+    this.bootsItem = bootsItem;
+  }
 
-    public int getParticleCount() {
-        return particleCount;
-    }
+  public Particle getParticle() {
+    return particle;
+  }
 
-    public void setParticleCount(int particleCount) {
-        this.particleCount = particleCount;
-    }
+  public void setParticle(Particle particle) {
+    this.particle = particle;
+  }
 
-    public float getParticleRadius() {
-        return particleRadius;
-    }
+  public int getParticleCount() {
+    return particleCount;
+  }
 
-    public void setParticleRadius(float particleRadius) {
-        this.particleRadius = particleRadius;
-    }
+  public void setParticleCount(int particleCount) {
+    this.particleCount = particleCount;
+  }
+
+  public float getParticleRadius() {
+    return particleRadius;
+  }
+
+  public void setParticleRadius(float particleRadius) {
+    this.particleRadius = particleRadius;
+  }
 }
