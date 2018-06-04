@@ -28,11 +28,15 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 
 public class DataListener implements Listener {
 
@@ -50,6 +54,24 @@ public class DataListener implements Listener {
         }
         if (plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()).getUnusedStatPoints() > 0) {
             notifyUnusedPoints(event.getPlayer());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityDeath(final EntityDeathEvent event) {
+        plugin.getUniqueEntityManager().removeEntity(event.getEntity());
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onChunkUnload(ChunkUnloadEvent e){
+        for (Entity ent : e.getChunk().getEntities()) {
+            if (!(ent instanceof LivingEntity)) {
+                continue;
+            }
+            if (plugin.getUniqueEntityManager().getLiveUniquesMap().containsKey(ent)) {
+                plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent);
+                ent.remove();
+            }
         }
     }
 

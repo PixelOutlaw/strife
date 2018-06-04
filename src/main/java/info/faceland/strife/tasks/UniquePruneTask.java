@@ -23,30 +23,32 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
-import java.util.ArrayList;
-import java.util.UUID;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class TrackedPruneTask extends BukkitRunnable {
+import java.util.ArrayList;
+
+public class UniquePruneTask extends BukkitRunnable {
 
     private final StrifePlugin plugin;
 
-    public TrackedPruneTask(StrifePlugin plugin) {
+    public UniquePruneTask(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void run() {
-        ArrayList<UUID> invalidEntities = new ArrayList<>();
-        for (UUID uuid : plugin.getEntityStatCache().getTrackedEntities().keySet()) {
-            if (plugin.getEntityStatCache().isValid(uuid)) {
-                continue;
+        ArrayList<LivingEntity> invalidEntities = new ArrayList<>();
+        for (LivingEntity entity : plugin.getUniqueEntityManager().getLiveUniquesMap().keySet()) {
+            if (entity == null || !entity.isValid()) {
+                invalidEntities.add(entity);
             }
-            invalidEntities.add(uuid);
         }
-        plugin.getLogger().info("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
-        for (UUID uuid : invalidEntities) {
-            plugin.getEntityStatCache().removeEntity(uuid);
+        if (invalidEntities.size() > 0) {
+            plugin.getLogger().warning("Cleared " + invalidEntities.size() + " no longer valid uniques");
+            for (LivingEntity ent : invalidEntities) {
+                plugin.getUniqueEntityManager().getLiveUniquesMap().remove(ent);
+            }
         }
     }
 }

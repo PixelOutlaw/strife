@@ -20,33 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.tasks;
+package info.faceland.strife.commands;
 
 import info.faceland.strife.StrifePlugin;
-import java.util.ArrayList;
-import java.util.UUID;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.Player;
+import se.ranzdo.bukkit.methodcommand.Arg;
+import se.ranzdo.bukkit.methodcommand.Command;
 
-public class TrackedPruneTask extends BukkitRunnable {
+public class UniqueEntityCommand {
 
     private final StrifePlugin plugin;
 
-    public TrackedPruneTask(StrifePlugin plugin) {
+    public UniqueEntityCommand(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
-    @Override
-    public void run() {
-        ArrayList<UUID> invalidEntities = new ArrayList<>();
-        for (UUID uuid : plugin.getEntityStatCache().getTrackedEntities().keySet()) {
-            if (plugin.getEntityStatCache().isValid(uuid)) {
-                continue;
-            }
-            invalidEntities.add(uuid);
-        }
-        plugin.getLogger().info("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
-        for (UUID uuid : invalidEntities) {
-            plugin.getEntityStatCache().removeEntity(uuid);
-        }
+    @Command(identifier = "strife boss", permissions = "strife.command.boss")
+    public void baseCommand(Player sender, @Arg(name = "spawn") String entityName) {
+        plugin.getUniqueEntityManager().spawnUnique(entityName, sender.getLocation());
     }
+
 }

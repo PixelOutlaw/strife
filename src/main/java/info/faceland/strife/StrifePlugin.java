@@ -23,6 +23,7 @@
 package info.faceland.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
@@ -35,44 +36,31 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.StrifeCommand;
-import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.ChampionSaveData;
-import info.faceland.strife.data.EntityStatCache;
-import info.faceland.strife.data.EntityStatData;
+import info.faceland.strife.commands.UniqueEntityCommand;
+import info.faceland.strife.data.*;
 import info.faceland.strife.listeners.*;
-import info.faceland.strife.managers.BarrierManager;
-import info.faceland.strife.managers.BleedManager;
-import info.faceland.strife.managers.EnchantExperienceManager;
-import info.faceland.strife.managers.FishExperienceManager;
-import info.faceland.strife.managers.MonsterManager;
-import info.faceland.strife.managers.MultiplierManager;
-import info.faceland.strife.managers.ChampionManager;
-import info.faceland.strife.managers.CraftExperienceManager;
-import info.faceland.strife.managers.ExperienceManager;
-import info.faceland.strife.managers.StrifeStatManager;
+import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
-import info.faceland.strife.tasks.AttackSpeedTask;
-import info.faceland.strife.tasks.BarrierTask;
-import info.faceland.strife.tasks.BleedTask;
-import info.faceland.strife.tasks.BlockTask;
-import info.faceland.strife.tasks.DarknessReductionTask;
-import info.faceland.strife.tasks.HealthRegenTask;
-import info.faceland.strife.tasks.SaveTask;
-import info.faceland.strife.tasks.TrackedPruneTask;
+import info.faceland.strife.tasks.*;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 import java.io.File;
@@ -87,10 +75,14 @@ public class StrifePlugin extends FacePlugin {
     private VersionedSmartYamlConfiguration configYAML;
     private VersionedSmartYamlConfiguration statsYAML;
     private VersionedSmartYamlConfiguration baseStatsYAML;
+    private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
+    private VersionedSmartYamlConfiguration equipmentYAML;
     private StrifeStatManager statManager;
     private BarrierManager barrierManager;
     private BleedManager bleedManager;
     private MonsterManager monsterManager;
+    private UniqueEntityManager uniqueEntityManager;
+    private EntityEquipmentManager equipmentManager;
     private MultiplierManager multiplierManager;
     private DataStorage storage;
     private ChampionManager championManager;
@@ -107,6 +99,8 @@ public class StrifePlugin extends FacePlugin {
     private DarknessReductionTask darkTask;
     private AttackSpeedTask attackSpeedTask;
     private BlockTask blockTask;
+    private UniquePruneTask uniquePruneTask;
+    private UniqueParticleTask uniqueParticleTask;
     private CommandHandler commandHandler;
     private MasterConfiguration settings;
     private LevelingRate levelingRate;
@@ -124,30 +118,29 @@ public class StrifePlugin extends FacePlugin {
         return instance;
     }
 
-    public AttackSpeedTask getAttackSpeedTask() {
-        return attackSpeedTask;
-    }
-    public BlockTask getBlockTask() {
-        return blockTask;
-    }
-
     final private static long attackTickRate = 2L;
 
     @Override
     public void enable() {
         setInstance(this);
         debugPrinter = new PluginLogger(this);
-        baseStatsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "base-entity-stats.yml"),
-            getResource("base-entity-stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-        statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
-            getResource("stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
         configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
-            getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+                getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
+                getResource("stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        baseStatsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "base-entity-stats.yml"),
+                getResource("base-entity-stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        uniqueEnemiesYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "unique-enemies.yml"),
+                getResource("unique-enemies.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        equipmentYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "equipment.yml"),
+                getResource("equipment.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
 
         statManager = new StrifeStatManager();
         barrierManager = new BarrierManager();
         bleedManager = new BleedManager();
         monsterManager = new MonsterManager(this);
+        uniqueEntityManager = new UniqueEntityManager(this);
+        equipmentManager = new EntityEquipmentManager();
         multiplierManager = new MultiplierManager();
         storage = new JsonDataStorage(this);
         championManager = new ChampionManager(this);
@@ -160,96 +153,28 @@ public class StrifePlugin extends FacePlugin {
 
         MenuListener.getInstance().register(this);
 
-        if (baseStatsYAML.update()) {
-            getLogger().info("Updating base-entity-stats.yml");
+        if (configYAML.update()) {
+            getLogger().info("Updating config.yml");
         }
         if (statsYAML.update()) {
             getLogger().info("Updating stats.yml");
         }
-        if (configYAML.update()) {
-            getLogger().info("Updating config.yml");
+        if (baseStatsYAML.update()) {
+            getLogger().info("Updating base-entity-stats.yml");
+        }
+        if (uniqueEnemiesYAML.update()) {
+            getLogger().info("Updating unique-enemies.yml");
+        }
+        if (equipmentYAML.update()) {
+            getLogger().info("Updating equipment.yml");
         }
 
         settings = MasterConfiguration.loadFromFiles(configYAML);
 
-        List<StrifeStat> stats = new ArrayList<>();
-        List<String> loadedStats = new ArrayList<>();
-        for (String key : statsYAML.getKeys(false)) {
-            if (!statsYAML.isConfigurationSection(key)) {
-                continue;
-            }
-            ConfigurationSection cs = statsYAML.getConfigurationSection(key);
-            StrifeStat stat = new StrifeStat(key);
-            stat.setName(cs.getString("name"));
-            stat.setDescription(cs.getStringList("description"));
-            stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
-            stat.setSlot(cs.getInt("slot"));
-            stat.setStartCap(cs.getInt("starting-cap", 0));
-            stat.setMaxCap(cs.getInt("maximum-cap", 100));
-            stat.setLevelsToRaiseCap(cs.getInt("levels-to-raise-cap", -1));
-            Map<String, Integer> baseStatRequirements = new HashMap<>();
-            if (cs.isConfigurationSection("base-attribute-requirements")) {
-                ConfigurationSection reqs = cs.getConfigurationSection("base-attribute-requirements");
-                for (String k : reqs.getKeys(false)) {
-                    baseStatRequirements.put(k, reqs.getInt(k));
-                }
-            }
-            Map<String, Integer> raiseStatCapAttributes = new HashMap<>();
-            if (cs.isConfigurationSection("attributes-to-raise-cap")) {
-                ConfigurationSection raiseReqs = cs.getConfigurationSection("attributes-to-raise-cap");
-                for (String k : raiseReqs.getKeys(false)) {
-                    raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
-                }
-            }
-            Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
-            if (cs.isConfigurationSection("attributes")) {
-                ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
-                for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
-                    attributeMap.put(attr, attrCS.getDouble(k));
-                }
-            }
-            stat.setStatIncreaseIncrements(raiseStatCapAttributes);
-            stat.setBaseStatRequirements(baseStatRequirements);
-            stat.setAttributeMap(attributeMap);
-            stats.add(stat);
-            loadedStats.add(stat.getKey());
-        }
-        for (StrifeStat stat : stats) {
-            getStatManager().addStat(stat);
-        }
-        debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
-
-        for (String entityKey : baseStatsYAML.getKeys(false)) {
-            if (!baseStatsYAML.isConfigurationSection(entityKey)) {
-                continue;
-            }
-            EntityType entityType = EntityType.valueOf(entityKey);
-            ConfigurationSection cs = baseStatsYAML.getConfigurationSection(entityKey);
-            EntityStatData data = new EntityStatData();
-            if (cs.isConfigurationSection("base-values")) {
-                ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
-                for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
-                    data.putBaseValue(attr, attrCS.getDouble(k));
-                }
-            }
-            if (cs.isConfigurationSection("per-level")) {
-                ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
-                for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
-                    data.putPerLevel(attr, attrCS.getDouble(k));
-                }
-            }
-            if (cs.isConfigurationSection("per-bonus-level")) {
-                ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
-                for (String k : attrCS.getKeys(false)) {
-                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
-                    data.putPerBonusLevel(attr, attrCS.getDouble(k));
-                }
-            }
-            getMonsterManager().addEntityData(entityType, data);
-        }
+        buildEquipment();
+        buildLevelpointStats();
+        buildBaseStats();
+        buildUniqueEnemies();
 
         //Backup old loading from data.json
         //for (ChampionSaveData saveData : storage.oldLoad()) {
@@ -271,10 +196,13 @@ public class StrifePlugin extends FacePlugin {
         darkTask = new DarknessReductionTask();
         attackSpeedTask = new AttackSpeedTask(attackTickRate);
         blockTask = new BlockTask();
+        uniquePruneTask = new UniquePruneTask(this);
+        uniqueParticleTask = new UniqueParticleTask(this);
 
         commandHandler.registerCommands(new AttributesCommand(this));
         commandHandler.registerCommands(new LevelUpCommand(this));
         commandHandler.registerCommands(new StrifeCommand(this));
+        commandHandler.registerCommands(new UniqueEntityCommand(this));
 
         levelingRate = new LevelingRate();
         Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
@@ -330,6 +258,8 @@ public class StrifePlugin extends FacePlugin {
         );
         attackSpeedTask.runTaskTimer(this, 5L, attackTickRate);
         blockTask.runTaskTimer(this, 5L, 5L);
+        uniquePruneTask.runTaskTimer(this, 30 * 20L, 30 * 20L);
+        uniqueParticleTask.runTaskTimer(this, 20* 20L, 2L);
         Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
@@ -352,6 +282,7 @@ public class StrifePlugin extends FacePlugin {
     @Override
     public void disable() {
         storage.saveAll();
+        uniqueEntityManager.killAllSpawnedUniques();
         HandlerList.unregisterAll(this);
 
         saveTask.cancel();
@@ -373,6 +304,8 @@ public class StrifePlugin extends FacePlugin {
 
         statManager = null;
         monsterManager = null;
+        uniqueEntityManager = null;
+        equipmentManager = null;
         bleedManager = null;
         barrierManager = null;
         multiplierManager = null;
@@ -399,6 +332,190 @@ public class StrifePlugin extends FacePlugin {
         debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
     }
 
+    private void buildEquipment() {
+        for (String itemStackKey : equipmentYAML.getKeys(false)) {
+            if (!equipmentYAML.isConfigurationSection(itemStackKey)) {
+                continue;
+            }
+            ConfigurationSection cs = equipmentYAML.getConfigurationSection(itemStackKey);
+
+            Material material;
+            String type = cs.getString("material");
+            try {
+                material = Material.getMaterial(type);
+            } catch (Exception e) {
+                getLogger().severe("Skipping item " + itemStackKey + " for invalid material");
+                continue;
+            }
+
+            ItemStack itemStack = new ItemStack(material);
+            ItemMeta meta = itemStack.getItemMeta();
+
+            String name = cs.getString("name", "");
+            if (StringUtils.isNotBlank(name)) {
+                meta.setDisplayName(TextUtils.color(name));
+            }
+
+            List<String> lore = new ArrayList<>();
+            for (String line : cs.getStringList("lore")) {
+                lore.add(TextUtils.color(line));
+            }
+            meta.setLore(lore);
+
+            itemStack.setItemMeta(meta);
+            equipmentManager.getItemMap().put(itemStackKey, itemStack);
+        }
+    }
+
+    private void buildLevelpointStats() {
+        List<StrifeStat> stats = new ArrayList<>();
+        List<String> loadedStats = new ArrayList<>();
+        for (String key : statsYAML.getKeys(false)) {
+            if (!statsYAML.isConfigurationSection(key)) {
+                continue;
+            }
+            ConfigurationSection cs = statsYAML.getConfigurationSection(key);
+            StrifeStat stat = new StrifeStat(key);
+            stat.setName(cs.getString("name"));
+            stat.setDescription(cs.getStringList("description"));
+            stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
+            stat.setSlot(cs.getInt("slot"));
+            stat.setStartCap(cs.getInt("starting-cap", 0));
+            stat.setMaxCap(cs.getInt("maximum-cap", 100));
+            stat.setLevelsToRaiseCap(cs.getInt("levels-to-raise-cap", -1));
+            Map<String, Integer> baseStatRequirements = new HashMap<>();
+            if (cs.isConfigurationSection("base-attribute-requirements")) {
+                ConfigurationSection reqs = cs.getConfigurationSection("base-attribute-requirements");
+                for (String k : reqs.getKeys(false)) {
+                    baseStatRequirements.put(k, reqs.getInt(k));
+                }
+            }
+            Map<String, Integer> raiseStatCapAttributes = new HashMap<>();
+            if (cs.isConfigurationSection("attributes-to-raise-cap")) {
+                ConfigurationSection raiseReqs = cs.getConfigurationSection("attributes-to-raise-cap");
+                for (String k : raiseReqs.getKeys(false)) {
+                    raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
+                }
+            }
+            Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
+            if (cs.isConfigurationSection("attributes")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    attributeMap.put(attr, attrCS.getDouble(k));
+                }
+            }
+            stat.setStatIncreaseIncrements(raiseStatCapAttributes);
+            stat.setBaseStatRequirements(baseStatRequirements);
+            stat.setAttributeMap(attributeMap);
+            stats.add(stat);
+            loadedStats.add(stat.getKey());
+        }
+        for (StrifeStat stat : stats) {
+            getStatManager().addStat(stat);
+        }
+        debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
+    }
+
+    private void buildBaseStats() {
+        for (String entityKey : baseStatsYAML.getKeys(false)) {
+            if (!baseStatsYAML.isConfigurationSection(entityKey)) {
+                continue;
+            }
+            EntityType entityType = EntityType.valueOf(entityKey);
+            ConfigurationSection cs = baseStatsYAML.getConfigurationSection(entityKey);
+            EntityStatData data = new EntityStatData();
+            if (cs.isConfigurationSection("base-values")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putBaseValue(attr, attrCS.getDouble(k));
+                }
+            }
+            if (cs.isConfigurationSection("per-level")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putPerLevel(attr, attrCS.getDouble(k));
+                }
+            }
+            if (cs.isConfigurationSection("per-bonus-level")) {
+                ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
+                for (String k : attrCS.getKeys(false)) {
+                    StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                    data.putPerBonusLevel(attr, attrCS.getDouble(k));
+                }
+            }
+            getMonsterManager().addEntityData(entityType, data);
+        }
+    }
+
+    private void buildUniqueEnemies() {
+        for (String entityNameKey : uniqueEnemiesYAML.getKeys(false)) {
+            getLogger().info("Attempting to load unique: " + entityNameKey);
+            if (!uniqueEnemiesYAML.isConfigurationSection(entityNameKey)) {
+                continue;
+            }
+            ConfigurationSection cs = uniqueEnemiesYAML.getConfigurationSection(entityNameKey);
+
+            UniqueEntity uniqueEntity = new UniqueEntity();
+
+            String type = cs.getString("type");
+            try {
+                uniqueEntity.setType(EntityType.valueOf(type));
+            } catch (Exception e) {
+                getLogger().severe("Failed to parse entity " + entityNameKey + ". Invalid type: " + type);
+                continue;
+            }
+
+            uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
+
+            ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
+            Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
+            for (String k : attrCS.getKeys(false)) {
+                getLogger().info("Setting attr " + k + " for unique " + entityNameKey);
+                StrifeAttribute attr = StrifeAttribute.valueOf(k);
+                attributeMap.put(attr, attrCS.getDouble(k));
+            }
+            uniqueEntity.setAttributeMap(attributeMap);
+
+            ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");
+            if (equipmentCS != null) {
+                uniqueEntity.setMainHandItem(equipmentManager.getItem(equipmentCS.getString("main-hand", "")));
+                uniqueEntity.setOffHandItem(equipmentManager.getItem(equipmentCS.getString("off-hand", "")));
+                uniqueEntity.setHelmetItem(equipmentManager.getItem(equipmentCS.getString("helmet", "")));
+                uniqueEntity.setChestItem(equipmentManager.getItem(equipmentCS.getString("chestplate", "")));
+                uniqueEntity.setLegsItem(equipmentManager.getItem(equipmentCS.getString("leggings", "")));
+                uniqueEntity.setBootsItem(equipmentManager.getItem(equipmentCS.getString("boots", "")));
+            }
+
+            ConfigurationSection particleCS = cs.getConfigurationSection("particle");
+            if (particleCS != null) {
+                try {
+                    uniqueEntity.setParticle(Particle.valueOf(particleCS.getString("effect")));
+                } catch (Exception e) {
+                    getLogger().severe("Particle for " + entityNameKey + " is invalid. Setting to FLAME");
+                    uniqueEntity.setParticle(Particle.FLAME);
+                }
+                uniqueEntity.setParticleCount(particleCS.getInt("count", 1));
+                uniqueEntity.setParticleRadius((float) particleCS.getDouble("radius", 0));
+            } else {
+                uniqueEntity.setParticle(null);
+            }
+
+            getLogger().info("Loaded unique: " + entityNameKey);
+            uniqueEntityManager.addUniqueEntity(entityNameKey, uniqueEntity);
+        }
+    }
+
+    public AttackSpeedTask getAttackSpeedTask() {
+        return attackSpeedTask;
+    }
+
+    public BlockTask getBlockTask() {
+        return blockTask;
+    }
+
     public StrifeStatManager getStatManager() {
         return statManager;
     }
@@ -413,6 +530,10 @@ public class StrifePlugin extends FacePlugin {
 
     public MonsterManager getMonsterManager() {
         return monsterManager;
+    }
+
+    public UniqueEntityManager getUniqueEntityManager() {
+        return uniqueEntityManager;
     }
 
     public MultiplierManager getMultiplierManager() {

@@ -40,9 +40,7 @@ public class BleedManager {
     }
 
     public void removeEntity(LivingEntity entity) {
-        if (bleedMap.containsKey(entity)) {
-            bleedMap.remove(entity);
-        }
+        bleedMap.remove(entity);
     }
 
     public void applyBleed(LivingEntity livingEntity, double amount, int ticks) {

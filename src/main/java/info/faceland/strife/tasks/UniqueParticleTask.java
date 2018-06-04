@@ -23,30 +23,35 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
-import java.util.ArrayList;
-import java.util.UUID;
+import info.faceland.strife.data.UniqueEntity;
+import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class TrackedPruneTask extends BukkitRunnable {
+import java.util.Map.Entry;
 
-    private final StrifePlugin plugin;
+public class UniqueParticleTask extends BukkitRunnable {
 
-    public TrackedPruneTask(StrifePlugin plugin) {
+    private StrifePlugin plugin;
+
+    public UniqueParticleTask(StrifePlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void run() {
-        ArrayList<UUID> invalidEntities = new ArrayList<>();
-        for (UUID uuid : plugin.getEntityStatCache().getTrackedEntities().keySet()) {
-            if (plugin.getEntityStatCache().isValid(uuid)) {
+        for (Entry<LivingEntity, UniqueEntity> entry : plugin.getUniqueEntityManager().getLiveUniquesMap().entrySet()) {
+            UniqueEntity ue = entry.getValue();
+            if (ue.getParticle() == null) {
                 continue;
             }
-            invalidEntities.add(uuid);
-        }
-        plugin.getLogger().info("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
-        for (UUID uuid : invalidEntities) {
-            plugin.getEntityStatCache().removeEntity(uuid);
+            Location location = entry.getKey().getLocation();
+            location.getWorld().spawnParticle(
+                    ue.getParticle(),
+                    location,
+                    ue.getParticleCount()
+            );
         }
     }
+
 }

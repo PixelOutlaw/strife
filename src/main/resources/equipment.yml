@@ -1,0 +1,13 @@
+version: "0.0.1"
+item-name:
+  material: GOLD_AXE
+  name: "&fDankAxe"
+  lore:
+  - "line one"
+  - "&7line two"
+item-name-two:
+  material: GOLD_AXE
+  name: "&fDankAxeII"
+  lore:
+  - "line one2121"
+  - "&7line two212121"
