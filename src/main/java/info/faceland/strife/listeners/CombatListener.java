@@ -30,10 +30,10 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
-import info.faceland.strife.data.Champion;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.Bukkit;
@@ -118,8 +118,8 @@ public class CombatListener implements Listener {
             attackEntity = (LivingEntity) event.getDamager();
         }
 
-        hashUpdates(attackEntity);
-        hashUpdates(defendEntity);
+        ItemUtil.updateHashes(attackEntity);
+        ItemUtil.updateHashes(defendEntity);
 
         double attackMultiplier = 1D;
         double healMultiplier = 1D;
@@ -522,18 +522,6 @@ public class CombatListener implements Listener {
 
     private void restoreHealth(LivingEntity livingEntity, double amount) {
         livingEntity.setHealth(Math.min(livingEntity.getHealth() + amount, livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
-    }
-
-    private void hashUpdates(LivingEntity entity) {
-        if (!(entity instanceof Player)) {
-            return;
-        }
-        Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
-        if (champion.isEquipmentHashMatching()) {
-            return;
-        }
-        champion.updateHashedEquipment();
-        plugin.getChampionManager().updateAll(champion);
     }
 
     private enum DamageType {

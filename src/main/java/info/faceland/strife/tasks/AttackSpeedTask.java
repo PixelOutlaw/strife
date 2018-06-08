@@ -72,7 +72,7 @@ public class AttackSpeedTask extends BukkitRunnable {
     }
 
     public void setSecondsLeft(UUID uuid, double seconds) {
-        attackTimeMap.put(uuid, (long) (seconds * (20L / tickRate)));
+        attackTimeMap.put(uuid, (long) (seconds * (20D / tickRate)));
     }
 
     public long getTicksLeft(UUID uuid) {
@@ -80,7 +80,7 @@ public class AttackSpeedTask extends BukkitRunnable {
     }
 
     public double getSecondsLeft(UUID uuid) {
-        return (getTicksLeft(uuid) * tickRate) / (double) 20L;
+        return (getTicksLeft(uuid) * tickRate) / 20D;
     }
 
     public double getAttackMultiplier(AttributedEntity attacker) {

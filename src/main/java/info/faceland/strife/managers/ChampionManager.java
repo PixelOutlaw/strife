@@ -33,7 +33,7 @@ import info.faceland.strife.data.Champion;
 
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.ItemTypeUtil;
+import info.faceland.strife.util.ItemUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -140,7 +140,7 @@ public class ChampionManager {
         Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
         ItemStack mainHandItemStack = champion.getPlayer().getEquipment().getItemInMainHand();
         ItemStack offHandItemStack = champion.getPlayer().getEquipment().getItemInOffHand();
-        if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !ItemTypeUtil.isArmor(mainHandItemStack.getType())) {
+        if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !ItemUtil.isArmor(mainHandItemStack.getType())) {
             removeAttributes(mainHandItemStack);
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(mainHandItemStack);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && champion.getPlayer().getLevel() < itemStatMap
@@ -150,9 +150,10 @@ public class ChampionManager {
                 attributeDoubleMap = AttributeHandler.combineMaps(attributeDoubleMap, itemStatMap);
             }
         }
-        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !ItemTypeUtil.isArmor(offHandItemStack.getType())) {
+        if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !ItemUtil.isArmor(offHandItemStack.getType())) {
             removeAttributes(offHandItemStack);
-            double dualWieldEfficiency = ItemTypeUtil.getDualWieldEfficiency(mainHandItemStack, offHandItemStack);
+            double dualWieldEfficiency = ItemUtil
+                .getDualWieldEfficiency(mainHandItemStack, offHandItemStack);
             Map<StrifeAttribute, Double> itemStatMap = AttributeHandler.getItemStats(offHandItemStack, dualWieldEfficiency);
             if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT) && champion.getPlayer().getLevel() < itemStatMap
                 .get(StrifeAttribute.LEVEL_REQUIREMENT) / dualWieldEfficiency) {
