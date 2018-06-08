@@ -58,7 +58,9 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.SkullType;
 import org.bukkit.World;
+import org.bukkit.block.Skull;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -393,6 +395,13 @@ public class StrifePlugin extends FacePlugin {
             }
 
             ItemStack itemStack = new ItemStack(material);
+            if (material == Material.SKULL) {
+                SkullType skullType = SkullType.valueOf(cs.getString("skull-type", "ZOMBIE"));
+                if (skullType == SkullType.PLAYER) {
+                    UUID uuid = UUID.fromString(cs.getString("uuid", "b4064ecc55084848ae4df12fbebd0a52"));
+                    ((Skull) itemStack).setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
+                }
+            }
             ItemMeta meta = itemStack.getItemMeta();
 
             String name = cs.getString("name", "");
@@ -561,7 +570,7 @@ public class StrifePlugin extends FacePlugin {
             String uniqueId = cs.getString("unique");
             UniqueEntity uniqueEntity = uniqueEntityManager.getLoadedUniquesMap().get(uniqueId);
 
-            int respawnSeconds = cs.getInt("respawn-delay", 30);
+            int respawnSeconds = cs.getInt("respawn-tickDelay", 30);
             double leashRange = cs.getDouble("leash-dist", 10);
 
             double xPos = cs.getDouble("location.x");
@@ -580,7 +589,7 @@ public class StrifePlugin extends FacePlugin {
         for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
             Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
             spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
-            spawnerYAML.set(spawnerId + ".respawn-delay", spawner.getRespawnSeconds());
+            spawnerYAML.set(spawnerId + ".respawn-tickDelay", spawner.getRespawnSeconds());
             spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
             spawnerYAML.set(spawnerId + ".location.world", spawner.getLocation().getWorld().getName());
             spawnerYAML.set(spawnerId + ".location.x", spawner.getLocation().getX());

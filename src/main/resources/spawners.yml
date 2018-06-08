@@ -1,6 +1,6 @@
 #spawner-name-one:
 #  unique: zombiechamp
-#  respawn-delay: 30
+#  respawn-tickDelay: 30
 #  leash-dist: 15
 #  location:
 #    world: world

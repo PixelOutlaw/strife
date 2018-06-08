@@ -11,3 +11,11 @@ item-name-two:
   lore:
   - "line one2121"
   - "&7line two212121"
+head-item-one:
+  material: SKULL
+  uuid: 6ffeff19c963438a9b8e6dc649a9d158
+  skull-type: PLAYER
+  name: "&fDankAxeII"
+  lore:
+  - "line one2121"
+  - "&7line two212121"
