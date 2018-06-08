@@ -124,7 +124,7 @@ public class StrifePlugin extends FacePlugin {
     return instance;
   }
 
-  final private static long attackTickRate = 2L;
+  final private static long attackTickRate = 1L;
 
   @Override
   public void enable() {
