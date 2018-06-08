@@ -56,13 +56,13 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.SkullType;
 import org.bukkit.World;
-import org.bukkit.block.Skull;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 import java.io.File;
@@ -394,13 +394,13 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
 
-      ItemStack itemStack = new ItemStack(material);
-      if (material == Material.SKULL) {
-        SkullType skullType = SkullType.valueOf(cs.getString("skull-type", "ZOMBIE"));
-        if (skullType == SkullType.PLAYER) {
-          UUID uuid = UUID.fromString(cs.getString("uuid", "b4064ecc55084848ae4df12fbebd0a52"));
-          ((Skull) itemStack).setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
-        }
+      ItemStack itemStack;
+      SkullType skullType = null;
+      if (material != Material.SKULL_ITEM) {
+        itemStack = new ItemStack(material);
+      } else {
+        skullType = SkullType.valueOf(cs.getString("skull-type", "ZOMBIE"));
+        itemStack = new ItemStack(Material.SKULL_ITEM, 1, (short) skullType.ordinal());
       }
       ItemMeta meta = itemStack.getItemMeta();
 
@@ -416,6 +416,14 @@ public class StrifePlugin extends FacePlugin {
       meta.setLore(lore);
 
       itemStack.setItemMeta(meta);
+
+      if (material == Material.SKULL_ITEM && skullType == SkullType.PLAYER) {
+        UUID uuid = UUID.fromString(cs.getString("uuid", "b4064ecc-5508-4848-ae4d-f12fbebd0a52"));
+        SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
+        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
+        itemStack.setItemMeta(skullMeta);
+      }
+
       equipmentManager.getItemMap().put(itemStackKey, itemStack);
     }
   }
