@@ -1,5 +1,7 @@
 package info.faceland.strife.data;
 
+import static org.bukkit.Bukkit.getLogger;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
@@ -40,12 +42,14 @@ public class Ability {
     this.readyTime = System.currentTimeMillis();
   }
 
-  public void execute(final LivingEntity caster) {
+  public void execute(final AttributedEntity caster) {
+    getLogger().info("executing ability");
     if (System.currentTimeMillis() < readyTime) {
+      getLogger().info("nvm on cd");
       if (caster instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN, (Player) caster);
-        return;
       }
+      return;
     }
     LivingEntity target = getTarget(caster);
     readyTime = System.currentTimeMillis() + cooldown * 1000;
@@ -66,16 +70,16 @@ public class Ability {
     }
   }
 
-  private LivingEntity getTarget(LivingEntity caster) {
+  private LivingEntity getTarget(AttributedEntity caster) {
     switch (targetType) {
       case SELF:
-        return caster;
+        return caster.getEntity();
       case OTHER:
-        return selectFirstEntityInSight(caster, (int) range);
+        return selectFirstEntityInSight(caster.getEntity(), (int) range);
       case RANGE:
-        LivingEntity target = selectFirstEntityInSight(caster, (int) range);
+        LivingEntity target = selectFirstEntityInSight(caster.getEntity(), (int) range);
         if (target == null) {
-          target = getBackupEntity(caster);
+          target = getBackupEntity(caster.getEntity());
         }
         return target;
     }

@@ -45,6 +45,14 @@ public class EffectManager {
       getLogger().severe("Null effect for " + key + "! Skipping...");
       return;
     }
+    if (effectType != EffectType.WAIT) {
+      effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
+      effect.setRange(cs.getInt("range", 5));
+      effect.setFriendly(cs.getBoolean("friendly", false));
+      effect.setSelfHarm(cs.getBoolean("self-harm", false));
+    } else {
+      effect.setName("wait");
+    }
     loadedEffects.put(key, effect);
     getLogger().info("Loaded effect " + key + " successfully.");
   }

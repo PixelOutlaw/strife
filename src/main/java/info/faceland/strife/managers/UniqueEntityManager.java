@@ -4,6 +4,7 @@ import static org.bukkit.Bukkit.getLogger;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
 import info.faceland.strife.data.UniqueEntity;
 import org.bukkit.Location;
@@ -71,16 +72,17 @@ public class UniqueEntityManager {
     return spawnUnique(uniqueEntity, location);
   }
 
-  public void checkPhaseChange(LivingEntity livingEntity) {
+  public void checkPhaseChange(AttributedEntity entity) {
+    LivingEntity livingEntity = entity.getEntity();
     if (!isUnique(livingEntity)) {
       plugin.getLogger().warning("Attempted to do a phase change on non-unique...");
       return;
     }
-    int currentPhase = liveUniquesMap.get(livingEntity).getPhase();
+    int currentPhase = liveUniquesMap.get(entity.getEntity()).getPhase();
     int newPhase = 6 - (int)Math.ceil((livingEntity.getHealth()/livingEntity.getMaxHealth()) / 0.2);
     if (newPhase > currentPhase) {
       liveUniquesMap.get(livingEntity).setPhase(newPhase);
-      liveUniquesMap.get(livingEntity).getAbilitySet().execute(livingEntity, AbilityType.PHASE_SHIFT, newPhase);
+      liveUniquesMap.get(livingEntity).getAbilitySet().execute(entity, AbilityType.PHASE_SHIFT, newPhase);
     }
   }
 

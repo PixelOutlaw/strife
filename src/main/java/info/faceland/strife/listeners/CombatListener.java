@@ -292,13 +292,13 @@ public class CombatListener implements Listener {
         if (plugin.getUniqueEntityManager().isUnique(attackEntity)) {
           int phase = plugin.getUniqueEntityManager().getLiveUniquesMap().get(defendEntity).getPhase();
             plugin.getUniqueEntityManager().getLiveUniquesMap().get(attackEntity)
-                .getAbilitySet().execute(attackEntity, AbilityType.ON_HIT, phase);
+                .getAbilitySet().execute(attacker, AbilityType.ON_HIT, phase);
         }
         if (plugin.getUniqueEntityManager().isUnique(defendEntity)) {
-            plugin.getUniqueEntityManager().checkPhaseChange(attackEntity);
+            plugin.getUniqueEntityManager().checkPhaseChange(defender);
             int phase = plugin.getUniqueEntityManager().getLiveUniquesMap().get(defendEntity).getPhase();
             plugin.getUniqueEntityManager().getLiveUniquesMap().get(defendEntity)
-                .getAbilitySet().execute(defendEntity, AbilityType.WHEN_HIT, phase);
+                .getAbilitySet().execute(defender, AbilityType.WHEN_HIT, phase);
         }
 
         sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,

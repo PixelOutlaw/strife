@@ -12,10 +12,9 @@ import org.bukkit.entity.LivingEntity;
 
 public class Effect {
 
-  private String name;
-  private boolean selfHarm;
-  private boolean friendly;
-
+  String name;
+  boolean selfHarm;
+  boolean friendly;
   double flatValue;
   double range;
   Map<StrifeAttribute, Double> statMults;
@@ -48,5 +47,53 @@ public class Effect {
       targets.remove(caster);
     }
     return targets;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public boolean isSelfHarm() {
+    return selfHarm;
+  }
+
+  public void setSelfHarm(boolean selfHarm) {
+    this.selfHarm = selfHarm;
+  }
+
+  public boolean isFriendly() {
+    return friendly;
+  }
+
+  public void setFriendly(boolean friendly) {
+    this.friendly = friendly;
+  }
+
+  public double getFlatValue() {
+    return flatValue;
+  }
+
+  public void setFlatValue(double flatValue) {
+    this.flatValue = flatValue;
+  }
+
+  public double getRange() {
+    return range;
+  }
+
+  public void setRange(double range) {
+    this.range = range;
+  }
+
+  public Map<StrifeAttribute, Double> getStatMults() {
+    return statMults;
+  }
+
+  public void setStatMults(Map<StrifeAttribute, Double> statMults) {
+    this.statMults = statMults;
   }
 }

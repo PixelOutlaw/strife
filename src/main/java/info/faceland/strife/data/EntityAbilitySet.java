@@ -42,7 +42,7 @@ public class EntityAbilitySet {
     }
   }
 
-  public void execute(LivingEntity caster, AbilityType type, int phase) {
+  public void execute(AttributedEntity caster, AbilityType type, int phase) {
     switch (type) {
       case ON_HIT:
         executeAbilities(caster, onHitAbilities, phase);
@@ -59,7 +59,7 @@ public class EntityAbilitySet {
     }
   }
 
-  private void executeAbilities(LivingEntity caster, Map<Integer, List<Ability>> abilitySection,
+  private void executeAbilities(AttributedEntity caster, Map<Integer, List<Ability>> abilitySection,
       int phase) {
     if (phase > 5) {
       plugin.getLogger().severe("Attempted to use ability phase higher than 5? Likely a code bug...");
@@ -74,7 +74,7 @@ public class EntityAbilitySet {
     }
   }
 
-  private void executeAbilityList(LivingEntity caster, List<Ability> abilities) {
+  private void executeAbilityList(AttributedEntity caster, List<Ability> abilities) {
     for (Ability a : abilities) {
       a.execute(caster);
     }
