@@ -1,0 +1,17 @@
+version: 0.0.1
+speaky-talk-move:
+  target-type: SELF
+  cooldown: 5
+  range: 30
+  effects:
+  - ignite-warning
+  - wait-one-second
+  - ignite-warning
+  - wait-one-second
+  - ignite-200-ticks
+instant-ignite:
+  target-type: SELF
+  cooldown: 5
+  range: 30
+  effects:
+  - ignite-200-ticks

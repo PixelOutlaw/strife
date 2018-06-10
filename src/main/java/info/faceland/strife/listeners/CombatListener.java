@@ -30,6 +30,8 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
+import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.DarknessManager;
@@ -53,6 +55,7 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.*;
 
 import static info.faceland.strife.attributes.StrifeAttribute.*;
+import static org.bukkit.Bukkit.getLogger;
 
 public class CombatListener implements Listener {
 
@@ -283,6 +286,19 @@ public class CombatListener implements Listener {
             } else {
                 attackEntity.damage(reflectDamage);
             }
+        }
+
+
+        if (plugin.getUniqueEntityManager().isUnique(attackEntity)) {
+          int phase = plugin.getUniqueEntityManager().getLiveUniquesMap().get(defendEntity).getPhase();
+            plugin.getUniqueEntityManager().getLiveUniquesMap().get(attackEntity)
+                .getAbilitySet().execute(attackEntity, AbilityType.ON_HIT, phase);
+        }
+        if (plugin.getUniqueEntityManager().isUnique(defendEntity)) {
+            plugin.getUniqueEntityManager().checkPhaseChange(attackEntity);
+            int phase = plugin.getUniqueEntityManager().getLiveUniquesMap().get(defendEntity).getPhase();
+            plugin.getUniqueEntityManager().getLiveUniquesMap().get(defendEntity)
+                .getAbilitySet().execute(defendEntity, AbilityType.WHEN_HIT, phase);
         }
 
         sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,

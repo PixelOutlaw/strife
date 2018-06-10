@@ -1,0 +1,10 @@
+version: 0.0.1
+ignite-200-ticks:
+  type: IGNITE
+  duration: 200
+ignite-warning:
+  type: SPEAK
+  message: "&cFOOL! I WILL IGNITE YOU NOW!"
+wait-one-second:
+  type: WAIT
+  duration: 20

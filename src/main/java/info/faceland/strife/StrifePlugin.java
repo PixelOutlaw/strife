@@ -35,6 +35,7 @@ import info.faceland.strife.commands.SpawnerCommand;
 import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.commands.UniqueEntityCommand;
 import info.faceland.strife.data.*;
+import info.faceland.strife.data.EntityAbilitySet.AbilityType;
 import info.faceland.strife.listeners.*;
 import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
@@ -74,26 +75,34 @@ public class StrifePlugin extends FacePlugin {
   private static StrifePlugin instance;
 
   private PluginLogger debugPrinter;
+  private CommandHandler commandHandler;
+  private MasterConfiguration settings;
   private VersionedSmartYamlConfiguration configYAML;
   private VersionedSmartYamlConfiguration statsYAML;
   private VersionedSmartYamlConfiguration baseStatsYAML;
   private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
   private VersionedSmartYamlConfiguration equipmentYAML;
+  private VersionedSmartYamlConfiguration effectYAML;
+  private VersionedSmartYamlConfiguration abilityYAML;
   private SmartYamlConfiguration spawnerYAML;
+
   private StrifeStatManager statManager;
-  private BarrierManager barrierManager;
-  private BleedManager bleedManager;
-  private MonsterManager monsterManager;
-  private UniqueEntityManager uniqueEntityManager;
-  private EntityEquipmentManager equipmentManager;
-  private SpawnerManager spawnerManager;
-  private MultiplierManager multiplierManager;
-  private DataStorage storage;
   private ChampionManager championManager;
   private StrifeExperienceManager experienceManager;
   private StrifeCraftExperienceManager craftExperienceManager;
   private StrifeEnchantExperienceManager enchantExperienceManager;
   private StrifeFishExperienceManager fishExperienceManager;
+  private BarrierManager barrierManager;
+  private BleedManager bleedManager;
+  private MonsterManager monsterManager;
+  private UniqueEntityManager uniqueEntityManager;
+  private EntityEquipmentManager equipmentManager;
+  private EffectManager effectManager;
+  private AbilityManager abilityManager;
+  private SpawnerManager spawnerManager;
+  private MultiplierManager multiplierManager;
+
+  private DataStorage storage;
   private EntityStatCache entityStatCache;
   private SaveTask saveTask;
   private TrackedPruneTask trackedPruneTask;
@@ -107,8 +116,7 @@ public class StrifePlugin extends FacePlugin {
   private UniqueParticleTask uniqueParticleTask;
   private SpawnerSpawnTask spawnerSpawnTask;
   private SpawnerLeashTask spawnerLeashTask;
-  private CommandHandler commandHandler;
-  private MasterConfiguration settings;
+
   private LevelingRate levelingRate;
   private LevelingRate craftingRate;
   private LevelingRate enchantRate;
@@ -144,6 +152,10 @@ public class StrifePlugin extends FacePlugin {
         VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     equipmentYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "equipment.yml"),
         getResource("equipment.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+    effectYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "effects.yml"),
+        getResource("effects.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+    abilityYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "abilities.yml"),
+        getResource("abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
     statManager = new StrifeStatManager();
@@ -152,6 +164,8 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = new MonsterManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     equipmentManager = new EntityEquipmentManager();
+    effectManager = new EffectManager();
+    abilityManager = new AbilityManager(effectManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     multiplierManager = new MultiplierManager();
     storage = new JsonDataStorage(this);
@@ -180,21 +194,24 @@ public class StrifePlugin extends FacePlugin {
     if (equipmentYAML.update()) {
       getLogger().info("Updating equipment.yml");
     }
+    if (effectYAML.update()) {
+      getLogger().info("Updating effects.yml");
+    }
+    if (abilityYAML.update()) {
+      getLogger().info("Updating abilities.yml");
+    }
 
     settings = MasterConfiguration.loadFromFiles(configYAML);
 
     buildEquipment();
     buildLevelpointStats();
     buildBaseStats();
+
+    buildEffects();
+    buildAbilities();
+
     buildUniqueEnemies();
     loadSpawners();
-
-    //Backup old loading from data.json
-    //for (ChampionSaveData saveData : storage.oldLoad()) {
-    //    championManager.addChampion(new Champion(saveData));
-    //}
-    //storage.saveAll();
-    //championManager.clear();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       ChampionSaveData saveData = storage.load(player.getUniqueId());
@@ -347,6 +364,8 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = null;
     uniqueEntityManager = null;
     equipmentManager = null;
+    effectManager = null;
+    abilityManager = null;
     bleedManager = null;
     barrierManager = null;
     multiplierManager = null;
@@ -376,6 +395,26 @@ public class StrifePlugin extends FacePlugin {
     settings = null;
 
     debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
+  }
+
+  private void buildAbilities() {
+    for (String key : abilityYAML.getKeys(false)) {
+      if (!abilityYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
+      abilityManager.loadAbility(key, cs);
+    }
+  }
+
+  private void buildEffects() {
+    for (String key : effectYAML.getKeys(false)) {
+      if (!effectYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = effectYAML.getConfigurationSection(key);
+      effectManager.loadEffect(key, cs);
+    }
   }
 
   private void buildEquipment() {
@@ -566,8 +605,49 @@ public class StrifePlugin extends FacePlugin {
         uniqueEntity.setParticle(null);
       }
 
+      ConfigurationSection abilityCS = cs.getConfigurationSection("abilities");
+      if (abilityCS != null) {
+        EntityAbilitySet abilitySet = new EntityAbilitySet(this);
+        for (int i = 1; i <= 5; i++) {
+          List<String> phaseBegin = abilityCS.getStringList("phase" + i + ".phase-begin");
+          List<String> phaseOnHit = abilityCS.getStringList("phase" + i + ".on-hit");
+          List<String> phaseWhenHit = abilityCS.getStringList("phase" + i + ".when-hit");
+          if (!phaseBegin.isEmpty()) {
+            List<Ability> abilities = setupPhase(phaseBegin, i);
+            if (!abilities.isEmpty()) {
+              abilitySet.addAbilityPhase(i, AbilityType.PHASE_SHIFT, abilities);
+            }
+          }
+          if (!phaseOnHit.isEmpty()) {
+            List<Ability> abilities = setupPhase(phaseOnHit, i);
+            if (!abilities.isEmpty()) {
+              abilitySet.addAbilityPhase(i, AbilityType.ON_HIT, abilities);
+            }
+          }
+          if (!phaseWhenHit.isEmpty()) {
+            List<Ability> abilities = setupPhase(phaseWhenHit, i);
+            if (!abilities.isEmpty()) {
+              abilitySet.addAbilityPhase(i, AbilityType.WHEN_HIT, abilities);
+            }
+          }
+        }
+        uniqueEntity.setAbilitySet(abilitySet);
+      }
       uniqueEntityManager.addUniqueEntity(entityNameKey, uniqueEntity);
     }
+  }
+
+  private List<Ability> setupPhase(List<String> strings, int phase) {
+    List<Ability> abilities = new ArrayList<>();
+    for (String s : strings) {
+      Ability ability = abilityManager.getAbility(s);
+      if (ability == null) {
+        getLogger().warning("Failed to add phase" + phase + " ability " + s + " - Not found");
+        continue;
+      }
+      abilities.add(ability);
+    }
+    return abilities;
   }
 
   private void loadSpawners() {
@@ -636,6 +716,10 @@ public class StrifePlugin extends FacePlugin {
 
   public UniqueEntityManager getUniqueEntityManager() {
     return uniqueEntityManager;
+  }
+
+  public EffectManager getEffectManager() {
+    return effectManager;
   }
 
   public SpawnerManager getSpawnerManager() {
