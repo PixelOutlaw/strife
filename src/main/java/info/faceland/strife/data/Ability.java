@@ -8,6 +8,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.tasks.EffectTask;
+import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +46,9 @@ public class Ability {
   }
 
   public void execute(final AttributedEntity caster) {
-    getLogger().info("executing ability");
+    LogUtil.printDebug(caster.getEntity().getCustomName() + " is casting ability: " + name);
     if (System.currentTimeMillis() < readyTime) {
-      getLogger().info("nvm on cd");
+      LogUtil.printDebug("Failed. Ability " + name + " is on cooldown");
       if (caster instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN, (Player) caster);
       }
@@ -55,25 +56,28 @@ public class Ability {
     }
     LivingEntity target = getTarget(caster);
     if (target == null) {
-      getLogger().info("No target, ignoring");
+      LogUtil.printDebug("Failed. No target found for ability " + name);
       if (caster instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET, (Player) caster);
       }
       return;
     }
     readyTime = System.currentTimeMillis() + cooldown * 1000;
-    List<Effect> taskActions = new ArrayList<>();
+    List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
-    for (Effect action : effects) {
-      if (!(action instanceof Wait)) {
-        taskActions.add(action);
+    for (Effect effect : effects) {
+      if (!(effect instanceof Wait)) {
+        taskEffects.add(effect);
+        LogUtil.printDebug("Added effect " + effect.getName() + " to task list");
       } else {
-        waitTicks += ((Wait) action).getTickDelay();
-        new EffectTask(caster, target, taskActions).runTaskLater(StrifePlugin.getInstance(), waitTicks);
-        taskActions.clear();
+        waitTicks += ((Wait) effect).getTickDelay();
+        new EffectTask(caster, target, taskEffects).runTaskLater(StrifePlugin.getInstance(), waitTicks);
+        LogUtil.printDebug("Starting effect task with " + taskEffects.size() + " effects in " + waitTicks + " ticks");
+        taskEffects.clear();
       }
     }
-    new EffectTask(caster, target, taskActions).run();
+    new EffectTask(caster, target, taskEffects).run();
+    LogUtil.printDebug("Starting effect task with " + taskEffects.size() + " effects");
     if (TEST_CHICKEN.equals(target.getCustomName())) {
       target.remove();
     }

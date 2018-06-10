@@ -1,8 +1,8 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class Effect {
 
   public List<LivingEntity> getTargets(LivingEntity caster, LivingEntity target, double range) {
     if (target == null) {
-      StrifePlugin.getInstance().getLogger().severe("Effect " + name + " cast without a target!");
+      LogUtil.printError("Effect " + name + " cast without a target!");
       return null;
     }
     if (range < 1) {

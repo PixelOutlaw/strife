@@ -1,12 +1,11 @@
 package info.faceland.strife.managers;
 
-import static org.bukkit.Bukkit.getLogger;
-
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Wait;
+import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,7 +24,7 @@ public class EffectManager {
     try {
       effectType = EffectType.valueOf(type);
     } catch (Exception e) {
-      getLogger().severe("Skipping effect " + key + " for invalid effect type");
+      LogUtil.printError("Skipping effect " + key + " for invalid effect type");
       return;
     }
     Effect effect = null;
@@ -45,7 +44,7 @@ public class EffectManager {
         break;
     }
     if (effect == null) {
-      getLogger().severe("Null effect for " + key + "! Skipping...");
+      LogUtil.printError("Null effect for " + key + "! Skipping...");
       return;
     }
     if (effectType != EffectType.WAIT) {
@@ -57,14 +56,14 @@ public class EffectManager {
       effect.setName("wait");
     }
     loadedEffects.put(key, effect);
-    getLogger().info("Loaded effect " + key + " successfully.");
+    LogUtil.printInfo("Loaded effect " + key + " successfully.");
   }
 
   public Effect getEffect(String key) {
     if (loadedEffects.containsKey(key)) {
       return loadedEffects.get(key);
     }
-    getLogger().warning("Attempted to get unknown effect '" + key + "'.");
+    LogUtil.printWarning("Attempted to get unknown effect '" + key + "'.");
     return null;
   }
 

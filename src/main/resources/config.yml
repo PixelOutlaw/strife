@@ -1,5 +1,7 @@
 version: "0.0.3"
 verbose: false
+# Options for log level are INFO, DEBUG, WARNING, ERROR
+log-level: ERROR
 
 menu:
   num-of-rows: 6

@@ -6,6 +6,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.data.Ability;
 import info.faceland.strife.data.Ability.TargetType;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ public class AbilityManager {
     if (loadedAbilities.containsKey(name)) {
       return loadedAbilities.get(name);
     }
-    getLogger().warning("Attempted to get unknown ability '" + name + "'.");
+    LogUtil.printWarning("Attempted to get unknown ability '" + name + "'.");
     return null;
   }
 
@@ -36,26 +37,26 @@ public class AbilityManager {
     try {
       targetType = TargetType.valueOf(cs.getString("target-type"));
     } catch (Exception e) {
-      getLogger().warning("Skipping load of ability " + key + " - Invalid target type.");
+      LogUtil.printWarning("Skipping load of ability " + key + " - Invalid target type.");
       return;
     }
     int cooldown = cs.getInt("cooldown", 10);
     int range = cs.getInt("range", 4);
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
-      getLogger().warning("Skipping ability " + key + " - No effects.");
+      LogUtil.printWarning("Skipping ability " + key + " - No effects.");
       return;
     }
     List<Effect> effects = new ArrayList<>();
     for (String s : effectStrings) {
       Effect effect = effectManager.getEffect(s);
       if (effect == null) {
-        getLogger().warning("Ability " + key + " tried to add unknown effect" + s + ".");
+        LogUtil.printWarning("Ability " + key + " tried to add unknown effect" + s);
         continue;
       }
       effects.add(effect);
     }
     loadedAbilities.put(key, new Ability(name, effects, targetType, range, cooldown));
-    getLogger().info("Loaded ability " + key + " successfully.");
+    LogUtil.printInfo("Loaded ability " + key + " with " + effects.size() + " effects successfully.");
   }
 }

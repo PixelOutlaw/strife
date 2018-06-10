@@ -44,6 +44,8 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.*;
+import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.LogUtil.LogLevel;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
@@ -75,6 +77,7 @@ public class StrifePlugin extends FacePlugin {
   private static StrifePlugin instance;
 
   private PluginLogger debugPrinter;
+  private LogLevel logLevel;
   private CommandHandler commandHandler;
   private MasterConfiguration settings;
   private VersionedSmartYamlConfiguration configYAML;
@@ -202,6 +205,13 @@ public class StrifePlugin extends FacePlugin {
     }
 
     settings = MasterConfiguration.loadFromFiles(configYAML);
+
+    try {
+      logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
+    } catch (Exception e) {
+      logLevel = LogLevel.ERROR;
+      LogUtil.printError("You don't have an acceptable log level you dangus");
+    }
 
     buildEquipment();
     buildLevelpointStats();
@@ -790,5 +800,9 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelingRate getFishRate() {
     return fishRate;
+  }
+
+  public LogLevel getLogLevel() {
+    return logLevel;
   }
 }

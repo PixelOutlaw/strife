@@ -1,9 +1,8 @@
 package info.faceland.strife.tasks;
 
-import static org.bukkit.Bukkit.getLogger;
-
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.util.LogUtil;
 import java.util.List;
 
 import org.bukkit.entity.LivingEntity;
@@ -23,16 +22,16 @@ public class EffectTask extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		getLogger().info("Effect Task Started");
+    LogUtil.printDebug("Effect task started...");
 		if (!caster.getEntity().isValid()) {
-			getLogger().info("nvm caster ded");
+      LogUtil.printDebug("Task cancelled, caster is dead");
 			this.cancel();
 			return;
 		}
 		for (Effect effect : effects) {
-			getLogger().info("executing effect " + effect);
+      LogUtil.printDebug("Executing effect " + effect.getName());
 			effect.execute(caster, target);
 		}
-		getLogger().info("done");
+    LogUtil.printDebug("Completed effect task.");
 	}
 }
