@@ -15,6 +15,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Chicken;
+import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -31,6 +32,7 @@ public class Ability {
   private int cooldown;
 
   private static final String ON_COOLDOWN = TextUtils.color("&f&lAbility On Cooldown!");
+  private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
   private static final String TEST_CHICKEN = ChatColor.RED + "TEST CHICKEN PLS IGNORE";
 
   public Ability(String name, List<Effect> effects, TargetType targetType, double range, int cooldown) {
@@ -52,20 +54,27 @@ public class Ability {
       return;
     }
     LivingEntity target = getTarget(caster);
+    if (target == null) {
+      getLogger().info("No target, ignoring");
+      if (caster instanceof Player) {
+        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET, (Player) caster);
+      }
+      return;
+    }
     readyTime = System.currentTimeMillis() + cooldown * 1000;
     List<Effect> taskActions = new ArrayList<>();
-    int totalTicks = 0;
+    int waitTicks = 0;
     for (Effect action : effects) {
       if (!(action instanceof Wait)) {
         taskActions.add(action);
       } else {
-        totalTicks += ((Wait) action).getTickDelay();
-        new EffectTask(caster, target, taskActions).runTaskLater(StrifePlugin.getInstance(), totalTicks);
+        waitTicks += ((Wait) action).getTickDelay();
+        new EffectTask(caster, target, taskActions).runTaskLater(StrifePlugin.getInstance(), waitTicks);
         taskActions.clear();
       }
     }
     new EffectTask(caster, target, taskActions).run();
-    if (target != null && TEST_CHICKEN.equals(target.getCustomName())) {
+    if (TEST_CHICKEN.equals(target.getCustomName())) {
       target.remove();
     }
   }
@@ -87,6 +96,9 @@ public class Ability {
   }
 
   private LivingEntity selectFirstEntityInSight(LivingEntity caster, int range) {
+    if (caster instanceof Creature && ((Creature) caster).getTarget() != null) {
+      return ((Creature) caster).getTarget();
+    }
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
     ArrayList<Block> sightBlock = (ArrayList<Block>) caster.getLineOfSight(null, range);
     ArrayList<Location> sight = new ArrayList<>();

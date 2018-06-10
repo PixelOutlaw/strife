@@ -33,13 +33,16 @@ public class EffectManager {
       case IGNITE:
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
+        break;
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));
+        break;
       case SPEAK:
         effect = new Speak();
         ((Speak) effect).setMessage(
             TextUtils.color(cs.getString("message", "set a message for this speech")));
+        break;
     }
     if (effect == null) {
       getLogger().severe("Null effect for " + key + "! Skipping...");
@@ -57,11 +60,11 @@ public class EffectManager {
     getLogger().info("Loaded effect " + key + " successfully.");
   }
 
-  public Effect getEffect(String name) {
-    if (loadedEffects.containsKey(name)) {
-      return loadedEffects.get(name);
+  public Effect getEffect(String key) {
+    if (loadedEffects.containsKey(key)) {
+      return loadedEffects.get(key);
     }
-    getLogger().warning("Attempted to get unknown effect '" + name + "'.");
+    getLogger().warning("Attempted to get unknown effect '" + key + "'.");
     return null;
   }
 

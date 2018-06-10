@@ -28,7 +28,7 @@ public class Effect {
       StrifePlugin.getInstance().getLogger().severe("Effect " + name + " cast without a target!");
       return null;
     }
-    if (range == 0) {
+    if (range < 1) {
       List<LivingEntity> targets = new ArrayList<>();
       targets.add(target);
       return targets;

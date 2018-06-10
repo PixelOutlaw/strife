@@ -2,7 +2,6 @@ package info.faceland.strife.tasks;
 
 import static org.bukkit.Bukkit.getLogger;
 
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.effects.Effect;
 import java.util.List;
@@ -24,10 +23,11 @@ public class EffectTask extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		getLogger().info("effect task running");
+		getLogger().info("Effect Task Started");
 		if (!caster.getEntity().isValid()) {
 			getLogger().info("nvm caster ded");
 			this.cancel();
+			return;
 		}
 		for (Effect effect : effects) {
 			getLogger().info("executing effect " + effect);
