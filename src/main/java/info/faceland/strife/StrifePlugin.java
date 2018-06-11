@@ -237,7 +237,7 @@ public class StrifePlugin extends FacePlugin {
     attackSpeedTask = new AttackSpeedTask(attackTickRate);
     blockTask = new BlockTask();
     uniquePruneTask = new UniquePruneTask(this);
-    uniqueParticleTask = new UniqueParticleTask(this);
+    uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
     spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
 

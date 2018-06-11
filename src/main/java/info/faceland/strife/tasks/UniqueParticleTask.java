@@ -22,36 +22,34 @@
  */
 package info.faceland.strife.tasks;
 
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.UniqueEntity;
+import info.faceland.strife.managers.UniqueEntityManager;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Map.Entry;
-
 public class UniqueParticleTask extends BukkitRunnable {
 
-    private StrifePlugin plugin;
+    private UniqueEntityManager uniqueEntityManager;
 
-    public UniqueParticleTask(StrifePlugin plugin) {
-        this.plugin = plugin;
+    public UniqueParticleTask(UniqueEntityManager uniqueEntityManager) {
+        this.uniqueEntityManager = uniqueEntityManager;
     }
 
     @Override
     public void run() {
-        for (Entry<LivingEntity, UniqueEntity> entry : plugin.getUniqueEntityManager().getLiveUniquesMap().entrySet()) {
-            UniqueEntity ue = entry.getValue();
-            if (ue.getParticle() == null) {
+        for (LivingEntity livingEntity : uniqueEntityManager.getLiveUniquesMap().keySet()) {
+            UniqueEntity unique = uniqueEntityManager.getLiveUniquesMap().get(livingEntity);
+            if (unique.getParticle() == null) {
                 continue;
             }
-            Location location = entry.getKey().getLocation();
+            Location location = livingEntity.getLocation();
             location.getWorld().spawnParticle(
-                    ue.getParticle(),
+                    unique.getParticle(),
                     location,
-                    ue.getParticleCount(),
-                    ue.getParticleRadius(), ue.getParticleRadius(), ue.getParticleRadius(),
-                    0.05f
+                    unique.getParticleCount(),
+                    unique.getParticleRadius(), unique.getParticleRadius(), unique.getParticleRadius(),
+                    0.02f
             );
         }
     }
