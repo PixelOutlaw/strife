@@ -168,7 +168,7 @@ public class StrifePlugin extends FacePlugin {
     uniqueEntityManager = new UniqueEntityManager(this);
     equipmentManager = new EntityEquipmentManager();
     effectManager = new EffectManager();
-    abilityManager = new AbilityManager(effectManager);
+    abilityManager = new AbilityManager(effectManager, uniqueEntityManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     multiplierManager = new MultiplierManager();
     storage = new JsonDataStorage(this);
@@ -415,6 +415,7 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
       abilityManager.loadAbility(key, cs);
     }
+    LogUtil.printDebug("Loaded abilities: " + abilityManager.getLoadedAbilities().entrySet().toString());
   }
 
   private void buildEffects() {
@@ -425,6 +426,7 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = effectYAML.getConfigurationSection(key);
       effectManager.loadEffect(key, cs);
     }
+    LogUtil.printDebug("Loaded effects: " + effectManager.getLoadedEffects().entrySet().toString());
   }
 
   private void buildEquipment() {
@@ -617,7 +619,7 @@ public class StrifePlugin extends FacePlugin {
 
       ConfigurationSection abilityCS = cs.getConfigurationSection("abilities");
       if (abilityCS != null) {
-        EntityAbilitySet abilitySet = new EntityAbilitySet(this);
+        EntityAbilitySet abilitySet = new EntityAbilitySet();
         for (int i = 1; i <= 5; i++) {
           List<String> phaseBegin = abilityCS.getStringList("phase" + i + ".phase-begin");
           List<String> phaseOnHit = abilityCS.getStringList("phase" + i + ".on-hit");
@@ -730,6 +732,10 @@ public class StrifePlugin extends FacePlugin {
 
   public EffectManager getEffectManager() {
     return effectManager;
+  }
+
+  public AbilityManager getAbilityManager() {
+    return abilityManager;
   }
 
   public SpawnerManager getSpawnerManager() {

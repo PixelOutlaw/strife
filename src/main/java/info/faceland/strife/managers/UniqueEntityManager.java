@@ -1,12 +1,10 @@
 package info.faceland.strife.managers;
 
-import static org.bukkit.Bukkit.getLogger;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.UniqueEntity;
+import info.faceland.strife.util.LogUtil;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
@@ -52,6 +50,30 @@ public class UniqueEntityManager {
     }
   }
 
+  public int getPhase(LivingEntity livingEntity) {
+    if (!liveUniquesMap.containsKey(livingEntity)) {
+      LogUtil.printWarning("Attempting to get phase of non-unique entity...");
+      return 0;
+    }
+    return liveUniquesMap.get(livingEntity).getAbilitySet().getPhase();
+  }
+
+  public int getPhase(UniqueEntity uniqueEntity) {
+    return uniqueEntity.getAbilitySet().getPhase();
+  }
+
+  public EntityAbilitySet getAbilitySet(LivingEntity livingEntity) {
+    if (!liveUniquesMap.containsKey(livingEntity)) {
+      LogUtil.printWarning("Attempting to get ability set of non-unique entity...");
+      return null;
+    }
+    return liveUniquesMap.get(livingEntity).getAbilitySet();
+  }
+
+  public EntityAbilitySet getAbilitySet(UniqueEntity uniqueEntity) {
+    return uniqueEntity.getAbilitySet();
+  }
+
   public void killAllSpawnedUniques() {
     for (LivingEntity le : liveUniquesMap.keySet()) {
       le.remove();
@@ -70,20 +92,6 @@ public class UniqueEntityManager {
       return null;
     }
     return spawnUnique(uniqueEntity, location);
-  }
-
-  public void checkPhaseChange(AttributedEntity entity) {
-    LivingEntity livingEntity = entity.getEntity();
-    if (!isUnique(livingEntity)) {
-      plugin.getLogger().warning("Attempted to do a phase change on non-unique...");
-      return;
-    }
-    int currentPhase = liveUniquesMap.get(entity.getEntity()).getPhase();
-    int newPhase = 6 - (int)Math.ceil((livingEntity.getHealth()/livingEntity.getMaxHealth()) / 0.2);
-    if (newPhase > currentPhase) {
-      liveUniquesMap.get(livingEntity).setPhase(newPhase);
-      liveUniquesMap.get(livingEntity).getAbilitySet().execute(entity, AbilityType.PHASE_SHIFT, newPhase);
-    }
   }
 
   public LivingEntity spawnUnique(UniqueEntity uniqueEntity, Location location) {

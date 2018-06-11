@@ -1,24 +1,18 @@
 package info.faceland.strife.data;
 
-import static org.bukkit.Bukkit.getLogger;
-
-import info.faceland.strife.StrifePlugin;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.entity.LivingEntity;
 
 public class EntityAbilitySet {
 
-  private final StrifePlugin plugin;
   private final Map<Integer, List<Ability>> onHitAbilities;
   private final Map<Integer, List<Ability>> whenHitAbilities;
   private final Map<Integer, List<Ability>> phaseShiftAbilities;
   private final Map<Integer, List<Ability>> timerAbilities;
+  private int phase = 0;
 
-  public EntityAbilitySet(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public EntityAbilitySet() {
     this.onHitAbilities = new HashMap<>();
     this.whenHitAbilities = new HashMap<>();
     this.phaseShiftAbilities = new HashMap<>();
@@ -42,42 +36,28 @@ public class EntityAbilitySet {
     }
   }
 
-  public void execute(AttributedEntity caster, AbilityType type, int phase) {
-    switch (type) {
-      case ON_HIT:
-        executeAbilities(caster, onHitAbilities, phase);
-        break;
-      case WHEN_HIT:
-        executeAbilities(caster, whenHitAbilities, phase);
-        break;
-      case TIMER:
-        executeAbilities(caster, phaseShiftAbilities, phase);
-        break;
-      case PHASE_SHIFT:
-        executeAbilities(caster, timerAbilities, phase);
-        break;
-    }
+  public int getPhase() {
+    return phase;
   }
 
-  private void executeAbilities(AttributedEntity caster, Map<Integer, List<Ability>> abilitySection,
-      int phase) {
-    if (phase > 5) {
-      plugin.getLogger().severe("Attempted to use ability phase higher than 5? Likely a code bug...");
-      return;
-    }
-    if (abilitySection.containsKey(phase)) {
-      executeAbilityList(caster, abilitySection.get(phase));
-      return;
-    }
-    if (phase > 1) {
-      executeAbilities(caster, abilitySection, phase - 1);
-    }
+  public void setPhase(int phase) {
+    this.phase = phase;
   }
 
-  private void executeAbilityList(AttributedEntity caster, List<Ability> abilities) {
-    for (Ability a : abilities) {
-      a.execute(caster);
-    }
+  public Map<Integer, List<Ability>> getOnHitAbilities() {
+    return onHitAbilities;
+  }
+
+  public Map<Integer, List<Ability>> getWhenHitAbilities() {
+    return whenHitAbilities;
+  }
+
+  public Map<Integer, List<Ability>> getPhaseShiftAbilities() {
+    return phaseShiftAbilities;
+  }
+
+  public Map<Integer, List<Ability>> getTimerAbilities() {
+    return timerAbilities;
   }
 
   public enum AbilityType {

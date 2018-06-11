@@ -15,3 +15,11 @@ instant-ignite:
   range: 30
   effects:
   - ignite-200-ticks
+poison-bash:
+  target-type: SELF
+  cooldown: 5
+  range: 30
+  effects:
+  - begone-fool
+  - mass-poison
+  - knockback-p20

@@ -15,8 +15,6 @@ public class UniqueEntity {
   private Map<StrifeAttribute, Double> attributeMap;
   private EntityAbilitySet abilitySet;
 
-  private int phase;
-
   private ItemStack mainHandItem = null;
   private ItemStack offHandItem = null;
   private ItemStack helmetItem = null;
@@ -66,14 +64,6 @@ public class UniqueEntity {
 
   public void setAbilitySet(EntityAbilitySet abilitySet) {
     this.abilitySet = abilitySet;
-  }
-
-  public int getPhase() {
-    return phase;
-  }
-
-  public void setPhase(int phase) {
-    this.phase = phase;
   }
 
   public ItemStack getMainHandItem() {
