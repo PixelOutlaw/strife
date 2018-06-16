@@ -280,27 +280,13 @@ public class CombatListener implements Listener {
       return;
     }
     StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
-    if (overBonus > 0) {
-      damageString.append("&e✦");
-    }
-    if (critBonus > 0) {
-      damageString.append("&c✶");
-    }
-    if (fireBonus > 0) {
-      damageString.append("&6☀");
-    }
-    if (iceBonus > 0) {
-      damageString.append("&b❊");
-    }
-    if (lightningBonus > 0) {
-      damageString.append("&7⚡");
-    }
-    if (corrupt) {
-      damageString.append("&8❂");
-    }
-    if (bleedBonus > 0) {
-      damageString.append("&4♦");
-    }
+    if (overBonus > 0) damageString.append("&e✦");
+    if (critBonus > 0) damageString.append("&c✶");
+    if (fireBonus > 0) damageString.append("&6☀");
+    if (iceBonus > 0) damageString.append("&b❊");
+    if (lightningBonus > 0) damageString.append("&7⚡");
+    if (corrupt) damageString.append("&8❂");
+    if (bleedBonus > 0) damageString.append("&4♦");
     ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(damageString.toString()), (Player) entity);
   }
 
