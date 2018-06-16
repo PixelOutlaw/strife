@@ -122,12 +122,12 @@ public class BarrierManager {
     }
 
     public double damageBarrier(AttributedEntity attributedEntity, double amount) {
+        interruptBarrier(attributedEntity.getEntity());
         if (!hasBarrierUp(attributedEntity)) {
             return amount;
         }
         LivingEntity entity = attributedEntity.getEntity();
         double remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
-        interruptBarrier(entity);
         if (remainingBarrier > 0) {
             setEntityBarrier(entity.getUniqueId(), remainingBarrier);
             return 0;
