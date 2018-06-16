@@ -20,6 +20,16 @@ public class Effect {
   Map<StrifeAttribute, Double> statMults;
 
   public void execute(AttributedEntity caster, LivingEntity target) {
+    if (range < 1) {
+      apply(caster, target);
+      return;
+    }
+    for (LivingEntity le : getTargets(caster.getEntity(), target, range)) {
+      apply(caster, le);
+    }
+  }
+
+  public void apply(AttributedEntity caster, LivingEntity target) {
 
   }
 

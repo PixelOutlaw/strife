@@ -11,10 +11,8 @@ private int duration;
   private int intensity;
 
   @Override
-  public void execute(AttributedEntity caster, LivingEntity target) {
-    for (LivingEntity le : getTargets(caster.getEntity(), target, range)) {
-      le.addPotionEffect(potionEffectType.createEffect(duration, intensity));
-    }
+  public void apply(AttributedEntity caster, LivingEntity target) {
+    target.addPotionEffect(potionEffectType.createEffect(duration, intensity));
   }
 
   public PotionEffectType getPotionEffectType() {
