@@ -6,6 +6,7 @@ import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.Speak;
+import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
@@ -42,12 +43,17 @@ public class EffectManager {
         break;
       case SPEAK:
         effect = new Speak();
-        ((Speak) effect).setMessage(
-            TextUtils.color(cs.getString("message", "set a message for this speech")));
+        ((Speak) effect).setMessages(
+            TextUtils.color(cs.getStringList("messages")));
         break;
       case KNOCKBACK:
         effect = new Knockback();
         ((Knockback) effect).setPower(cs.getDouble("power", 1));
+        break;
+      case SUMMON:
+        effect = new Summon();
+        ((Summon) effect).setAmount(cs.getInt("amount", 1));
+        ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
         break;
       case POTION:
         effect = new PotionEffectAction();
@@ -69,9 +75,9 @@ public class EffectManager {
     }
     if (effectType != EffectType.WAIT) {
       effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
-      effect.setRange(cs.getInt("range", 5));
+      effect.setRange(cs.getInt("range", 0));
+      effect.setSelfAffect(cs.getBoolean("self-affect", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
-      effect.setSelfHarm(cs.getBoolean("self-harm", false));
     } else {
       effect.setName("wait");
     }
@@ -99,6 +105,7 @@ public class EffectManager {
     WAIT,
     SPEAK,
     KNOCKBACK,
-    POTION
+    POTION,
+    SUMMON
   }
 }

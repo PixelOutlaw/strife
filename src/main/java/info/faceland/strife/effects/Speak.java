@@ -2,25 +2,28 @@ package info.faceland.strife.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.data.AttributedEntity;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class Speak extends Effect {
 
-	private String message;
+	private List<String> messages;
 	
 	@Override
 	public void apply(AttributedEntity caster, LivingEntity target) {
 		if (target instanceof Player) {
-			MessageUtils.sendMessage(target, message);
+			MessageUtils.sendMessage(target,
+					messages.get(ThreadLocalRandom.current().nextInt(messages.size())));
 		}
 	}
 
-	public String getMessage() {
-		return message;
+	public List<String> getMessages() {
+		return messages;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	public void setMessages(List<String> messages) {
+		this.messages = messages;
 	}
 }

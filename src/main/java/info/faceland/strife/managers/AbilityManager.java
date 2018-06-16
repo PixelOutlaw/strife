@@ -230,7 +230,7 @@ public class AbilityManager {
       return;
     }
     int cooldown = cs.getInt("cooldown", 10);
-    int range = cs.getInt("range", 4);
+    int range = cs.getInt("range", 0);
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");

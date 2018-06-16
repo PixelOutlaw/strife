@@ -13,7 +13,7 @@ import org.bukkit.entity.LivingEntity;
 public class Effect {
 
   String name;
-  boolean selfHarm;
+  boolean selfAffect;
   boolean friendly;
   double flatValue;
   double range;
@@ -53,7 +53,7 @@ public class Effect {
         targets.add((LivingEntity) e);
       }
     }
-    if (!selfHarm) {
+    if (!selfAffect) {
       targets.remove(caster);
     }
     return targets;
@@ -67,12 +67,12 @@ public class Effect {
     this.name = name;
   }
 
-  public boolean isSelfHarm() {
-    return selfHarm;
+  public boolean isSelfAffect() {
+    return selfAffect;
   }
 
-  public void setSelfHarm(boolean selfHarm) {
-    this.selfHarm = selfHarm;
+  public void setSelfAffect(boolean selfHarm) {
+    this.selfAffect = selfHarm;
   }
 
   public boolean isFriendly() {
