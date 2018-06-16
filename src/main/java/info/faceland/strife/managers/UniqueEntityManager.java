@@ -12,9 +12,9 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Zombie;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class UniqueEntityManager {
 
@@ -104,7 +104,8 @@ public class UniqueEntityManager {
       return null;
     }
 
-    Entity entity = location.getWorld().spawnEntity(location, uniqueEntity.getType());
+    Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
+        e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
     if (!(entity instanceof LivingEntity)) {
       plugin.getLogger()
           .warning("Attempted to non-living unique entity: " + uniqueEntity.getName());
@@ -161,8 +162,11 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
 
-    liveUniquesMap.put(spawnedUnique, uniqueEntity);
     plugin.getEntityStatCache().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     return spawnedUnique;
+  }
+
+  private void addToUniqueMap(LivingEntity spawnedUnique, UniqueEntity uniqueEntity) {
+    liveUniquesMap.put(spawnedUnique, uniqueEntity);
   }
 }

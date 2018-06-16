@@ -46,7 +46,7 @@ public class SpawnListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
-    if (event.isCancelled() || plugin.getUniqueEntityManager().isUnique(event.getEntity())) {
+    if (event.isCancelled() || event.getEntity().hasMetadata("BOSS")) {
       return;
     }
     LivingEntity entity = event.getEntity();
