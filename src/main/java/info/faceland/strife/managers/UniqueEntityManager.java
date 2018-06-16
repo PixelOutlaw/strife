@@ -12,6 +12,9 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.entity.PigZombie;
+import org.bukkit.entity.Slime;
+import org.bukkit.entity.Zombie;
 
 public class UniqueEntityManager {
 
@@ -110,9 +113,23 @@ public class UniqueEntityManager {
 
     LivingEntity spawnedUnique = (LivingEntity) entity;
 
+    spawnedUnique.setRemoveWhenFarAway(false);
+
     double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.HEALTH, 5D);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
     spawnedUnique.setHealth(health);
+
+    if (spawnedUnique instanceof Zombie) {
+      ((Zombie) spawnedUnique).setBaby(uniqueEntity.isBaby());
+    }
+    if (spawnedUnique instanceof Slime) {
+      ((Slime) spawnedUnique).setSize(uniqueEntity.getSize());
+    }
+
+    if (spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
+        .isKnockbackImmune()) {
+      spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
+    }
 
     if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
       double speed =

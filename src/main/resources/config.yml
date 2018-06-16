@@ -15,6 +15,22 @@ pvp-multiplier: 0.5
 xp-bonus: 0.0
 drops-bonus: 0.0
 
+leveled-monsters:
+  name-format: "&7%ENTITY% &f(%LEVEL%)"
+  give-skeletons-sword-chance: 0.1
+  give-skeletons-wand-chance: 0.1
+  replace-witch-evoker: 0.15
+  replace-witch-illusioner: 0.05
+  killer-bunny-chance: 0.05
+  mob-rankup-chance: 0.1
+  enabled-worlds:
+    world:
+      starting-level: 3
+      distance-per-level: 150
+    hard-world:
+      starting-level: 50
+      distance-per-level: 100
+
 ## NOTE: XP penalty exempt world applies to the world the
 ## player RESPAWNS in, as that is when xp is lost!
 penalty-free-worlds:

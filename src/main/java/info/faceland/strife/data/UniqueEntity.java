@@ -15,6 +15,10 @@ public class UniqueEntity {
   private Map<StrifeAttribute, Double> attributeMap;
   private EntityAbilitySet abilitySet;
 
+  private boolean baby;
+  private int size;
+  private boolean knockbackImmune;
+
   private ItemStack mainHandItem = null;
   private ItemStack offHandItem = null;
   private ItemStack helmetItem = null;
@@ -64,6 +68,30 @@ public class UniqueEntity {
 
   public void setAbilitySet(EntityAbilitySet abilitySet) {
     this.abilitySet = abilitySet;
+  }
+
+  public boolean isBaby() {
+    return baby;
+  }
+
+  public void setBaby(boolean baby) {
+    this.baby = baby;
+  }
+
+  public int getSize() {
+    return size;
+  }
+
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  public boolean isKnockbackImmune() {
+    return knockbackImmune;
+  }
+
+  public void setKnockbackImmune(boolean knockbackImmune) {
+    this.knockbackImmune = knockbackImmune;
   }
 
   public ItemStack getMainHandItem() {
