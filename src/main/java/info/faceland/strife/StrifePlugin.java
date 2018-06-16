@@ -606,7 +606,7 @@ public class StrifePlugin extends FacePlugin {
         uniqueEntity.setBootsItem(equipmentManager.getItem(equipmentCS.getString("boots", "")));
       }
 
-      ConfigurationSection particleCS = cs.getConfigurationSection("particle");
+      ConfigurationSection particleCS = cs.getConfigurationSection("particles");
       if (particleCS != null) {
         try {
           uniqueEntity.setParticle(Particle.valueOf(particleCS.getString("effect")));
