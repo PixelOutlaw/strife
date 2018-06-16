@@ -44,7 +44,8 @@ public class ItemUtil {
     return false;
   }
 
-  public static double getDualWieldEfficiency(ItemStack mainHandItemStack, ItemStack offHandItemStack) {
+  public static double getDualWieldEfficiency(ItemStack mainHandItemStack,
+      ItemStack offHandItemStack) {
     if (mainHandItemStack == null || mainHandItemStack.getType() == Material.AIR) {
       return 1.0;
     }
@@ -52,7 +53,9 @@ public class ItemUtil {
       return isValidMageOffhand(offHandItemStack) ? 1D : 0D;
     }
     if (isMeleeWeapon(mainHandItemStack.getType())) {
-      if (offHandItemStack.getType() == Material.POTATO || offHandItemStack.getType() == Material.SHIELD) {
+      if (offHandItemStack.getType() == Material.POTATO
+          || offHandItemStack.getType() == Material.SHIELD
+          || offHandItemStack.getType() == Material.BOOK) {
         return 1D;
       }
       if (isMeleeWeapon(offHandItemStack.getType()) || offHandItemStack.getType() == Material.BOW) {
@@ -63,6 +66,9 @@ public class ItemUtil {
     if (mainHandItemStack.getType() == Material.BOW) {
       return offHandItemStack.getType() == Material.ARROW ? 1D : 0D;
     }
+    if (mainHandItemStack.getType() == Material.SHIELD) {
+      return offHandItemStack.getType() == Material.SHIELD ? 1D : 0D;
+    }
     return 0D;
   }
 
@@ -70,7 +76,8 @@ public class ItemUtil {
     if (!(entity instanceof Player)) {
       return;
     }
-    Champion champion = StrifePlugin.getInstance().getChampionManager().getChampion(entity.getUniqueId());
+    Champion champion = StrifePlugin.getInstance().getChampionManager()
+        .getChampion(entity.getUniqueId());
     if (champion.isEquipmentHashMatching()) {
       return;
     }
