@@ -44,6 +44,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.*;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
@@ -289,7 +290,7 @@ public class StrifePlugin extends FacePlugin {
     );
     bleedTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
-        12L // Run it about every half second
+        DamageUtil.BLEED_TICK_RATE // Run it every BLEED_TICK_RATE ticks
     );
     barrierTask.runTaskTimer(this,
         201L, // Start timer after 10.05s

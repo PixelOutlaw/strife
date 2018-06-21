@@ -26,6 +26,8 @@ public class DamageUtil {
   private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   private static final Random RANDOM = new Random(System.currentTimeMillis());
+  public static final int BLEED_TICK_RATE = 12;
+  public static final int BLEED_TICKS_PER_5_SEC = (int) ((5D * 20) / BLEED_TICK_RATE);
 
   public static double attemptIgnite(double damage, AttributedEntity attacker, LivingEntity defender) {
     if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.IGNITE_CHANCE) / 100) {

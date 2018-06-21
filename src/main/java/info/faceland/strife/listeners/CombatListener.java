@@ -244,7 +244,7 @@ public class CombatListener implements Listener {
           .getAttribute(BLEED_DAMAGE));
       bleedAmount += bleedAmount * bonusCriticalMultiplier;
       if (!plugin.getBarrierManager().hasBarrierUp(defender)) {
-        plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, 10);
+        plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, BLEED_TICKS_PER_5_SEC);
         defendEntity.getWorld()
             .playSound(defendEntity.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
       }
@@ -262,9 +262,11 @@ public class CombatListener implements Listener {
 
     if (plugin.getUniqueEntityManager().isUnique(attackEntity)) {
       plugin.getAbilityManager().uniqueAbilityCast(attacker, AbilityType.ON_HIT);
+      plugin.getAbilityManager().checkPhaseChange(attacker);
     }
     if (plugin.getUniqueEntityManager().isUnique(defendEntity)) {
       plugin.getAbilityManager().uniqueAbilityCast(defender, AbilityType.WHEN_HIT);
+      plugin.getAbilityManager().checkPhaseChange(defender);
     }
 
     sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,

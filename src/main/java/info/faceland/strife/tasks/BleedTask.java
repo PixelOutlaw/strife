@@ -24,6 +24,7 @@ package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.BleedData;
+import info.faceland.strife.util.DamageUtil;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 import org.bukkit.Material;
@@ -52,7 +53,7 @@ public class BleedTask extends BukkitRunnable {
             }
 
             plugin.getBarrierManager().interruptBarrier(bleedingEntity);
-            double bleedDamage = bleedData.getBleedAmount() / 10;
+            double bleedDamage = bleedData.getBleedAmount() / DamageUtil.BLEED_TICK_RATE;
             if (bleedingEntity.getHealth() > bleedDamage) {
                 bleedingEntity.setHealth(bleedingEntity.getHealth() - bleedDamage);
             } else {
