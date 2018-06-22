@@ -19,6 +19,7 @@ public class Bleed extends Effect {
     }
     StrifePlugin.getInstance().getBleedManager()
         .applyBleed(target, bleedAmount, DamageUtil.BLEED_TICKS_PER_5_SEC);
+    // TODO: Add logic for ignore armor false
   }
 
   public void setAmount(double amount) {
