@@ -93,33 +93,33 @@ public class AbilityManager {
   }
 
   public void uniqueAbilityCast(AttributedEntity caster, AbilityType type) {
-    int phase = fetchAndUpdatePhase(caster);
-    EntityAbilitySet entityAbilitySet = uniqueEntityManager.getAbilitySet(caster.getEntity());
+    EntityAbilitySet abilitySet = uniqueEntityManager.getAbilitySet(caster.getEntity());
     switch (type) {
       case ON_HIT:
-        abilityPhaseCast(caster, entityAbilitySet.getOnHitAbilities(), phase);
+        abilityPhaseCast(caster, abilitySet.getOnHitAbilities(), abilitySet.getPhase());
         break;
       case WHEN_HIT:
-        abilityPhaseCast(caster, entityAbilitySet.getWhenHitAbilities(), phase);
+        abilityPhaseCast(caster, abilitySet.getWhenHitAbilities(), abilitySet.getPhase());
         break;
       case TIMER:
-        abilityPhaseCast(caster, entityAbilitySet.getTimerAbilities(), phase);
+        abilityPhaseCast(caster, abilitySet.getTimerAbilities(), abilitySet.getPhase());
         break;
       case PHASE_SHIFT:
-        abilityPhaseCast(caster, entityAbilitySet.getPhaseShiftAbilities(), phase);
+        abilityPhaseCast(caster, abilitySet.getPhaseShiftAbilities(), abilitySet.getPhase());
         break;
     }
   }
 
-  private int fetchAndUpdatePhase(AttributedEntity attributedEntity) {
+  public void checkPhaseChange(AttributedEntity attributedEntity) {
+    LogUtil.printDebug("Checking phase switch");
     LivingEntity livingEntity = attributedEntity.getEntity();
     int currentPhase = uniqueEntityManager.getPhase(attributedEntity.getEntity());
     int newPhase = 6 - (int)Math.ceil((livingEntity.getHealth()/livingEntity.getMaxHealth()) / 0.2);
+    LogUtil.printDebug("currentPhase: " + currentPhase + " | newPhase: " + newPhase);
     if (newPhase > currentPhase) {
       uniqueEntityManager.getLiveUniquesMap().get(livingEntity).getAbilitySet().setPhase(newPhase);
       uniqueAbilityCast(attributedEntity, AbilityType.PHASE_SHIFT);
     }
-    return newPhase;
   }
 
   private void abilityPhaseCast(AttributedEntity caster, Map<Integer, List<Ability>> abilitySection,

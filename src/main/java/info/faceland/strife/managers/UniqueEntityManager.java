@@ -163,10 +163,7 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomNameVisible(true);
 
     plugin.getEntityStatCache().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
-    return spawnedUnique;
-  }
-
-  private void addToUniqueMap(LivingEntity spawnedUnique, UniqueEntity uniqueEntity) {
     liveUniquesMap.put(spawnedUnique, uniqueEntity);
+    return spawnedUnique;
   }
 }
