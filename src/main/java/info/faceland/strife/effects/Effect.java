@@ -5,6 +5,7 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Entity;
@@ -12,12 +13,11 @@ import org.bukkit.entity.LivingEntity;
 
 public class Effect {
 
-  String name;
-  boolean selfAffect;
-  boolean friendly;
-  double flatValue;
-  double range;
-  Map<StrifeAttribute, Double> statMults;
+  private String name;
+  private boolean selfAffect;
+  private boolean friendly;
+  private double range;
+  Map<StrifeAttribute, Double> statMults = new HashMap<>();
 
   public void execute(AttributedEntity caster, LivingEntity target) {
     if (range < 1) {
@@ -81,14 +81,6 @@ public class Effect {
 
   public void setFriendly(boolean friendly) {
     this.friendly = friendly;
-  }
-
-  public double getFlatValue() {
-    return flatValue;
-  }
-
-  public void setFlatValue(double flatValue) {
-    this.flatValue = flatValue;
   }
 
   public double getRange() {

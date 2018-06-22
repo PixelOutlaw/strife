@@ -69,12 +69,16 @@ public class CombatListener implements Listener {
     LivingEntity attackEntity;
 
     Projectile projectile = null;
+    String projectileEffect = null;
     if (event.getDamager() instanceof Projectile) {
       projectile = (Projectile) event.getDamager();
       ProjectileSource shooter = projectile.getShooter();
       if (defendEntity.hasMetadata("NPC")) {
         projectile.remove();
         return;
+      }
+      if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
+        projectileEffect = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString();
       }
       if (shooter instanceof LivingEntity) {
         attackEntity = (LivingEntity) shooter;
@@ -151,6 +155,14 @@ public class CombatListener implements Listener {
       double blockTimeLeft = plugin.getBlockTask().getTimeLeft(defender.getEntity().getUniqueId());
       plugin.getBlockTask().setTimeLeft(defender.getEntity().getUniqueId(), 6L);
       blockAmount = getBlockAmount(defender, blockTimeLeft);
+    }
+
+    // Handle projectiles created by abilities/effects. Has to be done after
+    // block and evasion to properly mitigate hits.
+    if (projectileEffect != null) {
+      event.setDamage(0);
+      plugin.getEffectManager().getEffect(projectileEffect).apply(attacker, defendEntity);
+      return;
     }
 
     double potionMult = getPotionMult(attackEntity, defendEntity);

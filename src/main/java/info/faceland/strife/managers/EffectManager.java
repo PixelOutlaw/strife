@@ -1,10 +1,14 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.effects.DealDamage;
+import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.PotionEffectAction;
+import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
@@ -12,6 +16,7 @@ import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
@@ -33,6 +38,41 @@ public class EffectManager {
     }
     Effect effect = null;
     switch (effectType) {
+      case HEAL:
+        effect = new Heal();
+        ((Heal) effect).setAmount(cs.getInt("amount", 1));
+        ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        break;
+      case DAMAGE:
+        effect = new DealDamage();
+        ((DealDamage) effect).setAmount(cs.getInt("amount", 1));
+        ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        break;
+      case PROJECTILE:
+        effect = new ShootProjectile();
+        ((ShootProjectile) effect).setQuantity(cs.getInt("quantity", 1));
+        EntityType projType;
+        try {
+          projType = EntityType.valueOf(cs.getString("projectile-type", "null"));
+        } catch (Exception e) {
+          LogUtil.printError("Skipping effect " + key + " for invalid projectile type");
+          return;
+        }
+        if (!(projType == EntityType.ARROW || projType == EntityType.THROWN_EXP_BOTTLE
+            || projType == EntityType.SPLASH_POTION || projType == EntityType.LINGERING_POTION
+            || projType == EntityType.SHULKER_BULLET || projType == EntityType.PRIMED_TNT
+            || projType == EntityType.EGG || projType == EntityType.SNOWBALL
+            || projType == EntityType.FIREBALL || projType == EntityType.DRAGON_FIREBALL
+            || projType == EntityType.SMALL_FIREBALL || projType == EntityType.WITHER_SKULL)) {
+          LogUtil.printWarning("Skipping effect " + key + " for non projectile entity");
+          return;
+        }
+        ((ShootProjectile) effect).setProjectileEntity(projType);
+        ((ShootProjectile) effect).setSpread(cs.getInt("spread", 0));
+        ((ShootProjectile) effect).setSpeed(cs.getInt("speed", 1));
+        ((ShootProjectile) effect).setHitEffect(cs.getString("hit-effect"));
+        ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
+        break;
       case IGNITE:
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
@@ -69,10 +109,6 @@ public class EffectManager {
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         break;
     }
-    if (effect == null) {
-      LogUtil.printError("Null effect for " + key + "! Skipping...");
-      return;
-    }
     if (effectType != EffectType.WAIT) {
       effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
       effect.setRange(cs.getInt("range", 0));
@@ -99,8 +135,9 @@ public class EffectManager {
   }
 
   public enum EffectType {
-    PHYSICAL_DAMAGE,
-    MAGIC_DAMAGE,
+    DAMAGE,
+    HEAL,
+    PROJECTILE,
     IGNITE,
     WAIT,
     SPEAK,
