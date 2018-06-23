@@ -11,12 +11,13 @@ public class Knockback extends Effect {
 
   @Override
   public void apply(AttributedEntity caster, LivingEntity target) {
-    target.setVelocity(getVelocity(caster.getEntity(), target).multiply(power));
+    target.setVelocity(
+        target.getVelocity().add(getVelocity(caster.getEntity(), target).multiply(power)));
   }
 
   private Vector getVelocity(Entity from, Entity to) {
     Vector p1 = to.getLocation().toVector().subtract(from.getLocation().toVector());
-    p1.add(new Vector(0, 0.2, 0));
+    p1.add(new Vector(0, 0.5, 0));
     return p1.normalize();
   }
 
