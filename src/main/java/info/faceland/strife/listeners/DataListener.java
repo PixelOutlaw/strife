@@ -32,6 +32,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 public class DataListener implements Listener {
@@ -52,13 +53,18 @@ public class DataListener implements Listener {
         .getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer());
     }
+    plugin.getBarrierManager().createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onEntityDeath(final EntityDeathEvent event) {
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
-    plugin.getBleedManager().removeEntity(event.getEntity());
     plugin.getBarrierManager().removeEntity(event.getEntity());
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerRespawn(final PlayerRespawnEvent event) {
+    plugin.getBarrierManager().createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

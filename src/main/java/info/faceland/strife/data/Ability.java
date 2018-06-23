@@ -12,8 +12,6 @@ public class Ability {
   private final List<Effect> effects;
   private final int cooldown;
 
-  private long readyTime;
-
   public Ability(String id, String name, List<Effect> effects, TargetType targetType, double range, int cooldown) {
     this.id = id;
     this.name = name;
@@ -21,7 +19,6 @@ public class Ability {
     this.effects = effects;
     this.targetType = targetType;
     this.range = range;
-    this.readyTime = System.currentTimeMillis();
   }
 
   public String getId() {
@@ -42,14 +39,6 @@ public class Ability {
 
   public List<Effect> getEffects() {
     return effects;
-  }
-
-  public long getReadyTime() {
-    return readyTime;
-  }
-
-  public void setReadyTime(long readyTime) {
-    this.readyTime = readyTime;
   }
 
   public int getCooldown() {

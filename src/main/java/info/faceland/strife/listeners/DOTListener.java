@@ -52,7 +52,7 @@ public class DOTListener implements Listener {
     AttributedEntity statEntity = plugin.getEntityStatCache().getAttributedEntity(entity);
 
     if (event.getCause() == DamageCause.FIRE_TICK) {
-      double damage = (2 + entity.getHealth() * 0.04) * getResistPotionMult(entity) * (1
+      double damage = (1 + entity.getHealth() * 0.04) * getResistPotionMult(entity) * (1
           - StatUtil.getFireResist(statEntity) / 100);
       damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
       entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 0.5f, 0.75f);

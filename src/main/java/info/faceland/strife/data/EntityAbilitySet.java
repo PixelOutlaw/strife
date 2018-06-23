@@ -10,7 +10,6 @@ public class EntityAbilitySet {
   private final Map<Integer, List<Ability>> whenHitAbilities;
   private final Map<Integer, List<Ability>> phaseShiftAbilities;
   private final Map<Integer, List<Ability>> timerAbilities;
-  private int phase = 0;
 
   public EntityAbilitySet() {
     this.onHitAbilities = new HashMap<>();
@@ -34,14 +33,6 @@ public class EntityAbilitySet {
         phaseShiftAbilities.put(phase, abilityList);
         break;
     }
-  }
-
-  public int getPhase() {
-    return phase;
-  }
-
-  public void setPhase(int phase) {
-    this.phase = phase;
   }
 
   public Map<Integer, List<Ability>> getOnHitAbilities() {

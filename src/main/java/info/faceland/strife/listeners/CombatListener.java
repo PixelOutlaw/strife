@@ -255,7 +255,7 @@ public class CombatListener implements Listener {
       bleedAmount = physicalBaseDamage * 0.5D * attackMultiplier * pvpMult * (1 + attacker
           .getAttribute(BLEED_DAMAGE));
       bleedAmount += bleedAmount * bonusCriticalMultiplier;
-      if (!plugin.getBarrierManager().hasBarrierUp(defender)) {
+      if (!plugin.getBarrierManager().isBarrierUp(defender)) {
         plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, BLEED_TICKS_PER_5_SEC);
         defendEntity.getWorld()
             .playSound(defendEntity.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);

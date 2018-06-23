@@ -22,6 +22,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.BleedData;
 import info.faceland.strife.util.DamageUtil;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -54,6 +55,7 @@ public class BleedTask extends BukkitRunnable {
         bleedingEntity.setHealth(bleedingEntity.getHealth() - bleedDamage);
       } else {
         bleedingEntity.damage(bleedDamage);
+        pendingRemoval.add(bleedingEntity);
       }
 
       int particleAmount = 10 + (int) (bleedDamage * 20);

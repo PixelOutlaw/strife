@@ -14,6 +14,8 @@ public class Summon extends Effect {
     for (int i = 0; i < amount; i++) {
       StrifePlugin.getInstance().getUniqueEntityManager()
           .spawnUnique(uniqueEntity, caster.getEntity().getLocation());
+      StrifePlugin.getInstance().getUniqueEntityManager().getLiveUniquesMap()
+          .get(target).setMaster(caster.getEntity());
     }
   }
 

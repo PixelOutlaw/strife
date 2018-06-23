@@ -12,6 +12,7 @@ public class UniqueEntity {
   private String id;
   private EntityType type;
   private String name;
+  private int experience;
   private Map<StrifeAttribute, Double> attributeMap;
   private EntityAbilitySet abilitySet;
 
@@ -52,6 +53,14 @@ public class UniqueEntity {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public int getExperience() {
+    return experience;
+  }
+
+  public void setExperience(int experience) {
+    this.experience = experience;
   }
 
   public Map<StrifeAttribute, Double> getAttributeMap() {

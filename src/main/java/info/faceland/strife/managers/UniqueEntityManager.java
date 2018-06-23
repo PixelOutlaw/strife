@@ -4,6 +4,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.UniqueEntity;
+import info.faceland.strife.data.UniqueEntityData;
 import info.faceland.strife.util.LogUtil;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -19,7 +20,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class UniqueEntityManager {
 
   private final StrifePlugin plugin;
-  private final Map<LivingEntity, UniqueEntity> liveUniquesMap;
+  private final Map<LivingEntity, UniqueEntityData> liveUniquesMap;
   private final Map<String, UniqueEntity> loadedUniquesMap;
 
   public UniqueEntityManager(StrifePlugin plugin) {
@@ -28,7 +29,14 @@ public class UniqueEntityManager {
     this.loadedUniquesMap = new HashMap<>();
   }
 
-  public Map<LivingEntity, UniqueEntity> getLiveUniquesMap() {
+  public UniqueEntity getLivingUnique(LivingEntity livingEntity) {
+    if (!liveUniquesMap.containsKey(livingEntity)) {
+      return null;
+    }
+    return liveUniquesMap.get(livingEntity).getUniqueEntity();
+  }
+
+  public Map<LivingEntity, UniqueEntityData> getLiveUniquesMap() {
     return liveUniquesMap;
   }
 
@@ -58,11 +66,21 @@ public class UniqueEntityManager {
       LogUtil.printWarning("Attempting to get phase of non-unique entity...");
       return 0;
     }
-    return liveUniquesMap.get(livingEntity).getAbilitySet().getPhase();
+    return liveUniquesMap.get(livingEntity).getPhase();
   }
 
-  public int getPhase(UniqueEntity uniqueEntity) {
-    return uniqueEntity.getAbilitySet().getPhase();
+  public LivingEntity getMaster(LivingEntity livingEntity) {
+    if (!liveUniquesMap.containsKey(livingEntity)) {
+      return null;
+    }
+    return liveUniquesMap.get(livingEntity).getMaster();
+  }
+
+  public UniqueEntityData getData(LivingEntity livingEntity) {
+    if (!liveUniquesMap.containsKey(livingEntity)) {
+      return null;
+    }
+    return liveUniquesMap.get(livingEntity);
   }
 
   public EntityAbilitySet getAbilitySet(LivingEntity livingEntity) {
@@ -70,7 +88,7 @@ public class UniqueEntityManager {
       LogUtil.printWarning("Attempting to get ability set of non-unique entity...");
       return null;
     }
-    return liveUniquesMap.get(livingEntity).getAbilitySet();
+    return liveUniquesMap.get(livingEntity).getUniqueEntity().getAbilitySet();
   }
 
   public EntityAbilitySet getAbilitySet(UniqueEntity uniqueEntity) {
@@ -108,7 +126,7 @@ public class UniqueEntityManager {
         e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
     if (!(entity instanceof LivingEntity)) {
       plugin.getLogger()
-          .warning("Attempted to non-living unique entity: " + uniqueEntity.getName());
+          .warning("Attempted to spawn non-living unique entity: " + uniqueEntity.getName());
       return null;
     }
 
@@ -146,6 +164,8 @@ public class UniqueEntityManager {
           spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue() * speed);
     }
 
+    spawnedUnique.getEquipment().clear();
+
     spawnedUnique.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
     spawnedUnique.getEquipment().setHelmetDropChance(0f);
     spawnedUnique.getEquipment().setChestplate(uniqueEntity.getChestItem());
@@ -163,7 +183,8 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomNameVisible(true);
 
     plugin.getEntityStatCache().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
-    liveUniquesMap.put(spawnedUnique, uniqueEntity);
+    liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
+    plugin.getAbilityManager().checkPhaseChange(plugin.getEntityStatCache().getAttributedEntity(spawnedUnique));
     return spawnedUnique;
   }
 }

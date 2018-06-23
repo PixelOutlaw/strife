@@ -35,8 +35,8 @@ public class UniqueParticleTask extends BukkitRunnable {
   @Override
   public void run() {
     for (LivingEntity livingEntity : uniqueEntityManager.getLiveUniquesMap().keySet()) {
-      UniqueEntity unique = uniqueEntityManager.getLiveUniquesMap().get(livingEntity);
-      if (unique.getParticle() == null) {
+      UniqueEntity unique = uniqueEntityManager.getLivingUnique(livingEntity);
+      if (!livingEntity.isValid() || unique == null || unique.getParticle() == null) {
         continue;
       }
       Location location = livingEntity.getLocation();

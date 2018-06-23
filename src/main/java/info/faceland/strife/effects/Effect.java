@@ -1,5 +1,6 @@
 package info.faceland.strife.effects;
 
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.LogUtil;
@@ -33,13 +34,13 @@ public class Effect {
 
   }
 
-  public List<LivingEntity> getTargets(LivingEntity caster, LivingEntity target, double range) {
+  private List<LivingEntity> getTargets(LivingEntity caster, LivingEntity target, double range) {
+    List<LivingEntity> targets = new ArrayList<>();
     if (target == null) {
       LogUtil.printError("Effect " + name + " cast without a target!");
-      return null;
+      return targets;
     }
     if (range < 1) {
-      List<LivingEntity> targets = new ArrayList<>();
       targets.add(target);
       return targets;
     }
@@ -51,6 +52,7 @@ public class Effect {
     for (Entity e : target.getNearbyEntities(range, range, range)) {
       if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
         targets.add((LivingEntity) e);
+        targets.remove(StrifePlugin.getInstance().getUniqueEntityManager().getMaster((LivingEntity) e));
       }
     }
     if (!selfAffect) {

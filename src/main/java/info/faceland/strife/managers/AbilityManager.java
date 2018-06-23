@@ -56,8 +56,9 @@ public class AbilityManager {
   }
 
   private void execute(Ability ability, final AttributedEntity caster) {
-    LogUtil.printDebug(caster.getEntity().getCustomName() + " is casting ability: " + ability.getId());
-    if (System.currentTimeMillis() < ability.getReadyTime()) {
+    LogUtil
+        .printDebug(caster.getEntity().getCustomName() + " is casting ability: " + ability.getId());
+    if (!uniqueEntityManager.getData(caster.getEntity()).isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       if (caster instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN, (Player) caster);
@@ -72,7 +73,7 @@ public class AbilityManager {
       LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
       return;
     }
-    ability.setReadyTime(System.currentTimeMillis() + ability.getCooldown() * 1000);
+    uniqueEntityManager.getData(caster.getEntity()).setCooldown(ability);
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
@@ -94,18 +95,22 @@ public class AbilityManager {
 
   public void uniqueAbilityCast(AttributedEntity caster, AbilityType type) {
     EntityAbilitySet abilitySet = uniqueEntityManager.getAbilitySet(caster.getEntity());
+    if (abilitySet == null) {
+      return;
+    }
+    int phase = uniqueEntityManager.getPhase(caster.getEntity());
     switch (type) {
       case ON_HIT:
-        abilityPhaseCast(caster, abilitySet.getOnHitAbilities(), abilitySet.getPhase());
+        abilityPhaseCast(caster, abilitySet.getOnHitAbilities(), phase);
         break;
       case WHEN_HIT:
-        abilityPhaseCast(caster, abilitySet.getWhenHitAbilities(), abilitySet.getPhase());
+        abilityPhaseCast(caster, abilitySet.getWhenHitAbilities(), phase);
         break;
       case TIMER:
-        abilityPhaseCast(caster, abilitySet.getTimerAbilities(), abilitySet.getPhase());
+        abilityPhaseCast(caster, abilitySet.getTimerAbilities(), phase);
         break;
       case PHASE_SHIFT:
-        abilityPhaseCast(caster, abilitySet.getPhaseShiftAbilities(), abilitySet.getPhase());
+        abilityPhaseCast(caster, abilitySet.getPhaseShiftAbilities(), phase);
         break;
     }
   }
@@ -114,10 +119,11 @@ public class AbilityManager {
     LogUtil.printDebug("Checking phase switch");
     LivingEntity livingEntity = attributedEntity.getEntity();
     int currentPhase = uniqueEntityManager.getPhase(attributedEntity.getEntity());
-    int newPhase = 6 - (int)Math.ceil((livingEntity.getHealth()/livingEntity.getMaxHealth()) / 0.2);
+    int newPhase =
+        6 - (int) Math.ceil((livingEntity.getHealth() / livingEntity.getMaxHealth()) / 0.2);
     LogUtil.printDebug("currentPhase: " + currentPhase + " | newPhase: " + newPhase);
     if (newPhase > currentPhase) {
-      uniqueEntityManager.getLiveUniquesMap().get(livingEntity).getAbilitySet().setPhase(newPhase);
+      uniqueEntityManager.getLiveUniquesMap().get(livingEntity).setPhase(newPhase);
       uniqueAbilityCast(attributedEntity, AbilityType.PHASE_SHIFT);
     }
   }
@@ -143,7 +149,8 @@ public class AbilityManager {
     }
   }
 
-  private void runEffects(AttributedEntity caster, LivingEntity target, List<Effect> effectList, int delay) {
+  private void runEffects(AttributedEntity caster, LivingEntity target, List<Effect> effectList,
+      int delay) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), new Runnable() {
       @Override
       public void run() {
@@ -211,7 +218,8 @@ public class AbilityManager {
       case OTHER:
         return selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
       case RANGE:
-        LivingEntity target = selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
+        LivingEntity target = selectFirstEntityInSight(caster.getEntity(),
+            (int) ability.getRange());
         if (target == null) {
           target = getBackupEntity(caster.getEntity(), ability.getRange());
         }

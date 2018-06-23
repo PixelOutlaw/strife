@@ -336,6 +336,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new SummonListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(entityStatCache), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
@@ -585,6 +586,8 @@ public class StrifePlugin extends FacePlugin {
 
       uniqueEntity.setId(entityNameKey);
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
+      uniqueEntity.setExperience(cs.getInt("experience", 0));
+      uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
 
       ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
       Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
@@ -622,6 +625,7 @@ public class StrifePlugin extends FacePlugin {
       }
 
       ConfigurationSection abilityCS = cs.getConfigurationSection("abilities");
+      uniqueEntity.setAbilitySet(null);
       if (abilityCS != null) {
         EntityAbilitySet abilitySet = new EntityAbilitySet();
         for (int i = 1; i <= 5; i++) {
