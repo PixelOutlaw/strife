@@ -11,12 +11,14 @@ import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.Leap;
 import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.ShootProjectile;
+import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionEffectType;
@@ -120,6 +122,19 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         break;
+      case PARTICLE:
+        effect = new SpawnParticle();
+        Particle particle;
+        try {
+          particle = Particle.valueOf((cs.getString("particle-type")));
+        } catch (Exception e) {
+          LogUtil.printWarning("Invalid particle effect type in effect " + key + ". Skipping.");
+          return;
+        }
+        ((SpawnParticle) effect).setParticle(particle);
+        ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
+        ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
+        break;
     }
     if (effectType != EffectType.WAIT) {
       effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
@@ -153,6 +168,7 @@ public class EffectManager {
     IGNITE,
     BLEED,
     WAIT,
+    PARTICLE,
     SPEAK,
     KNOCKBACK,
     LEAP,
