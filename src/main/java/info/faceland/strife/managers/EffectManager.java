@@ -1,12 +1,14 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.DealDamage;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.Knockback;
+import info.faceland.strife.effects.Leap;
 import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.Speak;
@@ -77,6 +79,11 @@ public class EffectManager {
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
         break;
+      case BLEED:
+        effect = new Bleed();
+        ((Bleed) effect).setAmount(cs.getInt("amount", 10));
+        ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
+        break;
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));
@@ -89,6 +96,11 @@ public class EffectManager {
       case KNOCKBACK:
         effect = new Knockback();
         ((Knockback) effect).setPower(cs.getDouble("power", 1));
+        break;
+      case LEAP:
+        effect = new Leap();
+        ((Leap) effect).setForward(cs.getDouble("forward", 1));
+        ((Leap) effect).setHeight(cs.getDouble("height", 1));
         break;
       case SUMMON:
         effect = new Summon();
@@ -139,9 +151,11 @@ public class EffectManager {
     HEAL,
     PROJECTILE,
     IGNITE,
+    BLEED,
     WAIT,
     SPEAK,
     KNOCKBACK,
+    LEAP,
     POTION,
     SUMMON
   }
