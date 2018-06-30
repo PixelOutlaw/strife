@@ -15,24 +15,12 @@ public class SpawnParticle extends Effect {
     target.getWorld().spawnParticle(particle, target.getLocation(), quantity, getRange(), getRange(), getRange(), speed);
   }
 
-  public Particle getParticle() {
-    return particle;
-  }
-
   public void setParticle(Particle particle) {
     this.particle = particle;
   }
 
-  public int getQuantity() {
-    return quantity;
-  }
-
   public void setQuantity(int quantity) {
     this.quantity = quantity;
-  }
-
-  public float getSpeed() {
-    return speed;
   }
 
   public void setSpeed(float speed) {

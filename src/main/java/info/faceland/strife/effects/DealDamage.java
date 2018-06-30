@@ -3,12 +3,16 @@ package info.faceland.strife.effects;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.DamageType;
+import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.LivingEntity;
 
 public class DealDamage extends Effect {
 
   private double amount;
   private DamageScale damageScale;
+  private DamageType damageType;
+  private boolean applyEffects;
 
   @Override
   public void apply(AttributedEntity caster, LivingEntity target) {
@@ -16,19 +20,22 @@ public class DealDamage extends Effect {
     for (StrifeAttribute attr : statMults.keySet()) {
       damage += statMults.get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
     }
+    LogUtil.printDebug("Damage Effect! " + damage + " | " + damageScale + " | " + damageType);
     switch (damageScale) {
-      case FLAT:
-        target.damage(damage, caster.getEntity());
-        break;
       case CURRENT_HP:
-        damage = damage * (target.getHealth() / target.getMaxHealth());
-        target.damage(damage * target.getHealth(), caster.getEntity());
+        damage *= target.getHealth() / target.getMaxHealth();
+        break;
       case MISSING_HP:
-        damage = damage * (1 - target.getHealth() / target.getMaxHealth());
-        target.damage(damage, caster.getEntity());
+        damage *= 1 - target.getHealth() / target.getMaxHealth();
+        break;
       case MAXIMUM_HP:
-        target.damage(damage * target.getMaxHealth(), caster.getEntity());
+        damage *= target.getMaxHealth();
+        break;
     }
+    LogUtil.printDebug("[Pre-Damage] Target Health: " + target.getHealth());
+    DamageUtil
+        .dealDirectDamage(caster, entityStatCache.getAttributedEntity(target), damage, damageType);
+    LogUtil.printDebug("[Post-Damage] Target Health: " + target.getHealth());
   }
 
   public void setAmount(double amount) {
@@ -39,16 +46,14 @@ public class DealDamage extends Effect {
     this.damageScale = damageScale;
   }
 
-  public enum DamageType {
-    TRUE,
-    PHYSICAL,
-    MAGICAL,
-    FIRE,
-    ICE,
-    LIGHTNING,
-    DARK
+  public void setDamageType(DamageType damageType) {
+    this.damageType = damageType;
   }
-  
+
+  public void setApplyEffects(boolean applyEffects) {
+    this.applyEffects = applyEffects;
+  }
+
   public enum DamageScale {
     FLAT,
     MAXIMUM_HP,

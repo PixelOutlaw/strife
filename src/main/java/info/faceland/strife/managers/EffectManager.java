@@ -15,6 +15,7 @@ import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
+import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,8 +50,15 @@ public class EffectManager {
         break;
       case DAMAGE:
         effect = new DealDamage();
-        ((DealDamage) effect).setAmount(cs.getInt("amount", 1));
-        ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((DealDamage) effect).setAmount(cs.getDouble("amount", 1));
+        try {
+          ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+          ((DealDamage) effect)
+              .setDamageType(DamageType.valueOf(cs.getString("damage-type", "TRUE")));
+        } catch (Exception e) {
+          LogUtil.printError("Skipping effect " + key + " for invalid damage scale/type");
+          return;
+        }
         break;
       case PROJECTILE:
         effect = new ShootProjectile();
@@ -72,9 +80,13 @@ public class EffectManager {
           return;
         }
         ((ShootProjectile) effect).setProjectileEntity(projType);
-        ((ShootProjectile) effect).setSpread(cs.getInt("spread", 0));
+        ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
+        ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setSpeed(cs.getInt("speed", 1));
-        ((ShootProjectile) effect).setHitEffect(cs.getString("hit-effect"));
+        ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
+        ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
+        ((ShootProjectile) effect).setIgnite(cs.getBoolean("bounce", false));
+        ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         break;
       case IGNITE:

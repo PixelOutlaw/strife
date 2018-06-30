@@ -48,6 +48,7 @@ public class BarrierManager {
     }
     setEntityBarrier(attributedEntity.getEntity().getUniqueId(),
         attributedEntity.getAttribute(BARRIER));
+    updateShieldDisplay(attributedEntity);
     return true;
   }
 

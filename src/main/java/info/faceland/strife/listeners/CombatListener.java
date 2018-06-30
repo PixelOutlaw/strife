@@ -29,6 +29,7 @@ import info.faceland.strife.data.EntityAbilitySet.AbilityType;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.event.EventHandler;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -56,12 +57,11 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
+    if (event.getDamage() <= 0 && event.getCause() == DamageCause.CUSTOM) {
+      event.setDamage(0.001);
       return;
     }
-    if (event.getDamager() instanceof EvokerFangs) {
-      event.setDamage(((LivingEntity) event.getEntity()).getAttribute(
-          Attribute.GENERIC_MAX_HEALTH).getBaseValue() * 0.15);
+    if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
       return;
     }
 
@@ -69,7 +69,7 @@ public class CombatListener implements Listener {
     LivingEntity attackEntity;
 
     Projectile projectile = null;
-    String projectileEffect = null;
+    String[] projectileEffect = null;
     if (event.getDamager() instanceof Projectile) {
       projectile = (Projectile) event.getDamager();
       ProjectileSource shooter = projectile.getShooter();
@@ -78,13 +78,15 @@ public class CombatListener implements Listener {
         return;
       }
       if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
-        projectileEffect = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString();
+        projectileEffect = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString().split("~");
       }
       if (shooter instanceof LivingEntity) {
         attackEntity = (LivingEntity) shooter;
       } else {
         return;
       }
+    } else if (event.getDamager() instanceof EvokerFangs) {
+      attackEntity = ((EvokerFangs) event.getDamager()).getOwner();
     } else {
       attackEntity = (LivingEntity) event.getDamager();
     }
@@ -103,8 +105,8 @@ public class CombatListener implements Listener {
       explosionMult = Math.max(0.3, 4 / (distance + 3));
       healMultiplier = 0.3D;
     } else if (event.getDamager() instanceof ShulkerBullet || event
-        .getDamager() instanceof SmallFireball ||
-        event.getDamager() instanceof WitherSkull) {
+        .getDamager() instanceof SmallFireball || event.getDamager() instanceof WitherSkull || event
+        .getDamager() instanceof EvokerFangs) {
       damageType = DamageType.MAGIC;
     } else if (event.getDamager() instanceof Projectile) {
       damageType = DamageType.RANGED;
@@ -160,8 +162,12 @@ public class CombatListener implements Listener {
     // Handle projectiles created by abilities/effects. Has to be done after
     // block and evasion to properly mitigate hits.
     if (projectileEffect != null) {
-      event.setDamage(0);
-      plugin.getEffectManager().getEffect(projectileEffect).apply(attacker, defendEntity);
+      event.setDamage(1);
+      for (String s : projectileEffect) {
+        if (StringUtils.isNotBlank(s)) {
+          plugin.getEffectManager().getEffect(s).apply(attacker, defendEntity);
+        }
+      }
       return;
     }
 
@@ -294,14 +300,30 @@ public class CombatListener implements Listener {
       return;
     }
     StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
-    if (overBonus > 0) damageString.append("&e✦");
-    if (critBonus > 0) damageString.append("&c✶");
-    if (fireBonus > 0) damageString.append("&6☀");
-    if (iceBonus > 0) damageString.append("&b❊");
-    if (lightningBonus > 0) damageString.append("&7⚡");
-    if (corrupt) damageString.append("&8❂");
-    if (bleedBonus > 0) damageString.append("&4♦");
-    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(damageString.toString()), (Player) entity);
+    if (overBonus > 0) {
+      damageString.append("&e✦");
+    }
+    if (critBonus > 0) {
+      damageString.append("&c✶");
+    }
+    if (fireBonus > 0) {
+      damageString.append("&6☀");
+    }
+    if (iceBonus > 0) {
+      damageString.append("&b❊");
+    }
+    if (lightningBonus > 0) {
+      damageString.append("&7⚡");
+    }
+    if (corrupt) {
+      damageString.append("&8❂");
+    }
+    if (bleedBonus > 0) {
+      damageString.append("&4♦");
+    }
+    ChatAPI
+        .sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(damageString.toString()),
+            (Player) entity);
   }
 
   private boolean doCriticalHit(AttributedEntity attacker, AttributedEntity defender) {

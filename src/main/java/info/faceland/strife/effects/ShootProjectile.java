@@ -3,9 +3,14 @@ package info.faceland.strife.effects;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.LogUtil;
+import java.util.List;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.entity.SmallFireball;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
@@ -17,7 +22,10 @@ public class ShootProjectile extends Effect {
   private double speed;
   private double spread;
   private double verticalBonus;
-  private String hitEffect;
+  private boolean bounce;
+  private boolean ignite;
+  private float yield;
+  private List<String> hitEffects;
 
   @Override
   public void apply(AttributedEntity caster, LivingEntity target) {
@@ -25,25 +33,45 @@ public class ShootProjectile extends Effect {
     if (projectileEntity == EntityType.FIREBALL) {
       projectiles = 1;
     }
-    double adjustedSpread = spread + projectiles * 0.005;
-    Vector direction;
+    double adjustedSpread = spread + (projectiles - 1) * 0.005;
+    Vector entityDirection;
+    if (caster.getEntity() == target) {
+      LogUtil.printWarning("Skipping self targeted projectile launched by " + getName());
+      return;
+    }
     if (targeted) {
-      direction = target.getLocation().clone().subtract(caster.getEntity().getLocation()).toVector()
-          .normalize();
+      entityDirection = target.getLocation().clone().toVector()
+          .subtract(caster.getEntity().getLocation().clone().toVector().normalize());
     } else {
-      direction = caster.getEntity().getEyeLocation().getDirection();
+      entityDirection = caster.getEntity().getEyeLocation().clone().getDirection();
     }
     for (int i = 0; i < projectiles; i++) {
       Projectile projectile = (Projectile) caster.getEntity().getWorld()
-          .spawnEntity(caster.getEntity().getLocation(), projectileEntity);
+          .spawnEntity(caster.getEntity().getEyeLocation(), projectileEntity);
       projectile.setShooter(caster.getEntity());
-      Vector velocity = direction.multiply(speed);
-      velocity.add(new Vector(
-          adjustedSpread / 2 + adjustedSpread * Math.random(),
-          adjustedSpread / 2 + adjustedSpread * Math.random() + verticalBonus,
-          adjustedSpread / 2 + adjustedSpread * Math.random()));
-      projectile.setVelocity(velocity);
-      projectile.setMetadata("EFFECT_PROJECTILE", new FixedMetadataValue(StrifePlugin.getInstance(), hitEffect));
+      Vector direction = entityDirection.clone();
+      direction.add(new Vector(
+          -adjustedSpread + 2 * adjustedSpread * Math.random(),
+          -adjustedSpread + verticalBonus + 2 * adjustedSpread * Math.random(),
+          -adjustedSpread + 2 * adjustedSpread * Math.random()));
+      direction = direction.normalize();
+      projectile.setVelocity(direction.clone().multiply(speed));
+      if (projectileEntity == EntityType.FIREBALL) {
+        ((Fireball) projectile).setYield(yield);
+        ((Fireball) projectile).setIsIncendiary(ignite);
+      } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
+        ((SmallFireball) projectile).setIsIncendiary(ignite);
+        ((SmallFireball) projectile).setDirection(direction);
+      } else if (targeted && projectileEntity == EntityType.SHULKER_BULLET) {
+        ((ShulkerBullet) projectile).setTarget(target);
+      }
+      projectile.setBounce(bounce);
+      StringBuilder hitString = new StringBuilder();
+      for (String s : hitEffects) {
+        hitString.append(s).append("~");
+      }
+      projectile.setMetadata("EFFECT_PROJECTILE",
+          new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
     }
   }
 
@@ -67,11 +95,23 @@ public class ShootProjectile extends Effect {
     this.verticalBonus = verticalBonus;
   }
 
+  public void setBounce(boolean bounce) {
+    this.bounce = bounce;
+  }
+
+  public void setIgnite(boolean ignite) {
+    this.ignite = ignite;
+  }
+
+  public void setYield(float yield) {
+    this.yield = yield;
+  }
+
   public void setTargeted(boolean targeted) {
     this.targeted = targeted;
   }
 
-  public void setHitEffect(String hitEffect) {
-    this.hitEffect = hitEffect;
+  public void setHitEffects(List<String> hitEffects) {
+    this.hitEffects = hitEffects;
   }
 }
