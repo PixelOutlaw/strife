@@ -1,4 +1,4 @@
-package info.faceland.strife.effects;
+package info.faceland.strife.data.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -29,10 +29,12 @@ public class Effect {
 
   public void execute(AttributedEntity caster, LivingEntity target) {
     if (range < 1) {
+      LogUtil.printDebug("Applying effect to " + target.getCustomName());
       apply(caster, target);
       return;
     }
     for (LivingEntity le : getTargets(caster.getEntity(), target)) {
+      LogUtil.printDebug("Applying effect to " + le.getCustomName());
       apply(caster, le);
     }
   }

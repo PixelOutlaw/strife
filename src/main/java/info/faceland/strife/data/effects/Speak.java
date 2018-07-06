@@ -1,4 +1,4 @@
-package info.faceland.strife.effects;
+package info.faceland.strife.data.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.data.AttributedEntity;

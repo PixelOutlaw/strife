@@ -106,6 +106,10 @@ public class UniqueEntityManager {
     return liveUniquesMap.containsKey(entity);
   }
 
+  public boolean isLoadedUnique(String name) {
+    return loadedUniquesMap.containsKey(name);
+  }
+
   public LivingEntity spawnUnique(String unique, Location location) {
     UniqueEntity uniqueEntity = loadedUniquesMap.get(unique);
     if (uniqueEntity == null) {

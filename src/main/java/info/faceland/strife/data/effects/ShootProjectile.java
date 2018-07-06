@@ -1,4 +1,4 @@
-package info.faceland.strife.effects;
+package info.faceland.strife.data.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -18,6 +18,7 @@ public class ShootProjectile extends Effect {
 
   private EntityType projectileEntity;
   private boolean targeted;
+  private boolean seeking;
   private int quantity;
   private double speed;
   private double spread;
@@ -33,36 +34,40 @@ public class ShootProjectile extends Effect {
     if (projectileEntity == EntityType.FIREBALL) {
       projectiles = 1;
     }
-    double adjustedSpread = spread + (projectiles - 1) * 0.005;
-    Vector entityDirection;
+    Vector castDirection;
     if (caster.getEntity() == target) {
       LogUtil.printWarning("Skipping self targeted projectile launched by " + getName());
       return;
     }
     if (targeted) {
-      entityDirection = target.getLocation().clone().toVector()
-          .subtract(caster.getEntity().getLocation().clone().toVector().normalize());
+      castDirection = target.getLocation().toVector()
+          .subtract(caster.getEntity().getEyeLocation().toVector()).normalize();
+      LogUtil.printDebug("Fetched direction to target: " + castDirection.toString());
     } else {
-      entityDirection = caster.getEntity().getEyeLocation().clone().getDirection();
+      castDirection = caster.getEntity().getEyeLocation().getDirection();
+      LogUtil.printDebug("Fetched direction caster is facing: " + castDirection.toString());
     }
+    double adjustedSpread = (projectiles - 1) * spread;
     for (int i = 0; i < projectiles; i++) {
       Projectile projectile = (Projectile) caster.getEntity().getWorld()
           .spawnEntity(caster.getEntity().getEyeLocation(), projectileEntity);
       projectile.setShooter(caster.getEntity());
-      Vector direction = entityDirection.clone();
+      Vector direction = castDirection.clone();
       direction.add(new Vector(
-          -adjustedSpread + 2 * adjustedSpread * Math.random(),
-          -adjustedSpread + verticalBonus + 2 * adjustedSpread * Math.random(),
-          -adjustedSpread + 2 * adjustedSpread * Math.random()));
+          adjustedSpread - 2 * adjustedSpread * Math.random(),
+          adjustedSpread - 2 * adjustedSpread * Math.random() + verticalBonus,
+          adjustedSpread - 2 * adjustedSpread * Math.random()));
       direction = direction.normalize();
-      projectile.setVelocity(direction.clone().multiply(speed));
+      LogUtil.printDebug("Post spread and vert bonus direction: " + direction.toString());
+      LogUtil.printDebug("Final projectile velocity: " + direction.clone().multiply(speed));
+      projectile.setVelocity(direction.multiply(speed));
       if (projectileEntity == EntityType.FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
       } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
         ((SmallFireball) projectile).setIsIncendiary(ignite);
         ((SmallFireball) projectile).setDirection(direction);
-      } else if (targeted && projectileEntity == EntityType.SHULKER_BULLET) {
+      } else if (seeking && projectileEntity == EntityType.SHULKER_BULLET) {
         ((ShulkerBullet) projectile).setTarget(target);
       }
       projectile.setBounce(bounce);
@@ -109,6 +114,10 @@ public class ShootProjectile extends Effect {
 
   public void setTargeted(boolean targeted) {
     this.targeted = targeted;
+  }
+
+  public void setSeeking(boolean seeking) {
+    this.seeking = seeking;
   }
 
   public void setHitEffects(List<String> hitEffects) {

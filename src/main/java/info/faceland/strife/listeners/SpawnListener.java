@@ -46,7 +46,8 @@ public class SpawnListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
-    if (event.isCancelled() || event.getEntity().hasMetadata("BOSS")) {
+    if (event.isCancelled() || event.getEntity().hasMetadata("BOSS") ||
+        event.getEntity().hasMetadata("NPC")) {
       return;
     }
     LivingEntity entity = event.getEntity();
@@ -81,12 +82,14 @@ public class SpawnListener implements Listener {
       return;
     }
     int startingLevel = plugin.getSettings().getInt(
-        "config.leveled-monsters.enabled-worlds." + event.getLocation().getWorld().getName() + ".starting-level",
+        "config.leveled-monsters.enabled-worlds." + event.getLocation().getWorld().getName()
+            + ".starting-level",
         -1);
     if (startingLevel <= 0) {
       return;
     }
-    double distance = event.getLocation().distance(event.getLocation().getWorld().getSpawnLocation());
+    double distance = event.getLocation()
+        .distance(event.getLocation().getWorld().getSpawnLocation());
 
     double pow = plugin.getSettings().getInt(
         "config.leveled-monsters.enabled-worlds." + event.getLocation().getWorld().getName()
@@ -125,7 +128,7 @@ public class SpawnListener implements Listener {
     double health = statMap.getOrDefault(HEALTH, 10D) * (1 + statMap
         .getOrDefault(HEALTH_MULT, 0D));
     if (entity instanceof Slime) {
-      health *= 0.6 + (double)((Slime) entity).getSize() / 3.0;
+      health *= 0.6 + (double) ((Slime) entity).getSize() / 3.0;
     }
     entity.getAttribute(GENERIC_MAX_HEALTH).setBaseValue(health);
     entity.setHealth(health);

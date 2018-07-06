@@ -8,16 +8,19 @@ import info.faceland.strife.data.Ability.TargetType;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
-import info.faceland.strife.effects.Effect;
-import info.faceland.strife.effects.Wait;
+import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.data.effects.Wait;
 import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Chicken;
@@ -32,6 +35,7 @@ public class AbilityManager {
   private final EffectManager effectManager;
   private final UniqueEntityManager uniqueEntityManager;
   private final Map<String, Ability> loadedAbilities;
+  private final Set<Material> ignoredMaterials;
 
   private static final String ON_COOLDOWN = TextUtils.color("&f&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
@@ -41,6 +45,11 @@ public class AbilityManager {
     this.effectManager = effectManager;
     this.uniqueEntityManager = uniqueEntityManager;
     this.loadedAbilities = new HashMap<>();
+    this.ignoredMaterials = new HashSet<>();
+    this.ignoredMaterials.add(Material.AIR);
+    this.ignoredMaterials.add(Material.LONG_GRASS);
+    this.ignoredMaterials.add(Material.WALL_SIGN);
+    this.ignoredMaterials.add(Material.SIGN_POST);
   }
 
   public Ability getAbility(String name) {
@@ -73,12 +82,13 @@ public class AbilityManager {
       LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
       return;
     }
+    LogUtil.printDebug("Target: " + target.getName() + " | " + target.getCustomName());
     uniqueEntityManager.getData(caster.getEntity()).setCooldown(ability);
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
       if (effect instanceof Wait) {
-        LogUtil.printDebug("ree " + taskEffects.toString());
+        LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
         runEffects(caster, target, taskEffects, waitTicks);
         waitTicks += ((Wait) effect).getTickDelay();
         taskEffects = new ArrayList<>();
@@ -168,12 +178,32 @@ public class AbilityManager {
     }, delay);
   }
 
+  private LivingEntity getTarget(AttributedEntity caster, Ability ability) {
+    switch (ability.getTargetType()) {
+      case SELF:
+        return caster.getEntity();
+      case OTHER:
+        return selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
+      case RANGE:
+        LivingEntity target = selectFirstEntityInSight(caster.getEntity(),
+            (int) ability.getRange());
+        if (target == null) {
+          target = getBackupEntity(caster.getEntity(), ability.getRange());
+        }
+        return target;
+    }
+    return null;
+  }
+
   private LivingEntity selectFirstEntityInSight(LivingEntity caster, int range) {
     if (caster instanceof Creature && ((Creature) caster).getTarget() != null) {
+      LogUtil.printDebug("Creature target found. Using it instead of raycast");
+      LogUtil.printDebug("Creature target found. Using it instead of raycast");
       return ((Creature) caster).getTarget();
     }
+    LogUtil.printDebug("No creature target found. Using raycast");
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    ArrayList<Block> sightBlock = (ArrayList<Block>) caster.getLineOfSight(null, range);
+    ArrayList<Block> sightBlock = (ArrayList<Block>) caster.getLineOfSight(ignoredMaterials, range);
     ArrayList<Location> sight = new ArrayList<>();
     for (Block b : sightBlock) {
       sight.add(b.getLocation());
@@ -209,23 +239,6 @@ public class AbilityManager {
     chicken.setCustomNameVisible(true);
     chicken.setCustomName(TEST_CHICKEN);
     return chicken;
-  }
-
-  private LivingEntity getTarget(AttributedEntity caster, Ability ability) {
-    switch (ability.getTargetType()) {
-      case SELF:
-        return caster.getEntity();
-      case OTHER:
-        return selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
-      case RANGE:
-        LivingEntity target = selectFirstEntityInSight(caster.getEntity(),
-            (int) ability.getRange());
-        if (target == null) {
-          target = getBackupEntity(caster.getEntity(), ability.getRange());
-        }
-        return target;
-    }
-    return null;
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {

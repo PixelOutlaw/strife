@@ -1,4 +1,4 @@
-package info.faceland.strife.effects;
+package info.faceland.strife.data.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;

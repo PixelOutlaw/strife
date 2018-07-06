@@ -44,7 +44,19 @@ public class SpawnerManager {
 
   public void spawnSpawners() {
     for (Spawner s : spawnerMap.values()) {
-      attemptSpawn(s);
+      if (!s.getChunk().isLoaded()) {
+        s.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
+        continue;
+      }
+      if (System.currentTimeMillis() < s.getRespawnTime()) {
+        continue;
+      }
+      if (s.getTrackedEntity() != null && s.getTrackedEntity().isValid()) {
+        s.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
+        continue;
+      }
+      LivingEntity le = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
+      s.setTrackedEntity(le);
     }
   }
 
@@ -55,21 +67,5 @@ public class SpawnerManager {
         return;
       }
     }
-  }
-
-  private void attemptSpawn(Spawner spawner) {
-    if (!spawner.getChunk().isLoaded()) {
-      spawner.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
-      return;
-    }
-    if (System.currentTimeMillis() < spawner.getRespawnTime()) {
-      return;
-    }
-    if (spawner.getTrackedEntity() != null && spawner.getTrackedEntity().isValid()) {
-      spawner.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
-      return;
-    }
-    LivingEntity le = uniqueManager.spawnUnique(spawner.getUniqueEntity(), spawner.getLocation());
-    spawner.setTrackedEntity(le);
   }
 }

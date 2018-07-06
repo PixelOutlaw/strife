@@ -679,9 +679,13 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = spawnerYAML.getConfigurationSection(spawnerId);
 
       String uniqueId = cs.getString("unique");
+      if (!uniqueEntityManager.isLoadedUnique(uniqueId)) {
+        LogUtil.printWarning("Skipping spawner " + spawnerId + " with invalid unique " + uniqueId);
+        continue;
+      }
       UniqueEntity uniqueEntity = uniqueEntityManager.getLoadedUniquesMap().get(uniqueId);
 
-      int respawnSeconds = cs.getInt("respawn-tickDelay", 30);
+      int respawnSeconds = cs.getInt("respawn-seconds", 30);
       double leashRange = cs.getDouble("leash-dist", 10);
 
       double xPos = cs.getDouble("location.x");
@@ -700,7 +704,7 @@ public class StrifePlugin extends FacePlugin {
     for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
       spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
-      spawnerYAML.set(spawnerId + ".respawn-tickDelay", spawner.getRespawnSeconds());
+      spawnerYAML.set(spawnerId + ".respawn-seconds", spawner.getRespawnSeconds());
       spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
       spawnerYAML.set(spawnerId + ".location.world", spawner.getLocation().getWorld().getName());
       spawnerYAML.set(spawnerId + ".location.x", spawner.getLocation().getX());
