@@ -259,7 +259,7 @@ public class CombatListener implements Listener {
     double bleedAmount = 0;
     if (physicalBaseDamage > 0 && attacker.getAttribute(BLEED_CHANCE) / 100 >= rollDouble()) {
       bleedAmount = physicalBaseDamage * 0.5D * attackMultiplier * pvpMult * (1 + attacker
-          .getAttribute(BLEED_DAMAGE));
+          .getAttribute(BLEED_DAMAGE) / 100);
       bleedAmount += bleedAmount * bonusCriticalMultiplier;
       if (!plugin.getBarrierManager().isBarrierUp(defender)) {
         plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, BLEED_TICKS_PER_5_SEC);
