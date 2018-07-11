@@ -87,8 +87,16 @@ public class CombatListener implements Listener {
       }
     } else if (event.getDamager() instanceof EvokerFangs) {
       attackEntity = ((EvokerFangs) event.getDamager()).getOwner();
-    } else {
+    } else if (event.getDamager() instanceof TNTPrimed) {
+      double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
+      double explosionMult = Math.max(0.3, 4 / (distance + 3));
+      event.setDamage(explosionMult * (10 + defendEntity.getMaxHealth() * 0.4));
+      return;
+    } else if (event.getDamager() instanceof LivingEntity){
       attackEntity = (LivingEntity) event.getDamager();
+    } else {
+      event.setDamage(1);
+      return;
     }
 
     ItemUtil.updateHashes(attackEntity);
