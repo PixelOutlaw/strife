@@ -71,6 +71,7 @@ public class StrifeCommand {
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
             champion.setLevel(stat, 0);
         }
+        champion.setHighestReachedLevel(target.getLevel());
         champion.setUnusedStatPoints(target.getLevel());
         plugin.getChampionManager().removeChampion(champion.getUniqueId());
         plugin.getChampionManager().addChampion(champion);
