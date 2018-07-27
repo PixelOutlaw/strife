@@ -139,7 +139,6 @@ public class JsonDataStorage implements DataStorage {
                 continue;
             }
             ConfigurationSection section = config.getConfigurationSection(key);
-            boolean hadReset = checkResetAndSetLevels(section, saveData, true);
             saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
             saveData.setBonusLevels(section.getInt("bonus-levels"));
             saveData.setCraftingLevel(section.getInt("crafting-level"));
@@ -148,10 +147,15 @@ public class JsonDataStorage implements DataStorage {
             saveData.setEnchantExp((float)section.getDouble("enchant-exp"));
             saveData.setFishingLevel(section.getInt("fishing-level"));
             saveData.setFishingExp((float)section.getDouble("fishing-exp"));
-            if (hadReset) {
-                saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
-            } else {
-                saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+
+            saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+            ConfigurationSection statsSection = section.getConfigurationSection("stats");
+            for (String k : statsSection.getKeys(false)) {
+                StrifeStat stat = plugin.getStatManager().getStat(k);
+                if (stat == null) {
+                    continue;
+                }
+                saveData.setLevel(stat, statsSection.getInt(k));
             }
         }
         return saveData;
@@ -169,7 +173,6 @@ public class JsonDataStorage implements DataStorage {
             ConfigurationSection section = configuration.getConfigurationSection(key);
             UUID uuid = UUID.fromString(key);
             ChampionSaveData saveData = new ChampionSaveData(uuid);
-            boolean hadReset = checkResetAndSetLevels(section, saveData, true);
             saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
             saveData.setBonusLevels(section.getInt("bonus-levels"));
             saveData.setCraftingLevel(section.getInt("crafting-level"));
@@ -178,10 +181,14 @@ public class JsonDataStorage implements DataStorage {
             saveData.setEnchantExp((float)section.getDouble("enchant-exp"));
             saveData.setFishingLevel(section.getInt("fishing-level"));
             saveData.setFishingExp((float)section.getDouble("fishing-exp"));
-            if (hadReset) {
-                saveData.setUnusedStatPoints(saveData.getHighestReachedLevel());
-            } else {
-                saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+            saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+            ConfigurationSection statsSection = section.getConfigurationSection("stats");
+            for (String k : statsSection.getKeys(false)) {
+                StrifeStat stat = plugin.getStatManager().getStat(k);
+                if (stat == null) {
+                    continue;
+                }
+                saveData.setLevel(stat, statsSection.getInt(k));
             }
             collection.add(saveData);
         }
@@ -216,21 +223,6 @@ public class JsonDataStorage implements DataStorage {
     //    }
     //    return saveData;
     //}
-
-    private boolean checkResetAndSetLevels(ConfigurationSection section, ChampionSaveData champion, boolean hadReset) {
-        if (section.isConfigurationSection("stats")) {
-            ConfigurationSection statsSection = section.getConfigurationSection("stats");
-            for (String k : statsSection.getKeys(false)) {
-                StrifeStat stat = plugin.getStatManager().getStat(k);
-                if (stat == null) {
-                    continue;
-                }
-                champion.setLevel(stat, statsSection.getInt(k));
-            }
-            hadReset = false;
-        }
-        return hadReset;
-    }
 
     private boolean loadIfAble() {
         long now = System.currentTimeMillis();
