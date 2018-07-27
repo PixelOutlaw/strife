@@ -40,7 +40,6 @@ import info.faceland.strife.listeners.*;
 import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
-import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.*;
@@ -52,21 +51,14 @@ import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.SkullType;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 import java.io.File;
@@ -337,6 +329,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SummonListener(uniqueEntityManager), this);
+    Bukkit.getPluginManager().registerEvents(new TargetingListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(entityStatCache), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
@@ -440,98 +433,20 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = equipmentYAML.getConfigurationSection(itemStackKey);
-
-      Material material;
-      String type = cs.getString("material");
-      try {
-        material = Material.getMaterial(type);
-      } catch (Exception e) {
-        getLogger().severe("Skipping item " + itemStackKey + " for invalid material");
-        continue;
-      }
-
-      ItemStack itemStack;
-      SkullType skullType = null;
-      if (material != Material.SKULL_ITEM) {
-        itemStack = new ItemStack(material);
-      } else {
-        skullType = SkullType.valueOf(cs.getString("skull-type", "ZOMBIE"));
-        itemStack = new ItemStack(Material.SKULL_ITEM, 1, (short) skullType.ordinal());
-      }
-      ItemMeta meta = itemStack.getItemMeta();
-
-      String name = cs.getString("name", "");
-      if (StringUtils.isNotBlank(name)) {
-        meta.setDisplayName(TextUtils.color(name));
-      }
-
-      List<String> lore = new ArrayList<>();
-      for (String line : cs.getStringList("lore")) {
-        lore.add(TextUtils.color(line));
-      }
-      meta.setLore(lore);
-
-      itemStack.setItemMeta(meta);
-
-      if (material == Material.SKULL_ITEM && skullType == SkullType.PLAYER) {
-        UUID uuid = UUID.fromString(cs.getString("uuid", "b4064ecc-5508-4848-ae4d-f12fbebd0a52"));
-        SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
-        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
-        itemStack.setItemMeta(skullMeta);
-      }
-
-      equipmentManager.getItemMap().put(itemStackKey, itemStack);
+      equipmentManager.loadEquipmentItem(itemStackKey, cs);
     }
+    LogUtil.printDebug("Loaded equipments: " + equipmentManager.getItemMap().entrySet().toString());
   }
 
   private void buildLevelpointStats() {
-    List<StrifeStat> stats = new ArrayList<>();
-    List<String> loadedStats = new ArrayList<>();
     for (String key : statsYAML.getKeys(false)) {
       if (!statsYAML.isConfigurationSection(key)) {
         continue;
       }
       ConfigurationSection cs = statsYAML.getConfigurationSection(key);
-      StrifeStat stat = new StrifeStat(key);
-      stat.setName(cs.getString("name"));
-      stat.setDescription(cs.getStringList("description"));
-      stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
-      stat.setSlot(cs.getInt("slot"));
-      stat.setStartCap(cs.getInt("starting-cap", 0));
-      stat.setMaxCap(cs.getInt("maximum-cap", 100));
-      stat.setLevelsToRaiseCap(cs.getInt("levels-to-raise-cap", -1));
-      Map<String, Integer> baseStatRequirements = new HashMap<>();
-      if (cs.isConfigurationSection("base-attribute-requirements")) {
-        ConfigurationSection reqs = cs.getConfigurationSection("base-attribute-requirements");
-        for (String k : reqs.getKeys(false)) {
-          baseStatRequirements.put(k, reqs.getInt(k));
-        }
-      }
-      Map<String, Integer> raiseStatCapAttributes = new HashMap<>();
-      if (cs.isConfigurationSection("attributes-to-raise-cap")) {
-        ConfigurationSection raiseReqs = cs.getConfigurationSection("attributes-to-raise-cap");
-        for (String k : raiseReqs.getKeys(false)) {
-          raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
-        }
-      }
-      Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
-      if (cs.isConfigurationSection("attributes")) {
-        ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
-        for (String k : attrCS.getKeys(false)) {
-          StrifeAttribute attr = StrifeAttribute.valueOf(k);
-          attributeMap.put(attr, attrCS.getDouble(k));
-        }
-      }
-      stat.setStatIncreaseIncrements(raiseStatCapAttributes);
-      stat.setBaseStatRequirements(baseStatRequirements);
-      stat.setAttributeMap(attributeMap);
-      stats.add(stat);
-      loadedStats.add(stat.getKey());
+      statManager.loadStat(key, cs);
     }
-    for (StrifeStat stat : stats) {
-      getStatManager().addStat(stat);
-    }
-    debug(Level.INFO, "Loaded stats: " + loadedStats.toString());
+    LogUtil.printDebug("Loaded levelpoints: " + statManager.getStats().toString());
   }
 
   private void buildBaseStats() {
