@@ -53,7 +53,7 @@ public class DataListener implements Listener {
   public void onPlayerJoin(final PlayerJoinEvent event) {
     if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
       ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
-      if (getChampionLevelpoints(saveData) < event.getPlayer().getLevel()) {
+      if (getChampionLevelpoints(saveData) != event.getPlayer().getLevel()) {
         notifyResetPoints(event.getPlayer());
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
           saveData.setLevel(stat, 0);
