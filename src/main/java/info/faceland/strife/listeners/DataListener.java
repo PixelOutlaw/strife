@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -47,6 +48,13 @@ public class DataListener implements Listener {
   public void onPlayerJoin(final PlayerJoinEvent event) {
     if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
       ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
+      if (requiresReset(event.getPlayer(), saveData)) {
+        for (StrifeStat stat : plugin.getStatManager().getStats()) {
+          saveData.setLevel(stat, 0);
+        }
+        saveData.setHighestReachedLevel(event.getPlayer().getLevel());
+        saveData.setUnusedStatPoints(event.getPlayer().getLevel());
+      }
       plugin.getChampionManager().addChampion(new Champion(saveData));
     }
     if (plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId())
@@ -92,5 +100,20 @@ public class DataListener implements Listener {
                 (ChatColor.GOLD).send(player);
       }
     }, 20L * 2);
+  }
+
+  private boolean requiresReset(Player player, ChampionSaveData championSaveData) {
+    if (championSaveData.getHighestReachedLevel() < player.getLevel()) {
+      return true;
+    }
+    return getChampionLevelpoints(championSaveData) < player.getLevel();
+  }
+
+  private int getChampionLevelpoints(ChampionSaveData championSaveData) {
+    int total = championSaveData.getUnusedStatPoints();
+    for (StrifeStat stat : championSaveData.getLevelMap().keySet()) {
+      total += championSaveData.getLevel(stat);
+    }
+    return total;
   }
 }
