@@ -18,13 +18,12 @@
  */
 package info.faceland.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -39,6 +38,12 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 public class DataListener implements Listener {
 
   private final StrifePlugin plugin;
+  private final static String RESET_MESSAGE =
+      "&a&lYour Levelpoints have been automatically reset due to an update!";
+  private final static String UNUSED_MESSAGE_1 =
+      "&6&lLevelup! You have &f&l{0} &6&lunused Levelpoints!";
+  private final static String UNUSED_MESSAGE_2 =
+      "&6&lOpen your inventory or use &f&l/levelup &6&lto spend them!";
 
   public DataListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -48,7 +53,8 @@ public class DataListener implements Listener {
   public void onPlayerJoin(final PlayerJoinEvent event) {
     if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
       ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
-      if (requiresReset(event.getPlayer(), saveData)) {
+      if (getChampionLevelpoints(saveData) < event.getPlayer().getLevel()) {
+        notifyResetPoints(event.getPlayer());
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
           saveData.setLevel(stat, 0);
         }
@@ -57,11 +63,12 @@ public class DataListener implements Listener {
       }
       plugin.getChampionManager().addChampion(new Champion(saveData));
     }
-    if (plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId())
-        .getUnusedStatPoints() > 0) {
-      notifyUnusedPoints(event.getPlayer());
+    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+    if (champion.getUnusedStatPoints() > 0) {
+      notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    plugin.getBarrierManager().createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+    plugin.getBarrierManager()
+        .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -72,7 +79,8 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
-    plugin.getBarrierManager().createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+    plugin.getBarrierManager()
+        .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -88,25 +96,23 @@ public class DataListener implements Listener {
     }
   }
 
-  private void notifyUnusedPoints(final Player player) {
+  private void notifyUnusedPoints(final Player player, final int unused) {
     Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
       @Override
       public void run() {
-        FancyMessage message = new FancyMessage("");
-        message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE")
-            .command("/levelup").color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD)
-            .then("/levelup").color(ChatColor.WHITE).then(" to spend them and raise your stats!")
-            .color
-                (ChatColor.GOLD).send(player);
+        MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
+        MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
       }
-    }, 20L * 2);
+    }, 20L * 5);
   }
 
-  private boolean requiresReset(Player player, ChampionSaveData championSaveData) {
-    if (championSaveData.getHighestReachedLevel() < player.getLevel()) {
-      return true;
-    }
-    return getChampionLevelpoints(championSaveData) < player.getLevel();
+  private void notifyResetPoints(final Player player) {
+    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+      @Override
+      public void run() {
+        MessageUtils.sendMessage(player, RESET_MESSAGE);
+      }
+    }, 20L * 3);
   }
 
   private int getChampionLevelpoints(ChampionSaveData championSaveData) {
