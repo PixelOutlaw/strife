@@ -6,6 +6,7 @@ import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.UniqueEntityData;
 import info.faceland.strife.util.LogUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
@@ -168,20 +169,7 @@ public class UniqueEntityManager {
           spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue() * speed);
     }
 
-    spawnedUnique.getEquipment().clear();
-
-    spawnedUnique.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
-    spawnedUnique.getEquipment().setHelmetDropChance(0f);
-    spawnedUnique.getEquipment().setChestplate(uniqueEntity.getChestItem());
-    spawnedUnique.getEquipment().setChestplateDropChance(0f);
-    spawnedUnique.getEquipment().setLeggings(uniqueEntity.getLegsItem());
-    spawnedUnique.getEquipment().setLeggingsDropChance(0f);
-    spawnedUnique.getEquipment().setBoots(uniqueEntity.getBootsItem());
-    spawnedUnique.getEquipment().setBootsDropChance(0f);
-    spawnedUnique.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
-    spawnedUnique.getEquipment().setItemInMainHandDropChance(0f);
-    spawnedUnique.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
-    spawnedUnique.getEquipment().setItemInOffHandDropChance(0f);
+    delayedEquip(uniqueEntity, spawnedUnique);
 
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
@@ -190,5 +178,27 @@ public class UniqueEntityManager {
     liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
     plugin.getAbilityManager().checkPhaseChange(plugin.getEntityStatCache().getAttributedEntity(spawnedUnique));
     return spawnedUnique;
+  }
+
+  private void delayedEquip(UniqueEntity uniqueEntity, LivingEntity spawnedEntity) {
+    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+      @Override
+      public void run() {
+        spawnedEntity.getEquipment().clear();
+        spawnedEntity.setCanPickupItems(false);
+        spawnedEntity.getEquipment().setHelmetDropChance(0f);
+        spawnedEntity.getEquipment().setChestplateDropChance(0f);
+        spawnedEntity.getEquipment().setLeggingsDropChance(0f);
+        spawnedEntity.getEquipment().setBootsDropChance(0f);
+        spawnedEntity.getEquipment().setItemInMainHandDropChance(0f);
+        spawnedEntity.getEquipment().setItemInOffHandDropChance(0f);
+        spawnedEntity.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
+        spawnedEntity.getEquipment().setChestplate(uniqueEntity.getChestItem());
+        spawnedEntity.getEquipment().setLeggings(uniqueEntity.getLegsItem());
+        spawnedEntity.getEquipment().setBoots(uniqueEntity.getBootsItem());
+        spawnedEntity.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
+        spawnedEntity.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
+      }
+    }, 1L);
   }
 }

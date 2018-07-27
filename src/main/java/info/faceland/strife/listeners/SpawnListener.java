@@ -10,16 +10,20 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.UniqueEntity;
+import info.faceland.strife.data.UniqueEntityData;
 import java.util.Map;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Witch;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -107,6 +111,13 @@ public class SpawnListener implements Listener {
     }
 
     entity.getEquipment().clear();
+    entity.setCanPickupItems(false);
+    entity.getEquipment().setHelmetDropChance(0f);
+    entity.getEquipment().setChestplateDropChance(0f);
+    entity.getEquipment().setLeggingsDropChance(0f);
+    entity.getEquipment().setBootsDropChance(0f);
+    entity.getEquipment().setItemInMainHandDropChance(0f);
+    entity.getEquipment().setItemInOffHandDropChance(0f);
     equipEntity(entity);
 
     String rankName = "";
@@ -123,7 +134,6 @@ public class SpawnListener implements Listener {
     name = rankName + name;
 
     entity.setCustomName(name);
-    entity.setCanPickupItems(false);
 
     double health = statMap.getOrDefault(HEALTH, 10D) * (1 + statMap
         .getOrDefault(HEALTH_MULT, 0D));
@@ -153,8 +163,6 @@ public class SpawnListener implements Listener {
         } else {
           livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLD_SWORD));
         }
-        livingEntity.getEquipment().setItemInMainHandDropChance(0f);
-        livingEntity.getEquipment().setHelmetDropChance(0f);
         break;
       case SKELETON:
         if (random.nextDouble() < plugin.getSettings()
@@ -167,7 +175,6 @@ public class SpawnListener implements Listener {
         } else {
           livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
         }
-        livingEntity.getEquipment().setItemInMainHandDropChance(0f);
         break;
       case VINDICATOR:
         livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_AXE));
