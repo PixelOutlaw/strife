@@ -27,8 +27,7 @@ import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
-import info.faceland.strife.util.ItemTypeUtil;
+import info.faceland.strife.util.ItemUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Ghast;
@@ -92,7 +91,7 @@ public class WandListener implements Listener{
 
         ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
 
-        if (!ItemTypeUtil.isWand(wand)) {
+        if (!ItemUtil.isWand(wand)) {
             return;
         }
 
@@ -103,7 +102,7 @@ public class WandListener implements Listener{
             return;
         }
 
-        hashUpdates(playerEntity);
+        ItemUtil.updateHashes(playerEntity);
 
         double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
         double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
@@ -158,17 +157,5 @@ public class WandListener implements Listener{
     private double randomOffset(double magnitude) {
         magnitude = 0.1 + magnitude * 0.005;
         return (random.nextDouble() * magnitude * 2) - magnitude;
-    }
-
-    private void hashUpdates(LivingEntity entity) {
-        if (!(entity instanceof Player)) {
-            return;
-        }
-        Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
-        if (champion.isEquipmentHashMatching()) {
-            return;
-        }
-        champion.updateHashedEquipment();
-        plugin.getChampionManager().updateAll(champion);
     }
 }

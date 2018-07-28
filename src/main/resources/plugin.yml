@@ -27,6 +27,8 @@ permissions:
     default: op
   strife.command.strife.addxp:
     default: op
+  strife.command.reload:
+    default: op
   strife.xp:
     default: false
   strife.mult.75:

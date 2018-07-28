@@ -1,0 +1,56 @@
+version: 0.0.1
+smol-bol-blast:
+  type: PROJECTILE
+  projectile-type: SMALL_FIREBALL
+  quantity: 10
+  damage: 1
+  spread: 1
+  speed: 2
+  name: "&7blastem"
+deal-10-damage:
+  type: DAMAGE
+  scale: FLAT
+  damage-type: TRUE
+  amount: 10
+  name: "&7tru ten boi"
+full-heal:
+  type: HEAL
+  scale: MAXIMUM_HP
+  amount: 1.0
+  name: "&7100% heal wew"
+  self-affect: true
+  friendly: true
+ignite-200-ticks:
+  type: IGNITE
+  name: "&7memelord's blast"
+  range: 20
+  duration: 200
+single-ignite-200-ticks:
+  type: IGNITE
+  name: "&7memelord's strike"
+  range: 0
+  duration: 200
+ignite-warning:
+  type: SPEAK
+  name: "&7angreh"
+  range: 20
+  message: "&c[MEMER] &fFOOL! I WILL IGNITE YOU NOW!"
+wait-one-second:
+  type: WAIT
+  duration: 20
+begone-fool:
+  type: SPEAK
+  name: "&2meanie"
+  range: 20
+  message: "&8[Boss] &fZombo: &7Begone, fool!"
+mass-poison:
+  type: POTION
+  name: "Mass Poison"
+  effect: POISON
+  range: 10
+  duration: 1200
+  intensity: 0
+knockbackp-20:
+  type: KNOCKBACK
+  name: "Mass Poison"
+  power: 20
