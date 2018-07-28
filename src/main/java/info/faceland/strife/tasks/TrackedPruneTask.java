@@ -24,7 +24,6 @@ package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -45,7 +44,7 @@ public class TrackedPruneTask extends BukkitRunnable {
             }
             invalidEntities.add(uuid);
         }
-        System.out.println("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
+        plugin.getLogger().info("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
         for (UUID uuid : invalidEntities) {
             plugin.getEntityStatCache().removeEntity(uuid);
         }
