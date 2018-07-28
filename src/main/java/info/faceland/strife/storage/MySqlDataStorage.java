@@ -51,8 +51,4 @@ public class MySqlDataStorage implements DataStorage {
         return null;
     }
 
-    @Override
-    public Collection<ChampionSaveData> oldLoad() {
-        return null;
-    }
 }

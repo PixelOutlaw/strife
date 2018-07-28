@@ -145,51 +145,53 @@ public class JsonDataStorage implements DataStorage {
       saveData.setFishingExp((float) section.getDouble("fishing-exp"));
 
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
-      ConfigurationSection statsSection = section.getConfigurationSection("stats");
-      for (String k : statsSection.getKeys(false)) {
-        StrifeStat stat = plugin.getStatManager().getStat(k);
-        if (stat == null) {
-          continue;
+      if (section.isConfigurationSection("stats")) {
+        ConfigurationSection statsSection = section.getConfigurationSection("stats");
+        for (StrifeStat s : plugin.getStatManager().getStats()) {
+          saveData.setLevel(s, statsSection.getInt(s.getKey(), 0));
         }
-        saveData.setLevel(stat, statsSection.getInt(k));
+      } else {
+        for (StrifeStat s : plugin.getStatManager().getStats()) {
+          saveData.setLevel(s, 0);
+        }
       }
     }
     return saveData;
   }
 
-  public Collection<ChampionSaveData> oldLoad() {
-    if (loadIfAble()) {
-      plugin.debug(Level.FINE, "Loading data.json");
-    }
-    Collection<ChampionSaveData> collection = new HashSet<>();
-    for (String key : configuration.getKeys(false)) {
-      if (!configuration.isConfigurationSection(key)) {
-        continue;
-      }
-      ConfigurationSection section = configuration.getConfigurationSection(key);
-      UUID uuid = UUID.fromString(key);
-      ChampionSaveData saveData = new ChampionSaveData(uuid);
-      saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
-      saveData.setBonusLevels(section.getInt("bonus-levels"));
-      saveData.setCraftingLevel(section.getInt("crafting-level"));
-      saveData.setCraftingExp((float) section.getDouble("crafting-exp"));
-      saveData.setEnchantLevel(section.getInt("enchant-level"));
-      saveData.setEnchantExp((float) section.getDouble("enchant-exp"));
-      saveData.setFishingLevel(section.getInt("fishing-level"));
-      saveData.setFishingExp((float) section.getDouble("fishing-exp"));
-      saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
-      ConfigurationSection statsSection = section.getConfigurationSection("stats");
-      for (String k : statsSection.getKeys(false)) {
-        StrifeStat stat = plugin.getStatManager().getStat(k);
-        if (stat == null) {
-          continue;
-        }
-        saveData.setLevel(stat, statsSection.getInt(k));
-      }
-      collection.add(saveData);
-    }
-    return collection;
-  }
+  //public Collection<ChampionSaveData> oldLoad() {
+  //  if (loadIfAble()) {
+  //    plugin.debug(Level.FINE, "Loading data.json");
+  //  }
+  //  Collection<ChampionSaveData> collection = new HashSet<>();
+  //  for (String key : configuration.getKeys(false)) {
+  //    if (!configuration.isConfigurationSection(key)) {
+  //      continue;
+  //    }
+  //    ConfigurationSection section = configuration.getConfigurationSection(key);
+  //    UUID uuid = UUID.fromString(key);
+  //    ChampionSaveData saveData = new ChampionSaveData(uuid);
+  //    saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
+  //    saveData.setBonusLevels(section.getInt("bonus-levels"));
+  //    saveData.setCraftingLevel(section.getInt("crafting-level"));
+  //    saveData.setCraftingExp((float) section.getDouble("crafting-exp"));
+  //    saveData.setEnchantLevel(section.getInt("enchant-level"));
+  //    saveData.setEnchantExp((float) section.getDouble("enchant-exp"));
+  //    saveData.setFishingLevel(section.getInt("fishing-level"));
+  //    saveData.setFishingExp((float) section.getDouble("fishing-exp"));
+  //    saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
+  //    ConfigurationSection statsSection = section.getConfigurationSection("stats");
+  //    for (String k : statsSection.getKeys(false)) {
+  //      StrifeStat stat = plugin.getStatManager().getStat(k);
+  //      if (stat == null) {
+  //        continue;
+  //      }
+  //      saveData.setLevel(stat, statsSection.getInt(k));
+  //    }
+  //    collection.add(saveData);
+  //  }
+  //  return collection;
+  //}
 
   //@Override
   //public ChampionSaveData load(UUID uuid) {
