@@ -24,9 +24,11 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityStatData;
+import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -85,6 +87,39 @@ public class MonsterManager {
     }
     return AttributeHandler
         .combineMaps(entityStatDataMap.get(entityType).getBaseValueMap(), levelStats);
+  }
+
+  public void loadBaseStats(String key, ConfigurationSection cs) {
+    EntityType entityType;
+    try {
+      entityType = EntityType.valueOf(key);
+    } catch (Exception e) {
+      LogUtil.printWarning("Skipping base stat load for invalid entity type '" + key + "'");
+      return;
+    }
+    EntityStatData data = new EntityStatData();
+    if (cs.isConfigurationSection("base-values")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
+      for (String k : attrCS.getKeys(false)) {
+        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        data.putBaseValue(attr, attrCS.getDouble(k));
+      }
+    }
+    if (cs.isConfigurationSection("per-level")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
+      for (String k : attrCS.getKeys(false)) {
+        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        data.putPerLevel(attr, attrCS.getDouble(k));
+      }
+    }
+    if (cs.isConfigurationSection("per-bonus-level")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
+      for (String k : attrCS.getKeys(false)) {
+        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        data.putPerBonusLevel(attr, attrCS.getDouble(k));
+      }
+    }
+    addEntityData(entityType, data);
   }
 
   private int getEntityLevel(LivingEntity entity) {

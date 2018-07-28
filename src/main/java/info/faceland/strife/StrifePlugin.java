@@ -454,31 +454,8 @@ public class StrifePlugin extends FacePlugin {
       if (!baseStatsYAML.isConfigurationSection(entityKey)) {
         continue;
       }
-      EntityType entityType = EntityType.valueOf(entityKey);
       ConfigurationSection cs = baseStatsYAML.getConfigurationSection(entityKey);
-      EntityStatData data = new EntityStatData();
-      if (cs.isConfigurationSection("base-values")) {
-        ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
-        for (String k : attrCS.getKeys(false)) {
-          StrifeAttribute attr = StrifeAttribute.valueOf(k);
-          data.putBaseValue(attr, attrCS.getDouble(k));
-        }
-      }
-      if (cs.isConfigurationSection("per-level")) {
-        ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
-        for (String k : attrCS.getKeys(false)) {
-          StrifeAttribute attr = StrifeAttribute.valueOf(k);
-          data.putPerLevel(attr, attrCS.getDouble(k));
-        }
-      }
-      if (cs.isConfigurationSection("per-bonus-level")) {
-        ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
-        for (String k : attrCS.getKeys(false)) {
-          StrifeAttribute attr = StrifeAttribute.valueOf(k);
-          data.putPerBonusLevel(attr, attrCS.getDouble(k));
-        }
-      }
-      getMonsterManager().addEntityData(entityType, data);
+      monsterManager.loadBaseStats(entityKey, cs);
     }
   }
 
