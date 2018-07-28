@@ -15,10 +15,7 @@ public class AttributedEntity {
   }
 
   public double getAttribute(StrifeAttribute attribute) {
-    if (attributeCache.get(attribute) == null) {
-      return 0;
-    }
-    return attributeCache.get(attribute);
+    return attributeCache.getOrDefault(attribute, 0D);
   }
 
   public LivingEntity getEntity() {

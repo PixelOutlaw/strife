@@ -73,6 +73,7 @@ public enum StrifeAttribute {
     MAX_EARTH_RUNES(),
 
     BLEED_CHANCE("Bleed Chance"),
+    BLEED_DAMAGE("Bleed Damage"),
 
     LIFE_STEAL("Life Steal"),
     HP_ON_HIT("Health On Hit"),

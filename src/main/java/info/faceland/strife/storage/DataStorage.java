@@ -32,12 +32,12 @@ public interface DataStorage {
 
     void shutdown();
 
-    void updateChampion(ChampionSaveData champion, boolean save);
+    void saveAll();
 
-    void save(Collection<ChampionSaveData> champions);
-
-    Collection<ChampionSaveData> load();
+    void save(ChampionSaveData championSaveData);
 
     ChampionSaveData load(UUID uuid);
+
+    //Collection<ChampionSaveData> oldLoad();
 
 }

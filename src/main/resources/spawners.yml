@@ -1,0 +1,9 @@
+#spawner-name-one:
+#  unique: zombiechamp
+#  respawn-tickDelay: 30
+#  leash-dist: 15
+#  location:
+#    world: world
+#    x: 0
+#    y: 0
+#    z: 0

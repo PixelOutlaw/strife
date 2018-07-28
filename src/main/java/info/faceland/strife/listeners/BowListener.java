@@ -26,16 +26,14 @@ import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_SPEED;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.util.ItemUtil;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -72,7 +70,7 @@ public class BowListener implements Listener {
             return;
         }
 
-        hashUpdates(playerEntity);
+        ItemUtil.updateHashes(playerEntity);
 
         double bowPitch = 0.9 + random.nextDouble() * 0.2;
         playerEntity.getWorld().playSound(playerEntity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
@@ -119,17 +117,5 @@ public class BowListener implements Listener {
     private double randomOffset(double magnitude) {
         magnitude = 0.1 + magnitude * 0.0045;
         return (random.nextDouble() * magnitude * 2) - magnitude;
-    }
-
-    private void hashUpdates(LivingEntity entity) {
-        if (!(entity instanceof Player)) {
-            return;
-        }
-        Champion champion = plugin.getChampionManager().getChampion(entity.getUniqueId());
-        if (champion.isEquipmentHashMatching()) {
-            return;
-        }
-        champion.updateHashedEquipment();
-        plugin.getChampionManager().updateAll(champion);
     }
 }

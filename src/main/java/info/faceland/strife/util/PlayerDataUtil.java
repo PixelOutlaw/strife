@@ -23,7 +23,7 @@ public class PlayerDataUtil {
   }
 
   public static float getEnchantExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId()).getCraftingExp();
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId()).getEnchantExp();
   }
 
   public static float getEnchantMaxExp(Player player) {
