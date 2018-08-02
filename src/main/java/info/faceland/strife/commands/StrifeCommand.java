@@ -61,7 +61,7 @@ public class StrifeCommand {
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "<gold>----------------------------------");
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
-      sendMessage(sender, ChatColor.GRAY + " - " + champion.getLevel(stat));
+      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
   }
