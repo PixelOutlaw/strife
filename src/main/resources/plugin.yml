@@ -13,6 +13,8 @@ commands:
     aliases: [lu]
   strife:
     aliases: [str]
+  spawner:
+    aliases: [spn]
 
 permissions:
   strife.command.stats:
@@ -26,6 +28,8 @@ permissions:
   strife.command.strife.raise:
     default: op
   strife.command.strife.addxp:
+    default: op
+  strife.command.spawner:
     default: op
   strife.command.reload:
     default: op

@@ -35,7 +35,7 @@ public class UniqueEntityCommand {
         this.plugin = plugin;
     }
 
-    @Command(identifier = "strife boss", permissions = "strife.command.boss")
+    @Command(identifier = "strife unique", permissions = "strife.command.boss")
     public void baseCommand(Player sender, @Arg(name = "spawn") String entityName) {
         plugin.getUniqueEntityManager().spawnUnique(entityName, sender.getLocation());
     }
