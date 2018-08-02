@@ -562,7 +562,7 @@ public class StrifePlugin extends FacePlugin {
     return abilities;
   }
 
-  private void loadSpawners() {
+  public void loadSpawners() {
     Map<String, Spawner> spawners = new HashMap<>();
     for (String spawnerId : spawnerYAML.getKeys(false)) {
       if (!spawnerYAML.isConfigurationSection(spawnerId)) {

@@ -35,16 +35,17 @@ public class SpawnerCommand {
     this.plugin = plugin;
   }
 
-  @Command(identifier = "strife spawner", permissions = "strife.command.spawner")
-  public void baseCommand(Player sender, @Arg(name = "spawnerName") String spawnerName,
+  @Command(identifier = "spawner create", permissions = "strife.command.spawner")
+  public void creationCommand(Player sender, @Arg(name = "spawnerName") String spawnerName,
       @Arg(name = "uniqueName") String uniqueName, @Arg(name = "leashRange") double leashRange,
       @Arg(name = "respawnDelaySeconds") int respawnSecs) {
 
     if (plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
-      sendMessage(sender, "&eA spawner with this name already exists!");
+      sendMessage(sender, "&eA spawner with the name " + spawnerName + " already exists!");
       return;
     }
-    UniqueEntity uniqueEntity = plugin.getUniqueEntityManager().getLoadedUniquesMap().get(uniqueName);
+    UniqueEntity uniqueEntity = plugin.getUniqueEntityManager().getLoadedUniquesMap()
+        .get(uniqueName);
     if (uniqueEntity == null) {
       sendMessage(sender, "&eNo unique named " + uniqueName + " exists!");
       return;
@@ -53,6 +54,72 @@ public class SpawnerCommand {
     Spawner spawner = new Spawner(uniqueEntity, sender.getLocation(), respawnSecs, leashRange);
     plugin.getSpawnerManager().addSpawner(spawnerName, spawner);
     sendMessage(sender, "&aSpawner &f" + spawnerName + " &asuccessfully added!");
+  }
+
+  @Command(identifier = "spawner delete", permissions = "strife.command.spawner")
+  public void deleteSpawnerCommand(Player sender, @Arg(name = "spawnerName") String spawnerName) {
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    plugin.getSpawnerManager().getSpawnerMap().remove(spawnerName);
+    sendMessage(sender, "&aDeleted spawner &f" + spawnerName);
+  }
+
+  @Command(identifier = "spawner list", permissions = "strife.command.spawner")
+  public void spawnerList(Player sender) {
+    sendMessage(sender, "&2&lList of loaded spawners:");
+    StringBuilder listString = new StringBuilder();
+    for (String s : plugin.getSpawnerManager().getSpawnerMap().keySet()) {
+      listString.append(s).append(" ");
+    }
+    sendMessage(sender, "&f" + listString.toString());
+  }
+
+  @Command(identifier = "spawner info", permissions = "strife.command.spawner")
+  public void spawnerInfo(Player sender, @Arg(name = "spawnerName") String spawnerName) {
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    Spawner spawner = plugin.getSpawnerManager().getSpawnerMap().get(spawnerName);
+    sendMessage(sender, "&2&lSpawner info for &e&l" + spawnerName);
+    sendMessage(sender, "&f&l Entity: &b" + spawner.getUniqueEntity().getId());
+    sendMessage(sender, "&f&l World: &b" + spawner.getLocation().getWorld().getName());
+    sendMessage(sender, "&f&l Location: &b" + spawner.getLocation().toVector().toString());
+    sendMessage(sender, "&f&l Cooldown: &b" + spawner.getRespawnSeconds() + "s");
+    sendMessage(sender, "&f&l Leash Range: &b" + spawner.getLeashRange());
+  }
+
+  @Command(identifier = "spawner teleport", permissions = "strife.command.spawner")
+  public void spawnerTeleport(Player sender, @Arg(name = "spawnerName") String spawnerName) {
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    sender.teleport(plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).getLocation());
+    sendMessage(sender, "&aTeleported to location of spawner &f" + spawnerName);
+  }
+
+  @Command(identifier = "spawner location", permissions = "strife.command.spawner")
+  public void updateLocationCommand(Player sender, @Arg(name = "spawnerName") String spawnerName) {
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setLocation(sender.getLocation());
+    sendMessage(sender, "&aUpdated location of &f" + spawnerName + " &ato here.");
+  }
+
+  @Command(identifier = "spawner range", permissions = "strife.command.spawner")
+  public void updateRangeCommand(Player sender, @Arg(name = "spawnerName") String spawnerName,
+      @Arg(name = "leashRange") double leashRange) {
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setLeashRange(leashRange);
+    sendMessage(sender, "&aUpdated leash range of &f" + spawnerName + " &ato &f" + leashRange);
   }
 
 }

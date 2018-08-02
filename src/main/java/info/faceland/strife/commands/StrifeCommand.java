@@ -43,6 +43,10 @@ public class StrifeCommand {
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
   public void reloadCommand(CommandSender sender) {
+    // Reload spawners from config first so server changes aren't saved to file
+    plugin.getSpawnerManager().getSpawnerMap().clear();
+    plugin.loadSpawners();
+    // Normal enable/disable
     plugin.disable();
     plugin.enable();
     sendMessage(sender,

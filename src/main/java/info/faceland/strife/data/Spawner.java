@@ -7,14 +7,14 @@ import org.bukkit.entity.LivingEntity;
 public class Spawner {
 
   private final UniqueEntity uniqueEntity;
-  private final Location location;
-  private final double leashRange;
-  private final long respawnSeconds;
-  private final Chunk chunk;
 
   private LivingEntity trackedEntity;
+  private Location location;
+  private double leashRange;
+  private long respawnSeconds;
   private long respawnTime;
   private int resetCount = 0;
+  private Chunk chunk;
 
   public Spawner(UniqueEntity uniqueEntity, Location location, int respawnSeconds,
       double leashRange) {
@@ -35,8 +35,19 @@ public class Spawner {
     return location;
   }
 
+  // Chunk needs to be updated with location changes, it exists for efficient
+  // detection later
+  public void setLocation(Location location) {
+    this.location = location;
+    this.chunk = location.getChunk();
+  }
+
   public double getLeashRange() {
     return leashRange;
+  }
+
+  public void setLeashRange(double leashRange) {
+    this.leashRange = leashRange;
   }
 
   public long getRespawnMillis() {
