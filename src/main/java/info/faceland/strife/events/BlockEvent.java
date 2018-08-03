@@ -20,44 +20,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.tasks;
+package info.faceland.strife.events;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
+public class BlockEvent extends Event {
 
-public class BlockTask extends BukkitRunnable {
+  private static final HandlerList HANDLER_LIST = new HandlerList();
 
-    private Map<UUID, Long> timeLeftMap;
+  public static HandlerList getHandlerList() {
+    return HANDLER_LIST;
+  }
 
-    public BlockTask() {
-        timeLeftMap = new HashMap<>();
-    }
+  private final LivingEntity blocker;
+  private final LivingEntity attacker;
 
-    @Override
-    public void run() {
-        Iterator<Map.Entry<UUID, Long>> iterator = timeLeftMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, Long> entry = iterator.next();
-            if (entry.getValue() < 1L) {
-                iterator.remove();
-                continue;
-            }
-            entry.setValue(entry.getValue() - 1L);
-        }
-    }
+  public BlockEvent(LivingEntity blocker, LivingEntity attacker) {
+    this.blocker = blocker;
+    this.attacker = attacker;
+  }
 
-    public void setTimeLeft(UUID uuid, long timeToSet) {
-        timeLeftMap.put(uuid, timeToSet);
-    }
+  @Override
+  public HandlerList getHandlers() {
+    return HANDLER_LIST;
+  }
 
-    public long getTimeLeft(UUID uuid) {
-        return timeLeftMap.containsKey(uuid) ? timeLeftMap.get(uuid) : 0;
-    }
+  public LivingEntity getBlocker() {
+    return blocker;
+  }
+
+  public LivingEntity getAttacker() {
+    return attacker;
+  }
 
 }

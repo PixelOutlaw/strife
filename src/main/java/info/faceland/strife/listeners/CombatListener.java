@@ -91,7 +91,7 @@ public class CombatListener implements Listener {
       double explosionMult = Math.max(0.3, 4 / (distance + 3));
       event.setDamage(explosionMult * (10 + defendEntity.getMaxHealth() * 0.4));
       return;
-    } else if (event.getDamager() instanceof LivingEntity){
+    } else if (event.getDamager() instanceof LivingEntity) {
       attackEntity = (LivingEntity) event.getDamager();
     } else {
       event.setDamage(1);
@@ -159,11 +159,13 @@ public class CombatListener implements Listener {
       pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
     }
 
-    double blockAmount = 0D;
-    if (blocked && defendEntity instanceof Player) {
-      double blockTimeLeft = plugin.getBlockTask().getTimeLeft(defender.getEntity().getUniqueId());
-      plugin.getBlockTask().setTimeLeft(defender.getEntity().getUniqueId(), 6L);
-      blockAmount = getBlockAmount(defender, blockTimeLeft);
+    if (defender.getAttribute(BLOCK) > 0) {
+      if (plugin.getBlockManager()
+          .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
+        doBlock(attackEntity, defendEntity);
+        event.setCancelled(true);
+        return;
+      }
     }
 
     // Handle projectiles created by abilities/effects. Has to be done after
@@ -233,16 +235,6 @@ public class CombatListener implements Listener {
     standardDamage *= explosionMult;
     standardDamage *= potionMult;
     standardDamage *= StatUtil.getDamageMult(attacker);
-    standardDamage -= blockAmount;
-
-    // Block is removed from standard damage first.
-    // The remainder is still needed for elemental.
-    if (standardDamage < 0) {
-      blockAmount = Math.abs(standardDamage);
-      standardDamage = 0;
-    } else {
-      blockAmount = 0;
-    }
 
     standardDamage *= pvpMult;
 
@@ -254,11 +246,11 @@ public class CombatListener implements Listener {
     elementalDamage *= potionMult;
     elementalDamage *= explosionMult;
     elementalDamage *= StatUtil.getDamageMult(attacker);
-    elementalDamage -= blockAmount;
     elementalDamage *= pvpMult;
 
     double damageReduction = defender.getAttribute(StrifeAttribute.DAMAGE_REDUCTION) * pvpMult;
-    double rawDamage = Math.max(0D, standardDamage + elementalDamage - damageReduction);
+    double rawDamage = (standardDamage + elementalDamage) * (blocked ? 0.6 : 1.0);
+    rawDamage = Math.max(0D, rawDamage - damageReduction);
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);

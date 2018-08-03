@@ -13,6 +13,7 @@ import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.DarknessManager;
@@ -31,6 +32,7 @@ import org.bukkit.potion.PotionEffectType;
 public class DamageUtil {
 
   private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
+  private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   private static final Random RANDOM = new Random(System.currentTimeMillis());
   public static final int BLEED_TICK_RATE = 12;
@@ -144,6 +146,17 @@ public class DamageUtil {
     }
   }
 
+  public static void doBlock(LivingEntity attacker, LivingEntity defender) {
+    callBlockEvent(defender, attacker);
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 0f);
+    if (defender instanceof Player) {
+      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) defender);
+    }
+    if (attacker instanceof Player) {
+      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) attacker);
+    }
+  }
+
   public static double getBlockAmount(AttributedEntity defender, double blockTimeLeft) {
     double blockedAmount;
     double maxBlockAmount = defender.getAttribute(StrifeAttribute.BLOCK);
@@ -233,6 +246,11 @@ public class DamageUtil {
 
   public static void callEvadeEvent(LivingEntity evader, LivingEntity attacker) {
     EvadeEvent ev = new EvadeEvent(evader, attacker);
+    Bukkit.getPluginManager().callEvent(ev);
+  }
+
+  public static void callBlockEvent(LivingEntity evader, LivingEntity attacker) {
+    BlockEvent ev = new BlockEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
   }
 
