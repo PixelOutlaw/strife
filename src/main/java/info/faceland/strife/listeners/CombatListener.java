@@ -154,11 +154,6 @@ public class CombatListener implements Listener {
       return;
     }
 
-    double pvpMult = 1D;
-    if (attackEntity instanceof Player && defendEntity instanceof Player) {
-      pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
-    }
-
     if (defender.getAttribute(BLOCK) > 0) {
       if (plugin.getBlockManager()
           .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
@@ -167,6 +162,11 @@ public class CombatListener implements Listener {
         event.setCancelled(true);
         return;
       }
+    }
+
+    double pvpMult = 1D;
+    if (attackEntity instanceof Player && defendEntity instanceof Player) {
+      pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
     }
 
     // Handle projectiles created by abilities/effects. Has to be done after
@@ -324,6 +324,7 @@ public class CombatListener implements Listener {
     }
     double reflectDamage = defender.getAttribute(DAMAGE_REFLECT);
     reflectDamage = damageType == DamageType.MELEE ? reflectDamage : reflectDamage * 0.6D;
+    attacker.getWorld().playSound(attacker.getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
     if (attacker.getHealth() > reflectDamage) {
       attacker.setHealth(attacker.getHealth() - reflectDamage);
     } else {

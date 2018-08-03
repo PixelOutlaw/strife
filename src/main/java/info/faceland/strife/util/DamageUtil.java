@@ -148,7 +148,7 @@ public class DamageUtil {
 
   public static void doBlock(LivingEntity attacker, LivingEntity defender) {
     callBlockEvent(defender, attacker);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 0f);
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     if (defender instanceof Player) {
       ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) defender);
     }
