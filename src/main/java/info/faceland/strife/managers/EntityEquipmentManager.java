@@ -33,7 +33,7 @@ public class EntityEquipmentManager {
     Material material;
     String type = cs.getString("material");
     try {
-      material = Material.getMaterial(type);
+      material = Material.valueOf(type);
     } catch (Exception e) {
       LogUtil.printWarning("Skipping item " + key + " for invalid material");
       return;
