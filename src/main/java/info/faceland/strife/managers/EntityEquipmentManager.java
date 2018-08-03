@@ -42,7 +42,8 @@ public class EntityEquipmentManager {
     ItemStack itemStack;
     SkullType skullType = null;
     if (material != Material.SKULL_ITEM) {
-      itemStack = new ItemStack(material);
+      short data = (short) cs.getInt("data", 0);
+      itemStack = new ItemStack(material, 1, data);
     } else {
       skullType = SkullType.valueOf(cs.getString("skull-type", "ZOMBIE"));
       itemStack = new ItemStack(Material.SKULL_ITEM, 1, (short) skullType.ordinal());
@@ -59,6 +60,7 @@ public class EntityEquipmentManager {
       lore.add(TextUtils.color(line));
     }
     meta.setLore(lore);
+    meta.setUnbreakable(true);
 
     itemStack.setItemMeta(meta);
 
