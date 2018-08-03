@@ -162,6 +162,7 @@ public class CombatListener implements Listener {
     if (defender.getAttribute(BLOCK) > 0) {
       if (plugin.getBlockManager()
           .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
+        doReflectedDamage(defender, attackEntity, damageType);
         doBlock(attackEntity, defendEntity);
         event.setCancelled(true);
         return;
@@ -267,15 +268,7 @@ public class CombatListener implements Listener {
       }
     }
 
-    if (defender.getAttribute(DAMAGE_REFLECT) > 0.1) {
-      double reflectDamage = defender.getAttribute(DAMAGE_REFLECT);
-      reflectDamage = damageType == DamageType.MELEE ? reflectDamage : reflectDamage * 0.6D;
-      if (attackEntity.getHealth() > reflectDamage) {
-        attackEntity.setHealth(attackEntity.getHealth() - reflectDamage);
-      } else {
-        attackEntity.damage(reflectDamage);
-      }
-    }
+    doReflectedDamage(defender, attackEntity, damageType);
 
     if (plugin.getUniqueEntityManager().isUnique(attackEntity)) {
       plugin.getAbilityManager().uniqueAbilityCast(attacker, AbilityType.ON_HIT);
@@ -323,6 +316,19 @@ public class CombatListener implements Listener {
     ChatAPI
         .sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(damageString.toString()),
             (Player) entity);
+  }
+
+  private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker, DamageType damageType) {
+    if (defender.getAttribute(DAMAGE_REFLECT) < 0.1) {
+      return;
+    }
+    double reflectDamage = defender.getAttribute(DAMAGE_REFLECT);
+    reflectDamage = damageType == DamageType.MELEE ? reflectDamage : reflectDamage * 0.6D;
+    if (attacker.getHealth() > reflectDamage) {
+      attacker.setHealth(attacker.getHealth() - reflectDamage);
+    } else {
+      attacker.damage(reflectDamage);
+    }
   }
 
   private boolean doCriticalHit(AttributedEntity attacker, AttributedEntity defender) {
