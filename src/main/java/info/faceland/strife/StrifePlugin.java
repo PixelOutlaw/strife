@@ -594,10 +594,12 @@ public class StrifePlugin extends FacePlugin {
 
   private void saveSpawners() {
     for (String spawnerId : spawnerYAML.getKeys(false)) {
-      spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
-    }
-    for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
+      if (spawner == null) {
+        spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
+        LogUtil.printDebug("Spawner " + spawnerId + " has been removed.");
+        continue;
+      }
       spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
       spawnerYAML.set(spawnerId + ".respawn-seconds", spawner.getRespawnSeconds());
       spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
@@ -605,6 +607,7 @@ public class StrifePlugin extends FacePlugin {
       spawnerYAML.set(spawnerId + ".location.x", spawner.getLocation().getX());
       spawnerYAML.set(spawnerId + ".location.y", spawner.getLocation().getY());
       spawnerYAML.set(spawnerId + ".location.z", spawner.getLocation().getZ());
+      LogUtil.printDebug("Saved spawner " + spawnerId + ".");
     }
     spawnerYAML.save();
   }
