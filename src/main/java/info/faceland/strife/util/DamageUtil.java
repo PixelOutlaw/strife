@@ -20,6 +20,7 @@ import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import java.util.Collection;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -127,7 +128,8 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static double consumeEarthRunes(double damage, AttributedEntity attacker, LivingEntity defender) {
+  public static double consumeEarthRunes(double damage, AttributedEntity attacker,
+      LivingEntity defender) {
     if (damage == 0) {
       return 0;
     }
@@ -147,18 +149,20 @@ public class DamageUtil {
     return damage * 0.5 * runes;
   }
 
-  public static double getLightBonus(double damage, AttributedEntity attacker, LivingEntity defender) {
+  public static double getLightBonus(double damage, AttributedEntity attacker,
+      LivingEntity defender) {
     if (damage == 0) {
       return 0;
     }
     double light = attacker.getEntity().getLocation().getBlock().getLightLevel();
     double multiplier = (light - 4) / 10;
     if (multiplier >= 0.5) {
-      defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_FIREWORK_TWINKLE, 1f, 2f);
+      defender.getWorld()
+          .playSound(defender.getEyeLocation(), Sound.ENTITY_FIREWORK_TWINKLE, 1f, 2f);
       defender.getWorld().spawnParticle(
           Particle.FIREWORKS_SPARK,
           defender.getEyeLocation(),
-          (int)(8 * multiplier),
+          (int) (8 * multiplier),
           0.4, 0.4, 0.5,
           0.18
       );
@@ -197,7 +201,8 @@ public class DamageUtil {
     int runes = getBlockManager().getEarthRunes(defender.getUniqueId());
     if (runes > 0) {
       StringBuilder sb = new StringBuilder(defenderBar);
-      sb.append("&2 ").append(IntStream.range(0, runes).mapToObj(i -> "▼"));
+      sb.append(TextUtils.color("&2 "));
+      sb.append(IntStream.range(0, runes).mapToObj(i -> "▼").collect(Collectors.joining("")));
       defenderBar = sb.toString();
     }
     if (defender instanceof Player) {
