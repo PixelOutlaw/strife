@@ -88,6 +88,7 @@ public class StrifePlugin extends FacePlugin {
   private StrifeCraftExperienceManager craftExperienceManager;
   private StrifeEnchantExperienceManager enchantExperienceManager;
   private StrifeFishExperienceManager fishExperienceManager;
+  private BlockManager blockManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
   private MonsterManager monsterManager;
@@ -107,7 +108,6 @@ public class StrifePlugin extends FacePlugin {
   private BarrierTask barrierTask;
   private DarknessReductionTask darkTask;
   private AttackSpeedTask attackSpeedTask;
-  private BlockTask blockTask;
   private UniquePruneTask uniquePruneTask;
   private UniqueParticleTask uniqueParticleTask;
   private SpawnerSpawnTask spawnerSpawnTask;
@@ -156,6 +156,7 @@ public class StrifePlugin extends FacePlugin {
 
     statManager = new StrifeStatManager();
     barrierManager = new BarrierManager();
+    blockManager = new BlockManager();
     bleedManager = new BleedManager();
     monsterManager = new MonsterManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
@@ -228,7 +229,6 @@ public class StrifePlugin extends FacePlugin {
     barrierTask = new BarrierTask(this);
     darkTask = new DarknessReductionTask();
     attackSpeedTask = new AttackSpeedTask(attackTickRate);
-    blockTask = new BlockTask();
     uniquePruneTask = new UniquePruneTask(this);
     uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
     spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
@@ -296,10 +296,6 @@ public class StrifePlugin extends FacePlugin {
         5L,
         attackTickRate
     );
-    blockTask.runTaskTimer(this,
-        5L,
-        5L
-    );
     uniquePruneTask.runTaskTimer(this,
         30 * 20L,
         30 * 20L
@@ -337,7 +333,10 @@ public class StrifePlugin extends FacePlugin {
 
     levelupMenu = new LevelupMenu(this, getStatManager().getStats());
     statsMenu = new StatsMenu(this);
-    debug(Level.INFO, "v" + getDescription().getVersion() + " enabled");
+
+    LogUtil.printInfo("+++++");
+    LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
+    LogUtil.printInfo("+++++");
   }
 
   @Override
@@ -354,7 +353,6 @@ public class StrifePlugin extends FacePlugin {
     barrierTask.cancel();
     darkTask.cancel();
     attackSpeedTask.cancel();
-    blockTask.cancel();
     uniqueParticleTask.cancel();
     uniquePruneTask.cancel();
     spawnerLeashTask.cancel();
@@ -374,6 +372,7 @@ public class StrifePlugin extends FacePlugin {
     equipmentManager = null;
     effectManager = null;
     abilityManager = null;
+    blockManager = null;
     bleedManager = null;
     barrierManager = null;
     multiplierManager = null;
@@ -393,7 +392,6 @@ public class StrifePlugin extends FacePlugin {
     bleedTask = null;
     darkTask = null;
     attackSpeedTask = null;
-    blockTask = null;
     uniqueParticleTask = null;
     uniquePruneTask = null;
     spawnerSpawnTask = null;
@@ -402,7 +400,9 @@ public class StrifePlugin extends FacePlugin {
     commandHandler = null;
     settings = null;
 
-    debug(Level.INFO, "v" + getDescription().getVersion() + " disabled");
+    LogUtil.printInfo("+++++");
+    LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
+    LogUtil.printInfo("+++++");
   }
 
   private void buildAbilities() {
@@ -593,6 +593,9 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void saveSpawners() {
+    for (String spawnerId : spawnerYAML.getKeys(false)) {
+      spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
+    }
     for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
       spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
@@ -610,12 +613,12 @@ public class StrifePlugin extends FacePlugin {
     return attackSpeedTask;
   }
 
-  public BlockTask getBlockTask() {
-    return blockTask;
-  }
-
   public StrifeStatManager getStatManager() {
     return statManager;
+  }
+
+  public BlockManager getBlockManager() {
+    return blockManager;
   }
 
   public BarrierManager getBarrierManager() {

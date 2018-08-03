@@ -62,7 +62,7 @@ public class SpawnerCommand {
       sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
       return;
     }
-    plugin.getSpawnerManager().getSpawnerMap().remove(spawnerName);
+    plugin.getSpawnerManager().removeSpawner(spawnerName);
     sendMessage(sender, "&aDeleted spawner &f" + spawnerName);
   }
 

@@ -30,6 +30,10 @@ public class SpawnerManager {
     this.spawnerMap.put(id, spawner);
   }
 
+  public void removeSpawner(String id) {
+    this.spawnerMap.remove(id);
+  }
+
   public void leashSpawners() {
     for (Spawner spawner : spawnerMap.values()) {
       if (spawner.getTrackedEntity() == null || !spawner.getTrackedEntity().isValid()) {
