@@ -31,7 +31,7 @@ public class BlockManager {
   private final Random random = new Random();
 
   private static final double FLAT_BLOCK_S = 10;
-  private static final double PERCENT_BLOCK_S = 0.2;
+  private static final double PERCENT_BLOCK_S = 0.1;
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
