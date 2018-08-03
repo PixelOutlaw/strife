@@ -16,16 +16,19 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import java.util.Collection;
 import java.util.Random;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -35,6 +38,7 @@ public class DamageUtil {
   private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   private static final Random RANDOM = new Random(System.currentTimeMillis());
+
   public static final int BLEED_TICK_RATE = 12;
   public static final int BLEED_TICKS_PER_5_SEC = (int) ((5D * 20D) / BLEED_TICK_RATE);
 
@@ -122,6 +126,45 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
+  public static double consumeEarthRunes(double damage, AttributedEntity attacker, LivingEntity defender) {
+    if (damage == 0) {
+      return 0;
+    }
+    int runes = getBlockManager().getEarthRunes(attacker.getEntity().getUniqueId());
+    getBlockManager().setEarthRunes(attacker.getEntity().getUniqueId(), 0);
+    if (runes == 0) {
+      return 0;
+    }
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
+    defender.getWorld().spawnParticle(
+        Particle.BLOCK_CRACK,
+        defender.getEyeLocation().clone().add(0, -0.7, 0),
+        20,
+        0.0, 0.0, 0.0,
+        new MaterialData(Material.DIRT)
+    );
+    return damage * 0.5 * runes;
+  }
+
+  public static double getLightBonus(double damage, AttributedEntity attacker, LivingEntity defender) {
+    if (damage == 0) {
+      return 0;
+    }
+    double light = attacker.getEntity().getLocation().getBlock().getLightLevel();
+    double multiplier = (light - 4) / 10;
+    if (multiplier >= 0.5) {
+      defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_FIREWORK_TWINKLE, 1f, 2f);
+      defender.getWorld().spawnParticle(
+          Particle.FIREWORKS_SPARK,
+          defender.getEyeLocation(),
+          (int)(8 * multiplier),
+          0.4, 0.4, 0.5,
+          0.18
+      );
+    }
+    return damage * multiplier;
+  }
+
   public static boolean attemptCorrupt(double damage, AttributedEntity attacker,
       LivingEntity defender) {
     if (damage == 0
@@ -131,7 +174,7 @@ public class DamageUtil {
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
     defender.getWorld()
         .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
-    DarknessManager.applyCorruptionStacks(defender, damage);
+    getDarknessManager().applyCorruptionStacks(defender, damage);
     return true;
   }
 
@@ -155,17 +198,6 @@ public class DamageUtil {
     if (attacker instanceof Player) {
       ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) attacker);
     }
-  }
-
-  public static double getBlockAmount(AttributedEntity defender, double blockTimeLeft) {
-    double blockedAmount;
-    double maxBlockAmount = defender.getAttribute(StrifeAttribute.BLOCK);
-    if (blockTimeLeft > 0) {
-      blockedAmount = maxBlockAmount * Math.max(1 - (blockTimeLeft / 6), 0.1);
-    } else {
-      blockedAmount = maxBlockAmount;
-    }
-    return blockedAmount;
   }
 
   public static double getPotionMult(LivingEntity attacker, LivingEntity defender) {
@@ -285,6 +317,14 @@ public class DamageUtil {
 
   public enum CombatDamageType {
     MELEE, RANGED, MAGIC, EXPLOSION, OTHER
+  }
+
+  private static BlockManager getBlockManager() {
+    return StrifePlugin.getInstance().getBlockManager();
+  }
+
+  private static DarknessManager getDarknessManager() {
+    return StrifePlugin.getInstance().getDarknessManager();
   }
 
   public enum DamageType {

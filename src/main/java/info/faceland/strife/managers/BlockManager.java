@@ -57,6 +57,29 @@ public class BlockManager {
     return ((double) getMillisSinceBlock(uuid)) / 1000;
   }
 
+  public int getEarthRunes(UUID uuid) {
+    if (!blockDataMap.containsKey(uuid)) {
+      return 0;
+    }
+    return blockDataMap.get(uuid).getRunes();
+  }
+
+  public void setEarthRunes(UUID uuid, int runes) {
+    if (!blockDataMap.containsKey(uuid)) {
+      return;
+    }
+    blockDataMap.get(uuid).setRunes(runes);
+  }
+
+  public void bumpEarthRunes(UUID uuid, int maxRunes) {
+    if (!blockDataMap.containsKey(uuid)) {
+      return;
+    }
+    if (blockDataMap.get(uuid).getRunes() < maxRunes) {
+      blockDataMap.get(uuid).addRune();
+    }
+  }
+
   private void updateStoredBlock(UUID uuid, double maximumBlock) {
     if (blockDataMap.get(uuid) == null) {
       BlockData data = new BlockData(System.currentTimeMillis() - DEFAULT_BLOCK_MILLIS, 0);

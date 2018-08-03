@@ -127,34 +127,32 @@ public class StatUtil {
 
   public static double getFireResist(AttributedEntity ae) {
     double amount = ae.getAttribute(StrifeAttribute.FIRE_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
-    if (ae.getEntity() instanceof Player) {
-      amount = Math.min(amount, 80);
-    }
-    return amount;
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getIceResist(AttributedEntity ae) {
     double amount = ae.getAttribute(StrifeAttribute.ICE_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
-    if (ae.getEntity() instanceof Player) {
-      amount = Math.min(amount, 80);
-    }
-    return amount;
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLightningResist(AttributedEntity ae) {
     double amount = ae.getAttribute(StrifeAttribute.LIGHTNING_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
-    if (ae.getEntity() instanceof Player) {
-      amount = Math.min(amount, 80);
-    }
-    return amount;
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+  }
+
+  public static double getEarthResist(AttributedEntity ae) {
+    double amount = ae.getAttribute(StrifeAttribute.EARTH_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+  }
+
+  public static double getLightResist(AttributedEntity ae) {
+    double amount = ae.getAttribute(StrifeAttribute.LIGHT_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getShadowResist(AttributedEntity ae) {
     double amount = ae.getAttribute(StrifeAttribute.DARK_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
-    if (ae.getEntity() instanceof Player) {
-      amount = Math.min(amount, 80);
-    }
-    return amount;
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLifestealPercentage(AttributedEntity attacker) {
@@ -204,6 +202,26 @@ public class StatUtil {
     }
     damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightningResist(defender) / 100;
+    return damage;
+  }
+
+  public static double getBaseEarthDamage(AttributedEntity attacker, AttributedEntity defender) {
+    double damage = attacker.getAttribute(StrifeAttribute.EARTH_DAMAGE);
+    if (damage == 0) {
+      return 0D;
+    }
+    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 - getEarthResist(defender) / 100;
+    return damage;
+  }
+
+  public static double getBaseLightDamage(AttributedEntity attacker, AttributedEntity defender) {
+    double damage = attacker.getAttribute(StrifeAttribute.LIGHT_DAMAGE);
+    if (damage == 0) {
+      return 0D;
+    }
+    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 - getLightResist(defender) / 100;
     return damage;
   }
 

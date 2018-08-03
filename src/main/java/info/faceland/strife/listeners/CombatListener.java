@@ -26,7 +26,6 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
-import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -159,6 +158,8 @@ public class CombatListener implements Listener {
           .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
         doReflectedDamage(defender, attackEntity, damageType);
         doBlock(attackEntity, defendEntity);
+        plugin.getBlockManager().bumpEarthRunes(defendEntity.getUniqueId(),
+            (int) defender.getAttribute(MAX_EARTH_RUNES));
         event.setCancelled(true);
         return;
       }
@@ -202,18 +203,24 @@ public class CombatListener implements Listener {
     double fireBaseDamage = StatUtil.getBaseFireDamage(attacker, defender);
     double iceBaseDamage = StatUtil.getBaseIceDamage(attacker, defender);
     double lightningBaseDamage = StatUtil.getBaseLightningDamage(attacker, defender);
+    double earthBaseDamage = StatUtil.getBaseEarthDamage(attacker, defender);
+    double lightBaseDamage = StatUtil.getBaseLightDamage(attacker, defender);
     double shadowBaseDamage = StatUtil.getBaseShadowDamage(attacker, defender);
 
     double bonusFireDamage = attemptIgnite(fireBaseDamage, attacker, defendEntity);
     double bonusIceDamage = attemptFreeze(iceBaseDamage, attacker, defendEntity);
     double bonusLightningDamage = attemptShock(lightningBaseDamage, attacker, defendEntity);
+    double bonusEarthDamage = consumeEarthRunes(earthBaseDamage, attacker, defendEntity);
+    double bonusLightDamage = getLightBonus(lightBaseDamage, attacker, defendEntity);
     boolean corruptEffect = attemptCorrupt(shadowBaseDamage, attacker, defendEntity);
 
     fireBaseDamage += bonusFireDamage;
     iceBaseDamage += bonusIceDamage;
     lightningBaseDamage += bonusLightningDamage;
-    shadowBaseDamage +=
-        shadowBaseDamage * (DarknessManager.getCorruptionStacks(defendEntity) * 0.02);
+    earthBaseDamage += bonusEarthDamage;
+    lightBaseDamage += bonusLightDamage;
+    shadowBaseDamage += shadowBaseDamage *
+        (plugin.getDarknessManager().getCorruptionStacks(defender.getEntity()) * 0.02);
 
     double bonusCriticalMultiplier = 0;
     double bonusOverchargeMultiplier = 0;
@@ -226,8 +233,8 @@ public class CombatListener implements Listener {
     }
 
     double standardDamage = physicalBaseDamage + magicBaseDamage;
-    double elementalDamage =
-        fireBaseDamage + iceBaseDamage + lightningBaseDamage + shadowBaseDamage;
+    double elementalDamage = fireBaseDamage + iceBaseDamage + lightningBaseDamage +
+        earthBaseDamage + lightBaseDamage + shadowBaseDamage;
 
     standardDamage +=
         standardDamage * bonusCriticalMultiplier + standardDamage * bonusOverchargeMultiplier;
@@ -280,14 +287,15 @@ public class CombatListener implements Listener {
     }
 
     sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,
-        bonusFireDamage, bonusIceDamage, bonusLightningDamage, corruptEffect, bleedAmount);
+        bonusFireDamage, bonusIceDamage, bonusLightningDamage, bonusEarthDamage, bonusLightDamage,
+        corruptEffect, bleedAmount);
 
     event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
   }
 
   private void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
-      double critBonus, double fireBonus,
-      double iceBonus, double lightningBonus, boolean corrupt, double bleedBonus) {
+      double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
+      double lightBonus, boolean corrupt, double bleedBonus) {
     if (!(entity instanceof Player)) {
       return;
     }
@@ -307,6 +315,12 @@ public class CombatListener implements Listener {
     if (lightningBonus > 0) {
       damageString.append("&7⚡");
     }
+    if (earthBonus > 0) {
+      damageString.append("&2▼");
+    }
+    if (lightBonus > 0) {
+      damageString.append("&f❂");
+    }
     if (corrupt) {
       damageString.append("&8❂");
     }
@@ -318,7 +332,8 @@ public class CombatListener implements Listener {
             (Player) entity);
   }
 
-  private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker, DamageType damageType) {
+  private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker,
+      DamageType damageType) {
     if (defender.getAttribute(DAMAGE_REFLECT) < 0.1) {
       return;
     }

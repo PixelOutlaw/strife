@@ -35,6 +35,8 @@ public enum StrifeAttribute {
   FIRE_RESIST("Fire Resistance"),
   ICE_RESIST("Ice Resistance"),
   LIGHTNING_RESIST("Lightning Resistance"),
+  EARTH_RESIST("Earth Resistance"),
+  LIGHT_RESIST("Light Resistance"),
   DARK_RESIST("Shadow Resistance"),
   ALL_RESIST("Elemental Resist"),
 
