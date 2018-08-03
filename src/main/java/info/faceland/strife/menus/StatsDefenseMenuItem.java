@@ -94,8 +94,9 @@ public class StatsDefenseMenuItem extends MenuItem {
     lore.add(breakLine);
     lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));
-    lore.add(
-        addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
+    lore.add(addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
+    lore.add(addStat("Earth Resistance: ", StatUtil.getEarthResist(pStats), "%", INT_FORMAT));
+    lore.add(addStat("Light Resistance: ", StatUtil.getLightResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Shadow Resistance: ", StatUtil.getShadowResist(pStats), "%", INT_FORMAT));
     lore.add(breakLine);
     lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));

@@ -171,6 +171,14 @@ public class StatUtil {
     return attacker.getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * (1 + (attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
   }
 
+  public static double getEarthDamage(AttributedEntity attacker) {
+    return attacker.getAttribute(StrifeAttribute.EARTH_DAMAGE) * (1 + (attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+  }
+
+  public static double getLightDamage(AttributedEntity attacker) {
+    return attacker.getAttribute(StrifeAttribute.LIGHT_DAMAGE) * (1 + (attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+  }
+
   public static double getShadowDamage(AttributedEntity attacker) {
     return attacker.getAttribute(StrifeAttribute.DARK_DAMAGE) * (1 + (attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
   }
