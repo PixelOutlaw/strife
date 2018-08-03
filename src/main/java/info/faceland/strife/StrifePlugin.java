@@ -229,7 +229,7 @@ public class StrifePlugin extends FacePlugin {
     regenTask = new HealthRegenTask(this);
     bleedTask = new BleedTask(this);
     barrierTask = new BarrierTask(this);
-    darkTask = new DarknessReductionTask();
+    darkTask = new DarknessReductionTask(darknessManager);
     attackSpeedTask = new AttackSpeedTask(attackTickRate);
     uniquePruneTask = new UniquePruneTask(this);
     uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
