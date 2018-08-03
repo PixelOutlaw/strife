@@ -28,20 +28,20 @@ import org.bukkit.entity.LivingEntity;
 
 public class DarknessManager {
 
-    private static Map<LivingEntity, Double> darkMap = new HashMap<>();
+    private Map<LivingEntity, Double> darkMap = new HashMap<>();
 
-    public static boolean isValidEntity(LivingEntity entity) {
+    public boolean isValidEntity(LivingEntity entity) {
         return entity.isValid() && !entity.isDead();
     }
 
-    public static boolean isCorrupted(LivingEntity entity) {
+    public boolean isCorrupted(LivingEntity entity) {
         if (darkMap.get(entity) == null) {
             return false;
         }
         return darkMap.get(entity) >= 0;
     }
 
-    public static void applyCorruptionStacks(LivingEntity entity, double amount) {
+    public void applyCorruptionStacks(LivingEntity entity, double amount) {
         if (darkMap.get(entity) != null) {
             darkMap.put(entity, darkMap.get(entity) + amount);
             return;
@@ -49,20 +49,20 @@ public class DarknessManager {
         darkMap.put(entity, amount);
     }
 
-    public static double getCorruptionStacks(LivingEntity entity) {
+    public double getCorruptionStacks(LivingEntity entity) {
         if (darkMap.get(entity) != null) {
             return darkMap.get(entity);
         }
         return 0D;
     }
 
-    public static void removeEntity(LivingEntity entity) {
+    public void removeEntity(LivingEntity entity) {
         if (darkMap.get(entity) != null) {
             darkMap.remove(entity);
         }
     }
 
-    public static Map<LivingEntity, Double> getDarkMap() {
+    public Map<LivingEntity, Double> getDarkMap() {
         return darkMap;
     }
 }

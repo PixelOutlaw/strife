@@ -91,6 +91,7 @@ public class StrifePlugin extends FacePlugin {
   private BlockManager blockManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
+  private DarknessManager darknessManager;
   private MonsterManager monsterManager;
   private UniqueEntityManager uniqueEntityManager;
   private EntityEquipmentManager equipmentManager;
@@ -158,6 +159,7 @@ public class StrifePlugin extends FacePlugin {
     barrierManager = new BarrierManager();
     blockManager = new BlockManager();
     bleedManager = new BleedManager();
+    darknessManager = new DarknessManager();
     monsterManager = new MonsterManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     equipmentManager = new EntityEquipmentManager();
@@ -375,6 +377,7 @@ public class StrifePlugin extends FacePlugin {
     abilityManager = null;
     blockManager = null;
     bleedManager = null;
+    darknessManager = null;
     barrierManager = null;
     multiplierManager = null;
     spawnerManager = null;
@@ -631,6 +634,10 @@ public class StrifePlugin extends FacePlugin {
 
   public BleedManager getBleedManager() {
     return bleedManager;
+  }
+
+  public DarknessManager getDarknessManager() {
+    return darknessManager;
   }
 
   public MonsterManager getMonsterManager() {
