@@ -20,6 +20,7 @@ import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import java.util.Collection;
 import java.util.Random;
+import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -192,8 +193,15 @@ public class DamageUtil {
   public static void doBlock(LivingEntity attacker, LivingEntity defender) {
     callBlockEvent(defender, attacker);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+    String defenderBar = ATTACK_BLOCKED;
+    int runes = getBlockManager().getEarthRunes(defender.getUniqueId());
+    if (runes > 0) {
+      StringBuilder sb = new StringBuilder(defenderBar);
+      sb.append("&2 ").append(IntStream.range(0, runes).mapToObj(i -> "▼"));
+      defenderBar = sb.toString();
+    }
     if (defender instanceof Player) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) defender);
+      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, defenderBar, (Player) defender);
     }
     if (attacker instanceof Player) {
       ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) attacker);
