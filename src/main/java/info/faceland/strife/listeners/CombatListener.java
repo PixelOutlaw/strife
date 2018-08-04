@@ -156,8 +156,10 @@ public class CombatListener implements Listener {
     if (defender.getAttribute(BLOCK) > 0) {
       if (plugin.getBlockManager()
           .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
-        plugin.getBlockManager().bumpEarthRunes(defendEntity.getUniqueId(),
-            (int) defender.getAttribute(MAX_EARTH_RUNES));
+        if (defender.getAttribute(EARTH_DAMAGE) > 0) {
+          plugin.getBlockManager().bumpEarthRunes(defendEntity.getUniqueId(),
+              (int) defender.getAttribute(MAX_EARTH_RUNES));
+        }
         doReflectedDamage(defender, attackEntity, damageType);
         doBlock(attackEntity, defendEntity);
         event.setCancelled(true);
