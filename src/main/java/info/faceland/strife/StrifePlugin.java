@@ -602,8 +602,10 @@ public class StrifePlugin extends FacePlugin {
       if (spawner == null) {
         spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
         LogUtil.printDebug("Spawner " + spawnerId + " has been removed.");
-        continue;
       }
+    }
+    for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
+      Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
       spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
       spawnerYAML.set(spawnerId + ".respawn-seconds", spawner.getRespawnSeconds());
       spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
