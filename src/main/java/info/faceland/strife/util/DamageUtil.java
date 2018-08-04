@@ -162,9 +162,9 @@ public class DamageUtil {
       defender.getWorld().spawnParticle(
           Particle.FIREWORKS_SPARK,
           defender.getEyeLocation(),
-          (int) (8 * multiplier),
-          0.4, 0.4, 0.5,
-          0.18
+          (int) (20 * multiplier),
+          0.1, 0.1, 0.1,
+          0.1
       );
     }
     return damage * multiplier;
