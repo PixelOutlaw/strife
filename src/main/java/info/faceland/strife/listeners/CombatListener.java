@@ -55,8 +55,9 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
+    // Catch the spoofed damage from abilities
     if (event.getDamage() <= 0 && event.getCause() == DamageCause.CUSTOM) {
-      event.setDamage(0.001);
+      event.setDamage(0);
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
@@ -175,12 +176,13 @@ public class CombatListener implements Listener {
     // Handle projectiles created by abilities/effects. Has to be done after
     // block and evasion to properly mitigate hits.
     if (projectileEffect != null) {
-      event.setDamage(1);
       for (String s : projectileEffect) {
-        if (StringUtils.isNotBlank(s)) {
-          plugin.getEffectManager().getEffect(s).apply(attacker, defendEntity);
+        if (StringUtils.isBlank(s)) {
+          continue;
         }
+        plugin.getEffectManager().getEffect(s).apply(attacker, defendEntity);
       }
+      event.setDamage(0);
       return;
     }
 
