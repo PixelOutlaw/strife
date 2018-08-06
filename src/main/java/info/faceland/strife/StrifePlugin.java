@@ -121,6 +121,8 @@ public class StrifePlugin extends FacePlugin {
   private LevelupMenu levelupMenu;
   private StatsMenu statsMenu;
 
+  private int maxSkillLevel;
+
   public static void setInstance(StrifePlugin plugin) {
     instance = plugin;
   }
@@ -243,6 +245,8 @@ public class StrifePlugin extends FacePlugin {
     commandHandler.registerCommands(new SpawnerCommand(this));
 
     levelingRate = new LevelingRate();
+    maxSkillLevel = settings.getInt("config.leveling.max-skill-level",60);
+
     Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
     for (int i = 0; i < 200; i++) {
@@ -252,21 +256,21 @@ public class StrifePlugin extends FacePlugin {
     craftingRate = new LevelingRate();
     Expression craftExpr = new ExpressionBuilder(settings.getString("config.leveling.crafting",
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < 60; i++) {
+    for (int i = 0; i < maxSkillLevel; i++) {
       craftingRate.put(i, i, (int) Math.round(craftExpr.setVariable("LEVEL", i).evaluate()));
     }
 
     enchantRate = new LevelingRate();
     Expression enchantExpr = new ExpressionBuilder(settings.getString("config.leveling.enchanting",
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < 60; i++) {
+    for (int i = 0; i < maxSkillLevel; i++) {
       enchantRate.put(i, i, (int) Math.round(enchantExpr.setVariable("LEVEL", i).evaluate()));
     }
 
     fishRate = new LevelingRate();
     Expression fishExpr = new ExpressionBuilder(settings.getString("config.leveling.fishing",
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < 60; i++) {
+    for (int i = 0; i < maxSkillLevel; i++) {
       fishRate.put(i, i, (int) Math.round(fishExpr.setVariable("LEVEL", i).evaluate()));
     }
 
@@ -715,6 +719,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelingRate getLevelingRate() {
     return levelingRate;
+  }
+
+  public int getMaxSkillLevel() {
+    return maxSkillLevel;
   }
 
   public LevelingRate getCraftingRate() {

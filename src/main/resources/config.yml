@@ -37,6 +37,7 @@ penalty-free-worlds:
 - WeenieWorld
 
 leveling:
+  max-skill-level: 60
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
   crafting: 50 + (LEVEL * 25) + (LEVEL^3)
   fishing: 50 + (LEVEL * 25) + (LEVEL^3)
