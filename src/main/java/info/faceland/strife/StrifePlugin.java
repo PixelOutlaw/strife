@@ -484,6 +484,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
       uniqueEntity.setExperience(cs.getInt("experience", 0));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
+      uniqueEntity.setBaby(cs.getBoolean("baby", false));
 
       ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
       Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
