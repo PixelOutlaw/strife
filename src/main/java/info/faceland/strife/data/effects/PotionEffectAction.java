@@ -2,17 +2,19 @@ package info.faceland.strife.data.effects;
 
 import info.faceland.strife.data.AttributedEntity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class PotionEffectAction extends Effect {
 
   private PotionEffectType potionEffectType;
-private int duration;
+  private int duration;
   private int intensity;
 
   @Override
   public void apply(AttributedEntity caster, LivingEntity target) {
-    target.addPotionEffect(potionEffectType.createEffect(duration, intensity));
+    PotionEffect potionEffect = new PotionEffect(potionEffectType, duration, intensity, false);
+    target.addPotionEffect(potionEffect);
   }
 
   public PotionEffectType getPotionEffectType() {
