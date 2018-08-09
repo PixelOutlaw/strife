@@ -123,7 +123,7 @@ public class StrifePlugin extends FacePlugin {
 
   private int maxSkillLevel;
 
-  public static void setInstance(StrifePlugin plugin) {
+  private static void setInstance(StrifePlugin plugin) {
     instance = plugin;
   }
 
@@ -245,7 +245,7 @@ public class StrifePlugin extends FacePlugin {
     commandHandler.registerCommands(new SpawnerCommand(this));
 
     levelingRate = new LevelingRate();
-    maxSkillLevel = settings.getInt("config.leveling.max-skill-level",60);
+    maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);
 
     Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
@@ -322,6 +322,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
+    Bukkit.getPluginManager().registerEvents(
+        new UniqueSplashListener(entityStatCache, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
@@ -421,7 +423,8 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
       abilityManager.loadAbility(key, cs);
     }
-    LogUtil.printDebug("Loaded abilities: " + abilityManager.getLoadedAbilities().entrySet().toString());
+    LogUtil.printDebug(
+        "Loaded abilities: " + abilityManager.getLoadedAbilities().entrySet().toString());
   }
 
   private void buildEffects() {
