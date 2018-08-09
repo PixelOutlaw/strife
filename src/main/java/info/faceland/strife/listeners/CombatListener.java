@@ -155,18 +155,17 @@ public class CombatListener implements Listener {
       return;
     }
 
-    if (defender.getAttribute(BLOCK) > 0) {
-      if (plugin.getBlockManager()
-          .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
-        if (defender.getAttribute(EARTH_DAMAGE) > 0) {
-          plugin.getBlockManager().bumpEarthRunes(defendEntity.getUniqueId(),
-              (int) defender.getAttribute(MAX_EARTH_RUNES));
-        }
-        doReflectedDamage(defender, attackEntity, damageType);
-        doBlock(attackEntity, defendEntity);
-        event.setCancelled(true);
-        return;
+    if (plugin.getBlockManager()
+        .rollBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
+      plugin.getBlockManager().blockFatigue(defendEntity.getUniqueId(), attackMultiplier, blocked);
+      if (defender.getAttribute(EARTH_DAMAGE) > 0) {
+        plugin.getBlockManager().bumpRunes(defendEntity.getUniqueId(),
+            (int) defender.getAttribute(MAX_EARTH_RUNES));
       }
+      doReflectedDamage(defender, attackEntity, damageType);
+      doBlock(attackEntity, defendEntity);
+      event.setCancelled(true);
+      return;
     }
 
     double pvpMult = 1D;
@@ -303,7 +302,8 @@ public class CombatListener implements Listener {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    AttributedEntity killer = plugin.getEntityStatCache().getAttributedEntity(event.getEntity().getKiller());
+    AttributedEntity killer = plugin.getEntityStatCache()
+        .getAttributedEntity(event.getEntity().getKiller());
     if (killer.getAttribute(HP_ON_KILL) > 0.1) {
       restoreHealth(event.getEntity().getKiller(), killer.getAttribute(HP_ON_KILL));
     }

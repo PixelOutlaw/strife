@@ -62,17 +62,15 @@ public class UniqueSplashListener implements Listener {
         event.setCancelled(true);
         return;
       }
-      if (defender.getAttribute(BLOCK) > 0) {
-        if (blockManager
-            .attemptBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), false)) {
-          if (defender.getAttribute(EARTH_DAMAGE) > 0) {
-            blockManager.bumpEarthRunes(defendEntity.getUniqueId(),
-                (int) defender.getAttribute(MAX_EARTH_RUNES));
-          }
-          doBlock(attackEntity, defendEntity);
-          event.setCancelled(true);
-          return;
+      if (blockManager.rollBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), false)) {
+        blockManager.blockFatigue(defendEntity.getUniqueId(), 1.0, false);
+        if (defender.getAttribute(EARTH_DAMAGE) > 0) {
+          blockManager.bumpRunes(defendEntity.getUniqueId(),
+              (int) defender.getAttribute(MAX_EARTH_RUNES));
         }
+        doBlock(attackEntity, defendEntity);
+        event.setCancelled(true);
+        return;
       }
       for (String s : effects) {
         if (StringUtils.isBlank(s)) {

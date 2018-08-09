@@ -35,18 +35,17 @@ public class BlockManager {
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
-  public boolean attemptBlock(UUID uuid, double maximumBlock, boolean isBlocking) {
+  public boolean rollBlock(UUID uuid, double maximumBlock, boolean isBlocking) {
+    if (maximumBlock < 1) {
+      return false;
+    }
     updateStoredBlock(uuid, maximumBlock);
     double blockChance = Math.min(blockDataMap.get(uuid).getStoredBlock() / 100, MAX_BLOCK_CHANCE);
     if (isBlocking) {
       blockChance *= 2;
     }
     LogUtil.printDebug("Block chance: " + blockChance);
-    if (random.nextDouble() > blockChance) {
-      return false;
-    }
-    reduceStoredBlock(uuid, isBlocking);
-    return true;
+    return random.nextDouble() < blockChance;
   }
 
   public long getMillisSinceBlock(UUID uuid) {
@@ -71,7 +70,7 @@ public class BlockManager {
     blockDataMap.get(uuid).setRunes(runes);
   }
 
-  public void bumpEarthRunes(UUID uuid, int maxRunes) {
+  public void bumpRunes(UUID uuid, int maxRunes) {
     if (!blockDataMap.containsKey(uuid)) {
       return;
     }
@@ -92,10 +91,11 @@ public class BlockManager {
     LogUtil.printDebug("New block before clamp: " + block);
   }
 
-  private void reduceStoredBlock(UUID uuid, boolean isBlocking) {
+  public void blockFatigue(UUID uuid, double attackMultipler, boolean isBlocking) {
     BlockData data = blockDataMap.get(uuid);
     LogUtil.printDebug("Pre reduction block: " + data.getStoredBlock());
-    data.setStoredBlock(Math.max(0, data.getStoredBlock() - (isBlocking ? 50 : 100)));
+    double blockFatigue = attackMultipler * (isBlocking ? 50D : 100D);
+    data.setStoredBlock(Math.max(0, data.getStoredBlock() - blockFatigue));
     LogUtil.printDebug("Post reduction block: " + data.getStoredBlock());
   }
 }
