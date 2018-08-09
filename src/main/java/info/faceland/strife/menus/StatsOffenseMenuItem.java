@@ -25,11 +25,15 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.DamageUtil.AttackType;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
+import java.util.Map;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -64,17 +68,17 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
+    Map<StrifeAttribute, Double> baseStats = plugin.getMonsterManager()
+        .getBaseMonsterStats(EntityType.PLAYER, player.getLevel());
+
     AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic
-    int combatStyle = 0;
+    AttackType type = AttackType.MELEE;
     if (player.getEquipment().getItemInMainHand().getType() == Material.BOW) {
-      combatStyle = 1;
-    } else if (player.getEquipment().getItemInMainHand().getType() == Material.WOOD_SWORD) {
-      if (player.getEquipment().getItemInMainHand().getItemMeta().getLore().get(1)
-          .endsWith("Wand")) {
-        combatStyle = 2;
-      }
+      type = AttackType.RANGED;
+    } else if (ItemUtil.isWand(player.getEquipment().getItemInMainHand())) {
+      type = AttackType.MAGIC;
     }
     ItemStack itemStack = new ItemStack(Material.IRON_SWORD);
     ItemMeta itemMeta = itemStack.getItemMeta();
@@ -82,16 +86,16 @@ public class StatsOffenseMenuItem extends MenuItem {
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
-    switch (combatStyle) {
-      case 0:
+    switch (type) {
+      case MELEE:
         lore.add(addStat("Melee Damage: ", StatUtil.getMeleeDamage(pStats), INT_FORMAT));
         itemStack.setType(Material.IRON_SWORD);
         break;
-      case 1:
+      case RANGED:
         lore.add(addStat("Ranged Damage: ", StatUtil.getRangedDamage(pStats), INT_FORMAT));
         itemStack.setType(Material.BOW);
         break;
-      case 2:
+      case MAGIC:
         lore.add(addStat("Magic Damage: ", StatUtil.getMagicDamage(pStats), INT_FORMAT));
         itemStack.setType(Material.BLAZE_ROD);
         break;
@@ -99,6 +103,13 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
     lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x",
         TWO_DECIMAL));
+    if (pStats.getAttribute(MULTISHOT) > 0 && type != AttackType.MELEE) {
+      if (pStats.getAttribute(DOGE) > 0) {
+        lore.add(addStat("MultiTHOT: ", pStats.getAttribute(MULTISHOT), "%", INT_FORMAT));
+      } else {
+        lore.add(addStat("Multishot: ", pStats.getAttribute(MULTISHOT), "%", INT_FORMAT));
+      }
+    }
     lore.add(breakLine);
     lore.add(addStat("Critical Rate: ", pStats.getAttribute(CRITICAL_RATE), "%", INT_FORMAT));
     lore.add(
@@ -107,13 +118,21 @@ public class StatsOffenseMenuItem extends MenuItem {
       lore.add(breakLine);
       lore.add(addStat("Bleed Chance: ", pStats.getAttribute(BLEED_CHANCE), "%", INT_FORMAT));
     }
-    if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0) {
+    if (pStats.getAttribute(BLEED_DAMAGE) > 0) {
       lore.add(breakLine);
+      lore.add(addStat("Bleed Damage: +", pStats.getAttribute(BLEED_DAMAGE), "%", INT_FORMAT));
+    }
+    if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
+        || pStats.getAttribute(HP_ON_KILL) > 0) {
+      lore.add(breakLine);
+      if (pStats.getAttribute(LIFE_STEAL) > 0) {
+        lore.add(addStat("Life Steal: ", pStats.getAttribute(LIFE_STEAL), "%", INT_FORMAT));
+      }
       if (pStats.getAttribute(HP_ON_HIT) > 0) {
         lore.add(addStat("Health On Hit: ", pStats.getAttribute(HP_ON_HIT), INT_FORMAT));
       }
-      if (pStats.getAttribute(LIFE_STEAL) > 0) {
-        lore.add(addStat("Life Steal: ", pStats.getAttribute(LIFE_STEAL), "%", INT_FORMAT));
+      if (pStats.getAttribute(HP_ON_KILL) > 0) {
+        lore.add(addStat("Health On Kill: ", pStats.getAttribute(HP_ON_KILL), INT_FORMAT));
       }
     }
     lore.add(breakLine);
@@ -139,10 +158,27 @@ public class StatsOffenseMenuItem extends MenuItem {
       lore.add(addStat("Corrupt Chance: ", pStats.getAttribute(CORRUPT_CHANCE), "%", INT_FORMAT));
     }
     lore.add(breakLine);
-    lore.add(addStat("Armor Penetration: ", pStats.getAttribute(ARMOR_PENETRATION), INT_FORMAT));
-    lore.add(addStat("Ward Penetration: ", pStats.getAttribute(WARD_PENETRATION), INT_FORMAT));
-    lore.add(addStat("Accuracy: ", pStats.getAttribute(ACCURACY), INT_FORMAT));
-    lore.add(breakLine);
+    boolean accSection = false;
+    if (baseStats.get(ARMOR_PENETRATION) != pStats.getAttribute(ARMOR_PENETRATION)
+        && type != AttackType.MAGIC) {
+      lore.add(addStat("Armor Penetration: ",
+          pStats.getAttribute(ARMOR_PENETRATION) - baseStats.get(ARMOR_PENETRATION), INT_FORMAT));
+      accSection = true;
+    }
+    if (baseStats.get(WARD_PENETRATION) != pStats.getAttribute(WARD_PENETRATION)
+        && type == AttackType.MAGIC) {
+      lore.add(addStat("Ward Penetration: ",
+          pStats.getAttribute(WARD_PENETRATION) - baseStats.get(WARD_PENETRATION), INT_FORMAT));
+      accSection = true;
+    }
+    if (baseStats.get(ACCURACY) != pStats.getAttribute(ACCURACY)) {
+      lore.add(addStat("Accuracy: ", pStats.getAttribute(ACCURACY) - baseStats.get(ACCURACY),
+          INT_FORMAT));
+      accSection = true;
+    }
+    if (accSection) {
+      lore.add(breakLine);
+    }
     lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
