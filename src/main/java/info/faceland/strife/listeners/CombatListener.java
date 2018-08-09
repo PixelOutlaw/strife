@@ -37,6 +37,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 import static info.faceland.strife.attributes.StrifeAttribute.*;
@@ -105,24 +106,24 @@ public class CombatListener implements Listener {
     double healMultiplier = 1D;
     double explosionMult = 1D;
 
-    DamageType damageType = DamageType.MELEE;
+    AttackType damageType = AttackType.MELEE;
     if (event.getCause() == DamageCause.ENTITY_EXPLOSION) {
-      damageType = DamageType.EXPLOSION;
+      damageType = AttackType.EXPLOSION;
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       explosionMult = Math.max(0.3, 4 / (distance + 3));
       healMultiplier = 0.3D;
     } else if (event.getDamager() instanceof ShulkerBullet || event
         .getDamager() instanceof SmallFireball || event.getDamager() instanceof WitherSkull || event
         .getDamager() instanceof EvokerFangs) {
-      damageType = DamageType.MAGIC;
+      damageType = AttackType.MAGIC;
     } else if (event.getDamager() instanceof Projectile) {
-      damageType = DamageType.RANGED;
+      damageType = AttackType.RANGED;
     }
 
     AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity(attackEntity);
     AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
 
-    if (damageType == DamageType.MELEE) {
+    if (damageType == AttackType.MELEE) {
       attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(attacker);
     } else if (projectile != null && projectile.hasMetadata("AS_MULT")) {
       attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
@@ -297,6 +298,17 @@ public class CombatListener implements Listener {
     event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
   }
 
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void strifeEntityDeath(EntityDeathEvent event) {
+    if (event.getEntity().getKiller() == null) {
+      return;
+    }
+    AttributedEntity killer = plugin.getEntityStatCache().getAttributedEntity(event.getEntity().getKiller());
+    if (killer.getAttribute(HP_ON_KILL) > 0.1) {
+      restoreHealth(event.getEntity().getKiller(), killer.getAttribute(HP_ON_KILL));
+    }
+  }
+
   private void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
       double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
       double lightBonus, boolean corrupt, double bleedBonus) {
@@ -337,12 +349,12 @@ public class CombatListener implements Listener {
   }
 
   private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker,
-      DamageType damageType) {
+      AttackType damageType) {
     if (defender.getAttribute(DAMAGE_REFLECT) < 0.1) {
       return;
     }
     double reflectDamage = defender.getAttribute(DAMAGE_REFLECT);
-    reflectDamage = damageType == DamageType.MELEE ? reflectDamage : reflectDamage * 0.6D;
+    reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
     attacker.getWorld().playSound(attacker.getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
     if (attacker.getHealth() > reflectDamage) {
       attacker.setHealth(attacker.getHealth() - reflectDamage);
@@ -368,9 +380,5 @@ public class CombatListener implements Listener {
 
   private boolean doOvercharge(double attackSpeedMult) {
     return attackSpeedMult >= 0.99;
-  }
-
-  private enum DamageType {
-    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
   }
 }

@@ -324,14 +324,6 @@ public class DamageUtil {
     return RANDOM.nextDouble() <= chance;
   }
 
-  private static boolean doOvercharge(double attackSpeedMult) {
-    return attackSpeedMult >= 0.99;
-  }
-
-  public enum CombatDamageType {
-    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
-  }
-
   private static BlockManager getBlockManager() {
     return StrifePlugin.getInstance().getBlockManager();
   }
@@ -348,5 +340,9 @@ public class DamageUtil {
     ICE,
     LIGHTNING,
     DARK
+  }
+
+  public enum AttackType {
+    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
   }
 }
