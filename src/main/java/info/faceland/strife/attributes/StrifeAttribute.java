@@ -23,7 +23,7 @@ public enum StrifeAttribute {
   LEVEL_REQUIREMENT("Level Requirement"),
 
   HEALTH("Health"),
-  REGENERATION(),
+  REGENERATION("Base Regeneration"),
 
   BARRIER("Maximum Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
@@ -70,13 +70,14 @@ public enum StrifeAttribute {
   SHOCK_CHANCE("Shock Chance"),
   FREEZE_CHANCE("Freeze Chance"),
   CORRUPT_CHANCE("Corrupt Chance"),
-  MAX_EARTH_RUNES(),
+  MAX_EARTH_RUNES("Max Earth Runes"),
 
   BLEED_CHANCE("Bleed Chance"),
   BLEED_DAMAGE("Bleed Damage"),
 
   LIFE_STEAL("Life Steal"),
   HP_ON_HIT("Health On Hit"),
+  HP_ON_KILL("Health On Kill"),
 
   MULTISHOT("Multishot"),
 
