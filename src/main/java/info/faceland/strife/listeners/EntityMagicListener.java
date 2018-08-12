@@ -1,6 +1,5 @@
 package info.faceland.strife.listeners;
 
-import info.faceland.strife.StrifePlugin;
 import java.util.Random;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
@@ -24,7 +23,6 @@ import org.bukkit.util.Vector;
 public class EntityMagicListener implements Listener {
 
   private final Random random;
-
   private ItemStack skeletonWand;
 
   private static final PotionEffectType[] WITCH_SPELLS = {
