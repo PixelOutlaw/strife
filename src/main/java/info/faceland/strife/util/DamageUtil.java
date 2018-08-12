@@ -69,7 +69,8 @@ public class DamageUtil {
     }
     defender.getEntity().damage(-1, attacker.getEntity());
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
+    //defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
+    defender.getEntity().damage(damage);
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
     return damage;
   }
