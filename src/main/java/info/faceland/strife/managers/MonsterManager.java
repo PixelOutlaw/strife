@@ -78,9 +78,6 @@ public class MonsterManager {
 
   public Map<StrifeAttribute, Double> getBaseMonsterStats(EntityType entityType, int level) {
     Map<StrifeAttribute, Double> levelStats = new HashMap<>();
-    if (!entityStatDataMap.containsKey(entityType) || entityType == EntityType.PLAYER) {
-      return levelStats;
-    }
     for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(entityType)
         .getPerLevelMap().entrySet()) {
       levelStats.put(stat.getKey(), stat.getValue() * level);
