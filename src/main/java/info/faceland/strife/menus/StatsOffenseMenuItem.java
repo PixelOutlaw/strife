@@ -99,6 +99,9 @@ public class StatsOffenseMenuItem extends MenuItem {
         break;
     }
     lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
+    double acc = 100 + pStats.getAttribute(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
+    lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
+    lore.add(breakLine);
     lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x",
         TWO_DECIMAL));
     if (pStats.getAttribute(MULTISHOT) > 0 && type != AttackType.MELEE) {
@@ -108,7 +111,6 @@ public class StatsOffenseMenuItem extends MenuItem {
         lore.add(addStat("Multishot: ", pStats.getAttribute(MULTISHOT), "%", INT_FORMAT));
       }
     }
-    lore.add(breakLine);
     lore.add(addStat("Critical Rate: ", pStats.getAttribute(CRITICAL_RATE), "%", INT_FORMAT));
     lore.add(
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
@@ -134,6 +136,20 @@ public class StatsOffenseMenuItem extends MenuItem {
       }
     }
     lore.add(breakLine);
+    boolean penSection = false;
+    double aPen = pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
+    if (aPen != 0 && type != AttackType.MAGIC) {
+      lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
+      penSection = true;
+    }
+    double wPen = pStats.getAttribute(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
+    if (wPen != 0 && type == AttackType.MAGIC) {
+      lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
+      penSection = true;
+    }
+    if (penSection) {
+      lore.add(breakLine);
+    }
     lore.add(addStat("Fire Damage: ", StatUtil.getFireDamage(pStats), INT_FORMAT));
     lore.add(addStat("Ignite Chance: ", pStats.getAttribute(IGNITE_CHANCE), "%", INT_FORMAT));
     if (pStats.getAttribute(ICE_DAMAGE) > 0) {
@@ -156,25 +172,6 @@ public class StatsOffenseMenuItem extends MenuItem {
       lore.add(addStat("Corrupt Chance: ", pStats.getAttribute(CORRUPT_CHANCE), "%", INT_FORMAT));
     }
     lore.add(breakLine);
-    boolean accSection = false;
-    double aPen = pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
-    if (aPen != 0 && type != AttackType.MAGIC) {
-      lore.add(addStat("Armor Penetration: ", aPen, INT_FORMAT));
-      accSection = true;
-    }
-    double wPen = pStats.getAttribute(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
-    if (wPen != 0 && type == AttackType.MAGIC) {
-      lore.add(addStat("Ward Penetration: ", wPen, INT_FORMAT));
-      accSection = true;
-    }
-    double acc = pStats.getAttribute(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
-    if (acc != 0) {
-      lore.add(addStat("Accuracy: ", acc, INT_FORMAT));
-      accSection = true;
-    }
-    if (accSection) {
-      lore.add(breakLine);
-    }
     lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
@@ -192,5 +189,9 @@ public class StatsOffenseMenuItem extends MenuItem {
 
   private String addStat(String name, double value, String extra, DecimalFormat format) {
     return ChatColor.RED + name + ChatColor.WHITE + format.format(value) + extra;
+  }
+
+  private String plus(double num) {
+    return num >= 0 ? "+" : "";
   }
 }
