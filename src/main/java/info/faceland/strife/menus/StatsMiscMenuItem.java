@@ -22,6 +22,9 @@
  */
 package info.faceland.strife.menus;
 
+import static info.faceland.strife.menus.StatsMenu.INT_FORMAT;
+import static info.faceland.strife.menus.StatsMenu.breakLine;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
@@ -37,7 +40,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,16 +47,14 @@ public class StatsMiscMenuItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private Player player;
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#");
-    private static final String breakLine = TextUtils.color("&7&m--------------------");
 
-    public StatsMiscMenuItem(StrifePlugin plugin, Player player) {
+    StatsMiscMenuItem(StrifePlugin plugin, Player player) {
         super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
         this.player = player;
         this.plugin = plugin;
     }
 
-    public StatsMiscMenuItem(StrifePlugin plugin) {
+    StatsMiscMenuItem(StrifePlugin plugin) {
         super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
         this.plugin = plugin;
     }
@@ -71,7 +71,7 @@ public class StatsMiscMenuItem extends MenuItem {
         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         List<String> lore = new ArrayList<>();
         lore.add(breakLine);
-        lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + DECIMAL_FORMAT.format(
+        lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
                 pStats.getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
         if (pStats.getAttribute(StrifeAttribute.DOGE) > 0) {
             lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");

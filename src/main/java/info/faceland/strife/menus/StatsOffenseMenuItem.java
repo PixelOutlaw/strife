@@ -19,6 +19,9 @@
 package info.faceland.strife.menus;
 
 import static info.faceland.strife.attributes.StrifeAttribute.*;
+import static info.faceland.strife.menus.StatsMenu.INT_FORMAT;
+import static info.faceland.strife.menus.StatsMenu.TWO_DECIMAL;
+import static info.faceland.strife.menus.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 
@@ -47,18 +50,14 @@ public class StatsOffenseMenuItem extends MenuItem {
 
   private final StrifePlugin plugin;
   private Player player;
-  private static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
-  private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
-  private static final DecimalFormat TWO_DECIMAL = new DecimalFormat("#.##");
-  private static final String breakLine = TextUtils.color("&7&m--------------------");
 
-  public StatsOffenseMenuItem(StrifePlugin plugin, Player player) {
+  StatsOffenseMenuItem(StrifePlugin plugin, Player player) {
     super(TextUtils.color("&c&lOffensive Stats"), new ItemStack(Material.IRON_SWORD));
     this.player = player;
     this.plugin = plugin;
   }
 
-  public StatsOffenseMenuItem(StrifePlugin plugin) {
+  StatsOffenseMenuItem(StrifePlugin plugin) {
     super(TextUtils.color("&c&lOffensive Stats"), new ItemStack(Material.IRON_SWORD));
     this.plugin = plugin;
   }
@@ -68,10 +67,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    Map<StrifeAttribute, Double> baseStats = plugin.getMonsterManager()
-        .getBaseMonsterStats(EntityType.PLAYER, player.getLevel());
-
     AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+    Map<StrifeAttribute, Double> bases = plugin.getMonsterManager()
+        .getBaseMonsterStats(EntityType.PLAYER, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic
     AttackType type = AttackType.MELEE;
@@ -159,21 +157,19 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
     lore.add(breakLine);
     boolean accSection = false;
-    if (baseStats.get(ARMOR_PENETRATION) != pStats.getAttribute(ARMOR_PENETRATION)
-        && type != AttackType.MAGIC) {
-      lore.add(addStat("Armor Penetration: ",
-          pStats.getAttribute(ARMOR_PENETRATION) - baseStats.get(ARMOR_PENETRATION), INT_FORMAT));
+    double aPen = pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
+    if (aPen != 0 && type != AttackType.MAGIC) {
+      lore.add(addStat("Armor Penetration: ", aPen, INT_FORMAT));
       accSection = true;
     }
-    if (baseStats.get(WARD_PENETRATION) != pStats.getAttribute(WARD_PENETRATION)
-        && type == AttackType.MAGIC) {
-      lore.add(addStat("Ward Penetration: ",
-          pStats.getAttribute(WARD_PENETRATION) - baseStats.get(WARD_PENETRATION), INT_FORMAT));
+    double wPen = pStats.getAttribute(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
+    if (wPen != 0 && type == AttackType.MAGIC) {
+      lore.add(addStat("Ward Penetration: ", wPen, INT_FORMAT));
       accSection = true;
     }
-    if (baseStats.get(ACCURACY) != pStats.getAttribute(ACCURACY)) {
-      lore.add(addStat("Accuracy: ", pStats.getAttribute(ACCURACY) - baseStats.get(ACCURACY),
-          INT_FORMAT));
+    double acc = pStats.getAttribute(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
+    if (acc != 0) {
+      lore.add(addStat("Accuracy: ", acc, INT_FORMAT));
       accSection = true;
     }
     if (accSection) {

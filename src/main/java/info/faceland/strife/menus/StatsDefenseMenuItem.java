@@ -18,6 +18,11 @@
  */
 package info.faceland.strife.menus;
 
+import static info.faceland.strife.menus.StatsMenu.INT_FORMAT;
+import static info.faceland.strife.menus.StatsMenu.ONE_DECIMAL;
+import static info.faceland.strife.menus.StatsMenu.TWO_DECIMAL;
+import static info.faceland.strife.menus.StatsMenu.breakLine;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
@@ -42,19 +47,15 @@ public class StatsDefenseMenuItem extends MenuItem {
 
   private final StrifePlugin plugin;
   private Player player;
-  private static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
-  private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
-  private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#.##");
-  private static final String breakLine = TextUtils.color("&7&m--------------------");
   private static final String hpPerFive = TextUtils.color("&7 (HP/5s)");
 
-  public StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
+  StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
     this.plugin = plugin;
     this.player = player;
   }
 
-  public StatsDefenseMenuItem(StrifePlugin plugin) {
+  StatsDefenseMenuItem(StrifePlugin plugin) {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
     this.plugin = plugin;
   }
@@ -79,7 +80,7 @@ public class StatsDefenseMenuItem extends MenuItem {
           addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
     }
     lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
-    lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMALS));
+    lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMAL));
     lore.add(breakLine);
     lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
     lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
