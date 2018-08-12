@@ -77,13 +77,12 @@ public class CombatListener implements Listener {
         projectile.remove();
         return;
       }
+      if (!(shooter instanceof LivingEntity)) {
+        return;
+      }
+      attackEntity = (LivingEntity) shooter;
       if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
         projectileEffect = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString().split("~");
-      }
-      if (shooter instanceof LivingEntity) {
-        attackEntity = (LivingEntity) shooter;
-      } else {
-        return;
       }
     } else if (event.getDamager() instanceof EvokerFangs) {
       attackEntity = ((EvokerFangs) event.getDamager()).getOwner();
@@ -151,6 +150,7 @@ public class CombatListener implements Listener {
     evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
     if (evasionMultiplier <= 0.5) {
       doEvasion(attackEntity, defendEntity);
+      removeIfExisting(projectile);
       event.setCancelled(true);
       return;
     }
@@ -164,6 +164,7 @@ public class CombatListener implements Listener {
       }
       doReflectedDamage(defender, attackEntity, damageType);
       doBlock(attackEntity, defendEntity);
+      removeIfExisting(projectile);
       event.setCancelled(true);
       return;
     }
@@ -380,5 +381,12 @@ public class CombatListener implements Listener {
 
   private boolean doOvercharge(double attackSpeedMult) {
     return attackSpeedMult >= 0.99;
+  }
+
+  private void removeIfExisting(Projectile projectile) {
+    if (projectile == null) {
+      return;
+    }
+    projectile.remove();
   }
 }
