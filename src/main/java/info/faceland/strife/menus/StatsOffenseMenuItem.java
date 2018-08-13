@@ -98,9 +98,9 @@ public class StatsOffenseMenuItem extends MenuItem {
         itemStack.setType(Material.BLAZE_ROD);
         break;
     }
-    lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
     double acc = 100 + pStats.getAttribute(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
     lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
+    lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
     lore.add(breakLine);
     lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x",
         TWO_DECIMAL));
@@ -114,12 +114,18 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(addStat("Critical Rate: ", pStats.getAttribute(CRITICAL_RATE), "%", INT_FORMAT));
     lore.add(
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
+    double aPen = pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
+    if (aPen != 0 && type != AttackType.MAGIC) {
+      lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
+    }
+    double wPen = pStats.getAttribute(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
+    if (wPen != 0 && type == AttackType.MAGIC) {
+      lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
+    }
     if (pStats.getAttribute(BLEED_CHANCE) > 0) {
-      lore.add(breakLine);
       lore.add(addStat("Bleed Chance: ", pStats.getAttribute(BLEED_CHANCE), "%", INT_FORMAT));
     }
     if (pStats.getAttribute(BLEED_DAMAGE) > 0) {
-      lore.add(breakLine);
       lore.add(addStat("Bleed Damage: +", pStats.getAttribute(BLEED_DAMAGE), "%", INT_FORMAT));
     }
     if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
@@ -136,20 +142,6 @@ public class StatsOffenseMenuItem extends MenuItem {
       }
     }
     lore.add(breakLine);
-    boolean penSection = false;
-    double aPen = pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
-    if (aPen != 0 && type != AttackType.MAGIC) {
-      lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
-      penSection = true;
-    }
-    double wPen = pStats.getAttribute(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
-    if (wPen != 0 && type == AttackType.MAGIC) {
-      lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
-      penSection = true;
-    }
-    if (penSection) {
-      lore.add(breakLine);
-    }
     lore.add(addStat("Fire Damage: ", StatUtil.getFireDamage(pStats), INT_FORMAT));
     lore.add(addStat("Ignite Chance: ", pStats.getAttribute(IGNITE_CHANCE), "%", INT_FORMAT));
     if (pStats.getAttribute(ICE_DAMAGE) > 0) {
