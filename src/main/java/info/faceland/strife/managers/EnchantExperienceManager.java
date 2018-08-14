@@ -18,18 +18,19 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.ENCHANTING;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import gyurix.api.TitleAPI;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.api.StrifeEnchantExperienceManager;
+import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.events.SkillLevelUpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class EnchantExperienceManager implements StrifeEnchantExperienceManager {
+public class EnchantExperienceManager implements StrifeSkillExperienceManager {
 
   private final StrifePlugin plugin;
 
@@ -52,8 +53,11 @@ public class EnchantExperienceManager implements StrifeEnchantExperienceManager 
     while (currentExp > maxExp) {
       currentExp -= maxExp;
       saveData.setEnchantLevel(saveData.getEnchantLevel() + 1);
-      pushLevelUpSpam(champion.getPlayer(), saveData.getEnchantLevel(),
-          saveData.getEnchantLevel() % 5 == 0);
+
+      SkillLevelUpEvent enchantingLevelUp =
+          new SkillLevelUpEvent(champion.getPlayer(), ENCHANTING, saveData.getEnchantLevel());
+      Bukkit.getPluginManager().callEvent(enchantingLevelUp);
+
       maxExp = (double) getMaxExp(saveData.getEnchantLevel());
     }
 
@@ -66,17 +70,5 @@ public class EnchantExperienceManager implements StrifeEnchantExperienceManager 
 
   public Integer getMaxExp(int level) {
     return plugin.getEnchantRate().get(level);
-  }
-
-  private void pushLevelUpSpam(Player player, int level, boolean announce) {
-    MessageUtils.sendMessage(player,
-        "&dSkill Up! Your &fEnchanting &dlevel has increased to &f" + level + "&d!");
-    TitleAPI.set("§dSKILL UP!", "§dEnchanting Level §f" + level, 10, 40, 20, player);
-    if (announce) {
-      for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p, "&d&lSkillUp! &f" + player.getDisplayName() +
-            " &dhas reached skill level &f" + level + " &din enchanting!");
-      }
-    }
   }
 }

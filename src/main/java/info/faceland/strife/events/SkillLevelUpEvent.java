@@ -20,17 +20,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.api;
+package info.faceland.strife.events;
 
-import info.faceland.strife.data.Champion;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-public interface StrifeCraftExperienceManager {
+public class SkillLevelUpEvent extends Event {
 
-  void addCraftExperience(Player player, double amount);
+  private static final HandlerList HANDLER_LIST = new HandlerList();
 
-  void addCraftExperience(Champion champion, double amount);
+  public static HandlerList getHandlerList() {
+    return HANDLER_LIST;
+  }
 
-  Integer getMaxCraftExp(int level);
+  private final Player player;
+  private final LifeSkillType skillType;
+  private final int newSkillLevel;
 
+  public SkillLevelUpEvent(Player player, LifeSkillType skillType, int newLevel) {
+    this.player = player;
+    this.skillType = skillType;
+    this.newSkillLevel = newLevel;
+  }
+
+  @Override
+  public HandlerList getHandlers() {
+    return HANDLER_LIST;
+  }
+
+  public Player getPlayer() {
+    return player;
+  }
+
+  public LifeSkillType getSkillType() {
+    return skillType;
+  }
+
+  public int getNewSkillLevel() {
+    return newSkillLevel;
+  }
+
+  public enum LifeSkillType {
+    CRAFTING,
+    ENCHANTING,
+    FISHING,
+    MINING
+  }
 }

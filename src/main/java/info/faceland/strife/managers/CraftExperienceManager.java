@@ -18,18 +18,19 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.CRAFTING;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import gyurix.api.TitleAPI;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.api.StrifeCraftExperienceManager;
+import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.events.SkillLevelUpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class CraftExperienceManager implements StrifeCraftExperienceManager {
+public class CraftExperienceManager implements StrifeSkillExperienceManager {
 
   private final StrifePlugin plugin;
 
@@ -37,24 +38,27 @@ public class CraftExperienceManager implements StrifeCraftExperienceManager {
     this.plugin = plugin;
   }
 
-  public void addCraftExperience(Player player, double amount) {
-    addCraftExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount);
+  public void addExperience(Player player, double amount) {
+    addExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount);
   }
 
-  public void addCraftExperience(Champion champion, double amount) {
+  public void addExperience(Champion champion, double amount) {
     ChampionSaveData saveData = champion.getSaveData();
     if (saveData.getCraftingLevel() >= plugin.getMaxSkillLevel()) {
       return;
     }
     double currentExp = saveData.getCraftingExp() + amount;
-    double maxExp = (double) getMaxCraftExp(saveData.getCraftingLevel());
+    double maxExp = (double) getMaxExp(saveData.getCraftingLevel());
 
     while (currentExp > maxExp) {
       currentExp -= maxExp;
       saveData.setCraftingLevel(saveData.getCraftingLevel() + 1);
-      pushLevelUpSpam(champion.getPlayer(), saveData.getCraftingLevel(),
-          saveData.getCraftingLevel() % 5 == 0);
-      maxExp = (double) getMaxCraftExp(saveData.getCraftingLevel());
+
+      SkillLevelUpEvent craftingLevelUp =
+          new SkillLevelUpEvent(champion.getPlayer(), CRAFTING, saveData.getCraftingLevel());
+      Bukkit.getPluginManager().callEvent(craftingLevelUp);
+
+      maxExp = (double) getMaxExp(saveData.getCraftingLevel());
     }
 
     saveData.setCraftingExp((float) currentExp);
@@ -64,19 +68,7 @@ public class CraftExperienceManager implements StrifeCraftExperienceManager {
     champion.setSaveData(saveData);
   }
 
-  public Integer getMaxCraftExp(int level) {
+  public Integer getMaxExp(int level) {
     return plugin.getCraftingRate().get(level);
-  }
-
-  private void pushLevelUpSpam(Player player, int level, boolean announce) {
-    MessageUtils.sendMessage(player,
-        "&eSkill Up! Your &fCrafting &elevel has increased to &f" + level + "&e!");
-    TitleAPI.set("§eSKILL UP!", "§eCrafting Level §f" + level, 10, 40, 20, player);
-    if (announce) {
-      for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p, "&e&lSkillUp! &f" + player.getDisplayName() +
-            " &ehas reached skill level &f" + level + " &ein crafting!");
-      }
-    }
   }
 }

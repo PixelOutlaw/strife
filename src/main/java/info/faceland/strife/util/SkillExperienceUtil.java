@@ -11,7 +11,7 @@ public class SkillExperienceUtil {
   public static void addCraftExperience(Player player, double amount) {
     StrifeCraftEvent craftEvent = new StrifeCraftEvent(player, (float) amount);
     StrifePlugin.getInstance().getServer().getPluginManager().callEvent(craftEvent);
-    StrifePlugin.getInstance().getCraftExperienceManager().addCraftExperience(player, craftEvent.getAmount());
+    StrifePlugin.getInstance().getCraftExperienceManager().addExperience(player, craftEvent.getAmount());
   }
 
   public static void addEnchantExperience(Player player, double amount) {

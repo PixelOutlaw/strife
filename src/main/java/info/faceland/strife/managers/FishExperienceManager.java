@@ -18,18 +18,19 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.FISHING;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import gyurix.api.TitleAPI;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.api.StrifeFishExperienceManager;
+import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.events.SkillLevelUpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class FishExperienceManager implements StrifeFishExperienceManager {
+public class FishExperienceManager implements StrifeSkillExperienceManager {
 
   private final StrifePlugin plugin;
 
@@ -52,8 +53,11 @@ public class FishExperienceManager implements StrifeFishExperienceManager {
     while (currentExp > maxExp) {
       currentExp -= maxExp;
       saveData.setFishingLevel(saveData.getFishingLevel() + 1);
-      pushLevelUpSpam(champion.getPlayer(), saveData.getFishingLevel(),
-          saveData.getFishingLevel() % 5 == 0);
+
+      SkillLevelUpEvent fishingLevelUp =
+          new SkillLevelUpEvent(champion.getPlayer(), FISHING, saveData.getFishingLevel());
+      Bukkit.getPluginManager().callEvent(fishingLevelUp);
+
       maxExp = (double) getMaxExp(saveData.getFishingLevel());
     }
 
@@ -66,17 +70,5 @@ public class FishExperienceManager implements StrifeFishExperienceManager {
 
   public Integer getMaxExp(int level) {
     return plugin.getFishRate().get(level);
-  }
-
-  private void pushLevelUpSpam(Player player, int level, boolean announce) {
-    MessageUtils.sendMessage(player,
-        "&bSkill Up! Your &fFishing &blevel has increased to &f" + level + "&b!");
-    TitleAPI.set("§bSKILL UP!", "§bFishing Level §f" + level, 10, 40, 20, player);
-    if (announce) {
-      for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p, "&b&lSkillUp! &f" + player.getDisplayName() +
-            " &bhas reached skill level &f" + level + " &bin fishing!");
-      }
-    }
   }
 }

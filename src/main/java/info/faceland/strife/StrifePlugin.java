@@ -24,10 +24,7 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
-import info.faceland.strife.api.StrifeCraftExperienceManager;
-import info.faceland.strife.api.StrifeEnchantExperienceManager;
 import info.faceland.strife.api.StrifeExperienceManager;
-import info.faceland.strife.api.StrifeFishExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
@@ -85,9 +82,9 @@ public class StrifePlugin extends FacePlugin {
   private StrifeStatManager statManager;
   private ChampionManager championManager;
   private StrifeExperienceManager experienceManager;
-  private StrifeCraftExperienceManager craftExperienceManager;
-  private StrifeEnchantExperienceManager enchantExperienceManager;
-  private StrifeFishExperienceManager fishExperienceManager;
+  private CraftExperienceManager craftExperienceManager;
+  private EnchantExperienceManager enchantExperienceManager;
+  private FishExperienceManager fishExperienceManager;
   private BlockManager blockManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
@@ -329,6 +326,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(), this);
     Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
@@ -674,15 +672,15 @@ public class StrifePlugin extends FacePlugin {
     return multiplierManager;
   }
 
-  public StrifeCraftExperienceManager getCraftExperienceManager() {
+  public CraftExperienceManager getCraftExperienceManager() {
     return craftExperienceManager;
   }
 
-  public StrifeEnchantExperienceManager getEnchantExperienceManager() {
+  public EnchantExperienceManager getEnchantExperienceManager() {
     return enchantExperienceManager;
   }
 
-  public StrifeFishExperienceManager getFishExperienceManager() {
+  public FishExperienceManager getFishExperienceManager() {
     return fishExperienceManager;
   }
 

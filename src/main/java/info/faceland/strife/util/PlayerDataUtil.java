@@ -15,7 +15,7 @@ public class PlayerDataUtil {
 
   public static float getCraftMaxExp(Player player) {
     int level = getCraftLevel(player);
-    return StrifePlugin.getInstance().getCraftExperienceManager().getMaxCraftExp(level);
+    return StrifePlugin.getInstance().getCraftExperienceManager().getMaxExp(level);
   }
 
   public static int getEnchantLevel(Player player) {

@@ -25,7 +25,7 @@ package info.faceland.strife.api;
 import info.faceland.strife.data.Champion;
 import org.bukkit.entity.Player;
 
-public interface StrifeEnchantExperienceManager {
+public interface StrifeSkillExperienceManager {
 
   void addExperience(Player player, double amount);
 
