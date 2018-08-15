@@ -24,6 +24,9 @@ public class ChampionSaveData {
   private int enchantLevel;
   private float enchantExp;
 
+  private int miningLevel;
+  private float miningExp;
+
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
@@ -44,6 +47,7 @@ public class ChampionSaveData {
     this.bonusLevels = bonusLevels;
   }
 
+  // CRAFTING STUFF //
   public int getCraftingLevel() {
     return craftingLevel;
   }
@@ -60,6 +64,24 @@ public class ChampionSaveData {
     this.craftingExp = craftingExp;
   }
 
+  // ENCHANTING STUFF //
+  public int getEnchantLevel() {
+    return enchantLevel;
+  }
+
+  public void setEnchantLevel(int enchantLevel) {
+    this.enchantLevel = enchantLevel;
+  }
+
+  public float getEnchantExp() {
+    return enchantExp;
+  }
+
+  public void setEnchantExp(float enchantExp) {
+    this.enchantExp = enchantExp;
+  }
+
+  // FISHING STUFF //
   public int getFishingLevel() {
     return fishingLevel;
   }
@@ -76,20 +98,22 @@ public class ChampionSaveData {
     this.fishingExp = fishingExp;
   }
 
-  public int getEnchantLevel() {
-    return enchantLevel;
+
+  // MINING STUFF //
+  public int getMiningLevel() {
+    return miningLevel;
   }
 
-  public void setEnchantLevel(int enchantLevel) {
-    this.enchantLevel = enchantLevel;
+  public void setMiningLevel(int miningLevel) {
+    this.miningLevel = miningLevel;
   }
 
-  public float getEnchantExp() {
-    return enchantExp;
+  public float getMiningExp() {
+    return miningExp;
   }
 
-  public void setEnchantExp(float enchantExp) {
-    this.enchantExp = enchantExp;
+  public void setMiningExp(float miningExp) {
+    this.miningExp = miningExp;
   }
 
   public int getUnusedStatPoints() {

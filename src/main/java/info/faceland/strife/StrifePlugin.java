@@ -85,6 +85,7 @@ public class StrifePlugin extends FacePlugin {
   private CraftExperienceManager craftExperienceManager;
   private EnchantExperienceManager enchantExperienceManager;
   private FishExperienceManager fishExperienceManager;
+  private MiningExperienceManager miningExperienceManager;
   private BlockManager blockManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
@@ -115,6 +116,7 @@ public class StrifePlugin extends FacePlugin {
   private LevelingRate craftingRate;
   private LevelingRate enchantRate;
   private LevelingRate fishRate;
+  private LevelingRate miningRate;
   private LevelupMenu levelupMenu;
   private StatsMenu statsMenu;
 
@@ -172,6 +174,7 @@ public class StrifePlugin extends FacePlugin {
     craftExperienceManager = new CraftExperienceManager(this);
     enchantExperienceManager = new EnchantExperienceManager(this);
     fishExperienceManager = new FishExperienceManager(this);
+    miningExperienceManager = new MiningExperienceManager(this);
     entityStatCache = new EntityStatCache(this);
     commandHandler = new CommandHandler(this);
 
@@ -269,6 +272,13 @@ public class StrifePlugin extends FacePlugin {
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
     for (int i = 0; i < maxSkillLevel; i++) {
       fishRate.put(i, i, (int) Math.round(fishExpr.setVariable("LEVEL", i).evaluate()));
+    }
+
+    miningRate = new LevelingRate();
+    Expression mineExpr = new ExpressionBuilder(settings.getString("config.leveling.mining",
+        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+    for (int i = 0; i < maxSkillLevel; i++) {
+      miningRate.put(i, i, (int) Math.round(mineExpr.setVariable("LEVEL", i).evaluate()));
     }
 
     trackedPruneTask.runTaskTimer(this,
@@ -372,6 +382,7 @@ public class StrifePlugin extends FacePlugin {
     craftingRate = null;
     enchantRate = null;
     fishRate = null;
+    miningRate = null;
 
     statManager = null;
     monsterManager = null;
@@ -392,6 +403,7 @@ public class StrifePlugin extends FacePlugin {
     craftExperienceManager = null;
     enchantExperienceManager = null;
     fishExperienceManager = null;
+    miningExperienceManager = null;
     entityStatCache = null;
 
     saveTask = null;
@@ -684,6 +696,10 @@ public class StrifePlugin extends FacePlugin {
     return fishExperienceManager;
   }
 
+  public MiningExperienceManager getMiningExperienceManager() {
+    return miningExperienceManager;
+  }
+
   public StrifeExperienceManager getExperienceManager() {
     return experienceManager;
   }
@@ -736,6 +752,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelingRate getFishRate() {
     return fishRate;
+  }
+
+  public LevelingRate getMiningRate() {
+    return miningRate;
   }
 
   public LogLevel getLogLevel() {

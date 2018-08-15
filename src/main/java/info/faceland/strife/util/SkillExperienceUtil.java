@@ -4,6 +4,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.events.StrifeCraftEvent;
 import info.faceland.strife.events.StrifeEnchantEvent;
 import info.faceland.strife.events.StrifeFishEvent;
+import info.faceland.strife.events.StrifeMineEvent;
 import org.bukkit.entity.Player;
 
 public class SkillExperienceUtil {
@@ -24,6 +25,12 @@ public class SkillExperienceUtil {
     StrifeFishEvent fishEvent = new StrifeFishEvent(player, (float) amount);
     StrifePlugin.getInstance().getServer().getPluginManager().callEvent(fishEvent);
     StrifePlugin.getInstance().getFishExperienceManager().addExperience(player, fishEvent.getAmount());
+  }
+
+  public static void addMiningExperience(Player player, double amount) {
+    StrifeMineEvent mineEvent = new StrifeMineEvent(player, (float) amount);
+    StrifePlugin.getInstance().getServer().getPluginManager().callEvent(mineEvent);
+    StrifePlugin.getInstance().getMiningExperienceManager().addExperience(player, mineEvent.getAmount());
   }
 
 }
