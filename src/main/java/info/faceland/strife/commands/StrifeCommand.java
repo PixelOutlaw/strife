@@ -27,6 +27,7 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
+import info.faceland.strife.util.SkillExperienceUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -144,6 +145,34 @@ public class StrifeCommand {
       return;
     }
     sendMessage(sender, "<red>Cannot set level of unknown skill '" + skill + "'.");
+  }
+
+  @Command(identifier = "strife addskillxp", permissions = "strife.command.strife.setskill", onlyPlayers = false)
+  public void addSkillXp(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "skill") String skill, @Arg(name = "xpAmount") int amount) {
+    String skillName = skill.toUpperCase();
+    switch (skillName) {
+      case "CRAFTING":
+        SkillExperienceUtil.addCraftExperience(target, amount);
+        sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount +"XP)");
+        break;
+      case "ENCHANTING":
+        SkillExperienceUtil.addEnchantExperience(target, amount);
+        sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount +"XP)");
+        break;
+      case "FISHING":
+        SkillExperienceUtil.addFishExperience(target, amount);
+        sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount +"XP)");
+        break;
+      case "MINING":
+        SkillExperienceUtil.addMiningExperience(target, amount);
+        sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount +"XP)");
+        break;
+      default:
+        sendMessage(sender, "<red>Unknown skill " + skill + "??");
+        return;
+    }
+    sendMessage(sender, "&fGranted " + amount + " " +  skill + " XP to " + target);
   }
 
   @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
