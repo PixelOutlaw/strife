@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.attributes.StrifeAttribute.SKILL_XP_GAIN;
 import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.MINING;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
@@ -27,6 +28,7 @@ import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.events.SkillLevelUpEvent;
+import info.faceland.strife.events.StrifeMineEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -38,16 +40,21 @@ public class MiningExperienceManager implements StrifeSkillExperienceManager {
     this.plugin = plugin;
   }
 
-  public void addExperience(Player player, double amount) {
-    addExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount);
+  public void addExperience(Player player, double amount, boolean exact) {
+    addExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount, exact);
   }
 
-  public void addExperience(Champion champion, double amount) {
+  public void addExperience(Champion champion, double amount, boolean exact) {
     ChampionSaveData saveData = champion.getSaveData();
     if (saveData.getMiningLevel() >= plugin.getMaxSkillLevel()) {
       return;
     }
-    double currentExp = saveData.getMiningExp() + amount;
+    if (!exact) {
+      amount *= 1 + champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+    }
+    StrifeMineEvent mineEvent = new StrifeMineEvent(champion.getPlayer(), (float) amount);
+    StrifePlugin.getInstance().getServer().getPluginManager().callEvent(mineEvent);
+    double currentExp = saveData.getMiningExp() + mineEvent.getAmount();
     double maxExp = (double) getMaxExp(saveData.getMiningLevel());
 
     while (currentExp > maxExp) {

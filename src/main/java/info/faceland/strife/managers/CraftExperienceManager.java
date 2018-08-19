@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.attributes.StrifeAttribute.SKILL_XP_GAIN;
 import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.CRAFTING;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
@@ -27,6 +28,7 @@ import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.events.SkillLevelUpEvent;
+import info.faceland.strife.events.StrifeCraftEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -38,16 +40,21 @@ public class CraftExperienceManager implements StrifeSkillExperienceManager {
     this.plugin = plugin;
   }
 
-  public void addExperience(Player player, double amount) {
-    addExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount);
+  public void addExperience(Player player, double amount, boolean exact) {
+    addExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount, exact);
   }
 
-  public void addExperience(Champion champion, double amount) {
+  public void addExperience(Champion champion, double amount, boolean exact) {
     ChampionSaveData saveData = champion.getSaveData();
     if (saveData.getCraftingLevel() >= plugin.getMaxSkillLevel()) {
       return;
     }
-    double currentExp = saveData.getCraftingExp() + amount;
+    if (!exact) {
+      amount *= 1 + champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+    }
+    StrifeCraftEvent craftEvent = new StrifeCraftEvent(champion.getPlayer(), (float) amount);
+    StrifePlugin.getInstance().getServer().getPluginManager().callEvent(craftEvent);
+    double currentExp = saveData.getCraftingExp() + craftEvent.getAmount();
     double maxExp = (double) getMaxExp(saveData.getCraftingLevel());
 
     while (currentExp > maxExp) {

@@ -27,7 +27,6 @@ import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
-import info.faceland.strife.util.SkillExperienceUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -153,19 +152,19 @@ public class StrifeCommand {
     String skillName = skill.toUpperCase();
     switch (skillName) {
       case "CRAFTING":
-        SkillExperienceUtil.addCraftExperience(target, amount);
+        plugin.getCraftExperienceManager().addExperience(target, amount, true);
         sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount +"XP)");
         break;
       case "ENCHANTING":
-        SkillExperienceUtil.addEnchantExperience(target, amount);
+        plugin.getEnchantExperienceManager().addExperience(target, amount, true);
         sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount +"XP)");
         break;
       case "FISHING":
-        SkillExperienceUtil.addFishExperience(target, amount);
+        plugin.getFishExperienceManager().addExperience(target, amount, true);
         sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount +"XP)");
         break;
       case "MINING":
-        SkillExperienceUtil.addMiningExperience(target, amount);
+        plugin.getMiningExperienceManager().addExperience(target, amount, true);
         sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount +"XP)");
         break;
       default:

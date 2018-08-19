@@ -27,9 +27,9 @@ import org.bukkit.entity.Player;
 
 public interface StrifeSkillExperienceManager {
 
-  void addExperience(Player player, double amount);
+  void addExperience(Player player, double amount, boolean ignoreSkillExpMult);
 
-  void addExperience(Champion champion, double amount);
+  void addExperience(Champion champion, double amount, boolean ignoreSkillExpMult);
 
   Integer getMaxExp(int level);
 
