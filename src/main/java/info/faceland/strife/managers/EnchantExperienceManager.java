@@ -58,6 +58,9 @@ public class EnchantExperienceManager implements StrifeSkillExperienceManager {
           new SkillLevelUpEvent(champion.getPlayer(), ENCHANTING, saveData.getEnchantLevel());
       Bukkit.getPluginManager().callEvent(enchantingLevelUp);
 
+      if (saveData.getEnchantLevel() >= plugin.getMaxSkillLevel()) {
+        break;
+      }
       maxExp = (double) getMaxExp(saveData.getEnchantLevel());
     }
 

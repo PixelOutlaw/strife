@@ -58,6 +58,9 @@ public class CraftExperienceManager implements StrifeSkillExperienceManager {
           new SkillLevelUpEvent(champion.getPlayer(), CRAFTING, saveData.getCraftingLevel());
       Bukkit.getPluginManager().callEvent(craftingLevelUp);
 
+      if (saveData.getCraftingLevel() >= plugin.getMaxSkillLevel()) {
+        break;
+      }
       maxExp = (double) getMaxExp(saveData.getCraftingLevel());
     }
 

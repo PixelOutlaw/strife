@@ -58,6 +58,9 @@ public class MiningExperienceManager implements StrifeSkillExperienceManager {
           new SkillLevelUpEvent(champion.getPlayer(), MINING, saveData.getMiningLevel());
       Bukkit.getPluginManager().callEvent(miningLevelUp);
 
+      if (saveData.getMiningLevel() >= plugin.getMaxSkillLevel()) {
+        break;
+      }
       maxExp = (double) getMaxExp(saveData.getMiningLevel());
     }
 

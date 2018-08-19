@@ -58,6 +58,9 @@ public class FishExperienceManager implements StrifeSkillExperienceManager {
           new SkillLevelUpEvent(champion.getPlayer(), FISHING, saveData.getFishingLevel());
       Bukkit.getPluginManager().callEvent(fishingLevelUp);
 
+      if (saveData.getFishingLevel() >= plugin.getMaxSkillLevel()) {
+        break;
+      }
       maxExp = (double) getMaxExp(saveData.getFishingLevel());
     }
 
