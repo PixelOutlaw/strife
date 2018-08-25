@@ -112,8 +112,8 @@ public class JsonDataStorage implements DataStorage {
       saveData.setEnchantExp((float) section.getDouble("enchant-exp"));
       saveData.setFishingLevel(section.getInt("fishing-level"));
       saveData.setFishingExp((float) section.getDouble("fishing-exp"));
-      saveData.setFishingLevel(section.getInt("mining-level"));
-      saveData.setFishingExp((float) section.getDouble("mining-exp"));
+      saveData.setMiningLevel(section.getInt("mining-level"));
+      saveData.setMiningExp((float) section.getDouble("mining-exp"));
 
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
       if (section.isConfigurationSection("stats")) {

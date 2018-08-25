@@ -142,6 +142,18 @@ public class StrifeCommand {
       sendMessage(target, "<green>Your skill in enchanting is now " + newLevel);
       sendMessage(sender, "<green>Set enchanting level of " + target + " to " + newLevel);
       return;
+    } else if (skill.equalsIgnoreCase("fishing")) {
+      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      champion.getSaveData().setFishingLevel(newLevel);
+      sendMessage(target, "<green>Your skill in fishing is now " + newLevel);
+      sendMessage(sender, "<green>Set fishing level of " + target + " to " + newLevel);
+      return;
+    } else if (skill.equalsIgnoreCase("mining")) {
+      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      champion.getSaveData().setMiningLevel(newLevel);
+      sendMessage(target, "<green>Your skill in mining is now " + newLevel);
+      sendMessage(sender, "<green>Set mining level of " + target + " to " + newLevel);
+      return;
     }
     sendMessage(sender, "<red>Cannot set level of unknown skill '" + skill + "'.");
   }
@@ -153,25 +165,25 @@ public class StrifeCommand {
     switch (skillName) {
       case "CRAFTING":
         plugin.getCraftExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount +"XP)");
+        sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount + "XP)");
         break;
       case "ENCHANTING":
         plugin.getEnchantExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount +"XP)");
+        sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount + "XP)");
         break;
       case "FISHING":
         plugin.getFishExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount +"XP)");
+        sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount + "XP)");
         break;
       case "MINING":
         plugin.getMiningExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount +"XP)");
+        sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount + "XP)");
         break;
       default:
         sendMessage(sender, "<red>Unknown skill " + skill + "??");
         return;
     }
-    sendMessage(sender, "&fGranted " + amount + " " +  skill + " XP to " + target);
+    sendMessage(sender, "&fGranted " + amount + " " + skill + " XP to " + target);
   }
 
   @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)

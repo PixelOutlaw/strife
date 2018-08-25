@@ -126,7 +126,7 @@ public class StatsOffenseMenuItem extends MenuItem {
       lore.add(addStat("Bleed Chance: ", pStats.getAttribute(BLEED_CHANCE), "%", INT_FORMAT));
     }
     if (pStats.getAttribute(BLEED_DAMAGE) > 0) {
-      lore.add(addStat("Bleed Damage: +", pStats.getAttribute(BLEED_DAMAGE), "%", INT_FORMAT));
+      lore.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getAttribute(BLEED_DAMAGE), "%", INT_FORMAT));
     }
     if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
         || pStats.getAttribute(HP_ON_KILL) > 0) {
