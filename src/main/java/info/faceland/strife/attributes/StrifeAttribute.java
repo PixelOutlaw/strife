@@ -72,6 +72,11 @@ public enum StrifeAttribute {
   CORRUPT_CHANCE("Corrupt Chance"),
   MAX_EARTH_RUNES("Max Earth Runes"),
 
+  MAXIMUM_RAGE("Maximum Rage"),
+  RAGE_ON_HIT("Rage On Hit"),
+  RAGE_WHEN_HIT("Rage When Hit"),
+  RAGE_ON_KILL("Rage On Kill"),
+
   BLEED_CHANCE("Bleed Chance"),
   BLEED_DAMAGE("Bleed Damage"),
 

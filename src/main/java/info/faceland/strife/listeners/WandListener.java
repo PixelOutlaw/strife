@@ -78,7 +78,7 @@ public class WandListener implements Listener {
     Player playerEntity = event.getPlayer();
 
     AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
-    double attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(pStats);
+    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
 
     if (attackMultiplier == 0) {
       event.setCancelled(true);

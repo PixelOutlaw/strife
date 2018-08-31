@@ -123,7 +123,7 @@ public class CombatListener implements Listener {
     AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
 
     if (damageType == AttackType.MELEE) {
-      attackMultiplier = plugin.getAttackSpeedTask().getAttackMultiplier(attacker);
+      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
     } else if (projectile != null && projectile.hasMetadata("AS_MULT")) {
       attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
     }
