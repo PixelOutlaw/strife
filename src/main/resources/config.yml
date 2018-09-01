@@ -43,4 +43,8 @@ leveling:
   fishing: 50 + (LEVEL * 25) + (LEVEL^3)
   enchanting: 50 + (LEVEL * 25) + (LEVEL^3)
 
+language:
+  skill-up-self: "{c}&lSkill Up! {c}Your skill level in &f{n} {c}has increased to &f{l}{c}!"
+  skill-up-broadcast: "{c}&lSkill Up! &f{p} {c}has reached &f{n} {c}skill level &f{l}{c}!"
+
 configuration-load-period: 10

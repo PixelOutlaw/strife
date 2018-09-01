@@ -86,6 +86,7 @@ public class StrifePlugin extends FacePlugin {
   private EnchantExperienceManager enchantExperienceManager;
   private FishExperienceManager fishExperienceManager;
   private MiningExperienceManager miningExperienceManager;
+  private AttackSpeedManager attackSpeedManager;
   private BlockManager blockManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
@@ -106,7 +107,6 @@ public class StrifePlugin extends FacePlugin {
   private BleedTask bleedTask;
   private BarrierTask barrierTask;
   private DarknessReductionTask darkTask;
-  private AttackSpeedTask attackSpeedTask;
   private UniquePruneTask uniquePruneTask;
   private UniqueParticleTask uniqueParticleTask;
   private SpawnerSpawnTask spawnerSpawnTask;
@@ -129,8 +129,6 @@ public class StrifePlugin extends FacePlugin {
   public static StrifePlugin getInstance() {
     return instance;
   }
-
-  final private static long attackTickRate = 1L;
 
   @Override
   public void enable() {
@@ -166,6 +164,7 @@ public class StrifePlugin extends FacePlugin {
     equipmentManager = new EntityEquipmentManager();
     effectManager = new EffectManager();
     abilityManager = new AbilityManager(effectManager, uniqueEntityManager);
+    attackSpeedManager = new AttackSpeedManager();
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     multiplierManager = new MultiplierManager();
     storage = new JsonDataStorage(this);
@@ -232,7 +231,6 @@ public class StrifePlugin extends FacePlugin {
     bleedTask = new BleedTask(this);
     barrierTask = new BarrierTask(this);
     darkTask = new DarknessReductionTask(darknessManager);
-    attackSpeedTask = new AttackSpeedTask(attackTickRate);
     uniquePruneTask = new UniquePruneTask(this);
     uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
     spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
@@ -305,10 +303,6 @@ public class StrifePlugin extends FacePlugin {
         20L * 10, // Start timer after 10s
         10L  // Run it every 0.5s after
     );
-    attackSpeedTask.runTaskTimer(this,
-        5L,
-        attackTickRate
-    );
     uniquePruneTask.runTaskTimer(this,
         30 * 20L,
         30 * 20L
@@ -336,7 +330,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(), this);
+    Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
     Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
@@ -369,7 +363,6 @@ public class StrifePlugin extends FacePlugin {
     bleedTask.cancel();
     barrierTask.cancel();
     darkTask.cancel();
-    attackSpeedTask.cancel();
     uniqueParticleTask.cancel();
     uniquePruneTask.cancel();
     spawnerLeashTask.cancel();
@@ -411,7 +404,7 @@ public class StrifePlugin extends FacePlugin {
     regenTask = null;
     bleedTask = null;
     darkTask = null;
-    attackSpeedTask = null;
+    attackSpeedManager = null;
     uniqueParticleTask = null;
     uniquePruneTask = null;
     spawnerSpawnTask = null;
@@ -636,8 +629,8 @@ public class StrifePlugin extends FacePlugin {
     spawnerYAML.save();
   }
 
-  public AttackSpeedTask getAttackSpeedTask() {
-    return attackSpeedTask;
+  public AttackSpeedManager getAttackSpeedManager() {
+    return attackSpeedManager;
   }
 
   public StrifeStatManager getStatManager() {

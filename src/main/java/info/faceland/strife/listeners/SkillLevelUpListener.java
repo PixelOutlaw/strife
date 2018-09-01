@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import gyurix.api.TitleAPI;
 import info.faceland.strife.events.SkillLevelUpEvent;
+import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,10 +31,13 @@ import org.bukkit.event.Listener;
 
 public class SkillLevelUpListener implements Listener {
 
-  private static final String SELF_MESSAGE =
-      "{c}&lSkill Up! {c}Your skill level in &f{n} {c}has increased to &f{l}{c}!";
-  private static final String BROADCAST_MESSAGE =
-      "{c}&lSkill Up! &f{p} {c}has reached &f{n} {c}skill level &f{l}{c}!";
+  private static String SELF_MESSAGE;
+  private static String BROADCAST_MESSAGE;
+
+  public SkillLevelUpListener(MasterConfiguration settings) {
+    SELF_MESSAGE = settings.getString("config.language.skill-up-self");
+    BROADCAST_MESSAGE = settings.getString("config.language.skill-up-broadcast");
+  }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSkillLevelUp(SkillLevelUpEvent event) {
@@ -49,11 +53,11 @@ public class SkillLevelUpListener implements Listener {
         name = "Enchanting";
         break;
       case FISHING:
-        color = "&e";
+        color = "&b";
         name = "Fishing";
         break;
       case MINING:
-        color = "&a";
+        color = "&2";
         name = "Mining";
         break;
       default:
