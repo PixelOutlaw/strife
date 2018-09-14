@@ -61,7 +61,7 @@ public class DataListener implements Listener {
         saveData.setHighestReachedLevel(event.getPlayer().getLevel());
         saveData.setUnusedStatPoints(event.getPlayer().getLevel());
       }
-      plugin.getChampionManager().addChampion(new Champion(saveData));
+      plugin.getChampionManager().addChampion(new Champion(event.getPlayer(), saveData));
     }
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
     if (champion.getUnusedStatPoints() > 0) {

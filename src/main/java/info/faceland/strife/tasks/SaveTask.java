@@ -42,7 +42,7 @@ public class SaveTask extends BukkitRunnable {
     plugin.getChampionManager().clear();
     for (Player player : Bukkit.getOnlinePlayers()) {
       ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
-      plugin.getChampionManager().addChampion(new Champion(saveData));
+      plugin.getChampionManager().addChampion(new Champion(player, saveData));
     }
   }
 }
