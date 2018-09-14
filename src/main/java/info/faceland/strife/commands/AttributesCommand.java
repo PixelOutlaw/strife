@@ -24,7 +24,7 @@ package info.faceland.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
+import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.data.Champion;
 import org.bukkit.entity.Player;
 import se.ranzdo.bukkit.methodcommand.Arg;
@@ -42,7 +42,7 @@ public class AttributesCommand {
     public void baseCommand(Player sender) {
         Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
         plugin.getChampionManager().updateAll(champion);
-        AttributeHandler.updateAttributes(plugin, sender);
+        plugin.getAttributeUpdateManager().updateAttributes(plugin, sender);
         plugin.getStatsMenu().open(sender);
     }
 

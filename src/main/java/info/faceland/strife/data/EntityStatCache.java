@@ -1,7 +1,8 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.managers.BarrierManager;
+import info.faceland.strife.managers.MonsterManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -11,11 +12,13 @@ import org.bukkit.entity.LivingEntity;
 
 public class EntityStatCache {
 
-  private final StrifePlugin plugin;
+  private final BarrierManager barrierManager;
+  private final MonsterManager monsterManager;
   private Map<UUID, AttributedEntity> trackedEntities;
 
-  public EntityStatCache(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public EntityStatCache(BarrierManager barrierManager, MonsterManager monsterManager) {
+    this.barrierManager = barrierManager;
+    this.monsterManager = monsterManager;
     this.trackedEntities = new HashMap<>();
   }
 
@@ -28,14 +31,14 @@ public class EntityStatCache {
       buildEntityStats(entity);
     }
     AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
-    plugin.getBarrierManager().createBarrierEntry(attributedEntity);
+    barrierManager.createBarrierEntry(attributedEntity);
     return attributedEntity;
   }
 
   public void buildEntityStats(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       AttributedEntity attributedEntity = new AttributedEntity(entity);
-      attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity));
+      attributedEntity.setAttributes(monsterManager.getBaseStats(entity));
       trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
   }

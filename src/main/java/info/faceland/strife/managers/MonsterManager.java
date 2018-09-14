@@ -21,7 +21,6 @@ package info.faceland.strife.managers;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.util.LogUtil;
@@ -71,9 +70,10 @@ public class MonsterManager {
           .getPerBonusLevelMap().entrySet()) {
         bonusStats.put(stat.getKey(), stat.getValue() * bonusLevel);
       }
-      levelStats = AttributeHandler.combineMaps(levelStats, bonusStats);
+      levelStats = AttributeUpdateManager.combineMaps(levelStats, bonusStats);
     }
-    return AttributeHandler.combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
+    return AttributeUpdateManager
+        .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
   }
 
   public Map<StrifeAttribute, Double> getBaseMonsterStats(EntityType entityType, int level) {
@@ -82,7 +82,7 @@ public class MonsterManager {
         .getPerLevelMap().entrySet()) {
       levelStats.put(stat.getKey(), stat.getValue() * level);
     }
-    return AttributeHandler
+    return AttributeUpdateManager
         .combineMaps(entityStatDataMap.get(entityType).getBaseValueMap(), levelStats);
   }
 

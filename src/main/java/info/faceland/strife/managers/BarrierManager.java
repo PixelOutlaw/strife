@@ -20,7 +20,6 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,17 +29,21 @@ import org.bukkit.entity.Player;
 
 public class BarrierManager {
 
+  private final AttributeUpdateManager attributeUpdateManager;
   private static final int BASE_BARRIER_TICKS = 15;
-
   private final Map<UUID, Double> barrierMap = new HashMap<>();
   private final Map<UUID, Integer> tickMap = new HashMap<>();
+
+  public BarrierManager(AttributeUpdateManager attributeUpdateManager) {
+    this.attributeUpdateManager = attributeUpdateManager;
+  }
 
   public boolean createBarrierEntry(AttributedEntity attributedEntity) {
     if (!(attributedEntity.getEntity() instanceof Player)) {
       return false;
     }
     if (attributedEntity.getAttribute(BARRIER) <= 0 || !attributedEntity.getEntity().isValid()) {
-      AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+      attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       return false;
     }
     if (barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
@@ -68,14 +71,14 @@ public class BarrierManager {
     if (!createBarrierEntry(attributedEntity)) {
       return;
     }
-    AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+    attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
-      AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+      attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       return;
     }
     double percent = barrierMap.get(attributedEntity.getEntity().getUniqueId()) / attributedEntity
         .getAttribute(BARRIER);
-    AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), percent);
+    attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), percent);
   }
 
   public void removeEntity(LivingEntity entity) {

@@ -169,6 +169,15 @@ public class CombatListener implements Listener {
       return;
     }
 
+    if (attacker.getAttribute(RAGE_ON_HIT) > 0.1) {
+      plugin.getRageManager()
+          .addRage(attacker, attacker.getAttribute(RAGE_ON_HIT) * attackMultiplier);
+    }
+    if (defender.getAttribute(RAGE_WHEN_HIT) > 0.1) {
+      plugin.getRageManager()
+          .addRage(defender, defender.getAttribute(RAGE_WHEN_HIT));
+    }
+
     double pvpMult = 1D;
     if (attackEntity instanceof Player && defendEntity instanceof Player) {
       pvpMult = plugin.getSettings().getDouble("config.pvp-multiplier", 0.5);
@@ -264,6 +273,7 @@ public class CombatListener implements Listener {
     double damageReduction = defender.getAttribute(StrifeAttribute.DAMAGE_REDUCTION) * pvpMult;
     double rawDamage = (standardDamage + elementalDamage) * (blocked ? 0.6 : 1.0);
     rawDamage = Math.max(0D, rawDamage - damageReduction);
+    rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
@@ -308,6 +318,10 @@ public class CombatListener implements Listener {
     if (killer.getAttribute(HP_ON_KILL) > 0.1) {
       restoreHealth(event.getEntity().getKiller(), killer.getAttribute(HP_ON_KILL));
     }
+    if (killer.getAttribute(RAGE_ON_KILL) > 0.1) {
+      plugin.getRageManager()
+          .addRage(killer, killer.getAttribute(RAGE_ON_KILL));
+    }
   }
 
   private void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
@@ -344,9 +358,8 @@ public class CombatListener implements Listener {
     if (bleedBonus > 0) {
       damageString.append("&4♦");
     }
-    ChatAPI
-        .sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(damageString.toString()),
-            (Player) entity);
+    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR,
+        TextUtils.color(damageString.toString()), (Player) entity);
   }
 
   private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker,

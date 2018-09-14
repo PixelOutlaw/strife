@@ -23,7 +23,7 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
+import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
@@ -84,7 +84,7 @@ public class StrifeCommand {
         .command("/levelup")
         .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
         .color(ChatColor.WHITE).then(" to spend them!").send(target);
-    AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(plugin, champion.getPlayer());
   }
 
   @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -102,7 +102,7 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You cleared <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
-    AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(plugin, champion.getPlayer());
   }
 
   @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -120,7 +120,7 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
-    AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(plugin, champion.getPlayer());
   }
 
   @Command(identifier = "strife setskill", permissions = "strife.command.strife.setskill", onlyPlayers = false)
