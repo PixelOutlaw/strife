@@ -128,6 +128,14 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (pStats.getAttribute(BLEED_DAMAGE) > 0) {
       lore.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getAttribute(BLEED_DAMAGE), "%", INT_FORMAT));
     }
+    if (pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE) > 0 &&
+        pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT) > 0 ||
+        pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL) > 0) {
+      lore.add(breakLine);
+      lore.add(addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
+      lore.add(addStat("Rage On Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT), INT_FORMAT));
+      lore.add(addStat("Rage On Kill: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL), INT_FORMAT));
+    }
     if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
         || pStats.getAttribute(HP_ON_KILL) > 0) {
       lore.add(breakLine);

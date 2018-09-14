@@ -79,8 +79,14 @@ public class StatsDefenseMenuItem extends MenuItem {
       lore.add(
           addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
     }
+
     lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
     lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMAL));
+    if (pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE) > 0 && pStats.getAttribute(StrifeAttribute.RAGE_WHEN_HIT) > 0) {
+      lore.add(breakLine);
+      lore.add(addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
+      lore.add(addStat("Rage When Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_WHEN_HIT), ONE_DECIMAL));
+    }
     lore.add(breakLine);
     lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
     lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
