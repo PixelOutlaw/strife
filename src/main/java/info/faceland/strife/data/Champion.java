@@ -147,6 +147,14 @@ public class Champion {
     return saveData.getCraftingExp();
   }
 
+  public int getCraftSkill(boolean updateEquipment) {
+    if (updateEquipment) {
+      updateHashedEquipment();
+    }
+    return getCraftingLevel() + combinedAttributeCache
+        .getOrDefault(StrifeAttribute.CRAFT_SKILL, 0D).intValue();
+  }
+
   public int getEnchantLevel() {
     return saveData.getEnchantLevel();
   }
@@ -155,12 +163,44 @@ public class Champion {
     return saveData.getEnchantExp();
   }
 
+  public int getEnchantSkill(boolean updateEquipment) {
+    if (updateEquipment) {
+      updateHashedEquipment();
+    }
+    return getEnchantLevel() + combinedAttributeCache
+        .getOrDefault(StrifeAttribute.ENCHANT_SKILL, 0D).intValue();
+  }
+
   public int getFishingLevel() {
     return saveData.getFishingLevel();
   }
 
   public float getFishingExp() {
     return saveData.getFishingExp();
+  }
+
+  public int getFishSkill(boolean updateEquipment) {
+    if (updateEquipment) {
+      updateHashedEquipment();
+    }
+    return getFishingLevel() + combinedAttributeCache
+        .getOrDefault(StrifeAttribute.FISH_SKILL, 0D).intValue();
+  }
+
+  public int getMiningLevel() {
+    return saveData.getMiningLevel();
+  }
+
+  public float getMiningExp() {
+    return saveData.getMiningExp();
+  }
+
+  public int getMineSkill(boolean updateEquipment) {
+    if (updateEquipment) {
+      updateHashedEquipment();
+    }
+    return getMiningLevel() + combinedAttributeCache
+        .getOrDefault(StrifeAttribute.MINE_SKILL, 0D).intValue();
   }
 
   public int getUnusedStatPoints() {
