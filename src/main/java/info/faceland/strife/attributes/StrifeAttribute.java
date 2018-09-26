@@ -88,10 +88,10 @@ public enum StrifeAttribute {
 
   MOVEMENT_SPEED("Movement Speed"),
 
-  CRAFT_SKILL("Crafting Skill"),
-  ENCHANT_SKILL("Enchanting Skill"),
-  FISH_SKILL("Fishing Skill"),
-  MINE_SKILL("Mining Skill"),
+  CRAFT_SKILL("Crafting Skill Level"),
+  ENCHANT_SKILL("Enchanting Skill Level"),
+  FISH_SKILL("Fishing Skill Level"),
+  MINE_SKILL("Mining Skill Level"),
 
   XP_GAIN("Experience Gain"),
   SKILL_XP_GAIN("Skill Experience Gain"),
