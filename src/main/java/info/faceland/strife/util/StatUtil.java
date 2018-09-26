@@ -6,7 +6,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -64,7 +63,7 @@ public class StatUtil {
   public static double getAttackTime(AttributedEntity ae) {
     double attackTime = 2;
     double attackBonus = ae.getAttribute(StrifeAttribute.ATTACK_SPEED);
-    if (enableRageBonus(ae.getEntity().getEquipment().getItemInMainHand())) {
+    if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
     }
     if (attackBonus > 0) {
@@ -265,8 +264,16 @@ public class StatUtil {
     return damage;
   }
 
-  private static boolean enableRageBonus(ItemStack item) {
-    return item.getType() != Material.BOW && ItemUtil.isMeleeWeapon(item.getType()) &&
-        ItemUtil.isWand(item);
+  private static boolean itemCanUseRage(ItemStack item) {
+    if (item.getType() == Material.BOW) {
+      return false;
+    }
+    if (!ItemUtil.isMeleeWeapon(item.getType())) {
+      return false;
+    }
+    if (ItemUtil.isWand(item)) {
+      return false;
+    }
+    return true;
   }
 }

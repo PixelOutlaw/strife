@@ -5,6 +5,7 @@ import info.faceland.strife.data.effects.Bleed;
 import info.faceland.strife.data.effects.DealDamage;
 import info.faceland.strife.data.effects.DealDamage.DamageScale;
 import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.data.effects.ForceTarget;
 import info.faceland.strife.data.effects.Heal;
 import info.faceland.strife.data.effects.Ignite;
 import info.faceland.strife.data.effects.Knockback;
@@ -122,6 +123,10 @@ public class EffectManager {
         ((Summon) effect).setAmount(cs.getInt("amount", 1));
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
         break;
+      case TARGET:
+        effect = new ForceTarget();
+        ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite"));
+        break;
       case POTION:
         effect = new PotionEffectAction();
         PotionEffectType potionType;
@@ -186,6 +191,7 @@ public class EffectManager {
     KNOCKBACK,
     LEAP,
     POTION,
+    TARGET,
     SUMMON
   }
 }

@@ -18,6 +18,8 @@
  */
 package info.faceland.strife.tasks;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
+import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.data.RageData;
 import info.faceland.strife.managers.RageManager;
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class RageTask extends BukkitRunnable {
@@ -51,8 +54,8 @@ public class RageTask extends BukkitRunnable {
         entity.getWorld().spawnParticle(
             Particle.VILLAGER_ANGRY,
             entity.getEyeLocation(),
-            (int) (data.getRageStacks() / 10),
-            0.4, 0.4, 0.4
+            1 + (int) (data.getRageStacks() / 20),
+            0.6, 0.6, 0.6
         );
       }
       if (data.getGraceTicksRemaining() > 0) {
@@ -60,6 +63,9 @@ public class RageTask extends BukkitRunnable {
         continue;
       } else {
         rageManager.setRage(entityStatCache.getAttributedEntity(entity), data.getRageStacks() - 5);
+        String msg = TextUtils
+            .color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
+        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, msg, (Player) entity);
       }
       if (data.getRageStacks() <= 0) {
         pendingRemoval.add(entity);

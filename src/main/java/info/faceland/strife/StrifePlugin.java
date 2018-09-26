@@ -112,6 +112,7 @@ public class StrifePlugin extends FacePlugin {
   private RageTask rageTask;
   private UniquePruneTask uniquePruneTask;
   private UniqueParticleTask uniqueParticleTask;
+  private TimedAbilityTask timedAbilityTask;
   private SpawnerSpawnTask spawnerSpawnTask;
   private SpawnerLeashTask spawnerLeashTask;
 
@@ -241,6 +242,7 @@ public class StrifePlugin extends FacePlugin {
     uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
     spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
+    timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager, entityStatCache);
 
     commandHandler.registerCommands(new AttributesCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
@@ -325,6 +327,10 @@ public class StrifePlugin extends FacePlugin {
         20 * 20L, // Start timer after 20s
         6 * 20L // Run it every 6 seconds
     );
+    timedAbilityTask.runTaskTimer(this,
+        20 * 20L, // Start timer after 20s
+        2 * 20L // Run it every 2 seconds
+    );
     spawnerLeashTask.runTaskTimer(this,
         20 * 20L, // Start timer after 20s
         5 * 20L // Run it every 5s
@@ -378,6 +384,7 @@ public class StrifePlugin extends FacePlugin {
     uniquePruneTask.cancel();
     spawnerLeashTask.cancel();
     spawnerSpawnTask.cancel();
+    timedAbilityTask.cancel();
 
     configYAML = null;
     baseStatsYAML = null;
@@ -421,6 +428,7 @@ public class StrifePlugin extends FacePlugin {
     attackSpeedManager = null;
     uniqueParticleTask = null;
     uniquePruneTask = null;
+    timedAbilityTask = null;
     spawnerSpawnTask = null;
     spawnerLeashTask = null;
 
@@ -553,6 +561,7 @@ public class StrifePlugin extends FacePlugin {
           List<String> phaseBegin = abilityCS.getStringList("phase" + i + ".phase-begin");
           List<String> phaseOnHit = abilityCS.getStringList("phase" + i + ".on-hit");
           List<String> phaseWhenHit = abilityCS.getStringList("phase" + i + ".when-hit");
+          List<String> phaseTimer = abilityCS.getStringList("phase" + i + ".timer");
           if (!phaseBegin.isEmpty()) {
             List<Ability> abilities = setupPhase(phaseBegin, i);
             if (!abilities.isEmpty()) {
@@ -569,6 +578,12 @@ public class StrifePlugin extends FacePlugin {
             List<Ability> abilities = setupPhase(phaseWhenHit, i);
             if (!abilities.isEmpty()) {
               abilitySet.addAbilityPhase(i, AbilityType.WHEN_HIT, abilities);
+            }
+          }
+          if (!phaseTimer.isEmpty()) {
+            List<Ability> abilities = setupPhase(phaseTimer, i);
+            if (!abilities.isEmpty()) {
+              abilitySet.addAbilityPhase(i, AbilityType.TIMER, abilities);
             }
           }
         }
