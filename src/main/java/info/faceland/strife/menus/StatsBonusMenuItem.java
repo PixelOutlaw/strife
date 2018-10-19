@@ -35,7 +35,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +71,10 @@ public class StatsBonusMenuItem extends MenuItem {
         .getMultiplierManager().getExpMult();
     double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
         .getMultiplierManager().getDropMult();
-    lore.add(ChatColor.GREEN + "Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
+    lore.add(ChatColor.GREEN + "Combat Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
         .format((xpMult * 100 + pStats.getAttribute(StrifeAttribute.XP_GAIN))) + "%");
+    lore.add(ChatColor.GREEN + "Skill Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
+        .format(pStats.getAttribute(StrifeAttribute.SKILL_XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
         .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
     lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
