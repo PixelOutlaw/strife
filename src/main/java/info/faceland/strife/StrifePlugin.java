@@ -34,6 +34,11 @@ import info.faceland.strife.commands.UniqueEntityCommand;
 import info.faceland.strife.data.*;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
 import info.faceland.strife.listeners.*;
+import info.faceland.strife.listeners.combat.BowListener;
+import info.faceland.strife.listeners.combat.CombatListener;
+import info.faceland.strife.listeners.combat.DOTListener;
+import info.faceland.strife.listeners.DataListener;
+import info.faceland.strife.listeners.combat.DogeListener;
 import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
@@ -361,9 +366,9 @@ public class StrifePlugin extends FacePlugin {
     levelupMenu = new LevelupMenu(this, getStatManager().getStats());
     statsMenu = new StatsMenu(this);
 
-    LogUtil.printInfo("+++++");
+    LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
-    LogUtil.printInfo("+++++");
+    LogUtil.printInfo("+===================================+");
   }
 
   @Override
@@ -435,9 +440,9 @@ public class StrifePlugin extends FacePlugin {
     commandHandler = null;
     settings = null;
 
-    LogUtil.printInfo("+++++");
+    LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
-    LogUtil.printInfo("+++++");
+    LogUtil.printInfo("+===================================+");
   }
 
   private void buildAbilities() {

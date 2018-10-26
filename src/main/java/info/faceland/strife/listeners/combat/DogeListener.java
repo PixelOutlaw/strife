@@ -1,4 +1,4 @@
-package info.faceland.strife.listeners;
+package info.faceland.strife.listeners.combat;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.attributes.StrifeAttribute;

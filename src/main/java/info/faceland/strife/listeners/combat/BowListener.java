@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.listeners.combat;
 
 import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_SPEED;

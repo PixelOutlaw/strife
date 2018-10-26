@@ -1,6 +1,5 @@
 package info.faceland.strife.data.effects;
 
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.DamageUtil;
@@ -17,9 +16,8 @@ public class Bleed extends Effect {
     for (StrifeAttribute attr : statMults.keySet()) {
       bleedAmount += statMults.get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
     }
-    StrifePlugin.getInstance().getBleedManager()
-        .applyBleed(target, bleedAmount, DamageUtil.BLEED_TICKS_PER_5_SEC);
     // TODO: Add logic for ignore armor false
+    DamageUtil.applyBleed(target, bleedAmount);
   }
 
   public void setAmount(double amount) {
