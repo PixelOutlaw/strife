@@ -28,19 +28,13 @@ public class EntityStatCache {
 
   public AttributedEntity getAttributedEntity(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
-      buildEntityStats(entity);
-    }
-    AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
-    barrierManager.createBarrierEntry(attributedEntity);
-    return attributedEntity;
-  }
-
-  public void buildEntityStats(LivingEntity entity) {
-    if (!trackedEntities.containsKey(entity.getUniqueId())) {
       AttributedEntity attributedEntity = new AttributedEntity(entity);
       attributedEntity.setAttributes(monsterManager.getBaseStats(entity));
       trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
+    AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
+    barrierManager.createBarrierEntry(attributedEntity);
+    return attributedEntity;
   }
 
   public void setEntityStats(LivingEntity entity, Map<StrifeAttribute, Double> statMap) {

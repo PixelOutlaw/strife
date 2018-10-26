@@ -57,10 +57,14 @@ public class ChampionManager {
   }
 
   public Champion getChampion(UUID uuid) {
+    return getChampion(uuid, false);
+  }
+
+  public Champion getChampion(UUID uuid, boolean forceRefresh) {
     if (uuid == null) {
       return null;
     }
-    if (!hasChampion(uuid)) {
+    if (forceRefresh || !hasChampion(uuid)) {
       ChampionSaveData saveData = plugin.getStorage().load(uuid);
       Player player = Bukkit.getPlayer(uuid);
       if (saveData != null) {
