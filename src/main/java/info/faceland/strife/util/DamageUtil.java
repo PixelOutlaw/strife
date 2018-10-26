@@ -1,5 +1,7 @@
 package info.faceland.strife.util;
 
+import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
@@ -285,6 +287,28 @@ public class DamageUtil {
     restoreHealth(attacker.getEntity(), health * healMultiplier);
   }
 
+  public static boolean attemptBleed(AttributedEntity attacker, AttributedEntity defender,
+      double damage, double critMult, double attackMult) {
+    if (!StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
+      return false;
+    }
+    if (attackMult * (attacker.getAttribute(BLEED_CHANCE) / 100) >= rollDouble()) {
+      double amount = damage + damage * critMult;
+      amount *= 1 + attacker.getAttribute(BLEED_DAMAGE) / 100;
+      amount *= 0.5D;
+      applyBleed(defender.getEntity(), amount);
+      return true;
+    }
+    return false;
+  }
+
+  public static void applyBleed(LivingEntity defender, double amount) {
+    StrifePlugin.getInstance().getBleedManager()
+        .applyBleed(defender, amount, BLEED_TICKS_PER_5_SEC);
+    defender.getWorld()
+        .playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
+  }
+
   public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {
     CriticalEvent c = new CriticalEvent(attacker, victim);
     Bukkit.getPluginManager().callEvent(c);
@@ -333,17 +357,17 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getDarknessManager();
   }
 
-  public enum DamageType {
-    TRUE_DAMAGE,
-    PHYSICAL,
-    MAGICAL,
-    FIRE,
-    ICE,
-    LIGHTNING,
-    DARK
-  }
+public enum DamageType {
+  TRUE_DAMAGE,
+  PHYSICAL,
+  MAGICAL,
+  FIRE,
+  ICE,
+  LIGHTNING,
+  DARK
+}
 
-  public enum AttackType {
-    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
-  }
+public enum AttackType {
+  MELEE, RANGED, MAGIC, EXPLOSION, OTHER
+}
 }

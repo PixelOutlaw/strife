@@ -16,7 +16,7 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.listeners.combat;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 
@@ -278,16 +278,10 @@ public class CombatListener implements Listener {
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
-    double bleedAmount = 0;
-    if (physicalBaseDamage > 0 && attacker.getAttribute(BLEED_CHANCE) / 100 >= rollDouble()) {
-      bleedAmount = physicalBaseDamage * 0.5D * attackMultiplier * pvpMult * (1 + attacker
-          .getAttribute(BLEED_DAMAGE) / 100);
-      bleedAmount += bleedAmount * bonusCriticalMultiplier;
-      if (!plugin.getBarrierManager().isBarrierUp(defender)) {
-        plugin.getBleedManager().applyBleed(defendEntity, bleedAmount, BLEED_TICKS_PER_5_SEC);
-        defendEntity.getWorld()
-            .playSound(defendEntity.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
-      }
+    boolean isBleedApplied = false;
+    if (physicalBaseDamage > 0) {
+      isBleedApplied = attemptBleed(attacker, defender, physicalBaseDamage * pvpMult,
+          bonusCriticalMultiplier, attackMultiplier);
     }
 
     doReflectedDamage(defender, attackEntity, damageType);
@@ -303,7 +297,7 @@ public class CombatListener implements Listener {
 
     sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,
         bonusFireDamage, bonusIceDamage, bonusLightningDamage, bonusEarthDamage, bonusLightDamage,
-        corruptEffect, bleedAmount);
+        corruptEffect, isBleedApplied);
 
     event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
   }
@@ -326,7 +320,7 @@ public class CombatListener implements Listener {
 
   private void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
       double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
-      double lightBonus, boolean corrupt, double bleedBonus) {
+      double lightBonus, boolean corrupt, boolean isBleedApplied) {
     if (!(entity instanceof Player)) {
       return;
     }
@@ -355,7 +349,7 @@ public class CombatListener implements Listener {
     if (corrupt) {
       damageString.append("&8❂");
     }
-    if (bleedBonus > 0) {
+    if (isBleedApplied) {
       damageString.append("&4♦");
     }
     ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR,
