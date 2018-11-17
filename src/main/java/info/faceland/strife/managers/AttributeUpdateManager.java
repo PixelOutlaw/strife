@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.attributes.StrifeAttribute.LEVEL_REQUIREMENT;
 import static info.faceland.strife.attributes.StrifeAttribute.MOVEMENT_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
@@ -29,6 +30,7 @@ import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
@@ -51,34 +53,36 @@ public class AttributeUpdateManager {
 
   public Map<StrifeAttribute, Double> getItemStats(ItemStack stack, double multiplier) {
     if (stack == null || stack.getType() == Material.AIR) {
-      return null;
+      return new HashMap<>();
     }
     HiltItemStack item = new HiltItemStack(stack);
     Map<StrifeAttribute, Double> itemStats = new HashMap<>();
 
     List<String> lore = item.getLore();
+    if (lore == null || lore.isEmpty()) {
+      return itemStats;
+    }
     List<String> strippedLore = stripColor(lore);
+
     for (String s : strippedLore) {
-      StrifeAttribute attribute = null;
       double amount = 0;
       String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
-      for (StrifeAttribute attr : StrifeAttribute.values()) {
-        if (attr.getName() == null) {
-          continue;
-        }
-        if (retained.equals(attr.getName().trim())) {
-          attribute = attr;
-          amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
-          break;
-        }
+
+      StrifeAttribute attribute = StrifeAttribute.fromName(retained);
+      if (attribute == null) {
+        continue;
       }
-      if (attribute != null && amount != 0) {
+      amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+      if (amount == 0) {
+        continue;
+      }
+      if (attribute != LEVEL_REQUIREMENT) {
         amount *= multiplier;
-        if (itemStats.containsKey(attribute)) {
-          amount += itemStats.get(attribute);
-        }
-        itemStats.put(attribute, amount);
       }
+      if (itemStats.containsKey(attribute)) {
+        amount += itemStats.get(attribute);
+      }
+      itemStats.put(attribute, amount);
     }
     return itemStats;
   }
@@ -122,11 +126,13 @@ public class AttributeUpdateManager {
     attributedEntity.getEntity().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
   }
 
-  public void updateAttributes(StrifePlugin plugin, Player player) {
-    AttributedEntity playerStatEntity = plugin.getEntityStatCache().getAttributedEntity(player);
+  public void updateAttributes(EntityStatCache statCache, Player player) {
+    AttributedEntity playerStatEntity = statCache.getAttributedEntity(player);
     updateHealth(playerStatEntity);
     updateMovementSpeed(playerStatEntity);
     updateAttackSpeed(playerStatEntity);
+
+    StrifePlugin.getInstance().getBarrierManager().updateShieldDisplay(playerStatEntity);
     player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
   }
 

@@ -18,20 +18,24 @@
  */
 package info.faceland.strife.managers;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+import static info.faceland.strife.attributes.StrifeAttribute.LEVEL_REQUIREMENT;
+
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.PlayerEquipmentCache;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -39,226 +43,240 @@ import java.util.*;
 public class ChampionManager {
 
   private final StrifePlugin plugin;
-  private Map<UUID, Champion> championMap;
+  private final Map<UUID, Champion> championMap = new HashMap<>();
 
   private final static String LVL_REQ_MAIN_WEAPON =
-      "<red>You do not meet the level requirement for your weapon! " +
-          "It will not give you any stats when used!";
+      "&e&lYou do not meet the level requirement for your weapon!";
   private final static String LVL_REQ_OFF_WEAPON =
-      "<red>You do not meet the level requirement for your offhand " +
-          "item! It will not give you any stats when used!";
-  private final static String LVL_REQ_ARMOR =
-      "<red>You do not meet the level requirement for a piece of your " +
-          "armor! It will not give you any stats while equipped!";
+      "&e&lYou do not meet the level requirement for your offhand item!";
+  private final static String LVL_REQ_HELMET =
+      "&e&lYou do not meet the level requirement for your helmet!";
+  private final static String LVL_REQ_CHEST =
+      "&c&lYou do not meet the level requirement for your chest armor!";
+  private final static String LVL_REQ_LEGS =
+      "&e&lYou do not meet the level requirement for your leg armor!";
+  private final static String LVL_REQ_BOOTS =
+      "&c&lYou do not meet the level requirement for your boots!";
+  private final static String LVL_REQ_GENERIC =
+      "&c&lYou will not benefit from the stats on this item!";
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    championMap = new HashMap<>();
+  }
+
+  public Champion getChampion(Player player) {
+    return getChampion(player.getUniqueId());
   }
 
   public Champion getChampion(UUID uuid) {
-    return getChampion(uuid, false);
+    if (championExists(uuid)) {
+      return championMap.get(uuid);
+    }
+    ChampionSaveData saveData = plugin.getStorage().load(uuid);
+    Player player = Bukkit.getPlayer(uuid);
+    if (saveData == null) {
+      saveData = new ChampionSaveData(player.getUniqueId());
+      Champion champ = new Champion(player, saveData);
+      championMap.put(player.getUniqueId(), champ);
+      return champ;
+    }
+    Champion champion = new Champion(player, saveData);
+    championMap.put(uuid, champion);
+    return champion;
   }
 
-  public Champion getChampion(UUID uuid, boolean forceRefresh) {
-    if (uuid == null) {
-      return null;
-    }
-    if (forceRefresh || !hasChampion(uuid)) {
-      ChampionSaveData saveData = plugin.getStorage().load(uuid);
-      Player player = Bukkit.getPlayer(uuid);
-      if (saveData != null) {
-        Champion champion = new Champion(player, saveData);
-        championMap.put(uuid, champion);
-        return champion;
-      }
-      return createChampion(player, uuid);
-    }
-    return championMap.get(uuid);
-  }
-
-  public boolean hasChampion(UUID uuid) {
+  public boolean championExists(UUID uuid) {
     return uuid != null && championMap.containsKey(uuid);
   }
 
-  public Champion createChampion(Player player, UUID uuid) {
-    ChampionSaveData saveData = new ChampionSaveData(uuid);
-    Champion champ = new Champion(player, saveData);
-    championMap.put(uuid, champ);
-    return champ;
-  }
-
   public void addChampion(Champion champion) {
-    if (!hasChampion(champion.getUniqueId())) {
-      championMap.put(champion.getUniqueId(), champion);
-    }
+    championMap.put(champion.getUniqueId(), champion);
+    updateAll(champion);
   }
 
   public void removeChampion(UUID uuid) {
-    if (hasChampion(uuid)) {
-      championMap.remove(uuid);
-    }
-  }
-
-  private void getBaseAttributes(Champion champion) {
-    champion.setAttributeBaseCache(plugin.getMonsterManager().getBaseStats(champion.getPlayer()));
-  }
-
-  public void getLevelPointAttributes(Champion champion) {
-    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-    for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
-      for (Map.Entry<StrifeAttribute, Double> pointSection : entry.getKey().getAttributeMap()
-          .entrySet()) {
-        double amount = pointSection.getValue() * entry.getValue();
-        if (attributeDoubleMap.containsKey(pointSection.getKey())) {
-          amount += attributeDoubleMap.get(pointSection.getKey());
-        }
-        attributeDoubleMap.put(pointSection.getKey(), amount);
-      }
-    }
-    champion.setAttributeLevelPointCache(attributeDoubleMap);
-  }
-
-  public void getArmorAttributes(Champion champion) {
-    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-    boolean spam = false;
-    for (ItemStack itemStack : champion.getPlayer().getEquipment().getArmorContents()) {
-      if (itemStack == null || itemStack.getType() == Material.AIR) {
-        continue;
-      }
-      removeAttributes(itemStack);
-      Map<StrifeAttribute, Double> itemStatMap = plugin.getAttributeUpdateManager()
-          .getItemStats(itemStack);
-      if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT)) {
-        if (champion.getPlayer().getLevel() < itemStatMap.get(StrifeAttribute.LEVEL_REQUIREMENT)) {
-          spam = true;
-          continue;
-        }
-      }
-      attributeDoubleMap = AttributeUpdateManager.combineMaps(attributeDoubleMap, itemStatMap);
-    }
-    if (spam) {
-      MessageUtils.sendMessage(champion.getPlayer(), ChampionManager.LVL_REQ_ARMOR);
-    }
-    champion.setAttributeArmorCache(attributeDoubleMap);
-  }
-
-  public void getWeaponAttributes(Champion champion) {
-    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-    ItemStack mainHandItemStack = champion.getPlayer().getEquipment().getItemInMainHand();
-    ItemStack offHandItemStack = champion.getPlayer().getEquipment().getItemInOffHand();
-    if (mainHandItemStack != null && mainHandItemStack.getType() != Material.AIR && !ItemUtil
-        .isArmor(mainHandItemStack.getType())) {
-      removeAttributes(mainHandItemStack);
-      Map<StrifeAttribute, Double> itemStatMap = plugin.getAttributeUpdateManager()
-          .getItemStats(mainHandItemStack);
-      if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT)
-          && champion.getPlayer().getLevel() < itemStatMap
-          .get(StrifeAttribute.LEVEL_REQUIREMENT)) {
-        MessageUtils.sendMessage(champion.getPlayer(), ChampionManager.LVL_REQ_MAIN_WEAPON);
-      } else {
-        attributeDoubleMap = AttributeUpdateManager
-            .combineMaps(attributeDoubleMap, itemStatMap);
-      }
-    }
-    if (offHandItemStack != null && offHandItemStack.getType() != Material.AIR && !ItemUtil
-        .isArmor(offHandItemStack.getType())) {
-      removeAttributes(offHandItemStack);
-      double dualWieldEfficiency = ItemUtil
-          .getDualWieldEfficiency(mainHandItemStack, offHandItemStack);
-      Map<StrifeAttribute, Double> itemStatMap = plugin.getAttributeUpdateManager()
-          .getItemStats(offHandItemStack, dualWieldEfficiency);
-      if (itemStatMap.containsKey(StrifeAttribute.LEVEL_REQUIREMENT)
-          && champion.getPlayer().getLevel() < itemStatMap
-          .get(StrifeAttribute.LEVEL_REQUIREMENT) / dualWieldEfficiency) {
-        MessageUtils.sendMessage(champion.getPlayer(), ChampionManager.LVL_REQ_OFF_WEAPON);
-      } else {
-        attributeDoubleMap = AttributeUpdateManager
-            .combineMaps(attributeDoubleMap, itemStatMap);
-      }
-    }
-    champion.setAttributeWeaponCache(attributeDoubleMap);
-  }
-
-  public void updateWeapons(Champion champion) {
-    getWeaponAttributes(champion);
-    champion.recombineCache();
-  }
-
-  public void updateArmor(Champion champion) {
-    getArmorAttributes(champion);
-    champion.recombineCache();
-  }
-
-  public void updateLevelPoints(Champion champion) {
-    getLevelPointAttributes(champion);
-    champion.recombineCache();
-  }
-
-  public void updateBase(Champion champion) {
-    getBaseAttributes(champion);
-    champion.recombineCache();
-  }
-
-  public void updateAll(Champion champion) {
-    getWeaponAttributes(champion);
-    getArmorAttributes(champion);
-    getLevelPointAttributes(champion);
-    getBaseAttributes(champion);
-    champion.recombineCache();
-    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
-  }
-
-  public void updateChampionWeapons(Champion champion) {
-    updateWeapons(champion);
-    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
-  }
-
-  public void updateChampionArmor(Champion champion) {
-    updateArmor(champion);
-    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
-  }
-
-  public void updateChampionLevelPoints(Champion champion) {
-    updateLevelPoints(champion);
-    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
-  }
-
-  public void updateChampionBaseStats(Champion champion) {
-    updateBase(champion);
-    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
-  }
-
-  public void updateChampionStats(Champion champion) {
-    updateAll(champion);
-    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
+    championMap.remove(uuid);
   }
 
   public Collection<Champion> getChampions() {
     return new HashSet<>(championMap.values());
   }
 
-  public Collection<ChampionSaveData> getChampionSaveData() {
-    Collection<ChampionSaveData> dataCollection = new LinkedHashSet<>();
-    for (Champion champion : getChampions()) {
-      dataCollection.add(champion.getSaveData());
-    }
-    return dataCollection;
-  }
-
-  public void clear() {
+  public void clearAllChampions() {
     championMap.clear();
   }
 
-  private static ItemStack removeAttributes(ItemStack item) {
+  private void buildBaseAttributes(Champion champion) {
+    champion.setAttributeBaseCache(plugin.getMonsterManager().getBaseStats(champion.getPlayer()));
+  }
+
+  private void buildPointAttributes(Champion champion) {
+    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
+    for (StrifeStat stat : champion.getLevelMap().keySet()) {
+      int statLevel = champion.getLevelMap().get(stat);
+      if (statLevel == 0) {
+        continue;
+      }
+      for (StrifeAttribute attr : stat.getAttributeMap().keySet()) {
+        double amount = stat.getAttributeMap().get(attr) * statLevel;
+        if (attributeDoubleMap.containsKey(attr)) {
+          amount += attributeDoubleMap.get(attr);
+        }
+        attributeDoubleMap.put(attr, amount);
+      }
+    }
+    champion.setAttributeLevelPointCache(attributeDoubleMap);
+  }
+
+  private void buildEquipmentAttributes(Champion champion) {
+    EntityEquipment equipment = champion.getPlayer().getEquipment();
+    PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
+
+    boolean recombine = false;
+    if (!doesHashMatch(equipment.getItemInMainHand(), equipmentCache.getMainHandHash()) ||
+        !doesHashMatch(equipment.getItemInOffHand(), equipmentCache.getOffHandHash())) {
+
+      if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+        equipmentCache.setMainhandStats(new HashMap<>());
+      } else {
+        equipmentCache.setMainhandStats(
+            plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInMainHand()));
+      }
+      double offhandStatMultiplier = ItemUtil
+          .getDualWieldEfficiency(equipment.getItemInMainHand(), equipment.getItemInOffHand());
+      equipmentCache.setOffhandStats(plugin.getAttributeUpdateManager().getItemStats(
+          equipment.getItemInOffHand(), offhandStatMultiplier));
+
+      removeAttributes(equipment.getItemInMainHand());
+      removeAttributes(equipment.getItemInOffHand());
+
+      equipmentCache.setMainHandHash(hashItem(equipment.getItemInMainHand()));
+      equipmentCache.setOffHandHash(hashItem(equipment.getItemInOffHand()));
+      recombine = true;
+    }
+    if (!doesHashMatch(equipment.getHelmet(), equipmentCache.getHelmetHash())) {
+      equipmentCache.setHelmetStats(
+          plugin.getAttributeUpdateManager().getItemStats(equipment.getHelmet()));
+      removeAttributes(equipment.getHelmet());
+      equipmentCache.setHelmetHash(hashItem(equipment.getHelmet()));
+      recombine = true;
+    }
+    if (!doesHashMatch(equipment.getChestplate(), equipmentCache.getChestHash())) {
+      equipmentCache.setChestplateStats(
+          plugin.getAttributeUpdateManager().getItemStats(equipment.getChestplate()));
+      removeAttributes(equipment.getChestplate());
+      equipmentCache.setChestHash(hashItem(equipment.getChestplate()));
+      recombine = true;
+    }
+    if (!doesHashMatch(equipment.getLeggings(), equipmentCache.getLegsHash())) {
+      equipmentCache.setLeggingsStats(
+          plugin.getAttributeUpdateManager().getItemStats(equipment.getLeggings()));
+
+      removeAttributes(equipment.getLeggings());
+      equipmentCache.setLegsHash(hashItem(equipment.getLeggings()));
+      recombine = true;
+    }
+    if (!doesHashMatch(equipment.getBoots(), equipmentCache.getBootsHash())) {
+      equipmentCache.setBootsStats(
+          plugin.getAttributeUpdateManager().getItemStats(equipment.getBoots()));
+
+      removeAttributes(equipment.getBoots());
+      equipmentCache.setBootsHash(hashItem(equipment.getBoots()));
+      recombine = true;
+    }
+
+    if (recombine) {
+      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getMainhandStats())) {
+        sendMessage(champion.getPlayer(), LVL_REQ_MAIN_WEAPON);
+        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
+        equipmentCache.getMainhandStats().clear();
+      }
+      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getOffhandStats())) {
+        sendMessage(champion.getPlayer(), LVL_REQ_OFF_WEAPON);
+        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
+        equipmentCache.getOffhandStats().clear();
+      }
+      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getHelmetStats())) {
+        sendMessage(champion.getPlayer(), LVL_REQ_HELMET);
+        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
+        equipmentCache.getHelmetStats().clear();
+      }
+      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getChestplateStats())) {
+        sendMessage(champion.getPlayer(), LVL_REQ_CHEST);
+        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
+        equipmentCache.getChestplateStats().clear();
+      }
+      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getLeggingsStats())) {
+        sendMessage(champion.getPlayer(), LVL_REQ_LEGS);
+        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
+        equipmentCache.getLeggingsStats().clear();
+      }
+      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getBootsStats())) {
+        sendMessage(champion.getPlayer(), LVL_REQ_BOOTS);
+        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
+        equipmentCache.getBootsStats().clear();
+      }
+      equipmentCache.recombine();
+    }
+  }
+
+  public void updatePointAttributes(Champion champion) {
+    buildPointAttributes(champion);
+    pushChampionUpdate(champion);
+  }
+
+  public void updateBaseAttributes(Champion champion) {
+    buildBaseAttributes(champion);
+    pushChampionUpdate(champion);
+  }
+
+  public void updateEquipmentAttributes(Champion champion) {
+    buildEquipmentAttributes(champion);
+    pushChampionUpdate(champion);
+  }
+
+  public void updateAll(Champion champion) {
+    buildPointAttributes(champion);
+    buildBaseAttributes(champion);
+    buildEquipmentAttributes(champion);
+
+    pushChampionUpdate(champion);
+  }
+
+  private void pushChampionUpdate(Champion champion) {
+    champion.recombineCache();
+    plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
+  }
+
+  private static void removeAttributes(ItemStack item) {
+    if (item == null || item.getType() == Material.AIR) {
+      return;
+    }
     if (item.getType().getMaxDurability() < 15) {
-      return item;
+      return;
     }
     if (!MinecraftReflection.isCraftItemStack(item)) {
       item = MinecraftReflection.getBukkitItemStack(item);
     }
     NbtCompound compound = (NbtCompound) NbtFactory.fromItemTag(item);
     compound.put(NbtFactory.ofList("AttributeModifiers"));
-    return item;
+  }
+
+  private boolean meetsLevelRequirement(Player player, Map<StrifeAttribute, Double> statMap) {
+    return statMap.getOrDefault(LEVEL_REQUIREMENT, 0D) <= player.getLevel();
+  }
+
+  private int hashItem(ItemStack itemStack) {
+    if (itemStack == null || itemStack.getType() == Material.AIR) {
+      return -1;
+    }
+    return itemStack.hashCode();
+  }
+
+  private boolean doesHashMatch(ItemStack itemStack, int hash) {
+    if (itemStack == null || itemStack.getType() == Material.AIR) {
+      return hash == -1;
+    }
+    return itemStack.hashCode() == hash;
   }
 }

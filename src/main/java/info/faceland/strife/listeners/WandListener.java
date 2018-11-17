@@ -99,7 +99,8 @@ public class WandListener implements Listener {
       return;
     }
 
-    ItemUtil.updateHashes(playerEntity);
+    plugin.getChampionManager().updateEquipmentAttributes(
+        plugin.getChampionManager().getChampion(playerEntity.getUniqueId()));
 
     double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;

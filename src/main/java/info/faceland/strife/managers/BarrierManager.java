@@ -38,27 +38,27 @@ public class BarrierManager {
     this.attributeUpdateManager = attributeUpdateManager;
   }
 
-  public boolean createBarrierEntry(AttributedEntity attributedEntity) {
-    if (!(attributedEntity.getEntity() instanceof Player)) {
-      return false;
+  public void createBarrierEntry(AttributedEntity attributedEntity) {
+    if (!attributedEntity.getEntity().isValid()) {
+      return;
     }
-    if (attributedEntity.getAttribute(BARRIER) <= 0 || !attributedEntity.getEntity().isValid()) {
-      attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
-      return false;
+    if (attributedEntity.getAttribute(BARRIER) <= 0) {
+      if (attributedEntity.getEntity() instanceof Player) {
+        attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+      }
+      return;
     }
     if (barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
-      return true;
+      updateShieldDisplay(attributedEntity);
+      return;
     }
     setEntityBarrier(attributedEntity.getEntity().getUniqueId(),
         attributedEntity.getAttribute(BARRIER));
     updateShieldDisplay(attributedEntity);
-    return true;
   }
 
   public boolean isBarrierUp(AttributedEntity attributedEntity) {
-    if (!createBarrierEntry(attributedEntity)) {
-      return false;
-    }
+    createBarrierEntry(attributedEntity);
     UUID uuid = attributedEntity.getEntity().getUniqueId();
     return barrierMap.containsKey(uuid) && barrierMap.get(uuid) > 0;
   }
@@ -68,7 +68,10 @@ public class BarrierManager {
   }
 
   public void updateShieldDisplay(AttributedEntity attributedEntity) {
-    if (!createBarrierEntry(attributedEntity)) {
+    if (!(attributedEntity.getEntity() instanceof Player)) {
+      return;
+    }
+    if (!barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
       return;
     }
     attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);

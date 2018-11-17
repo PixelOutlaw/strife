@@ -38,6 +38,4 @@ public interface DataStorage {
 
     ChampionSaveData load(UUID uuid);
 
-    //Collection<ChampionSaveData> oldLoad();
-
 }

@@ -51,7 +51,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
-    if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
+    if (!plugin.getChampionManager().championExists(event.getPlayer().getUniqueId())) {
       ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
       if (getChampionLevelpoints(saveData) != event.getPlayer().getLevel()) {
         notifyResetPoints(event.getPlayer());
@@ -97,22 +97,15 @@ public class DataListener implements Listener {
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
-        MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
-        MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
-      }
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
+      MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
     }, 20L * 5);
   }
 
   private void notifyResetPoints(final Player player) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
-        MessageUtils.sendMessage(player, RESET_MESSAGE);
-      }
-    }, 20L * 3);
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> MessageUtils.sendMessage(player, RESET_MESSAGE), 20L * 3);
   }
 
   private int getChampionLevelpoints(ChampionSaveData championSaveData) {

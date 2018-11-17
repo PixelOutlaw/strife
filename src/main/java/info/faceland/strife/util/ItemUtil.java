@@ -1,10 +1,6 @@
 package info.faceland.strife.util;
 
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemUtil {
@@ -37,51 +33,35 @@ public class ItemUtil {
   }
 
   public static boolean isValidMageOffhand(ItemStack stack) {
-    if (stack.getType() == Material.BOOK || stack.getType() == Material.SHIELD
-        || stack.getType() == Material.POTATO_ITEM) {
-      return true;
-    }
-    return false;
+    return stack.getType() == Material.BOOK || stack.getType() == Material.SHIELD ||
+        stack.getType() == Material.POTATO_ITEM;
   }
 
-  public static double getDualWieldEfficiency(ItemStack mainHandItemStack,
-      ItemStack offHandItemStack) {
-    if (mainHandItemStack == null || mainHandItemStack.getType() == Material.AIR) {
+  public static double getDualWieldEfficiency(ItemStack mainItem, ItemStack offItem) {
+    if (mainItem == null || mainItem.getType() == Material.AIR) {
       return 1.0;
     }
-    if (isWand(mainHandItemStack)) {
-      return isValidMageOffhand(offHandItemStack) ? 1D : 0D;
+    if (isWand(mainItem)) {
+      return isValidMageOffhand(offItem) ? 1D : 0D;
     }
-    if (isMeleeWeapon(mainHandItemStack.getType())) {
-      if (offHandItemStack.getType() == Material.POTATO
-          || offHandItemStack.getType() == Material.SHIELD
-          || offHandItemStack.getType() == Material.BOOK) {
+    if (isMeleeWeapon(mainItem.getType())) {
+      if (isValidMageOffhand(offItem)) {
         return 1D;
       }
-      if (isMeleeWeapon(offHandItemStack.getType()) || offHandItemStack.getType() == Material.BOW) {
-        return 0.3D;
+      if (isMeleeWeapon(offItem.getType()) || offItem.getType() == Material.BOW) {
+        return 0.35D;
       }
       return 0D;
     }
-    if (mainHandItemStack.getType() == Material.BOW) {
-      return offHandItemStack.getType() == Material.ARROW ? 1D : 0D;
+    if (mainItem.getType() == Material.BOW) {
+      return offItem.getType() == Material.ARROW ? 1D : 0D;
     }
-    if (mainHandItemStack.getType() == Material.SHIELD) {
-      return offHandItemStack.getType() == Material.SHIELD ? 1D : 0D;
+    if (mainItem.getType() == Material.SHIELD) {
+      return offItem.getType() == Material.SHIELD ? 1D : 0D;
     }
-    return 0D;
-  }
-
-  public static void updateHashes(LivingEntity entity) {
-    if (!(entity instanceof Player)) {
-      return;
+    if (isArmor(offItem.getType())) {
+      return 0D;
     }
-    Champion champion = StrifePlugin.getInstance().getChampionManager()
-        .getChampion(entity.getUniqueId());
-    if (champion.isEquipmentHashMatching()) {
-      return;
-    }
-    champion.updateHashedEquipment();
-    StrifePlugin.getInstance().getChampionManager().updateAll(champion);
+    return 1.0D;
   }
 }

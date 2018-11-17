@@ -26,7 +26,6 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
-import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.event.EventHandler;
@@ -98,8 +97,14 @@ public class CombatListener implements Listener {
       return;
     }
 
-    ItemUtil.updateHashes(attackEntity);
-    ItemUtil.updateHashes(defendEntity);
+    if (attackEntity instanceof Player) {
+      plugin.getChampionManager().updateEquipmentAttributes(
+          plugin.getChampionManager().getChampion(attackEntity.getUniqueId()));
+    }
+    if (defendEntity instanceof Player) {
+      plugin.getChampionManager().updateEquipmentAttributes(
+          plugin.getChampionManager().getChampion(defendEntity.getUniqueId()));
+    }
 
     double attackMultiplier = 1D;
     double healMultiplier = 1D;

@@ -39,7 +39,7 @@ public class SaveTask extends BukkitRunnable {
   public void run() {
     plugin.debug(Level.INFO, "Running save task");
     plugin.getStorage().saveAll();
-    plugin.getChampionManager().clear();
+    plugin.getChampionManager().clearAllChampions();
     for (Player player : Bukkit.getOnlinePlayers()) {
       ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
       plugin.getChampionManager().addChampion(new Champion(player, saveData));

@@ -86,8 +86,8 @@ public class PlayerDataUtil {
   }
 
   public static void updatePlayerEquipment(Player player) {
-    StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
-        .updateHashedEquipment();
+    StrifePlugin.getInstance().getChampionManager().updateEquipmentAttributes(
+        StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId()));
   }
 
   // TODO: Something better with the crap below here...

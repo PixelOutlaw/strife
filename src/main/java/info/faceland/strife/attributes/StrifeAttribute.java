@@ -18,6 +18,9 @@
  */
 package info.faceland.strife.attributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum StrifeAttribute {
 
   LEVEL_REQUIREMENT("Level Requirement"),
@@ -118,6 +121,25 @@ public enum StrifeAttribute {
   WPEN_MULT(),
 
   EXPLOSION_MAGIC("Explosion Magic");
+
+  // values() is dumb, so we only run it once, and hit use this to
+  // change String to enum instead of try catching or values()
+  private static final Map<String, StrifeAttribute> copyOfValues = buildStringToAttributeMap();
+
+  private static Map<String, StrifeAttribute> buildStringToAttributeMap() {
+    Map<String, StrifeAttribute> values = new HashMap<>();
+    for (StrifeAttribute attribute : StrifeAttribute.values()) {
+      if (attribute.getName() == null) {
+        continue;
+      }
+      values.put(attribute.getName(), attribute);
+    }
+    return values;
+  }
+
+  public static StrifeAttribute fromName(String name) {
+    return copyOfValues.getOrDefault(name, null);
+  }
 
   private final String name;
 

@@ -19,7 +19,6 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -49,30 +48,30 @@ public class AttributeUpdateListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      Champion champion = plugin.getChampionManager()
-          .getChampion(event.getPlayer().getUniqueId(), true);
-      plugin.getChampionManager().updateAll(champion);
-      plugin.getAttributeUpdateManager().updateAttributes(plugin, event.getPlayer());
+      plugin.getChampionManager().updateAll(
+          plugin.getChampionManager().getChampion(event.getPlayer()));
+      plugin.getAttributeUpdateManager().updateAttributes(
+          plugin.getEntityStatCache(), event.getPlayer());
     }, 20L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerItemHeldEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      Champion champion = plugin.getChampionManager()
-          .getChampion(event.getPlayer().getUniqueId());
-      plugin.getChampionManager().updateAll(champion);
-      plugin.getAttributeUpdateManager().updateAttributes(plugin, event.getPlayer());
+      plugin.getChampionManager().updateEquipmentAttributes(
+          plugin.getChampionManager().getChampion(event.getPlayer()));
+      plugin.getAttributeUpdateManager().updateAttributes(
+          plugin.getEntityStatCache(), event.getPlayer());
     }, 1L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerSwapHandItemsEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      Champion champion = plugin.getChampionManager()
-          .getChampion(event.getPlayer().getUniqueId());
-      plugin.getChampionManager().updateAll(champion);
-      plugin.getAttributeUpdateManager().updateAttributes(plugin, event.getPlayer());
+      plugin.getChampionManager().updateEquipmentAttributes(
+          plugin.getChampionManager().getChampion(event.getPlayer()));
+      plugin.getAttributeUpdateManager().updateAttributes(
+          plugin.getEntityStatCache(), event.getPlayer());
     }, 1L);
   }
 
@@ -101,18 +100,17 @@ public class AttributeUpdateListener implements Listener {
     if (player.isDead() || player.getHealth() <= 0D) {
       return;
     }
-    Champion champion = plugin.getChampionManager()
-        .getChampion(event.getPlayer().getUniqueId(), true);
-    plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(plugin, player);
+    plugin.getChampionManager().updateEquipmentAttributes(
+        plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()));
+    plugin.getAttributeUpdateManager().updateAttributes(plugin.getEntityStatCache(), player);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerJoin(PlayerJoinEvent event) {
-    Champion champion = plugin.getChampionManager()
-        .getChampion(event.getPlayer().getUniqueId(), true);
-    plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(plugin, event.getPlayer());
+    plugin.getChampionManager().updateAll(
+        plugin.getChampionManager().getChampion(event.getPlayer()));
+    plugin.getAttributeUpdateManager().updateAttributes(
+        plugin.getEntityStatCache(), event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

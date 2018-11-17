@@ -25,35 +25,23 @@ import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 public class Champion {
 
   private final Map<StrifeAttribute, Double> attributeBase;
   private final Map<StrifeAttribute, Double> attributeLevelPoint;
-  private final Map<StrifeAttribute, Double> attributeArmorCache;
-  private final Map<StrifeAttribute, Double> attributeWeaponCache;
   private final Map<StrifeAttribute, Double> combinedAttributeCache;
-
-  private int mainHandHash;
-  private int offHandHash;
-  private int helmetHash;
-  private int chestHash;
-  private int legsHash;
-  private int bootsHash;
 
   private Player player;
   private ChampionSaveData saveData;
+  private PlayerEquipmentCache equipmentCache;
 
   public Champion(Player player, ChampionSaveData saveData) {
     this.attributeBase = new HashMap<>();
     this.attributeLevelPoint = new HashMap<>();
-    this.attributeArmorCache = new HashMap<>();
-    this.attributeWeaponCache = new HashMap<>();
     this.combinedAttributeCache = new HashMap<>();
+    this.equipmentCache = new PlayerEquipmentCache();
     this.player = player;
     this.saveData = saveData;
   }
@@ -69,8 +57,6 @@ public class Champion {
   private void clearAttributeCaches() {
     attributeBase.clear();
     attributeLevelPoint.clear();
-    attributeArmorCache.clear();
-    attributeWeaponCache.clear();
   }
 
   public void recombineCache() {
@@ -78,8 +64,7 @@ public class Champion {
     combinedAttributeCache.putAll(AttributeUpdateManager.combineMaps(
         attributeBase,
         attributeLevelPoint,
-        attributeWeaponCache,
-        attributeArmorCache
+        equipmentCache.getCombinedStats()
     ));
   }
 
@@ -91,32 +76,6 @@ public class Champion {
   public void setAttributeLevelPointCache(Map<StrifeAttribute, Double> map) {
     attributeLevelPoint.clear();
     attributeLevelPoint.putAll(map);
-  }
-
-  public void setAttributeArmorCache(Map<StrifeAttribute, Double> map) {
-    attributeArmorCache.clear();
-    attributeArmorCache.putAll(map);
-  }
-
-  public void setAttributeWeaponCache(Map<StrifeAttribute, Double> map) {
-    attributeWeaponCache.clear();
-    attributeWeaponCache.putAll(map);
-  }
-
-  public Map<StrifeAttribute, Double> getAttributeBaseCache() {
-    return attributeBase;
-  }
-
-  public Map<StrifeAttribute, Double> getAttributeLevelPointCache() {
-    return attributeLevelPoint;
-  }
-
-  public Map<StrifeAttribute, Double> getAttributeArmorCache() {
-    return attributeArmorCache;
-  }
-
-  public Map<StrifeAttribute, Double> getAttributeWeaponCache() {
-    return attributeWeaponCache;
   }
 
   public ChampionSaveData getSaveData() {
@@ -149,7 +108,7 @@ public class Champion {
 
   public int getCraftSkill(boolean updateEquipment) {
     if (updateEquipment) {
-      updateHashedEquipment();
+      recombineCache();
     }
     return getCraftingLevel() + combinedAttributeCache
         .getOrDefault(StrifeAttribute.CRAFT_SKILL, 0D).intValue();
@@ -165,7 +124,7 @@ public class Champion {
 
   public int getEnchantSkill(boolean updateEquipment) {
     if (updateEquipment) {
-      updateHashedEquipment();
+      recombineCache();
     }
     return getEnchantLevel() + combinedAttributeCache
         .getOrDefault(StrifeAttribute.ENCHANT_SKILL, 0D).intValue();
@@ -181,7 +140,7 @@ public class Champion {
 
   public int getFishSkill(boolean updateEquipment) {
     if (updateEquipment) {
-      updateHashedEquipment();
+      recombineCache();
     }
     return getFishingLevel() + combinedAttributeCache
         .getOrDefault(StrifeAttribute.FISH_SKILL, 0D).intValue();
@@ -197,7 +156,7 @@ public class Champion {
 
   public int getMineSkill(boolean updateEquipment) {
     if (updateEquipment) {
-      updateHashedEquipment();
+      recombineCache();
     }
     return getMiningLevel() + combinedAttributeCache
         .getOrDefault(StrifeAttribute.MINE_SKILL, 0D).intValue();
@@ -235,43 +194,7 @@ public class Champion {
     return player;
   }
 
-  public void updateHashedEquipment() {
-    PlayerInventory invy = player.getInventory();
-    mainHandHash = invy.getItemInMainHand() == null ? -1 : invy.getItemInMainHand().hashCode();
-    offHandHash = invy.getItemInOffHand() == null ? -1 : invy.getItemInOffHand().hashCode();
-    helmetHash = invy.getHelmet() == null ? -1 : invy.getHelmet().hashCode();
-    chestHash = invy.getChestplate() == null ? -1 : invy.getChestplate().hashCode();
-    legsHash = invy.getLeggings() == null ? -1 : invy.getLeggings().hashCode();
-    bootsHash = invy.getBoots() == null ? -1 : invy.getBoots().hashCode();
-  }
-
-  public boolean isEquipmentHashMatching() {
-    PlayerInventory invy = player.getInventory();
-    if (!itemStackHashMatch(invy.getItemInMainHand(), mainHandHash)) {
-      return false;
-    }
-    if (!itemStackHashMatch(invy.getItemInOffHand(), offHandHash)) {
-      return false;
-    }
-    if (!itemStackHashMatch(invy.getHelmet(), helmetHash)) {
-      return false;
-    }
-    if (!itemStackHashMatch(invy.getChestplate(), chestHash)) {
-      return false;
-    }
-    if (!itemStackHashMatch(invy.getLeggings(), legsHash)) {
-      return false;
-    }
-    if (!itemStackHashMatch(invy.getBoots(), bootsHash)) {
-      return false;
-    }
-    return true;
-  }
-
-  private boolean itemStackHashMatch(ItemStack stack, int hash) {
-    if (stack == null) {
-      return hash == -1;
-    }
-    return stack.hashCode() == hash;
+  public PlayerEquipmentCache getEquipmentCache() {
+    return equipmentCache;
   }
 }
