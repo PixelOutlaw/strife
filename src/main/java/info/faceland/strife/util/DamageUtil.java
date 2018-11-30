@@ -45,6 +45,7 @@ public class DamageUtil {
 
   public static final int BLEED_TICK_RATE = 12;
   public static final int BLEED_TICKS_PER_5_SEC = (int) ((5D * 20D) / BLEED_TICK_RATE);
+  private static final double BLEED_PERCENT = 0.8;
 
   public static double dealDirectDamage(AttributedEntity attacker, AttributedEntity defender,
       double damage, DamageType damageType) {
@@ -289,13 +290,13 @@ public class DamageUtil {
 
   public static boolean attemptBleed(AttributedEntity attacker, AttributedEntity defender,
       double damage, double critMult, double attackMult) {
-    if (!StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
+    if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
     if (attackMult * (attacker.getAttribute(BLEED_CHANCE) / 100) >= rollDouble()) {
       double amount = damage + damage * critMult;
       amount *= 1 + attacker.getAttribute(BLEED_DAMAGE) / 100;
-      amount *= 0.5D;
+      amount *= BLEED_PERCENT;
       applyBleed(defender.getEntity(), amount);
       return true;
     }
