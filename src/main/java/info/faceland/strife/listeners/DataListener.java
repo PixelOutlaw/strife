@@ -24,6 +24,7 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -31,6 +32,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -81,6 +83,25 @@ public class DataListener implements Listener {
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     plugin.getBarrierManager()
         .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onInteract(final PlayerInteractEntityEvent event) {
+    if (event.getRightClicked() == null) {
+      return;
+    }
+    if (!(event.getRightClicked() instanceof LivingEntity) || event
+        .getRightClicked() instanceof ArmorStand) {
+      return;
+    }
+    if (event.getRightClicked().hasMetadata("NPC")) {
+      return;
+    }
+    final Player player = event.getPlayer();
+    final LivingEntity entity = (LivingEntity) event.getRightClicked();
+    plugin.getEntityStatCache().getAttributedEntity(entity);
+    plugin.getBossBarManager()
+        .pushBar(player, plugin.getEntityStatCache().getAttributedEntity(entity));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

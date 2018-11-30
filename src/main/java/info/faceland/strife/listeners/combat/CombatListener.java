@@ -291,6 +291,8 @@ public class CombatListener implements Listener {
 
     doReflectedDamage(defender, attackEntity, damageType);
 
+    event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+
     if (plugin.getUniqueEntityManager().isUnique(attackEntity)) {
       plugin.getAbilityManager().uniqueAbilityCast(attacker, AbilityType.ON_HIT);
       plugin.getAbilityManager().checkPhaseChange(attacker);
@@ -304,7 +306,9 @@ public class CombatListener implements Listener {
         bonusFireDamage, bonusIceDamage, bonusLightningDamage, bonusEarthDamage, bonusLightDamage,
         corruptEffect, isBleedApplied);
 
-    event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
+    if (attackEntity instanceof Player) {
+      plugin.getBossBarManager().pushBar((Player) attackEntity, defender);
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

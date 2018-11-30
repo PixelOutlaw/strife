@@ -100,6 +100,7 @@ public class StrifePlugin extends FacePlugin {
   private RageManager rageManager;
   private MonsterManager monsterManager;
   private UniqueEntityManager uniqueEntityManager;
+  private BossBarManager bossBarManager;
   private EntityEquipmentManager equipmentManager;
   private EffectManager effectManager;
   private AbilityManager abilityManager;
@@ -113,6 +114,8 @@ public class StrifePlugin extends FacePlugin {
   private HealthRegenTask regenTask;
   private BleedTask bleedTask;
   private BarrierTask barrierTask;
+  private TickBossBarsTask tickBossBarsTask;
+  private PruneBossBarsTask pruneBossBarsTask;
   private DarknessReductionTask darkTask;
   private RageTask rageTask;
   private UniquePruneTask uniquePruneTask;
@@ -163,33 +166,6 @@ public class StrifePlugin extends FacePlugin {
         getResource("abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
-    statManager = new StrifeStatManager();
-    blockManager = new BlockManager();
-    bleedManager = new BleedManager();
-    darknessManager = new DarknessManager();
-    attributeUpdateManager = new AttributeUpdateManager();
-    rageManager = new RageManager(attributeUpdateManager);
-    barrierManager = new BarrierManager(attributeUpdateManager);
-    monsterManager = new MonsterManager(this);
-    uniqueEntityManager = new UniqueEntityManager(this);
-    equipmentManager = new EntityEquipmentManager();
-    effectManager = new EffectManager();
-    abilityManager = new AbilityManager(effectManager, uniqueEntityManager);
-    attackSpeedManager = new AttackSpeedManager();
-    spawnerManager = new SpawnerManager(uniqueEntityManager);
-    multiplierManager = new MultiplierManager();
-    storage = new JsonDataStorage(this);
-    championManager = new ChampionManager(this);
-    experienceManager = new ExperienceManager(this);
-    craftExperienceManager = new CraftExperienceManager(this);
-    enchantExperienceManager = new EnchantExperienceManager(this);
-    fishExperienceManager = new FishExperienceManager(this);
-    miningExperienceManager = new MiningExperienceManager(this);
-    entityStatCache = new EntityStatCache(barrierManager, monsterManager);
-    commandHandler = new CommandHandler(this);
-
-    MenuListener.getInstance().register(this);
-
     if (configYAML.update()) {
       getLogger().info("Updating config.yml");
     }
@@ -211,8 +187,35 @@ public class StrifePlugin extends FacePlugin {
     if (abilityYAML.update()) {
       getLogger().info("Updating abilities.yml");
     }
-
     settings = MasterConfiguration.loadFromFiles(configYAML);
+
+    statManager = new StrifeStatManager();
+    blockManager = new BlockManager();
+    bleedManager = new BleedManager();
+    darknessManager = new DarknessManager();
+    attributeUpdateManager = new AttributeUpdateManager();
+    rageManager = new RageManager(attributeUpdateManager);
+    barrierManager = new BarrierManager(attributeUpdateManager);
+    monsterManager = new MonsterManager(this);
+    uniqueEntityManager = new UniqueEntityManager(this);
+    bossBarManager = new BossBarManager(this);
+    equipmentManager = new EntityEquipmentManager();
+    effectManager = new EffectManager();
+    abilityManager = new AbilityManager(effectManager, uniqueEntityManager);
+    attackSpeedManager = new AttackSpeedManager();
+    spawnerManager = new SpawnerManager(uniqueEntityManager);
+    multiplierManager = new MultiplierManager();
+    storage = new JsonDataStorage(this);
+    championManager = new ChampionManager(this);
+    experienceManager = new ExperienceManager(this);
+    craftExperienceManager = new CraftExperienceManager(this);
+    enchantExperienceManager = new EnchantExperienceManager(this);
+    fishExperienceManager = new FishExperienceManager(this);
+    miningExperienceManager = new MiningExperienceManager(this);
+    entityStatCache = new EntityStatCache(barrierManager, monsterManager);
+    commandHandler = new CommandHandler(this);
+
+    MenuListener.getInstance().register(this);
 
     try {
       logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
@@ -241,6 +244,8 @@ public class StrifePlugin extends FacePlugin {
     regenTask = new HealthRegenTask(this);
     bleedTask = new BleedTask(this);
     barrierTask = new BarrierTask(this);
+    tickBossBarsTask = new TickBossBarsTask(bossBarManager);
+    pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     darkTask = new DarknessReductionTask(darknessManager);
     rageTask = new RageTask(rageManager, entityStatCache);
     uniquePruneTask = new UniquePruneTask(this);
@@ -301,7 +306,7 @@ public class StrifePlugin extends FacePlugin {
         20L * 600 // Run every 10 minutes after that
     );
     regenTask.runTaskTimer(this,
-        20L * 10, // Start timer after 10s
+        20L * 9, // Start timer after 9s
         20L * 2 // Run it every 2s after
     );
     bleedTask.runTaskTimer(this,
@@ -309,11 +314,19 @@ public class StrifePlugin extends FacePlugin {
         DamageUtil.BLEED_TICK_RATE // Run it every BLEED_TICK_RATE ticks
     );
     barrierTask.runTaskTimer(this,
-        201L, // Start timer after 10.05s
+        2201L, // Start timer after 11s
         4L // Run it every 1/5th of a second after
     );
+    tickBossBarsTask.runTaskTimer(this,
+        240L, // Start timer after 12s
+        2L // Run it every 1/10th of a second after
+    );
+    pruneBossBarsTask.runTaskTimer(this,
+        20L * 13, // Start timer after 13s
+        20L * 60 * 7 // Run it every 7 minutes
+    );
     darkTask.runTaskTimer(this,
-        20L * 10, // Start timer after 10s
+        20L * 14, // Start timer after 14s
         10L  // Run it every 0.5s after
     );
     rageTask.runTaskTimer(this,
@@ -383,6 +396,8 @@ public class StrifePlugin extends FacePlugin {
     regenTask.cancel();
     bleedTask.cancel();
     barrierTask.cancel();
+    tickBossBarsTask.cancel();
+    pruneBossBarsTask.cancel();
     darkTask.cancel();
     rageTask.cancel();
     uniqueParticleTask.cancel();
@@ -404,6 +419,7 @@ public class StrifePlugin extends FacePlugin {
     statManager = null;
     monsterManager = null;
     uniqueEntityManager = null;
+    bossBarManager = null;
     equipmentManager = null;
     effectManager = null;
     abilityManager = null;
@@ -426,6 +442,8 @@ public class StrifePlugin extends FacePlugin {
 
     saveTask = null;
     trackedPruneTask = null;
+    pruneBossBarsTask = null;
+    tickBossBarsTask = null;
     regenTask = null;
     bleedTask = null;
     darkTask = null;
@@ -701,6 +719,10 @@ public class StrifePlugin extends FacePlugin {
 
   public UniqueEntityManager getUniqueEntityManager() {
     return uniqueEntityManager;
+  }
+
+  public BossBarManager getBossBarManager() {
+    return bossBarManager;
   }
 
   public EffectManager getEffectManager() {

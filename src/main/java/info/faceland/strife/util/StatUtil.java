@@ -19,6 +19,10 @@ public class StatUtil {
     return ae.getAttribute(HEALTH) * (1 + ae.getAttribute(HEALTH_MULT) / 100);
   }
 
+  public static double getBarrier(AttributedEntity ae) {
+    return ae.getAttribute(BARRIER);
+  }
+
   public static double getBarrierPerSecond(AttributedEntity ae) {
     return (4 + (ae.getAttribute(BARRIER) * 0.08)) * (1 + (ae.getAttribute(BARRIER_SPEED) / 100));
   }

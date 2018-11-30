@@ -42,7 +42,7 @@ public class BarrierManager {
     if (!attributedEntity.getEntity().isValid()) {
       return;
     }
-    if (attributedEntity.getAttribute(BARRIER) <= 0) {
+    if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
       if (attributedEntity.getEntity() instanceof Player) {
         attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       }
