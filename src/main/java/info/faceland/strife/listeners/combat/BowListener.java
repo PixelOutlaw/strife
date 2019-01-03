@@ -23,7 +23,6 @@ import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_SPEED;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.util.ItemUtil;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -86,23 +85,26 @@ public class BowListener implements Listener {
       if (multiShot % 1 >= random.nextDouble()) {
         bonusProjectiles++;
       }
-      double splitMult = Math.max(1 - (0.1 * bonusProjectiles), 0.3D);
       for (int i = bonusProjectiles; i > 0; i--) {
-        createArrow(playerEntity, location, attackMultiplier, splitMult,
-            randomOffset(bonusProjectiles),
+        createArrow(playerEntity, location, attackMultiplier, randomOffset(bonusProjectiles),
             randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), projectileSpeed,
             shotMult);
       }
     }
+    //Todo: enable in 1.13
+    //PacketPlayInUseEntity playInUseEntity = new PacketPlayInUseEntity();
+    //playInUseEntity.action = EntityUseAction.ATTACK;
+    //playInUseEntity.hand = HandType.MAIN_HAND;
+    //playInUseEntity.entityId = playerEntity.getEntityId();
+    //SU.tp.sendPacket(playerEntity, playInUseEntity);
   }
 
   private void createArrow(LivingEntity shooter, Location location, double attackMult, double power,
       double shotMult) {
-    createArrow(shooter, location, attackMult, 1D, 0, 0, 0, power, shotMult);
+    createArrow(shooter, location, attackMult, 0, 0, 0, power, shotMult);
   }
 
-  private void createArrow(LivingEntity shooter, Location location, double attackMult,
-      double splitMult, double xOff,
+  private void createArrow(LivingEntity shooter, Location location, double attackMult, double xOff,
       double yOff, double zOff, double power, double shotMult) {
     Arrow arrow = shooter.getWorld().spawn(location.clone(), Arrow.class);
     arrow.setShooter(shooter);
