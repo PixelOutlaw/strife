@@ -44,8 +44,8 @@ public class DamageUtil {
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
   public static final int BLEED_TICK_RATE = 12;
-  public static final int BLEED_TICKS_PER_5_SEC = (int) ((5D * 20D) / BLEED_TICK_RATE);
-  private static final double BLEED_PERCENT = 0.8;
+  public static final int BLEED_TICKS_PER_TEN_SEC = (int) ((20D * 20D) / BLEED_TICK_RATE);
+  private static final double BLEED_PERCENT = 1.0;
 
   public static double dealDirectDamage(AttributedEntity attacker, AttributedEntity defender,
       double damage, DamageType damageType) {
@@ -305,7 +305,7 @@ public class DamageUtil {
 
   public static void applyBleed(LivingEntity defender, double amount) {
     StrifePlugin.getInstance().getBleedManager()
-        .applyBleed(defender, amount, BLEED_TICKS_PER_5_SEC);
+        .applyBleed(defender, amount, BLEED_TICKS_PER_TEN_SEC);
     defender.getWorld()
         .playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
