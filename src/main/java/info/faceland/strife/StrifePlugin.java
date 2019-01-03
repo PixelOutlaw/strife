@@ -39,6 +39,7 @@ import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.DataListener;
 import info.faceland.strife.listeners.combat.DogeListener;
+import info.faceland.strife.listeners.combat.WandListener;
 import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;

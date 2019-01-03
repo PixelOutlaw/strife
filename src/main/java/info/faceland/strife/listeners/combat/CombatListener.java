@@ -26,6 +26,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.event.EventHandler;
@@ -128,6 +129,10 @@ public class CombatListener implements Listener {
     AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
 
     if (damageType == AttackType.MELEE) {
+      if (ItemUtil.isWand(attackEntity.getEquipment().getItemInMainHand())) {
+        event.setCancelled(true);
+        return;
+      }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
     } else if (projectile != null && projectile.hasMetadata("AS_MULT")) {
       attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();

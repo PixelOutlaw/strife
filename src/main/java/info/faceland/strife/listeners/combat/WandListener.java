@@ -16,7 +16,7 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.listeners;
+package info.faceland.strife.listeners.combat;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
@@ -31,12 +31,16 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
@@ -70,48 +74,59 @@ public class WandListener implements Listener {
     event.setCancelled(true);
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.NORMAL)
   public void onSwing(PlayerInteractEvent event) {
-    if (event.getAction() != Action.LEFT_CLICK_AIR) {
+    if (event.getHand() != EquipmentSlot.HAND) {
       return;
     }
-    Player playerEntity = event.getPlayer();
+    if (!(event.getAction() == Action.LEFT_CLICK_AIR
+        || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
+      return;
+    }
+    shootWand(event.getPlayer(), event);
+  }
 
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onEnemyHit(EntityDamageByEntityEvent event) {
+    if (!(event.getDamager() instanceof Player)) {
+      return;
+    }
+    shootWand((Player) event.getDamager(), event);
+  }
+
+  private void shootWand(Player player, Cancellable event) {
+    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
 
-    if (attackMultiplier == 0) {
+    if (attackMultiplier <= 0.05) {
       event.setCancelled(true);
       return;
     }
 
-    ItemStack wand = playerEntity.getEquipment().getItemInMainHand();
-
+    ItemStack wand = player.getEquipment().getItemInMainHand();
     if (!ItemUtil.isWand(wand)) {
       return;
     }
-
     if (attackMultiplier <= 0.25) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, playerEntity);
-      playerEntity.getWorld()
-          .playSound(playerEntity.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, player);
+      player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
       event.setCancelled(true);
       return;
     }
 
     plugin.getChampionManager().updateEquipmentAttributes(
-        plugin.getChampionManager().getChampion(playerEntity.getUniqueId()));
+        plugin.getChampionManager().getChampion(player.getUniqueId()));
 
     double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
 
     if (pStats.getAttribute(StrifeAttribute.EXPLOSION_MAGIC) > 0.1) {
-      createGhastBall(playerEntity, attackMultiplier, projectileSpeed, multiShot);
+      createGhastBall(player, attackMultiplier, projectileSpeed, multiShot);
       event.setCancelled(true);
       return;
     }
 
-    createMagicMissile(playerEntity, attackMultiplier, projectileSpeed, 0, 0, 0);
+    createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0);
 
     if (multiShot > 0) {
       int bonusProjectiles = (int) (multiShot - (multiShot % 1));
@@ -119,9 +134,9 @@ public class WandListener implements Listener {
         bonusProjectiles++;
       }
       for (int i = bonusProjectiles; i > 0; i--) {
-        createMagicMissile(playerEntity, attackMultiplier, projectileSpeed,
-            randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles));
+        createMagicMissile(player, attackMultiplier, projectileSpeed,
+            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
+            randomOffset(bonusProjectiles));
       }
     }
     event.setCancelled(true);
