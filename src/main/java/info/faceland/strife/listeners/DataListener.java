@@ -94,7 +94,7 @@ public class DataListener implements Listener {
         .getRightClicked() instanceof ArmorStand) {
       return;
     }
-    if (event.getRightClicked().hasMetadata("NPC")) {
+    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC")) {
       return;
     }
     final Player player = event.getPlayer();

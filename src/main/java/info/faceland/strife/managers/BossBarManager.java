@@ -97,7 +97,8 @@ public class BossBarManager {
   }
 
   private void pruneBarIfNoOwners(UUID uuid) {
-    if ((barMap.get(uuid).getPlayerUuidTickMap().isEmpty())) {
+    if (barMap.get(uuid).getPlayerUuidTickMap().isEmpty()) {
+      barMap.get(uuid).destroy();
       barMap.remove(uuid);
     }
   }

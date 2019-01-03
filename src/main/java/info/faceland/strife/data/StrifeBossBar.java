@@ -49,4 +49,13 @@ public class StrifeBossBar {
   public void setDead(boolean dead) {
     this.dead = dead;
   }
+
+  public void destroy() {
+    healthBar.removeAll();
+    healthBar = null;
+    if (barrierBar != null) {
+      barrierBar.removeAll();
+      barrierBar = null;
+    }
+  }
 }
