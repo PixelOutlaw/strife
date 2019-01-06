@@ -83,12 +83,18 @@ public class WandListener implements Listener {
         || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
       return;
     }
+    if (!ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
+      return;
+    }
     shootWand(event.getPlayer(), event);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onEnemyHit(EntityDamageByEntityEvent event) {
     if (!(event.getDamager() instanceof Player)) {
+      return;
+    }
+    if (!ItemUtil.isWand(((Player)event.getDamager()).getEquipment().getItemInMainHand())) {
       return;
     }
     shootWand((Player) event.getDamager(), event);
@@ -100,11 +106,6 @@ public class WandListener implements Listener {
 
     if (attackMultiplier <= 0.05) {
       event.setCancelled(true);
-      return;
-    }
-
-    ItemStack wand = player.getEquipment().getItemInMainHand();
-    if (!ItemUtil.isWand(wand)) {
       return;
     }
     if (attackMultiplier <= 0.25) {
