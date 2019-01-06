@@ -243,7 +243,9 @@ public class StrifePlugin extends FacePlugin {
     saveTask = new SaveTask(this);
     trackedPruneTask = new TrackedPruneTask(this);
     regenTask = new HealthRegenTask(this);
-    bleedTask = new BleedTask(this);
+    bleedTask = new BleedTask(bleedManager, barrierManager,
+        settings.getDouble("config.mechanics.base-bleed-damage", 1D),
+        settings.getDouble("config.mechanics.percent-bleed-damage", 0.1D));
     barrierTask = new BarrierTask(this);
     tickBossBarsTask = new TickBossBarsTask(bossBarManager);
     pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
@@ -312,7 +314,7 @@ public class StrifePlugin extends FacePlugin {
     );
     bleedTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
-        DamageUtil.BLEED_TICK_RATE // Run it every BLEED_TICK_RATE ticks
+        settings.getLong("config.mechanics.ticks-per-bleed", 10L)
     );
     barrierTask.runTaskTimer(this,
         2201L, // Start timer after 11s

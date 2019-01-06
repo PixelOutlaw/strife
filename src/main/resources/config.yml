@@ -15,6 +15,11 @@ pvp-multiplier: 0.5
 xp-bonus: 0.0
 drops-bonus: 0.0
 
+mechanics:
+  base-bleed-damage: 1
+  percent-bleed-damage: 0.1
+  ticks-per-bleed: 12
+
 leveled-monsters:
   name-format: "&7%ENTITY% &f(%LEVEL%)"
   give-skeletons-sword-chance: 0.1

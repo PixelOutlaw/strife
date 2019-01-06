@@ -43,9 +43,7 @@ public class DamageUtil {
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
-  public static final int BLEED_TICK_RATE = 12;
-  public static final int BLEED_TICKS_PER_TEN_SEC = (int) ((20D * 20D) / BLEED_TICK_RATE);
-  private static final double BLEED_PERCENT = 1.0;
+  private static final double BLEED_PERCENT = 0.5;
 
   public static double dealDirectDamage(AttributedEntity attacker, AttributedEntity defender,
       double damage, DamageType damageType) {
@@ -72,7 +70,7 @@ public class DamageUtil {
     }
     defender.getEntity().damage(-1, attacker.getEntity());
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    //defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
+    //defender.getBleedOnEntity().setHealth(defender.getBleedOnEntity().getHealth() - damage);
     defender.getEntity().damage(damage);
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
     return damage;
@@ -305,7 +303,7 @@ public class DamageUtil {
 
   public static void applyBleed(LivingEntity defender, double amount) {
     StrifePlugin.getInstance().getBleedManager()
-        .applyBleed(defender, amount, BLEED_TICKS_PER_TEN_SEC);
+        .applyBleed(defender, amount);
     defender.getWorld()
         .playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
