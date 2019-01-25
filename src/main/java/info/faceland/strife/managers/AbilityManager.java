@@ -198,7 +198,6 @@ public class AbilityManager {
   private LivingEntity selectFirstEntityInSight(LivingEntity caster, int range) {
     if (caster instanceof Creature && ((Creature) caster).getTarget() != null) {
       LogUtil.printDebug("Creature target found. Using it instead of raycast");
-      LogUtil.printDebug("Creature target found. Using it instead of raycast");
       return ((Creature) caster).getTarget();
     }
     LogUtil.printDebug("No creature target found. Using raycast");
