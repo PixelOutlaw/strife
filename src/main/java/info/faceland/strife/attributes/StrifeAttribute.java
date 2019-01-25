@@ -120,7 +120,8 @@ public enum StrifeAttribute {
   APEN_MULT(),
   WPEN_MULT(),
 
-  EXPLOSION_MAGIC("Explosion Magic");
+  EXPLOSION_MAGIC("Explosion Magic"),
+  SPELL_STRIKE_RANGE("Spell Strike Range");
 
   // values() is dumb, so we only run it once, and hit use this to
   // change String to enum instead of try catching or values()

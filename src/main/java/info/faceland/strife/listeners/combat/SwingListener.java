@@ -24,7 +24,15 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.ItemUtil;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
@@ -44,16 +52,22 @@ import org.bukkit.util.Vector;
 
 import java.util.Random;
 
-public class WandListener implements Listener {
+public class SwingListener implements Listener {
 
   private final StrifePlugin plugin;
   private final Random random;
+  private final Set<Material> ignoredMaterials;
 
   private static final String ATTACK_UNCHARGED = TextUtils.color("&e&lNot charged enough!");
 
-  public WandListener(StrifePlugin plugin) {
+  public SwingListener(StrifePlugin plugin) {
     this.plugin = plugin;
     this.random = new Random(System.currentTimeMillis());
+    this.ignoredMaterials = new HashSet<>();
+    this.ignoredMaterials.add(Material.AIR);
+    this.ignoredMaterials.add(Material.LONG_GRASS);
+    this.ignoredMaterials.add(Material.WALL_SIGN);
+    this.ignoredMaterials.add(Material.SIGN_POST);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -80,10 +94,10 @@ public class WandListener implements Listener {
         || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
       return;
     }
-    if (!ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
+    if (ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
+      shootWand(event.getPlayer(), event);
       return;
     }
-    shootWand(event.getPlayer(), event);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -91,10 +105,29 @@ public class WandListener implements Listener {
     if (!(event.getDamager() instanceof Player)) {
       return;
     }
-    if (!ItemUtil.isWand(((Player)event.getDamager()).getEquipment().getItemInMainHand())) {
+    if (!ItemUtil.isWand(((Player) event.getDamager()).getEquipment().getItemInMainHand())) {
       return;
     }
     shootWand((Player) event.getDamager(), event);
+  }
+
+  private void spellSwordSwing(Player player, Cancellable event) {
+    AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity(player);
+    double range = attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE);
+    if (attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE) < 0.5) {
+      return;
+    }
+    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+    if (attackMultiplier < 0.95) {
+      return;
+    }
+    LivingEntity target = selectFirstEntityInSight(player, range);
+    if (target == null) {
+      return;
+    }
+    //AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(target);
+    spawnSparkle(target);
+    event.setCancelled(true);
   }
 
   private void shootWand(Player player, Cancellable event) {
@@ -173,5 +206,37 @@ public class WandListener implements Listener {
   private double randomOffset(double magnitude) {
     magnitude = 0.1 + magnitude * 0.005;
     return (random.nextDouble() * magnitude * 2) - magnitude;
+  }
+
+  private LivingEntity selectFirstEntityInSight(Player player, double range) {
+    ArrayList<Entity> entities = (ArrayList<Entity>) player.getNearbyEntities(range, range, range);
+    ArrayList<Block> sightBlock = (ArrayList<Block>) player
+        .getLineOfSight(ignoredMaterials, (int) range);
+    ArrayList<Location> sight = new ArrayList<>();
+    for (Block b : sightBlock) {
+      sight.add(b.getLocation());
+    }
+    for (Location loc : sight) {
+      for (Entity entity : entities) {
+        if (!(entity instanceof LivingEntity)) {
+          continue;
+        }
+        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1 &&
+            Math.abs(entity.getLocation().getY() - loc.getY()) < 1 &&
+            Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
+          return (LivingEntity) entity;
+        }
+      }
+    }
+    return null;
+  }
+
+  private void spawnSparkle(LivingEntity target) {
+    Location location = target.getLocation().clone().add(
+        target.getEyeLocation().clone().subtract(target.getLocation()).multiply(0.5));
+    location.getWorld().spawnParticle(Particle.CRIT_MAGIC, location, 20, 5, 5, 5);
+    location.getWorld().spawnParticle(Particle.SWEEP_ATTACK, location, 1);
+    location.getWorld().playSound(location, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 2.0f, 1.0f);
+    location.getWorld().playSound(location, Sound.ENTITY_BLAZE_HURT, 2.0f, 1.0f);
   }
 }

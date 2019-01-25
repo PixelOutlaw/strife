@@ -39,14 +39,13 @@ import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.DataListener;
 import info.faceland.strife.listeners.combat.DogeListener;
-import info.faceland.strife.listeners.combat.WandListener;
+import info.faceland.strife.listeners.combat.SwingListener;
 import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.JsonDataStorage;
 import info.faceland.strife.tasks.*;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
@@ -363,7 +362,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(entityStatCache, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
