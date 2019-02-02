@@ -95,7 +95,15 @@ public class StatUtil {
   }
 
   public static double getEvasion(AttributedEntity ae) {
-    return ae.getAttribute(EVASION) * (1 + ae.getAttribute(EVASION_MULT) / 100);
+    return getFlatEvasion(ae) * (1 + ae.getAttribute(EVASION_MULT) / 100);
+  }
+
+  public static double getFlatEvasion(AttributedEntity ae) {
+    if (ae.getChampion() == null) {
+      return ae.getAttribute(EVASION);
+    }
+    return ae.getAttribute(EVASION) + ae.getChampion().getBonusLevels() * (1
+        + ae.getAttribute(EVASION_PER_TEN_B_LEVEL) / 10);
   }
 
   public static double getArmorPen(AttributedEntity ae) {
