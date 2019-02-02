@@ -70,6 +70,7 @@ public enum StrifeAttribute {
   DARK_DAMAGE("Shadow Damage"),
 
   IGNITE_CHANCE("Ignite Chance"),
+  IGNITE_DURATION("Ignite Duration"),
   SHOCK_CHANCE("Shock Chance"),
   FREEZE_CHANCE("Freeze Chance"),
   CORRUPT_CHANCE("Corrupt Chance"),
@@ -90,6 +91,10 @@ public enum StrifeAttribute {
   MULTISHOT("Multishot"),
 
   MOVEMENT_SPEED("Movement Speed"),
+  TRUE_DAMAGE("True Damage"),
+
+  PVP_ATTACK("PvP Attack"),
+  PVP_DEFENCE("PvP Defence"),
 
   CRAFT_SKILL("Crafting Skill Level"),
   ENCHANT_SKILL("Enchanting Skill Level"),
@@ -121,7 +126,15 @@ public enum StrifeAttribute {
   WPEN_MULT(),
 
   EXPLOSION_MAGIC("Explosion Magic"),
-  SPELL_STRIKE_RANGE("Spell Strike Range");
+  SPELL_STRIKE_RANGE("Spell Strike Range"),
+
+  HEALTH_PER_TEN_B_LEVEL("Max Health Per Ten BLvl"),
+  BARRIER_PER_TEN_B_LEVEL("Max Barrier Per Ten BLvl"),
+  DAMAGE_PER_TEN_B_LEVEL("Damage Per Ten BLvl"),
+  ARMOR_PER_TEN_B_LEVEL("Armor Per Ten BLvl"),
+  EVASION_PER_TEN_B_LEVEL("Evasion Per Ten BLvl"),
+  MS_PER_TEN_B_LEVEL("Move Speed Per Ten BLvl"),
+  AS_PER_TEN_B_LEVEL("Attack Speed Per Ten BLvl");
 
   // values() is dumb, so we only run it once, and hit use this to
   // change String to enum instead of try catching or values()

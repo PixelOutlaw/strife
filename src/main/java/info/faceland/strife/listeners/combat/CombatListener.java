@@ -284,6 +284,7 @@ public class CombatListener implements Listener {
     double rawDamage = (standardDamage + elementalDamage) * (blocked ? 0.6 : 1.0);
     rawDamage = Math.max(0D, rawDamage - damageReduction);
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
+    rawDamage += attacker.getAttribute(TRUE_DAMAGE) * attackMultiplier;
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
