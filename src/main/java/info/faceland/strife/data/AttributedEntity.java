@@ -8,10 +8,18 @@ import org.bukkit.entity.LivingEntity;
 public class AttributedEntity {
   private final Map<StrifeAttribute, Double> attributeCache;
   private final LivingEntity livingEntity;
+  private final Champion champion;
+
+  public AttributedEntity(Champion champion) {
+    this.attributeCache = new HashMap<>();
+    this.livingEntity = champion.getPlayer();
+    this.champion = champion;
+  }
 
   public AttributedEntity(LivingEntity livingEntity) {
     this.attributeCache = new HashMap<>();
     this.livingEntity = livingEntity;
+    this.champion = null;
   }
 
   public double getAttribute(StrifeAttribute attribute) {
@@ -20,6 +28,10 @@ public class AttributedEntity {
 
   public LivingEntity getEntity() {
     return livingEntity;
+  }
+
+  public Champion getChampion() {
+    return champion;
   }
 
   public Map<StrifeAttribute, Double> getAttributes() {

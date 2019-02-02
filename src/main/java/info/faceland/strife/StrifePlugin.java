@@ -212,7 +212,7 @@ public class StrifePlugin extends FacePlugin {
     enchantExperienceManager = new EnchantExperienceManager(this);
     fishExperienceManager = new FishExperienceManager(this);
     miningExperienceManager = new MiningExperienceManager(this);
-    entityStatCache = new EntityStatCache(barrierManager, monsterManager);
+    entityStatCache = new EntityStatCache(championManager, barrierManager, monsterManager);
     commandHandler = new CommandHandler(this);
 
     MenuListener.getInstance().register(this);

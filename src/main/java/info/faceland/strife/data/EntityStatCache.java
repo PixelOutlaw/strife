@@ -2,6 +2,7 @@ package info.faceland.strife.data;
 
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.managers.BarrierManager;
+import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.MonsterManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,14 +10,18 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 public class EntityStatCache {
 
+  private final ChampionManager championManager;
   private final BarrierManager barrierManager;
   private final MonsterManager monsterManager;
   private Map<UUID, AttributedEntity> trackedEntities;
 
-  public EntityStatCache(BarrierManager barrierManager, MonsterManager monsterManager) {
+  public EntityStatCache(ChampionManager championManager, BarrierManager barrierManager,
+      MonsterManager monsterManager) {
+    this.championManager = championManager;
     this.barrierManager = barrierManager;
     this.monsterManager = monsterManager;
     this.trackedEntities = new HashMap<>();
@@ -28,7 +33,12 @@ public class EntityStatCache {
 
   public AttributedEntity getAttributedEntity(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
-      AttributedEntity attributedEntity = new AttributedEntity(entity);
+      AttributedEntity attributedEntity;
+      if (entity instanceof Player) {
+        attributedEntity = new AttributedEntity(championManager.getChampion((Player) entity));
+      } else {
+        attributedEntity = new AttributedEntity(entity);
+      }
       attributedEntity.setAttributes(monsterManager.getBaseStats(entity));
       trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
