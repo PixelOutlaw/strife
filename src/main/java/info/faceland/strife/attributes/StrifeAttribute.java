@@ -138,6 +138,7 @@ public enum StrifeAttribute {
 
   // values() is dumb, so we only run it once, and hit use this to
   // change String to enum instead of try catching or values()
+  // TODO: We map String to StrifeAttribute, why not let the user customize the string rather than declaring it in the enum?
   private static final Map<String, StrifeAttribute> copyOfValues = buildStringToAttributeMap();
 
   private static Map<String, StrifeAttribute> buildStringToAttributeMap() {
