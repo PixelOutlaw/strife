@@ -5,7 +5,6 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
-import org.bukkit.entity.LivingEntity;
 
 public class DealDamage extends Effect {
 
@@ -15,7 +14,7 @@ public class DealDamage extends Effect {
   private boolean applyEffects;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     double damage = amount;
     for (StrifeAttribute attr : statMults.keySet()) {
       damage += statMults.get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
@@ -23,19 +22,18 @@ public class DealDamage extends Effect {
     LogUtil.printDebug("Damage Effect! " + damage + " | " + damageScale + " | " + damageType);
     switch (damageScale) {
       case CURRENT_HP:
-        damage *= target.getHealth() / target.getMaxHealth();
+        damage *= target.getEntity().getHealth() / target.getEntity().getMaxHealth();
         break;
       case MISSING_HP:
-        damage *= 1 - target.getHealth() / target.getMaxHealth();
+        damage *= 1 - target.getEntity().getHealth() / target.getEntity().getMaxHealth();
         break;
       case MAXIMUM_HP:
-        damage *= target.getMaxHealth();
+        damage *= target.getEntity().getMaxHealth();
         break;
     }
-    LogUtil.printDebug("[Pre-Damage] Target Health: " + target.getHealth());
-    DamageUtil
-        .dealDirectDamage(caster, entityStatCache.getAttributedEntity(target), damage, damageType);
-    LogUtil.printDebug("[Post-Damage] Target Health: " + target.getHealth());
+    LogUtil.printDebug("[Pre-Damage] Target Health: " + target.getEntity().getHealth());
+    DamageUtil.dealDirectDamage(caster, target, damage, damageType);
+    LogUtil.printDebug("[Post-Damage] Target Health: " + target.getEntity().getHealth());
   }
 
   public void setAmount(double amount) {

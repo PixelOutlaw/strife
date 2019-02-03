@@ -80,8 +80,10 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration baseStatsYAML;
   private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
   private VersionedSmartYamlConfiguration equipmentYAML;
+  private VersionedSmartYamlConfiguration conditionYAML;
   private VersionedSmartYamlConfiguration effectYAML;
   private VersionedSmartYamlConfiguration abilityYAML;
+  private VersionedSmartYamlConfiguration loreAbilityYAML;
   private SmartYamlConfiguration spawnerYAML;
 
   private AttributeUpdateManager attributeUpdateManager;
@@ -104,6 +106,7 @@ public class StrifePlugin extends FacePlugin {
   private EntityEquipmentManager equipmentManager;
   private EffectManager effectManager;
   private AbilityManager abilityManager;
+  private LoreAbilityManager loreAbilityManager;
   private SpawnerManager spawnerManager;
   private MultiplierManager multiplierManager;
 
@@ -160,10 +163,14 @@ public class StrifePlugin extends FacePlugin {
         VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     equipmentYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "equipment.yml"),
         getResource("equipment.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+    conditionYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "conditions.yml"),
+        getResource("conditions.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     effectYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "effects.yml"),
         getResource("effects.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     abilityYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "abilities.yml"),
         getResource("abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+    loreAbilityYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "lore-abilities.yml"),
+        getResource("lore-abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
     if (configYAML.update()) {
@@ -201,7 +208,6 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager = new BossBarManager(this);
     equipmentManager = new EntityEquipmentManager();
     effectManager = new EffectManager();
-    abilityManager = new AbilityManager(effectManager, uniqueEntityManager);
     attackSpeedManager = new AttackSpeedManager();
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     multiplierManager = new MultiplierManager();
@@ -213,6 +219,8 @@ public class StrifePlugin extends FacePlugin {
     fishExperienceManager = new FishExperienceManager(this);
     miningExperienceManager = new MiningExperienceManager(this);
     entityStatCache = new EntityStatCache(championManager, barrierManager, monsterManager);
+    abilityManager = new AbilityManager(this);
+    loreAbilityManager = new LoreAbilityManager(abilityManager);
     commandHandler = new CommandHandler(this);
 
     MenuListener.getInstance().register(this);
@@ -228,8 +236,10 @@ public class StrifePlugin extends FacePlugin {
     buildLevelpointStats();
     buildBaseStats();
 
+    buildConditions();
     buildEffects();
     buildAbilities();
+    buildLoreAbilities();
 
     buildUniqueEnemies();
     loadSpawners();
@@ -486,6 +496,29 @@ public class StrifePlugin extends FacePlugin {
       effectManager.loadEffect(key, cs);
     }
     LogUtil.printDebug("Loaded effects: " + effectManager.getLoadedEffects().entrySet().toString());
+  }
+
+  private void buildConditions() {
+    for (String key : conditionYAML.getKeys(false)) {
+      if (!conditionYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = conditionYAML.getConfigurationSection(key);
+      effectManager.loadCondition(key, cs);
+    }
+    LogUtil.printDebug("Loaded conditions: " + effectManager.getConditions().entrySet().toString());
+  }
+
+  private void buildLoreAbilities() {
+    for (String key : loreAbilityYAML.getKeys(false)) {
+      if (!loreAbilityYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = loreAbilityYAML.getConfigurationSection(key);
+      loreAbilityManager.loadLoreAbility(key, cs);
+    }
+    LogUtil.printDebug("Loaded lore abilities: " +
+        loreAbilityManager.getLoreAbilityMap().entrySet().toString());
   }
 
   private void buildEquipment() {

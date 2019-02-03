@@ -8,6 +8,7 @@ import info.faceland.strife.data.Ability.TargetType;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.Wait;
 import info.faceland.strife.util.LogUtil;
@@ -32,20 +33,16 @@ import org.bukkit.entity.Player;
 
 public class AbilityManager {
 
-  private final EffectManager effectManager;
-  private final UniqueEntityManager uniqueEntityManager;
-  private final Map<String, Ability> loadedAbilities;
-  private final Set<Material> ignoredMaterials;
+  private final StrifePlugin plugin;
+  private final Map<String, Ability> loadedAbilities = new HashMap<>();
+  private final Set<Material> ignoredMaterials = new HashSet<>();
 
   private static final String ON_COOLDOWN = TextUtils.color("&f&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
   private static final String TEST_CHICKEN = ChatColor.RED + "TEST CHICKEN PLS IGNORE";
 
-  public AbilityManager(EffectManager effectManager, UniqueEntityManager uniqueEntityManager) {
-    this.effectManager = effectManager;
-    this.uniqueEntityManager = uniqueEntityManager;
-    this.loadedAbilities = new HashMap<>();
-    this.ignoredMaterials = new HashSet<>();
+  public AbilityManager(StrifePlugin plugin) {
+    this.plugin = plugin;
     this.ignoredMaterials.add(Material.AIR);
     this.ignoredMaterials.add(Material.LONG_GRASS);
     this.ignoredMaterials.add(Material.WALL_SIGN);
@@ -65,25 +62,25 @@ public class AbilityManager {
   }
 
   private void execute(Ability ability, final AttributedEntity caster) {
-    LogUtil
-        .printDebug(caster.getEntity().getCustomName() + " is casting ability: " + ability.getId());
-    if (!uniqueEntityManager.getData(caster.getEntity()).isCooledDown(ability)) {
+    LogUtil.printDebug(caster.getEntity().getCustomName() + " is casting: " + ability.getId());
+    if (!plugin.getUniqueEntityManager().getData(caster.getEntity()).isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
-      if (caster instanceof Player) {
+      if (caster.getEntity() instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN, (Player) caster);
       }
       return;
     }
-    LivingEntity target = getTarget(caster, ability);
-    if (target == null) {
+    LivingEntity targetEntity = getTarget(caster, ability);
+    if (targetEntity == null) {
       if (caster instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET, (Player) caster);
       }
       LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
       return;
     }
-    LogUtil.printDebug("Target: " + target.getName() + " | " + target.getCustomName());
-    uniqueEntityManager.getData(caster.getEntity()).setCooldown(ability);
+    AttributedEntity target = plugin.getEntityStatCache().getAttributedEntity(targetEntity);
+    LogUtil.printDebug("Target: " + targetEntity.getName() + " | " + targetEntity.getCustomName());
+    plugin.getUniqueEntityManager().getData(caster.getEntity()).setCooldown(ability);
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
@@ -98,17 +95,17 @@ public class AbilityManager {
       LogUtil.printDebug("Added effect " + effect.getName() + " to task list");
     }
     runEffects(caster, target, taskEffects, waitTicks);
-    if (TEST_CHICKEN.equals(target.getCustomName())) {
-      target.remove();
+    if (TEST_CHICKEN.equals(targetEntity.getCustomName())) {
+      targetEntity.remove();
     }
   }
 
   public void uniqueAbilityCast(AttributedEntity caster, AbilityType type) {
-    EntityAbilitySet abilitySet = uniqueEntityManager.getAbilitySet(caster.getEntity());
+    EntityAbilitySet abilitySet = plugin.getUniqueEntityManager().getAbilitySet(caster.getEntity());
     if (abilitySet == null) {
       return;
     }
-    int phase = uniqueEntityManager.getPhase(caster.getEntity());
+    int phase = plugin.getUniqueEntityManager().getPhase(caster.getEntity());
     switch (type) {
       case ON_HIT:
         abilityPhaseCast(caster, abilitySet.getOnHitAbilities(), phase);
@@ -128,12 +125,12 @@ public class AbilityManager {
   public void checkPhaseChange(AttributedEntity attributedEntity) {
     LogUtil.printDebug("Checking phase switch");
     LivingEntity livingEntity = attributedEntity.getEntity();
-    int currentPhase = uniqueEntityManager.getPhase(attributedEntity.getEntity());
+    int currentPhase = plugin.getUniqueEntityManager().getPhase(attributedEntity.getEntity());
     int newPhase =
         6 - (int) Math.ceil((livingEntity.getHealth() / livingEntity.getMaxHealth()) / 0.2);
     LogUtil.printDebug("currentPhase: " + currentPhase + " | newPhase: " + newPhase);
     if (newPhase > currentPhase) {
-      uniqueEntityManager.getLiveUniquesMap().get(livingEntity).setPhase(newPhase);
+      plugin.getUniqueEntityManager().getLiveUniquesMap().get(livingEntity).setPhase(newPhase);
       uniqueAbilityCast(attributedEntity, AbilityType.PHASE_SHIFT);
     }
   }
@@ -159,22 +156,19 @@ public class AbilityManager {
     }
   }
 
-  private void runEffects(AttributedEntity caster, LivingEntity target, List<Effect> effectList,
+  private void runEffects(AttributedEntity caster, AttributedEntity target, List<Effect> effectList,
       int delay) {
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), new Runnable() {
-      @Override
-      public void run() {
-        LogUtil.printDebug("Effect task started - " + effectList.toString());
-        if (!caster.getEntity().isValid()) {
-          LogUtil.printDebug("Task cancelled, caster is dead");
-          return;
-        }
-        for (Effect effect : effectList) {
-          LogUtil.printDebug("Executing effect " + effect.getName());
-          effect.execute(caster, target);
-        }
-        LogUtil.printDebug("Completed effect task.");
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      LogUtil.printDebug("Effect task started - " + effectList.toString());
+      if (!caster.getEntity().isValid()) {
+        LogUtil.printDebug("Task cancelled, caster is dead");
+        return;
       }
+      for (Effect effect : effectList) {
+        LogUtil.printDebug("Executing effect " + effect.getName());
+        effect.execute(caster, target);
+      }
+      LogUtil.printDebug("Completed effect task.");
     }, delay);
   }
 
@@ -258,7 +252,7 @@ public class AbilityManager {
     }
     List<Effect> effects = new ArrayList<>();
     for (String s : effectStrings) {
-      Effect effect = effectManager.getEffect(s);
+      Effect effect = plugin.getEffectManager().getEffect(s);
       if (effect == null) {
         LogUtil.printWarning("Ability " + key + " tried to add unknown effect" + s);
         continue;

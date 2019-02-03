@@ -11,4 +11,17 @@ public interface Condition {
     LESS_THAN,
     EQUAL
   }
+
+  enum ConditionType {
+    ATTRIBUTE,
+    STAT,
+    HEALTH,
+    BARRIER,
+    HEALTH_PERCENT,
+    BARRIER_PERCENT,
+    POTION_EFFECT,
+    LEVEL,
+    BONUS_LEVEL,
+    ITS_OVER_ANAKIN
+  }
 }

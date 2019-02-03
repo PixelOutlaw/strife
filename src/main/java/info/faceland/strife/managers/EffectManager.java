@@ -1,8 +1,11 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.condition.AttributeCondition;
 import info.faceland.strife.data.condition.Condition;
+import info.faceland.strife.data.condition.Condition.Comparison;
+import info.faceland.strife.data.condition.Condition.ConditionType;
 import info.faceland.strife.data.effects.Bleed;
 import info.faceland.strife.data.effects.DealDamage;
 import info.faceland.strife.data.effects.DealDamage.DamageScale;
@@ -22,7 +25,6 @@ import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -31,11 +33,11 @@ import org.bukkit.potion.PotionEffectType;
 public class EffectManager {
 
   private final Map<String, Effect> loadedEffects;
-  private final Map<String, Effect> loreEffects;
+  private final Map<String, Condition> conditions;
 
   public EffectManager() {
     this.loadedEffects = new HashMap<>();
-    this.loreEffects = new HashMap<>();
+    this.conditions = new HashMap<>();
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -171,13 +173,44 @@ public class EffectManager {
     LogUtil.printInfo("Loaded effect " + key + " successfully.");
   }
 
-  public boolean areConditionsMet(AttributedEntity caster, AttributedEntity target, Effect effect) {
-    for (Entry<Condition, Double> entry : effect.getConditions().entrySet()) {
-      if (!entry.getKey().isMet(caster, target)) {
-        return false;
-      }
+  public void loadCondition(String key, ConfigurationSection cs) {
+    String type = cs.getString("comparison-type", "NULL").toUpperCase();
+
+    Comparison comparison;
+    try {
+      comparison = Comparison.valueOf(type);
+    } catch (Exception e) {
+      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + type + ")");
+      return;
     }
-    return true;
+
+    ConditionType conditionType;
+    try {
+      conditionType = ConditionType.valueOf(type);
+    } catch (Exception e) {
+      LogUtil.printError("Failed to load " + key + ". Invalid condition type (" + type + ")");
+      return;
+    }
+
+    Condition condition;
+    switch (conditionType) {
+      case ATTRIBUTE:
+        StrifeAttribute attr;
+        try {
+          attr = StrifeAttribute.valueOf(cs.getString("attribute", null));
+        } catch (Exception e) {
+          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute...");
+          return;
+        }
+        double value = cs.getDouble("value");
+        condition = new AttributeCondition(attr, comparison, value);
+        break;
+      default:
+        LogUtil.printError("No valid condition found for " + key + "... somehow?");
+        return;
+    }
+    conditions.put(key, condition);
+    LogUtil.printInfo("Loaded condition " + key + " successfully.");
   }
 
   public Effect getEffect(String key) {
@@ -189,20 +222,12 @@ public class EffectManager {
     return null;
   }
 
-  public void addLoreEffect(String loreString, String effectId) {
-    if (!loadedEffects.containsKey(effectId)) {
-      LogUtil.printWarning("No effectId '" + effectId + "' found.");
-      return;
-    }
-    loreEffects.put(loreString, loadedEffects.get(effectId));
-  }
-
   public Map<String, Effect> getLoadedEffects() {
     return loadedEffects;
   }
 
-  public Effect getLoreEffect(String loreString) {
-    return loreEffects.getOrDefault(loreString, null);
+  public Map<String, Condition> getConditions() {
+    return conditions;
   }
 
   public enum EffectType {

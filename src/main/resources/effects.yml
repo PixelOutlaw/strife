@@ -7,6 +7,9 @@ smol-bol-blast:
   spread: 1
   speed: 2
   name: "&7blastem"
+  conditions:
+  - melee-damage-under-10
+  - smart-bois-only
 deal-10-damage:
   type: DAMAGE
   scale: FLAT

@@ -16,32 +16,27 @@ import org.bukkit.entity.LivingEntity;
 
 public class Effect {
 
-  final EntityStatCache entityStatCache;
-
+  private static final EntityStatCache entityStatCache = StrifePlugin.getInstance().getEntityStatCache();
   private String name;
   private boolean selfAffect;
   private boolean friendly;
   private double range;
   final Map<StrifeAttribute, Double> statMults = new HashMap<>();
-  private final Map<Condition, Double> conditions = new HashMap<>();
+  private final List<Condition> conditions = new ArrayList<>();
 
-  public Effect() {
-    this.entityStatCache = StrifePlugin.getInstance().getEntityStatCache();
-  }
-
-  public void execute(AttributedEntity caster, LivingEntity target) {
+  public void execute(AttributedEntity caster, AttributedEntity target) {
     if (range < 1) {
-      LogUtil.printDebug("Applying effect to " + target.getCustomName());
+      LogUtil.printDebug("Applying effect to " + target.getEntity().getCustomName());
       apply(caster, target);
       return;
     }
-    for (LivingEntity le : getTargets(caster.getEntity(), target)) {
+    for (LivingEntity le : getTargets(caster.getEntity(), target.getEntity())) {
       LogUtil.printDebug("Applying effect to " + le.getCustomName());
-      apply(caster, le);
+      apply(caster, entityStatCache.getAttributedEntity(le));
     }
   }
 
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
 
   }
 
@@ -105,14 +100,5 @@ public class Effect {
   public void setStatMults(Map<StrifeAttribute, Double> statMults) {
     this.statMults.clear();
     this.statMults.putAll(statMults);
-  }
-
-  public Map<Condition, Double> getConditions() {
-    return conditions;
-  }
-
-  public void setConditions(Map<Condition, Double> conditions) {
-    this.conditions.clear();
-    this.conditions.putAll(conditions);
   }
 }

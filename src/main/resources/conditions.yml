@@ -1,0 +1,12 @@
+version: 0.0.1
+
+melee-damage-under-10:
+  type: ATTRIBUTE
+  comparison: LESS_THAN
+  value: 10
+  attribute: MELEE_DAMAGE
+smart-bois-only:
+  type: ATTRIBUTE
+  comparison: GREATER_THAN
+  value: 30
+  stat: int
