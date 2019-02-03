@@ -4,6 +4,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityStatCache;
+import info.faceland.strife.data.condition.Condition;
 import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 
@@ -21,7 +22,8 @@ public class Effect {
   private boolean selfAffect;
   private boolean friendly;
   private double range;
-  Map<StrifeAttribute, Double> statMults = new HashMap<>();
+  final Map<StrifeAttribute, Double> statMults = new HashMap<>();
+  private final Map<Condition, Double> conditions = new HashMap<>();
 
   public Effect() {
     this.entityStatCache = StrifePlugin.getInstance().getEntityStatCache();
@@ -101,6 +103,16 @@ public class Effect {
   }
 
   public void setStatMults(Map<StrifeAttribute, Double> statMults) {
-    this.statMults = statMults;
+    this.statMults.clear();
+    this.statMults.putAll(statMults);
+  }
+
+  public Map<Condition, Double> getConditions() {
+    return conditions;
+  }
+
+  public void setConditions(Map<Condition, Double> conditions) {
+    this.conditions.clear();
+    this.conditions.putAll(conditions);
   }
 }

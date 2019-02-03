@@ -1,6 +1,8 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.condition.Condition;
 import info.faceland.strife.data.effects.Bleed;
 import info.faceland.strife.data.effects.DealDamage;
 import info.faceland.strife.data.effects.DealDamage.DamageScale;
@@ -20,6 +22,7 @@ import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -28,9 +31,11 @@ import org.bukkit.potion.PotionEffectType;
 public class EffectManager {
 
   private final Map<String, Effect> loadedEffects;
+  private final Map<String, Effect> loreEffects;
 
   public EffectManager() {
     this.loadedEffects = new HashMap<>();
+    this.loreEffects = new HashMap<>();
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -166,6 +171,15 @@ public class EffectManager {
     LogUtil.printInfo("Loaded effect " + key + " successfully.");
   }
 
+  public boolean areConditionsMet(AttributedEntity caster, AttributedEntity target, Effect effect) {
+    for (Entry<Condition, Double> entry : effect.getConditions().entrySet()) {
+      if (!entry.getKey().isMet(caster, target)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public Effect getEffect(String key) {
     if (loadedEffects.containsKey(key)) {
       LogUtil.printDebug("Attempting to load effect " + key);
@@ -175,8 +189,20 @@ public class EffectManager {
     return null;
   }
 
+  public void addLoreEffect(String loreString, String effectId) {
+    if (!loadedEffects.containsKey(effectId)) {
+      LogUtil.printWarning("No effectId '" + effectId + "' found.");
+      return;
+    }
+    loreEffects.put(loreString, loadedEffects.get(effectId));
+  }
+
   public Map<String, Effect> getLoadedEffects() {
     return loadedEffects;
+  }
+
+  public Effect getLoreEffect(String loreString) {
+    return loreEffects.getOrDefault(loreString, null);
   }
 
   public enum EffectType {
