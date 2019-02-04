@@ -40,35 +40,11 @@ public class StrifeStatManager {
   }
 
   public StrifeStat getStat(String name) {
-    if (statMap.containsKey(name)) {
-      return statMap.get(name);
-    }
-    return null;
-  }
-
-  public void addStat(StrifeStat stat) {
-    if (!statMap.containsKey(stat.getKey())) {
-      statMap.put(stat.getKey(), stat);
-    }
-  }
-
-  public void removeStat(String key) {
-    if (statMap.containsKey(key)) {
-      statMap.remove(key);
-    }
+    return statMap.getOrDefault(name, null);
   }
 
   public List<StrifeStat> getStats() {
     return new ArrayList<>(statMap.values());
-  }
-
-  public StrifeStat getStatByName(String name) {
-    for (StrifeStat stat : statMap.values()) {
-      if (stat.getKey().equalsIgnoreCase(name) || stat.getName().equalsIgnoreCase(name)) {
-        return stat;
-      }
-    }
-    return null;
   }
 
   public int getStatCap(StrifeStat stat, Champion champion) {
@@ -187,6 +163,6 @@ public class StrifeStatManager {
     stat.setStatIncreaseIncrements(raiseStatCapAttributes);
     stat.setBaseStatRequirements(baseStatRequirements);
     stat.setAttributeMap(attributeMap);
-    addStat(stat);
+    statMap.put(stat.getKey(), stat);
   }
 }
