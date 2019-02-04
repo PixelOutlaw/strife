@@ -3,10 +3,18 @@ version: 0.0.1
 melee-damage-under-10:
   type: ATTRIBUTE
   comparison: LESS_THAN
+  target: SELF
   value: 10
   attribute: MELEE_DAMAGE
 smart-bois-only:
   type: ATTRIBUTE
   comparison: GREATER_THAN
+  target: SELF
+  value: 30
+  stat: int
+smart-bois-only2:
+  type: ATTRIBUTE
+  comparison: GREATER_THAN
+  target: OTHER
   value: 30
   stat: int

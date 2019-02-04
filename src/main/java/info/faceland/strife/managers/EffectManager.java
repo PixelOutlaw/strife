@@ -2,25 +2,13 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.condition.AttributeCondition;
-import info.faceland.strife.data.condition.Condition;
+import info.faceland.strife.data.condition.*;
+import info.faceland.strife.data.condition.Condition.CompareTarget;
 import info.faceland.strife.data.condition.Condition.Comparison;
 import info.faceland.strife.data.condition.Condition.ConditionType;
-import info.faceland.strife.data.effects.Bleed;
-import info.faceland.strife.data.effects.DealDamage;
+import info.faceland.strife.data.effects.*;
 import info.faceland.strife.data.effects.DealDamage.DamageScale;
-import info.faceland.strife.data.effects.Effect;
-import info.faceland.strife.data.effects.ForceTarget;
-import info.faceland.strife.data.effects.Heal;
-import info.faceland.strife.data.effects.Ignite;
-import info.faceland.strife.data.effects.Knockback;
-import info.faceland.strife.data.effects.Leap;
-import info.faceland.strife.data.effects.PotionEffectAction;
-import info.faceland.strife.data.effects.ShootProjectile;
-import info.faceland.strife.data.effects.SpawnParticle;
-import info.faceland.strife.data.effects.Speak;
-import info.faceland.strife.data.effects.Summon;
-import info.faceland.strife.data.effects.Wait;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
@@ -32,10 +20,12 @@ import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
 
+  private final StrifeStatManager strifeStatManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  public EffectManager() {
+  public EffectManager(StrifeStatManager strifeStatManager) {
+    this.strifeStatManager = strifeStatManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
   }
@@ -174,16 +164,17 @@ public class EffectManager {
   }
 
   public void loadCondition(String key, ConfigurationSection cs) {
-    String type = cs.getString("comparison-type", "NULL").toUpperCase();
 
+    String compType = cs.getString("comparison", "NULL").toUpperCase();
     Comparison comparison;
     try {
-      comparison = Comparison.valueOf(type);
+      comparison = Comparison.valueOf(compType);
     } catch (Exception e) {
-      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + type + ")");
+      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + compType + ")");
       return;
     }
 
+    String type = cs.getString("type", "NULL").toUpperCase();
     ConditionType conditionType;
     try {
       conditionType = ConditionType.valueOf(type);
@@ -192,6 +183,12 @@ public class EffectManager {
       return;
     }
 
+    String compareTargetString = cs.getString("target", "SELF");
+    CompareTarget compareTarget =
+        compareTargetString.equalsIgnoreCase("SELF") ? CompareTarget.SELF : CompareTarget.OTHER;
+
+    double value = cs.getDouble("value", 0);
+
     Condition condition;
     switch (conditionType) {
       case ATTRIBUTE:
@@ -199,11 +196,46 @@ public class EffectManager {
         try {
           attr = StrifeAttribute.valueOf(cs.getString("attribute", null));
         } catch (Exception e) {
-          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute...");
+          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
           return;
         }
-        double value = cs.getDouble("value");
-        condition = new AttributeCondition(attr, comparison, value);
+        condition = new AttributeCondition(attr, compareTarget, comparison, value);
+        break;
+      case STAT:
+        StrifeStat stat = strifeStatManager.getStat(cs.getString("stat", null));
+        if (stat == null) {
+          LogUtil.printError("Failed to load condition " + key + ". Invalid stat.");
+          return;
+        }
+        condition = new StatCondition(stat, compareTarget, comparison, value);
+        break;
+      case BARRIER:
+        boolean percent = cs.getBoolean("percentage", false);
+        condition = new BarrierCondition(compareTarget, comparison, value, percent);
+        break;
+      case HEALTH:
+        boolean percent2 = cs.getBoolean("percentage", false);
+        condition = new HealthCondition(compareTarget, comparison, value, percent2);
+        break;
+      case POTION_EFFECT:
+        PotionEffectType potionEffectType;
+        try {
+          potionEffectType = PotionEffectType.getByName(cs.getString("potion-effect", "p"));
+        } catch (Exception e) {
+          LogUtil.printError("Failed to load " + key + ". Invalid condition type (" + type + ")");
+          return;
+        }
+        int potionIntensity = cs.getInt("intensity", 0);
+        condition = new PotionCondition(potionEffectType, compareTarget, comparison, potionIntensity);
+        break;
+      case LEVEL:
+        condition = new LevelCondition(comparison, (int) value);
+        break;
+      case BONUS_LEVEL:
+        condition = new BonusLevelCondition(comparison, (int) value);
+        break;
+      case ITS_OVER_ANAKIN:
+        condition = new HeightCondition(compareTarget);
         break;
       default:
         LogUtil.printError("No valid condition found for " + key + "... somehow?");
