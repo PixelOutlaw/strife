@@ -12,13 +12,16 @@ public interface Condition {
     EQUAL
   }
 
+  enum CompareTarget {
+    SELF,
+    OTHER
+  }
+
   enum ConditionType {
     ATTRIBUTE,
     STAT,
     HEALTH,
     BARRIER,
-    HEALTH_PERCENT,
-    BARRIER_PERCENT,
     POTION_EFFECT,
     LEVEL,
     BONUS_LEVEL,

@@ -2,31 +2,31 @@ package info.faceland.strife.data.condition;
 
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.PlayerDataUtil;
 
 public class StatCondition implements Condition {
 
-  private StrifeStat strifeStat;
-  private Comparison comparison;
-  private double value;
+  private final StrifeStat strifeStat;
+  private final CompareTarget compareTarget;
+  private final Comparison comparison;
+  private final double value;
 
-  public StatCondition(StrifeStat strifeStat, Comparison comparison, double value) {
+  public StatCondition(StrifeStat strifeStat, CompareTarget compareTarget, Comparison comparison,
+      double value) {
     this.strifeStat = strifeStat;
+    this.compareTarget = compareTarget;
     this.comparison = comparison;
     this.value = value;
   }
 
   public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
-    if (attacker.getChampion() == null) {
+    if (compareTarget == CompareTarget.SELF && attacker.getChampion() == null ||
+        compareTarget == CompareTarget.OTHER && target.getChampion() == null) {
       return false;
     }
-    switch (comparison) {
-      case GREATER_THAN:
-        return attacker.getChampion().getLevelMap().getOrDefault(strifeStat, 0) > value;
-      case LESS_THAN:
-        return attacker.getChampion().getLevelMap().getOrDefault(strifeStat, 0) < value;
-      case EQUAL:
-        return attacker.getChampion().getLevelMap().getOrDefault(strifeStat, 0) == value;
-    }
-    return false;
+    int statValue =
+        compareTarget == CompareTarget.SELF ? attacker.getChampion().getLevelMap().get(strifeStat)
+            : target.getChampion().getLevelMap().get(strifeStat);
+    return PlayerDataUtil.conditionCompare(comparison, statValue, value);
   }
 }
