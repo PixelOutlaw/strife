@@ -63,6 +63,11 @@ public class BarrierManager {
     return barrierMap.containsKey(uuid) && barrierMap.get(uuid) > 0;
   }
 
+  public double getCurrentBarrier(AttributedEntity attributedEntity) {
+    createBarrierEntry(attributedEntity);
+    return barrierMap.getOrDefault(attributedEntity.getEntity().getUniqueId(), 0D);
+  }
+
   public void setEntityBarrier(UUID uuid, double amount) {
     barrierMap.put(uuid, amount);
   }
