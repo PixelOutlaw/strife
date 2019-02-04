@@ -1,6 +1,7 @@
 package info.faceland.strife.util;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.condition.Condition.Comparison;
 import org.bukkit.entity.Player;
 
 public class PlayerDataUtil {
@@ -88,6 +89,19 @@ public class PlayerDataUtil {
   public static void updatePlayerEquipment(Player player) {
     StrifePlugin.getInstance().getChampionManager().updateEquipmentAttributes(
         StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId()));
+  }
+
+  // TODO: Something less stupid, this shouldn't be in this Util
+  public static boolean conditionCompare(Comparison comparison, double val1, double val2) {
+    switch (comparison) {
+      case GREATER_THAN:
+        return val1 > val2;
+      case LESS_THAN:
+        return val1 < val2;
+      case EQUAL:
+        return val1 == val2;
+    }
+    return false;
   }
 
   // TODO: Something better with the crap below here...
