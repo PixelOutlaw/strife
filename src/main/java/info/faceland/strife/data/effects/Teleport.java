@@ -11,11 +11,11 @@ public class Teleport extends Effect {
   private boolean relative;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     if (relative) {
-      target.getLocation().add(vector);
+      target.getEntity().getLocation().add(vector);
     } else {
-      target.teleport(
+      target.getEntity().teleport(
           new Location(caster.getEntity().getWorld(), vector.getX(), vector.getY(), vector.getZ()));
     }
   }

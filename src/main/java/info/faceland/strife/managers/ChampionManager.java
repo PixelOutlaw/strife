@@ -29,9 +29,12 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.PlayerEquipmentCache;
+import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemUtil;
+import java.util.Map.Entry;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -131,6 +134,7 @@ public class ChampionManager {
   private void buildEquipmentAttributes(Champion champion) {
     EntityEquipment equipment = champion.getPlayer().getEquipment();
     PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
+    List<LoreAbility> loreAbilities = new ArrayList<>();
 
     boolean recombine = false;
     if (!doesHashMatch(equipment.getItemInMainHand(), equipmentCache.getMainHandHash()) ||
@@ -141,11 +145,15 @@ public class ChampionManager {
       } else {
         equipmentCache.setMainhandStats(
             plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInMainHand()));
+        loreAbilities.addAll(
+            plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getItemInMainHand()));
       }
       double offhandStatMultiplier = ItemUtil
           .getDualWieldEfficiency(equipment.getItemInMainHand(), equipment.getItemInOffHand());
       equipmentCache.setOffhandStats(plugin.getAttributeUpdateManager().getItemStats(
           equipment.getItemInOffHand(), offhandStatMultiplier));
+      loreAbilities.addAll(
+          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getItemInMainHand()));
 
       removeAttributes(equipment.getItemInMainHand());
       removeAttributes(equipment.getItemInOffHand());
@@ -157,6 +165,8 @@ public class ChampionManager {
     if (!doesHashMatch(equipment.getHelmet(), equipmentCache.getHelmetHash())) {
       equipmentCache.setHelmetStats(
           plugin.getAttributeUpdateManager().getItemStats(equipment.getHelmet()));
+      loreAbilities.addAll(
+          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getHelmet()));
       removeAttributes(equipment.getHelmet());
       equipmentCache.setHelmetHash(hashItem(equipment.getHelmet()));
       recombine = true;
@@ -164,6 +174,8 @@ public class ChampionManager {
     if (!doesHashMatch(equipment.getChestplate(), equipmentCache.getChestHash())) {
       equipmentCache.setChestplateStats(
           plugin.getAttributeUpdateManager().getItemStats(equipment.getChestplate()));
+      loreAbilities.addAll(
+          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getChestplate()));
       removeAttributes(equipment.getChestplate());
       equipmentCache.setChestHash(hashItem(equipment.getChestplate()));
       recombine = true;
@@ -171,7 +183,8 @@ public class ChampionManager {
     if (!doesHashMatch(equipment.getLeggings(), equipmentCache.getLegsHash())) {
       equipmentCache.setLeggingsStats(
           plugin.getAttributeUpdateManager().getItemStats(equipment.getLeggings()));
-
+      loreAbilities.addAll(
+          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getLeggings()));
       removeAttributes(equipment.getLeggings());
       equipmentCache.setLegsHash(hashItem(equipment.getLeggings()));
       recombine = true;
@@ -179,7 +192,8 @@ public class ChampionManager {
     if (!doesHashMatch(equipment.getBoots(), equipmentCache.getBootsHash())) {
       equipmentCache.setBootsStats(
           plugin.getAttributeUpdateManager().getItemStats(equipment.getBoots()));
-
+      loreAbilities.addAll(
+          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getBoots()));
       removeAttributes(equipment.getBoots());
       equipmentCache.setBootsHash(hashItem(equipment.getBoots()));
       recombine = true;
@@ -216,6 +230,7 @@ public class ChampionManager {
         sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
         equipmentCache.getBootsStats().clear();
       }
+      updateLoreAbilities(champion, loreAbilities);
       equipmentCache.recombine();
     }
   }
@@ -246,6 +261,15 @@ public class ChampionManager {
   private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
     plugin.getEntityStatCache().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
+  }
+
+  private void updateLoreAbilities(Champion champion, List<LoreAbility> loreAbilities) {
+    for (Entry<TriggerType, List<LoreAbility>> entry : champion.getLoreAbilities().entrySet()) {
+      entry.getValue().clear();
+    }
+    for (LoreAbility la : loreAbilities) {
+      champion.getLoreAbilities().get(la.getTriggerType()).add(la);
+    }
   }
 
   private static void removeAttributes(ItemStack item) {

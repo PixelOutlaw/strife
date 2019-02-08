@@ -10,9 +10,9 @@ public class Knockback extends Effect {
   private double power;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
-    target.setVelocity(
-        target.getVelocity().add(getVelocity(caster.getEntity(), target).multiply(power)));
+  public void apply(AttributedEntity caster, AttributedEntity target) {
+    target.getEntity().setVelocity(target.getEntity().getVelocity()
+        .add(getVelocity(caster.getEntity(), target.getEntity()).multiply(power)));
   }
 
   private Vector getVelocity(Entity from, Entity to) {

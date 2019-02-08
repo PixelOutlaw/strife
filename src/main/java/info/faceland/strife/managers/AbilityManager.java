@@ -61,7 +61,8 @@ public class AbilityManager {
     return loadedAbilities;
   }
 
-  private void execute(Ability ability, final AttributedEntity caster) {
+  public void execute(final Ability ability, final AttributedEntity caster,
+      AttributedEntity target) {
     LogUtil.printDebug(caster.getEntity().getCustomName() + " is casting: " + ability.getId());
     if (!plugin.getUniqueEntityManager().getData(caster.getEntity()).isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
@@ -70,15 +71,20 @@ public class AbilityManager {
       }
       return;
     }
-    LivingEntity targetEntity = getTarget(caster, ability);
-    if (targetEntity == null) {
-      if (caster instanceof Player) {
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET, (Player) caster);
+    LivingEntity targetEntity;
+    if (target == null) {
+      targetEntity = getTarget(caster, ability);
+      if (targetEntity == null) {
+        if (caster instanceof Player) {
+          ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET, (Player) caster);
+        }
+        LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
+        return;
       }
-      LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
-      return;
+      target = plugin.getEntityStatCache().getAttributedEntity(targetEntity);
+    } else {
+      targetEntity = target.getEntity();
     }
-    AttributedEntity target = plugin.getEntityStatCache().getAttributedEntity(targetEntity);
     LogUtil.printDebug("Target: " + targetEntity.getName() + " | " + targetEntity.getCustomName());
     plugin.getUniqueEntityManager().getData(caster.getEntity()).setCooldown(ability);
     List<Effect> taskEffects = new ArrayList<>();
@@ -98,6 +104,10 @@ public class AbilityManager {
     if (TEST_CHICKEN.equals(targetEntity.getCustomName())) {
       targetEntity.remove();
     }
+  }
+
+  public void execute(Ability ability, final AttributedEntity caster) {
+    execute(ability, caster, null);
   }
 
   public void uniqueAbilityCast(AttributedEntity caster, AbilityType type) {

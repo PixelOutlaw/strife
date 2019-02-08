@@ -76,7 +76,7 @@ public class UniqueSplashListener implements Listener {
         if (StringUtils.isBlank(s)) {
           continue;
         }
-        effectManager.getEffect(s).apply(attacker, defendEntity);
+        effectManager.getEffect(s).apply(attacker, defender);
       }
     }
   }

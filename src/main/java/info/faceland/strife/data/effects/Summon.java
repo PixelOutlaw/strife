@@ -10,12 +10,12 @@ public class Summon extends Effect {
   private int amount;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     for (int i = 0; i < amount; i++) {
       StrifePlugin.getInstance().getUniqueEntityManager()
           .spawnUnique(uniqueEntity, caster.getEntity().getLocation());
       StrifePlugin.getInstance().getUniqueEntityManager().getLiveUniquesMap()
-          .get(target).setMaster(caster.getEntity());
+          .get(target.getEntity()).setMaster(caster.getEntity());
     }
   }
 

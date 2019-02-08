@@ -12,9 +12,9 @@ public class Speak extends Effect {
 	private List<String> messages;
 	
 	@Override
-	public void apply(AttributedEntity caster, LivingEntity target) {
-		if (target instanceof Player) {
-			MessageUtils.sendMessage(target,
+	public void apply(AttributedEntity caster, AttributedEntity target) {
+		if (target.getEntity() instanceof Player) {
+			MessageUtils.sendMessage(target.getEntity(),
 					messages.get(ThreadLocalRandom.current().nextInt(messages.size())));
 		}
 	}

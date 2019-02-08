@@ -4,7 +4,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityStatCache;
-import info.faceland.strife.data.condition.Condition;
 import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 
@@ -22,7 +21,6 @@ public class Effect {
   private boolean friendly;
   private double range;
   final Map<StrifeAttribute, Double> statMults = new HashMap<>();
-  private final List<Condition> conditions = new ArrayList<>();
 
   public void execute(AttributedEntity caster, AttributedEntity target) {
     if (range < 1) {

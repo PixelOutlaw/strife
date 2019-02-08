@@ -169,8 +169,10 @@ public class StrifePlugin extends FacePlugin {
         getResource("effects.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     abilityYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "abilities.yml"),
         getResource("abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    loreAbilityYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "lore-abilities.yml"),
-        getResource("lore-abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+    loreAbilityYAML = new VersionedSmartYamlConfiguration(
+        new File(getDataFolder(), "lore-abilities.yml"),
+        getResource("lore-abilities.yml"),
+        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
     if (configYAML.update()) {
@@ -207,7 +209,7 @@ public class StrifePlugin extends FacePlugin {
     uniqueEntityManager = new UniqueEntityManager(this);
     bossBarManager = new BossBarManager(this);
     equipmentManager = new EntityEquipmentManager();
-    effectManager = new EffectManager();
+    effectManager = new EffectManager(statManager);
     attackSpeedManager = new AttackSpeedManager();
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     multiplierManager = new MultiplierManager();
@@ -384,6 +386,9 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new TargetingListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(entityStatCache), this);
+    Bukkit.getPluginManager()
+        .registerEvents(new LoreAbilityListener(entityStatCache, abilityManager, championManager),
+            this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
@@ -794,6 +799,10 @@ public class StrifePlugin extends FacePlugin {
 
   public StrifeExperienceManager getExperienceManager() {
     return experienceManager;
+  }
+
+  public LoreAbilityManager getLoreAbilityManager() {
+    return loreAbilityManager;
   }
 
   public void debug(Level level, String... messages) {

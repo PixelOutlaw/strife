@@ -10,7 +10,7 @@ public class Leap extends Effect {
   private double forward;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     caster.getEntity().setVelocity(caster.getEntity().getVelocity().add(new Vector(0, height, 0)
         .add(caster.getEntity().getEyeLocation().getDirection().multiply(forward))));
   }

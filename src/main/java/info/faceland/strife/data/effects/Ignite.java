@@ -8,8 +8,8 @@ public class Ignite extends Effect {
   private int duration = 0;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
-    target.setFireTicks(Math.max(duration, target.getFireTicks()));
+  public void apply(AttributedEntity caster, AttributedEntity target) {
+    target.getEntity().setFireTicks(Math.max(duration, target.getEntity().getFireTicks()));
   }
 
   public int getDuration() {

@@ -4,9 +4,13 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.data.Ability;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.util.LogUtil;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
 public class LoreAbilityManager {
 
@@ -16,6 +20,26 @@ public class LoreAbilityManager {
   public LoreAbilityManager(AbilityManager abilityManager) {
     this.loreAbilityMap = new HashMap<>();
     this.abilityManager = abilityManager;
+  }
+
+  public List<LoreAbility> getLoreAbilitiesFromItem(ItemStack stack) {
+    if (stack == null || stack.getType() == Material.AIR) {
+      return new ArrayList<>();
+    }
+    List<LoreAbility> abilities = new ArrayList<>();
+
+    List<String> lore = stack.getLore();
+    if (lore == null || lore.isEmpty()) {
+      return abilities;
+    }
+    for (String s : lore) {
+      for (String s2 : loreAbilityMap.keySet()) {
+        if (s.equals(s2)) {
+          abilities.add(loreAbilityMap.get(s2));
+        }
+      }
+    }
+    return abilities;
   }
 
   public void loadLoreAbility(String key, ConfigurationSection cs) {
@@ -40,7 +64,9 @@ public class LoreAbilityManager {
       LogUtil.printError("Failed to load " + key + ". No valid ability defined!");
       return;
     }
-    loreAbilityMap.put(triggerText, new LoreAbility(triggerType, ability));
+
+    boolean singleTarget = cs.getBoolean("single-target", true);
+    loreAbilityMap.put(triggerText, new LoreAbility(triggerType, ability, singleTarget));
     LogUtil.printInfo("Loaded ability " + key + " successfully.");
   }
 

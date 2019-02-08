@@ -10,12 +10,12 @@ public class ForceTarget extends Effect {
   private boolean overwrite;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     if (caster.getEntity() instanceof Creature) {
       if (!overwrite && ((Creature) caster.getEntity()).getTarget() != null) {
         return;
       }
-      ((Creature) caster.getEntity()).setTarget(target);
+      ((Creature) caster.getEntity()).setTarget(target.getEntity());
     } else {
       LogUtil.printWarning(caster.getEntity().getName() + " is not a creature. Target failed.");
     }

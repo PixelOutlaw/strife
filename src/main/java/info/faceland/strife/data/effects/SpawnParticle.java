@@ -11,8 +11,10 @@ public class SpawnParticle extends Effect {
   private float speed;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
-    target.getWorld().spawnParticle(particle, target.getLocation(), quantity, getRange(), getRange(), getRange(), speed);
+  public void apply(AttributedEntity caster, AttributedEntity target) {
+    target.getEntity().getWorld()
+        .spawnParticle(particle, target.getEntity().getLocation(), quantity, getRange(), getRange(),
+            getRange(), speed);
   }
 
   public void setParticle(Particle particle) {

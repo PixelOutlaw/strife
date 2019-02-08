@@ -12,9 +12,9 @@ public class PotionEffectAction extends Effect {
   private int intensity;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     PotionEffect potionEffect = new PotionEffect(potionEffectType, duration, intensity, false);
-    target.addPotionEffect(potionEffect);
+    target.getEntity().addPotionEffect(potionEffect);
   }
 
   public PotionEffectType getPotionEffectType() {

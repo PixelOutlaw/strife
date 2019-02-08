@@ -4,27 +4,25 @@ import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 
 public class LoreAbility {
 
-  private TriggerType triggerType;
-  private Ability ability;
+  private final TriggerType triggerType;
+  private final Ability ability;
+  private boolean singleTarget;
 
-  public LoreAbility(TriggerType triggerType, Ability ability) {
+  public LoreAbility(TriggerType triggerType, Ability ability, boolean singleTarget) {
     this.triggerType = triggerType;
     this.ability = ability;
+    this.singleTarget = singleTarget;
   }
 
   public TriggerType getTriggerType() {
     return triggerType;
   }
 
-  public void setTriggerType(TriggerType triggerType) {
-    this.triggerType = triggerType;
-  }
-
   public Ability getAbility() {
     return ability;
   }
 
-  public void setAbility(Ability ability) {
-    this.ability = ability;
+  public boolean isSingleTarget() {
+    return singleTarget;
   }
 }

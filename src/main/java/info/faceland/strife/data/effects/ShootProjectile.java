@@ -29,18 +29,18 @@ public class ShootProjectile extends Effect {
   private List<String> hitEffects;
 
   @Override
-  public void apply(AttributedEntity caster, LivingEntity target) {
+  public void apply(AttributedEntity caster, AttributedEntity target) {
     double projectiles = quantity * (1 + caster.getAttribute(StrifeAttribute.MULTISHOT) / 100);
     if (projectileEntity == EntityType.FIREBALL) {
       projectiles = 1;
     }
     Vector castDirection;
-    if (caster.getEntity() == target) {
+    if (caster == target) {
       LogUtil.printWarning("Skipping self targeted projectile launched by " + getName());
       return;
     }
     if (targeted) {
-      castDirection = target.getLocation().toVector()
+      castDirection = target.getEntity().getLocation().toVector()
           .subtract(caster.getEntity().getEyeLocation().toVector()).normalize();
       LogUtil.printDebug("Fetched direction to target: " + castDirection.toString());
     } else {
@@ -68,7 +68,7 @@ public class ShootProjectile extends Effect {
         ((SmallFireball) projectile).setIsIncendiary(ignite);
         ((SmallFireball) projectile).setDirection(direction);
       } else if (seeking && projectileEntity == EntityType.SHULKER_BULLET) {
-        ((ShulkerBullet) projectile).setTarget(target);
+        ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
       projectile.setBounce(bounce);
       StringBuilder hitString = new StringBuilder();
