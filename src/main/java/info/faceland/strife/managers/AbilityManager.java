@@ -8,7 +8,6 @@ import info.faceland.strife.data.Ability.TargetType;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
-import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.Wait;
 import info.faceland.strife.util.LogUtil;
@@ -64,10 +63,11 @@ public class AbilityManager {
   public void execute(final Ability ability, final AttributedEntity caster,
       AttributedEntity target) {
     LogUtil.printDebug(caster.getEntity().getCustomName() + " is casting: " + ability.getId());
-    if (!plugin.getUniqueEntityManager().getData(caster.getEntity()).isCooledDown(ability)) {
+    if (!caster.isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
-      if (caster.getEntity() instanceof Player) {
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN, (Player) caster);
+      if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
+        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN,
+            (Player) caster.getEntity());
       }
       return;
     }
@@ -75,8 +75,9 @@ public class AbilityManager {
     if (target == null) {
       targetEntity = getTarget(caster, ability);
       if (targetEntity == null) {
-        if (caster instanceof Player) {
-          ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET, (Player) caster);
+        if (ability.isDisplayCd() && caster instanceof Player) {
+          ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET,
+              (Player) caster.getEntity());
         }
         LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
         return;
@@ -86,7 +87,7 @@ public class AbilityManager {
       targetEntity = target.getEntity();
     }
     LogUtil.printDebug("Target: " + targetEntity.getName() + " | " + targetEntity.getCustomName());
-    plugin.getUniqueEntityManager().getData(caster.getEntity()).setCooldown(ability);
+    caster.setCooldown(ability);
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
@@ -270,7 +271,9 @@ public class AbilityManager {
       effects.add(effect);
       LogUtil.printDebug("Added effect " + effect.getName() + " (" + s + ") to ability " + key);
     }
-    loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, cooldown));
+    boolean displayCd = cs.getBoolean("show-cooldown-messages", false);
+    loadedAbilities
+        .put(key, new Ability(key, name, effects, targetType, range, cooldown, displayCd));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 }

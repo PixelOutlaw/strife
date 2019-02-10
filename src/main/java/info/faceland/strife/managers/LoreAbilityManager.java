@@ -1,5 +1,6 @@
 package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.data.Ability;
 import info.faceland.strife.data.LoreAbility;
@@ -27,16 +28,19 @@ public class LoreAbilityManager {
       return new ArrayList<>();
     }
     List<LoreAbility> abilities = new ArrayList<>();
-
-    List<String> lore = stack.getLore();
-    if (lore == null || lore.isEmpty()) {
+    if (stack.getItemMeta() == null || stack.getItemMeta().getLore() == null) {
+      return abilities;
+    }
+    List<String> lore = stack.getItemMeta().getLore();
+    if (lore.isEmpty()) {
       return abilities;
     }
     for (String s : lore) {
-      for (String s2 : loreAbilityMap.keySet()) {
-        if (s.equals(s2)) {
-          abilities.add(loreAbilityMap.get(s2));
-        }
+      LoreAbility loreAbility = getLoreAbilityFromString(s);
+      LogUtil.printDebug("Attempting to get lore ability for string: " + s);
+      if (loreAbility != null) {
+        LogUtil.printDebug("Added!: " + s);
+        abilities.add(loreAbility);
       }
     }
     return abilities;
@@ -53,7 +57,7 @@ public class LoreAbilityManager {
       return;
     }
 
-    String triggerText = cs.getString("trigger-text", null);
+    String triggerText = TextUtils.color(cs.getString("trigger-text", ""));
     if (StringUtils.isBlank(triggerText)) {
       LogUtil.printError("Failed to load " + key + ". Must provide trigger-text!");
       return;
@@ -65,13 +69,16 @@ public class LoreAbilityManager {
       return;
     }
 
+    List<String> description = TextUtils.color(cs.getStringList("description"));
+
     boolean singleTarget = cs.getBoolean("single-target", true);
-    loreAbilityMap.put(triggerText, new LoreAbility(triggerType, ability, singleTarget));
-    LogUtil.printInfo("Loaded ability " + key + " successfully.");
+    loreAbilityMap.put(triggerText,
+        new LoreAbility(triggerType, triggerText, ability, singleTarget, description));
+    LogUtil.printInfo("Loaded lore ability " + key + " successfully.");
   }
 
   public LoreAbility getLoreAbilityFromString(String loreString) {
-    return loreAbilityMap.get(loreString);
+    return loreAbilityMap.getOrDefault(loreString, null);
   }
 
   public Map<String, LoreAbility> getLoreAbilityMap() {

@@ -9,17 +9,20 @@ public class AttributedEntity {
   private final Map<StrifeAttribute, Double> attributeCache;
   private final LivingEntity livingEntity;
   private final Champion champion;
+  private final Map<Ability, Long> cooldownMap;
 
   public AttributedEntity(Champion champion) {
     this.attributeCache = new HashMap<>();
     this.livingEntity = champion.getPlayer();
     this.champion = champion;
+    this.cooldownMap = new HashMap<>();
   }
 
   public AttributedEntity(LivingEntity livingEntity) {
     this.attributeCache = new HashMap<>();
     this.livingEntity = livingEntity;
     this.champion = null;
+    this.cooldownMap = new HashMap<>();
   }
 
   public double getAttribute(StrifeAttribute attribute) {
@@ -41,5 +44,16 @@ public class AttributedEntity {
   public void setAttributes(Map<StrifeAttribute, Double> attributes) {
     attributeCache.clear();
     attributeCache.putAll(attributes);
+  }
+
+  public boolean isCooledDown(Ability ability) {
+    if (cooldownMap.containsKey(ability)) {
+      return System.currentTimeMillis() > cooldownMap.get(ability);
+    }
+    return true;
+  }
+
+  public void setCooldown(Ability ability) {
+    cooldownMap.put(ability, System.currentTimeMillis() + ability.getCooldown() * 1000);
   }
 }

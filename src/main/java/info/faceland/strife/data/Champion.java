@@ -18,14 +18,11 @@
  */
 package info.faceland.strife.data;
 
-import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.*;
-
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import info.faceland.strife.stats.StrifeStat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +34,6 @@ public class Champion {
   private final Map<StrifeAttribute, Double> attributeBase;
   private final Map<StrifeAttribute, Double> attributeLevelPoint;
   private final Map<StrifeAttribute, Double> combinedAttributeCache;
-  private final Map<TriggerType, List<LoreAbility>> loreAbilities;
 
   private Player player;
   private ChampionSaveData saveData;
@@ -50,16 +46,6 @@ public class Champion {
     this.equipmentCache = new PlayerEquipmentCache();
     this.player = player;
     this.saveData = saveData;
-
-    // Don't use TriggerType.values() here, MC has enough performance and memory problems already
-    this.loreAbilities = new HashMap<>();
-    this.loreAbilities.put(ON_HIT, new ArrayList<>());
-    this.loreAbilities.put(ON_KILL, new ArrayList<>());
-    this.loreAbilities.put(ON_CRIT, new ArrayList<>());
-    this.loreAbilities.put(ON_BLOCK, new ArrayList<>());
-    this.loreAbilities.put(ON_EVADE, new ArrayList<>());
-    this.loreAbilities.put(ON_SNEAK, new ArrayList<>());
-    this.loreAbilities.put(WHEN_HIT, new ArrayList<>());
   }
 
   public Map<StrifeAttribute, Double> getCombinedCache() {
@@ -215,6 +201,6 @@ public class Champion {
   }
 
   public Map<TriggerType, List<LoreAbility>> getLoreAbilities() {
-    return loreAbilities;
+    return equipmentCache.getLoreAbilities();
   }
 }
