@@ -47,10 +47,11 @@ public class StatsMenu extends ItemMenu {
       setItem(1, new StatsMainHandItem(plugin));
       setItem(10, new StatsOffHandItem(plugin));
 
-      setItem(13, new StatsOffenseMenuItem(plugin));
-      setItem(15, new StatsDefenseMenuItem(plugin));
-      setItem(22, new StatsMiscMenuItem(plugin));
-      setItem(24, new StatsBonusMenuItem(plugin));
+      setItem(12, new StatsOffenseMenuItem(plugin));
+      setItem(14, new StatsDefenseMenuItem(plugin));
+      setItem(16, new StatsMiscMenuItem(plugin));
+      setItem(22, new StatsBonusMenuItem(plugin));
+      setItem(24, new StatsEffectMenuItem(plugin));
     } else {
       setItem(0, new StatsHelmetItem(plugin, target));
       setItem(9, new StatsChestItem(plugin, target));
