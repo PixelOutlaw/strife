@@ -332,6 +332,10 @@ public class DamageUtil {
         livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
   }
 
+  public static void restoreBarrier(AttributedEntity attributedEntity, double amount) {
+    StrifePlugin.getInstance().getBarrierManager().restoreBarrier(attributedEntity, amount);
+  }
+
   public static double rollDouble(boolean lucky) {
     return lucky ? Math.max(rollDouble(), rollDouble()) : rollDouble();
   }

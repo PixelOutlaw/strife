@@ -2,6 +2,7 @@ package info.faceland.strife.util;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.condition.Condition.Comparison;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class PlayerDataUtil {
@@ -123,5 +124,12 @@ public class PlayerDataUtil {
 
   public static int getMaxCraftItemLevel(int craftLvl) {
     return 5 + (int) Math.floor((double) craftLvl / 5) * 8;
+  }
+
+  public static String getName(LivingEntity livingEntity) {
+    if (livingEntity instanceof Player) {
+      return ((Player) livingEntity).getDisplayName();
+    }
+    return livingEntity.getCustomName() == null ? livingEntity.getName() : livingEntity.getCustomName();
   }
 }

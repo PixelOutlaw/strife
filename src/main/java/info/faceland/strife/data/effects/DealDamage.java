@@ -21,13 +21,13 @@ public class DealDamage extends Effect {
     }
     LogUtil.printDebug("Damage Effect! " + damage + " | " + damageScale + " | " + damageType);
     switch (damageScale) {
-      case CURRENT_HP:
+      case CURRENT:
         damage *= target.getEntity().getHealth() / target.getEntity().getMaxHealth();
         break;
-      case MISSING_HP:
+      case MISSING:
         damage *= 1 - target.getEntity().getHealth() / target.getEntity().getMaxHealth();
         break;
-      case MAXIMUM_HP:
+      case MAXIMUM:
         damage *= target.getEntity().getMaxHealth();
         break;
     }
@@ -54,8 +54,8 @@ public class DealDamage extends Effect {
 
   public enum DamageScale {
     FLAT,
-    MAXIMUM_HP,
-    CURRENT_HP,
-    MISSING_HP
+    MAXIMUM,
+    CURRENT,
+    MISSING
   }
 }

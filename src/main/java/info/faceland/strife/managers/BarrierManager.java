@@ -21,6 +21,8 @@ package info.faceland.strife.managers;
 import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.PlayerDataUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -134,6 +136,20 @@ public class BarrierManager {
     setEntityBarrier(entity.getUniqueId(), 0);
     updateShieldDisplay(attributedEntity);
     return Math.abs(remainingBarrier);
+  }
+
+  public void restoreBarrier(AttributedEntity attributedEntity, double amount) {
+    if (attributedEntity.getAttribute(BARRIER) == 0) {
+      return;
+    }
+    UUID uuid = attributedEntity.getEntity().getUniqueId();
+    LogUtil.printDebug("restoreBarrier: " + PlayerDataUtil.getName(attributedEntity.getEntity()));
+    LogUtil.printDebug(" starting barrier: " + barrierMap.get(uuid));
+    double newBarrierValue = Math
+        .min(barrierMap.get(uuid) + amount, attributedEntity.getAttribute(BARRIER));
+    setEntityBarrier(uuid, newBarrierValue);
+    LogUtil.printDebug(" ending barrier: " + barrierMap.get(uuid));
+    updateShieldDisplay(attributedEntity);
   }
 
   public Map<UUID, Integer> getTickMap() {

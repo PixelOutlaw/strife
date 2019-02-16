@@ -12,6 +12,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
@@ -43,8 +44,13 @@ public class EffectManager {
     switch (effectType) {
       case HEAL:
         effect = new Heal();
-        ((Heal) effect).setAmount(cs.getInt("amount", 1));
+        ((Heal) effect).setAmount(cs.getDouble("amount", 1));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        break;
+      case RESTORE_BARRIER:
+        effect = new RestoreBarrier();
+        ((RestoreBarrier) effect).setAmount(cs.getDouble("amount", 1));
+        ((RestoreBarrier) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case DAMAGE:
         effect = new DealDamage();
@@ -136,6 +142,7 @@ public class EffectManager {
         ((PotionEffectAction) effect).setPotionEffectType(potionType);
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
+        ((PotionEffectAction) effect).setTargetCaster(cs.getBoolean("target-caster", false));
         break;
       case PARTICLE:
         effect = new SpawnParticle();
@@ -153,11 +160,20 @@ public class EffectManager {
     }
     if (effectType != EffectType.WAIT) {
       effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
-      effect.setRange(cs.getInt("range", 0));
+      effect.setRange(cs.getDouble("range", 0));
       effect.setSelfAffect(cs.getBoolean("self-affect", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
     } else {
       effect.setName("wait");
+    }
+    List<String> conditionStrings = cs.getStringList("conditions");
+    for (String s : conditionStrings) {
+      Condition condition = conditions.get(s);
+      if (condition == null) {
+        LogUtil.printWarning("Invalid condition " + s + " for effect " + key + ". Skipping.");
+        continue;
+      }
+      effect.addCondition(conditions.get(s));
     }
     loadedEffects.put(key, effect);
     LogUtil.printInfo("Loaded effect " + key + " successfully.");
@@ -165,21 +181,21 @@ public class EffectManager {
 
   public void loadCondition(String key, ConfigurationSection cs) {
 
-    String compType = cs.getString("comparison", "NULL").toUpperCase();
-    Comparison comparison;
-    try {
-      comparison = Comparison.valueOf(compType);
-    } catch (Exception e) {
-      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + compType + ")");
-      return;
-    }
-
     String type = cs.getString("type", "NULL").toUpperCase();
     ConditionType conditionType;
     try {
       conditionType = ConditionType.valueOf(type);
     } catch (Exception e) {
       LogUtil.printError("Failed to load " + key + ". Invalid condition type (" + type + ")");
+      return;
+    }
+
+    String compType = cs.getString("comparison", "NULL").toUpperCase();
+    Comparison comparison;
+    try {
+      comparison = Comparison.valueOf(compType);
+    } catch (Exception e) {
+      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + compType + ")");
       return;
     }
 
@@ -213,6 +229,10 @@ public class EffectManager {
         boolean percent = cs.getBoolean("percentage", false);
         condition = new BarrierCondition(compareTarget, comparison, value, percent);
         break;
+      case CHANCE:
+        double chance = cs.getDouble("chance", 0.5);
+        condition = new ChanceCondition(comparison, chance);
+        break;
       case HEALTH:
         boolean percent2 = cs.getBoolean("percentage", false);
         condition = new HealthCondition(compareTarget, comparison, value, percent2);
@@ -226,7 +246,8 @@ public class EffectManager {
           return;
         }
         int potionIntensity = cs.getInt("intensity", 0);
-        condition = new PotionCondition(potionEffectType, compareTarget, comparison, potionIntensity);
+        condition = new PotionCondition(potionEffectType, compareTarget, comparison,
+            potionIntensity);
         break;
       case LEVEL:
         condition = new LevelCondition(comparison, (int) value);
@@ -265,6 +286,7 @@ public class EffectManager {
   public enum EffectType {
     DAMAGE,
     HEAL,
+    RESTORE_BARRIER,
     PROJECTILE,
     IGNITE,
     BLEED,

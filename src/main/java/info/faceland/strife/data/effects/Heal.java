@@ -5,7 +5,6 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.effects.DealDamage.DamageScale;
 import info.faceland.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
-import org.w3c.dom.Attr;
 
 public class Heal extends Effect {
 
@@ -23,13 +22,13 @@ public class Heal extends Effect {
       case FLAT:
         DamageUtil.restoreHealth(target, heal);
         break;
-      case CURRENT_HP:
+      case CURRENT:
         heal = heal * (target.getHealth() / target.getMaxHealth());
         DamageUtil.restoreHealth(target, heal * target.getHealth());
-      case MISSING_HP:
+      case MISSING:
         heal = heal * (1 - target.getHealth() / target.getMaxHealth());
         DamageUtil.restoreHealth(target, heal);
-      case MAXIMUM_HP:
+      case MAXIMUM:
         DamageUtil.restoreHealth(target, heal * target.getMaxHealth());
     }
   }

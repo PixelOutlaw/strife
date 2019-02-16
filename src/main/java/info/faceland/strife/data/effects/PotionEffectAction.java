@@ -10,11 +10,16 @@ public class PotionEffectAction extends Effect {
   private PotionEffectType potionEffectType;
   private int duration;
   private int intensity;
+  private boolean targetCaster;
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
     PotionEffect potionEffect = new PotionEffect(potionEffectType, duration, intensity, false);
-    target.getEntity().addPotionEffect(potionEffect);
+    if (targetCaster) {
+      caster.getEntity().addPotionEffect(potionEffect);
+    } else {
+      target.getEntity().addPotionEffect(potionEffect);
+    }
   }
 
   public PotionEffectType getPotionEffectType() {
@@ -39,5 +44,9 @@ public class PotionEffectAction extends Effect {
 
   public void setIntensity(int intensity) {
     this.intensity = intensity;
+  }
+
+  public void setTargetCaster(boolean targetCaster) {
+    this.targetCaster = targetCaster;
   }
 }

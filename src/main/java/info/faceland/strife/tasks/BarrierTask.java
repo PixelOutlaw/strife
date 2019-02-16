@@ -61,10 +61,7 @@ public class BarrierTask extends BukkitRunnable {
       }
       // Restore this amount per barrier tick (4 MC ticks, 0.2s)
       double barrierGain = StatUtil.getBarrierPerSecond(player) / 5;
-      double newBarrierValue = Math
-          .min(entry.getValue() + barrierGain, player.getAttribute(BARRIER));
-      plugin.getBarrierManager().setEntityBarrier(entry.getKey(), newBarrierValue);
-      plugin.getBarrierManager().updateShieldDisplay(player);
+      plugin.getBarrierManager().restoreBarrier(player, barrierGain);
     }
     for (UUID uuid : playersPendingRemoval) {
       plugin.getBarrierManager().removeEntity(uuid);

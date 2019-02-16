@@ -1,6 +1,7 @@
 package info.faceland.strife.data.effects;
 
 import info.faceland.strife.data.AttributedEntity;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
 
@@ -12,9 +13,11 @@ public class SpawnParticle extends Effect {
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
+    Location loc = target.getEntity().getLocation().clone()
+        .add(target.getEntity().getEyeLocation());
+    loc.multiply(0.5);
     target.getEntity().getWorld()
-        .spawnParticle(particle, target.getEntity().getLocation(), quantity, getRange(), getRange(),
-            getRange(), speed);
+        .spawnParticle(particle, loc, quantity, getRange(), getRange(), getRange(), speed);
   }
 
   public void setParticle(Particle particle) {
