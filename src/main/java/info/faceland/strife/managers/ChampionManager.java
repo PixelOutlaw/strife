@@ -29,6 +29,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.Champion;
 
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.PlayerEquipmentCache;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemUtil;
@@ -235,6 +236,11 @@ public class ChampionManager {
       }
       equipmentCache.recombine();
     }
+  }
+
+  public void setChampionBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
+    champion.getEquipmentCache().getBoundAbilities().put(loreAbility.getTriggerType(), loreAbility);
+    champion.getEquipmentCache().combineLoreAbilities();
   }
 
   public void updatePointAttributes(Champion champion) {

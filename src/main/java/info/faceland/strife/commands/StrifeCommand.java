@@ -23,7 +23,7 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.managers.AttributeUpdateManager;
+import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
@@ -124,6 +124,19 @@ public class StrifeCommand {
     sendMessage(target, "<green>Your level has been raised.");
     plugin.getAttributeUpdateManager()
         .updateAttributes(plugin.getEntityStatCache(), champion.getPlayer());
+  }
+
+  @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void bindCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "loreAbility") String loreAbilityId) {
+    LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(loreAbilityId);
+    if (ability == null) {
+      sendMessage(sender, "<red>Invalid loreAbility ID: " + loreAbilityId);
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    plugin.getChampionManager().setChampionBoundLoreAbility(champion, ability);
+    sendMessage(target, "<green>Bound loreAbility " + loreAbilityId + " to player " + target.getName());
   }
 
   @Command(identifier = "strife setskill", permissions = "strife.command.strife.setskill", onlyPlayers = false)

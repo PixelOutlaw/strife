@@ -28,6 +28,7 @@ public class PlayerEquipmentCache {
 
   private final Map<StrifeAttribute, Double> combinedStats = new HashMap<>();
   private final Map<TriggerType, List<LoreAbility>> loreAbilities = new HashMap<>();
+  private final Map<TriggerType, LoreAbility> boundAbilities = new HashMap<>();
 
   private int mainHandHash = -1;
   private int offHandHash = -1;
@@ -190,11 +191,15 @@ public class PlayerEquipmentCache {
     this.bootsHash = bootsHash;
   }
 
+  public Map<TriggerType, LoreAbility> getBoundAbilities() {
+    return boundAbilities;
+  }
+
   public Map<TriggerType, List<LoreAbility>> getLoreAbilities() {
     return loreAbilities;
   }
 
-  private void combineLoreAbilities() {
+  public void combineLoreAbilities() {
     for (Entry<TriggerType, List<LoreAbility>> entry : loreAbilities.entrySet()) {
       entry.getValue().clear();
     }
@@ -207,6 +212,9 @@ public class PlayerEquipmentCache {
     newAbilities.addAll(bootAbilities);
     for (LoreAbility loreAbility : newAbilities) {
       loreAbilities.get(loreAbility.getTriggerType()).add(loreAbility);
+    }
+    for (Entry<TriggerType, LoreAbility> entry : boundAbilities.entrySet()) {
+      loreAbilities.get(entry.getKey()).add(entry.getValue());
     }
   }
 }
