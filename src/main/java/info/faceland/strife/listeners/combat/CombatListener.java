@@ -200,7 +200,7 @@ public class CombatListener implements Listener {
         if (StringUtils.isBlank(s)) {
           continue;
         }
-        plugin.getEffectManager().getEffect(s).apply(attacker, defender);
+        plugin.getEffectManager().getEffect(s).execute(attacker, defender);
       }
       event.setDamage(0);
       return;

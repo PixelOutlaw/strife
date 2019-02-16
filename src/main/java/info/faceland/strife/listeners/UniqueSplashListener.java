@@ -12,7 +12,6 @@ import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.EffectManager;
 import info.faceland.strife.util.StatUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -73,10 +72,10 @@ public class UniqueSplashListener implements Listener {
         return;
       }
       for (String s : effects) {
-        if (StringUtils.isBlank(s)) {
+        if (effectManager.getEffect(s) == null) {
           continue;
         }
-        effectManager.getEffect(s).apply(attacker, defender);
+        effectManager.getEffect(s).execute(attacker, defender);
       }
     }
   }
