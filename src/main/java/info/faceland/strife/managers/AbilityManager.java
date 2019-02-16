@@ -8,9 +8,11 @@ import info.faceland.strife.data.Ability.TargetType;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.condition.Condition;
 import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.Wait;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,14 +64,23 @@ public class AbilityManager {
 
   public void execute(final Ability ability, final AttributedEntity caster,
       AttributedEntity target) {
-    LogUtil.printDebug(caster.getEntity().getCustomName() + " is casting: " + ability.getId());
-    if (!caster.isCooledDown(ability)) {
+    LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + ability.getId());
+    for (Condition condition : ability.getConditions()) {
+      if (!condition.isMet(caster, target)) {
+        LogUtil.printDebug("Condition not met for effect. Failed.");
+        return;
+      }
+    }
+    if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN,
             (Player) caster.getEntity());
       }
       return;
+    }
+    if (ability.getTargetType() == TargetType.SELF) {
+      target = caster;
     }
     LivingEntity targetEntity;
     if (target == null) {
@@ -86,8 +97,10 @@ public class AbilityManager {
     } else {
       targetEntity = target.getEntity();
     }
-    LogUtil.printDebug("Target: " + targetEntity.getName() + " | " + targetEntity.getCustomName());
-    caster.setCooldown(ability);
+    LogUtil.printDebug("Target: " + PlayerDataUtil.getName(targetEntity));
+    if (ability.getCooldown() != 0) {
+      caster.setCooldown(ability);
+    }
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
@@ -254,7 +267,7 @@ public class AbilityManager {
       LogUtil.printWarning("Skipping load of ability " + key + " - Invalid target type.");
       return;
     }
-    int cooldown = cs.getInt("cooldown", 10);
+    int cooldown = cs.getInt("cooldown", 0);
     int range = cs.getInt("range", 0);
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
@@ -272,8 +285,18 @@ public class AbilityManager {
       LogUtil.printDebug("Added effect " + effect.getName() + " (" + s + ") to ability " + key);
     }
     boolean displayCd = cs.getBoolean("show-cooldown-messages", false);
-    loadedAbilities
-        .put(key, new Ability(key, name, effects, targetType, range, cooldown, displayCd));
+    List<String> conditionStrings = cs.getStringList("conditions");
+    List<Condition> conditions = new ArrayList<>();
+    for (String s : conditionStrings) {
+      Condition condition = plugin.getEffectManager().getConditions().get(s);
+      if (condition == null) {
+        LogUtil.printWarning("Invalid condition " + s + " for effect " + key + ". Skipping.");
+        continue;
+      }
+      conditions.add(plugin.getEffectManager().getConditions().get(s));
+    }
+    loadedAbilities.put(key,
+        new Ability(key, name, effects, targetType, range, cooldown, displayCd, conditions));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 }

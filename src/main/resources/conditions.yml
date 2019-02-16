@@ -18,3 +18,7 @@ smart-bois-only2:
   target: OTHER
   value: 30
   stat: int
+30chance:
+  type: CHANCE
+  comparison: GREATER_THAN
+  chance: 0.3

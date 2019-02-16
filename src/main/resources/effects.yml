@@ -18,7 +18,7 @@ deal-10-damage:
   name: "&7tru ten boi"
 full-heal:
   type: HEAL
-  scale: MAXIMUM_HP
+  scale: MAXIMUM
   amount: 1.0
   name: "&7100% heal wew"
   self-affect: true
