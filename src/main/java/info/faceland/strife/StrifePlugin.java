@@ -222,7 +222,7 @@ public class StrifePlugin extends FacePlugin {
     miningExperienceManager = new MiningExperienceManager(this);
     entityStatCache = new EntityStatCache(championManager, barrierManager, monsterManager);
     abilityManager = new AbilityManager(this);
-    loreAbilityManager = new LoreAbilityManager(abilityManager);
+    loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     commandHandler = new CommandHandler(this);
 
     MenuListener.getInstance().register(this);
@@ -386,9 +386,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new TargetingListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(entityStatCache), this);
-    Bukkit.getPluginManager()
-        .registerEvents(new LoreAbilityListener(entityStatCache, abilityManager, championManager),
-            this);
+    Bukkit.getPluginManager().registerEvents(
+        new LoreAbilityListener(entityStatCache, championManager, loreAbilityManager), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
@@ -523,7 +522,7 @@ public class StrifePlugin extends FacePlugin {
       loreAbilityManager.loadLoreAbility(key, cs);
     }
     LogUtil.printDebug("Loaded lore abilities: " +
-        loreAbilityManager.getLoreAbilityMap().entrySet().toString());
+        loreAbilityManager.getLoreStringToAbilityMap().entrySet().toString());
   }
 
   private void buildEquipment() {
