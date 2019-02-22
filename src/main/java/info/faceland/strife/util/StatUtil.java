@@ -1,6 +1,7 @@
 package info.faceland.strife.util;
 
 import static info.faceland.strife.attributes.StrifeAttribute.*;
+import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -8,6 +9,7 @@ import info.faceland.strife.data.AttributedEntity;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 public class StatUtil {
 
@@ -69,6 +71,9 @@ public class StatUtil {
     double attackBonus = ae.getAttribute(StrifeAttribute.ATTACK_SPEED);
     if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
+    }
+    if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
+      attackBonus += 0.15 * (1 + ae.getEntity().getPotionEffect(FAST_DIGGING).getAmplifier());
     }
     if (attackBonus > 0) {
       attackTime /= 1 + attackBonus / 100;

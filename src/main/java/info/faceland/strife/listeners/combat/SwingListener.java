@@ -96,8 +96,9 @@ public class SwingListener implements Listener {
     }
     if (ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
       shootWand(event.getPlayer(), event);
-      return;
     }
+    plugin.getAttributeUpdateManager()
+        .updateAttackSpeed(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
