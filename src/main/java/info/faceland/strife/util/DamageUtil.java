@@ -336,6 +336,28 @@ public class DamageUtil {
     StrifePlugin.getInstance().getBarrierManager().restoreBarrier(attributedEntity, amount);
   }
 
+  public static void applyPotionEffect(LivingEntity entity, PotionEffectType type, int power,
+      int duration) {
+    if (entity == null || !entity.isValid()) {
+      return;
+    }
+    Collection<PotionEffect> effects = entity.getActivePotionEffects();
+    for (PotionEffect effect : effects) {
+      if (type != effect.getType()) {
+        continue;
+      }
+      if (power < effect.getAmplifier()) {
+        return;
+      }
+      if (power == Math.abs(effect.getAmplifier()) && duration < effect.getDuration()) {
+        return;
+      }
+      break;
+    }
+    entity.removePotionEffect(type);
+    entity.addPotionEffect(new PotionEffect(type, duration, power));
+  }
+
   public static double rollDouble(boolean lucky) {
     return lucky ? Math.max(rollDouble(), rollDouble()) : rollDouble();
   }
@@ -360,17 +382,17 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getDarknessManager();
   }
 
-public enum DamageType {
-  TRUE_DAMAGE,
-  PHYSICAL,
-  MAGICAL,
-  FIRE,
-  ICE,
-  LIGHTNING,
-  DARK
-}
+  public enum DamageType {
+    TRUE_DAMAGE,
+    PHYSICAL,
+    MAGICAL,
+    FIRE,
+    ICE,
+    LIGHTNING,
+    DARK
+  }
 
-public enum AttackType {
-  MELEE, RANGED, MAGIC, EXPLOSION, OTHER
-}
+  public enum AttackType {
+    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
+  }
 }

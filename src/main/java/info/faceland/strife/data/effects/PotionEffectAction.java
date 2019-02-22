@@ -1,8 +1,7 @@
 package info.faceland.strife.data.effects;
 
 import info.faceland.strife.data.AttributedEntity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.potion.PotionEffect;
+import info.faceland.strife.util.DamageUtil;
 import org.bukkit.potion.PotionEffectType;
 
 public class PotionEffectAction extends Effect {
@@ -14,11 +13,10 @@ public class PotionEffectAction extends Effect {
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
-    PotionEffect potionEffect = new PotionEffect(potionEffectType, duration, intensity, false);
     if (targetCaster) {
-      caster.getEntity().addPotionEffect(potionEffect);
+      DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, duration);
     } else {
-      target.getEntity().addPotionEffect(potionEffect);
+      DamageUtil.applyPotionEffect(target.getEntity(), potionEffectType, intensity, duration);
     }
   }
 
