@@ -40,7 +40,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     Champion champion = championManager.getChampion((Player) event.getAttacker());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_EVADE)) {
+    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_CRIT)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
           la.isSingleTarget() ? getAttrEntity(event.getVictim()) : null);
     }
