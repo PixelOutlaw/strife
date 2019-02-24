@@ -73,7 +73,7 @@ public class DataListener implements Listener {
         .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(final EntityDeathEvent event) {
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());

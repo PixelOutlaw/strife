@@ -45,12 +45,14 @@ public class BossBarManager {
   private final Map<UUID, StrifeBossBar> barMap = new ConcurrentHashMap<>();
   private final Map<Player, StrifeBossBar> playerToCurrentTargetMap = new HashMap<>();
   private final List<String> deathMessages;
+  private final int duration;
   private final Random random = new Random();
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.deathMessages = TextUtils.color(plugin.getSettings()
         .getStringList("config.language.bar-title-entity-killed"));
+    this.duration = plugin.getSettings().getInt("config.language.health-bar-duration", 200);
   }
 
   private void createBars(AttributedEntity target) {
@@ -159,7 +161,7 @@ public class BossBarManager {
     if (strifeBossBar.isDead()) {
       return;
     }
-    strifeBossBar.getPlayerUuidTickMap().put(uuid, 100);
+    strifeBossBar.getPlayerUuidTickMap().put(uuid, duration);
   }
 
   private BossBar makeHealthBar() {

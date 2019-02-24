@@ -19,6 +19,7 @@ mechanics:
   base-bleed-damage: 1
   percent-bleed-damage: 0.1
   ticks-per-bleed: 12
+  health-bar-duration: 200
 
 leveled-monsters:
   name-format: "&7%ENTITY% &f(%LEVEL%)"
