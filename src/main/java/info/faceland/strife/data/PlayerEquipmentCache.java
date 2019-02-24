@@ -213,8 +213,8 @@ public class PlayerEquipmentCache {
     for (LoreAbility loreAbility : newAbilities) {
       loreAbilities.get(loreAbility.getTriggerType()).add(loreAbility);
     }
-    for (Entry<TriggerType, LoreAbility> entry : boundAbilities.entrySet()) {
-      loreAbilities.get(entry.getKey()).add(entry.getValue());
+    for (LoreAbility loreAbility : boundAbilities.values()) {
+      loreAbilities.get(loreAbility.getTriggerType()).add(loreAbility);
     }
   }
 }

@@ -65,17 +65,19 @@ public class StatsEffectMenuItem extends MenuItem {
 
     lore.add(breakLine);
 
-    for (Entry<TriggerType, List<LoreAbility>> entry : pStats.getChampion().getLoreAbilities()
-        .entrySet()) {
-      for (LoreAbility loreAbility : entry.getValue()) {
-        lore.add(loreAbility.getTriggerText());
-        lore.addAll(loreAbility.getDescription());
+    List<String> abilityLores = new ArrayList<>();
+    for (TriggerType triggerType : pStats.getChampion().getLoreAbilities().keySet()) {
+      for (LoreAbility la : pStats.getChampion().getLoreAbilities().get(triggerType)) {
+        abilityLores.add(la.getTriggerText());
+        abilityLores.addAll(la.getDescription());
       }
     }
-    if (lore.isEmpty()) {
+    if (abilityLores.isEmpty()) {
       lore.add(TextUtils.color("&6You don't have an item effects! They"));
       lore.add(TextUtils.color("&6usually come from socket gems or"));
       lore.add(TextUtils.color("&6unique items."));
+    } else {
+      lore.addAll(abilityLores);
     }
 
     lore.add(breakLine);

@@ -20,7 +20,6 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.util.LogUtil;
@@ -34,19 +33,21 @@ import org.bukkit.entity.Player;
 
 public class MonsterManager {
 
-  private final StrifePlugin plugin;
-  private Map<EntityType, EntityStatData> entityStatDataMap;
+  private final ChampionManager championManager;
+  private final Map<EntityType, EntityStatData> entityStatDataMap;
+  private EntityStatData defaultData;
 
-  public MonsterManager(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public MonsterManager(ChampionManager championManager) {
+    this.championManager = championManager;
     this.entityStatDataMap = new HashMap<>();
+    this.defaultData = new EntityStatData();
   }
 
   public boolean containsEntityType(EntityType type) {
     return entityStatDataMap.containsKey(type);
   }
 
-  public void addEntityData(EntityType type, EntityStatData data) {
+  private void addEntityData(EntityType type, EntityStatData data) {
     entityStatDataMap.put(type, data);
   }
 
@@ -63,7 +64,7 @@ public class MonsterManager {
       levelStats.put(stat.getKey(), stat.getValue() * level);
     }
     if (type == EntityType.PLAYER && level >= 100) {
-      int bonusLevel = plugin.getChampionManager().getChampion(livingEntity.getUniqueId())
+      int bonusLevel = championManager.getChampion(livingEntity.getUniqueId())
           .getBonusLevels();
       Map<StrifeAttribute, Double> bonusStats = new HashMap<>();
       for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type)
@@ -88,13 +89,20 @@ public class MonsterManager {
 
   public void loadBaseStats(String key, ConfigurationSection cs) {
     EntityType entityType;
+    if ("default".equalsIgnoreCase(key) && !defaultData.getBaseValueMap().isEmpty()) {
+      return;
+    }
     try {
-      entityType = EntityType.valueOf(key);
+      if ("default".equalsIgnoreCase(key)) {
+        entityType = null;
+      } else {
+        entityType = EntityType.valueOf(key);
+      }
     } catch (Exception e) {
       LogUtil.printWarning("Skipping base stat load for invalid entity type '" + key + "'");
       return;
     }
-    EntityStatData data = new EntityStatData();
+    EntityStatData data = new EntityStatData(defaultData);
     if (cs.isConfigurationSection("base-values")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
       for (String k : attrCS.getKeys(false)) {
@@ -116,7 +124,11 @@ public class MonsterManager {
         data.putPerBonusLevel(attr, attrCS.getDouble(k));
       }
     }
-    addEntityData(entityType, data);
+    if ("default".equalsIgnoreCase(key)) {
+      defaultData = data;
+    } else {
+      addEntityData(entityType, data);
+    }
   }
 
   private int getEntityLevel(LivingEntity entity) {
