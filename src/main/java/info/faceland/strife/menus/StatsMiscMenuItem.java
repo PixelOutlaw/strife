@@ -69,6 +69,8 @@ public class StatsMiscMenuItem extends MenuItem {
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
         pStats.getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
+    lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
+        100 + pStats.getAttribute(StrifeAttribute.EFFECT_DURATION)) + "%");
     if (pStats.getAttribute(StrifeAttribute.DOGE) > 0) {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN
           + "many levels");
