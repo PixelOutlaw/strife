@@ -292,13 +292,13 @@ public class DamageUtil {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
-    if (attacker.getAttribute(BLEED_RESIST) > 99) {
+    if (defender.getAttribute(BLEED_RESIST) > 99) {
       return false;
     }
     if (attackMult * (attacker.getAttribute(BLEED_CHANCE) / 100) >= rollDouble()) {
       double amount = damage + damage * critMult;
       amount *= 1 + attacker.getAttribute(BLEED_DAMAGE) / 100;
-      amount *= 1 - attacker.getAttribute(BLEED_RESIST) / 100;
+      amount *= 1 - defender.getAttribute(BLEED_RESIST) / 100;
       amount *= BLEED_PERCENT;
       applyBleed(defender.getEntity(), amount);
       return true;
