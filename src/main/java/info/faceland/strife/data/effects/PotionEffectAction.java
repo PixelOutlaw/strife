@@ -1,5 +1,6 @@
 package info.faceland.strife.data.effects;
 
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.DamageUtil;
 import org.bukkit.potion.PotionEffectType;
@@ -7,16 +8,18 @@ import org.bukkit.potion.PotionEffectType;
 public class PotionEffectAction extends Effect {
 
   private PotionEffectType potionEffectType;
-  private int duration;
+  private double duration;
   private int intensity;
   private boolean targetCaster;
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
+    int effectDuration = (int) (duration * (1 + (
+        caster.getAttribute(StrifeAttribute.EFFECT_DURATION) / 100)));
     if (targetCaster) {
-      DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, duration);
+      DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, effectDuration);
     } else {
-      DamageUtil.applyPotionEffect(target.getEntity(), potionEffectType, intensity, duration);
+      DamageUtil.applyPotionEffect(target.getEntity(), potionEffectType, intensity, effectDuration);
     }
   }
 
@@ -28,16 +31,8 @@ public class PotionEffectAction extends Effect {
     this.potionEffectType = potionEffectType;
   }
 
-  public int getDuration() {
-    return duration;
-  }
-
-  public void setDuration(int duration) {
+  public void setDuration(double duration) {
     this.duration = duration;
-  }
-
-  public int getIntensity() {
-    return intensity;
   }
 
   public void setIntensity(int intensity) {

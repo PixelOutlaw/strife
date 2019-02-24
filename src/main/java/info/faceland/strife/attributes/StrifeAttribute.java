@@ -83,6 +83,7 @@ public enum StrifeAttribute {
 
   BLEED_CHANCE("Bleed Chance"),
   BLEED_DAMAGE("Bleed Damage"),
+  BLEED_RESIST("Bleed Resistance"),
 
   LIFE_STEAL("Life Steal"),
   HP_ON_HIT("Health On Hit"),
@@ -127,6 +128,7 @@ public enum StrifeAttribute {
 
   EXPLOSION_MAGIC("Explosion Magic"),
   SPELL_STRIKE_RANGE("Spell Strike Range"),
+  EFFECT_DURATION("Effect Duration"),
 
   HEALTH_PER_TEN_B_LEVEL("Max Health Per Ten BLvl"),
   BARRIER_PER_TEN_B_LEVEL("Max Barrier Per Ten BLvl"),

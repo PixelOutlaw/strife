@@ -196,34 +196,35 @@ public class StrifePlugin extends FacePlugin {
     if (abilityYAML.update()) {
       getLogger().info("Updating abilities.yml");
     }
+
     settings = MasterConfiguration.loadFromFiles(configYAML);
 
-    statManager = new StrifeStatManager();
-    blockManager = new BlockManager();
-    bleedManager = new BleedManager();
-    darknessManager = new DarknessManager();
-    attributeUpdateManager = new AttributeUpdateManager();
-    rageManager = new RageManager(attributeUpdateManager);
-    barrierManager = new BarrierManager(attributeUpdateManager);
-    monsterManager = new MonsterManager(this);
-    uniqueEntityManager = new UniqueEntityManager(this);
-    bossBarManager = new BossBarManager(this);
-    equipmentManager = new EntityEquipmentManager();
-    effectManager = new EffectManager(statManager);
-    attackSpeedManager = new AttackSpeedManager();
-    spawnerManager = new SpawnerManager(uniqueEntityManager);
-    multiplierManager = new MultiplierManager();
     storage = new JsonDataStorage(this);
     championManager = new ChampionManager(this);
+    uniqueEntityManager = new UniqueEntityManager(this);
+    bossBarManager = new BossBarManager(this);
     experienceManager = new ExperienceManager(this);
     craftExperienceManager = new CraftExperienceManager(this);
     enchantExperienceManager = new EnchantExperienceManager(this);
     fishExperienceManager = new FishExperienceManager(this);
     miningExperienceManager = new MiningExperienceManager(this);
-    entityStatCache = new EntityStatCache(championManager, barrierManager, monsterManager);
     abilityManager = new AbilityManager(this);
-    loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     commandHandler = new CommandHandler(this);
+    statManager = new StrifeStatManager();
+    blockManager = new BlockManager();
+    bleedManager = new BleedManager();
+    darknessManager = new DarknessManager();
+    attributeUpdateManager = new AttributeUpdateManager();
+    attackSpeedManager = new AttackSpeedManager();
+    equipmentManager = new EntityEquipmentManager();
+    multiplierManager = new MultiplierManager();
+    rageManager = new RageManager(attributeUpdateManager);
+    barrierManager = new BarrierManager(attributeUpdateManager);
+    monsterManager = new MonsterManager(championManager);
+    effectManager = new EffectManager(statManager);
+    spawnerManager = new SpawnerManager(uniqueEntityManager);
+    entityStatCache = new EntityStatCache(championManager, barrierManager, monsterManager);
+    loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
 
     MenuListener.getInstance().register(this);
 
@@ -548,6 +549,7 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void buildBaseStats() {
+    monsterManager.loadBaseStats("default", baseStatsYAML.getConfigurationSection("default"));
     for (String entityKey : baseStatsYAML.getKeys(false)) {
       if (!baseStatsYAML.isConfigurationSection(entityKey)) {
         continue;

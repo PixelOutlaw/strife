@@ -2,6 +2,7 @@ package info.faceland.strife.util;
 
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.BLEED_RESIST;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
@@ -291,9 +292,13 @@ public class DamageUtil {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
+    if (attacker.getAttribute(BLEED_RESIST) > 99) {
+      return false;
+    }
     if (attackMult * (attacker.getAttribute(BLEED_CHANCE) / 100) >= rollDouble()) {
       double amount = damage + damage * critMult;
       amount *= 1 + attacker.getAttribute(BLEED_DAMAGE) / 100;
+      amount *= 1 - attacker.getAttribute(BLEED_RESIST) / 100;
       amount *= BLEED_PERCENT;
       applyBleed(defender.getEntity(), amount);
       return true;
