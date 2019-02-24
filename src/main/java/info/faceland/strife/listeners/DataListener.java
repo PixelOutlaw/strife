@@ -20,6 +20,7 @@ package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
@@ -69,8 +70,11 @@ public class DataListener implements Listener {
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    plugin.getBarrierManager()
-        .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getPlayer());
+    plugin.getAttributeUpdateManager().updateHealth(pStats);
+    plugin.getAttributeUpdateManager().updateMovementSpeed(pStats);
+    plugin.getAttributeUpdateManager().updateAttackSpeed(pStats);
+    plugin.getBarrierManager().createBarrierEntry(pStats);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
