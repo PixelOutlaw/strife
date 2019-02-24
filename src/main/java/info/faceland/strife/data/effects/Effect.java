@@ -33,7 +33,6 @@ public class Effect {
       }
     }
     if (range < 1) {
-      LogUtil.printDebug("Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
       apply(caster, target);
       return;
     }

@@ -10,6 +10,7 @@ import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
+import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -70,17 +71,14 @@ public class LoreAbilityListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.LOWEST)
   public void onEntityDeath(EntityDeathEvent event) {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    Player killer = event.getEntity().getKiller();
-    Champion champion = championManager.getChampion(killer);
+    Champion champion = championManager.getChampion(event.getEntity().getKiller());
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_KILL)) {
-      if (la.getAbility() != null) {
-        loreAbilityManager.applyLoreAbility(la, getAttrEntity(killer), null);
-      }
+      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEntity().getKiller()), null);
     }
   }
 
