@@ -27,7 +27,6 @@ import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -57,7 +56,7 @@ public class StatsEffectMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
     ItemStack itemStack = new ItemStack(Material.EMERALD);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

@@ -125,8 +125,10 @@ public class CombatListener implements Listener {
       damageType = AttackType.RANGED;
     }
 
-    AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity(attackEntity);
-    AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(defendEntity);
+    AttributedEntity attacker = plugin.getAttributedEntityManager()
+        .getAttributedEntity(attackEntity);
+    AttributedEntity defender = plugin.getAttributedEntityManager()
+        .getAttributedEntity(defendEntity);
 
     if (damageType == AttackType.MELEE) {
       if (ItemUtil.isWand(attackEntity.getEquipment().getItemInMainHand())) {
@@ -322,7 +324,7 @@ public class CombatListener implements Listener {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    AttributedEntity killer = plugin.getEntityStatCache()
+    AttributedEntity killer = plugin.getAttributedEntityManager()
         .getAttributedEntity(event.getEntity().getKiller());
     if (killer.getAttribute(HP_ON_KILL) > 0.1) {
       restoreHealth(event.getEntity().getKiller(), killer.getAttribute(HP_ON_KILL));

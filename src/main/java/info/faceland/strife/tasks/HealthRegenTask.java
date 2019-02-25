@@ -49,7 +49,7 @@ public class HealthRegenTask extends BukkitRunnable {
             if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
                 continue;
             }
-            AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+            AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
             // Restore 40% of your regen per 2s tick (This task runs every 2s)
             // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
             double amount = StatUtil.getRegen(pStats) * 0.4;

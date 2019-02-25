@@ -49,7 +49,7 @@ public class DOTListener implements Listener {
       return;
     }
     LivingEntity entity = (LivingEntity) event.getEntity();
-    AttributedEntity statEntity = plugin.getEntityStatCache().getAttributedEntity(entity);
+    AttributedEntity statEntity = plugin.getAttributedEntityManager().getAttributedEntity(entity);
 
     if (event.getCause() == DamageCause.FIRE_TICK) {
       double damage = (1 + entity.getHealth() * 0.04) * getResistPotionMult(entity) * (1

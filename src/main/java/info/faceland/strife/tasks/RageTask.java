@@ -20,7 +20,7 @@ package info.faceland.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
-import info.faceland.strife.data.EntityStatCache;
+import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.RageData;
 import info.faceland.strife.managers.RageManager;
 import java.util.ArrayList;
@@ -33,11 +33,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class RageTask extends BukkitRunnable {
 
   private final RageManager rageManager;
-  private final EntityStatCache entityStatCache;
+  private final AttributedEntityManager attributedEntityManager;
 
-  public RageTask(RageManager rageManager, EntityStatCache entityStatCache) {
+  public RageTask(RageManager rageManager, AttributedEntityManager attributedEntityManager) {
     this.rageManager = rageManager;
-    this.entityStatCache = entityStatCache;
+    this.attributedEntityManager = attributedEntityManager;
   }
 
   @Override
@@ -62,7 +62,8 @@ public class RageTask extends BukkitRunnable {
         data.setGraceTicksRemaining(data.getGraceTicksRemaining() - 1);
         continue;
       } else {
-        rageManager.setRage(entityStatCache.getAttributedEntity(entity), data.getRageStacks() - 5);
+        rageManager.setRage(
+            attributedEntityManager.getAttributedEntity(entity), data.getRageStacks() - 5);
         String msg = TextUtils
             .color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
         ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, msg, (Player) entity);

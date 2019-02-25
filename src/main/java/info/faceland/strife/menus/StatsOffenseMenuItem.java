@@ -67,9 +67,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
     Map<StrifeAttribute, Double> bases = plugin.getMonsterManager()
-        .getBaseMonsterStats(EntityType.PLAYER, player.getLevel());
+        .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic
     AttackType type = AttackType.MELEE;
@@ -114,7 +114,8 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(addStat("Critical Rate: ", pStats.getAttribute(CRITICAL_RATE), "%", INT_FORMAT));
     lore.add(
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
-    double aPen = pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
+    double aPen =
+        pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
     if (aPen != 0 && type != AttackType.MAGIC) {
       lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
     }
@@ -126,15 +127,20 @@ public class StatsOffenseMenuItem extends MenuItem {
       lore.add(addStat("Bleed Chance: ", pStats.getAttribute(BLEED_CHANCE), "%", INT_FORMAT));
     }
     if (pStats.getAttribute(BLEED_DAMAGE) > 0) {
-      lore.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getAttribute(BLEED_DAMAGE), "%", INT_FORMAT));
+      lore.add(
+          addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getAttribute(BLEED_DAMAGE), "%",
+              INT_FORMAT));
     }
     if (pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE) > 0 &&
         pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT) > 0 ||
         pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL) > 0) {
       lore.add(breakLine);
-      lore.add(addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
-      lore.add(addStat("Rage On Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT), INT_FORMAT));
-      lore.add(addStat("Rage On Kill: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL), INT_FORMAT));
+      lore.add(
+          addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
+      lore.add(
+          addStat("Rage On Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT), INT_FORMAT));
+      lore.add(
+          addStat("Rage On Kill: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL), INT_FORMAT));
     }
     if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
         || pStats.getAttribute(HP_ON_KILL) > 0) {

@@ -51,7 +51,7 @@ public class BarrierTask extends BukkitRunnable {
         playersPendingRemoval.add(entry.getKey());
         continue;
       }
-      AttributedEntity player = plugin.getEntityStatCache().getAttributedEntity(entity);
+      AttributedEntity player = plugin.getAttributedEntityManager().getAttributedEntity(entity);
       if (player.getAttribute(BARRIER) < 0.1) {
         playersPendingRemoval.add(entry.getKey());
         continue;

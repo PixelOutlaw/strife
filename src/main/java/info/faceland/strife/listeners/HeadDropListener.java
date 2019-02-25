@@ -51,7 +51,7 @@ public class HeadDropListener implements Listener {
         if (event.getEntity() == null || event.getEntity().getKiller() == null) {
             return;
         }
-        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getEntity().getKiller());
+        AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(event.getEntity().getKiller());
         double chance = pStats.getAttribute(StrifeAttribute.HEAD_DROP) / 100;
         if (chance == 0) {
             return;

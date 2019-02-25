@@ -59,7 +59,7 @@ public class StatsBonusMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
     ItemStack itemStack = new ItemStack(Material.GOLD_INGOT);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

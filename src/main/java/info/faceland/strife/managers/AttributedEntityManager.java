@@ -1,25 +1,27 @@
-package info.faceland.strife.data;
+package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
+import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.managers.BarrierManager;
-import info.faceland.strife.managers.ChampionManager;
-import info.faceland.strife.managers.MonsterManager;
+import info.faceland.strife.data.AttributedEntity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-public class EntityStatCache {
+public class AttributedEntityManager {
 
   private final ChampionManager championManager;
   private final BarrierManager barrierManager;
   private final MonsterManager monsterManager;
   private Map<UUID, AttributedEntity> trackedEntities;
 
-  public EntityStatCache(ChampionManager championManager, BarrierManager barrierManager,
+  public AttributedEntityManager(ChampionManager championManager, BarrierManager barrierManager,
       MonsterManager monsterManager) {
     this.championManager = championManager;
     this.barrierManager = barrierManager;

@@ -111,7 +111,7 @@ public class StrifePlugin extends FacePlugin {
   private MultiplierManager multiplierManager;
 
   private DataStorage storage;
-  private EntityStatCache entityStatCache;
+  private AttributedEntityManager attributedEntityManager;
   private SaveTask saveTask;
   private TrackedPruneTask trackedPruneTask;
   private HealthRegenTask regenTask;
@@ -223,7 +223,7 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(statManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
-    entityStatCache = new EntityStatCache(championManager, barrierManager, monsterManager);
+    attributedEntityManager = new AttributedEntityManager(championManager, barrierManager, monsterManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
 
     MenuListener.getInstance().register(this);
@@ -262,12 +262,13 @@ public class StrifePlugin extends FacePlugin {
     tickBossBarsTask = new TickBossBarsTask(bossBarManager);
     pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     darkTask = new DarknessReductionTask(darknessManager);
-    rageTask = new RageTask(rageManager, entityStatCache);
+    rageTask = new RageTask(rageManager, attributedEntityManager);
     uniquePruneTask = new UniquePruneTask(this);
     uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
     spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
-    timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager, entityStatCache);
+    timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
+        attributedEntityManager);
 
     commandHandler.registerCommands(new AttributesCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
@@ -373,7 +374,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(
-        new UniqueSplashListener(entityStatCache, blockManager, effectManager), this);
+        new UniqueSplashListener(attributedEntityManager, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
@@ -386,9 +387,9 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new SummonListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
-    Bukkit.getPluginManager().registerEvents(new DogeListener(entityStatCache), this);
+    Bukkit.getPluginManager().registerEvents(new DogeListener(attributedEntityManager), this);
     Bukkit.getPluginManager().registerEvents(
-        new LoreAbilityListener(entityStatCache, championManager, loreAbilityManager), this);
+        new LoreAbilityListener(attributedEntityManager, championManager, loreAbilityManager), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
@@ -455,7 +456,7 @@ public class StrifePlugin extends FacePlugin {
     enchantExperienceManager = null;
     fishExperienceManager = null;
     miningExperienceManager = null;
-    entityStatCache = null;
+    attributedEntityManager = null;
 
     saveTask = null;
     trackedPruneTask = null;
@@ -820,8 +821,8 @@ public class StrifePlugin extends FacePlugin {
     return championManager;
   }
 
-  public EntityStatCache getEntityStatCache() {
-    return entityStatCache;
+  public AttributedEntityManager getAttributedEntityManager() {
+    return attributedEntityManager;
   }
 
   public MasterConfiguration getSettings() {

@@ -3,7 +3,7 @@ package info.faceland.strife.data.effects;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.EntityStatCache;
+import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.condition.Condition;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -17,7 +17,7 @@ import org.bukkit.entity.LivingEntity;
 
 public class Effect {
 
-  private static final EntityStatCache entityStatCache = StrifePlugin.getInstance().getEntityStatCache();
+  private static final AttributedEntityManager ATTRIBUTED_ENTITY_MANAGER = StrifePlugin.getInstance().getAttributedEntityManager();
   private String name;
   private boolean selfAffect;
   private boolean friendly;
@@ -38,7 +38,7 @@ public class Effect {
     }
     for (LivingEntity le : getTargets(caster.getEntity(), target.getEntity())) {
       LogUtil.printDebug("Applying effect to " + PlayerDataUtil.getName(le));
-      apply(caster, entityStatCache.getAttributedEntity(le));
+      apply(caster, ATTRIBUTED_ENTITY_MANAGER.getAttributedEntity(le));
     }
   }
 

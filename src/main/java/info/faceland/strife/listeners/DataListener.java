@@ -70,7 +70,7 @@ public class DataListener implements Listener {
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getPlayer());
+    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer());
     plugin.getAttributeUpdateManager().updateHealth(pStats);
     plugin.getAttributeUpdateManager().updateMovementSpeed(pStats);
     plugin.getAttributeUpdateManager().updateAttackSpeed(pStats);
@@ -86,7 +86,7 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     plugin.getBarrierManager()
-        .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+        .createBarrierEntry(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -103,9 +103,9 @@ public class DataListener implements Listener {
     }
     final Player player = event.getPlayer();
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
-    plugin.getEntityStatCache().getAttributedEntity(entity);
+    plugin.getAttributedEntityManager().getAttributedEntity(entity);
     plugin.getBossBarManager()
-        .pushBar(player, plugin.getEntityStatCache().getAttributedEntity(entity));
+        .pushBar(player, plugin.getAttributedEntityManager().getAttributedEntity(entity));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

@@ -85,7 +85,7 @@ public class StrifeCommand {
         .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
         .color(ChatColor.WHITE).then(" to spend them!").send(target);
     plugin.getAttributeUpdateManager()
-        .updateAttributes(plugin.getEntityStatCache(), champion.getPlayer());
+        .updateAttributes(plugin.getAttributedEntityManager(), champion.getPlayer());
   }
 
   @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -104,7 +104,7 @@ public class StrifeCommand {
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
     plugin.getAttributeUpdateManager()
-        .updateAttributes(plugin.getEntityStatCache(), champion.getPlayer());
+        .updateAttributes(plugin.getAttributedEntityManager(), champion.getPlayer());
   }
 
   @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -123,7 +123,7 @@ public class StrifeCommand {
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
     plugin.getAttributeUpdateManager()
-        .updateAttributes(plugin.getEntityStatCache(), champion.getPlayer());
+        .updateAttributes(plugin.getAttributedEntityManager(), champion.getPlayer());
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)

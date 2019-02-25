@@ -58,7 +58,7 @@ public class BowListener implements Listener {
     event.setCancelled(true);
 
     Player playerEntity = (Player) event.getEntity().getShooter();
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(playerEntity);
+    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(playerEntity);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
 
     if (attackMultiplier <= 0.1) {

@@ -47,7 +47,7 @@ public class BullionListener implements Listener {
         if (event.getKiller() == null) {
             return;
         }
-        AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(event.getKiller());
+        AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(event.getKiller());
         double amount = event.getAmount() + event.getAmount() * (1 + pStats.getAttribute(StrifeAttribute.GOLD_FIND) / 100);
         event.setAmount(amount);
     }

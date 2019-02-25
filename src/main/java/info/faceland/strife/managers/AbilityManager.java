@@ -93,7 +93,7 @@ public class AbilityManager {
         LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
         return;
       }
-      target = plugin.getEntityStatCache().getAttributedEntity(targetEntity);
+      target = plugin.getAttributedEntityManager().getAttributedEntity(targetEntity);
     } else {
       targetEntity = target.getEntity();
     }

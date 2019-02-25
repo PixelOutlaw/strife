@@ -1,8 +1,8 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
@@ -10,7 +10,6 @@ import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
-import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -24,13 +23,13 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 public class LoreAbilityListener implements Listener {
 
-  private final EntityStatCache entityStatCache;
+  private final AttributedEntityManager attributedEntityManager;
   private final ChampionManager championManager;
   private final LoreAbilityManager loreAbilityManager;
 
-  public LoreAbilityListener(EntityStatCache entityStatCache, ChampionManager championManager,
+  public LoreAbilityListener(AttributedEntityManager attributedEntityManager, ChampionManager championManager,
       LoreAbilityManager loreAbilityManager) {
-    this.entityStatCache = entityStatCache;
+    this.attributedEntityManager = attributedEntityManager;
     this.championManager = championManager;
     this.loreAbilityManager = loreAbilityManager;
   }
@@ -133,6 +132,6 @@ public class LoreAbilityListener implements Listener {
 
   // Just to make things prettier, so sue me
   private AttributedEntity getAttrEntity(LivingEntity livingEntity) {
-    return entityStatCache.getAttributedEntity(livingEntity);
+    return attributedEntityManager.getAttributedEntity(livingEntity);
   }
 }

@@ -98,7 +98,7 @@ public class SwingListener implements Listener {
       shootWand(event.getPlayer(), event);
     }
     plugin.getAttributeUpdateManager()
-        .updateAttackSpeed(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+        .updateAttackSpeed(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -113,7 +113,7 @@ public class SwingListener implements Listener {
   }
 
   private void spellSwordSwing(Player player, Cancellable event) {
-    AttributedEntity attacker = plugin.getEntityStatCache().getAttributedEntity(player);
+    AttributedEntity attacker = plugin.getAttributedEntityManager().getAttributedEntity(player);
     double range = attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE);
     if (attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE) < 0.5) {
       return;
@@ -126,13 +126,13 @@ public class SwingListener implements Listener {
     if (target == null) {
       return;
     }
-    //AttributedEntity defender = plugin.getEntityStatCache().getAttributedEntity(target);
+    //AttributedEntity defender = plugin.getAttributedEntityManager().getAttributedEntity(target);
     spawnSparkle(target);
     event.setCancelled(true);
   }
 
   private void shootWand(Player player, Cancellable event) {
-    AttributedEntity pStats = plugin.getEntityStatCache().getAttributedEntity(player);
+    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
 
     if (attackMultiplier <= 0.05) {

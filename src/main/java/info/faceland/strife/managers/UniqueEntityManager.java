@@ -174,9 +174,9 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
 
-    plugin.getEntityStatCache().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
+    plugin.getAttributedEntityManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
-    plugin.getAbilityManager().checkPhaseChange(plugin.getEntityStatCache().getAttributedEntity(spawnedUnique));
+    plugin.getAbilityManager().checkPhaseChange(plugin.getAttributedEntityManager().getAttributedEntity(spawnedUnique));
     return spawnedUnique;
   }
 

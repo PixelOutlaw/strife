@@ -30,7 +30,6 @@ import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
@@ -126,7 +125,7 @@ public class AttributeUpdateManager {
     attributedEntity.getEntity().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
   }
 
-  public void updateAttributes(EntityStatCache statCache, Player player) {
+  public void updateAttributes(AttributedEntityManager statCache, Player player) {
     AttributedEntity playerStatEntity = statCache.getAttributedEntity(player);
     updateHealth(playerStatEntity);
     updateMovementSpeed(playerStatEntity);

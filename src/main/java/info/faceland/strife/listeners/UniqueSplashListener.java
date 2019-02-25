@@ -8,7 +8,7 @@ import static info.faceland.strife.util.DamageUtil.doEvasion;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
 
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.EntityStatCache;
+import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.EffectManager;
 import info.faceland.strife.util.StatUtil;
@@ -21,13 +21,13 @@ import org.bukkit.event.entity.PotionSplashEvent;
 
 public class UniqueSplashListener implements Listener {
 
-  private final EntityStatCache entityStatCache;
+  private final AttributedEntityManager attributedEntityManager;
   private final BlockManager blockManager;
   private final EffectManager effectManager;
 
-  public UniqueSplashListener(EntityStatCache entityStatCache, BlockManager blockManager,
+  public UniqueSplashListener(AttributedEntityManager attributedEntityManager, BlockManager blockManager,
       EffectManager effectManager) {
-    this.entityStatCache = entityStatCache;
+    this.attributedEntityManager = attributedEntityManager;
     this.blockManager = blockManager;
     this.effectManager = effectManager;
   }
@@ -46,13 +46,13 @@ public class UniqueSplashListener implements Listener {
       return;
     }
     LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
-    AttributedEntity attacker = entityStatCache.getAttributedEntity(attackEntity);
+    AttributedEntity attacker = attributedEntityManager.getAttributedEntity(attackEntity);
     for (Entity e : event.getAffectedEntities()) {
       if (!(e instanceof LivingEntity)) {
         continue;
       }
       LivingEntity defendEntity = (LivingEntity) e;
-      AttributedEntity defender = entityStatCache.getAttributedEntity(defendEntity);
+      AttributedEntity defender = attributedEntityManager.getAttributedEntity(defendEntity);
 
       double evasionMultiplier = StatUtil.getEvasion(attacker, defender);
       evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));

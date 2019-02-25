@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -52,39 +53,32 @@ public class MonsterManager {
   }
 
   public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity) {
+    return getBaseStats(livingEntity, -1);
+  }
+
+  public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity, int level) {
     Map<StrifeAttribute, Double> levelStats = new HashMap<>();
     EntityType type = livingEntity.getType();
     if (!entityStatDataMap.containsKey(type)) {
       return levelStats;
     }
-    int level = getEntityLevel(livingEntity);
-
-    for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type).getPerLevelMap()
-        .entrySet()) {
-      levelStats.put(stat.getKey(), stat.getValue() * level);
+    if (level == -1) {
+      level = getEntityLevel(livingEntity);
+    }
+    for (StrifeAttribute attr : entityStatDataMap.get(type).getPerLevelMap().keySet()) {
+      levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
     }
     if (type == EntityType.PLAYER && level >= 100) {
-      int bonusLevel = championManager.getChampion(livingEntity.getUniqueId())
-          .getBonusLevels();
+      int bLevel = championManager.getChampion(livingEntity.getUniqueId()).getBonusLevels();
       Map<StrifeAttribute, Double> bonusStats = new HashMap<>();
-      for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type)
-          .getPerBonusLevelMap().entrySet()) {
-        bonusStats.put(stat.getKey(), stat.getValue() * bonusLevel);
+      for (StrifeAttribute attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
+        bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
       }
-      levelStats = AttributeUpdateManager.combineMaps(levelStats, bonusStats);
+      return AttributeUpdateManager
+          .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats, bonusStats);
     }
     return AttributeUpdateManager
         .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
-  }
-
-  public Map<StrifeAttribute, Double> getBaseMonsterStats(EntityType entityType, int level) {
-    Map<StrifeAttribute, Double> levelStats = new HashMap<>();
-    for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(entityType)
-        .getPerLevelMap().entrySet()) {
-      levelStats.put(stat.getKey(), stat.getValue() * level);
-    }
-    return AttributeUpdateManager
-        .combineMaps(entityStatDataMap.get(entityType).getBaseValueMap(), levelStats);
   }
 
   public void loadBaseStats(String key, ConfigurationSection cs) {
@@ -135,10 +129,10 @@ public class MonsterManager {
     if (entity instanceof Player) {
       return ((Player) entity).getLevel();
     }
-    if (entity.getCustomName() != null) {
-      return NumberUtils
-          .toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
+    if (StringUtils.isBlank(entity.getCustomName())) {
+      return 0;
     }
-    return 0;
+    return NumberUtils
+        .toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
   }
 }

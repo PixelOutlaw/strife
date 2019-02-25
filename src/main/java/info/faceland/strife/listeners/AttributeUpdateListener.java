@@ -51,7 +51,7 @@ public class AttributeUpdateListener implements Listener {
       plugin.getChampionManager().updateAll(
           plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getAttributeUpdateManager().updateAttributes(
-          plugin.getEntityStatCache(), event.getPlayer());
+          plugin.getAttributedEntityManager(), event.getPlayer());
     }, 20L);
   }
 
@@ -61,7 +61,7 @@ public class AttributeUpdateListener implements Listener {
       plugin.getChampionManager().updateEquipmentAttributes(
           plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getAttributeUpdateManager().updateAttributes(
-          plugin.getEntityStatCache(), event.getPlayer());
+          plugin.getAttributedEntityManager(), event.getPlayer());
     }, 1L);
   }
 
@@ -71,7 +71,7 @@ public class AttributeUpdateListener implements Listener {
       plugin.getChampionManager().updateEquipmentAttributes(
           plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getAttributeUpdateManager().updateAttributes(
-          plugin.getEntityStatCache(), event.getPlayer());
+          plugin.getAttributedEntityManager(), event.getPlayer());
     }, 1L);
   }
 
@@ -102,7 +102,7 @@ public class AttributeUpdateListener implements Listener {
     }
     plugin.getChampionManager().updateEquipmentAttributes(
         plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()));
-    plugin.getAttributeUpdateManager().updateAttributes(plugin.getEntityStatCache(), player);
+    plugin.getAttributeUpdateManager().updateAttributes(plugin.getAttributedEntityManager(), player);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -110,16 +110,16 @@ public class AttributeUpdateListener implements Listener {
     plugin.getChampionManager().updateAll(
         plugin.getChampionManager().getChampion(event.getPlayer()));
     plugin.getAttributeUpdateManager().updateAttributes(
-        plugin.getEntityStatCache(), event.getPlayer());
+        plugin.getAttributedEntityManager(), event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerQuit(PlayerQuitEvent event) {
-    plugin.getEntityStatCache().removeEntity(event.getPlayer());
+    plugin.getAttributedEntityManager().removeEntity(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerKick(PlayerKickEvent event) {
-    plugin.getEntityStatCache().removeEntity(event.getPlayer());
+    plugin.getAttributedEntityManager().removeEntity(event.getPlayer());
   }
 }

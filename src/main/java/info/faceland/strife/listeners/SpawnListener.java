@@ -10,6 +10,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.util.LogUtil;
 import java.util.Map;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
@@ -99,9 +100,7 @@ public class SpawnListener implements Listener {
     level += -2 + random.nextInt(5);
     level = Math.max(level, 1);
 
-    Map<StrifeAttribute, Double> statMap = plugin.getMonsterManager()
-        .getBaseMonsterStats(entity.getType(), level);
-
+    Map<StrifeAttribute, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
     if (statMap.isEmpty()) {
       return;
     }

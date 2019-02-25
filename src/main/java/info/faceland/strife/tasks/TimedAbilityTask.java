@@ -18,8 +18,8 @@
  */
 package info.faceland.strife.tasks;
 
+import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
-import info.faceland.strife.data.EntityStatCache;
 import info.faceland.strife.managers.AbilityManager;
 import info.faceland.strife.managers.UniqueEntityManager;
 import org.bukkit.entity.LivingEntity;
@@ -29,20 +29,20 @@ public class TimedAbilityTask extends BukkitRunnable {
 
   private final AbilityManager abilityManager;
   private final UniqueEntityManager uniqueEntityManager;
-  private final EntityStatCache entityStatCache;
+  private final AttributedEntityManager attributedEntityManager;
 
   public TimedAbilityTask(AbilityManager abilityManager, UniqueEntityManager uniqueEntityManager,
-      EntityStatCache entityStatCache) {
+      AttributedEntityManager attributedEntityManager) {
     this.abilityManager = abilityManager;
     this.uniqueEntityManager = uniqueEntityManager;
-    this.entityStatCache = entityStatCache;
+    this.attributedEntityManager = attributedEntityManager;
   }
 
   @Override
   public void run() {
     for (LivingEntity livingEntity : uniqueEntityManager.getLiveUniquesMap().keySet()) {
       abilityManager
-          .uniqueAbilityCast(entityStatCache.getAttributedEntity(livingEntity), AbilityType.TIMER);
+          .uniqueAbilityCast(attributedEntityManager.getAttributedEntity(livingEntity), AbilityType.TIMER);
     }
   }
 

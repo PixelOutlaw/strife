@@ -38,15 +38,15 @@ public class TrackedPruneTask extends BukkitRunnable {
     @Override
     public void run() {
         ArrayList<UUID> invalidEntities = new ArrayList<>();
-        for (UUID uuid : plugin.getEntityStatCache().getTrackedEntities().keySet()) {
-            if (plugin.getEntityStatCache().isValid(uuid)) {
+        for (UUID uuid : plugin.getAttributedEntityManager().getTrackedEntities().keySet()) {
+            if (plugin.getAttributedEntityManager().isValid(uuid)) {
                 continue;
             }
             invalidEntities.add(uuid);
         }
         plugin.getLogger().info("Cleared " + invalidEntities.size() + " no longer valid attributed entities.");
         for (UUID uuid : invalidEntities) {
-            plugin.getEntityStatCache().removeEntity(uuid);
+            plugin.getAttributedEntityManager().removeEntity(uuid);
         }
     }
 }
