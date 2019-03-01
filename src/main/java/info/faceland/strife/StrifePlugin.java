@@ -54,6 +54,7 @@ import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -223,7 +224,8 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(statManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
-    attributedEntityManager = new AttributedEntityManager(championManager, barrierManager, monsterManager);
+    attributedEntityManager = new AttributedEntityManager(championManager, barrierManager,
+        monsterManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
 
     MenuListener.getInstance().register(this);
@@ -389,7 +391,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(attributedEntityManager), this);
     Bukkit.getPluginManager().registerEvents(
-        new LoreAbilityListener(attributedEntityManager, championManager, loreAbilityManager), this);
+        new LoreAbilityListener(attributedEntityManager, championManager, loreAbilityManager),
+        this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
@@ -523,8 +526,8 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = loreAbilityYAML.getConfigurationSection(key);
       loreAbilityManager.loadLoreAbility(key, cs);
     }
-    LogUtil.printDebug("Loaded lore abilities: " +
-        loreAbilityManager.getLoreStringToAbilityMap().entrySet().toString());
+    LogUtil.printDebug("Loaded lore abilities: " + ChatColor
+        .stripColor(loreAbilityManager.getLoreStringToAbilityMap().entrySet().toString()));
   }
 
   private void buildEquipment() {
