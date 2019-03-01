@@ -69,7 +69,11 @@ public class LoreAbilityManager {
       return;
     }
 
-    Ability ability = abilityManager.getAbility(cs.getString("ability-name", null));
+    String abilityString = cs.getString("ability-name", null);
+    Ability ability = null;
+    if (!StringUtils.isBlank(abilityString)) {
+      ability = abilityManager.getAbility(abilityString);
+    }
     List<String> stringEffects = cs.getStringList("effects");
     List<Effect> effectList = new ArrayList<>();
     for (String s : stringEffects) {
