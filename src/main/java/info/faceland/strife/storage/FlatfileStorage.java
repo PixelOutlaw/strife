@@ -101,6 +101,7 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".bound-lore-abilities", boundAbilityIds);
 
     configMap.put(champion.getUniqueId(), config);
+    config.save();
   }
 
   public ChampionSaveData load(UUID uuid) {
