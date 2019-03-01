@@ -43,9 +43,8 @@ public class LoreAbilityManager {
     }
     for (String s : lore) {
       LoreAbility loreAbility = getLoreAbilityFromString(s);
-      LogUtil.printDebug("Attempting to get lore ability for string: " + s);
       if (loreAbility != null) {
-        LogUtil.printDebug("Added!: " + s);
+        LogUtil.printDebug("Added LA string: " + s);
         abilities.add(loreAbility);
       }
     }
