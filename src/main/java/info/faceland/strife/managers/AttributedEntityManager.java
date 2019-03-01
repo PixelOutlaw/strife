@@ -1,31 +1,23 @@
 package info.faceland.strife.managers;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
-import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class AttributedEntityManager {
 
-  private final ChampionManager championManager;
-  private final BarrierManager barrierManager;
-  private final MonsterManager monsterManager;
+  private final StrifePlugin plugin;
   private Map<UUID, AttributedEntity> trackedEntities;
 
-  public AttributedEntityManager(ChampionManager championManager, BarrierManager barrierManager,
-      MonsterManager monsterManager) {
-    this.championManager = championManager;
-    this.barrierManager = barrierManager;
-    this.monsterManager = monsterManager;
+  public AttributedEntityManager(StrifePlugin plugin) {
+    this.plugin = plugin;
     this.trackedEntities = new HashMap<>();
   }
 
@@ -37,15 +29,16 @@ public class AttributedEntityManager {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       AttributedEntity attributedEntity;
       if (entity instanceof Player) {
-        attributedEntity = new AttributedEntity(championManager.getChampion((Player) entity));
+        attributedEntity = new AttributedEntity(
+            plugin.getChampionManager().getChampion((Player) entity));
       } else {
         attributedEntity = new AttributedEntity(entity);
       }
-      attributedEntity.setAttributes(monsterManager.getBaseStats(entity));
+      attributedEntity.setAttributes(plugin.getMonsterManager().getBaseStats(entity));
       trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
     AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
-    barrierManager.createBarrierEntry(attributedEntity);
+    plugin.getBarrierManager().createBarrierEntry(attributedEntity);
     return attributedEntity;
   }
 

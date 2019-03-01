@@ -37,7 +37,7 @@ public class AttributesCommand {
   public void baseCommand(Player sender) {
     Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
     plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(plugin.getAttributedEntityManager(), sender);
+    plugin.getAttributeUpdateManager().updateAttributes(sender);
     plugin.getStatsMenu().open(sender);
   }
 

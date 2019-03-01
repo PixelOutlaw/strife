@@ -105,8 +105,7 @@ public class LevelupMenuItem extends MenuItem {
     plugin.getChampionManager().removeChampion(champion.getUniqueId());
     plugin.getChampionManager().addChampion(champion);
     plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(plugin.getAttributedEntityManager(),
-        champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
     event.setWillUpdate(true);
   }
 }

@@ -46,6 +46,12 @@ import java.util.Map;
 
 public class AttributeUpdateManager {
 
+  private final AttributedEntityManager attributedEntityManager;
+
+  public AttributeUpdateManager(final AttributedEntityManager attributedEntityManager) {
+    this.attributedEntityManager = attributedEntityManager;
+  }
+
   public Map<StrifeAttribute, Double> getItemStats(ItemStack stack) {
     return getItemStats(stack, 1.0);
   }
@@ -125,14 +131,20 @@ public class AttributeUpdateManager {
     attributedEntity.getEntity().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
   }
 
-  public void updateAttributes(AttributedEntityManager statCache, Player player) {
-    AttributedEntity playerStatEntity = statCache.getAttributedEntity(player);
-    updateHealth(playerStatEntity);
-    updateMovementSpeed(playerStatEntity);
-    updateAttackSpeed(playerStatEntity);
+  public void updateAttributes(Player player) {
+    updateAttributes(attributedEntityManager.getAttributedEntity(player));
+  }
 
-    StrifePlugin.getInstance().getBarrierManager().updateShieldDisplay(playerStatEntity);
-    player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+  public void updateAttributes(AttributedEntity attributedEntity) {
+    if (!(attributedEntity.getEntity() instanceof Player)) {
+      return;
+    }
+    updateHealth(attributedEntity);
+    updateMovementSpeed(attributedEntity);
+    updateAttackSpeed(attributedEntity);
+
+    StrifePlugin.getInstance().getBarrierManager().updateShieldDisplay(attributedEntity);
+    attributedEntity.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
   }
 
   public void setPlayerArmor(Player player, double percent) {

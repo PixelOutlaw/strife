@@ -27,6 +27,7 @@ import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -43,12 +44,17 @@ public class StrifeCommand {
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
   public void reloadCommand(CommandSender sender) {
-    // Reload spawners from config first so server changes aren't saved to file
-    plugin.getSpawnerManager().getSpawnerMap().clear();
-    plugin.loadSpawners();
+    // Save player data before reload continues
+    plugin.getStorage().saveAll();
+
     // Normal enable/disable
     plugin.disable();
     plugin.enable();
+
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      plugin.getAttributeUpdateManager().updateAttributes(player);
+    }
+
     sendMessage(sender,
         plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
   }
@@ -84,8 +90,7 @@ public class StrifeCommand {
         .command("/levelup")
         .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
         .color(ChatColor.WHITE).then(" to spend them!").send(target);
-    plugin.getAttributeUpdateManager()
-        .updateAttributes(plugin.getAttributedEntityManager(), champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -103,8 +108,7 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You cleared <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
-    plugin.getAttributeUpdateManager()
-        .updateAttributes(plugin.getAttributedEntityManager(), champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -122,8 +126,7 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
-    plugin.getAttributeUpdateManager()
-        .updateAttributes(plugin.getAttributedEntityManager(), champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)

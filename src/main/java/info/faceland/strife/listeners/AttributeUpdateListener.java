@@ -50,8 +50,7 @@ public class AttributeUpdateListener implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().updateAll(
           plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getAttributeUpdateManager().updateAttributes(
-          plugin.getAttributedEntityManager(), event.getPlayer());
+      plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
     }, 20L);
   }
 
@@ -60,8 +59,7 @@ public class AttributeUpdateListener implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().updateEquipmentAttributes(
           plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getAttributeUpdateManager().updateAttributes(
-          plugin.getAttributedEntityManager(), event.getPlayer());
+      plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
     }, 1L);
   }
 
@@ -70,8 +68,7 @@ public class AttributeUpdateListener implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().updateEquipmentAttributes(
           plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getAttributeUpdateManager().updateAttributes(
-          plugin.getAttributedEntityManager(), event.getPlayer());
+      plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
     }, 1L);
   }
 
@@ -102,15 +99,14 @@ public class AttributeUpdateListener implements Listener {
     }
     plugin.getChampionManager().updateEquipmentAttributes(
         plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()));
-    plugin.getAttributeUpdateManager().updateAttributes(plugin.getAttributedEntityManager(), player);
+    plugin.getAttributeUpdateManager().updateAttributes(player);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerJoin(PlayerJoinEvent event) {
     plugin.getChampionManager().updateAll(
         plugin.getChampionManager().getChampion(event.getPlayer()));
-    plugin.getAttributeUpdateManager().updateAttributes(
-        plugin.getAttributedEntityManager(), event.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

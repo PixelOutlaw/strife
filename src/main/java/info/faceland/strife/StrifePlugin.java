@@ -54,7 +54,6 @@ import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import ninja.amp.ampmenus.MenuListener;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -209,23 +208,22 @@ public class StrifePlugin extends FacePlugin {
     enchantExperienceManager = new EnchantExperienceManager(this);
     fishExperienceManager = new FishExperienceManager(this);
     miningExperienceManager = new MiningExperienceManager(this);
+    attributedEntityManager = new AttributedEntityManager(this);
     abilityManager = new AbilityManager(this);
     commandHandler = new CommandHandler(this);
     statManager = new StrifeStatManager();
     blockManager = new BlockManager();
     bleedManager = new BleedManager();
     darknessManager = new DarknessManager();
-    attributeUpdateManager = new AttributeUpdateManager();
     attackSpeedManager = new AttackSpeedManager();
     equipmentManager = new EntityEquipmentManager();
     multiplierManager = new MultiplierManager();
+    attributeUpdateManager = new AttributeUpdateManager(attributedEntityManager);
     rageManager = new RageManager(attributeUpdateManager);
     barrierManager = new BarrierManager(attributeUpdateManager);
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(statManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
-    attributedEntityManager = new AttributedEntityManager(championManager, barrierManager,
-        monsterManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
 
     MenuListener.getInstance().register(this);
@@ -492,8 +490,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
       abilityManager.loadAbility(key, cs);
     }
-    LogUtil.printDebug(
-        "Loaded abilities: " + abilityManager.getLoadedAbilities().entrySet().toString());
   }
 
   private void buildEffects() {
@@ -504,7 +500,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = effectYAML.getConfigurationSection(key);
       effectManager.loadEffect(key, cs);
     }
-    LogUtil.printDebug("Loaded effects: " + effectManager.getLoadedEffects().entrySet().toString());
   }
 
   private void buildConditions() {
@@ -515,7 +510,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = conditionYAML.getConfigurationSection(key);
       effectManager.loadCondition(key, cs);
     }
-    LogUtil.printDebug("Loaded conditions: " + effectManager.getConditions().entrySet().toString());
   }
 
   private void buildLoreAbilities() {
@@ -526,8 +520,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = loreAbilityYAML.getConfigurationSection(key);
       loreAbilityManager.loadLoreAbility(key, cs);
     }
-    LogUtil.printDebug("Loaded lore abilities: " + ChatColor
-        .stripColor(loreAbilityManager.getLoreStringToAbilityMap().entrySet().toString()));
   }
 
   private void buildEquipment() {
@@ -538,7 +530,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = equipmentYAML.getConfigurationSection(itemStackKey);
       equipmentManager.loadEquipmentItem(itemStackKey, cs);
     }
-    LogUtil.printDebug("Loaded equipments: " + equipmentManager.getItemMap().entrySet().toString());
   }
 
   private void buildLevelpointStats() {
@@ -549,7 +540,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = statsYAML.getConfigurationSection(key);
       statManager.loadStat(key, cs);
     }
-    LogUtil.printDebug("Loaded levelpoints: " + statManager.getStats().toString());
   }
 
   private void buildBaseStats() {
