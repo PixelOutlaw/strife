@@ -1,10 +1,9 @@
-package info.faceland.strife.data.effects;
+package info.faceland.strife.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class Speak extends Effect {

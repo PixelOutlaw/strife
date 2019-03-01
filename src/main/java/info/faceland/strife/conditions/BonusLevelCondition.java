@@ -1,8 +1,7 @@
-package info.faceland.strife.data.condition;
+package info.faceland.strife.conditions;
 
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.PlayerDataUtil;
-import org.bukkit.entity.Player;
 
 public class BonusLevelCondition implements Condition {
 

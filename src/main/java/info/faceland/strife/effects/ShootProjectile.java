@@ -1,4 +1,4 @@
-package info.faceland.strife.data.effects;
+package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -7,7 +7,6 @@ import info.faceland.strife.util.LogUtil;
 import java.util.List;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;

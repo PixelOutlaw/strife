@@ -2,12 +2,12 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.condition.*;
-import info.faceland.strife.data.condition.Condition.CompareTarget;
-import info.faceland.strife.data.condition.Condition.Comparison;
-import info.faceland.strife.data.condition.Condition.ConditionType;
-import info.faceland.strife.data.effects.*;
-import info.faceland.strife.data.effects.DealDamage.DamageScale;
+import info.faceland.strife.conditions.*;
+import info.faceland.strife.conditions.Condition.CompareTarget;
+import info.faceland.strife.conditions.Condition.Comparison;
+import info.faceland.strife.conditions.Condition.ConditionType;
+import info.faceland.strife.effects.*;
+import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
@@ -170,7 +170,7 @@ public class EffectManager {
     for (String s : conditionStrings) {
       Condition condition = conditions.get(s);
       if (condition == null) {
-        LogUtil.printWarning("Invalid condition " + s + " for effect " + key + ". Skipping.");
+        LogUtil.printWarning("Invalid conditions " + s + " for effect " + key + ". Skipping.");
         continue;
       }
       effect.addCondition(conditions.get(s));
@@ -186,7 +186,7 @@ public class EffectManager {
     try {
       conditionType = ConditionType.valueOf(type);
     } catch (Exception e) {
-      LogUtil.printError("Failed to load " + key + ". Invalid condition type (" + type + ")");
+      LogUtil.printError("Failed to load " + key + ". Invalid conditions type (" + type + ")");
       return;
     }
 
@@ -212,7 +212,7 @@ public class EffectManager {
         try {
           attr = StrifeAttribute.valueOf(cs.getString("attribute", null));
         } catch (Exception e) {
-          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
+          LogUtil.printError("Failed to load conditions " + key + ". Invalid attribute.");
           return;
         }
         condition = new AttributeCondition(attr, compareTarget, comparison, value);
@@ -220,7 +220,7 @@ public class EffectManager {
       case STAT:
         StrifeStat stat = strifeStatManager.getStat(cs.getString("stat", null));
         if (stat == null) {
-          LogUtil.printError("Failed to load condition " + key + ". Invalid stat.");
+          LogUtil.printError("Failed to load conditions " + key + ". Invalid stat.");
           return;
         }
         condition = new StatCondition(stat, compareTarget, comparison, value);
@@ -242,7 +242,7 @@ public class EffectManager {
         try {
           potionEffectType = PotionEffectType.getByName(cs.getString("potion-effect", "p"));
         } catch (Exception e) {
-          LogUtil.printError("Failed to load " + key + ". Invalid condition type (" + type + ")");
+          LogUtil.printError("Failed to load " + key + ". Invalid conditions type (" + type + ")");
           return;
         }
         int potionIntensity = cs.getInt("intensity", 0);
@@ -259,11 +259,11 @@ public class EffectManager {
         condition = new HeightCondition(compareTarget);
         break;
       default:
-        LogUtil.printError("No valid condition found for " + key + "... somehow?");
+        LogUtil.printError("No valid conditions found for " + key + "... somehow?");
         return;
     }
     conditions.put(key, condition);
-    LogUtil.printInfo("Loaded condition " + key + " successfully.");
+    LogUtil.printInfo("Loaded conditions " + key + " successfully.");
   }
 
   public Effect getEffect(String key) {

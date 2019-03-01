@@ -1,7 +1,6 @@
-package info.faceland.strife.data.effects;
+package info.faceland.strife.effects;
 
 import info.faceland.strife.data.AttributedEntity;
-import org.bukkit.entity.LivingEntity;
 
 public class Lightning extends Effect {
 

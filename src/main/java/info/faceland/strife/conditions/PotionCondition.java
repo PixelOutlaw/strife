@@ -1,6 +1,6 @@
-package info.faceland.strife.data.condition;
+package info.faceland.strife.conditions;
 
-import static info.faceland.strife.data.condition.Condition.CompareTarget.*;
+import static info.faceland.strife.conditions.Condition.CompareTarget.*;
 
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.PlayerDataUtil;

@@ -1,9 +1,8 @@
-package info.faceland.strife.data.effects;
+package info.faceland.strife.effects;
 
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Creature;
-import org.bukkit.entity.LivingEntity;
 
 public class ForceTarget extends Effect {
 

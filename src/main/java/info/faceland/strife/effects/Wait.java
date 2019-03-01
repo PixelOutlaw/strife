@@ -1,4 +1,4 @@
-package info.faceland.strife.data.effects;
+package info.faceland.strife.effects;
 
 public class Wait extends Effect {
 

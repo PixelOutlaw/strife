@@ -8,9 +8,9 @@ import info.faceland.strife.data.Ability.TargetType;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.EntityAbilitySet;
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
-import info.faceland.strife.data.condition.Condition;
-import info.faceland.strife.data.effects.Effect;
-import info.faceland.strife.data.effects.Wait;
+import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.Wait;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
@@ -290,7 +290,7 @@ public class AbilityManager {
     for (String s : conditionStrings) {
       Condition condition = plugin.getEffectManager().getConditions().get(s);
       if (condition == null) {
-        LogUtil.printWarning("Invalid condition " + s + " for effect " + key + ". Skipping.");
+        LogUtil.printWarning("Invalid conditions " + s + " for effect " + key + ". Skipping.");
         continue;
       }
       conditions.add(plugin.getEffectManager().getConditions().get(s));

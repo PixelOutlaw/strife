@@ -1,7 +1,7 @@
 package info.faceland.strife.util;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.condition.Condition.Comparison;
+import info.faceland.strife.conditions.Condition.Comparison;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 

@@ -1,6 +1,6 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.effects.Effect;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import java.util.ArrayList;
 import java.util.List;

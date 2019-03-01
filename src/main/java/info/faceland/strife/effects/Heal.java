@@ -1,8 +1,8 @@
-package info.faceland.strife.data.effects;
+package info.faceland.strife.effects;
 
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.effects.DealDamage.DamageScale;
+import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
 
