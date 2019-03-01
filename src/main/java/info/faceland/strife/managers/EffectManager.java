@@ -212,7 +212,7 @@ public class EffectManager {
         try {
           attr = StrifeAttribute.valueOf(cs.getString("attribute", null));
         } catch (Exception e) {
-          LogUtil.printError("Failed to load conditions " + key + ". Invalid attribute.");
+          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
           return;
         }
         condition = new AttributeCondition(attr, compareTarget, comparison, value);
@@ -220,7 +220,7 @@ public class EffectManager {
       case STAT:
         StrifeStat stat = strifeStatManager.getStat(cs.getString("stat", null));
         if (stat == null) {
-          LogUtil.printError("Failed to load conditions " + key + ". Invalid stat.");
+          LogUtil.printError("Failed to load condition " + key + ". Invalid stat.");
           return;
         }
         condition = new StatCondition(stat, compareTarget, comparison, value);
@@ -263,15 +263,13 @@ public class EffectManager {
         return;
     }
     conditions.put(key, condition);
-    LogUtil.printInfo("Loaded conditions " + key + " successfully.");
   }
 
   public Effect getEffect(String key) {
     if (loadedEffects.containsKey(key)) {
-      LogUtil.printDebug("Attempting to load effect " + key);
       return loadedEffects.get(key);
     }
-    LogUtil.printWarning("Attempted to get unknown effect '" + key + "'.");
+    LogUtil.printWarning("Attempted to get unknown effect '" + key + "'");
     return null;
   }
 

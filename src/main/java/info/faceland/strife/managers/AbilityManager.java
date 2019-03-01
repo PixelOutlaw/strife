@@ -278,11 +278,11 @@ public class AbilityManager {
     for (String s : effectStrings) {
       Effect effect = plugin.getEffectManager().getEffect(s);
       if (effect == null) {
-        LogUtil.printWarning("Ability " + key + " tried to add unknown effect" + s);
+        LogUtil.printWarning(" Failed to add unknown effect '" + s + "' to ability '" + s + "'");
         continue;
       }
       effects.add(effect);
-      LogUtil.printDebug("Added effect " + effect.getName() + " (" + s + ") to ability " + key);
+      LogUtil.printDebug(" Added effect '" + s + "' to ability '" + key + "'");
     }
     boolean displayCd = cs.getBoolean("show-cooldown-messages", false);
     List<String> conditionStrings = cs.getStringList("conditions");
@@ -290,7 +290,7 @@ public class AbilityManager {
     for (String s : conditionStrings) {
       Condition condition = plugin.getEffectManager().getConditions().get(s);
       if (condition == null) {
-        LogUtil.printWarning("Invalid conditions " + s + " for effect " + key + ". Skipping.");
+        LogUtil.printWarning(" Invalid condition '" + s + "' for ability '" + key + "'. Skipping.");
         continue;
       }
       conditions.add(plugin.getEffectManager().getConditions().get(s));
