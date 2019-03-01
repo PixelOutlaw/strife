@@ -75,7 +75,6 @@ public class CraftExperienceManager implements StrifeSkillExperienceManager {
     String xpMsg = "&e&l( &f&l" + (int) currentExp + " &e&l/ &f&l" + (int) maxExp + " XP &e&l)";
     ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg),
         champion.getPlayer());
-    champion.setSaveData(saveData);
   }
 
   public Integer getMaxExp(int level) {

@@ -75,7 +75,6 @@ public class MiningExperienceManager implements StrifeSkillExperienceManager {
     String xpMsg = "&2&l( &f&l" + (int) currentExp + " &2&l/ &f&l" + (int) maxExp + " XP &2&l)";
     ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg),
         champion.getPlayer());
-    champion.setSaveData(saveData);
   }
 
   public Integer getMaxExp(int level) {
