@@ -238,11 +238,20 @@ public class ChampionManager {
     }
   }
 
-  public boolean setChampionBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
+  public boolean addBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
     if (champion.getSaveData().getBoundAbilities().contains(loreAbility)) {
       return false;
     }
     champion.getSaveData().getBoundAbilities().add(loreAbility);
+    champion.getEquipmentCache().combineLoreAbilities(champion);
+    return true;
+  }
+
+  public boolean removeBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
+    if (!champion.getSaveData().getBoundAbilities().contains(loreAbility)) {
+      return false;
+    }
+    champion.getSaveData().getBoundAbilities().remove(loreAbility);
     champion.getEquipmentCache().combineLoreAbilities(champion);
     return true;
   }

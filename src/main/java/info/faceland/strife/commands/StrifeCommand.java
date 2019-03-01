@@ -135,13 +135,30 @@ public class StrifeCommand {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
-    boolean success = plugin.getChampionManager().setChampionBoundLoreAbility(champion, ability);
+    boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
     if (success) {
       sendMessage(sender,
           "<green>Bound loreAbility " + loreAbilityId + " to player " + target.getName());
     } else {
       sendMessage(sender,
           "<red>LoreAbility " + loreAbilityId + " already exists on " + target.getName());
+    }
+  }
+
+  @Command(identifier = "strife unbind", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void unbindCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "loreAbility") String abilityId) {
+    LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(abilityId);
+    if (ability == null) {
+      sendMessage(sender, "<red>Invalid loreAbility ID: " + abilityId);
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    boolean success = plugin.getChampionManager().removeBoundLoreAbility(champion, ability);
+    if (success) {
+      sendMessage(sender, "&aUnbound loreAbility " + abilityId + " to player " + target.getName());
+    } else {
+      sendMessage(sender, "&cLoreAbility " + abilityId + " doesn't exist on " + target.getName());
     }
   }
 
