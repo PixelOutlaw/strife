@@ -22,7 +22,9 @@ import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
@@ -31,6 +33,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
@@ -45,6 +48,7 @@ public class DamageUtil {
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
   private static final double BLEED_PERCENT = 0.5;
+  private static final Set<Entity> CUSTOM_DAMAGED_ENTITIES = new HashSet<>();
 
   public static double dealDirectDamage(AttributedEntity attacker, AttributedEntity defender,
       double damage, DamageType damageType) {
@@ -69,12 +73,19 @@ public class DamageUtil {
         damage *= 1 - getShadowResist(defender) / 100;
         break;
     }
-    defender.getEntity().damage(-1, attacker.getEntity());
+    CUSTOM_DAMAGED_ENTITIES.add(defender.getEntity());
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    //defender.getBleedOnEntity().setHealth(defender.getBleedOnEntity().getHealth() - damage);
-    defender.getEntity().damage(damage);
+    defender.getEntity().damage(damage, attacker.getEntity());
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
     return damage;
+  }
+
+  public static boolean isCustomDamage(Entity entity) {
+    return CUSTOM_DAMAGED_ENTITIES.contains(entity);
+  }
+
+  public static void removeCustomDamageEntity(Entity entity) {
+    CUSTOM_DAMAGED_ENTITIES.remove(entity);
   }
 
   public static double attemptIgnite(double damage, AttributedEntity attacker,

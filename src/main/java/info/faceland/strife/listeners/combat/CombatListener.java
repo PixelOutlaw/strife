@@ -26,6 +26,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -57,8 +58,8 @@ public class CombatListener implements Listener {
       return;
     }
     // Catch the spoofed damage from abilities
-    if (event.getDamage() <= 0 && event.getCause() == DamageCause.CUSTOM) {
-      event.setDamage(0);
+    if (DamageUtil.isCustomDamage(event.getEntity())) {
+      DamageUtil.removeCustomDamageEntity(event.getEntity());
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
