@@ -135,8 +135,14 @@ public class StrifeCommand {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
-    plugin.getChampionManager().setChampionBoundLoreAbility(champion, ability);
-    sendMessage(target, "<green>Bound loreAbility " + loreAbilityId + " to player " + target.getName());
+    boolean success = plugin.getChampionManager().setChampionBoundLoreAbility(champion, ability);
+    if (success) {
+      sendMessage(sender,
+          "<green>Bound loreAbility " + loreAbilityId + " to player " + target.getName());
+    } else {
+      sendMessage(sender,
+          "<red>LoreAbility " + loreAbilityId + " already exists on " + target.getName());
+    }
   }
 
   @Command(identifier = "strife setskill", permissions = "strife.command.strife.setskill", onlyPlayers = false)

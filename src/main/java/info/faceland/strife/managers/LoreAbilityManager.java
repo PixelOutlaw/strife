@@ -84,7 +84,7 @@ public class LoreAbilityManager {
     }
     List<String> description = TextUtils.color(cs.getStringList("description"));
     boolean singleTarget = cs.getBoolean("single-target", true);
-    LoreAbility loreAbility = new LoreAbility(triggerType, triggerText, ability, singleTarget,
+    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, singleTarget,
         description);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);

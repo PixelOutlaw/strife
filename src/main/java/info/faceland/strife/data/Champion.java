@@ -35,9 +35,9 @@ public class Champion {
   private final Map<StrifeAttribute, Double> attributeLevelPoint;
   private final Map<StrifeAttribute, Double> combinedAttributeCache;
 
-  private Player player;
-  private ChampionSaveData saveData;
-  private PlayerEquipmentCache equipmentCache;
+  private final Player player;
+  private final ChampionSaveData saveData;
+  private final PlayerEquipmentCache equipmentCache;
 
   public Champion(Player player, ChampionSaveData saveData) {
     this.attributeBase = new HashMap<>();
@@ -82,10 +82,6 @@ public class Champion {
 
   public ChampionSaveData getSaveData() {
     return saveData;
-  }
-
-  public void setSaveData(ChampionSaveData data) {
-    this.saveData = data;
   }
 
   public int getLevel(StrifeStat stat) {

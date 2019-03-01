@@ -1,7 +1,9 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.stats.StrifeStat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -9,8 +11,10 @@ import org.bukkit.entity.Player;
 
 public class ChampionSaveData {
 
-  private UUID uniqueId;
-  private Map<StrifeStat, Integer> levelMap;
+  private final UUID uniqueId;
+  private final Map<StrifeStat, Integer> levelMap;
+  private final List<LoreAbility> boundAbilities;
+
   private int unusedStatPoints;
   private int highestReachedLevel;
   private int bonusLevels;
@@ -30,6 +34,7 @@ public class ChampionSaveData {
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
+    this.boundAbilities = new ArrayList<>();
   }
 
   public int getLevel(StrifeStat stat) {
@@ -37,6 +42,10 @@ public class ChampionSaveData {
       return levelMap.get(stat);
     }
     return 0;
+  }
+
+  public List<LoreAbility> getBoundAbilities() {
+    return boundAbilities;
   }
 
   public int getBonusLevels() {

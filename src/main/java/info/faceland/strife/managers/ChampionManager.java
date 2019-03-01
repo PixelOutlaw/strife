@@ -234,13 +234,17 @@ public class ChampionManager {
         sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
         equipmentCache.getBootsStats().clear();
       }
-      equipmentCache.recombine();
+      equipmentCache.recombine(champion);
     }
   }
 
-  public void setChampionBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
-    champion.getEquipmentCache().getBoundAbilities().put(loreAbility.getTriggerType(), loreAbility);
-    champion.getEquipmentCache().combineLoreAbilities();
+  public boolean setChampionBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
+    if (champion.getSaveData().getBoundAbilities().contains(loreAbility)) {
+      return false;
+    }
+    champion.getSaveData().getBoundAbilities().add(loreAbility);
+    champion.getEquipmentCache().combineLoreAbilities(champion);
+    return true;
   }
 
   public void updatePointAttributes(Champion champion) {
