@@ -23,6 +23,7 @@ import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,12 +34,12 @@ import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 
-public class JsonDataStorage implements DataStorage {
+public class FlatfileStorage implements DataStorage {
 
   private final StrifePlugin plugin;
   private final Map<UUID, SmartYamlConfiguration> configMap;
 
-  public JsonDataStorage(StrifePlugin plugin) {
+  public FlatfileStorage(StrifePlugin plugin) {
     this.plugin = plugin;
     this.configMap = new HashMap<>();
   }
@@ -127,9 +128,11 @@ public class JsonDataStorage implements DataStorage {
       for (String s : section.getStringList("bound-lore-abilities")) {
         LoreAbility loreAbility = plugin.getLoreAbilityManager().getLoreAbilityFromId(s);
         if (loreAbility == null) {
+          LogUtil.printError("LoreAbility " + s + " not found for player " + uuid);
           continue;
         }
         if (saveData.getBoundAbilities().contains(loreAbility)) {
+          LogUtil.printWarning("LoreAbility " + s + " already exists on player " + uuid);
           continue;
         }
         saveData.getBoundAbilities().add(loreAbility);

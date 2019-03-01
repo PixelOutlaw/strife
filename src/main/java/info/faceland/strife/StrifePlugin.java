@@ -44,7 +44,7 @@ import info.faceland.strife.managers.*;
 import info.faceland.strife.menus.LevelupMenu;
 import info.faceland.strife.menus.StatsMenu;
 import info.faceland.strife.storage.DataStorage;
-import info.faceland.strife.storage.JsonDataStorage;
+import info.faceland.strife.storage.FlatfileStorage;
 import info.faceland.strife.tasks.*;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
@@ -199,7 +199,7 @@ public class StrifePlugin extends FacePlugin {
 
     settings = MasterConfiguration.loadFromFiles(configYAML);
 
-    storage = new JsonDataStorage(this);
+    storage = new FlatfileStorage(this);
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     bossBarManager = new BossBarManager(this);
