@@ -117,7 +117,7 @@ public class StrifePlugin extends FacePlugin {
   private HealthRegenTask regenTask;
   private BleedTask bleedTask;
   private BarrierTask barrierTask;
-  private TickBossBarsTask tickBossBarsTask;
+  private BossBarsTask bossBarsTask;
   private PruneBossBarsTask pruneBossBarsTask;
   private DarknessReductionTask darkTask;
   private RageTask rageTask;
@@ -259,7 +259,7 @@ public class StrifePlugin extends FacePlugin {
         settings.getDouble("config.mechanics.base-bleed-damage", 1D),
         settings.getDouble("config.mechanics.percent-bleed-damage", 0.1D));
     barrierTask = new BarrierTask(this);
-    tickBossBarsTask = new TickBossBarsTask(bossBarManager);
+    bossBarsTask = new BossBarsTask(bossBarManager);
     pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     darkTask = new DarknessReductionTask(darknessManager);
     rageTask = new RageTask(rageManager, attributedEntityManager);
@@ -333,7 +333,7 @@ public class StrifePlugin extends FacePlugin {
         2201L, // Start timer after 11s
         4L // Run it every 1/5th of a second after
     );
-    tickBossBarsTask.runTaskTimer(this,
+    bossBarsTask.runTaskTimer(this,
         240L, // Start timer after 12s
         2L // Run it every 1/10th of a second after
     );
@@ -415,7 +415,7 @@ public class StrifePlugin extends FacePlugin {
     regenTask.cancel();
     bleedTask.cancel();
     barrierTask.cancel();
-    tickBossBarsTask.cancel();
+    bossBarsTask.cancel();
     pruneBossBarsTask.cancel();
     darkTask.cancel();
     rageTask.cancel();
@@ -462,7 +462,7 @@ public class StrifePlugin extends FacePlugin {
     saveTask = null;
     trackedPruneTask = null;
     pruneBossBarsTask = null;
-    tickBossBarsTask = null;
+    bossBarsTask = null;
     regenTask = null;
     bleedTask = null;
     darkTask = null;

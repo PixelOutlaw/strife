@@ -133,12 +133,12 @@ public class BossBarManager {
     double health = barOwner.getEntity().getHealth();
     double maxHealth = barOwner.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
     strifeBossBar.getHealthBar().setProgress(Math.min(health / maxHealth, 1D));
-    if (!barOwner.getEntity().isValid() || health <= 0) {
+    if (!barOwner.getEntity().isValid()) {
+      strifeBossBar.setDead(true);
       setFirstBarTitle(strifeBossBar, deathMessages.get(random.nextInt(deathMessages.size())));
       for (UUID playerUuid : strifeBossBar.getPlayerUuidTickMap().keySet()) {
-        strifeBossBar.getPlayerUuidTickMap().put(playerUuid, 25);
+        strifeBossBar.getPlayerUuidTickMap().put(playerUuid, health > 0 ? 0 : 25);
       }
-      strifeBossBar.setDead(true);
     }
   }
 

@@ -21,11 +21,11 @@ package info.faceland.strife.tasks;
 import info.faceland.strife.managers.BossBarManager;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class TickBossBarsTask extends BukkitRunnable {
+public class BossBarsTask extends BukkitRunnable {
 
   private BossBarManager bossBarManager;
 
-  public TickBossBarsTask(BossBarManager bossBarManager) {
+  public BossBarsTask(BossBarManager bossBarManager) {
     this.bossBarManager = bossBarManager;
   }
 
