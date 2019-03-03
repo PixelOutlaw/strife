@@ -18,6 +18,11 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.MAX_EARTH_RUNES;
+
+import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.BlockData;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
@@ -35,11 +40,12 @@ public class BlockManager {
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
-  public boolean rollBlock(UUID uuid, double maximumBlock, boolean isBlocking) {
-    if (maximumBlock < 1) {
+  public boolean rollBlock(AttributedEntity attributedEntity, boolean isBlocking) {
+    if (attributedEntity.getAttribute(StrifeAttribute.BLOCK) < 1) {
       return false;
     }
-    updateStoredBlock(uuid, maximumBlock);
+    UUID uuid = attributedEntity.getEntity().getUniqueId();
+    updateStoredBlock(uuid, attributedEntity.getAttribute(StrifeAttribute.BLOCK));
     double blockChance = Math.min(blockDataMap.get(uuid).getStoredBlock() / 100, MAX_BLOCK_CHANCE);
     if (isBlocking) {
       blockChance *= 2;
@@ -70,11 +76,15 @@ public class BlockManager {
     blockDataMap.get(uuid).setRunes(runes);
   }
 
-  public void bumpRunes(UUID uuid, int maxRunes) {
+  public void bumpRunes(AttributedEntity aEntity) {
+    if (aEntity.getAttribute(EARTH_DAMAGE) < 1) {
+      return;
+    }
+    UUID uuid = aEntity.getEntity().getUniqueId();
     if (!blockDataMap.containsKey(uuid)) {
       return;
     }
-    if (blockDataMap.get(uuid).getRunes() < maxRunes) {
+    if (blockDataMap.get(uuid).getRunes() < Math.round(aEntity.getAttribute(MAX_EARTH_RUNES))) {
       blockDataMap.get(uuid).addRune();
     }
   }

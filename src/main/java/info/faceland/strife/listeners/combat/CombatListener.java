@@ -18,21 +18,54 @@
  */
 package info.faceland.strife.listeners.combat;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_REFLECT;
+import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_KILL;
+import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
+import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_HIT;
+import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_KILL;
+import static info.faceland.strife.attributes.StrifeAttribute.RAGE_WHEN_HIT;
+import static info.faceland.strife.attributes.StrifeAttribute.TRUE_DAMAGE;
+import static info.faceland.strife.util.DamageUtil.AttackType;
+import static info.faceland.strife.util.DamageUtil.applyHealthOnHit;
+import static info.faceland.strife.util.DamageUtil.applyLifeSteal;
+import static info.faceland.strife.util.DamageUtil.attemptBleed;
+import static info.faceland.strife.util.DamageUtil.attemptCorrupt;
+import static info.faceland.strife.util.DamageUtil.attemptFreeze;
+import static info.faceland.strife.util.DamageUtil.attemptIgnite;
+import static info.faceland.strife.util.DamageUtil.attemptShock;
+import static info.faceland.strife.util.DamageUtil.callCritEvent;
+import static info.faceland.strife.util.DamageUtil.consumeEarthRunes;
+import static info.faceland.strife.util.DamageUtil.doBlock;
+import static info.faceland.strife.util.DamageUtil.doEvasion;
+import static info.faceland.strife.util.DamageUtil.getLightBonus;
+import static info.faceland.strife.util.DamageUtil.getPotionMult;
+import static info.faceland.strife.util.DamageUtil.hasLuck;
+import static info.faceland.strife.util.DamageUtil.restoreHealth;
+import static info.faceland.strife.util.DamageUtil.rollDouble;
+import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-
 import info.faceland.strife.data.EntityAbilitySet.AbilityType;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.event.EventHandler;
 import org.bukkit.Sound;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EvokerFangs;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.entity.WitherSkull;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -40,9 +73,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.projectiles.ProjectileSource;
-
-import static info.faceland.strife.attributes.StrifeAttribute.*;
-import static info.faceland.strife.util.DamageUtil.*;
 
 public class CombatListener implements Listener {
 
@@ -168,13 +198,9 @@ public class CombatListener implements Listener {
       return;
     }
 
-    if (plugin.getBlockManager()
-        .rollBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), blocked)) {
+    if (plugin.getBlockManager().rollBlock(defender, blocked)) {
       plugin.getBlockManager().blockFatigue(defendEntity.getUniqueId(), attackMultiplier, blocked);
-      if (defender.getAttribute(EARTH_DAMAGE) > 0) {
-        plugin.getBlockManager().bumpRunes(defendEntity.getUniqueId(),
-            (int) defender.getAttribute(MAX_EARTH_RUNES));
-      }
+      plugin.getBlockManager().bumpRunes(defender);
       doReflectedDamage(defender, attackEntity, damageType);
       doBlock(attackEntity, defendEntity);
       removeIfExisting(projectile);
@@ -334,44 +360,6 @@ public class CombatListener implements Listener {
       plugin.getRageManager()
           .addRage(killer, killer.getAttribute(RAGE_ON_KILL));
     }
-  }
-
-  private void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
-      double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
-      double lightBonus, boolean corrupt, boolean isBleedApplied) {
-    if (!(entity instanceof Player)) {
-      return;
-    }
-    StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
-    if (overBonus > 0) {
-      damageString.append("&e✦");
-    }
-    if (critBonus > 0) {
-      damageString.append("&c✶");
-    }
-    if (fireBonus > 0) {
-      damageString.append("&6☀");
-    }
-    if (iceBonus > 0) {
-      damageString.append("&b❊");
-    }
-    if (lightningBonus > 0) {
-      damageString.append("&7⚡");
-    }
-    if (earthBonus > 0) {
-      damageString.append("&2▼");
-    }
-    if (lightBonus > 0) {
-      damageString.append("&f❂");
-    }
-    if (corrupt) {
-      damageString.append("&8❂");
-    }
-    if (isBleedApplied) {
-      damageString.append("&4♦");
-    }
-    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR,
-        TextUtils.color(damageString.toString()), (Player) entity);
   }
 
   private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker,

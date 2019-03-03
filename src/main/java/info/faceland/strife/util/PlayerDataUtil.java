@@ -1,11 +1,67 @@
 package info.faceland.strife.util;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
+import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
+import info.faceland.strife.data.AttributedEntity;
+import java.util.List;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class PlayerDataUtil {
+
+  public static void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
+      double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
+      double lightBonus, boolean corrupt, boolean isBleedApplied) {
+    if (!(entity instanceof Player)) {
+      return;
+    }
+    StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
+    if (overBonus > 0) {
+      damageString.append("&e✦");
+    }
+    if (critBonus > 0) {
+      damageString.append("&c✶");
+    }
+    if (fireBonus > 0) {
+      damageString.append("&6☀");
+    }
+    if (iceBonus > 0) {
+      damageString.append("&b❊");
+    }
+    if (lightningBonus > 0) {
+      damageString.append("&7⚡");
+    }
+    if (earthBonus > 0) {
+      damageString.append("&2▼");
+    }
+    if (lightBonus > 0) {
+      damageString.append("&f❂");
+    }
+    if (corrupt) {
+      damageString.append("&8❂");
+    }
+    if (isBleedApplied) {
+      damageString.append("&4♦");
+    }
+    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR,
+        TextUtils.color(damageString.toString()), (Player) entity);
+  }
+
+  public static boolean areConditionsMet(AttributedEntity caster, AttributedEntity target,
+      List<Condition> conditions) {
+    if (target == null && conditions.size() > 0) {
+      return false;
+    }
+    for (Condition condition : conditions) {
+      if (!condition.isMet(caster, target)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   public static int getCraftSkill(Player player, Boolean updateEquipment) {
     return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
@@ -130,6 +186,7 @@ public class PlayerDataUtil {
     if (livingEntity instanceof Player) {
       return ((Player) livingEntity).getDisplayName();
     }
-    return livingEntity.getCustomName() == null ? livingEntity.getName() : livingEntity.getCustomName();
+    return livingEntity.getCustomName() == null ? livingEntity.getName()
+        : livingEntity.getCustomName();
   }
 }

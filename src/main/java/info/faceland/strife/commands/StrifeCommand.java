@@ -131,20 +131,18 @@ public class StrifeCommand {
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
   public void bindCommand(CommandSender sender, @Arg(name = "target") Player target,
-      @Arg(name = "loreAbility") String loreAbilityId) {
-    LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(loreAbilityId);
+      @Arg(name = "loreAbility") String id) {
+    LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(id);
     if (ability == null) {
-      sendMessage(sender, "<red>Invalid loreAbility ID: " + loreAbilityId);
+      sendMessage(sender, "<red>Invalid loreAbility ID: " + id);
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
     boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
     if (success) {
-      sendMessage(sender,
-          "<green>Bound loreAbility " + loreAbilityId + " to player " + target.getName());
+      sendMessage(sender, "&aBound loreAbility " + id + " to player " + target.getName());
     } else {
-      sendMessage(sender,
-          "<red>LoreAbility " + loreAbilityId + " already exists on " + target.getName());
+      sendMessage(sender, "&cLoreAbility " + id + " already exists on " + target.getName());
     }
   }
 
