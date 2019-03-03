@@ -161,7 +161,7 @@ public class EffectManager {
     if (effectType != EffectType.WAIT) {
       effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
       effect.setRange(cs.getDouble("range", 0));
-      effect.setSelfAffect(cs.getBoolean("self-affect", false));
+      effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
     } else {
       effect.setName("wait");

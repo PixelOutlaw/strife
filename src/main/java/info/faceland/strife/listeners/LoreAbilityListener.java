@@ -1,12 +1,12 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
@@ -27,7 +27,8 @@ public class LoreAbilityListener implements Listener {
   private final ChampionManager championManager;
   private final LoreAbilityManager loreAbilityManager;
 
-  public LoreAbilityListener(AttributedEntityManager attributedEntityManager, ChampionManager championManager,
+  public LoreAbilityListener(AttributedEntityManager attributedEntityManager,
+      ChampionManager championManager,
       LoreAbilityManager loreAbilityManager) {
     this.attributedEntityManager = attributedEntityManager;
     this.championManager = championManager;
@@ -42,7 +43,7 @@ public class LoreAbilityListener implements Listener {
     Champion champion = championManager.getChampion((Player) event.getAttacker());
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_CRIT)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
-          la.isSingleTarget() ? getAttrEntity(event.getVictim()) : null);
+          getAttrEntity(event.getVictim()));
     }
   }
 
@@ -54,7 +55,7 @@ public class LoreAbilityListener implements Listener {
     Champion champion = championManager.getChampion((Player) event.getEvader());
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_EVADE)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEvader()),
-          la.isSingleTarget() ? getAttrEntity(event.getAttacker()) : null);
+          getAttrEntity(event.getAttacker()));
     }
   }
 
@@ -66,7 +67,7 @@ public class LoreAbilityListener implements Listener {
     Champion champion = championManager.getChampion((Player) event.getBlocker());
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_BLOCK)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getBlocker()),
-          la.isSingleTarget() ? getAttrEntity(event.getAttacker()) : null);
+          getAttrEntity(event.getAttacker()));
     }
   }
 
@@ -106,15 +107,13 @@ public class LoreAbilityListener implements Listener {
     if (attacker instanceof Player) {
       Champion champion = championManager.getChampion((Player) attacker);
       for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, getAttrEntity(attacker),
-            la.isSingleTarget() ? getAttrEntity(defender) : null);
+        loreAbilityManager.applyLoreAbility(la, getAttrEntity(attacker), getAttrEntity(defender));
       }
     }
     if (attacker != null && defender instanceof Player) {
       Champion champion = championManager.getChampion((Player) defender);
       for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.WHEN_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, getAttrEntity(defender),
-            la.isSingleTarget() ? getAttrEntity(attacker) : null);
+        loreAbilityManager.applyLoreAbility(la, getAttrEntity(defender), getAttrEntity(attacker));
       }
     }
   }

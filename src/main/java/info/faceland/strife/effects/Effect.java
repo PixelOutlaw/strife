@@ -2,13 +2,12 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.managers.AttributedEntityManager;
-import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,21 +18,18 @@ public class Effect {
 
   private static final AttributedEntityManager ATTRIBUTED_ENTITY_MANAGER = StrifePlugin.getInstance().getAttributedEntityManager();
   private String name;
-  private boolean selfAffect;
+  private boolean forceTargetCaster;
   private boolean friendly;
   private double range;
   final Map<StrifeAttribute, Double> statMults = new HashMap<>();
   private final List<Condition> conditions = new ArrayList<>();
 
   public void execute(AttributedEntity caster, AttributedEntity target) {
-    for (Condition condition : conditions) {
-      if (!condition.isMet(caster, target)) {
-        LogUtil.printDebug("Condition not met for effect. Failed.");
-        return;
-      }
+    if (forceTargetCaster) {
+      target = caster;
     }
-    if (range < 1) {
-      apply(caster, target);
+    if (!PlayerDataUtil.areConditionsMet(caster, target, conditions)) {
+      LogUtil.printDebug("Conditions not met for effect. Failed.");
       return;
     }
     for (LivingEntity le : getTargets(caster.getEntity(), target.getEntity())) {
@@ -75,12 +71,12 @@ public class Effect {
     this.name = name;
   }
 
-  public boolean isSelfAffect() {
-    return selfAffect;
+  public boolean isForceTargetCaster() {
+    return forceTargetCaster;
   }
 
-  public void setSelfAffect(boolean selfAffect) {
-    this.selfAffect = selfAffect;
+  public void setForceTargetCaster(boolean forceTargetCaster) {
+    this.forceTargetCaster = forceTargetCaster;
   }
 
   public boolean isFriendly() {

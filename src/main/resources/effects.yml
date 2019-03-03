@@ -49,6 +49,7 @@ begone-fool:
 mass-poison:
   type: POTION
   name: "Mass Poison"
+  force-target-caster: true
   effect: POISON
   range: 10
   duration: 1200

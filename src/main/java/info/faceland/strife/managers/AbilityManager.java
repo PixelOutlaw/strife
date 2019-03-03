@@ -58,19 +58,9 @@ public class AbilityManager {
     return null;
   }
 
-  public Map<String, Ability> getLoadedAbilities() {
-    return loadedAbilities;
-  }
-
   public void execute(final Ability ability, final AttributedEntity caster,
       AttributedEntity target) {
     LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + ability.getId());
-    for (Condition condition : ability.getConditions()) {
-      if (!condition.isMet(caster, target)) {
-        LogUtil.printDebug("Condition not met for effect. Failed.");
-        return;
-      }
-    }
     if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
@@ -81,6 +71,10 @@ public class AbilityManager {
     }
     if (ability.getTargetType() == TargetType.SELF) {
       target = caster;
+    }
+    if (!PlayerDataUtil.areConditionsMet(caster, target, ability.getConditions())) {
+      LogUtil.printDebug("Conditions not met for ability. Failed.");
+      return;
     }
     LivingEntity targetEntity;
     if (target == null) {

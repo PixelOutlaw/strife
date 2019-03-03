@@ -13,7 +13,6 @@ public class LoreAbility {
   private final List<String> description;
   private final Ability ability;
   private final List<Effect> effects;
-  private boolean singleTarget;
 
   public LoreAbility(String id, TriggerType triggerType, String triggerText, Ability ability,
       boolean singleTarget, List<String> description) {
@@ -23,7 +22,6 @@ public class LoreAbility {
     this.description = description;
     this.ability = ability;
     this.effects = new ArrayList<>();
-    this.singleTarget = singleTarget;
   }
 
   public String getId() {
@@ -54,9 +52,5 @@ public class LoreAbility {
     if (!effects.contains(effect)) {
       effects.add(effect);
     }
-  }
-
-  public boolean isSingleTarget() {
-    return singleTarget;
   }
 }
