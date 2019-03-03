@@ -1,8 +1,5 @@
 package info.faceland.strife.listeners;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BLOCK;
-import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.MAX_EARTH_RUNES;
 import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
@@ -61,16 +58,15 @@ public class UniqueSplashListener implements Listener {
         event.setCancelled(true);
         return;
       }
-      if (blockManager.rollBlock(defendEntity.getUniqueId(), defender.getAttribute(BLOCK), false)) {
+
+      if (blockManager.rollBlock(defender, false)) {
         blockManager.blockFatigue(defendEntity.getUniqueId(), 1.0, false);
-        if (defender.getAttribute(EARTH_DAMAGE) > 0) {
-          blockManager.bumpRunes(defendEntity.getUniqueId(),
-              (int) defender.getAttribute(MAX_EARTH_RUNES));
-        }
+        blockManager.bumpRunes(defender);
         doBlock(attackEntity, defendEntity);
         event.setCancelled(true);
         return;
       }
+
       for (String s : effects) {
         if (effectManager.getEffect(s) == null) {
           continue;
