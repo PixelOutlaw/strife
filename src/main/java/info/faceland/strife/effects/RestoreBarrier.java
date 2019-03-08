@@ -17,8 +17,8 @@ public class RestoreBarrier extends Effect {
       return;
     }
     double restoreAmount = amount;
-    for (StrifeAttribute attr : statMults.keySet()) {
-      restoreAmount += statMults.get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+    for (StrifeAttribute attr : getStatMults().keySet()) {
+      restoreAmount += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
     }
     switch (damageScale) {
       case FLAT:

@@ -16,8 +16,8 @@ public class DealDamage extends Effect {
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
     double damage = amount;
-    for (StrifeAttribute attr : statMults.keySet()) {
-      damage += statMults.get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+    for (StrifeAttribute attr : getStatMults().keySet()) {
+      damage += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
     }
     LogUtil.printDebug("Damage Effect! " + damage + " | " + damageScale + " | " + damageType);
     switch (damageScale) {

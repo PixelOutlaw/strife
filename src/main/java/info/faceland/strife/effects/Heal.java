@@ -14,8 +14,8 @@ public class Heal extends Effect {
   @Override
   public void apply(AttributedEntity caster, AttributedEntity attributedTarget) {
     double heal = amount;
-    for (StrifeAttribute attr : statMults.keySet()) {
-      heal += statMults.get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+    for (StrifeAttribute attr : getStatMults().keySet()) {
+      heal += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
     }
     LivingEntity target = attributedTarget.getEntity();
     switch (damageScale) {
