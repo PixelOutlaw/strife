@@ -18,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
@@ -95,7 +96,7 @@ public class LoreAbilityListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-    if (event.isCancelled()) {
+    if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity)) {

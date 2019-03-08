@@ -222,7 +222,7 @@ public class StrifePlugin extends FacePlugin {
     rageManager = new RageManager(attributeUpdateManager);
     barrierManager = new BarrierManager(attributeUpdateManager);
     monsterManager = new MonsterManager(championManager);
-    effectManager = new EffectManager(statManager);
+    effectManager = new EffectManager(statManager, attributedEntityManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
 

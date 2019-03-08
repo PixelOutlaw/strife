@@ -3,6 +3,7 @@ package info.faceland.strife.data;
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.effects.Effect;
 import java.util.List;
+import java.util.Set;
 
 public class Ability {
 
@@ -13,10 +14,10 @@ public class Ability {
   private final List<Effect> effects;
   private final int cooldown;
   private final boolean displayCd;
-  private final List<Condition> conditions;
+  private final Set<Condition> conditions;
 
   public Ability(String id, String name, List<Effect> effects, TargetType targetType, double range,
-      int cooldown, boolean displayCd, List<Condition> conditions) {
+      int cooldown, boolean displayCd, Set<Condition> conditions) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -55,7 +56,7 @@ public class Ability {
     return displayCd;
   }
 
-  public List<Condition> getConditions() {
+  public Set<Condition> getConditions() {
     return conditions;
   }
 

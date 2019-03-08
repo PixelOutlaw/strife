@@ -184,7 +184,7 @@ public class AbilityManager {
       }
       for (Effect effect : effectList) {
         LogUtil.printDebug("Executing effect " + effect.getName());
-        effect.execute(caster, target);
+        plugin.getEffectManager().execute(effect, caster, target);
       }
       LogUtil.printDebug("Completed effect task.");
     }, delay);
@@ -280,7 +280,7 @@ public class AbilityManager {
     }
     boolean displayCd = cs.getBoolean("show-cooldown-messages", false);
     List<String> conditionStrings = cs.getStringList("conditions");
-    List<Condition> conditions = new ArrayList<>();
+    Set<Condition> conditions = new HashSet<>();
     for (String s : conditionStrings) {
       Condition condition = plugin.getEffectManager().getConditions().get(s);
       if (condition == null) {

@@ -7,6 +7,7 @@ import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.List;
+import java.util.Set;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -51,7 +52,7 @@ public class PlayerDataUtil {
   }
 
   public static boolean areConditionsMet(AttributedEntity caster, AttributedEntity target,
-      List<Condition> conditions) {
+      Set<Condition> conditions) {
     if (target == null && conditions.size() > 0) {
       return false;
     }

@@ -6,29 +6,80 @@ import info.faceland.strife.conditions.*;
 import info.faceland.strife.conditions.Condition.CompareTarget;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.conditions.Condition.ConditionType;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.effects.*;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.PlayerDataUtil;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
 
   private final StrifeStatManager strifeStatManager;
+  private final AttributedEntityManager aeManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  public EffectManager(StrifeStatManager strifeStatManager) {
+  public EffectManager(StrifeStatManager strifeStatManager, AttributedEntityManager aeManager) {
     this.strifeStatManager = strifeStatManager;
+    this.aeManager = aeManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
+  }
+
+  public void execute(String effectName, AttributedEntity caster, AttributedEntity target) {
+    Effect effect = getEffect(effectName);
+    if (effect == null) {
+      return;
+    }
+    execute(effect, caster, target);
+  }
+
+  public void execute(Effect effect, AttributedEntity caster, AttributedEntity target) {
+    if (effect.isForceTargetCaster()) {
+      target = caster;
+    }
+    if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
+      LogUtil.printDebug("Conditions not met for effect. Failed.");
+      return;
+    }
+    LogUtil.printDebug("Looping targets for " + effect.getName());
+    for (LivingEntity le : getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange())) {
+      LogUtil.printDebug("Applying effect to " + PlayerDataUtil.getName(le));
+      effect.apply(caster, aeManager.getAttributedEntity(le));
+    }
+  }
+
+  private List<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
+    List<LivingEntity> targets = new ArrayList<>();
+    if (target == null) {
+      LogUtil.printError(" Missing targets! Returning empty list");
+      return targets;
+    }
+    if (range < 1) {
+      LogUtil.printDebug(" Self casting, low or no range");
+      targets.add(target);
+      return targets;
+    }
+    for (Entity e : target.getNearbyEntities(range, range, range)) {
+      if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
+        targets.add((LivingEntity) e);
+      }
+    }
+    targets.remove(caster);
+    LogUtil.printDebug(" Targeting " + targets.size() + " targets!");
+    return targets;
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -50,7 +101,8 @@ public class EffectManager {
       case RESTORE_BARRIER:
         effect = new RestoreBarrier();
         ((RestoreBarrier) effect).setAmount(cs.getDouble("amount", 1));
-        ((RestoreBarrier) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((RestoreBarrier) effect)
+            .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case DAMAGE:
         effect = new DealDamage();

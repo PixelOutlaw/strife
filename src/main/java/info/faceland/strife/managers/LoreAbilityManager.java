@@ -102,7 +102,7 @@ public class LoreAbilityManager {
       abilityManager.execute(la.getAbility(), caster, target);
     }
     for (Effect effect : la.getEffects()) {
-      effect.execute(caster, target);
+      effectManager.execute(effect, caster, target);
     }
   }
 

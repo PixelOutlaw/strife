@@ -133,6 +133,7 @@ public class BossBarManager {
     double health = barOwner.getEntity().getHealth();
     double maxHealth = barOwner.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
     strifeBossBar.getHealthBar().setProgress(Math.min(health / maxHealth, 1D));
+
     if (!barOwner.getEntity().isValid()) {
       strifeBossBar.setDead(true);
       setFirstBarTitle(strifeBossBar, deathMessages.get(random.nextInt(deathMessages.size())));
