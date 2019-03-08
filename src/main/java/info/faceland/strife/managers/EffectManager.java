@@ -155,6 +155,11 @@ public class EffectManager {
         ((Bleed) effect).setAmount(cs.getInt("amount", 10));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
         break;
+      case CONSUME_BLEED:
+        effect = new ConsumeBleed();
+        ((ConsumeBleed) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
+        ((ConsumeBleed) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
+        break;
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));
@@ -340,6 +345,7 @@ public class EffectManager {
     PROJECTILE,
     IGNITE,
     BLEED,
+    CONSUME_BLEED,
     WAIT,
     PARTICLE,
     SPEAK,
