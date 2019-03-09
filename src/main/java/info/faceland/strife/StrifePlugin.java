@@ -218,9 +218,9 @@ public class StrifePlugin extends FacePlugin {
     attackSpeedManager = new AttackSpeedManager();
     equipmentManager = new EntityEquipmentManager();
     multiplierManager = new MultiplierManager();
+    barrierManager = new BarrierManager();
     attributeUpdateManager = new AttributeUpdateManager(attributedEntityManager);
     rageManager = new RageManager(attributeUpdateManager);
-    barrierManager = new BarrierManager(attributeUpdateManager);
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(statManager, attributedEntityManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);

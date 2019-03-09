@@ -26,19 +26,15 @@ import info.faceland.strife.util.PlayerDataUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BarrierManager {
 
-  private final AttributeUpdateManager attributeUpdateManager;
   private static final int BASE_BARRIER_TICKS = 15;
   private final Map<UUID, Double> barrierMap = new HashMap<>();
   private final Map<UUID, Integer> tickMap = new HashMap<>();
-
-  public BarrierManager(AttributeUpdateManager attributeUpdateManager) {
-    this.attributeUpdateManager = attributeUpdateManager;
-  }
 
   public void createBarrierEntry(AttributedEntity attributedEntity) {
     if (!attributedEntity.getEntity().isValid()) {
@@ -46,7 +42,7 @@ public class BarrierManager {
     }
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
       if (attributedEntity.getEntity() instanceof Player) {
-        attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+        setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       }
       return;
     }
@@ -81,14 +77,14 @@ public class BarrierManager {
     if (!barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
       return;
     }
-    attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+    setPlayerArmor((Player) attributedEntity.getEntity(), 0);
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
-      attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+      setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       return;
     }
     double percent = barrierMap.get(attributedEntity.getEntity().getUniqueId()) / attributedEntity
         .getAttribute(BARRIER);
-    attributeUpdateManager.setPlayerArmor((Player) attributedEntity.getEntity(), percent);
+    setPlayerArmor((Player) attributedEntity.getEntity(), percent);
   }
 
   public void removeEntity(LivingEntity entity) {
@@ -158,5 +154,9 @@ public class BarrierManager {
 
   public Map<UUID, Double> getBarrierMap() {
     return barrierMap;
+  }
+
+  private void setPlayerArmor(Player player, double percent) {
+    player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(20 * percent);
   }
 }

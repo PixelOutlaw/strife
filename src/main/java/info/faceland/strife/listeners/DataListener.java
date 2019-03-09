@@ -72,11 +72,7 @@ public class DataListener implements Listener {
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer());
-    plugin.getAttributeUpdateManager().updateHealth(pStats);
-    plugin.getAttributeUpdateManager().updateMovementSpeed(pStats);
-    plugin.getAttributeUpdateManager().updateAttackSpeed(pStats);
-    plugin.getBarrierManager().createBarrierEntry(pStats);
+    plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

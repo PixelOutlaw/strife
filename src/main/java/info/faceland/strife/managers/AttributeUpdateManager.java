@@ -100,7 +100,7 @@ public class AttributeUpdateManager {
     return stripped;
   }
 
-  public void updateHealth(AttributedEntity aEntity) {
+  private void updateHealth(AttributedEntity aEntity) {
     double maxHealth = Math.max(StatUtil.getHealth(aEntity), 1);
     aEntity.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     if (aEntity.getEntity() instanceof Player) {
@@ -109,7 +109,7 @@ public class AttributeUpdateManager {
     }
   }
 
-  public void updateMovementSpeed(AttributedEntity attributedEntity) {
+  private void updateMovementSpeed(AttributedEntity attributedEntity) {
     LivingEntity entity = attributedEntity.getEntity();
     double speed =
         attributedEntity.getAttributes().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
@@ -143,12 +143,8 @@ public class AttributeUpdateManager {
     updateMovementSpeed(attributedEntity);
     updateAttackSpeed(attributedEntity);
 
-    StrifePlugin.getInstance().getBarrierManager().updateShieldDisplay(attributedEntity);
+    StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(attributedEntity);
     attributedEntity.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-  }
-
-  public void setPlayerArmor(Player player, double percent) {
-    player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(20 * percent);
   }
 
   @SafeVarargs
