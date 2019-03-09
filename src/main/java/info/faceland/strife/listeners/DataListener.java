@@ -35,6 +35,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
@@ -83,8 +85,19 @@ public class DataListener implements Listener {
     plugin.getBarrierManager().removeEntity(event.getEntity());
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerQuit(final PlayerQuitEvent event) {
+    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerKick(final PlayerKickEvent event) {
+    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+  }
+
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
+    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager()
         .createBarrierEntry(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
   }

@@ -98,6 +98,13 @@ public class BossBarManager {
     }
   }
 
+  public void removeBar(UUID uuid) {
+    for (StrifeBossBar sbb : barMap.values()) {
+      sbb.destroy();
+    }
+    barMap.remove(uuid);
+  }
+
   private void pruneBarIfNoOwners(UUID uuid) {
     if (barMap.get(uuid).getPlayerUuidTickMap().isEmpty()) {
       barMap.get(uuid).destroy();
