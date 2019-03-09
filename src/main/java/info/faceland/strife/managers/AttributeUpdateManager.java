@@ -136,12 +136,9 @@ public class AttributeUpdateManager {
   }
 
   public void updateAttributes(AttributedEntity attributedEntity) {
-    if (!(attributedEntity.getEntity() instanceof Player)) {
-      return;
-    }
-    updateHealth(attributedEntity);
     updateMovementSpeed(attributedEntity);
     updateAttackSpeed(attributedEntity);
+    updateHealth(attributedEntity);
 
     StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(attributedEntity);
     attributedEntity.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);

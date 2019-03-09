@@ -25,7 +25,6 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.StrifeBossBar;
 import info.faceland.strife.util.StatUtil;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -43,7 +42,6 @@ public class BossBarManager {
 
   private final StrifePlugin plugin;
   private final Map<UUID, StrifeBossBar> barMap = new ConcurrentHashMap<>();
-  private final Map<Player, StrifeBossBar> playerToCurrentTargetMap = new HashMap<>();
   private final List<String> deathMessages;
   private final int duration;
   private final Random random = new Random();
@@ -59,14 +57,8 @@ public class BossBarManager {
     if (barMap.containsKey(target.getEntity().getUniqueId())) {
       return;
     }
-    BossBar barrierBar;
-    if (target.getAttribute(StrifeAttribute.BARRIER) > 0) {
-      barrierBar = makeBarrierBar();
-    } else {
-      barrierBar = null;
-    }
-    BossBar healthBar = makeHealthBar();
-    StrifeBossBar strifeBossBar = new StrifeBossBar(target, barrierBar, healthBar);
+    StrifeBossBar strifeBossBar = new StrifeBossBar(target, makeBarrierBar(target),
+        makeHealthBar());
     setFirstBarTitle(strifeBossBar, createBarTitle(target));
     barMap.put(target.getEntity().getUniqueId(), strifeBossBar);
   }
@@ -74,10 +66,6 @@ public class BossBarManager {
   public void pushBar(Player player, AttributedEntity target) {
     updateBar(target);
     StrifeBossBar strifeBossBar = barMap.get(target.getEntity().getUniqueId());
-    if (playerToCurrentTargetMap.containsKey(player)) {
-      removePlayerFromBar(playerToCurrentTargetMap.get(player), player.getUniqueId());
-    }
-    playerToCurrentTargetMap.put(player, strifeBossBar);
     if (strifeBossBar.getBarrierBar() != null) {
       strifeBossBar.getBarrierBar().addPlayer(player);
     }
@@ -136,12 +124,20 @@ public class BossBarManager {
       double barrier = plugin.getBarrierManager().getBarrierMap().getOrDefault(uuid, 0D);
       double maxBarrier = StatUtil.getBarrier(barOwner);
       strifeBossBar.getBarrierBar().setProgress(Math.min(barrier / maxBarrier, 1D));
+    } else if (strifeBossBar.getBarrierBar() != null) {
+      strifeBossBar.setBarrierBar(null);
+      setFirstBarTitle(strifeBossBar, createBarTitle(barOwner));
+
     }
     double health = barOwner.getEntity().getHealth();
     double maxHealth = barOwner.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
     strifeBossBar.getHealthBar().setProgress(Math.min(health / maxHealth, 1D));
 
     if (!barOwner.getEntity().isValid()) {
+      if (health > 0) {
+        removeBar(uuid);
+        return;
+      }
       strifeBossBar.setDead(true);
       setFirstBarTitle(strifeBossBar, deathMessages.get(random.nextInt(deathMessages.size())));
       for (UUID playerUuid : strifeBossBar.getPlayerUuidTickMap().keySet()) {
@@ -177,7 +173,10 @@ public class BossBarManager {
         new BarFlag[0]);
   }
 
-  private BossBar makeBarrierBar() {
+  private BossBar makeBarrierBar(AttributedEntity attributedEntity) {
+    if (attributedEntity.getAttribute(StrifeAttribute.BARRIER) < 1) {
+      return null;
+    }
     return plugin.getServer().createBossBar("barrierBar", BarColor.WHITE, BarStyle.SOLID,
         new BarFlag[0]);
   }
@@ -193,7 +192,7 @@ public class BossBarManager {
   private void setFirstBarTitle(StrifeBossBar bossBar, String title) {
     if (bossBar.getOwner().getAttribute(StrifeAttribute.BARRIER) > 0) {
       if (bossBar.getBarrierBar() == null) {
-        bossBar.setBarrierBar(makeBarrierBar());
+        bossBar.setBarrierBar(makeBarrierBar(bossBar.getOwner()));
       }
       bossBar.getBarrierBar().setTitle(title);
       bossBar.getHealthBar().setTitle(null);

@@ -40,7 +40,6 @@ public class BarrierTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    ArrayList<UUID> playersPendingRemoval = new ArrayList<>();
     for (Entry<UUID, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
       if (plugin.getBarrierManager().getTickMap().containsKey(entry.getKey())) {
         plugin.getBarrierManager().tickEntity(entry.getKey());
@@ -48,12 +47,12 @@ public class BarrierTask extends BukkitRunnable {
       }
       LivingEntity entity = (LivingEntity) Bukkit.getEntity(entry.getKey());
       if (entity == null || !entity.isValid()) {
-        playersPendingRemoval.add(entry.getKey());
+        plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
       AttributedEntity player = plugin.getAttributedEntityManager().getAttributedEntity(entity);
       if (player.getAttribute(BARRIER) < 0.1) {
-        playersPendingRemoval.add(entry.getKey());
+        plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
       if (entry.getValue() >= player.getAttribute(BARRIER)) {
@@ -62,9 +61,6 @@ public class BarrierTask extends BukkitRunnable {
       // Restore this amount per barrier tick (4 MC ticks, 0.2s)
       double barrierGain = StatUtil.getBarrierPerSecond(player) / 5;
       plugin.getBarrierManager().restoreBarrier(player, barrierGain);
-    }
-    for (UUID uuid : playersPendingRemoval) {
-      plugin.getBarrierManager().removeEntity(uuid);
     }
   }
 }

@@ -26,6 +26,7 @@ import info.faceland.strife.util.PlayerDataUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -33,17 +34,15 @@ import org.bukkit.entity.Player;
 public class BarrierManager {
 
   private static final int BASE_BARRIER_TICKS = 15;
-  private final Map<UUID, Double> barrierMap = new HashMap<>();
-  private final Map<UUID, Integer> tickMap = new HashMap<>();
+  private final Map<UUID, Double> barrierMap = new ConcurrentHashMap<>();
+  private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
 
   public void createBarrierEntry(AttributedEntity attributedEntity) {
     if (!attributedEntity.getEntity().isValid()) {
       return;
     }
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
-      if (attributedEntity.getEntity() instanceof Player) {
-        setPlayerArmor((Player) attributedEntity.getEntity(), 0);
-      }
+      updateShieldDisplay(attributedEntity);
       return;
     }
     if (barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
@@ -75,9 +74,9 @@ public class BarrierManager {
       return;
     }
     if (!barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
+      setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       return;
     }
-    setPlayerArmor((Player) attributedEntity.getEntity(), 0);
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
       setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       return;

@@ -378,7 +378,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new HeadDropListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new HeadDropListener(attributedEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
     Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);

@@ -45,8 +45,6 @@ import static info.faceland.strife.util.DamageUtil.restoreHealth;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
 import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
