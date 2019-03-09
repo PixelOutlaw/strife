@@ -199,7 +199,6 @@ public class EffectManager {
         ((PotionEffectAction) effect).setPotionEffectType(potionType);
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
-        ((PotionEffectAction) effect).setTargetCaster(cs.getBoolean("target-caster", false));
         break;
       case PARTICLE:
         effect = new SpawnParticle();
