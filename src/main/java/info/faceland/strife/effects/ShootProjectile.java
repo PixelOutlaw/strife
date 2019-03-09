@@ -29,16 +29,16 @@ public class ShootProjectile extends Effect {
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
-    double projectiles = quantity * (1 + caster.getAttribute(StrifeAttribute.MULTISHOT) / 100);
-    if (projectileEntity == EntityType.FIREBALL) {
-      projectiles = 1;
+    double projectiles = 1;
+    if (projectileEntity != EntityType.FIREBALL) {
+      projectiles = quantity * (1 + caster.getAttribute(StrifeAttribute.MULTISHOT) / 100);
     }
     Vector castDirection;
-    if (caster == target) {
-      LogUtil.printWarning("Skipping self targeted projectile launched by " + getName());
-      return;
-    }
     if (targeted) {
+      if (caster == target) {
+        LogUtil.printWarning("Skipping self targeted projectile launched by " + getName());
+        return;
+      }
       castDirection = target.getEntity().getLocation().toVector()
           .subtract(caster.getEntity().getEyeLocation().toVector()).normalize();
       LogUtil.printDebug("Fetched direction to target: " + castDirection.toString());
