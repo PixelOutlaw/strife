@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Player;
 
 public class StrifeBossBar {
 
@@ -57,5 +58,12 @@ public class StrifeBossBar {
       barrierBar.removeAll();
       barrierBar = null;
     }
+  }
+
+  public void addPlayer(Player player) {
+    if (barrierBar != null) {
+      barrierBar.addPlayer(player);
+    }
+    healthBar.addPlayer(player);
   }
 }

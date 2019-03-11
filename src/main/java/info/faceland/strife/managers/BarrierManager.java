@@ -38,7 +38,7 @@ public class BarrierManager {
   private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
 
   public void createBarrierEntry(AttributedEntity attributedEntity) {
-    if (!attributedEntity.getEntity().isValid()) {
+    if (attributedEntity.getEntity() == null || !attributedEntity.getEntity().isValid()) {
       return;
     }
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
