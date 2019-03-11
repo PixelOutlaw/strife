@@ -23,11 +23,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import java.text.DecimalFormat;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsMenu extends ItemMenu {
 
@@ -52,6 +48,8 @@ public class StatsMenu extends ItemMenu {
       setItem(16, new StatsMiscMenuItem(plugin));
       setItem(22, new StatsBonusMenuItem(plugin));
       setItem(24, new StatsEffectMenuItem(plugin));
+
+      setItem(35, new StatsChangeHealthDisplay(plugin, 35));
     } else {
       setItem(0, new StatsHelmetItem(plugin, target));
       setItem(9, new StatsChestItem(plugin, target));
@@ -64,6 +62,8 @@ public class StatsMenu extends ItemMenu {
       setItem(15, new StatsDefenseMenuItem(plugin, target));
       setItem(22, new StatsMiscMenuItem(plugin, target));
       setItem(24, new StatsBonusMenuItem(plugin, target));
+
+      setItem(35, new StatsBonusMenuItem(plugin, target));
     }
     target = null;
   }
@@ -81,6 +81,7 @@ public class StatsMenu extends ItemMenu {
     setItem(13, new StatsOffenseMenuItem(plugin, player));
     setItem(15, new StatsDefenseMenuItem(plugin, player));
     setItem(22, new StatsMiscMenuItem(plugin, player));
+
     setItem(24, new StatsBonusMenuItem(plugin, player));
   }
 

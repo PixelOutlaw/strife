@@ -11,9 +11,13 @@ import org.bukkit.entity.Player;
 
 public class ChampionSaveData {
 
+  public static final HealthDisplayType[] DISPLAY_OPTIONS = HealthDisplayType.values();
+
   private final UUID uniqueId;
   private final Map<StrifeStat, Integer> levelMap;
   private final List<LoreAbility> boundAbilities;
+
+  private HealthDisplayType healthDisplayType;
 
   private int unusedStatPoints;
   private int highestReachedLevel;
@@ -46,6 +50,15 @@ public class ChampionSaveData {
 
   public List<LoreAbility> getBoundAbilities() {
     return boundAbilities;
+  }
+
+  public HealthDisplayType getHealthDisplayType() {
+    return healthDisplayType;
+  }
+
+  public void setHealthDisplayType(
+      HealthDisplayType healthDisplayType) {
+    this.healthDisplayType = healthDisplayType;
   }
 
   public int getBonusLevels() {
@@ -157,4 +170,12 @@ public class ChampionSaveData {
     return Bukkit.getPlayer(getUniqueId());
   }
 
+  public enum HealthDisplayType {
+    TWO_HEALTH_HEARTS,
+    FIVE_HEALTH_HEARTS,
+    TEN_HEALTH_HEARTS,
+    TEN_PERCENT_HEARTS,
+    FIVE_PERCENT_HEARTS,
+    THREE_PERCENT_HEARTS
+  }
 }

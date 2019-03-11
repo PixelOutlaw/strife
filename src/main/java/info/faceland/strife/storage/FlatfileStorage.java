@@ -21,6 +21,7 @@ package info.faceland.strife.storage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.Champion;
 import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.ChampionSaveData.HealthDisplayType;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
@@ -82,6 +83,7 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + ".stats." + entry.getKey().getKey(), entry.getValue());
     }
 
+    config.set(champUuid + ".health-display", champion.getHealthDisplayType().toString());
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
     config.set(champUuid + ".bonus-levels", champion.getBonusLevels());
@@ -114,6 +116,15 @@ public class FlatfileStorage implements DataStorage {
         continue;
       }
       ConfigurationSection section = config.getConfigurationSection(key);
+
+      HealthDisplayType displayType;
+      try {
+        displayType = HealthDisplayType
+            .valueOf(section.getString("health-display", "TEN_HEALTH_HEARTS"));
+      } catch (Exception e) {
+        displayType = HealthDisplayType.TEN_HEALTH_HEARTS;
+      }
+      saveData.setHealthDisplayType(displayType);
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
       saveData.setBonusLevels(section.getInt("bonus-levels"));
       saveData.setCraftingLevel(section.getInt("crafting-level"));

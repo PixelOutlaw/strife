@@ -30,6 +30,7 @@ import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.ChampionSaveData.HealthDisplayType;
 import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
 import org.bukkit.ChatColor;
@@ -100,16 +101,19 @@ public class AttributeUpdateManager {
     return stripped;
   }
 
-  private void updateHealth(AttributedEntity aEntity) {
+  public void updateHealth(AttributedEntity aEntity) {
     double maxHealth = Math.max(StatUtil.getHealth(aEntity), 1);
     aEntity.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-    if (aEntity.getEntity() instanceof Player) {
-      ((Player) aEntity.getEntity()).setHealthScaled(true);
-      ((Player) aEntity.getEntity()).setHealthScale(2 * Math.ceil(maxHealth / 10));
+    HealthDisplayType displayType = aEntity.getChampion().getSaveData().getHealthDisplayType();
+    if (displayType == HealthDisplayType.TWO_HEALTH_HEARTS) {
+      ((Player) aEntity.getEntity()).setHealthScaled(false);
+      return;
     }
+    ((Player) aEntity.getEntity()).setHealthScaled(true);
+    ((Player) aEntity.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
   }
 
-  private void updateMovementSpeed(AttributedEntity attributedEntity) {
+  public void updateMovementSpeed(AttributedEntity attributedEntity) {
     LivingEntity entity = attributedEntity.getEntity();
     double speed =
         attributedEntity.getAttributes().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
@@ -142,6 +146,23 @@ public class AttributeUpdateManager {
 
     StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(attributedEntity);
     attributedEntity.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+  }
+
+  private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {
+    switch (healthDisplayType) {
+      case FIVE_HEALTH_HEARTS:
+        return 2 * Math.ceil(maxHealth / 5);
+      case TEN_HEALTH_HEARTS:
+        return 2 * Math.ceil(maxHealth / 10);
+      case TEN_PERCENT_HEARTS:
+        return 20;
+      case FIVE_PERCENT_HEARTS:
+        return 40;
+      case THREE_PERCENT_HEARTS:
+        return 60;
+      default:
+        return 20;
+    }
   }
 
   @SafeVarargs

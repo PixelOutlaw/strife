@@ -75,11 +75,13 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoinUpdateAttributes(final PlayerJoinEvent event) {
+    event.getPlayer().setHealthScaled(false);
     plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(final EntityDeathEvent event) {
+    plugin.getBossBarManager().setBarDeath(event.getEntity());
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());
   }
