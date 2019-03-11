@@ -181,24 +181,21 @@ public class UniqueEntityManager {
   }
 
   private void delayedEquip(UniqueEntity uniqueEntity, LivingEntity spawnedEntity) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
-        spawnedEntity.getEquipment().clear();
-        spawnedEntity.setCanPickupItems(false);
-        spawnedEntity.getEquipment().setHelmetDropChance(0f);
-        spawnedEntity.getEquipment().setChestplateDropChance(0f);
-        spawnedEntity.getEquipment().setLeggingsDropChance(0f);
-        spawnedEntity.getEquipment().setBootsDropChance(0f);
-        spawnedEntity.getEquipment().setItemInMainHandDropChance(0f);
-        spawnedEntity.getEquipment().setItemInOffHandDropChance(0f);
-        spawnedEntity.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
-        spawnedEntity.getEquipment().setChestplate(uniqueEntity.getChestItem());
-        spawnedEntity.getEquipment().setLeggings(uniqueEntity.getLegsItem());
-        spawnedEntity.getEquipment().setBoots(uniqueEntity.getBootsItem());
-        spawnedEntity.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
-        spawnedEntity.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
-      }
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      spawnedEntity.getEquipment().clear();
+      spawnedEntity.setCanPickupItems(false);
+      spawnedEntity.getEquipment().setHelmetDropChance(0f);
+      spawnedEntity.getEquipment().setChestplateDropChance(0f);
+      spawnedEntity.getEquipment().setLeggingsDropChance(0f);
+      spawnedEntity.getEquipment().setBootsDropChance(0f);
+      spawnedEntity.getEquipment().setItemInMainHandDropChance(0f);
+      spawnedEntity.getEquipment().setItemInOffHandDropChance(0f);
+      spawnedEntity.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
+      spawnedEntity.getEquipment().setChestplate(uniqueEntity.getChestItem());
+      spawnedEntity.getEquipment().setLeggings(uniqueEntity.getLegsItem());
+      spawnedEntity.getEquipment().setBoots(uniqueEntity.getBootsItem());
+      spawnedEntity.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
+      spawnedEntity.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
     }, 1L);
   }
 }
