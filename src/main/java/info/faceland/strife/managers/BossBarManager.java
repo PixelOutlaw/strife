@@ -101,6 +101,12 @@ public class BossBarManager {
     }
   }
 
+  public void removeAllBars() {
+    for (UUID uuid : barMap.keySet()) {
+      removeBar(uuid);
+    }
+  }
+
   public void addPlayerToBar(StrifeBossBar strifeBossBar, Player player) {
     if (strifeBossBar.getBarrierBar() != null) {
       strifeBossBar.getBarrierBar().addPlayer(player);

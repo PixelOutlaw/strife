@@ -408,6 +408,7 @@ public class StrifePlugin extends FacePlugin {
     saveSpawners();
     storage.saveAll();
     uniqueEntityManager.killAllSpawnedUniques();
+    bossBarManager.removeAllBars();
     HandlerList.unregisterAll(this);
 
     saveTask.cancel();
