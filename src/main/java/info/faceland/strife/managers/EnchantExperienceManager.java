@@ -42,7 +42,7 @@ public class EnchantExperienceManager implements StrifeSkillExperienceManager {
   }
 
   public void addExperience(Player player, double amount, boolean exact) {
-    addExperience(plugin.getChampionManager().getChampion(player.getUniqueId()), amount, exact);
+    addExperience(plugin.getChampionManager().getChampion(player), amount, exact);
   }
 
   public void addExperience(Champion champion, double amount, boolean exact) {

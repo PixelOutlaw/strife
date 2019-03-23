@@ -55,19 +55,24 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoinChampionStuff(final PlayerJoinEvent event) {
+    ChampionSaveData championSaveData;
     if (!plugin.getChampionManager().championExists(event.getPlayer().getUniqueId())) {
-      ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
-      if (getChampionLevelpoints(saveData) != event.getPlayer().getLevel()) {
+      championSaveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
+      if (getChampionLevelpoints(championSaveData) != event.getPlayer().getLevel()) {
         notifyResetPoints(event.getPlayer());
         for (StrifeStat stat : plugin.getStatManager().getStats()) {
-          saveData.setLevel(stat, 0);
+          championSaveData.setLevel(stat, 0);
         }
-        saveData.setHighestReachedLevel(event.getPlayer().getLevel());
-        saveData.setUnusedStatPoints(event.getPlayer().getLevel());
+        championSaveData.setHighestReachedLevel(event.getPlayer().getLevel());
+        championSaveData.setUnusedStatPoints(event.getPlayer().getLevel());
       }
-      plugin.getChampionManager().addChampion(new Champion(event.getPlayer(), saveData));
+    } else {
+      championSaveData = plugin.getChampionManager().getChampion(event.getPlayer()).getSaveData();
     }
-    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
+
+    Champion champion = new Champion(event.getPlayer(), championSaveData);
+    plugin.getChampionManager().addChampion(champion);
+
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
@@ -81,7 +86,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(final EntityDeathEvent event) {
-    plugin.getBossBarManager().setBarDeath(event.getEntity());
+    plugin.getBossBarManager().doBarDeath(event.getEntity());
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());
   }
@@ -89,11 +94,13 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(final PlayerQuitEvent event) {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+    plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerKick(final PlayerKickEvent event) {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+    plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

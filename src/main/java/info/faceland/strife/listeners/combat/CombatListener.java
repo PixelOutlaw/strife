@@ -129,11 +129,11 @@ public class CombatListener implements Listener {
 
     if (attackEntity instanceof Player) {
       plugin.getChampionManager().updateEquipmentAttributes(
-          plugin.getChampionManager().getChampion(attackEntity.getUniqueId()));
+          plugin.getChampionManager().getChampion((Player)attackEntity));
     }
     if (defendEntity instanceof Player) {
       plugin.getChampionManager().updateEquipmentAttributes(
-          plugin.getChampionManager().getChampion(defendEntity.getUniqueId()));
+          plugin.getChampionManager().getChampion((Player)defendEntity));
     }
 
     double attackMultiplier = 1D;

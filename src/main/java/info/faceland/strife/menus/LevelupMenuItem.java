@@ -51,7 +51,7 @@ public class LevelupMenuItem extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(player);
     int currentPoints = champion.getLevel(stat);
     int statCap = plugin.getStatManager().getStatCap(stat, champion);
 
@@ -92,7 +92,7 @@ public class LevelupMenuItem extends MenuItem {
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
     Player player = event.getPlayer();
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(player);
     if (champion.getUnusedStatPoints() < 1) {
       return;
     }

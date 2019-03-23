@@ -98,7 +98,7 @@ public class AttributeUpdateListener implements Listener {
       return;
     }
     plugin.getChampionManager().updateEquipmentAttributes(
-        plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId()));
+        plugin.getChampionManager().getChampion((Player)event.getPlayer()));
     plugin.getAttributeUpdateManager().updateAttributes(player);
   }
 

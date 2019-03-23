@@ -65,16 +65,18 @@ public class ChampionManager {
     this.plugin = plugin;
   }
 
-  public Champion getChampion(Player player) {
-    return getChampion(player.getUniqueId());
-  }
-
   public Champion getChampion(UUID uuid) {
     if (championExists(uuid)) {
       return championMap.get(uuid);
     }
-    ChampionSaveData saveData = plugin.getStorage().load(uuid);
-    Player player = Bukkit.getPlayer(uuid);
+    return getChampion(Bukkit.getPlayer(uuid));
+  }
+
+  public Champion getChampion(Player player) {
+    if (championExists(player.getUniqueId())) {
+      return championMap.get(player.getUniqueId());
+    }
+    ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
     if (saveData == null) {
       saveData = new ChampionSaveData(player.getUniqueId());
       Champion champ = new Champion(player, saveData);
@@ -82,7 +84,7 @@ public class ChampionManager {
       return champ;
     }
     Champion champion = new Champion(player, saveData);
-    championMap.put(uuid, champion);
+    championMap.put(player.getUniqueId(), champion);
     return champion;
   }
 

@@ -61,7 +61,7 @@ public class StrifeCommand {
 
   @Command(identifier = "strife profile", permissions = "strife.command.strife.profile", onlyPlayers = false)
   public void profileCommand(CommandSender sender, @Arg(name = "target") Player target) {
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     sendMessage(sender, "<gold>----------------------------------");
     sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
@@ -74,7 +74,7 @@ public class StrifeCommand {
 
   @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
   public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
       champion.setLevel(stat, 0);
     }
@@ -97,7 +97,7 @@ public class StrifeCommand {
   public void clearCommand(CommandSender sender, @Arg(name = "target") Player target) {
     target.setExp(0f);
     target.setLevel(0);
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
       champion.setLevel(stat, 0);
     }
@@ -120,7 +120,7 @@ public class StrifeCommand {
     }
     target.setExp(0f);
     target.setLevel(newLevel);
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     plugin.getChampionManager().removeChampion(champion.getUniqueId());
     plugin.getChampionManager().addChampion(champion);
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
@@ -137,7 +137,7 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Invalid loreAbility ID: " + id);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
     if (success) {
       sendMessage(sender, "&aBound loreAbility " + id + " to player " + target.getName());
@@ -154,7 +154,7 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Invalid loreAbility ID: " + abilityId);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     boolean success = plugin.getChampionManager().removeBoundLoreAbility(champion, ability);
     if (success) {
       sendMessage(sender, "&aUnbound loreAbility " + abilityId + " to player " + target.getName());
@@ -171,25 +171,25 @@ public class StrifeCommand {
       return;
     }
     if (skill.equalsIgnoreCase("crafting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(target);
       champion.getSaveData().setCraftingLevel(newLevel);
       sendMessage(target, "<green>Your skill in crafting is now " + newLevel);
       sendMessage(sender, "<green>Set crafting level of " + target + " to " + newLevel);
       return;
     } else if (skill.equalsIgnoreCase("enchanting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(target);
       champion.getSaveData().setEnchantLevel(newLevel);
       sendMessage(target, "<green>Your skill in enchanting is now " + newLevel);
       sendMessage(sender, "<green>Set enchanting level of " + target + " to " + newLevel);
       return;
     } else if (skill.equalsIgnoreCase("fishing")) {
-      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(target);
       champion.getSaveData().setFishingLevel(newLevel);
       sendMessage(target, "<green>Your skill in fishing is now " + newLevel);
       sendMessage(sender, "<green>Set fishing level of " + target + " to " + newLevel);
       return;
     } else if (skill.equalsIgnoreCase("mining")) {
-      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(target);
       champion.getSaveData().setMiningLevel(newLevel);
       sendMessage(target, "<green>Your skill in mining is now " + newLevel);
       sendMessage(sender, "<green>Set mining level of " + target + " to " + newLevel);

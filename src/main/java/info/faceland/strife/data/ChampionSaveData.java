@@ -39,6 +39,7 @@ public class ChampionSaveData {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
     this.boundAbilities = new ArrayList<>();
+    this.healthDisplayType = HealthDisplayType.TEN_HEALTH_HEARTS;
   }
 
   public int getLevel(StrifeStat stat) {

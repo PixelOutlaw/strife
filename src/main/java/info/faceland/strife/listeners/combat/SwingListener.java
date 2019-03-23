@@ -147,7 +147,7 @@ public class SwingListener implements Listener {
     }
 
     plugin.getChampionManager().updateEquipmentAttributes(
-        plugin.getChampionManager().getChampion(player.getUniqueId()));
+        plugin.getChampionManager().getChampion(player));
 
     double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;

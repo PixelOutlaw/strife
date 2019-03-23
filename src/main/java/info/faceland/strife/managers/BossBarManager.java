@@ -70,7 +70,7 @@ public class BossBarManager {
     for (StrifeBossBar bossBar : barMap.values()) {
       removePlayerFromBar(bossBar, player.getUniqueId());
     }
-    strifeBossBar.addPlayer(player);
+    addPlayerToBar(strifeBossBar, player);
     refreshCounter(strifeBossBar, player.getUniqueId());
   }
 
@@ -91,14 +91,45 @@ public class BossBarManager {
     if (!barMap.containsKey(uuid)) {
       return;
     }
-    barMap.get(uuid).destroy();
+    StrifeBossBar strifeBossBar = barMap.get(uuid);
     barMap.remove(uuid);
+    strifeBossBar.getHealthBar().removeAll();
+    strifeBossBar.setHealthBar(null);
+    if (strifeBossBar.getBarrierBar() != null) {
+      strifeBossBar.getBarrierBar().removeAll();
+      strifeBossBar.setBarrierBar(null);
+    }
+  }
+
+  public void addPlayerToBar(StrifeBossBar strifeBossBar, Player player) {
+    if (strifeBossBar.getBarrierBar() != null) {
+      strifeBossBar.getBarrierBar().addPlayer(player);
+    }
+    strifeBossBar.getHealthBar().addPlayer(player);
+  }
+
+  public void doBarDeath(LivingEntity livingEntity) {
+    StrifeBossBar bossBar = barMap.getOrDefault(livingEntity.getUniqueId(), null);
+    if (bossBar != null) {
+      doBarDeath(bossBar);
+    }
+  }
+
+  public void doBarDeath(StrifeBossBar bossBar) {
+    bossBar.setDead(true);
+    setFirstBarTitle(bossBar, deathMessages.get(random.nextInt(deathMessages.size())));
+    if (bossBar.getBarrierBar() != null) {
+      bossBar.getBarrierBar().setProgress(0);
+    }
+    bossBar.getHealthBar().setProgress(0);
+    for (UUID playerUuid : bossBar.getPlayerUuidTickMap().keySet()) {
+      bossBar.getPlayerUuidTickMap().put(playerUuid, 25);
+    }
   }
 
   private void pruneBarIfNoOwners(UUID uuid) {
     if (barMap.get(uuid).getPlayerUuidTickMap().isEmpty()) {
-      barMap.get(uuid).destroy();
-      barMap.remove(uuid);
+      removeBar(uuid);
     }
   }
 
@@ -199,24 +230,5 @@ public class BossBarManager {
       return;
     }
     bossBar.getHealthBar().setTitle(title);
-  }
-
-  public void setBarDeath(LivingEntity livingEntity) {
-    StrifeBossBar bossBar = barMap.getOrDefault(livingEntity.getUniqueId(), null);
-    if (bossBar != null) {
-      setBarDeath(bossBar);
-    }
-  }
-
-  public void setBarDeath(StrifeBossBar bossBar) {
-    bossBar.setDead(true);
-    setFirstBarTitle(bossBar, deathMessages.get(random.nextInt(deathMessages.size())));
-    if (bossBar.getBarrierBar() != null) {
-      bossBar.getBarrierBar().setProgress(0);
-    }
-    bossBar.getHealthBar().setProgress(0);
-    for (UUID playerUuid : bossBar.getPlayerUuidTickMap().keySet()) {
-      bossBar.getPlayerUuidTickMap().put(playerUuid, 25);
-    }
   }
 }

@@ -66,7 +66,7 @@ public class BowListener implements Listener {
     }
 
     plugin.getChampionManager().updateEquipmentAttributes(
-        plugin.getChampionManager().getChampion(playerEntity.getUniqueId()));
+        plugin.getChampionManager().getChampion(playerEntity));
 
     double bowPitch = 0.9 + random.nextDouble() * 0.2;
     playerEntity.getWorld()

@@ -65,17 +65,17 @@ public class PlayerDataUtil {
   }
 
   public static int getCraftSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getCraftSkill(updateEquipment);
   }
 
   public static int getCraftLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getCraftingLevel();
   }
 
   public static float getCraftExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getCraftingExp();
   }
 
@@ -85,17 +85,17 @@ public class PlayerDataUtil {
   }
 
   public static int getEnchantSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getEnchantSkill(updateEquipment);
   }
 
   public static int getEnchantLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getEnchantLevel();
   }
 
   public static float getEnchantExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getEnchantExp();
   }
 
@@ -105,17 +105,17 @@ public class PlayerDataUtil {
   }
 
   public static int getFishSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getFishSkill(updateEquipment);
   }
 
   public static int getFishLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getFishingLevel();
   }
 
   public static float getFishExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getFishingExp();
   }
 
@@ -125,17 +125,17 @@ public class PlayerDataUtil {
   }
 
   public static int getMineSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getMineSkill(updateEquipment);
   }
 
   public static int getMiningLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getMiningLevel();
   }
 
   public static float getMiningExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getMiningExp();
   }
 
@@ -146,7 +146,7 @@ public class PlayerDataUtil {
 
   public static void updatePlayerEquipment(Player player) {
     StrifePlugin.getInstance().getChampionManager().updateEquipmentAttributes(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId()));
+        StrifePlugin.getInstance().getChampionManager().getChampion(player));
   }
 
   // TODO: Something less stupid, this shouldn't be in this Util
@@ -165,8 +165,7 @@ public class PlayerDataUtil {
   // TODO: Something better with the crap below here...
   public static int getMaxItemDestroyLevel(Player player) {
     return getMaxItemDestroyLevel(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
-            .getCraftingLevel());
+        StrifePlugin.getInstance().getChampionManager().getChampion(player).getCraftingLevel());
   }
 
   private static int getMaxItemDestroyLevel(int craftLvl) {
@@ -175,8 +174,7 @@ public class PlayerDataUtil {
 
   public static int getMaxCraftItemLevel(Player player) {
     return getMaxCraftItemLevel(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player.getUniqueId())
-            .getCraftingLevel());
+        StrifePlugin.getInstance().getChampionManager().getChampion(player).getCraftingLevel());
   }
 
   public static int getMaxCraftItemLevel(int craftLvl) {

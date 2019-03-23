@@ -65,7 +65,7 @@ public class ExperienceManager implements StrifeExperienceManager {
       player.setExp(0);
       amount -= faceExpToLevel;
       currentExpPercent = 0;
-      Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(player);
       if (player.getLevel() < 100) {
         player.setLevel(player.getLevel() + 1);
         pushLevelUpSpam(player, player.getLevel() % 5 == 0);

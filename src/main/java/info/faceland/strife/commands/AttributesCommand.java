@@ -35,7 +35,7 @@ public class AttributesCommand {
 
   @Command(identifier = "stats", permissions = "strife.command.stats")
   public void baseCommand(Player sender) {
-    Champion champion = plugin.getChampionManager().getChampion(sender.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(sender);
     plugin.getChampionManager().updateAll(champion);
     plugin.getAttributeUpdateManager().updateAttributes(sender);
     plugin.getStatsMenu().open(sender);

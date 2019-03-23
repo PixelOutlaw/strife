@@ -69,7 +69,7 @@ public class MonsterManager {
       levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
     }
     if (type == EntityType.PLAYER && level >= 100) {
-      int bLevel = championManager.getChampion(livingEntity.getUniqueId()).getBonusLevels();
+      int bLevel = championManager.getChampion((Player)livingEntity).getBonusLevels();
       Map<StrifeAttribute, Double> bonusStats = new HashMap<>();
       for (StrifeAttribute attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
         bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);

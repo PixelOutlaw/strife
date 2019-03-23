@@ -93,7 +93,7 @@ public class ExperienceListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerLevelChange(PlayerLevelChangeEvent event) {
     Player player = event.getPlayer();
-    Champion champion = plugin.getChampionManager().getChampion(player.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(player);
     if (event.getOldLevel() < event.getNewLevel()) {
       ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_UP), player);
     } else {
