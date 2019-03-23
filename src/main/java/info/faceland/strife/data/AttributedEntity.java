@@ -1,6 +1,8 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.ability.Ability;
+import info.faceland.strife.data.champion.Champion;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.LivingEntity;

@@ -1,5 +1,6 @@
-package info.faceland.strife.data;
+package info.faceland.strife.data.champion;
 
+import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.ArrayList;
 import java.util.HashMap;

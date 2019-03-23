@@ -1,8 +1,10 @@
-package info.faceland.strife.data;
+package info.faceland.strife.data.champion;
 
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.*;
 
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import java.util.ArrayList;

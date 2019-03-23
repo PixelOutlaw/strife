@@ -1,5 +1,6 @@
-package info.faceland.strife.data;
+package info.faceland.strife.data.ability;
 
+import info.faceland.strife.data.ability.Ability;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

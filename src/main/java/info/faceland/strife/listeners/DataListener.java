@@ -20,8 +20,8 @@ package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;

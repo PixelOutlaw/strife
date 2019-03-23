@@ -1,6 +1,7 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.data.ability.EntityAbilitySet;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;

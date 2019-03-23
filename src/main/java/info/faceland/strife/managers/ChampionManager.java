@@ -26,11 +26,11 @@ import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 
-import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.data.PlayerEquipmentCache;
+import info.faceland.strife.data.champion.PlayerEquipmentCache;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemUtil;
 import org.bukkit.Bukkit;

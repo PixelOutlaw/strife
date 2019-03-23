@@ -27,7 +27,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

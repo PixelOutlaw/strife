@@ -22,7 +22,7 @@
  */
 package info.faceland.strife.api;
 
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import org.bukkit.entity.Player;
 
 public interface StrifeSkillExperienceManager {

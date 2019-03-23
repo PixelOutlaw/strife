@@ -2,7 +2,7 @@ package info.faceland.strife.managers;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.EntityAbilitySet;
+import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.UniqueEntityData;
 import info.faceland.strife.util.LogUtil;

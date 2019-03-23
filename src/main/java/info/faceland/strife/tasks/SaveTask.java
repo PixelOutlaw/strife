@@ -19,8 +19,8 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;

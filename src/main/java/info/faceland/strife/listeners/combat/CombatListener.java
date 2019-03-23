@@ -48,7 +48,7 @@ import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;

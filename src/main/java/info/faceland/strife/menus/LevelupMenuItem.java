@@ -20,7 +20,7 @@ package info.faceland.strife.menus;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;

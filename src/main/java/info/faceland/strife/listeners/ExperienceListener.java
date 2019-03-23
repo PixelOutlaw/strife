@@ -23,7 +23,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

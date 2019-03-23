@@ -2,7 +2,7 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import info.faceland.strife.data.Ability;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.effects.Effect;

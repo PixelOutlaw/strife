@@ -1,7 +1,7 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;

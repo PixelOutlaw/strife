@@ -1,4 +1,4 @@
-package info.faceland.strife.data;
+package info.faceland.strife.data.ability;
 
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.effects.Effect;

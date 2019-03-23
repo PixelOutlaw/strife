@@ -20,7 +20,7 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
 import java.util.*;

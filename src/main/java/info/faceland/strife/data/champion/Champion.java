@@ -16,8 +16,9 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.data;
+package info.faceland.strife.data.champion;
 
+import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 

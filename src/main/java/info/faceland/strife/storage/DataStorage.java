@@ -22,7 +22,7 @@
  */
 package info.faceland.strife.storage;
 
-import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import java.util.UUID;
 
 public interface DataStorage {

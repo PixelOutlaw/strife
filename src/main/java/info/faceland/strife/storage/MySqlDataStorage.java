@@ -4,8 +4,7 @@ import com.tealcube.minecraft.bukkit.facecore.database.Database;
 import com.tealcube.minecraft.bukkit.facecore.database.MySqlDatabasePool;
 import info.faceland.strife.StrifePlugin;
 
-import info.faceland.strife.data.ChampionSaveData;
-import java.util.Collection;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import java.util.UUID;
 
 public class MySqlDataStorage implements DataStorage {

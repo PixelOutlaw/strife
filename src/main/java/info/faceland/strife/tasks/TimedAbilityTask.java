@@ -19,7 +19,7 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.managers.AttributedEntityManager;
-import info.faceland.strife.data.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.managers.AbilityManager;
 import info.faceland.strife.managers.UniqueEntityManager;
 import org.bukkit.entity.LivingEntity;

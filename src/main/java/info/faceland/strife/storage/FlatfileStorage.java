@@ -19,9 +19,9 @@
 package info.faceland.strife.storage;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.ChampionSaveData;
-import info.faceland.strife.data.ChampionSaveData.HealthDisplayType;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData;
+import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;

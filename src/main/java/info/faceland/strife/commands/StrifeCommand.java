@@ -24,7 +24,7 @@ import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
 
 import org.bukkit.Bukkit;

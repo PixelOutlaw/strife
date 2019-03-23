@@ -23,16 +23,13 @@
 package info.faceland.strife.menus;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.champion.Champion;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Wool;
 
 public class LevelupPointsMenuItem extends MenuItem {
 
