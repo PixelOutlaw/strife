@@ -94,13 +94,11 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(final PlayerQuitEvent event) {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
-    plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerKick(final PlayerKickEvent event) {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
-    plugin.getChampionManager().removeChampion(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
