@@ -37,7 +37,7 @@ public class ExperienceManager implements StrifeExperienceManager {
 
   private final StrifePlugin plugin;
   private static final String EXP_TEXT = "&a&l( &f&l{0} &a&l/ &f&l{1} &a&l)";
-  static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
+  private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
 
   public ExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
