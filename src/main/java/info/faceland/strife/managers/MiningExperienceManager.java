@@ -29,12 +29,14 @@ import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.events.SkillLevelUpEvent;
 import info.faceland.strife.events.StrifeMineEvent;
+import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class MiningExperienceManager implements StrifeSkillExperienceManager {
 
   private final StrifePlugin plugin;
+  private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
 
   public MiningExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -50,7 +52,8 @@ public class MiningExperienceManager implements StrifeSkillExperienceManager {
       return;
     }
     if (!exact) {
-      amount *= 1 + champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+      double statsMult = champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+      amount *= 1 + statsMult;
     }
     StrifeMineEvent mineEvent = new StrifeMineEvent(champion.getPlayer(), (float) amount);
     StrifePlugin.getInstance().getServer().getPluginManager().callEvent(mineEvent);
@@ -72,7 +75,7 @@ public class MiningExperienceManager implements StrifeSkillExperienceManager {
     }
 
     saveData.setMiningExp((float) currentExp);
-    String xpMsg = "&2&l( &f&l" + (int) currentExp + " &2&l/ &f&l" + (int) maxExp + " XP &2&l)";
+    String xpMsg = "&2&l( &f&l" + FORMAT.format((int) currentExp) + " &2&l/ &f&l" + FORMAT.format((int) maxExp) + " XP &2&l)";
     ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg),
         champion.getPlayer());
   }

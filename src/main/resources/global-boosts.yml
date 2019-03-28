@@ -1,0 +1,69 @@
+version: 0.0.1
+
+scheduled-boosts:
+  FRIDAY: friday-drop-day
+  SATURDAY: weekend-double-exp
+  SUNDAY: weekend-double-exp
+
+boost-templates:
+  friday-drop-day:
+    creator: SERVER
+    duration: -1
+    announcement-interval: 30
+    announcement-start:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-running:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-end:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    attributes:
+      XP_GAIN: 100
+  weekend-double-exp:
+    creator: SERVER
+    duration: -1
+    announcement-interval: 30
+    announcement-start:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-running:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-end:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    attributes:
+      XP_GAIN: 100
+  cash-shop-xp-boost:
+    creator: SERVER
+    duration: 60
+    announcement-interval: 5
+    announcement-start:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-running:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-end:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    attributes:
+      XP_GAIN: 100
+  shitty-move-and-attack-speed-boost:
+    creator: SERVER
+    duration: -1
+    announcement-interval: 1
+    announcement-start:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-running:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    announcement-end:
+    - " &aWow! {name} has bought a double xp boost!"
+    - " &fThere's {duration} minutes remaining! Have fun!"
+    attributes:
+      MOVEMENT_SPEED: 100
+      ATTACK_SPEED: 100

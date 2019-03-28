@@ -67,16 +67,12 @@ public class StatsBonusMenuItem extends MenuItem {
 
     lore.add(breakLine);
 
-    double xpMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0) + plugin
-        .getMultiplierManager().getExpMult();
-    double dropMult = plugin.getSettings().getDouble("config.drop-bonus", 0.0) + plugin
-        .getMultiplierManager().getDropMult();
     lore.add(ChatColor.GREEN + "Combat Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format((xpMult * 100 + pStats.getAttribute(StrifeAttribute.XP_GAIN))) + "%");
+        .format(pStats.getAttribute(StrifeAttribute.XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Skill Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
         .format(pStats.getAttribute(StrifeAttribute.SKILL_XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format((dropMult * 100 + pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY))) + "%");
+        .format(pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY)) + "%");
     lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
         .format(pStats.getAttribute(StrifeAttribute.ITEM_RARITY)) + "%");
     lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT

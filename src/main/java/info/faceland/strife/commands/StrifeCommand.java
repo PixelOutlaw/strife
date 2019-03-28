@@ -21,12 +21,10 @@ package info.faceland.strife.commands;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -233,18 +231,13 @@ public class StrifeCommand {
     sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
   }
 
-  @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)
-  public void setExpMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-    sendMessage(sender, "&aBonus XP mult changed to " + amount + "x from " + (plugin
-        .getMultiplierManager().getExpMult() + 1) + "x!");
-    plugin.getMultiplierManager().setExpMult(amount);
-  }
-
-  @Command(identifier = "strife dropmult", permissions = "strife.command.strife.dropmult", onlyPlayers = false)
-  public void setDropMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-    sendMessage(sender, "&aBonus drop mult changed to " + amount + "x from " + (plugin
-        .getMultiplierManager().getDropMult() + 1) + "x!");
-    plugin.getMultiplierManager().setDropMult(amount);
+  @Command(identifier = "strife startBoost", permissions = "strife.command.strife.boosts", onlyPlayers = false)
+  public void startBoostCommand(CommandSender sender, @Arg(name = "boostId") String boostId,
+      @Arg(name = "creator") String creator, @Arg(name = "duration") int duration) {
+    boolean success = plugin.getGlobalBoostManager().createStatBoost(boostId, creator, duration);
+    if (!success) {
+      sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
+    }
   }
 
 }

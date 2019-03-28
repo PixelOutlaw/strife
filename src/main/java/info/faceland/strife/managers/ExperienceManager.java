@@ -52,11 +52,8 @@ public class ExperienceManager implements StrifeExperienceManager {
 
     if (!exact) {
       double statsMult = pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100;
-      double globalMult = plugin.getSettings().getDouble("config.xp-bonus", 0.0);
-      double eventMult = plugin.getMultiplierManager().getExpMult();
-      double bonusMult = 1 + statsMult + globalMult + eventMult;
       amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)));
-      amount *= bonusMult;
+      amount *= 1 + statsMult;
     }
 
     double faceExpToLevel = maxFaceExp * (1 - currentExpPercent);

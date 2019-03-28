@@ -29,12 +29,14 @@ import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.events.SkillLevelUpEvent;
 import info.faceland.strife.events.StrifeEnchantEvent;
+import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class EnchantExperienceManager implements StrifeSkillExperienceManager {
 
   private final StrifePlugin plugin;
+  private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
 
   public EnchantExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -51,7 +53,8 @@ public class EnchantExperienceManager implements StrifeSkillExperienceManager {
     }
     plugin.getChampionManager().updateAll(champion);
     if (!exact) {
-      amount *= 1 + champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+      double statsMult = champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+      amount *= 1 + statsMult;
     }
     StrifeEnchantEvent enchantEvent = new StrifeEnchantEvent(champion.getPlayer(), (float) amount);
     StrifePlugin.getInstance().getServer().getPluginManager().callEvent(enchantEvent);
@@ -73,7 +76,7 @@ public class EnchantExperienceManager implements StrifeSkillExperienceManager {
     }
 
     saveData.setEnchantExp((float) currentExp);
-    String xpMsg = "&d&l( &f&l" + (int) currentExp + " &d&l/ &f&l" + (int) maxExp + " XP &d&l)";
+    String xpMsg = "&d&l( &f&l" + FORMAT.format((int) currentExp) + " &d&l/ &f&l" + FORMAT.format((int) maxExp) + " XP &d&l)";
     ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg),
         champion.getPlayer());
   }

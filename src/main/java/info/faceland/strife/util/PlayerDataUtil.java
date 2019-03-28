@@ -8,6 +8,7 @@ import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.AttributedEntity;
 import java.util.List;
 import java.util.Set;
+import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -147,6 +148,11 @@ public class PlayerDataUtil {
   public static void updatePlayerEquipment(Player player) {
     StrifePlugin.getInstance().getChampionManager().updateEquipmentAttributes(
         StrifePlugin.getInstance().getChampionManager().getChampion(player));
+  }
+
+  public static void playExpSound(Player player) {
+    player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.75f,
+        0.8f + (float) Math.random() * 0.4f);
   }
 
   // TODO: Something less stupid, this shouldn't be in this Util

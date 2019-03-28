@@ -283,7 +283,8 @@ public class ChampionManager {
 
   private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
-    plugin.getAttributedEntityManager().setEntityStats(champion.getPlayer(), champion.getCombinedCache());
+    plugin.getAttributedEntityManager().setEntityStats(champion.getPlayer(), AttributeUpdateManager
+        .combineMaps(champion.getCombinedCache(), plugin.getGlobalBoostManager().getAttributes()));
   }
 
   private static void removeAttributes(ItemStack item) {

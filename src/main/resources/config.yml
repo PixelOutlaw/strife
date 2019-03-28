@@ -10,7 +10,12 @@ menu:
   close-marker-x: 8
   close-marker-y: 5
 
-pvp-multiplier: 0.5
+global-multipliers:
+  pvp-damage: 0.5
+  combat-exp: 0.0
+  skill-exp: 0.0
+  item-drop: 0.0
+  item-rarity: 0.0
 
 xp-bonus: 0.0
 drops-bonus: 0.0
