@@ -19,6 +19,7 @@ public class ChampionSaveData {
   private final List<LoreAbility> boundAbilities;
 
   private HealthDisplayType healthDisplayType;
+  private boolean displayExp;
 
   private int unusedStatPoints;
   private int highestReachedLevel;
@@ -61,6 +62,14 @@ public class ChampionSaveData {
   public void setHealthDisplayType(
       HealthDisplayType healthDisplayType) {
     this.healthDisplayType = healthDisplayType;
+  }
+
+  public boolean isDisplayExp() {
+    return displayExp;
+  }
+
+  public void setDisplayExp(boolean displayExp) {
+    this.displayExp = displayExp;
   }
 
   public int getBonusLevels() {

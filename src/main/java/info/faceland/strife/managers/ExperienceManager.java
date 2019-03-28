@@ -37,6 +37,7 @@ public class ExperienceManager implements StrifeExperienceManager {
 
   private final StrifePlugin plugin;
   private static final String EXP_TEXT = "&a&l( &f&l{0} &a&l/ &f&l{1} &a&l)";
+  private static final String EXP_MESSAGE = " &a&l+&f&l{0}&a&lXP";
   private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
 
   public ExperienceManager(StrifePlugin plugin) {
@@ -52,6 +53,10 @@ public class ExperienceManager implements StrifeExperienceManager {
 
     if (!exact) {
       double statsMult = pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100;
+      if (pStats.getChampion().getSaveData().isDisplayExp()) {
+        String xp = FORMAT.format(amount * (1 + statsMult));
+        MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));
+      }
       amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)));
       amount *= 1 + statsMult;
     }

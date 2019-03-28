@@ -240,4 +240,10 @@ public class StrifeCommand {
     }
   }
 
+  @Command(identifier = "strife togglexp", onlyPlayers = true)
+  public void toggleExp(CommandSender sender) {
+    Champion champion = plugin.getChampionManager().getChampion((Player) sender);
+    champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
+    sendMessage(sender, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
+  }
 }

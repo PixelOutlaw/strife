@@ -83,6 +83,7 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + ".stats." + entry.getKey().getKey(), entry.getValue());
     }
 
+    config.set(champUuid + ".display-exp", champion.isDisplayExp());
     config.set(champUuid + ".health-display", champion.getHealthDisplayType().toString());
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
@@ -125,6 +126,7 @@ public class FlatfileStorage implements DataStorage {
         displayType = HealthDisplayType.TEN_HEALTH_HEARTS;
       }
       saveData.setHealthDisplayType(displayType);
+      saveData.setDisplayExp(section.getBoolean("display-exp", false));
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
       saveData.setBonusLevels(section.getInt("bonus-levels"));
       saveData.setCraftingLevel(section.getInt("crafting-level"));
