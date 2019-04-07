@@ -60,22 +60,22 @@ public class BowListener implements Listener {
     Player playerEntity = (Player) event.getEntity().getShooter();
     AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(playerEntity);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
+    attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
-    if (attackMultiplier <= 0.1) {
+    if (attackMultiplier <= 0.05) {
+      event.setCancelled(true);
       return;
     }
 
     plugin.getChampionManager().updateEquipmentAttributes(
         plugin.getChampionManager().getChampion(playerEntity));
 
+    Location location = event.getEntity().getLocation().clone();
     double bowPitch = 0.9 + random.nextDouble() * 0.2;
-    playerEntity.getWorld()
-        .playSound(playerEntity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
+    playerEntity.getWorld().playSound(location, Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
 
     double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
     double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
-
-    Location location = event.getEntity().getLocation().clone();
 
     createArrow(playerEntity, location, attackMultiplier, projectileSpeed, shotMult);
 
@@ -119,7 +119,7 @@ public class BowListener implements Listener {
   }
 
   private double randomOffset(double magnitude) {
-    magnitude = 0.1 + magnitude * 0.0045;
+    magnitude = 0.11 + magnitude * 0.005;
     return (random.nextDouble() * magnitude * 2) - magnitude;
   }
 }

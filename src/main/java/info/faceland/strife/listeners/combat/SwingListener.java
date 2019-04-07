@@ -134,12 +134,9 @@ public class SwingListener implements Listener {
   private void shootWand(Player player, Cancellable event) {
     AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
+    attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
-    if (attackMultiplier <= 0.05) {
-      event.setCancelled(true);
-      return;
-    }
-    if (attackMultiplier <= 0.25) {
+    if (attackMultiplier < 0.1) {
       ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, player);
       player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
       event.setCancelled(true);
@@ -205,7 +202,7 @@ public class SwingListener implements Listener {
   }
 
   private double randomOffset(double magnitude) {
-    magnitude = 0.1 + magnitude * 0.005;
+    magnitude = 0.12 + magnitude * 0.005;
     return (random.nextDouble() * magnitude * 2) - magnitude;
   }
 
