@@ -55,24 +55,15 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoinChampionStuff(final PlayerJoinEvent event) {
-    ChampionSaveData championSaveData;
-    if (!plugin.getChampionManager().championExists(event.getPlayer().getUniqueId())) {
-      championSaveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
-      if (getChampionLevelpoints(championSaveData) != event.getPlayer().getLevel()) {
-        notifyResetPoints(event.getPlayer());
-        for (StrifeStat stat : plugin.getStatManager().getStats()) {
-          championSaveData.setLevel(stat, 0);
-        }
-        championSaveData.setHighestReachedLevel(event.getPlayer().getLevel());
-        championSaveData.setUnusedStatPoints(event.getPlayer().getLevel());
+    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    if (getChampionLevelpoints(champion) != event.getPlayer().getLevel()) {
+      notifyResetPoints(event.getPlayer());
+      for (StrifeStat stat : plugin.getStatManager().getStats()) {
+        champion.setLevel(stat, 0);
       }
-    } else {
-      championSaveData = plugin.getChampionManager().getChampion(event.getPlayer()).getSaveData();
+      champion.setHighestReachedLevel(event.getPlayer().getLevel());
+      champion.setUnusedStatPoints(event.getPlayer().getLevel());
     }
-
-    Champion champion = new Champion(event.getPlayer(), championSaveData);
-    plugin.getChampionManager().addChampion(champion);
-
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
@@ -152,7 +143,8 @@ public class DataListener implements Listener {
         () -> MessageUtils.sendMessage(player, RESET_MESSAGE), 20L * 3);
   }
 
-  private int getChampionLevelpoints(ChampionSaveData championSaveData) {
+  private int getChampionLevelpoints(Champion champion) {
+    ChampionSaveData championSaveData = champion.getSaveData();
     int total = championSaveData.getUnusedStatPoints();
     for (StrifeStat stat : championSaveData.getLevelMap().keySet()) {
       total += championSaveData.getLevel(stat);

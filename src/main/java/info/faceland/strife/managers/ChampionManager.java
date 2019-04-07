@@ -85,7 +85,7 @@ public class ChampionManager {
     }
     Champion champion = new Champion(player, saveData);
     championMap.put(player.getUniqueId(), champion);
-    return champion;
+    return championMap.get(player.getUniqueId());
   }
 
   public boolean championExists(UUID uuid) {
@@ -95,10 +95,6 @@ public class ChampionManager {
   public void addChampion(Champion champion) {
     championMap.put(champion.getUniqueId(), champion);
     updateAll(champion);
-  }
-
-  public void removeChampion(UUID uuid) {
-    championMap.remove(uuid);
   }
 
   public Collection<Champion> getChampions() {

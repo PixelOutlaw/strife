@@ -105,8 +105,6 @@ public class ExperienceListener implements Listener {
     int points = event.getNewLevel() - event.getOldLevel();
     champion.setHighestReachedLevel(event.getNewLevel());
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
     plugin.getChampionManager().updateAll(champion);
   }
 

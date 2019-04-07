@@ -78,8 +78,6 @@ public class StrifeCommand {
     }
     champion.setHighestReachedLevel(target.getLevel());
     champion.setUnusedStatPoints(target.getLevel());
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
     sendMessage(sender, "<green>You reset <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been reset.");
@@ -88,6 +86,7 @@ public class StrifeCommand {
         .command("/levelup")
         .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
         .color(ChatColor.WHITE).then(" to spend them!").send(target);
+    plugin.getChampionManager().updateAll(champion);
     plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
@@ -101,11 +100,10 @@ public class StrifeCommand {
     }
     champion.setUnusedStatPoints(0);
     champion.setHighestReachedLevel(0);
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
     sendMessage(sender, "<green>You cleared <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
+    plugin.getChampionManager().updateAll(champion);
     plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
@@ -119,8 +117,7 @@ public class StrifeCommand {
     target.setExp(0f);
     target.setLevel(newLevel);
     Champion champion = plugin.getChampionManager().getChampion(target);
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
+    plugin.getChampionManager().updateAll(champion);
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
