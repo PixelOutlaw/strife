@@ -12,6 +12,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class StatUtil {
 
+  private static final double BASE_EVASION_MULT = 0.8D;
+  private static final double EVASION_ACCURACY_MULT = 0.6D;
+
   public static double getRegen(AttributedEntity ae) {
     return ae.getAttribute(REGENERATION) * (1 + ae.getAttribute(REGEN_MULT) / 100);
   }
@@ -98,7 +101,7 @@ public class StatUtil {
     return ae.getAttribute(WARDING) * (1 + ae.getAttribute(WARD_MULT) / 100);
   }
 
-  public static double getEvasion(AttributedEntity ae) {
+  public static double getMinimumEvasionMult(AttributedEntity ae) {
     return getFlatEvasion(ae) * (1 + ae.getAttribute(EVASION_MULT) / 100);
   }
 
@@ -132,56 +135,40 @@ public class StatUtil {
     return Math.min(1, 80 / (80 + adjustedWarding));
   }
 
-  //public static double getEvasionMultiplier(AttributedEntity attacker, AttributedEntity defender) {
-  //  double adjustedEvasion = Math.max(getEvasion(defender) - getAccuracy(attacker), 1);
-  //  return Math.min(1, 40 / (40 + adjustedEvasion));
-  //}
-
-  public static double getEvasion(AttributedEntity attacker, AttributedEntity defender) {
-    double evasion = getEvasion(defender);
+  public static double getMinimumEvasionMult(AttributedEntity attacker, AttributedEntity defender) {
+    double evasion = getMinimumEvasionMult(defender);
     double accuracy = getAccuracy(attacker);
-    double minimumDamage = 0.8 - 0.65 * ((evasion - accuracy) / (1 + accuracy));
-    return Math.min(1, minimumDamage);
+    double bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (1 + accuracy));
+    return Math.min(1, BASE_EVASION_MULT - bonusMultiplier);
   }
 
-  //public static double getEvasionChance(AttributedEntity attacker, AttributedEntity defender) {
-  //  double evasionAdvantage = Math.max(getEvasion(defender) - getAccuracy(attacker), 1);
-  //  return Math.min(1, 100 / (100 + evasionAdvantage));
-  //}
-
   public static double getFireResist(AttributedEntity ae) {
-    double amount =
-        ae.getAttribute(StrifeAttribute.FIRE_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    double amount = ae.getAttribute(FIRE_RESIST) + ae.getAttribute(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getIceResist(AttributedEntity ae) {
-    double amount =
-        ae.getAttribute(StrifeAttribute.ICE_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    double amount = ae.getAttribute(ICE_RESIST) + ae.getAttribute(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLightningResist(AttributedEntity ae) {
-    double amount = ae.getAttribute(StrifeAttribute.LIGHTNING_RESIST) + ae
-        .getAttribute(StrifeAttribute.ALL_RESIST);
+    double amount = ae.getAttribute(LIGHTNING_RESIST) + ae.getAttribute(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getEarthResist(AttributedEntity ae) {
-    double amount =
-        ae.getAttribute(StrifeAttribute.EARTH_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    double amount = ae.getAttribute(EARTH_RESIST) + ae.getAttribute(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLightResist(AttributedEntity ae) {
-    double amount =
-        ae.getAttribute(StrifeAttribute.LIGHT_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    double amount = ae.getAttribute(LIGHT_RESIST) + ae.getAttribute(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getShadowResist(AttributedEntity ae) {
-    double amount =
-        ae.getAttribute(StrifeAttribute.DARK_RESIST) + ae.getAttribute(StrifeAttribute.ALL_RESIST);
+    double amount = ae.getAttribute(DARK_RESIST) + ae.getAttribute(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
@@ -190,33 +177,27 @@ public class StatUtil {
   }
 
   public static double getFireDamage(AttributedEntity attacker) {
-    return attacker.getAttribute(StrifeAttribute.FIRE_DAMAGE) * (1 + (
-        attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+    return attacker.getAttribute(FIRE_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getIceDamage(AttributedEntity attacker) {
-    return attacker.getAttribute(StrifeAttribute.ICE_DAMAGE) * (1 + (
-        attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+    return attacker.getAttribute(ICE_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getLightningDamage(AttributedEntity attacker) {
-    return attacker.getAttribute(StrifeAttribute.LIGHTNING_DAMAGE) * (1 + (
-        attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+    return attacker.getAttribute(LIGHTNING_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getEarthDamage(AttributedEntity attacker) {
-    return attacker.getAttribute(StrifeAttribute.EARTH_DAMAGE) * (1 + (
-        attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+    return attacker.getAttribute(EARTH_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getLightDamage(AttributedEntity attacker) {
-    return attacker.getAttribute(StrifeAttribute.LIGHT_DAMAGE) * (1 + (
-        attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+    return attacker.getAttribute(LIGHT_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getShadowDamage(AttributedEntity attacker) {
-    return attacker.getAttribute(StrifeAttribute.DARK_DAMAGE) * (1 + (
-        attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100));
+    return attacker.getAttribute(DARK_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getBaseFireDamage(AttributedEntity attacker, AttributedEntity defender) {
@@ -278,6 +259,10 @@ public class StatUtil {
     damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
     damage *= 1 - getShadowResist(defender) / 100;
     return damage;
+  }
+
+  private static double getElementalMult(AttributedEntity pStats) {
+    return 1 + (pStats.getAttribute(ELEMENTAL_MULT) / 100);
   }
 
   private static boolean itemCanUseRage(ItemStack item) {

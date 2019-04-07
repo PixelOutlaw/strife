@@ -51,7 +51,7 @@ public class UniqueSplashListener implements Listener {
       LivingEntity defendEntity = (LivingEntity) e;
       AttributedEntity defender = attributedEntityManager.getAttributedEntity(defendEntity);
 
-      double evasionMultiplier = StatUtil.getEvasion(attacker, defender);
+      double evasionMultiplier = StatUtil.getMinimumEvasionMult(attacker, defender);
       evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
       if (evasionMultiplier <= 0.5) {
         doEvasion(attackEntity, defendEntity);

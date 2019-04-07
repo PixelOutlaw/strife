@@ -22,6 +22,7 @@ import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_REFLECT;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_KILL;
 import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
+import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
 import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_HIT;
 import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_KILL;
 import static info.faceland.strife.attributes.StrifeAttribute.RAGE_WHEN_HIT;
@@ -69,12 +70,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
+  private static final double EVASION_DODGE_THRESHOLD = 0.5D;
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -86,8 +89,7 @@ public class CombatListener implements Listener {
       return;
     }
     // Catch the spoofed damage from abilities
-    if (DamageUtil.isCustomDamage(event.getEntity())) {
-      DamageUtil.removeCustomDamageEntity(event.getEntity());
+    if (event.getCause() == DamageCause.CUSTOM) {
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
@@ -176,20 +178,18 @@ public class CombatListener implements Listener {
     }
 
     boolean blocked = false;
-    for (EntityDamageEvent.DamageModifier modifier : EntityDamageEvent.DamageModifier.values()) {
-      if (event.isApplicable(modifier)) {
-        if (modifier == EntityDamageEvent.DamageModifier.BLOCKING) {
-          if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
-            blocked = true;
-          }
-        }
-        event.setDamage(modifier, 0D);
+    if (event.isApplicable(DamageModifier.BLOCKING)) {
+      if (event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) != 0) {
+        blocked = true;
       }
     }
 
-    double evasionMultiplier = StatUtil.getEvasion(attacker, defender);
+    DamageUtil.removeDamageModifiers(event);
+
+    double evasionMultiplier = StatUtil.getMinimumEvasionMult(attacker, defender);
     evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
-    if (evasionMultiplier <= 0.5) {
+
+    if (evasionMultiplier < EVASION_DODGE_THRESHOLD) {
       doEvasion(attackEntity, defendEntity);
       removeIfExisting(projectile);
       event.setCancelled(true);
@@ -311,6 +311,9 @@ public class CombatListener implements Listener {
     double rawDamage = (standardDamage + elementalDamage) * (blocked ? 0.6 : 1.0);
     rawDamage = Math.max(0D, rawDamage - damageReduction);
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
+    if (projectile != null) {
+      rawDamage *= Math.min(0.05D, 1 - (defender.getAttribute(PROJECTILE_REDUCTION) / 100));
+    }
     rawDamage += attacker.getAttribute(TRUE_DAMAGE) * attackMultiplier;
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);

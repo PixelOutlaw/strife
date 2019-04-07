@@ -47,6 +47,7 @@ public enum StrifeAttribute {
 
   DAMAGE_REDUCTION("Damage Reduction"),
   DAMAGE_REFLECT("Reflected Damage"),
+  PROJECTILE_REDUCTION("Projectile Damage Reduction"),
 
   MELEE_DAMAGE("Melee Damage"),
   RANGED_DAMAGE("Ranged Damage"),
