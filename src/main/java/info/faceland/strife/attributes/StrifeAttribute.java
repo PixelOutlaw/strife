@@ -129,15 +129,7 @@ public enum StrifeAttribute {
 
   EXPLOSION_MAGIC("Explosion Magic"),
   SPELL_STRIKE_RANGE("Spell Strike Range"),
-  EFFECT_DURATION("Effect Duration"),
-
-  HEALTH_PER_TEN_B_LEVEL("Max Health Per Ten BLvl"),
-  BARRIER_PER_TEN_B_LEVEL("Max Barrier Per Ten BLvl"),
-  DAMAGE_PER_TEN_B_LEVEL("Damage Per Ten BLvl"),
-  ARMOR_PER_TEN_B_LEVEL("Armor Per Ten BLvl"),
-  EVASION_PER_TEN_B_LEVEL("Evasion Per Ten BLvl"),
-  MS_PER_TEN_B_LEVEL("Move Speed Per Ten BLvl"),
-  AS_PER_TEN_B_LEVEL("Attack Speed Per Ten BLvl");
+  EFFECT_DURATION("Effect Duration");
 
   // values() is dumb, so we only run it once, and hit use this to
   // change String to enum instead of try catching or values()
