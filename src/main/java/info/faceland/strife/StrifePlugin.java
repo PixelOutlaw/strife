@@ -314,8 +314,7 @@ public class StrifePlugin extends FacePlugin {
     loadSpawners();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      ChampionSaveData saveData = storage.load(player.getUniqueId());
-      championManager.addChampion(new Champion(player, saveData));
+      championManager.getChampion(player);
     }
 
     saveTask = new SaveTask(this);

@@ -26,20 +26,22 @@ import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.champion.Champion;
-
-import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.PlayerEquipmentCache;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ItemUtil;
-import org.bukkit.Bukkit;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.*;
 
 public class ChampionManager {
 
@@ -65,40 +67,36 @@ public class ChampionManager {
     this.plugin = plugin;
   }
 
-  public Champion getChampion(UUID uuid) {
-    if (championExists(uuid)) {
-      return championMap.get(uuid);
-    }
-    return getChampion(Bukkit.getPlayer(uuid));
-  }
-
   public Champion getChampion(Player player) {
-    if (championExists(player.getUniqueId())) {
-      return championMap.get(player.getUniqueId());
+    UUID uuid = player.getUniqueId();
+    if (championExists(uuid)) {
+      championMap.get(uuid).setPlayer(player);
+      return championMap.get(uuid);
     }
     ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
     if (saveData == null) {
       saveData = new ChampionSaveData(player.getUniqueId());
       Champion champ = new Champion(player, saveData);
-      championMap.put(player.getUniqueId(), champ);
+      championMap.put(uuid, champ);
       return champ;
     }
     Champion champion = new Champion(player, saveData);
-    championMap.put(player.getUniqueId(), champion);
-    return championMap.get(player.getUniqueId());
+    championMap.put(uuid, champion);
+    return championMap.get(uuid);
   }
 
   public boolean championExists(UUID uuid) {
-    return uuid != null && championMap.containsKey(uuid);
-  }
-
-  public void addChampion(Champion champion) {
-    championMap.put(champion.getUniqueId(), champion);
-    updateAll(champion);
+    return championMap.containsKey(uuid);
   }
 
   public Collection<Champion> getChampions() {
     return new HashSet<>(championMap.values());
+  }
+
+  public void addListOfChampions(List<Champion> champions) {
+    for (Champion c : champions) {
+      championMap.put(c.getUniqueId(), c);
+    }
   }
 
   public void clearAllChampions() {
