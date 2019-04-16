@@ -4,6 +4,8 @@ import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_RESIST;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
+import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
 import static info.faceland.strife.util.StatUtil.getIceResist;
@@ -258,6 +260,11 @@ public class DamageUtil {
       }
     }
     return mult;
+  }
+
+  public static double getProjectileMultiplier(AttributedEntity atk, AttributedEntity def) {
+    return Math.max(0.05D,
+        1 + (atk.getAttribute(PROJECTILE_DAMAGE) - def.getAttribute(PROJECTILE_REDUCTION)) / 100);
   }
 
   public static void applyLifeSteal(AttributedEntity attacker, double damage,

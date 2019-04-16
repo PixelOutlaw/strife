@@ -22,6 +22,7 @@ import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_REFLECT;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_KILL;
 import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
+import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
 import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_HIT;
 import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_KILL;
@@ -37,6 +38,7 @@ import static info.faceland.strife.util.DamageUtil.attemptIgnite;
 import static info.faceland.strife.util.DamageUtil.attemptShock;
 import static info.faceland.strife.util.DamageUtil.callCritEvent;
 import static info.faceland.strife.util.DamageUtil.consumeEarthRunes;
+import static info.faceland.strife.util.DamageUtil.dealDirectDamage;
 import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
 import static info.faceland.strife.util.DamageUtil.getLightBonus;
@@ -131,11 +133,11 @@ public class CombatListener implements Listener {
 
     if (attackEntity instanceof Player) {
       plugin.getChampionManager().updateEquipmentAttributes(
-          plugin.getChampionManager().getChampion((Player)attackEntity));
+          plugin.getChampionManager().getChampion((Player) attackEntity));
     }
     if (defendEntity instanceof Player) {
       plugin.getChampionManager().updateEquipmentAttributes(
-          plugin.getChampionManager().getChampion((Player)defendEntity));
+          plugin.getChampionManager().getChampion((Player) defendEntity));
     }
 
     double attackMultiplier = 1D;
@@ -312,7 +314,7 @@ public class CombatListener implements Listener {
     rawDamage = Math.max(0D, rawDamage - damageReduction);
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
     if (projectile != null) {
-      rawDamage *= Math.max(0.05D, 1 - (defender.getAttribute(PROJECTILE_REDUCTION) / 100));
+      rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
     }
     rawDamage += attacker.getAttribute(TRUE_DAMAGE) * attackMultiplier;
 
