@@ -20,24 +20,39 @@ package info.faceland.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
 
 public class StrifeCommand {
 
   private final StrifePlugin plugin;
+  private final String REVEAL_SUCCESS;
+  private final String REVEAL_FAIL;
+  private final String REVEAL_PREFIX;
+  private final String REVEAL_REPLACEMENT;
 
   public StrifeCommand(StrifePlugin plugin) {
     this.plugin = plugin;
+    REVEAL_SUCCESS = plugin.getSettings()
+        .getString("config.language.command.reveal-success", "Reveal success");
+    REVEAL_FAIL = plugin.getSettings()
+        .getString("config.language.command.reveal-fail", "Reveal failure");
+    REVEAL_PREFIX = TextUtils.color(plugin.getSettings()
+        .getString("config.language.command.reveal-prefix", "&0&k"));
+    REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
+        .getString("config.language.command.reveal-replace", "&f"));
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
@@ -242,5 +257,30 @@ public class StrifeCommand {
     Champion champion = plugin.getChampionManager().getChampion((Player) sender);
     champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
     sendMessage(sender, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
+  }
+
+  @Command(identifier = "strife reveal", permissions = "strife.command.strife.reveal", onlyPlayers = false)
+  public void reveal(CommandSender sender, @Arg(name = "target") Player target) {
+    ItemStack item = target.getEquipment().getItemInMainHand();
+    if (item == null || item.getType() == null || item.getItemMeta() == null) {
+      sendMessage(target, REVEAL_FAIL);
+      return;
+    }
+    if (item.getItemMeta().getLore() == null || item.getItemMeta().getLore().size() == 0) {
+      sendMessage(target, REVEAL_FAIL);
+      return;
+    }
+    List<String> lore = item.getItemMeta().getLore();
+    for (int i = 0; i < lore.size(); i++) {
+      String loreString = lore.get(i);
+      if (loreString.contains(REVEAL_PREFIX)) {
+        lore.set(i, lore.get(i).replace(REVEAL_PREFIX, REVEAL_REPLACEMENT));
+        item.setLore(lore);
+        target.updateInventory();
+        sendMessage(target, REVEAL_SUCCESS);
+        return;
+      }
+    }
+    sendMessage(target, REVEAL_FAIL);
   }
 }
