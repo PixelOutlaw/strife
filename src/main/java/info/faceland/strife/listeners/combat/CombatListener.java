@@ -312,7 +312,7 @@ public class CombatListener implements Listener {
     rawDamage = Math.max(0D, rawDamage - damageReduction);
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
     if (projectile != null) {
-      rawDamage *= Math.min(0.05D, 1 - (defender.getAttribute(PROJECTILE_REDUCTION) / 100));
+      rawDamage *= Math.max(0.05D, 1 - (defender.getAttribute(PROJECTILE_REDUCTION) / 100));
     }
     rawDamage += attacker.getAttribute(TRUE_DAMAGE) * attackMultiplier;
 
