@@ -3,9 +3,11 @@ package info.faceland.strife.util;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_RESIST;
+import static info.faceland.strife.attributes.StrifeAttribute.BLOCK_RECOVERY;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
+import static info.faceland.strife.attributes.StrifeAttribute.TENACITY;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
 import static info.faceland.strife.util.StatUtil.getIceResist;
@@ -220,6 +222,15 @@ public class DamageUtil {
     if (attacker instanceof Player) {
       ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) attacker);
     }
+  }
+
+  public static double getTenacityMult(AttributedEntity defender) {
+    if (defender.getAttribute(TENACITY) < 1) {
+      return 1.0D;
+    }
+    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
+    double maxReduction = 1 - Math.pow(0.5, defender.getAttribute(TENACITY) / 100);
+    return 1 - (maxReduction * Math.pow(1 - percent, 1.5));
   }
 
   public static double getPotionMult(LivingEntity attacker, LivingEntity defender) {
