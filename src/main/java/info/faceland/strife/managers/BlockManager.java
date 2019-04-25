@@ -18,6 +18,8 @@
  */
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.attributes.StrifeAttribute.BLOCK;
+import static info.faceland.strife.attributes.StrifeAttribute.BLOCK_RECOVERY;
 import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.MAX_EARTH_RUNES;
 
@@ -36,7 +38,7 @@ public class BlockManager {
   private final Random random = new Random();
 
   private static final double FLAT_BLOCK_S = 10;
-  private static final double PERCENT_BLOCK_S = 0.1;
+  private static final double PERCENT_BLOCK_S = 0.05;
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
@@ -45,7 +47,7 @@ public class BlockManager {
       return false;
     }
     UUID uuid = attributedEntity.getEntity().getUniqueId();
-    updateStoredBlock(uuid, attributedEntity.getAttribute(StrifeAttribute.BLOCK));
+    updateStoredBlock(attributedEntity);
     double blockChance = Math.min(blockDataMap.get(uuid).getStoredBlock() / 100, MAX_BLOCK_CHANCE);
     if (isBlocking) {
       blockChance *= 2;
@@ -89,13 +91,20 @@ public class BlockManager {
     }
   }
 
-  private void updateStoredBlock(UUID uuid, double maximumBlock) {
+  private void updateStoredBlock(AttributedEntity attributedEntity) {
+    UUID uuid = attributedEntity.getEntity().getUniqueId();
     if (blockDataMap.get(uuid) == null) {
       BlockData data = new BlockData(System.currentTimeMillis() - DEFAULT_BLOCK_MILLIS, 0);
       blockDataMap.put(uuid, data);
     }
+    double maximumBlock = attributedEntity.getAttribute(BLOCK);
     double block = blockDataMap.get(uuid).getStoredBlock();
-    block += (FLAT_BLOCK_S + PERCENT_BLOCK_S * maximumBlock) * getSecondsSinceBlock(uuid);
+    double restoredBlock = FLAT_BLOCK_S + PERCENT_BLOCK_S * maximumBlock;
+    if (attributedEntity.getAttribute(BLOCK_RECOVERY) > 1) {
+      restoredBlock *= 1 + attributedEntity.getAttribute(BLOCK_RECOVERY) / 100;
+    }
+
+    block += restoredBlock * getSecondsSinceBlock(uuid);
     blockDataMap.get(uuid).setStoredBlock(Math.min(block, maximumBlock));
     blockDataMap.get(uuid).setLastHit(System.currentTimeMillis());
     LogUtil.printDebug("New block before clamp: " + block);

@@ -44,9 +44,15 @@ public enum StrifeAttribute {
   ALL_RESIST("Elemental Resist"),
 
   BLOCK("Block"),
+  BLOCK_RECOVERY("Block Recovery"),
+
+  TENACITY("Tenacity"),
 
   DAMAGE_REDUCTION("Damage Reduction"),
   DAMAGE_REFLECT("Reflected Damage"),
+
+  PROJECTILE_SPEED("Projectile Speed"),
+  PROJECTILE_DAMAGE("Projectile Damage"),
   PROJECTILE_REDUCTION("Projectile Damage Reduction"),
 
   MELEE_DAMAGE("Melee Damage"),
@@ -121,8 +127,6 @@ public enum StrifeAttribute {
   RANGED_MULT(),
   MAGIC_MULT(),
   DAMAGE_MULT(),
-  PROJECTILE_SPEED("Projectile Speed"),
-  PROJECTILE_DAMAGE("Projectile Damage"),
   ELEMENTAL_MULT("Elemental Damage"),
   ACCURACY_MULT(),
   APEN_MULT(),
