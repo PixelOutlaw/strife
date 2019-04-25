@@ -229,7 +229,7 @@ public class DamageUtil {
       return 1.0D;
     }
     double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
-    double maxReduction = 1 - Math.pow(0.5, defender.getAttribute(TENACITY) / 100);
+    double maxReduction = 1 - Math.pow(0.5, defender.getAttribute(TENACITY) / 200);
     return 1 - (maxReduction * Math.pow(1 - percent, 1.5));
   }
 
