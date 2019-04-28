@@ -313,10 +313,6 @@ public class StrifePlugin extends FacePlugin {
     buildUniqueEnemies();
     loadSpawners();
 
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      championManager.getChampion(player);
-    }
-
     saveTask = new SaveTask(this);
     trackedPruneTask = new TrackedPruneTask(this);
     regenTask = new HealthRegenTask(this);
@@ -471,6 +467,11 @@ public class StrifePlugin extends FacePlugin {
     levelupMenu = new LevelupMenu(this, getStatManager().getStats());
     statsMenu = new StatsMenu(this);
 
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      championManager.getChampion(player);
+      attributeUpdateManager.updateAttributes(player);
+    }
+
     LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
     LogUtil.printInfo("+===================================+");
@@ -499,59 +500,6 @@ public class StrifePlugin extends FacePlugin {
     spawnerLeashTask.cancel();
     spawnerSpawnTask.cancel();
     timedAbilityTask.cancel();
-
-    configYAML = null;
-    baseStatsYAML = null;
-    statsYAML = null;
-
-    craftingRate = null;
-    enchantRate = null;
-    fishRate = null;
-    miningRate = null;
-
-    attributeUpdateManager = null;
-    statManager = null;
-    monsterManager = null;
-    uniqueEntityManager = null;
-    bossBarManager = null;
-    equipmentManager = null;
-    effectManager = null;
-    abilityManager = null;
-    blockManager = null;
-    bleedManager = null;
-    darknessManager = null;
-    rageManager = null;
-    barrierManager = null;
-    globalBoostManager = null;
-    spawnerManager = null;
-
-    storage = null;
-    championManager = null;
-    experienceManager = null;
-    craftExperienceManager = null;
-    enchantExperienceManager = null;
-    fishExperienceManager = null;
-    miningExperienceManager = null;
-    attributedEntityManager = null;
-
-    saveTask = null;
-    trackedPruneTask = null;
-    pruneBossBarsTask = null;
-    bossBarsTask = null;
-    globalMultiplierTask = null;
-    regenTask = null;
-    bleedTask = null;
-    darkTask = null;
-    rageTask = null;
-    attackSpeedManager = null;
-    uniqueParticleTask = null;
-    uniquePruneTask = null;
-    timedAbilityTask = null;
-    spawnerSpawnTask = null;
-    spawnerLeashTask = null;
-
-    commandHandler = null;
-    settings = null;
 
     LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
