@@ -14,7 +14,8 @@ public class Spawner {
   private long respawnSeconds;
   private long respawnTime;
   private int resetCount = 0;
-  private Chunk chunk;
+  private int chunkX;
+  private int chunkZ;
 
   public Spawner(UniqueEntity uniqueEntity, Location location, int respawnSeconds,
       double leashRange) {
@@ -22,9 +23,11 @@ public class Spawner {
     this.location = location;
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
-
-    this.chunk = location.getChunk();
     this.respawnTime = System.currentTimeMillis();
+
+    Chunk chunk = location.getChunk();
+    this.chunkX = chunk.getX();
+    this.chunkZ = chunk.getZ();
   }
 
   public UniqueEntity getUniqueEntity() {
@@ -35,11 +38,11 @@ public class Spawner {
     return location;
   }
 
-  // Chunk needs to be updated with location changes, it exists for efficient
-  // detection later
   public void setLocation(Location location) {
     this.location = location;
-    this.chunk = location.getChunk();
+    Chunk chunk = location.getChunk();
+    this.chunkX = chunk.getX();
+    this.chunkZ = chunk.getZ();
   }
 
   public double getLeashRange() {
@@ -56,10 +59,6 @@ public class Spawner {
 
   public long getRespawnSeconds() {
     return respawnSeconds;
-  }
-
-  public Chunk getChunk() {
-    return chunk;
   }
 
   public LivingEntity getTrackedEntity() {
@@ -84,5 +83,13 @@ public class Spawner {
 
   public void setResetCount(int resetCount) {
     this.resetCount = resetCount;
+  }
+
+  public int getChunkX() {
+    return chunkX;
+  }
+
+  public int getChunkZ() {
+    return chunkZ;
   }
 }

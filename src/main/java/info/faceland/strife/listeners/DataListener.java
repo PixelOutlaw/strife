@@ -96,7 +96,8 @@ public class DataListener implements Listener {
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager()
-        .createBarrierEntry(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+        .createBarrierEntry(
+            plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -121,12 +122,8 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void onChunkUnload(ChunkUnloadEvent e) {
     for (Entity ent : e.getChunk().getEntities()) {
-      if (!(ent instanceof LivingEntity)) {
-        continue;
-      }
-      if (plugin.getUniqueEntityManager().getLiveUniquesMap().containsKey(ent)) {
+      if (ent instanceof LivingEntity) {
         plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
-        ent.remove();
       }
     }
   }

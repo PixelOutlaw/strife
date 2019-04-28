@@ -50,15 +50,17 @@ public class UniqueEntityManager {
   }
 
   public void removeEntity(LivingEntity entity, boolean purge, boolean triggerTimer) {
-    if (!liveUniquesMap.containsKey(entity)) {
+    UniqueEntityData data = getData(entity);
+    if (data == null) {
       return;
+    }
+    if (triggerTimer && data.getSpawner() != null) {
+      data.getSpawner()
+          .setRespawnTime(System.currentTimeMillis() + data.getSpawner().getRespawnMillis());
     }
     liveUniquesMap.remove(entity);
     if (purge) {
       entity.remove();
-    }
-    if (triggerTimer) {
-      plugin.getSpawnerManager().triggerRespawnCooldown(entity);
     }
   }
 
@@ -78,10 +80,7 @@ public class UniqueEntityManager {
   }
 
   public UniqueEntityData getData(LivingEntity livingEntity) {
-    if (!liveUniquesMap.containsKey(livingEntity)) {
-      return null;
-    }
-    return liveUniquesMap.get(livingEntity);
+    return liveUniquesMap.getOrDefault(livingEntity, null);
   }
 
   public EntityAbilitySet getAbilitySet(LivingEntity livingEntity) {
@@ -122,21 +121,15 @@ public class UniqueEntityManager {
 
   public LivingEntity spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
-      plugin.getLogger()
-          .warning("Attempted to unique with null entity type: " + uniqueEntity.getName());
+      LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
     }
+    LogUtil.printDebug("Spawning unique entity " + uniqueEntity.getId());
 
     Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
         e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
-    if (!(entity instanceof LivingEntity)) {
-      plugin.getLogger()
-          .warning("Attempted to spawn non-living unique entity: " + uniqueEntity.getName());
-      return null;
-    }
 
     LivingEntity spawnedUnique = (LivingEntity) entity;
-
     spawnedUnique.setRemoveWhenFarAway(false);
 
     double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.HEALTH, 5D);
@@ -174,9 +167,11 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
 
-    plugin.getAttributedEntityManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
+    plugin.getAttributedEntityManager()
+        .setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
-    plugin.getAbilityManager().checkPhaseChange(plugin.getAttributedEntityManager().getAttributedEntity(spawnedUnique));
+    plugin.getAbilityManager()
+        .checkPhaseChange(plugin.getAttributedEntityManager().getAttributedEntity(spawnedUnique));
     return spawnedUnique;
   }
 

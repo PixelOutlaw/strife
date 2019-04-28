@@ -48,11 +48,11 @@ public class SpawnerManager {
 
   public void spawnSpawners() {
     for (Spawner s : spawnerMap.values()) {
-      if (!s.getChunk().isLoaded()) {
-        s.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
+      if (System.currentTimeMillis() < s.getRespawnTime()) {
         continue;
       }
-      if (System.currentTimeMillis() < s.getRespawnTime()) {
+      if (!isChuckLoaded(s)) {
+        s.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
         continue;
       }
       if (s.getTrackedEntity() != null && s.getTrackedEntity().isValid()) {
@@ -60,16 +60,12 @@ public class SpawnerManager {
         continue;
       }
       LivingEntity le = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
+      uniqueManager.getData(le).setSpawner(s);
       s.setTrackedEntity(le);
     }
   }
 
-  public void triggerRespawnCooldown(LivingEntity livingEntity) {
-    for (Spawner spawner : spawnerMap.values()) {
-      if (livingEntity == spawner.getTrackedEntity()) {
-        spawner.setRespawnTime(System.currentTimeMillis() + spawner.getRespawnMillis());
-        return;
-      }
-    }
+  private boolean isChuckLoaded(Spawner spawner) {
+    return spawner.getLocation().getWorld().isChunkInUse(spawner.getChunkX(), spawner.getChunkZ());
   }
 }
