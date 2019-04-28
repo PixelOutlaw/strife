@@ -7,6 +7,7 @@ public class UniqueEntityData {
   private final UniqueEntity uniqueEntity;
   private LivingEntity master;
   private int phase;
+  private Spawner spawner;
 
   public UniqueEntityData(UniqueEntity uniqueEntity) {
     this.uniqueEntity = uniqueEntity;
@@ -32,6 +33,14 @@ public class UniqueEntityData {
 
   public void setMaster(LivingEntity master) {
     this.master = master;
+  }
+
+  public Spawner getSpawner() {
+    return spawner;
+  }
+
+  public void setSpawner(Spawner spawner) {
+    this.spawner = spawner;
   }
 
 }
