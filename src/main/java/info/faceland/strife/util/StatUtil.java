@@ -123,7 +123,7 @@ public class StatUtil {
 
   public static double getArmorMult(AttributedEntity attacker, AttributedEntity defender) {
     double adjustedArmor = Math.max(getArmor(defender) - getArmorPen(attacker), 1);
-    return Math.min(1, 100 / (100 + adjustedArmor));
+    return Math.min(1, 80 / (80 + adjustedArmor));
   }
 
   public static double getWardingMult(AttributedEntity attacker, AttributedEntity defender) {

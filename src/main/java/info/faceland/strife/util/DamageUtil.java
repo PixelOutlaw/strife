@@ -3,7 +3,6 @@ package info.faceland.strife.util;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.BLEED_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.BLOCK_RECOVERY;
 import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_DAMAGE;
 import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
