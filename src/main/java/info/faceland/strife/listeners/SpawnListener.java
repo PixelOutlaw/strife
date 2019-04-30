@@ -195,6 +195,8 @@ public class SpawnListener implements Listener {
   private static ItemStack buildWitchHat() {
     ItemStack hat = new ItemStack(Material.SHEARS);
     hat.setDurability((short) 2);
+    ItemMeta itemMeta = hat.getItemMeta();
+    itemMeta.setUnbreakable(true);
     return hat;
   }
 }
