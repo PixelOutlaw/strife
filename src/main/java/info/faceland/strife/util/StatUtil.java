@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class StatUtil {
 
+  private static final double BASE_ATTACK_SECONDS = 2.0D;
   private static final double BASE_EVASION_MULT = 0.8D;
   private static final double EVASION_ACCURACY_MULT = 0.6D;
 
@@ -69,7 +70,7 @@ public class StatUtil {
   }
 
   public static double getAttackTime(AttributedEntity ae) {
-    double attackTime = 2;
+    double attackTime = BASE_ATTACK_SECONDS;
     double attackBonus = ae.getAttribute(StrifeAttribute.ATTACK_SPEED);
     if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());

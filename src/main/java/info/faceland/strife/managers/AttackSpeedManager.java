@@ -18,8 +18,8 @@
  */
 package info.faceland.strife.managers;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.StatUtil;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -28,7 +28,6 @@ import java.util.UUID;
 
 public class AttackSpeedManager {
 
-  private static final double BASE_ATTACK_SECONDS = 2.0D;
   private final Map<UUID, Long> lastAttackMap;
 
   public AttackSpeedManager() {
@@ -47,23 +46,15 @@ public class AttackSpeedManager {
     if (!(attacker.getEntity() instanceof Player)) {
       return 1.0;
     }
-
-    double attackMillis = BASE_ATTACK_SECONDS * 1000;
-    double attackSpeed = attacker.getAttribute(StrifeAttribute.ATTACK_SPEED);
-    if (attackSpeed > 0) {
-      attackMillis /= (1 + attackSpeed / 100);
-    } else {
-      attackMillis *= (1 + Math.abs(attackSpeed / 100));
-    }
-
+    double attackTime = 1000 * StatUtil.getAttackTime(attacker);
     long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
     if (resetTime) {
       setAttackTime(attacker.getEntity().getUniqueId());
     }
-    if (millisPassed > attackMillis) {
+    if (millisPassed > attackTime) {
       return 1.0;
     }
-    return (double) millisPassed / attackMillis;
+    return (double) millisPassed / attackTime;
   }
 
   private long getMillisPassed(UUID uuid) {

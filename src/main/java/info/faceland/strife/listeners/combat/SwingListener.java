@@ -18,6 +18,9 @@
  */
 package info.faceland.strife.listeners.combat;
 
+import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
+import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
@@ -43,7 +46,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -90,15 +92,19 @@ public class SwingListener implements Listener {
     if (event.getHand() != EquipmentSlot.HAND) {
       return;
     }
-    if (!(event.getAction() == Action.LEFT_CLICK_AIR
-        || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
+    if (event.getClickedBlock() != null && event.getClickedBlock().getType().isItem()) {
+      return;
+    }
+    if (!(event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK)) {
       return;
     }
     if (ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
       shootWand(event.getPlayer(), event);
+    } else {
+      doMeleeSwing(event.getPlayer(), event);
     }
-    plugin.getAttributeUpdateManager()
-        .updateAttackSpeed(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+    plugin.getAttributeUpdateManager().updateAttackSpeed(
+            plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -112,13 +118,15 @@ public class SwingListener implements Listener {
     shootWand((Player) event.getDamager(), event);
   }
 
-  private void spellSwordSwing(Player player, Cancellable event) {
+  private void doMeleeSwing(Player player, Cancellable event) {
     AttributedEntity attacker = plugin.getAttributedEntityManager().getAttributedEntity(player);
+
+    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+
     double range = attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE);
     if (attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE) < 0.5) {
       return;
     }
-    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
     if (attackMultiplier < 0.95) {
       return;
     }
