@@ -101,10 +101,10 @@ public class SwingListener implements Listener {
     if (ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
       shootWand(event.getPlayer(), event);
     } else {
-      doMeleeSwing(event.getPlayer(), event);
+      doMeleeSwing(event.getPlayer(), event, true);
     }
     plugin.getAttributeUpdateManager().updateAttackSpeed(
-            plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+        plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -112,16 +112,18 @@ public class SwingListener implements Listener {
     if (!(event.getDamager() instanceof Player)) {
       return;
     }
-    if (!ItemUtil.isWand(((Player) event.getDamager()).getEquipment().getItemInMainHand())) {
-      return;
+    if (ItemUtil.isWand(((Player) event.getDamager()).getEquipment().getItemInMainHand())) {
+      shootWand((Player) event.getDamager(), event);
+    } else {
+      doMeleeSwing((Player) event.getDamager(), event, false);
     }
-    shootWand((Player) event.getDamager(), event);
   }
 
-  private void doMeleeSwing(Player player, Cancellable event) {
+  private void doMeleeSwing(Player player, Cancellable event, boolean resetAttack) {
     AttributedEntity attacker = plugin.getAttributedEntityManager().getAttributedEntity(player);
 
-    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+    double attackMultiplier = plugin.getAttackSpeedManager()
+        .getAttackMultiplier(attacker, resetAttack);
 
     double range = attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE);
     if (attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE) < 0.5) {
