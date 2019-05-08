@@ -59,10 +59,7 @@ import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
-import org.bukkit.entity.ShulkerBullet;
-import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.entity.WitherSkull;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -139,21 +136,8 @@ public class CombatListener implements Listener {
 
     double attackMultiplier = 1D;
     double healMultiplier = 1D;
-    double explosionMult = 1D;
 
-    AttackType damageType = AttackType.MELEE;
-    if (event.getCause() == DamageCause.ENTITY_EXPLOSION) {
-      damageType = AttackType.EXPLOSION;
-      double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
-      explosionMult = Math.max(0.3, 4 / (distance + 3));
-      healMultiplier = 0.3D;
-    } else if (event.getDamager() instanceof ShulkerBullet || event
-        .getDamager() instanceof SmallFireball || event.getDamager() instanceof WitherSkull || event
-        .getDamager() instanceof EvokerFangs) {
-      damageType = AttackType.MAGIC;
-    } else if (event.getDamager() instanceof Projectile) {
-      damageType = AttackType.RANGED;
-    }
+    AttackType damageType = DamageUtil.getAttackType(event);
 
     AttributedEntity attacker = plugin.getAttributedEntityManager()
         .getAttributedEntity(attackEntity);
@@ -166,11 +150,15 @@ public class CombatListener implements Listener {
         return;
       }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+    } else if (damageType == AttackType.EXPLOSION) {
+      double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
+      attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
+      healMultiplier = 0.3D;
     } else if (projectile != null && projectile.hasMetadata("AS_MULT")) {
       attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
     }
 
-    if (attackMultiplier <= 0.1) {
+    if (attackMultiplier < 0.05) {
       event.setDamage(0);
       event.setCancelled(true);
       return;
@@ -290,19 +278,17 @@ public class CombatListener implements Listener {
         standardDamage * bonusCriticalMultiplier + standardDamage * bonusOverchargeMultiplier;
     standardDamage *= evasionMultiplier;
     standardDamage *= attackMultiplier;
-    standardDamage *= explosionMult;
     standardDamage *= potionMult;
     standardDamage *= StatUtil.getDamageMult(attacker);
 
     standardDamage *= pvpMult;
 
     applyLifeSteal(attacker, standardDamage, healMultiplier);
-    applyHealthOnHit(attacker, attackMultiplier * explosionMult, healMultiplier);
+    applyHealthOnHit(attacker, attackMultiplier, healMultiplier);
 
     elementalDamage *= evasionMultiplier;
     elementalDamage *= attackMultiplier;
     elementalDamage *= potionMult;
-    elementalDamage *= explosionMult;
     elementalDamage *= StatUtil.getDamageMult(attacker);
     elementalDamage *= pvpMult;
 

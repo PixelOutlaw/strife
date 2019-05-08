@@ -34,9 +34,16 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.WitherSkull;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
@@ -382,6 +389,19 @@ public class DamageUtil {
     }
     entity.removePotionEffect(type);
     entity.addPotionEffect(new PotionEffect(type, duration, power));
+  }
+
+  public static AttackType getAttackType(EntityDamageByEntityEvent event) {
+    if (event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+      return AttackType.EXPLOSION;
+    } else if (event.getDamager() instanceof ShulkerBullet || event
+        .getDamager() instanceof SmallFireball || event.getDamager() instanceof WitherSkull || event
+        .getDamager() instanceof EvokerFangs) {
+      return AttackType.MAGIC;
+    } else if (event.getDamager() instanceof Projectile) {
+      return AttackType.RANGED;
+    }
+    return AttackType.MELEE;
   }
 
   public static void removeDamageModifiers(EntityDamageEvent event) {
