@@ -9,9 +9,9 @@ import org.bukkit.entity.LivingEntity;
 
 public class AttributedEntity {
   private final Map<StrifeAttribute, Double> attributeCache;
-  private final LivingEntity livingEntity;
   private final Champion champion;
   private final Map<Ability, Long> cooldownMap;
+  private LivingEntity livingEntity;
 
   public AttributedEntity(Champion champion) {
     this.attributeCache = new HashMap<>();
@@ -33,6 +33,10 @@ public class AttributedEntity {
 
   public LivingEntity getEntity() {
     return livingEntity;
+  }
+
+  public void setLivingEntity(LivingEntity livingEntity) {
+    this.livingEntity = livingEntity;
   }
 
   public Champion getChampion() {

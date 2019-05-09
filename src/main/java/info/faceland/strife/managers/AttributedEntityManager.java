@@ -3,9 +3,9 @@ package info.faceland.strife.managers;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -18,7 +18,7 @@ public class AttributedEntityManager {
 
   public AttributedEntityManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.trackedEntities = new HashMap<>();
+    this.trackedEntities = new ConcurrentHashMap<>();
   }
 
   public Map<UUID, AttributedEntity> getTrackedEntities() {
@@ -38,6 +38,7 @@ public class AttributedEntityManager {
       trackedEntities.put(entity.getUniqueId(), attributedEntity);
     }
     AttributedEntity attributedEntity = trackedEntities.get(entity.getUniqueId());
+    attributedEntity.setLivingEntity(entity);
     plugin.getBarrierManager().createBarrierEntry(attributedEntity);
     return attributedEntity;
   }
