@@ -133,7 +133,9 @@ public class ChampionManager {
     if (!doesHashMatch(equipment.getItemInMainHand(), equipmentCache.getMainHandHash()) ||
         !doesHashMatch(equipment.getItemInOffHand(), equipmentCache.getOffHandHash())) {
 
-      if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+      // TODO: Configurable list of non-valid main/offhand materialTypes that won't be picked up
+      if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())
+          || equipment.getItemInMainHand().getType() == Material.EMERALD) {
         equipmentCache.setMainhandStats(new HashMap<>());
       } else {
         equipmentCache.setMainhandStats(
