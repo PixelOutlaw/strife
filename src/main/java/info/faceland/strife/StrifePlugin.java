@@ -36,8 +36,6 @@ import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
-import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.listeners.AttributeUpdateListener;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
@@ -82,8 +80,8 @@ import info.faceland.strife.managers.RageManager;
 import info.faceland.strife.managers.SpawnerManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.managers.UniqueEntityManager;
-import info.faceland.strife.menus.LevelupMenu;
-import info.faceland.strife.menus.StatsMenu;
+import info.faceland.strife.menus.levelup.LevelupMenu;
+import info.faceland.strife.menus.stats.StatsMenu;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.FlatfileStorage;
 import info.faceland.strife.tasks.BarrierTask;
@@ -468,7 +466,7 @@ public class StrifePlugin extends FacePlugin {
     statsMenu = new StatsMenu(this);
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      championManager.getChampion(player);
+      getChampionManager().updateAll(championManager.getChampion(player));
       attributeUpdateManager.updateAttributes(player);
     }
 
