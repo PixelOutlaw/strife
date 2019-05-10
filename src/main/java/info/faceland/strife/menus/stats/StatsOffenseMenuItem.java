@@ -16,12 +16,12 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.stats;
 
 import static info.faceland.strife.attributes.StrifeAttribute.*;
-import static info.faceland.strife.menus.StatsMenu.INT_FORMAT;
-import static info.faceland.strife.menus.StatsMenu.TWO_DECIMAL;
-import static info.faceland.strife.menus.StatsMenu.breakLine;
+import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
+import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
+import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 
@@ -36,7 +36,6 @@ import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;

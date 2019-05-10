@@ -20,39 +20,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.stats;
+
+import com.tealcube.minecraft.bukkit.TextUtils;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.champion.Champion;
-import ninja.amp.ampmenus.events.ItemClickEvent;
-import ninja.amp.ampmenus.items.MenuItem;
-import org.bukkit.ChatColor;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-public class LevelupPointsMenuItem extends MenuItem {
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
 
-    private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
-    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.NETHER_STAR);
-    private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
+public class StatsMainHandItem extends MenuItem {
+
     private final StrifePlugin plugin;
+    private Player player;
 
-    public LevelupPointsMenuItem(StrifePlugin plugin) {
-        super(DISPLAY_NAME, DISPLAY_ICON, DISPLAY_LORE);
+    public StatsMainHandItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Mainhand Item"), new ItemStack(Material.BARRIER));
+        this.player = player;
+        this.plugin = plugin;
+    }
+
+    public StatsMainHandItem(StrifePlugin plugin) {
+        super(TextUtils.color("&eNo Mainhand Item"), new ItemStack(Material.BARRIER));
         this.plugin = plugin;
     }
 
     @Override
     public ItemStack getFinalIcon(Player player) {
-        ItemStack itemStack = super.getFinalIcon(player);
-        Champion champion = plugin.getChampionManager().getChampion(player);
-        int stacks = champion.getUnusedStatPoints();
-        String name = ChatColor.WHITE + "Unused Levelpoints (" + stacks + ")";
-        itemStack.getItemMeta().setDisplayName(name);
-        stacks = Math.min(stacks, 64);
-        itemStack.setAmount(stacks);
-        return itemStack;
+        if (this.player != null) {
+            player = this.player;
+        }
+        ItemStack chest = player.getEquipment().getItemInMainHand();
+        if (chest == null || chest.getType() == Material.AIR) {
+            chest = new ItemStack(this.getIcon());
+            ItemMeta im = chest.getItemMeta();
+            im.setDisplayName(this.getDisplayName());
+            chest.setItemMeta(im);
+        }
+        return chest;
     }
 
     @Override

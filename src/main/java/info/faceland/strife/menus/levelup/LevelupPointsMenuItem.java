@@ -20,49 +20,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.menus;
-
-import com.tealcube.minecraft.bukkit.TextUtils;
+package info.faceland.strife.menus.levelup;
 
 import info.faceland.strife.StrifePlugin;
-
+import info.faceland.strife.data.champion.Champion;
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import ninja.amp.ampmenus.events.ItemClickEvent;
-import ninja.amp.ampmenus.items.MenuItem;
+public class LevelupPointsMenuItem extends MenuItem {
 
-public class StatsHelmetItem extends MenuItem {
-
+    private static final String DISPLAY_NAME = ChatColor.WHITE + "Unused Levelup Points";
+    private static final ItemStack DISPLAY_ICON = new ItemStack(Material.NETHER_STAR);
+    private static final String[] DISPLAY_LORE = {ChatColor.GRAY + "Click a stat to spend your points!"};
     private final StrifePlugin plugin;
-    private Player player;
 
-    public StatsHelmetItem(StrifePlugin plugin, Player player) {
-        super(TextUtils.color("&eNo Helmet"), new ItemStack(Material.BARRIER));
-        this.plugin = plugin;
-        this.player = player;
-    }
-
-    public StatsHelmetItem(StrifePlugin plugin) {
-        super(TextUtils.color("&eNo Helmet"), new ItemStack(Material.BARRIER));
+    public LevelupPointsMenuItem(StrifePlugin plugin) {
+        super(DISPLAY_NAME, DISPLAY_ICON, DISPLAY_LORE);
         this.plugin = plugin;
     }
 
     @Override
     public ItemStack getFinalIcon(Player player) {
-        if (this.player != null) {
-            player = this.player;
-        }
-        ItemStack helm = player.getEquipment().getHelmet();
-        if (helm == null || helm.getType() == Material.AIR) {
-            helm = new ItemStack(this.getIcon());
-            ItemMeta im = helm.getItemMeta();
-            im.setDisplayName(this.getDisplayName());
-            helm.setItemMeta(im);
-        }
-        return helm;
+        ItemStack itemStack = super.getFinalIcon(player);
+        Champion champion = plugin.getChampionManager().getChampion(player);
+        int stacks = champion.getUnusedStatPoints();
+        String name = ChatColor.WHITE + "Unused Levelpoints (" + stacks + ")";
+        itemStack.getItemMeta().setDisplayName(name);
+        stacks = Math.min(stacks, 64);
+        itemStack.setAmount(stacks);
+        return itemStack;
     }
 
     @Override

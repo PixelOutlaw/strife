@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 
@@ -34,19 +34,19 @@ import org.bukkit.inventory.meta.ItemMeta;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 
-public class StatsLegsItem extends MenuItem {
+public class StatsBootsItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private Player player;
 
-    public StatsLegsItem(StrifePlugin plugin, Player player) {
-        super(TextUtils.color("&eNo Leggings"), new ItemStack(Material.BARRIER));
+    public StatsBootsItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Boots"), new ItemStack(Material.BARRIER));
         this.plugin = plugin;
         this.player = player;
     }
 
-    public StatsLegsItem(StrifePlugin plugin) {
-        super(TextUtils.color("&eNo Leggings"), new ItemStack(Material.BARRIER));
+    public StatsBootsItem(StrifePlugin plugin) {
+        super(TextUtils.color("&eNo Boots"), new ItemStack(Material.BARRIER));
         this.plugin = plugin;
     }
 
@@ -55,7 +55,7 @@ public class StatsLegsItem extends MenuItem {
         if (this.player != null) {
             player = this.player;
         }
-        ItemStack chest = player.getEquipment().getLeggings();
+        ItemStack chest = player.getEquipment().getBoots();
         if (chest == null || chest.getType() == Material.AIR) {
             chest = new ItemStack(this.getIcon());
             ItemMeta im = chest.getItemMeta();

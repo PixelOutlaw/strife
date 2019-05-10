@@ -16,9 +16,11 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -60,14 +63,6 @@ public class StatsChangeHealthDisplay extends MenuItem {
 
     lore.add(TextUtils.color("&7Click this icon to change how your"));
     lore.add(TextUtils.color("&7hearts are displayed!"));
-    lore.add(TextUtils.color(" &7> 5 Health Per Heart"));
-    lore.add(TextUtils.color(" &3> 10 Health Per Heart"));
-    lore.add(TextUtils.color(" &7> One Heart Row"));
-    lore.add(TextUtils.color(" &7> Two Heart Rows"));
-    lore.add(TextUtils.color(" &7> Vanilla Health Display"));
-    lore.add(TextUtils.color(""));
-    lore.add(TextUtils.color("&8&oNote: May or may not actually work?"));
-    lore.add(TextUtils.color("&8&oPending vanilla bugfix in 1.13!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
@@ -87,6 +82,9 @@ public class StatsChangeHealthDisplay extends MenuItem {
     plugin.getAttributeUpdateManager()
         .updateHealth(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
     plugin.getStatsMenu().setItem(position, this);
+    MessageUtils.sendMessage(champion.getPlayer(),
+        "&c&lHealth Display: &f&c" + WordUtils.capitalize(
+            champion.getSaveData().getHealthDisplayType().toString().replace("_", " ")));
   }
 
 }

@@ -16,12 +16,12 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.stats;
 
-import static info.faceland.strife.menus.StatsMenu.INT_FORMAT;
-import static info.faceland.strife.menus.StatsMenu.ONE_DECIMAL;
-import static info.faceland.strife.menus.StatsMenu.TWO_DECIMAL;
-import static info.faceland.strife.menus.StatsMenu.breakLine;
+import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
+import static info.faceland.strife.menus.stats.StatsMenu.ONE_DECIMAL;
+import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
+import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 

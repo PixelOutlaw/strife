@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.levelup;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.stats.StrifeStat;

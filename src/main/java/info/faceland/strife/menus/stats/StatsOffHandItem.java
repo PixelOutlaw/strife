@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.menus;
+package info.faceland.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 
@@ -34,19 +34,19 @@ import org.bukkit.inventory.meta.ItemMeta;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 
-public class StatsChestItem extends MenuItem {
+public class StatsOffHandItem extends MenuItem {
 
     private final StrifePlugin plugin;
     private Player player;
 
-    public StatsChestItem(StrifePlugin plugin, Player player) {
-        super(TextUtils.color("&eNo Chestplate"), new ItemStack(Material.BARRIER));
-        this.plugin = plugin;
+    public StatsOffHandItem(StrifePlugin plugin, Player player) {
+        super(TextUtils.color("&eNo Offhand Item"), new ItemStack(Material.BARRIER));
         this.player = player;
+        this.plugin = plugin;
     }
 
-    public StatsChestItem(StrifePlugin plugin) {
-        super(TextUtils.color("&eNo Chestplate"), new ItemStack(Material.BARRIER));
+    public StatsOffHandItem(StrifePlugin plugin) {
+        super(TextUtils.color("&eNo Offhand Item"), new ItemStack(Material.BARRIER));
         this.plugin = plugin;
     }
 
@@ -55,7 +55,7 @@ public class StatsChestItem extends MenuItem {
         if (this.player != null) {
             player = this.player;
         }
-        ItemStack chest = player.getEquipment().getChestplate();
+        ItemStack chest = player.getEquipment().getItemInOffHand();
         if (chest == null || chest.getType() == Material.AIR) {
             chest = new ItemStack(this.getIcon());
             ItemMeta im = chest.getItemMeta();
