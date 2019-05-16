@@ -24,7 +24,7 @@ public class StatUtil {
     return ae.getAttribute(HEALTH) * (1 + ae.getAttribute(HEALTH_MULT) / 100);
   }
 
-  public static double getBarrier(AttributedEntity ae) {
+  public static double getMaximumBarrier(AttributedEntity ae) {
     return ae.getAttribute(BARRIER);
   }
 
