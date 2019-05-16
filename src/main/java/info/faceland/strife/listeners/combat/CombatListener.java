@@ -47,6 +47,7 @@ import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.util.DamageUtil;
@@ -280,12 +281,14 @@ public class CombatListener implements Listener {
     standardDamage *= attackMultiplier;
     standardDamage *= potionMult;
     standardDamage *= StatUtil.getDamageMult(attacker);
-
     standardDamage *= pvpMult;
 
     applyLifeSteal(attacker, standardDamage, healMultiplier);
     applyHealthOnHit(attacker, attackMultiplier, healMultiplier);
 
+    if (attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
+      elementalDamage += elementalDamage * bonusCriticalMultiplier;
+    }
     elementalDamage *= evasionMultiplier;
     elementalDamage *= attackMultiplier;
     elementalDamage *= potionMult;

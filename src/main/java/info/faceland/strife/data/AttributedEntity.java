@@ -1,20 +1,25 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.entity.LivingEntity;
 
 public class AttributedEntity {
   private final Map<StrifeAttribute, Double> attributeCache;
   private final Champion champion;
   private final Map<Ability, Long> cooldownMap;
+  private final Set<StrifeTrait> traitSet;
   private LivingEntity livingEntity;
 
   public AttributedEntity(Champion champion) {
     this.attributeCache = new HashMap<>();
+    this.traitSet = new HashSet<>();
     this.livingEntity = champion.getPlayer();
     this.champion = champion;
     this.cooldownMap = new HashMap<>();
@@ -22,6 +27,7 @@ public class AttributedEntity {
 
   public AttributedEntity(LivingEntity livingEntity) {
     this.attributeCache = new HashMap<>();
+    this.traitSet = new HashSet<>();
     this.livingEntity = livingEntity;
     this.champion = null;
     this.cooldownMap = new HashMap<>();
@@ -29,6 +35,18 @@ public class AttributedEntity {
 
   public double getAttribute(StrifeAttribute attribute) {
     return attributeCache.getOrDefault(attribute, 0D);
+  }
+
+  public boolean hasTrait(StrifeTrait trait) {
+    return traitSet.contains(trait);
+  }
+
+  public void addTrait(StrifeTrait trait) {
+    traitSet.add(trait);
+  }
+
+  public void removeTrait(StrifeTrait trait) {
+    traitSet.remove(trait);
   }
 
   public LivingEntity getEntity() {
