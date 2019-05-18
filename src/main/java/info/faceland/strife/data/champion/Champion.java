@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.data.champion;
 
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -25,8 +26,8 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.entity.Player;
 
@@ -201,7 +202,11 @@ public class Champion {
     return equipmentCache;
   }
 
-  public Map<TriggerType, List<LoreAbility>> getLoreAbilities() {
-    return equipmentCache.getLoreAbilities();
+  public Map<TriggerType, Set<LoreAbility>> getLoreAbilities() {
+    return equipmentCache.getCombinedAbilities();
+  }
+
+  public Set<StrifeTrait> getTraits() {
+    return equipmentCache.getCombinedTraits();
   }
 }

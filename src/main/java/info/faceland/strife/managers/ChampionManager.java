@@ -19,13 +19,22 @@
 package info.faceland.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+import static info.faceland.strife.attributes.StrifeAttribute.ATTACK_SPEED;
 import static info.faceland.strife.attributes.StrifeAttribute.LEVEL_REQUIREMENT;
+import static info.faceland.strife.util.ItemUtil.doesHashMatch;
+import static info.faceland.strife.util.ItemUtil.getItem;
+import static info.faceland.strife.util.ItemUtil.hashItem;
+import static info.faceland.strife.util.ItemUtil.removeAttributes;
+import static org.bukkit.inventory.EquipmentSlot.CHEST;
+import static org.bukkit.inventory.EquipmentSlot.FEET;
+import static org.bukkit.inventory.EquipmentSlot.HAND;
+import static org.bukkit.inventory.EquipmentSlot.HEAD;
+import static org.bukkit.inventory.EquipmentSlot.LEGS;
+import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
-import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.nbt.NbtCompound;
-import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
@@ -37,34 +46,29 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class ChampionManager {
 
   private final StrifePlugin plugin;
   private final Map<UUID, Champion> championMap = new HashMap<>();
-
-  private final static String LVL_REQ_MAIN_WEAPON =
-      "&e&lYou do not meet the level requirement for your weapon!";
-  private final static String LVL_REQ_OFF_WEAPON =
-      "&e&lYou do not meet the level requirement for your offhand item!";
-  private final static String LVL_REQ_HELMET =
-      "&e&lYou do not meet the level requirement for your helmet!";
-  private final static String LVL_REQ_CHEST =
-      "&c&lYou do not meet the level requirement for your chest armor!";
-  private final static String LVL_REQ_LEGS =
-      "&e&lYou do not meet the level requirement for your leg armor!";
-  private final static String LVL_REQ_BOOTS =
-      "&c&lYou do not meet the level requirement for your boots!";
-  private final static String LVL_REQ_GENERIC =
-      "&c&lYou will not benefit from the stats on this item!";
+  private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
+  private final String levelReqGeneric;
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    this.levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
+    this.levelReqMap.put(HAND, plugin.getSettings().getString("language.level-req.main", ""));
+    this.levelReqMap.put(OFF_HAND, plugin.getSettings().getString("language.level-req.off", ""));
+    this.levelReqMap.put(HEAD, plugin.getSettings().getString("language.level-req.head", ""));
+    this.levelReqMap.put(CHEST, plugin.getSettings().getString("language.level-req.body", ""));
+    this.levelReqMap.put(LEGS, plugin.getSettings().getString("language.level-req.legs", ""));
+    this.levelReqMap.put(FEET, plugin.getSettings().getString("language.level-req.feet", ""));
   }
 
   public Champion getChampion(Player player) {
@@ -130,109 +134,44 @@ public class ChampionManager {
     PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
 
     boolean recombine = false;
-    if (!doesHashMatch(equipment.getItemInMainHand(), equipmentCache.getMainHandHash()) ||
-        !doesHashMatch(equipment.getItemInOffHand(), equipmentCache.getOffHandHash())) {
 
-      // TODO: Configurable list of non-valid main/offhand materialTypes that won't be picked up
-      if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())
-          || equipment.getItemInMainHand().getType() == Material.EMERALD) {
-        equipmentCache.setMainhandStats(new HashMap<>());
-      } else {
-        equipmentCache.setMainhandStats(
-            plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInMainHand()));
-        equipmentCache.getMainAbilities().clear();
-        equipmentCache.getMainAbilities().addAll(
-            plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getItemInMainHand()));
+    for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
+      ItemStack item = getItem(equipment, slot);
+      if (!doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
+        equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
+        equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
+        equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
+        if ((slot == HAND || slot == OFF_HAND) && ItemUtil.isDualWield(equipment)) {
+          applyDualWieldStatChanges(equipmentCache, slot);
+        }
+        removeAttributes(item);
+        equipmentCache.setSlotHash(slot, hashItem(item));
+        recombine = true;
       }
-      double offhandStatMultiplier = ItemUtil
-          .getDualWieldEfficiency(equipment.getItemInMainHand(), equipment.getItemInOffHand());
-      equipmentCache.setOffhandStats(plugin.getAttributeUpdateManager().getItemStats(
-          equipment.getItemInOffHand(), offhandStatMultiplier));
-      equipmentCache.getOffhandAbilities().clear();
-      equipmentCache.getOffhandAbilities().addAll(
-          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getItemInOffHand()));
+    }
 
-      removeAttributes(equipment.getItemInMainHand());
-      removeAttributes(equipment.getItemInOffHand());
-
-      equipmentCache.setMainHandHash(hashItem(equipment.getItemInMainHand()));
-      equipmentCache.setOffHandHash(hashItem(equipment.getItemInOffHand()));
-      recombine = true;
-    }
-    if (!doesHashMatch(equipment.getHelmet(), equipmentCache.getHelmetHash())) {
-      equipmentCache.setHelmetStats(
-          plugin.getAttributeUpdateManager().getItemStats(equipment.getHelmet()));
-      equipmentCache.getHelmetAbilities().clear();
-      equipmentCache.getHelmetAbilities().addAll(
-          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getHelmet()));
-
-      removeAttributes(equipment.getHelmet());
-      equipmentCache.setHelmetHash(hashItem(equipment.getHelmet()));
-      recombine = true;
-    }
-    if (!doesHashMatch(equipment.getChestplate(), equipmentCache.getChestHash())) {
-      equipmentCache.setChestplateStats(
-          plugin.getAttributeUpdateManager().getItemStats(equipment.getChestplate()));
-      equipmentCache.getChestAbilities().clear();
-      equipmentCache.getChestAbilities().addAll(
-          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getChestplate()));
-      removeAttributes(equipment.getChestplate());
-      equipmentCache.setChestHash(hashItem(equipment.getChestplate()));
-      recombine = true;
-    }
-    if (!doesHashMatch(equipment.getLeggings(), equipmentCache.getLegsHash())) {
-      equipmentCache.setLeggingsStats(
-          plugin.getAttributeUpdateManager().getItemStats(equipment.getLeggings()));
-      equipmentCache.getLegsAbilities().clear();
-      equipmentCache.getLegsAbilities().addAll(
-          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getLeggings()));
-      removeAttributes(equipment.getLeggings());
-      equipmentCache.setLegsHash(hashItem(equipment.getLeggings()));
-      recombine = true;
-    }
-    if (!doesHashMatch(equipment.getBoots(), equipmentCache.getBootsHash())) {
-      equipmentCache.setBootsStats(
-          plugin.getAttributeUpdateManager().getItemStats(equipment.getBoots()));
-      equipmentCache.getBootAbilities().clear();
-      equipmentCache.getBootAbilities().addAll(
-          plugin.getLoreAbilityManager().getLoreAbilitiesFromItem(equipment.getBoots()));
-      removeAttributes(equipment.getBoots());
-      equipmentCache.setBootsHash(hashItem(equipment.getBoots()));
-      recombine = true;
+    for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
+      clearStatsIfReqNotMet(champion.getPlayer(), slot, equipmentCache);
     }
 
     if (recombine) {
-      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getMainhandStats())) {
-        sendMessage(champion.getPlayer(), LVL_REQ_MAIN_WEAPON);
-        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
-        equipmentCache.getMainhandStats().clear();
-      }
-      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getOffhandStats())) {
-        sendMessage(champion.getPlayer(), LVL_REQ_OFF_WEAPON);
-        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
-        equipmentCache.getOffhandStats().clear();
-      }
-      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getHelmetStats())) {
-        sendMessage(champion.getPlayer(), LVL_REQ_HELMET);
-        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
-        equipmentCache.getHelmetStats().clear();
-      }
-      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getChestplateStats())) {
-        sendMessage(champion.getPlayer(), LVL_REQ_CHEST);
-        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
-        equipmentCache.getChestplateStats().clear();
-      }
-      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getLeggingsStats())) {
-        sendMessage(champion.getPlayer(), LVL_REQ_LEGS);
-        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
-        equipmentCache.getLeggingsStats().clear();
-      }
-      if (!meetsLevelRequirement(champion.getPlayer(), equipmentCache.getBootsStats())) {
-        sendMessage(champion.getPlayer(), LVL_REQ_BOOTS);
-        sendMessage(champion.getPlayer(), LVL_REQ_GENERIC);
-        equipmentCache.getBootsStats().clear();
-      }
       equipmentCache.recombine(champion);
+    }
+  }
+
+  private void applyDualWieldStatChanges(PlayerEquipmentCache cache, EquipmentSlot slot) {
+    for (StrifeAttribute attribute : cache.getSlotStats(slot).keySet()) {
+      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7D);
+    }
+    cache.getSlotStats(slot)
+        .put(ATTACK_SPEED, cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0D) + 25D);
+  }
+
+  private void clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {
+    if (!meetsLevelRequirement(p, cache.getSlotStats(slot))) {
+      sendMessage(p, levelReqMap.get(slot));
+      sendMessage(p, levelReqGeneric);
+      cache.clearSlot(slot);
     }
   }
 
@@ -241,7 +180,7 @@ public class ChampionManager {
       return false;
     }
     champion.getSaveData().getBoundAbilities().add(loreAbility);
-    champion.getEquipmentCache().combineLoreAbilities(champion);
+    champion.getEquipmentCache().recombineAbilities(champion);
     return true;
   }
 
@@ -250,7 +189,7 @@ public class ChampionManager {
       return false;
     }
     champion.getSaveData().getBoundAbilities().remove(loreAbility);
-    champion.getEquipmentCache().combineLoreAbilities(champion);
+    champion.getEquipmentCache().recombineAbilities(champion);
     return true;
   }
 
@@ -283,35 +222,73 @@ public class ChampionManager {
         .combineMaps(champion.getCombinedCache(), plugin.getGlobalBoostManager().getAttributes()));
   }
 
-  private static void removeAttributes(ItemStack item) {
-    if (item == null || item.getType() == Material.AIR) {
-      return;
+  private Set<LoreAbility> getItemAbilities(EquipmentSlot slot, EntityEquipment equipment) {
+    switch (slot) {
+      case HAND:
+        return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand());
+      case OFF_HAND:
+        if (!ItemUtil.isValidOffhand(equipment)) {
+          return new HashSet<>();
+        }
+        return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInOffHand());
+      case HEAD:
+        return plugin.getLoreAbilityManager().getAbilities(equipment.getHelmet());
+      case CHEST:
+        return plugin.getLoreAbilityManager().getAbilities(equipment.getChestplate());
+      case LEGS:
+        return plugin.getLoreAbilityManager().getAbilities(equipment.getLeggings());
+      case FEET:
+        return plugin.getLoreAbilityManager().getAbilities(equipment.getBoots());
+      default:
+        return new HashSet<>();
     }
-    if (item.getType().getMaxDurability() < 15) {
-      return;
+  }
+
+  private Map<StrifeAttribute, Double> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
+    switch (slot) {
+      case HAND:
+        return plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInMainHand());
+      case OFF_HAND:
+        if (!ItemUtil.isValidOffhand(equipment)) {
+          return new HashMap<>();
+        }
+        return plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInOffHand());
+      case HEAD:
+        return plugin.getAttributeUpdateManager().getItemStats(equipment.getHelmet());
+      case CHEST:
+        return plugin.getAttributeUpdateManager().getItemStats(equipment.getChestplate());
+      case LEGS:
+        return plugin.getAttributeUpdateManager().getItemStats(equipment.getLeggings());
+      case FEET:
+        return plugin.getAttributeUpdateManager().getItemStats(equipment.getBoots());
+      default:
+        return new HashMap<>();
     }
-    if (!MinecraftReflection.isCraftItemStack(item)) {
-      item = MinecraftReflection.getBukkitItemStack(item);
+  }
+
+  private Set<StrifeTrait> getItemTraits(EquipmentSlot slot, EntityEquipment equipment) {
+    switch (slot) {
+      case HAND:
+        return ItemUtil.getTraits(equipment.getItemInMainHand());
+      case OFF_HAND:
+        if (!ItemUtil.isValidOffhand(equipment)) {
+          return new HashSet<>();
+        }
+        return ItemUtil.getTraits(equipment.getItemInOffHand());
+      case HEAD:
+        return ItemUtil.getTraits(equipment.getHelmet());
+      case CHEST:
+        return  ItemUtil.getTraits(equipment.getChestplate());
+      case LEGS:
+        return ItemUtil.getTraits(equipment.getLeggings());
+      case FEET:
+        return ItemUtil.getTraits(equipment.getBoots());
+      default:
+        return new HashSet<>();
     }
-    NbtCompound compound = (NbtCompound) NbtFactory.fromItemTag(item);
-    compound.put(NbtFactory.ofList("AttributeModifiers"));
   }
 
   private boolean meetsLevelRequirement(Player player, Map<StrifeAttribute, Double> statMap) {
     return statMap.getOrDefault(LEVEL_REQUIREMENT, 0D) <= player.getLevel();
-  }
-
-  private int hashItem(ItemStack itemStack) {
-    if (itemStack == null || itemStack.getType() == Material.AIR) {
-      return -1;
-    }
-    return itemStack.hashCode();
-  }
-
-  private boolean doesHashMatch(ItemStack itemStack, int hash) {
-    if (itemStack == null || itemStack.getType() == Material.AIR) {
-      return hash == -1;
-    }
-    return itemStack.hashCode() == hash;
   }
 }

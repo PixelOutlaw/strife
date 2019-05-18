@@ -1,217 +1,133 @@
 package info.faceland.strife.data.champion;
 
-import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.*;
-
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.managers.AttributeUpdateManager;
+import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
+import org.bukkit.inventory.EquipmentSlot;
 
 public class PlayerEquipmentCache {
 
-  private final Map<StrifeAttribute, Double> mainhandStats = new HashMap<>();
-  private final Map<StrifeAttribute, Double> offhandStats = new HashMap<>();
-  private final Map<StrifeAttribute, Double> helmetStats = new HashMap<>();
-  private final Map<StrifeAttribute, Double> chestplateStats = new HashMap<>();
-  private final Map<StrifeAttribute, Double> leggingsStats = new HashMap<>();
-  private final Map<StrifeAttribute, Double> bootsStats = new HashMap<>();
-  private final List<LoreAbility> mainAbilities = new ArrayList<>();
-  private final List<LoreAbility> offhandAbilities = new ArrayList<>();
-  private final List<LoreAbility> helmetAbilities = new ArrayList<>();
-  private final List<LoreAbility> chestAbilities = new ArrayList<>();
-  private final List<LoreAbility> legsAbilities = new ArrayList<>();
-  private final List<LoreAbility> bootAbilities = new ArrayList<>();
+  private final Map<EquipmentSlot, Integer> slotHashCodeMap = new HashMap<>();
 
+  private final Map<EquipmentSlot, Map<StrifeAttribute, Double>> slotStatMap = new HashMap<>();
+  private final Map<EquipmentSlot, List<LoreAbility>> slotAbilityMap = new HashMap<>();
+  private final Map<EquipmentSlot, List<StrifeTrait>> slotTraitMap = new HashMap<>();
+
+  private final Map<TriggerType, Set<LoreAbility>> loreAbilities = new HashMap<>();
   private final Map<StrifeAttribute, Double> combinedStats = new HashMap<>();
-  private final Map<TriggerType, List<LoreAbility>> loreAbilities = new HashMap<>();
+  private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
-  private int mainHandHash = -1;
-  private int offHandHash = -1;
-  private int helmetHash = -1;
-  private int chestHash = -1;
-  private int legsHash = -1;
-  private int bootsHash = -1;
+  public final static EquipmentSlot[] itemSlots = EquipmentSlot.values();
 
-  public PlayerEquipmentCache() {
-    // Don't use TriggerType.values() here, MC has enough performance and memory problems already
-    this.loreAbilities.put(ON_HIT, new ArrayList<>());
-    this.loreAbilities.put(ON_KILL, new ArrayList<>());
-    this.loreAbilities.put(ON_CRIT, new ArrayList<>());
-    this.loreAbilities.put(ON_BLOCK, new ArrayList<>());
-    this.loreAbilities.put(ON_EVADE, new ArrayList<>());
-    this.loreAbilities.put(ON_SNEAK, new ArrayList<>());
-    this.loreAbilities.put(WHEN_HIT, new ArrayList<>());
+  PlayerEquipmentCache() {
+    for (EquipmentSlot slot : itemSlots) {
+      slotHashCodeMap.put(slot, -1);
+      slotStatMap.put(slot, new HashMap<>());
+      slotAbilityMap.put(slot, new ArrayList<>());
+      slotTraitMap.put(slot, new ArrayList<>());
+    }
+    for (TriggerType triggerType : LoreAbilityManager.triggerTypes) {
+      loreAbilities.put(triggerType, new HashSet<>());
+    }
   }
 
-  public void recombine(Champion champion) {
-    combinedStats.clear();
-    combinedStats.putAll(AttributeUpdateManager.combineMaps(
-        mainhandStats,
-        offhandStats,
-        helmetStats,
-        chestplateStats,
-        leggingsStats,
-        bootsStats
-    ));
-    combineLoreAbilities(champion);
+  public void setSlotStats(EquipmentSlot slot, Map<StrifeAttribute, Double> stats) {
+    this.slotStatMap.get(slot).clear();
+    this.slotStatMap.get(slot).putAll(stats);
   }
 
-  public Map<StrifeAttribute, Double> getMainhandStats() {
-    return mainhandStats;
+  public Map<StrifeAttribute, Double> getSlotStats(EquipmentSlot slot) {
+    return this.slotStatMap.get(slot);
   }
 
-  public void setMainhandStats(Map<StrifeAttribute, Double> mainhandStats) {
-    this.mainhandStats.clear();
-    this.mainhandStats.putAll(mainhandStats);
+  public void setSlotTraits(EquipmentSlot slot, Set<StrifeTrait> traits) {
+    this.slotTraitMap.get(slot).clear();
+    this.slotTraitMap.get(slot).addAll(traits);
   }
 
-  public Map<StrifeAttribute, Double> getOffhandStats() {
-    return offhandStats;
+  public List<StrifeTrait> getSlotTraits(EquipmentSlot slot) {
+    return this.slotTraitMap.get(slot);
   }
 
-  public void setOffhandStats(Map<StrifeAttribute, Double> offhandStats) {
-    this.offhandStats.clear();
-    this.offhandStats.putAll(offhandStats);
+  public void setSlotAbilities(EquipmentSlot slot, Set<LoreAbility> abilities) {
+    this.slotAbilityMap.get(slot).clear();
+    this.slotAbilityMap.get(slot).addAll(abilities);
   }
 
-  public Map<StrifeAttribute, Double> getHelmetStats() {
-    return helmetStats;
+  public List<LoreAbility> getSlotAbilities(EquipmentSlot slot) {
+    return this.slotAbilityMap.get(slot);
   }
 
-  public void setHelmetStats(Map<StrifeAttribute, Double> helmetStats) {
-    this.helmetStats.clear();
-    this.helmetStats.putAll(helmetStats);
+  public int getSlotHash(EquipmentSlot slot) {
+    return slotHashCodeMap.get(slot);
   }
 
-  public Map<StrifeAttribute, Double> getChestplateStats() {
-    return chestplateStats;
+  public void setSlotHash(EquipmentSlot slot, int hash) {
+    this.slotHashCodeMap.put(slot, hash);
   }
 
-  public void setChestplateStats(Map<StrifeAttribute, Double> chestplateStats) {
-    this.chestplateStats.clear();
-    this.chestplateStats.putAll(chestplateStats);
-  }
-
-  public Map<StrifeAttribute, Double> getLeggingsStats() {
-    return leggingsStats;
-  }
-
-  public void setLeggingsStats(Map<StrifeAttribute, Double> leggingsStats) {
-    this.leggingsStats.clear();
-    this.leggingsStats.putAll(leggingsStats);
-  }
-
-  public Map<StrifeAttribute, Double> getBootsStats() {
-    return bootsStats;
-  }
-
-  public void setBootsStats(Map<StrifeAttribute, Double> bootsStats) {
-    this.bootsStats.clear();
-    this.bootsStats.putAll(bootsStats);
-  }
-
-  public List<LoreAbility> getMainAbilities() {
-    return mainAbilities;
-  }
-
-  public List<LoreAbility> getOffhandAbilities() {
-    return offhandAbilities;
-  }
-
-  public List<LoreAbility> getHelmetAbilities() {
-    return helmetAbilities;
-  }
-
-  public List<LoreAbility> getChestAbilities() {
-    return chestAbilities;
-  }
-
-  public List<LoreAbility> getLegsAbilities() {
-    return legsAbilities;
-  }
-
-  public List<LoreAbility> getBootAbilities() {
-    return bootAbilities;
+  public void clearSlot(EquipmentSlot slot) {
+    this.slotAbilityMap.get(slot).clear();
+    this.slotStatMap.get(slot).clear();
+    this.slotTraitMap.get(slot).clear();
   }
 
   public Map<StrifeAttribute, Double> getCombinedStats() {
     return combinedStats;
   }
 
-  public int getMainHandHash() {
-    return mainHandHash;
-  }
-
-  public void setMainHandHash(int mainHandHash) {
-    this.mainHandHash = mainHandHash;
-  }
-
-  public int getOffHandHash() {
-    return offHandHash;
-  }
-
-  public void setOffHandHash(int offHandHash) {
-    this.offHandHash = offHandHash;
-  }
-
-  public int getHelmetHash() {
-    return helmetHash;
-  }
-
-  public void setHelmetHash(int helmetHash) {
-    this.helmetHash = helmetHash;
-  }
-
-  public int getChestHash() {
-    return chestHash;
-  }
-
-  public void setChestHash(int chestHash) {
-    this.chestHash = chestHash;
-  }
-
-  public int getLegsHash() {
-    return legsHash;
-  }
-
-  public void setLegsHash(int legsHash) {
-    this.legsHash = legsHash;
-  }
-
-  public int getBootsHash() {
-    return bootsHash;
-  }
-
-  public void setBootsHash(int bootsHash) {
-    this.bootsHash = bootsHash;
-  }
-
-  public Map<TriggerType, List<LoreAbility>> getLoreAbilities() {
+  public Map<TriggerType, Set<LoreAbility>> getCombinedAbilities() {
     return loreAbilities;
   }
 
-  public void combineLoreAbilities(Champion champion) {
-    for (Entry<TriggerType, List<LoreAbility>> entry : loreAbilities.entrySet()) {
-      entry.getValue().clear();
+  public Set<StrifeTrait> getCombinedTraits() {
+    return combinedTraits;
+  }
+
+  public void recombineStats() {
+    combinedStats.clear();
+    combinedStats.putAll(AttributeUpdateManager.combineMaps(
+        slotStatMap.get(EquipmentSlot.HAND),
+        slotStatMap.get(EquipmentSlot.OFF_HAND),
+        slotStatMap.get(EquipmentSlot.HEAD),
+        slotStatMap.get(EquipmentSlot.CHEST),
+        slotStatMap.get(EquipmentSlot.LEGS),
+        slotStatMap.get(EquipmentSlot.FEET)
+    ));
+  }
+
+  public void recombineAbilities(Champion champion) {
+    for (TriggerType triggerType : LoreAbilityManager.triggerTypes) {
+      loreAbilities.get(triggerType).clear();
     }
-    List<LoreAbility> newAbilities = new ArrayList<>();
-    newAbilities.addAll(mainAbilities);
-    newAbilities.addAll(offhandAbilities);
-    newAbilities.addAll(helmetAbilities);
-    newAbilities.addAll(chestAbilities);
-    newAbilities.addAll(legsAbilities);
-    newAbilities.addAll(bootAbilities);
-    for (LoreAbility loreAbility : newAbilities) {
-      loreAbilities.get(loreAbility.getTriggerType()).add(loreAbility);
+    Set<LoreAbility> newAbilities = new HashSet<>(champion.getSaveData().getBoundAbilities());
+    for (EquipmentSlot slot : itemSlots) {
+      newAbilities.addAll(slotAbilityMap.get(slot));
     }
-    for (LoreAbility loreAbility : champion.getSaveData().getBoundAbilities()) {
-      loreAbilities.get(loreAbility.getTriggerType()).add(loreAbility);
+    for (LoreAbility la : newAbilities) {
+      loreAbilities.get(la.getTriggerType()).add(la);
     }
+  }
+
+  public void recombineTraits() {
+    combinedTraits.clear();
+    for (EquipmentSlot slot : slotTraitMap.keySet()) {
+      combinedTraits.addAll(slotTraitMap.get(slot));
+    }
+  }
+
+  public void recombine(Champion champion) {
+    recombineStats();
+    recombineAbilities(champion);
+    recombineTraits();
   }
 }

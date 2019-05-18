@@ -6,12 +6,14 @@ import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Material;
+import java.util.Set;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,6 +24,8 @@ public class LoreAbilityManager {
   private final AbilityManager abilityManager;
   private final EffectManager effectManager;
 
+  public final static TriggerType[] triggerTypes = TriggerType.values();
+
   public LoreAbilityManager(AbilityManager abilityManager, EffectManager effectManager) {
     this.loreStringToAbilityMap = new HashMap<>();
     this.loreIdToAbilityMap = new HashMap<>();
@@ -29,15 +33,9 @@ public class LoreAbilityManager {
     this.effectManager = effectManager;
   }
 
-  public List<LoreAbility> getLoreAbilitiesFromItem(ItemStack stack) {
-    if (stack == null || stack.getType() == Material.AIR) {
-      return new ArrayList<>();
-    }
-    List<LoreAbility> abilities = new ArrayList<>();
-    if (stack.getItemMeta() == null || stack.getItemMeta().getLore() == null) {
-      return abilities;
-    }
-    List<String> lore = stack.getItemMeta().getLore();
+  public Set<LoreAbility> getAbilities(ItemStack stack) {
+    List<String> lore = ItemUtil.getLore(stack);
+    Set<LoreAbility> abilities = new HashSet<>();
     if (lore.isEmpty()) {
       return abilities;
     }
