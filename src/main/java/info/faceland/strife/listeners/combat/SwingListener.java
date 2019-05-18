@@ -66,7 +66,7 @@ public class SwingListener implements Listener {
     ignoredMaterials.add(Material.LONG_GRASS);
     ignoredMaterials.add(Material.WALL_SIGN);
     ignoredMaterials.add(Material.SIGN_POST);
-    notChargedMessage = plugin.getConfig().getString("language.wand.not-charged", "");
+    notChargedMessage = plugin.getSettings().getString("language.wand.not-charged", "");
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
