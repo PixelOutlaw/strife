@@ -21,14 +21,16 @@ package info.faceland.strife.listeners.combat;
 import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.ItemUtil;
+import info.faceland.strife.util.ProjectileUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,7 +43,6 @@ import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
-import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -49,27 +50,23 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.Vector;
-
-import java.util.Random;
 
 public class SwingListener implements Listener {
 
   private final StrifePlugin plugin;
   private final Random random;
   private final Set<Material> ignoredMaterials;
-
-  private static final String ATTACK_UNCHARGED = TextUtils.color("&e&lNot charged enough!");
+  private final String notChargedMessage;
 
   public SwingListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.random = new Random(System.currentTimeMillis());
-    this.ignoredMaterials = new HashSet<>();
-    this.ignoredMaterials.add(Material.AIR);
-    this.ignoredMaterials.add(Material.LONG_GRASS);
-    this.ignoredMaterials.add(Material.WALL_SIGN);
-    this.ignoredMaterials.add(Material.SIGN_POST);
+    random = new Random(System.currentTimeMillis());
+    ignoredMaterials = new HashSet<>();
+    ignoredMaterials.add(Material.AIR);
+    ignoredMaterials.add(Material.LONG_GRASS);
+    ignoredMaterials.add(Material.WALL_SIGN);
+    ignoredMaterials.add(Material.SIGN_POST);
+    notChargedMessage = plugin.getConfig().getString("language.wand.not-charged", "");
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -114,6 +111,7 @@ public class SwingListener implements Listener {
     }
     if (ItemUtil.isWand(((Player) event.getDamager()).getEquipment().getItemInMainHand())) {
       shootWand((Player) event.getDamager(), event);
+      event.setCancelled(true);
     } else {
       doMeleeSwing((Player) event.getDamager(), event, false);
     }
@@ -147,7 +145,7 @@ public class SwingListener implements Listener {
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
     if (attackMultiplier < 0.1) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_UNCHARGED, player);
+      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, notChargedMessage, player);
       player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
       event.setCancelled(true);
       return;
@@ -158,14 +156,14 @@ public class SwingListener implements Listener {
 
     double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
+    event.setCancelled(true);
 
-    if (pStats.getAttribute(StrifeAttribute.EXPLOSION_MAGIC) > 0.1) {
-      createGhastBall(player, attackMultiplier, projectileSpeed, multiShot);
-      event.setCancelled(true);
+    if (pStats.hasTrait(StrifeTrait.EXPLOSIVE_PROJECTILES)) {
+      ProjectileUtil.createGhastBall(player, attackMultiplier, projectileSpeed, multiShot);
       return;
     }
 
-    createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0);
+    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0);
 
     if (multiShot > 0) {
       int bonusProjectiles = (int) (multiShot - (multiShot % 1));
@@ -173,42 +171,11 @@ public class SwingListener implements Listener {
         bonusProjectiles++;
       }
       for (int i = bonusProjectiles; i > 0; i--) {
-        createMagicMissile(player, attackMultiplier, projectileSpeed,
+        ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed,
             randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
             randomOffset(bonusProjectiles));
       }
     }
-    event.setCancelled(true);
-  }
-
-  private void createMagicMissile(LivingEntity shooter, double attackMult, double power,
-      double xOff, double yOff, double zOff) {
-    shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
-    ShulkerBullet magicProj = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
-    magicProj.setShooter(shooter);
-
-    Vector vec = shooter.getLocation().getDirection();
-    xOff = vec.getX() * power + xOff;
-    yOff = vec.getY() * power + yOff + 0.25;
-    zOff = vec.getZ() * power + zOff;
-    magicProj.setVelocity(new Vector(xOff, yOff, zOff));
-    magicProj.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
-  }
-
-  private void createGhastBall(LivingEntity shooter, double attackMult, double power,
-      double radius) {
-    shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_GHAST_SHOOT, 0.7f, 1.1f);
-    Fireball fireball = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), Fireball.class);
-    fireball.setShooter(shooter);
-    fireball.setBounce(false);
-    fireball.setIsIncendiary(false);
-    fireball.setYield((float) (2 + radius * 0.5));
-
-    Vector vec = shooter.getLocation().getDirection().multiply(0.05 * power);
-    fireball.setVelocity(vec);
-    fireball.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
   }
 
   private double randomOffset(double magnitude) {
