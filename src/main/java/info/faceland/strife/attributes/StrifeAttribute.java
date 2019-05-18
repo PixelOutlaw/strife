@@ -132,7 +132,6 @@ public enum StrifeAttribute {
   APEN_MULT(),
   WPEN_MULT(),
 
-  EXPLOSION_MAGIC("Explosion Magic"),
   SPELL_STRIKE_RANGE("Spell Strike Range"),
   EFFECT_DURATION("Effect Duration");
 
