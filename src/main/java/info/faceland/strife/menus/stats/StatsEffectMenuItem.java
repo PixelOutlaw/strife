@@ -22,6 +22,7 @@ import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
@@ -30,6 +31,7 @@ import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -41,13 +43,13 @@ public class StatsEffectMenuItem extends MenuItem {
   private Player player;
 
   StatsEffectMenuItem(StrifePlugin plugin, Player player) {
-    super(TextUtils.color("&6&Item Effects"), new ItemStack(Material.EMERALD));
+    super(TextUtils.color("&6&Additional Effects"), new ItemStack(Material.EMERALD));
     this.plugin = plugin;
     this.player = player;
   }
 
   StatsEffectMenuItem(StrifePlugin plugin) {
-    super(TextUtils.color("&6&lItem Effects"), new ItemStack(Material.EMERALD));
+    super(TextUtils.color("&6&lAdditional Effects"), new ItemStack(Material.EMERALD));
     this.plugin = plugin;
   }
 
@@ -64,6 +66,16 @@ public class StatsEffectMenuItem extends MenuItem {
 
     lore.add(breakLine);
 
+    List<String> traitLores = new ArrayList<>();
+    for (StrifeTrait trait : pStats.getChampion().getTraits()) {
+      traitLores.add(ChatColor.YELLOW + trait.getName());
+    }
+
+    if (!traitLores.isEmpty()) {
+      lore.addAll(TextUtils.color(traitLores));
+      lore.add(breakLine);
+    }
+
     List<String> abilityLores = new ArrayList<>();
     for (TriggerType triggerType : pStats.getChampion().getLoreAbilities().keySet()) {
       for (LoreAbility la : pStats.getChampion().getLoreAbilities().get(triggerType)) {
@@ -71,17 +83,14 @@ public class StatsEffectMenuItem extends MenuItem {
         abilityLores.addAll(la.getDescription());
       }
     }
-    if (abilityLores.isEmpty()) {
-      lore.add(TextUtils.color("&6You don't have an item effects! They"));
-      lore.add(TextUtils.color("&6usually come from socket gems or"));
-      lore.add(TextUtils.color("&6unique items."));
-    } else {
+    if (!abilityLores.isEmpty()) {
       lore.addAll(abilityLores);
     }
 
     lore.add(breakLine);
-
-    lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(TextUtils.color("&8&oTraits and effects appear here!"));
+    lore.add(TextUtils.color("&8&oThey usually come from unique"));
+    lore.add(TextUtils.color("&8&oitems and socket gems!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
