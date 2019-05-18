@@ -89,9 +89,6 @@ public class SwingListener implements Listener {
     if (event.getHand() != EquipmentSlot.HAND) {
       return;
     }
-    if (event.getClickedBlock() != null && event.getClickedBlock().getType().isItem()) {
-      return;
-    }
     if (!(event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK)) {
       return;
     }
