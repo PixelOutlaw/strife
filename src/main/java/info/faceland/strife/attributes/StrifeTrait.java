@@ -5,6 +5,10 @@ import java.util.Map;
 
 public enum StrifeTrait {
 
+  EXPLOSIVE_PROJECTILES("Projectile Type: Ghast Ball"),
+  SNOWBALL_PROJECTILES("Projectile Type: Snowball"),
+  FIREBALL_PROJECTILES("Projectile Type: Fireball"),
+  WITHER_SKULL_PROJECTILES("Projectile Type: Wither Skull"),
   ELEMENTAL_CRITS("Elemental Damage Can Critically Strike"),
   NO_HEALTH_REGEN("Health Cannot Be Regenerated"),
   NO_BARRIER_ALLOWED("Maximum Barrier Is Always Zero"),
