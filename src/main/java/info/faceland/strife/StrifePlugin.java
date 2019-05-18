@@ -132,6 +132,7 @@ public class StrifePlugin extends FacePlugin {
   private CommandHandler commandHandler;
   private MasterConfiguration settings;
   private VersionedSmartYamlConfiguration configYAML;
+  private VersionedSmartYamlConfiguration langYAML;
   private VersionedSmartYamlConfiguration statsYAML;
   private VersionedSmartYamlConfiguration baseStatsYAML;
   private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
@@ -207,38 +208,25 @@ public class StrifePlugin extends FacePlugin {
   public void enable() {
     setInstance(this);
     debugPrinter = new PluginLogger(this);
-    configYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "config.yml"),
-        getResource("config.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    statsYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "stats.yml"),
-        getResource("stats.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    baseStatsYAML = new VersionedSmartYamlConfiguration(
-        new File(getDataFolder(), "base-entity-stats.yml"),
-        getResource("base-entity-stats.yml"),
-        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    uniqueEnemiesYAML = new VersionedSmartYamlConfiguration(
-        new File(getDataFolder(), "unique-enemies.yml"),
-        getResource("unique-enemies.yml"),
-        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    equipmentYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "equipment.yml"),
-        getResource("equipment.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    conditionYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "conditions.yml"),
-        getResource("conditions.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    effectYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "effects.yml"),
-        getResource("effects.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    abilityYAML = new VersionedSmartYamlConfiguration(new File(getDataFolder(), "abilities.yml"),
-        getResource("abilities.yml"), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    loreAbilityYAML = new VersionedSmartYamlConfiguration(
-        new File(getDataFolder(), "lore-abilities.yml"),
-        getResource("lore-abilities.yml"),
-        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
-    globalBoostsYAML = new VersionedSmartYamlConfiguration(
-        new File(getDataFolder(), "global-boosts.yml"),
-        getResource("global-boosts.yml"),
-        VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+
+    configYAML = defaultSettingsLoad("config.yml");
+    langYAML = defaultSettingsLoad("language.yml");
+    statsYAML = defaultSettingsLoad("stats.yml");
+    baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml");
+    uniqueEnemiesYAML = defaultSettingsLoad("unique-enemies.yml");
+    equipmentYAML = defaultSettingsLoad("equipment.yml");
+    conditionYAML = defaultSettingsLoad("conditions.yml");
+    effectYAML = defaultSettingsLoad("effects.yml");
+    abilityYAML = defaultSettingsLoad("abilities.yml");
+    loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml");
+    globalBoostsYAML = defaultSettingsLoad("global-boosts.yml");
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
     if (configYAML.update()) {
       getLogger().info("Updating config.yml");
+    }
+    if (langYAML.update()) {
+      getLogger().info("Updating language.yml");
     }
     if (statsYAML.update()) {
       getLogger().info("Updating stats.yml");
@@ -259,7 +247,7 @@ public class StrifePlugin extends FacePlugin {
       getLogger().info("Updating abilities.yml");
     }
 
-    settings = MasterConfiguration.loadFromFiles(configYAML);
+    settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
 
     storage = new FlatfileStorage(this);
     championManager = new ChampionManager(this);
@@ -502,6 +490,11 @@ public class StrifePlugin extends FacePlugin {
     LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
     LogUtil.printInfo("+===================================+");
+  }
+
+  private VersionedSmartYamlConfiguration defaultSettingsLoad(String name) {
+    return new VersionedSmartYamlConfiguration(new File(getDataFolder(), name),
+        getResource(name), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
   }
 
   private void buildAbilities() {

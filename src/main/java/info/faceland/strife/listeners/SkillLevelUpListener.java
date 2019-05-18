@@ -35,8 +35,8 @@ public class SkillLevelUpListener implements Listener {
   private static String BROADCAST_MESSAGE;
 
   public SkillLevelUpListener(MasterConfiguration settings) {
-    SELF_MESSAGE = settings.getString("config.language.skill-up-self");
-    BROADCAST_MESSAGE = settings.getString("config.language.skill-up-broadcast");
+    SELF_MESSAGE = settings.getString("language.lvl-up-self");
+    BROADCAST_MESSAGE = settings.getString("language.lvl-up-broadcast");
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

@@ -1,0 +1,21 @@
+command:
+  reveal-prefix: "&5&k"
+  reveal-replace: "&5"
+  reveal-success: "&8[NPC] &fVoid Mage: &7Hmmm... yes I can reveal this... here you are, let me know what you think!"
+  reveal-fail: "&8[NPC] &fVoid Mage: &7I'm sorry, I cannot reveal an item without &5Void Text&7. Hold such an item in your hand, and speak to me again."
+skills:
+  lvl-up-self: "{c}&lSkill Up! {c}Your skill level in &f{n} {c}has increased to &f{l}{c}!"
+  lvl-up-broadcast: "{c}&lSkill Up! &f{p} {c}has reached &f{n} {c}skill level &f{l}{c}!"
+wand:
+  not-charged: "&e&lNot charged enough!"
+bar-title-entity-killed:
+  - '&cENEMY SLAIN!'
+  - '&c&lded!'
+level-req:
+  generic: "&c&lYou will not benefit from the stats on this item!"
+  main: "&e&lYou do not meet the level requirement for your weapon!"
+  off: "&e&lYou do not meet the level requirement for your offhand item!"
+  head: "&e&lYou do not meet the level requirement for your helmet!"
+  body: "&e&lYou do not meet the level requirement for your chest armor!"
+  legs: "&e&lYou do not meet the level requirement for your leg armor!"
+  feet: "&e&lYou do not meet the level requirement for your boots!"

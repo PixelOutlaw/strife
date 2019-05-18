@@ -46,13 +46,13 @@ public class StrifeCommand {
   public StrifeCommand(StrifePlugin plugin) {
     this.plugin = plugin;
     REVEAL_SUCCESS = plugin.getSettings()
-        .getString("config.language.command.reveal-success", "Reveal success");
+        .getString("language.command.reveal-success", "Reveal success");
     REVEAL_FAIL = plugin.getSettings()
-        .getString("config.language.command.reveal-fail", "Reveal failure");
+        .getString("language.command.reveal-fail", "Reveal failure");
     REVEAL_PREFIX = TextUtils.color(plugin.getSettings()
-        .getString("config.language.command.reveal-prefix", "&0&k"));
+        .getString("language.command.reveal-prefix", "&0&k"));
     REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
-        .getString("config.language.command.reveal-replace", "&f"));
+        .getString("language.command.reveal-replace", "&f"));
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)

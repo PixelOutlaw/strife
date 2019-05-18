@@ -49,9 +49,9 @@ public class BossBarManager {
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.deathMessages = TextUtils.color(plugin.getSettings()
-        .getStringList("config.language.bar-title-entity-killed"));
-    this.duration = plugin.getSettings().getInt("config.language.health-bar-duration", 200);
+    this.deathMessages = TextUtils
+        .color(plugin.getSettings().getStringList("language.bar-title-entity-killed"));
+    this.duration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
   }
 
   private void createBars(AttributedEntity target) {
