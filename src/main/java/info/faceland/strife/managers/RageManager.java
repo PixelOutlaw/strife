@@ -21,44 +21,49 @@ package info.faceland.strife.managers;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.RageData;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.entity.LivingEntity;
 
 public class RageManager {
 
   private final AttributeUpdateManager attributeUpdateManager;
-  private final Map<LivingEntity, RageData> rageMap = new HashMap<>();
+  private final Map<UUID, RageData> rageMap = new ConcurrentHashMap<>();
   private static final int RAGE_GRACE_TICKS = 25;
 
   public RageManager(AttributeUpdateManager attributeUpdateManager) {
     this.attributeUpdateManager = attributeUpdateManager;
   }
 
-  public Map<LivingEntity, RageData> getRageMap() {
+  public Map<UUID, RageData> getRageMap() {
     return rageMap;
   }
 
   public RageData getEntity(LivingEntity entity) {
-    return rageMap.get(entity);
+    return rageMap.get(entity.getUniqueId());
   }
 
   public void removeEntity(LivingEntity entity) {
-    rageMap.remove(entity);
+    rageMap.remove(entity.getUniqueId());
+  }
+
+  public void removeEntity(UUID uuid) {
+    rageMap.remove(uuid);
   }
 
   public double getRage(LivingEntity entity) {
-    if (!rageMap.containsKey(entity)) {
+    if (!rageMap.containsKey(entity.getUniqueId())) {
       return 0;
     }
-    return rageMap.get(entity).getRageStacks();
+    return rageMap.get(entity.getUniqueId()).getRageStacks();
   }
 
   public void setRage(AttributedEntity aEntity, double amount) {
-    if (!rageMap.containsKey(aEntity.getEntity())) {
+    if (!rageMap.containsKey(aEntity.getEntity().getUniqueId())) {
       return;
     }
-    rageMap.get(aEntity.getEntity()).setRageStacks(amount);
+    rageMap.get(aEntity.getEntity().getUniqueId()).setRageStacks(amount);
     attributeUpdateManager.updateAttackSpeed(aEntity);
   }
 
@@ -67,21 +72,22 @@ public class RageManager {
     if (attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE) < 1) {
       return;
     }
-    if (!rageMap.containsKey(entity)) {
-      rageMap.put(entity, new RageData(
+    if (!rageMap.containsKey(entity.getUniqueId())) {
+      rageMap.put(entity.getUniqueId(), new RageData(
           Math.min(amount, attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE)),
           RAGE_GRACE_TICKS));
       return;
     }
 
-    rageMap.get(entity).setRageStacks(Math.min(rageMap.get(entity).getRageStacks() + amount,
-        attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE)));
+    rageMap.get(entity.getUniqueId()).setRageStacks(
+        Math.min(rageMap.get(entity.getUniqueId()).getRageStacks() + amount,
+            attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE)));
     refreshRage(entity);
   }
 
   public void refreshRage(LivingEntity entity) {
-    if (rageMap.containsKey(entity)) {
-      rageMap.get(entity).setGraceTicksRemaining(RAGE_GRACE_TICKS);
+    if (rageMap.containsKey(entity.getUniqueId())) {
+      rageMap.get(entity.getUniqueId()).setGraceTicksRemaining(RAGE_GRACE_TICKS);
     }
   }
 }

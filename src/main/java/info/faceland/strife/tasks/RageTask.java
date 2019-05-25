@@ -23,8 +23,8 @@ import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.RageData;
 import info.faceland.strife.managers.RageManager;
-import java.util.ArrayList;
-import java.util.Map.Entry;
+import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -42,39 +42,41 @@ public class RageTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    ArrayList<LivingEntity> pendingRemoval = new ArrayList<>();
-    for (Entry<LivingEntity, RageData> entry : rageManager.getRageMap().entrySet()) {
-      LivingEntity entity = entry.getKey();
-      if (!entity.isValid()) {
-        pendingRemoval.add(entity);
+    for (UUID uuid : rageManager.getRageMap().keySet()) {
+      LivingEntity entity = (LivingEntity) Bukkit.getEntity(uuid);
+
+      if (entity == null || !entity.isValid()) {
+        rageManager.removeEntity(uuid);
         continue;
       }
-      RageData data = entry.getValue();
+
+      RageData data = rageManager.getEntity(entity);
+
       if (data.getRageStacks() >= 5) {
-        entity.getWorld().spawnParticle(
-            Particle.VILLAGER_ANGRY,
-            entity.getEyeLocation(),
-            1 + (int) (data.getRageStacks() / 20),
-            0.6, 0.6, 0.6
-        );
+        spawnRageParticles(entity, data.getRageStacks());
       }
       if (data.getGraceTicksRemaining() > 0) {
         data.setGraceTicksRemaining(data.getGraceTicksRemaining() - 1);
         continue;
-      } else {
-        rageManager.setRage(
-            attributedEntityManager.getAttributedEntity(entity), data.getRageStacks() - 5);
-        String msg = TextUtils
-            .color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, msg, (Player) entity);
       }
+
+      rageManager.setRage(attributedEntityManager.getAttributedEntity(entity), data.getRageStacks() - 5);
+      String msg = TextUtils.color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
+      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, msg, (Player) entity);
+
       if (data.getRageStacks() <= 0) {
-        pendingRemoval.add(entity);
+        rageManager.removeEntity(entity);
       }
     }
-    for (LivingEntity le : pendingRemoval) {
-      rageManager.removeEntity(le);
-    }
+  }
+
+  private void spawnRageParticles(LivingEntity entity, double rageStacks) {
+    entity.getWorld().spawnParticle(
+        Particle.VILLAGER_ANGRY,
+        entity.getEyeLocation(),
+        1 + (int) (rageStacks / 20),
+        0.6, 0.6, 0.6
+    );
   }
 
 }
