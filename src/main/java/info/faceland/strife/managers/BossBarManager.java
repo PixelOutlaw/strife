@@ -58,19 +58,19 @@ public class BossBarManager {
     if (barMap.containsKey(target.getEntity().getUniqueId())) {
       return;
     }
-    StrifeBossBar strifeBossBar = new StrifeBossBar(target,
-        StatUtil.getMaximumBarrier(target) < 1 ? null : makeBarrierBar(), makeHealthBar());
-    updateBarTitle(strifeBossBar, createBarTitle(target));
-    barMap.put(target.getEntity().getUniqueId(), strifeBossBar);
+    StrifeBossBar bossBar = new StrifeBossBar(target, makeBarrierBar(target), makeHealthBar());
+    updateBarTitle(bossBar, createBarTitle(target));
+    barMap.put(target.getEntity().getUniqueId(), bossBar);
   }
 
   public void pushBar(Player player, AttributedEntity target) {
     createBars(target);
     StrifeBossBar strifeBossBar = barMap.get(target.getEntity().getUniqueId());
     for (StrifeBossBar bossBar : barMap.values()) {
-      if (!bossBar.equals(strifeBossBar)) {
-        removePlayerFromBar(bossBar, player.getUniqueId());
+      if (bossBar.equals(strifeBossBar)) {
+        continue;
       }
+      removePlayerFromBar(bossBar, player.getUniqueId());
     }
     addPlayerToBar(strifeBossBar, player);
     updateBar(target);
@@ -96,12 +96,14 @@ public class BossBarManager {
     }
     StrifeBossBar strifeBossBar = barMap.get(uuid);
     barMap.remove(uuid);
+
     strifeBossBar.getHealthBar().removeAll();
-    strifeBossBar.setHealthBar(null);
     if (strifeBossBar.getBarrierBar() != null) {
       strifeBossBar.getBarrierBar().removeAll();
-      strifeBossBar.setBarrierBar(null);
     }
+
+    strifeBossBar.setHealthBar(null);
+    strifeBossBar.setBarrierBar(null);
   }
 
   public void removeAllBars() {
@@ -147,6 +149,9 @@ public class BossBarManager {
   }
 
   private void tickDownBar(StrifeBossBar strifeBossBar) {
+    if (strifeBossBar == null) {
+      return;
+    }
     for (UUID barPlayer : strifeBossBar.getPlayerUuidTickMap().keySet()) {
       int ticksRemaining = strifeBossBar.getPlayerUuidTickMap().get(barPlayer);
       if (ticksRemaining < 1) {
@@ -159,7 +164,6 @@ public class BossBarManager {
   }
 
   private void updateBar(AttributedEntity barOwner) {
-    createBars(barOwner);
     UUID uuid = barOwner.getEntity().getUniqueId();
     StrifeBossBar strifeBossBar = barMap.get(uuid);
     if (!strifeBossBar.isDead() && !strifeBossBar.getOwner().getEntity().isValid()) {
@@ -222,7 +226,10 @@ public class BossBarManager {
         new BarFlag[0]);
   }
 
-  private BossBar makeBarrierBar() {
+  private BossBar makeBarrierBar(AttributedEntity entity) {
+    if (StatUtil.getMaximumBarrier(entity) < 1) {
+      return null;
+    }
     return plugin.getServer().createBossBar("barrierBar", BarColor.WHITE, BarStyle.SOLID,
         new BarFlag[0]);
   }
