@@ -1,12 +1,10 @@
 package info.faceland.strife.util;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.AttributedEntity;
-import java.util.List;
 import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -48,8 +46,7 @@ public class PlayerDataUtil {
     if (isBleedApplied) {
       damageString.append("&4♦");
     }
-    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR,
-        TextUtils.color(damageString.toString()), (Player) entity);
+    MessageUtils.sendActionBar((Player)entity, damageString.toString());
   }
 
   public static boolean areConditionsMet(AttributedEntity caster, AttributedEntity target,

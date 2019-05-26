@@ -18,9 +18,7 @@
  */
 package info.faceland.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import gyurix.spigotlib.ChatAPI;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -95,9 +93,9 @@ public class ExperienceListener implements Listener {
     Player player = event.getPlayer();
     Champion champion = plugin.getChampionManager().getChampion(player);
     if (event.getOldLevel() < event.getNewLevel()) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_UP), player);
+      MessageUtils.sendActionBar(player, LEVEL_UP);
     } else {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(LEVEL_DOWN), player);
+      MessageUtils.sendActionBar(player, LEVEL_DOWN);
     }
     if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
       return;

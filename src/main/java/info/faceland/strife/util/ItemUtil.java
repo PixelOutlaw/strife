@@ -35,10 +35,10 @@ public class ItemUtil {
   public static boolean isValidOffhand(EntityEquipment entityEquipment) {
     ItemStack mainItem = entityEquipment.getItemInMainHand();
     ItemStack offItem = entityEquipment.getItemInOffHand();
-    if (mainItem == null || mainItem.getType() == Material.AIR) {
+    if (mainItem.getType() == Material.AIR) {
       return true;
     }
-    if (offItem == null || offItem.getType() == Material.AIR) {
+    if (offItem.getType() == Material.AIR) {
       return true;
     }
     if (isMeleeWeapon(mainItem.getType())) {
@@ -60,7 +60,7 @@ public class ItemUtil {
   }
 
   public static boolean isWand(ItemStack is) {
-    if (is.getType() != Material.WOOD_SWORD) {
+    if (is.getType() != Material.WOODEN_SWORD) {
       return false;
     }
     if (!is.hasItemMeta()) {
@@ -77,7 +77,7 @@ public class ItemUtil {
 
   public static boolean isValidMageOffhand(ItemStack stack) {
     return stack.getType() == Material.BOOK || stack.getType() == Material.SHIELD ||
-        stack.getType() == Material.POTATO_ITEM;
+        stack.getType() == Material.POTATO;
   }
 
   public static ItemStack getItem(EntityEquipment equipment, EquipmentSlot slot) {

@@ -39,7 +39,6 @@ import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.listeners.AttributeUpdateListener;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
-import info.faceland.strife.listeners.EndermanListener;
 import info.faceland.strife.listeners.EntityMagicListener;
 import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.FallListener;
@@ -424,7 +423,7 @@ public class StrifePlugin extends FacePlugin {
 
     globalBoostManager.startScheduledEvents();
 
-    Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
+    //Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);

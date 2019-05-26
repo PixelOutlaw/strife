@@ -18,9 +18,8 @@
  */
 package info.faceland.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import gyurix.api.TitleAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.events.SkillLevelUpEvent;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import org.bukkit.Bukkit;
@@ -66,13 +65,10 @@ public class SkillLevelUpListener implements Listener {
     }
 
     int level = event.getNewSkillLevel();
+    String upperTitle = color + "SKILL UP!";
+    String lowerTitle = color + name + " Level &f" + level;
 
-    TitleAPI.set(
-        TextUtils.color(color + "SKILL UP!"),
-        TextUtils.color(color + name + " Level &f" + level),
-        10, 40, 20,
-        event.getPlayer()
-    );
+    TitleUtils.sendTitle(event.getPlayer(),upperTitle, lowerTitle);
 
     if (event.getNewSkillLevel() % 5 == 0) {
       for (Player p : Bukkit.getOnlinePlayers()) {

@@ -127,11 +127,11 @@ public class EffectManager {
           return;
         }
         if (!(projType == EntityType.ARROW || projType == EntityType.THROWN_EXP_BOTTLE
-            || projType == EntityType.SPLASH_POTION || projType == EntityType.LINGERING_POTION
+            || projType == EntityType.SPLASH_POTION || projType == EntityType.WITHER_SKULL
             || projType == EntityType.SHULKER_BULLET || projType == EntityType.PRIMED_TNT
             || projType == EntityType.EGG || projType == EntityType.SNOWBALL
             || projType == EntityType.FIREBALL || projType == EntityType.DRAGON_FIREBALL
-            || projType == EntityType.SMALL_FIREBALL || projType == EntityType.WITHER_SKULL)) {
+            || projType == EntityType.SMALL_FIREBALL)) {
           LogUtil.printWarning("Skipping effect " + key + " for non projectile entity");
           return;
         }

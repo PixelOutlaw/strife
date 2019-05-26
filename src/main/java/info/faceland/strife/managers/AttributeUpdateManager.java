@@ -32,7 +32,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import info.faceland.strife.util.StatUtil;
-import io.pixeloutlaw.minecraft.spigot.hilt.HiltItemStack;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -61,11 +61,10 @@ public class AttributeUpdateManager {
     if (stack == null || stack.getType() == Material.AIR) {
       return new HashMap<>();
     }
-    HiltItemStack item = new HiltItemStack(stack);
     Map<StrifeAttribute, Double> itemStats = new HashMap<>();
 
-    List<String> lore = item.getLore();
-    if (lore == null || lore.isEmpty()) {
+    List<String> lore = ItemStackExtensionsKt.getLore(stack);
+    if (lore.isEmpty()) {
       return itemStats;
     }
     List<String> strippedLore = stripColor(lore);

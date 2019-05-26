@@ -146,11 +146,11 @@ public class SpawnListener implements Listener {
   private void equipEntity(LivingEntity livingEntity) {
     switch (livingEntity.getType()) {
       case PIG_ZOMBIE:
-        livingEntity.getEquipment().setHelmet(new ItemStack(Material.GOLD_HELMET));
+        livingEntity.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
         if (random.nextDouble() < 0.5) {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLD_AXE));
+          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
         } else {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLD_SWORD));
+          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
         }
         livingEntity.getEquipment().setItemInMainHandDropChance(0f);
         livingEntity.getEquipment().setHelmetDropChance(0f);

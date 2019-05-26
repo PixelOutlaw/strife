@@ -21,7 +21,7 @@ package info.faceland.strife.listeners.combat;
 import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
@@ -63,9 +63,7 @@ public class SwingListener implements Listener {
     random = new Random(System.currentTimeMillis());
     ignoredMaterials = new HashSet<>();
     ignoredMaterials.add(Material.AIR);
-    ignoredMaterials.add(Material.LONG_GRASS);
-    ignoredMaterials.add(Material.WALL_SIGN);
-    ignoredMaterials.add(Material.SIGN_POST);
+    ignoredMaterials.add(Material.TALL_GRASS);
     notChargedMessage = plugin.getSettings().getString("language.wand.not-charged", "");
   }
 
@@ -142,7 +140,7 @@ public class SwingListener implements Listener {
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
     if (attackMultiplier < 0.1) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, notChargedMessage, player);
+      MessageUtils.sendActionBar(player, notChargedMessage);
       player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
       event.setCancelled(true);
       return;

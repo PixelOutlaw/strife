@@ -22,7 +22,7 @@ import static info.faceland.strife.attributes.StrifeAttribute.SKILL_XP_GAIN;
 import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.MINING;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.champion.Champion;
@@ -76,8 +76,7 @@ public class MiningExperienceManager implements StrifeSkillExperienceManager {
 
     saveData.setMiningExp((float) currentExp);
     String xpMsg = "&2&l( &f&l" + FORMAT.format((int) currentExp) + " &2&l/ &f&l" + FORMAT.format((int) maxExp) + " XP &2&l)";
-    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg),
-        champion.getPlayer());
+    MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
   }
 
   public Integer getMaxExp(int level) {

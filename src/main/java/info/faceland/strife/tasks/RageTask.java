@@ -19,7 +19,7 @@
 package info.faceland.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.RageData;
 import info.faceland.strife.managers.RageManager;
@@ -62,7 +62,7 @@ public class RageTask extends BukkitRunnable {
 
       rageManager.setRage(attributedEntityManager.getAttributedEntity(entity), data.getRageStacks() - 5);
       String msg = TextUtils.color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, msg, (Player) entity);
+      MessageUtils.sendActionBar((Player) entity, msg);
 
       if (data.getRageStacks() <= 0) {
         rageManager.removeEntity(entity);

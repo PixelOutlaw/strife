@@ -21,11 +21,11 @@ package info.faceland.strife.commands;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -96,11 +96,7 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You reset <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been reset.");
-    FancyMessage message = new FancyMessage("");
-    message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE")
-        .command("/levelup")
-        .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-        .color(ChatColor.WHITE).then(" to spend them!").send(target);
+    sendMessage(target, "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
     plugin.getChampionManager().updateAll(champion);
     plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
@@ -261,8 +257,11 @@ public class StrifeCommand {
 
   @Command(identifier = "strife reveal", permissions = "strife.command.strife.reveal", onlyPlayers = false)
   public void reveal(CommandSender sender, @Arg(name = "target") Player target) {
+    if (target.getEquipment() == null) {
+      sendMessage(sender, "&cTarget's equipment is null, somehow.");
+    }
     ItemStack item = target.getEquipment().getItemInMainHand();
-    if (item == null || item.getType() == null || item.getItemMeta() == null) {
+    if (item.getItemMeta() == null) {
       sendMessage(target, REVEAL_FAIL);
       return;
     }
@@ -275,7 +274,7 @@ public class StrifeCommand {
       String loreString = lore.get(i);
       if (loreString.contains(REVEAL_PREFIX)) {
         lore.set(i, lore.get(i).replace(REVEAL_PREFIX, REVEAL_REPLACEMENT));
-        item.setLore(lore);
+        ItemStackExtensionsKt.setLore(item, lore);
         target.updateInventory();
         sendMessage(target, REVEAL_SUCCESS);
         return;

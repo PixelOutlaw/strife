@@ -22,6 +22,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.util.DamageUtil;
+import io.pixeloutlaw.minecraft.spigot.hilt.HiltSkull;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -41,7 +42,7 @@ public class HeadDropListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(EntityDeathEvent event) {
-    if (event.getEntity() == null || event.getEntity().getKiller() == null) {
+    if (event.getEntity().getKiller() == null) {
       return;
     }
     AttributedEntity pStats = aeManager.getAttributedEntity(event.getEntity().getKiller());
@@ -49,25 +50,26 @@ public class HeadDropListener implements Listener {
       return;
     }
     if (DamageUtil.rollBool(pStats.getAttribute(StrifeAttribute.HEAD_DROP) / 100)) {
-      LivingEntity e = event.getEntity();
-      if (e.getType() == EntityType.SKELETON) {
-        if (((Skeleton) e).getSkeletonType() == Skeleton.SkeletonType.NORMAL) {
-          ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 0);
-          e.getWorld().dropItemNaturally(e.getLocation(), skull);
+      LivingEntity livingEntity = event.getEntity();
+      ItemStack skull = null;
+      if (livingEntity instanceof Skeleton) {
+        if (livingEntity.getType() == EntityType.SKELETON) {
+          skull = new ItemStack(Material.SKELETON_SKULL);
         }
-      } else if ((e.getType() == EntityType.ZOMBIE)) {
-        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 2);
-        e.getWorld().dropItemNaturally(e.getLocation(), skull);
-      } else if ((e.getType() == EntityType.CREEPER)) {
-        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 4);
-        e.getWorld().dropItemNaturally(e.getLocation(), skull);
-      } else if ((e.getType() == EntityType.PLAYER)) {
-        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) SkullType.PLAYER.ordinal());
+      } else if (livingEntity instanceof Zombie) {
+        skull = new ItemStack(Material.ZOMBIE_HEAD);
+      } else if (livingEntity instanceof Creeper) {
+        skull = new ItemStack(Material.CREEPER_HEAD);
+      } else if (livingEntity instanceof Player) {
+        skull = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-        skullMeta.setOwner(event.getEntity().getName());
+        skullMeta.setOwningPlayer((Player) event.getEntity());
         skull.setItemMeta(skullMeta);
-        e.getWorld().dropItemNaturally(e.getLocation(), skull);
       }
+      if (skull == null) {
+        return;
+      }
+      livingEntity.getWorld().dropItemNaturally(livingEntity.getLocation(), skull);
     }
   }
 }

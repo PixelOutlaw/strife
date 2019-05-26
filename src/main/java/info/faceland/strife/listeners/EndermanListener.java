@@ -18,19 +18,19 @@
  */
 package info.faceland.strife.listeners;
 
-import com.destroystokyo.paper.event.entity.EndermanEscapeEvent;
-import com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason;
-import info.faceland.strife.util.DamageUtil;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
+//import com.destroystokyo.paper.event.entity.EndermanEscapeEvent;
+//import com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason;
+//import info.faceland.strife.util.DamageUtil;
+//import org.bukkit.event.EventHandler;
+//import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public class EndermanListener implements Listener {
 
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onEndermanTeleport(EndermanEscapeEvent event) {
-    if (DamageUtil.rollBool(0.5) && event.getReason() == Reason.INDIRECT) {
-      event.setCancelled(true);
-    }
-  }
+  //@EventHandler(priority = EventPriority.LOWEST)
+  //public void onEndermanTeleport(EndermanEscapeEvent event) {
+  //  if (DamageUtil.rollBool(0.5) && event.getReason() == Reason.INDIRECT) {
+  //    event.setCancelled(true);
+  //  }
+  //}
 }

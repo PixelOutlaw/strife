@@ -21,8 +21,7 @@ package info.faceland.strife.managers;
 import static info.faceland.strife.attributes.StrifeAttribute.SKILL_XP_GAIN;
 import static info.faceland.strife.events.SkillLevelUpEvent.LifeSkillType.FISHING;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeSkillExperienceManager;
 import info.faceland.strife.data.champion.Champion;
@@ -76,8 +75,7 @@ public class FishExperienceManager implements StrifeSkillExperienceManager {
 
     saveData.setFishingExp((float) currentExp);
     String xpMsg = "&b&l( &f&l" + FORMAT.format((int) currentExp) + " &b&l/ &f&l" + FORMAT.format((int) maxExp) + " XP &b&l)";
-    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg),
-        champion.getPlayer());
+    MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
   }
 
   public Integer getMaxExp(int level) {

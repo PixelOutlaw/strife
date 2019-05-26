@@ -15,7 +15,7 @@ import static info.faceland.strife.util.StatUtil.getShadowResist;
 import static info.faceland.strife.util.StatUtil.getWardingMult;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
@@ -83,9 +83,6 @@ public class DamageUtil {
         break;
     }
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    if (damage >= defender.getEntity().getHealth() && attacker.getEntity() instanceof Player) {
-      defender.getEntity().setKiller((Player) attacker.getEntity());
-    }
     defender.getEntity().damage(damage);
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
     return damage;
@@ -119,7 +116,7 @@ public class DamageUtil {
     double particles = damage * multiplier * 0.5;
     double particleRange = 0.8 + multiplier * 0.2;
     defender.getWorld()
-        .playSound(defender.getEyeLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 0.7f, 2f);
+        .playSound(defender.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.7f, 2f);
     defender.getWorld()
         .spawnParticle(Particle.CRIT_MAGIC, defender.getEyeLocation(), 10 + (int) particles,
             particleRange, particleRange, particleRange, 0.12);
@@ -175,7 +172,7 @@ public class DamageUtil {
     double multiplier = (light - 4) / 10;
     if (multiplier >= 0.5) {
       defender.getWorld()
-          .playSound(defender.getEyeLocation(), Sound.ENTITY_FIREWORK_TWINKLE, 1f, 2f);
+          .playSound(defender.getEyeLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 2f);
       defender.getWorld().spawnParticle(
           Particle.FIREWORKS_SPARK,
           defender.getEyeLocation(),
@@ -204,10 +201,10 @@ public class DamageUtil {
     callEvadeEvent(defender, attacker);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (defender instanceof Player) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_DODGED, (Player) defender);
+      MessageUtils.sendActionBar((Player) defender, ATTACK_DODGED);
     }
     if (attacker instanceof Player) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_MISSED, (Player) attacker);
+      MessageUtils.sendActionBar((Player) attacker, ATTACK_MISSED);
     }
   }
 
@@ -223,10 +220,10 @@ public class DamageUtil {
       defenderBar = sb.toString();
     }
     if (defender instanceof Player) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, defenderBar, (Player) defender);
+      MessageUtils.sendActionBar((Player) defender, defenderBar);
     }
     if (attacker instanceof Player) {
-      ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ATTACK_BLOCKED, (Player) attacker);
+      MessageUtils.sendActionBar((Player) attacker, ATTACK_BLOCKED);
     }
   }
 

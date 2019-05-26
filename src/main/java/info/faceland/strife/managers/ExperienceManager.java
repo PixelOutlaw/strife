@@ -20,9 +20,7 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-import gyurix.api.TitleAPI;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
@@ -84,7 +82,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     int currentExp = (int) (newExpPercent * maxFaceExp);
     String xpMsg = EXP_TEXT.replace("{0}", FORMAT.format(currentExp))
         .replace("{1}", FORMAT.format(maxFaceExp));
-    ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, TextUtils.color(xpMsg), player);
+    MessageUtils.sendActionBar(player, xpMsg);
 
     player.setExp((float) newExpPercent);
   }
@@ -97,34 +95,31 @@ public class ExperienceManager implements StrifeExperienceManager {
   }
 
   private void pushLevelUpSpam(Player player, boolean announce) {
-    MessageUtils.sendMessage(player, "<green>You have leveled up!");
-    FancyMessage message = new FancyMessage("");
-    message.then("You gained a Levelpoint! ").color(ChatColor.GOLD).then("CLICK HERE")
-        .command("/levelup")
-        .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-        .color(ChatColor.WHITE).then(" to spend them and raise your stats!").color(ChatColor.GOLD)
-        .send(player);
-    TitleAPI.set("§aLEVEL UP!", "§aOh dang, you got stronger!", 10, 40, 20, player);
+    MessageUtils.sendMessage(player,
+        "&a&lCongratulations! You have reached level &f" + player.getLevel() + "&a!");
+    MessageUtils.sendMessage(player,
+        "&6You gained a Levelpoint! Use &f/levelup &6to spend levelpoints and raise your stats!");
+    TitleUtils.sendTitle(player, "&aLEVEL UP!", "&aOh dang, you got stronger!");
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p,
-            "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" +
-                +player.getLevel() + "&a!");
+            "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" + player
+                .getLevel() + "&a!");
       }
     }
   }
 
   private void pushBonusLevelUpSpam(Player player, int bonusLevel, boolean announce) {
-    MessageUtils.sendMessage(player, "&eYou got a &fBONUS LEVEL&e!");
     MessageUtils.sendMessage(player,
-        "&eYour Health, Regeneration, Movement Speed, and Damage have increased!");
-    FancyMessage message = new FancyMessage("");
-    TitleAPI.set("§eBONUS LEVEL UP!", "§eOh dang, you got stronger!", 15, 20, 10, player);
+        "&a&lCongratulations! You have reached bonus level &f" + bonusLevel + "&e!");
+    MessageUtils.sendMessage(player,
+        "&eYour stats have slightly increased!");
+    TitleUtils.sendTitle(player, "&eBONUS LEVEL UP!", "&eOh dang, you got stronger!");
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p,
-            "&e&lLevelup! &f" + player.getDisplayName() + " &ehas reached bonus level &f" +
-                +bonusLevel + "&e!");
+            "&e&lLevelup! &f" + player.getDisplayName() + " &ehas reached bonus level &f"
+                + bonusLevel + "&e!");
       }
     }
   }

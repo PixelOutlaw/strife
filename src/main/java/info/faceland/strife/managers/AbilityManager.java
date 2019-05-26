@@ -1,7 +1,7 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import gyurix.spigotlib.ChatAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
@@ -45,9 +45,7 @@ public class AbilityManager {
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.ignoredMaterials.add(Material.AIR);
-    this.ignoredMaterials.add(Material.LONG_GRASS);
-    this.ignoredMaterials.add(Material.WALL_SIGN);
-    this.ignoredMaterials.add(Material.SIGN_POST);
+    this.ignoredMaterials.add(Material.TALL_GRASS);
   }
 
   public Ability getAbility(String name) {
@@ -64,8 +62,7 @@ public class AbilityManager {
     if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
-        ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, ON_COOLDOWN,
-            (Player) caster.getEntity());
+        MessageUtils.sendActionBar((Player) caster.getEntity(), ON_COOLDOWN);
       }
       return;
     }
@@ -81,8 +78,7 @@ public class AbilityManager {
       targetEntity = getTarget(caster, ability);
       if (targetEntity == null) {
         if (ability.isDisplayCd() && caster instanceof Player) {
-          ChatAPI.sendJsonMsg(ChatAPI.ChatMessageType.ACTION_BAR, NO_TARGET,
-              (Player) caster.getEntity());
+          MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
         }
         LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
         return;
