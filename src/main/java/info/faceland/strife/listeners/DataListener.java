@@ -23,6 +23,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -80,6 +81,11 @@ public class DataListener implements Listener {
     plugin.getBossBarManager().doBarDeath(event.getEntity());
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());
+    if (!(event.getEntity() instanceof Player)) {
+      UUID uuid = event.getEntity().getUniqueId();
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> plugin.getAttributedEntityManager().removeEntity(uuid), 20L * 30);
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

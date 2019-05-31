@@ -64,7 +64,7 @@ public class FlatfileStorage implements DataStorage {
       champs++;
     }
     long diff = System.currentTimeMillis() - start;
-    plugin.getLogger().info("Saved " + champs + " players in " + diff + "ms");
+    LogUtil.printDebug("Saved " + champs + " players in " + diff + "ms");
   }
 
 
