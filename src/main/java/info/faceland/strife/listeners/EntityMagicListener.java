@@ -2,6 +2,7 @@ package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
 import java.util.Random;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
@@ -24,7 +25,6 @@ import org.bukkit.util.Vector;
 public class EntityMagicListener implements Listener {
 
   private final Random random;
-
   private ItemStack skeletonWand;
 
   private static final PotionEffectType[] WITCH_SPELLS = {
@@ -66,8 +66,8 @@ public class EntityMagicListener implements Listener {
       return;
     }
     LivingEntity t = (LivingEntity) e.getEntity();
-    t.removePotionEffect(PotionEffectType.LEVITATION);
-    t.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 1, 3, true, false));
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> t.removePotionEffect(PotionEffectType.LEVITATION), 1L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

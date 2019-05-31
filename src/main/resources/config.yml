@@ -10,10 +10,21 @@ menu:
   close-marker-x: 8
   close-marker-y: 5
 
-pvp-multiplier: 0.5
+global-multipliers:
+  pvp-damage: 0.5
+  combat-exp: 0.0
+  skill-exp: 0.0
+  item-drop: 0.0
+  item-rarity: 0.0
 
 xp-bonus: 0.0
 drops-bonus: 0.0
+
+mechanics:
+  base-bleed-damage: 1
+  percent-bleed-damage: 0.1
+  ticks-per-bleed: 12
+  health-bar-duration: 200
 
 leveled-monsters:
   name-format: "&7%ENTITY% &f(%LEVEL%)"
@@ -37,6 +48,7 @@ penalty-free-worlds:
 - WeenieWorld
 
 leveling:
+  max-skill-level: 60
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
   crafting: 50 + (LEVEL * 25) + (LEVEL^3)
   fishing: 50 + (LEVEL * 25) + (LEVEL^3)

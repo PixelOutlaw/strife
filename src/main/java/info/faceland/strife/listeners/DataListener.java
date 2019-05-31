@@ -20,10 +20,12 @@ package info.faceland.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
-import info.faceland.strife.data.ChampionSaveData;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.StrifeStat;
+import java.util.UUID;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -31,7 +33,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
@@ -50,72 +55,99 @@ public class DataListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onPlayerJoin(final PlayerJoinEvent event) {
-    if (!plugin.getChampionManager().hasChampion(event.getPlayer().getUniqueId())) {
-      ChampionSaveData saveData = plugin.getStorage().load(event.getPlayer().getUniqueId());
-      if (getChampionLevelpoints(saveData) != event.getPlayer().getLevel()) {
-        notifyResetPoints(event.getPlayer());
-        for (StrifeStat stat : plugin.getStatManager().getStats()) {
-          saveData.setLevel(stat, 0);
-        }
-        saveData.setHighestReachedLevel(event.getPlayer().getLevel());
-        saveData.setUnusedStatPoints(event.getPlayer().getLevel());
+  public void onPlayerJoinChampionStuff(final PlayerJoinEvent event) {
+    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    if (getChampionLevelpoints(champion) != event.getPlayer().getLevel()) {
+      notifyResetPoints(event.getPlayer());
+      for (StrifeStat stat : plugin.getStatManager().getStats()) {
+        champion.setLevel(stat, 0);
       }
-      plugin.getChampionManager().addChampion(new Champion(saveData));
+      champion.setHighestReachedLevel(event.getPlayer().getLevel());
+      champion.setUnusedStatPoints(event.getPlayer().getLevel());
     }
-    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer().getUniqueId());
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    plugin.getBarrierManager()
-        .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerJoinUpdateAttributes(final PlayerJoinEvent event) {
+    event.getPlayer().setHealthScaled(false);
+    plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(final EntityDeathEvent event) {
+    plugin.getBossBarManager().doBarDeath(event.getEntity());
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());
+    if (!(event.getEntity() instanceof Player)) {
+      UUID uuid = event.getEntity().getUniqueId();
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> plugin.getAttributedEntityManager().removeEntity(uuid), 20L * 30);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerQuit(final PlayerQuitEvent event) {
+    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerKick(final PlayerKickEvent event) {
+    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
+    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager()
-        .createBarrierEntry(plugin.getEntityStatCache().getAttributedEntity(event.getPlayer()));
+        .createBarrierEntry(
+            plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onInteract(final PlayerInteractEntityEvent event) {
+    if (event.getRightClicked() == null) {
+      return;
+    }
+    if (!(event.getRightClicked() instanceof LivingEntity) || event
+        .getRightClicked() instanceof ArmorStand) {
+      return;
+    }
+    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC")) {
+      return;
+    }
+    final Player player = event.getPlayer();
+    final LivingEntity entity = (LivingEntity) event.getRightClicked();
+    plugin.getAttributedEntityManager().getAttributedEntity(entity);
+    plugin.getBossBarManager()
+        .pushBar(player, plugin.getAttributedEntityManager().getAttributedEntity(entity));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onChunkUnload(ChunkUnloadEvent e) {
     for (Entity ent : e.getChunk().getEntities()) {
-      if (!(ent instanceof LivingEntity)) {
-        continue;
-      }
-      if (plugin.getUniqueEntityManager().getLiveUniquesMap().containsKey(ent)) {
+      if (ent instanceof LivingEntity) {
         plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
-        ent.remove();
       }
     }
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
-        MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
-        MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
-      }
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
+      MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
     }, 20L * 5);
   }
 
   private void notifyResetPoints(final Player player) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
-        MessageUtils.sendMessage(player, RESET_MESSAGE);
-      }
-    }, 20L * 3);
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> MessageUtils.sendMessage(player, RESET_MESSAGE), 20L * 3);
   }
 
-  private int getChampionLevelpoints(ChampionSaveData championSaveData) {
+  private int getChampionLevelpoints(Champion champion) {
+    ChampionSaveData championSaveData = champion.getSaveData();
     int total = championSaveData.getUnusedStatPoints();
     for (StrifeStat stat : championSaveData.getLevelMap().keySet()) {
       total += championSaveData.getLevel(stat);

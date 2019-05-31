@@ -20,44 +20,49 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.PlayerDataUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BarrierManager {
 
   private static final int BASE_BARRIER_TICKS = 15;
+  private final Map<UUID, Double> barrierMap = new ConcurrentHashMap<>();
+  private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
 
-  private final Map<UUID, Double> barrierMap = new HashMap<>();
-  private final Map<UUID, Integer> tickMap = new HashMap<>();
-
-  public boolean createBarrierEntry(AttributedEntity attributedEntity) {
-    if (!(attributedEntity.getEntity() instanceof Player)) {
-      return false;
+  public void createBarrierEntry(AttributedEntity attributedEntity) {
+    if (attributedEntity.getEntity() == null || !attributedEntity.getEntity().isValid()) {
+      return;
     }
-    if (attributedEntity.getAttribute(BARRIER) <= 0 || !attributedEntity.getEntity().isValid()) {
-      AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
-      return false;
+    if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
+      updateShieldDisplay(attributedEntity);
+      return;
     }
     if (barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
-      return true;
+      updateShieldDisplay(attributedEntity);
+      return;
     }
     setEntityBarrier(attributedEntity.getEntity().getUniqueId(),
         attributedEntity.getAttribute(BARRIER));
     updateShieldDisplay(attributedEntity);
-    return true;
   }
 
   public boolean isBarrierUp(AttributedEntity attributedEntity) {
-    if (!createBarrierEntry(attributedEntity)) {
-      return false;
-    }
+    createBarrierEntry(attributedEntity);
     UUID uuid = attributedEntity.getEntity().getUniqueId();
     return barrierMap.containsKey(uuid) && barrierMap.get(uuid) > 0;
+  }
+
+  public double getCurrentBarrier(AttributedEntity attributedEntity) {
+    createBarrierEntry(attributedEntity);
+    return barrierMap.getOrDefault(attributedEntity.getEntity().getUniqueId(), 0D);
   }
 
   public void setEntityBarrier(UUID uuid, double amount) {
@@ -65,17 +70,20 @@ public class BarrierManager {
   }
 
   public void updateShieldDisplay(AttributedEntity attributedEntity) {
-    if (!createBarrierEntry(attributedEntity)) {
+    if (!(attributedEntity.getEntity() instanceof Player)) {
       return;
     }
-    AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+    if (!barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
+      setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+      return;
+    }
     if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
-      AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+      setPlayerArmor((Player) attributedEntity.getEntity(), 0);
       return;
     }
     double percent = barrierMap.get(attributedEntity.getEntity().getUniqueId()) / attributedEntity
         .getAttribute(BARRIER);
-    AttributeHandler.setPlayerArmor((Player) attributedEntity.getEntity(), percent);
+    setPlayerArmor((Player) attributedEntity.getEntity(), percent);
   }
 
   public void removeEntity(LivingEntity entity) {
@@ -125,11 +133,29 @@ public class BarrierManager {
     return Math.abs(remainingBarrier);
   }
 
+  public void restoreBarrier(AttributedEntity attributedEntity, double amount) {
+    if (attributedEntity.getAttribute(BARRIER) == 0) {
+      return;
+    }
+    UUID uuid = attributedEntity.getEntity().getUniqueId();
+    LogUtil.printDebug("restoreBarrier: " + PlayerDataUtil.getName(attributedEntity.getEntity()));
+    LogUtil.printDebug(" starting barrier: " + barrierMap.get(uuid));
+    double newBarrierValue = Math
+        .min(barrierMap.get(uuid) + amount, attributedEntity.getAttribute(BARRIER));
+    setEntityBarrier(uuid, newBarrierValue);
+    LogUtil.printDebug(" ending barrier: " + barrierMap.get(uuid));
+    updateShieldDisplay(attributedEntity);
+  }
+
   public Map<UUID, Integer> getTickMap() {
     return tickMap;
   }
 
   public Map<UUID, Double> getBarrierMap() {
     return barrierMap;
+  }
+
+  private void setPlayerArmor(Player player, double percent) {
+    player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(20 * percent);
   }
 }

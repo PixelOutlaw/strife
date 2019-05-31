@@ -18,63 +18,46 @@
  */
 package info.faceland.strife.tasks;
 
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.BleedData;
-import info.faceland.strife.util.DamageUtil;
-import java.util.ArrayList;
-import java.util.Iterator;
+import info.faceland.strife.managers.BarrierManager;
+import info.faceland.strife.managers.BleedManager;
 import java.util.Map.Entry;
-import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BleedTask extends BukkitRunnable {
 
-  private StrifePlugin plugin;
+  private final BleedManager bleedManager;
+  private final BarrierManager barrierManager;
+  private final double percentBleedPerTick;
+  private final double baseBleedPerTick;
 
-  public BleedTask(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public BleedTask(BleedManager bleedManager, BarrierManager barrierManager,
+      double baseBleedPerTick, double percentBleedPerTick) {
+    this.bleedManager = bleedManager;
+    this.barrierManager = barrierManager;
+    this.baseBleedPerTick = baseBleedPerTick;
+    this.percentBleedPerTick = percentBleedPerTick;
   }
 
   @Override
   public void run() {
-    ArrayList<LivingEntity> pendingRemoval = new ArrayList<>();
-    for (Entry<LivingEntity, BleedData> entry : plugin.getBleedManager().getBleedMap().entrySet()) {
+    for (Entry<LivingEntity, Double> entry : bleedManager.getBleedMap().entrySet()) {
       LivingEntity bleedingEntity = entry.getKey();
-      BleedData bleedData = entry.getValue();
+      double bleedAmount = entry.getValue();
       if (!bleedingEntity.isValid()) {
-        pendingRemoval.add(bleedingEntity);
+        bleedManager.removeEntity(bleedingEntity);
         continue;
       }
 
-      plugin.getBarrierManager().interruptBarrier(bleedingEntity);
-      double bleedDamage = bleedData.getBleedAmount() / DamageUtil.BLEED_TICK_RATE;
-      if (bleedingEntity.getHealth() > bleedDamage) {
-        bleedingEntity.setHealth(bleedingEntity.getHealth() - bleedDamage);
-      } else {
-        bleedingEntity.damage(bleedDamage);
-        pendingRemoval.add(bleedingEntity);
-      }
+      barrierManager.interruptBarrier(bleedingEntity);
+      double bleedDamage = baseBleedPerTick + bleedAmount * percentBleedPerTick;
 
-      int particleAmount = 10 + (int) (bleedDamage * 20);
+      bleedManager.applyDamage(bleedingEntity, bleedDamage);
+      bleedManager.spawnBleedParticles(bleedingEntity, bleedDamage);
 
-      bleedingEntity.getWorld().spawnParticle(
-          Particle.BLOCK_CRACK,
-          bleedingEntity.getEyeLocation().clone().add(0, -0.7, 0),
-          particleAmount,
-          0.0, 0.0, 0.0,
-          new MaterialData(Material.REDSTONE_WIRE)
-      );
-      int ticksLeft = plugin.getBleedManager().removeTick(bleedingEntity);
-      if (ticksLeft < 1) {
-        pendingRemoval.add(bleedingEntity);
+      if (bleedManager.getBleedOnEntity(bleedingEntity) <= 0) {
+        bleedManager.removeEntity(bleedingEntity);
       }
-    }
-    for (LivingEntity le : pendingRemoval) {
-      plugin.getBleedManager().removeEntity(le);
     }
   }
-
 }

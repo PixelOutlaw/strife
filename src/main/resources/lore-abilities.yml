@@ -1,0 +1,38 @@
+version: 0.0.1
+
+poison-thing:
+  trigger-type: ON_HIT
+  trigger-text: "&7Unique Effect - Memery"
+  description:
+  - ' &eApplies &fSpeed III &efor &b4s'
+  ability-name: deal-10-damage
+poison-thing2:
+  trigger-type: WHEN_HIT
+  trigger-text: "&7Unique Effect - Memery"
+  description:
+  - ' &eApplies &fSpeed III &efor &b4s'
+  ability-name: deal-10-damage
+poison-thing3:
+  trigger-type: ON_CRIT
+  trigger-text: "&7Unique Effect - Memery"
+  description:
+  - ' &eApplies &fSpeed III &efor &b4s'
+  ability-name: deal-10-damage
+poison-thing4:
+  trigger-type: ON_BLOCK
+  trigger-text: "&7Unique Effect - Memery"
+  description:
+  - ' &eApplies &fSpeed III &efor &b4s'
+  ability-name: deal-10-damage
+poison-thing5:
+  trigger-type: ON_SNEAK
+  trigger-text: "&7Unique Effect - Memery"
+  description:
+  - ' &eApplies &fSpeed III &efor &b4s'
+  ability-name: deal-10-damage
+poison-thing6:
+  trigger-type: ON_KILL
+  trigger-text: "&7Unique Effect - Memery"
+  description:
+  - ' &eApplies &fSpeed III &efor &b4s'
+  ability-name: deal-10-damage

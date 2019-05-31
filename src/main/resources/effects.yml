@@ -7,6 +7,9 @@ smol-bol-blast:
   spread: 1
   speed: 2
   name: "&7blastem"
+  conditions:
+  - melee-damage-under-10
+  - smart-bois-only
 deal-10-damage:
   type: DAMAGE
   scale: FLAT
@@ -15,7 +18,7 @@ deal-10-damage:
   name: "&7tru ten boi"
 full-heal:
   type: HEAL
-  scale: MAXIMUM_HP
+  scale: MAXIMUM
   amount: 1.0
   name: "&7100% heal wew"
   self-affect: true
@@ -46,6 +49,7 @@ begone-fool:
 mass-poison:
   type: POTION
   name: "Mass Poison"
+  force-target-caster: true
   effect: POISON
   range: 10
   duration: 1200

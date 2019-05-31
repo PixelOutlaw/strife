@@ -18,20 +18,22 @@
  */
 package info.faceland.strife.managers;
 
-import info.faceland.strife.data.BleedData;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.material.MaterialData;
 
 public class BleedManager {
 
-  private Map<LivingEntity, BleedData> bleedMap = new HashMap<>();
+  private Map<LivingEntity, Double> bleedMap = new ConcurrentHashMap<>();
 
-  public Map<LivingEntity, BleedData> getBleedMap() {
+  public Map<LivingEntity, Double> getBleedMap() {
     return bleedMap;
   }
 
-  public BleedData getEntity(LivingEntity entity) {
+  public double getBleedOnEntity(LivingEntity entity) {
     return bleedMap.get(entity);
   }
 
@@ -39,33 +41,35 @@ public class BleedManager {
     bleedMap.remove(entity);
   }
 
-  public void applyBleed(LivingEntity livingEntity, double amount, int ticks) {
+  public void applyBleed(LivingEntity livingEntity, double amount) {
     if (!livingEntity.isValid()) {
       return;
     }
     if (!bleedMap.containsKey(livingEntity)) {
-      bleedMap.put(livingEntity, new BleedData(amount, ticks));
+      bleedMap.put(livingEntity, amount);
       return;
     }
-    if (amount > bleedMap.get(livingEntity).getBleedAmount()) {
-      bleedMap.get(livingEntity).setBleedAmount(amount);
-    }
-    bleedMap.get(livingEntity).bumpTicks(ticks);
+    bleedMap.put(livingEntity, bleedMap.get(livingEntity) + amount);
   }
 
-  public void applyBleed(LivingEntity livingEntity, BleedData bleedData) {
-    if (!livingEntity.isValid()) {
+  public void spawnBleedParticles(LivingEntity livingEntity, double damage) {
+    int particleAmount = 10 + (int) (damage * 20);
+    livingEntity.getWorld().spawnParticle(
+        Particle.BLOCK_CRACK,
+        livingEntity.getEyeLocation().clone().add(0, -0.7, 0),
+        particleAmount,
+        0.0, 0.0, 0.0,
+        new MaterialData(Material.REDSTONE_WIRE)
+    );
+  }
+
+  public void applyDamage(LivingEntity livingEntity, double damage) {
+    if (livingEntity.getHealth() > damage) {
+      livingEntity.setHealth(livingEntity.getHealth() - damage);
+      bleedMap.replace(livingEntity, bleedMap.get(livingEntity) - damage);
       return;
     }
-    bleedMap.put(livingEntity, bleedData);
-  }
-
-  public int removeTick(LivingEntity livingEntity) {
-    if (!bleedMap.containsKey(livingEntity)) {
-      return 0;
-    }
-    bleedMap.get(livingEntity)
-        .setTicksRemaining(bleedMap.get(livingEntity).getTicksRemaining() - 1);
-    return bleedMap.get(livingEntity).getTicksRemaining();
+    bleedMap.replace(livingEntity, 0D);
+    livingEntity.damage(damage);
   }
 }

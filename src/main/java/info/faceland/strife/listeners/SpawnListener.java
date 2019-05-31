@@ -10,6 +10,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.util.LogUtil;
 import java.util.Map;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
@@ -99,9 +100,7 @@ public class SpawnListener implements Listener {
     level += -2 + random.nextInt(5);
     level = Math.max(level, 1);
 
-    Map<StrifeAttribute, Double> statMap = plugin.getMonsterManager()
-        .getBaseMonsterStats(entity.getType(), level);
-
+    Map<StrifeAttribute, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
     if (statMap.isEmpty()) {
       return;
     }
@@ -147,11 +146,11 @@ public class SpawnListener implements Listener {
   private void equipEntity(LivingEntity livingEntity) {
     switch (livingEntity.getType()) {
       case PIG_ZOMBIE:
-        livingEntity.getEquipment().setHelmet(new ItemStack(Material.GOLD_HELMET));
+        livingEntity.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
         if (random.nextDouble() < 0.5) {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLD_AXE));
+          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
         } else {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLD_SWORD));
+          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
         }
         livingEntity.getEquipment().setItemInMainHandDropChance(0f);
         livingEntity.getEquipment().setHelmetDropChance(0f);
@@ -196,6 +195,8 @@ public class SpawnListener implements Listener {
   private static ItemStack buildWitchHat() {
     ItemStack hat = new ItemStack(Material.SHEARS);
     hat.setDurability((short) 2);
+    ItemMeta itemMeta = hat.getItemMeta();
+    itemMeta.setUnbreakable(true);
     return hat;
   }
 }

@@ -18,83 +18,121 @@
  */
 package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityStatData;
+import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class MonsterManager {
 
-  private final StrifePlugin plugin;
-  private Map<EntityType, EntityStatData> entityStatDataMap;
+  private final ChampionManager championManager;
+  private final Map<EntityType, EntityStatData> entityStatDataMap;
+  private EntityStatData defaultData;
 
-  public MonsterManager(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public MonsterManager(ChampionManager championManager) {
+    this.championManager = championManager;
     this.entityStatDataMap = new HashMap<>();
+    this.defaultData = new EntityStatData();
   }
 
   public boolean containsEntityType(EntityType type) {
     return entityStatDataMap.containsKey(type);
   }
 
-  public void addEntityData(EntityType type, EntityStatData data) {
+  private void addEntityData(EntityType type, EntityStatData data) {
     entityStatDataMap.put(type, data);
   }
 
   public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity) {
+    return getBaseStats(livingEntity, -1);
+  }
+
+  public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity, int level) {
     Map<StrifeAttribute, Double> levelStats = new HashMap<>();
     EntityType type = livingEntity.getType();
     if (!entityStatDataMap.containsKey(type)) {
       return levelStats;
     }
-    int level = getEntityLevel(livingEntity);
-
-    for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type).getPerLevelMap()
-        .entrySet()) {
-      levelStats.put(stat.getKey(), stat.getValue() * level);
+    if (level == -1) {
+      level = getEntityLevel(livingEntity);
+    }
+    for (StrifeAttribute attr : entityStatDataMap.get(type).getPerLevelMap().keySet()) {
+      levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
     }
     if (type == EntityType.PLAYER && level >= 100) {
-      int bonusLevel = plugin.getChampionManager().getChampion(livingEntity.getUniqueId())
-          .getBonusLevels();
+      int bLevel = championManager.getChampion((Player)livingEntity).getBonusLevels();
       Map<StrifeAttribute, Double> bonusStats = new HashMap<>();
-      for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(type)
-          .getPerBonusLevelMap().entrySet()) {
-        bonusStats.put(stat.getKey(), stat.getValue() * bonusLevel);
+      for (StrifeAttribute attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
+        bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
       }
-      levelStats = AttributeHandler.combineMaps(levelStats, bonusStats);
+      return AttributeUpdateManager
+          .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats, bonusStats);
     }
-    return AttributeHandler.combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
+    return AttributeUpdateManager
+        .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
   }
 
-  public Map<StrifeAttribute, Double> getBaseMonsterStats(EntityType entityType, int level) {
-    Map<StrifeAttribute, Double> levelStats = new HashMap<>();
-    if (!entityStatDataMap.containsKey(entityType) || entityType == EntityType.PLAYER) {
-      return levelStats;
+  public void loadBaseStats(String key, ConfigurationSection cs) {
+    EntityType entityType;
+    if ("default".equalsIgnoreCase(key) && !defaultData.getBaseValueMap().isEmpty()) {
+      return;
     }
-    for (Map.Entry<StrifeAttribute, Double> stat : entityStatDataMap.get(entityType)
-        .getPerLevelMap().entrySet()) {
-      levelStats.put(stat.getKey(), stat.getValue() * level);
+    try {
+      if ("default".equalsIgnoreCase(key)) {
+        entityType = null;
+      } else {
+        entityType = EntityType.valueOf(key);
+      }
+    } catch (Exception e) {
+      LogUtil.printWarning("Skipping base stat load for invalid entity type '" + key + "'");
+      return;
     }
-    return AttributeHandler
-        .combineMaps(entityStatDataMap.get(entityType).getBaseValueMap(), levelStats);
+    EntityStatData data = new EntityStatData(defaultData);
+    if (cs.isConfigurationSection("base-values")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
+      for (String k : attrCS.getKeys(false)) {
+        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        data.putBaseValue(attr, attrCS.getDouble(k));
+      }
+    }
+    if (cs.isConfigurationSection("per-level")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
+      for (String k : attrCS.getKeys(false)) {
+        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        data.putPerLevel(attr, attrCS.getDouble(k));
+      }
+    }
+    if (cs.isConfigurationSection("per-bonus-level")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
+      for (String k : attrCS.getKeys(false)) {
+        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        data.putPerBonusLevel(attr, attrCS.getDouble(k));
+      }
+    }
+    if ("default".equalsIgnoreCase(key)) {
+      defaultData = data;
+    } else {
+      addEntityData(entityType, data);
+    }
   }
 
   private int getEntityLevel(LivingEntity entity) {
     if (entity instanceof Player) {
       return ((Player) entity).getLevel();
     }
-    if (entity.getCustomName() != null) {
-      return NumberUtils
-          .toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
+    if (StringUtils.isBlank(entity.getCustomName())) {
+      return 0;
     }
-    return 0;
+    return NumberUtils
+        .toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
   }
 }

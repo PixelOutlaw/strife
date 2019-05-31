@@ -1,10 +1,17 @@
 package info.faceland.strife.util;
 
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.Champion;
+import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.wrappers.nbt.NbtCompound;
+import com.comphenix.protocol.wrappers.nbt.NbtFactory;
+import info.faceland.strife.attributes.StrifeTrait;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemUtil {
@@ -17,11 +24,43 @@ public class ItemUtil {
 
   public static boolean isMeleeWeapon(Material material) {
     String name = material.name();
-    return name.endsWith("SWORD") || name.endsWith("AXE") || name.endsWith("HOE");
+    return name.endsWith("SWORD") || name.endsWith("_AXE") || name.endsWith("HOE");
+  }
+
+  public static boolean isDualWield(EntityEquipment equipment) {
+    return isMeleeWeapon(equipment.getItemInMainHand().getType()) && isMeleeWeapon(
+        equipment.getItemInOffHand().getType());
+  }
+
+  public static boolean isValidOffhand(EntityEquipment entityEquipment) {
+    ItemStack mainItem = entityEquipment.getItemInMainHand();
+    ItemStack offItem = entityEquipment.getItemInOffHand();
+    if (mainItem.getType() == Material.AIR) {
+      return true;
+    }
+    if (offItem.getType() == Material.AIR) {
+      return true;
+    }
+    if (isMeleeWeapon(mainItem.getType())) {
+      if (isMeleeWeapon(offItem.getType())) {
+        return true;
+      }
+      return isValidMageOffhand(offItem);
+    }
+    if (isWand(mainItem)) {
+      return isValidMageOffhand(offItem);
+    }
+    if (mainItem.getType() == Material.BOW) {
+      return offItem.getType() == Material.ARROW;
+    }
+    if (mainItem.getType() == Material.SHIELD) {
+      return offItem.getType() == Material.SHIELD;
+    }
+    return !isArmor(offItem.getType());
   }
 
   public static boolean isWand(ItemStack is) {
-    if (is.getType() != Material.WOOD_SWORD) {
+    if (is.getType() != Material.WOODEN_SWORD) {
       return false;
     }
     if (!is.hasItemMeta()) {
@@ -37,51 +76,80 @@ public class ItemUtil {
   }
 
   public static boolean isValidMageOffhand(ItemStack stack) {
-    if (stack.getType() == Material.BOOK || stack.getType() == Material.SHIELD
-        || stack.getType() == Material.POTATO_ITEM) {
-      return true;
-    }
-    return false;
+    return stack.getType() == Material.BOOK || stack.getType() == Material.SHIELD ||
+        stack.getType() == Material.POTATO;
   }
 
-  public static double getDualWieldEfficiency(ItemStack mainHandItemStack,
-      ItemStack offHandItemStack) {
-    if (mainHandItemStack == null || mainHandItemStack.getType() == Material.AIR) {
-      return 1.0;
+  public static ItemStack getItem(EntityEquipment equipment, EquipmentSlot slot) {
+    switch (slot) {
+      case HAND:
+        return equipment.getItemInMainHand();
+      case OFF_HAND:
+        return equipment.getItemInOffHand();
+      case HEAD:
+        return equipment.getHelmet();
+      case CHEST:
+        return equipment.getChestplate();
+      case LEGS:
+        return equipment.getLeggings();
+      case FEET:
+        return equipment.getBoots();
+      default:
+        return null;
     }
-    if (isWand(mainHandItemStack)) {
-      return isValidMageOffhand(offHandItemStack) ? 1D : 0D;
-    }
-    if (isMeleeWeapon(mainHandItemStack.getType())) {
-      if (offHandItemStack.getType() == Material.POTATO
-          || offHandItemStack.getType() == Material.SHIELD
-          || offHandItemStack.getType() == Material.BOOK) {
-        return 1D;
-      }
-      if (isMeleeWeapon(offHandItemStack.getType()) || offHandItemStack.getType() == Material.BOW) {
-        return 0.3D;
-      }
-      return 0D;
-    }
-    if (mainHandItemStack.getType() == Material.BOW) {
-      return offHandItemStack.getType() == Material.ARROW ? 1D : 0D;
-    }
-    if (mainHandItemStack.getType() == Material.SHIELD) {
-      return offHandItemStack.getType() == Material.SHIELD ? 1D : 0D;
-    }
-    return 0D;
   }
 
-  public static void updateHashes(LivingEntity entity) {
-    if (!(entity instanceof Player)) {
+  public static List<String> getLore(ItemStack stack) {
+    if (stack == null || stack.getType() == Material.AIR) {
+      return new ArrayList<>();
+    }
+    if (stack.getItemMeta() == null || stack.getItemMeta().getLore() == null) {
+      return new ArrayList<>();
+    }
+    return stack.getItemMeta().getLore();
+  }
+
+  public static Set<StrifeTrait> getTraits(ItemStack stack) {
+    List<String> lore = getLore(stack);
+    Set<StrifeTrait> traits = new HashSet<>();
+    if (lore.isEmpty()) {
+      return traits;
+    }
+    for (String s : lore) {
+      StrifeTrait trait = StrifeTrait.fromName(ChatColor.stripColor(s));
+      if (trait != null) {
+        LogUtil.printDebug("Added Trait: " + s);
+        traits.add(trait);
+      }
+    }
+    return traits;
+  }
+
+  public static int hashItem(ItemStack itemStack) {
+    if (itemStack == null || itemStack.getType() == Material.AIR) {
+      return -1;
+    }
+    return itemStack.hashCode();
+  }
+
+  public static boolean doesHashMatch(ItemStack itemStack, int hash) {
+    if (itemStack == null || itemStack.getType() == Material.AIR) {
+      return hash == -1;
+    }
+    return itemStack.hashCode() == hash;
+  }
+
+  public static void removeAttributes(ItemStack item) {
+    if (item == null || item.getType() == Material.AIR) {
       return;
     }
-    Champion champion = StrifePlugin.getInstance().getChampionManager()
-        .getChampion(entity.getUniqueId());
-    if (champion.isEquipmentHashMatching()) {
+    if (item.getType().getMaxDurability() < 15) {
       return;
     }
-    champion.updateHashedEquipment();
-    StrifePlugin.getInstance().getChampionManager().updateAll(champion);
+    if (!MinecraftReflection.isCraftItemStack(item)) {
+      item = MinecraftReflection.getBukkitItemStack(item);
+    }
+    NbtCompound compound = (NbtCompound) NbtFactory.fromItemTag(item);
+    compound.put(NbtFactory.ofList("AttributeModifiers"));
   }
 }

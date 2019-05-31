@@ -2,7 +2,7 @@ package info.faceland.strife.managers;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.EntityAbilitySet;
+import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.UniqueEntityData;
 import info.faceland.strife.util.LogUtil;
@@ -50,15 +50,17 @@ public class UniqueEntityManager {
   }
 
   public void removeEntity(LivingEntity entity, boolean purge, boolean triggerTimer) {
-    if (!liveUniquesMap.containsKey(entity)) {
+    UniqueEntityData data = getData(entity);
+    if (data == null) {
       return;
+    }
+    if (triggerTimer && data.getSpawner() != null) {
+      data.getSpawner()
+          .setRespawnTime(System.currentTimeMillis() + data.getSpawner().getRespawnMillis());
     }
     liveUniquesMap.remove(entity);
     if (purge) {
       entity.remove();
-    }
-    if (triggerTimer) {
-      plugin.getSpawnerManager().triggerRespawnCooldown(entity);
     }
   }
 
@@ -78,10 +80,7 @@ public class UniqueEntityManager {
   }
 
   public UniqueEntityData getData(LivingEntity livingEntity) {
-    if (!liveUniquesMap.containsKey(livingEntity)) {
-      return null;
-    }
-    return liveUniquesMap.get(livingEntity);
+    return liveUniquesMap.getOrDefault(livingEntity, null);
   }
 
   public EntityAbilitySet getAbilitySet(LivingEntity livingEntity) {
@@ -122,21 +121,15 @@ public class UniqueEntityManager {
 
   public LivingEntity spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
-      plugin.getLogger()
-          .warning("Attempted to unique with null entity type: " + uniqueEntity.getName());
+      LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
     }
+    LogUtil.printDebug("Spawning unique entity " + uniqueEntity.getId());
 
     Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
         e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
-    if (!(entity instanceof LivingEntity)) {
-      plugin.getLogger()
-          .warning("Attempted to spawn non-living unique entity: " + uniqueEntity.getName());
-      return null;
-    }
 
     LivingEntity spawnedUnique = (LivingEntity) entity;
-
     spawnedUnique.setRemoveWhenFarAway(false);
 
     double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.HEALTH, 5D);
@@ -174,31 +167,30 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
 
-    plugin.getEntityStatCache().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
+    plugin.getAttributedEntityManager()
+        .setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
-    plugin.getAbilityManager().checkPhaseChange(plugin.getEntityStatCache().getAttributedEntity(spawnedUnique));
+    plugin.getAbilityManager()
+        .checkPhaseChange(plugin.getAttributedEntityManager().getAttributedEntity(spawnedUnique));
     return spawnedUnique;
   }
 
   private void delayedEquip(UniqueEntity uniqueEntity, LivingEntity spawnedEntity) {
-    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-      @Override
-      public void run() {
-        spawnedEntity.getEquipment().clear();
-        spawnedEntity.setCanPickupItems(false);
-        spawnedEntity.getEquipment().setHelmetDropChance(0f);
-        spawnedEntity.getEquipment().setChestplateDropChance(0f);
-        spawnedEntity.getEquipment().setLeggingsDropChance(0f);
-        spawnedEntity.getEquipment().setBootsDropChance(0f);
-        spawnedEntity.getEquipment().setItemInMainHandDropChance(0f);
-        spawnedEntity.getEquipment().setItemInOffHandDropChance(0f);
-        spawnedEntity.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
-        spawnedEntity.getEquipment().setChestplate(uniqueEntity.getChestItem());
-        spawnedEntity.getEquipment().setLeggings(uniqueEntity.getLegsItem());
-        spawnedEntity.getEquipment().setBoots(uniqueEntity.getBootsItem());
-        spawnedEntity.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
-        spawnedEntity.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
-      }
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      spawnedEntity.getEquipment().clear();
+      spawnedEntity.setCanPickupItems(false);
+      spawnedEntity.getEquipment().setHelmetDropChance(0f);
+      spawnedEntity.getEquipment().setChestplateDropChance(0f);
+      spawnedEntity.getEquipment().setLeggingsDropChance(0f);
+      spawnedEntity.getEquipment().setBootsDropChance(0f);
+      spawnedEntity.getEquipment().setItemInMainHandDropChance(0f);
+      spawnedEntity.getEquipment().setItemInOffHandDropChance(0f);
+      spawnedEntity.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
+      spawnedEntity.getEquipment().setChestplate(uniqueEntity.getChestItem());
+      spawnedEntity.getEquipment().setLeggings(uniqueEntity.getLegsItem());
+      spawnedEntity.getEquipment().setBoots(uniqueEntity.getBootsItem());
+      spawnedEntity.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
+      spawnedEntity.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
     }, 1L);
   }
 }

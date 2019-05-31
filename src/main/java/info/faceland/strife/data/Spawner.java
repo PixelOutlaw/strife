@@ -7,14 +7,15 @@ import org.bukkit.entity.LivingEntity;
 public class Spawner {
 
   private final UniqueEntity uniqueEntity;
-  private final Location location;
-  private final double leashRange;
-  private final long respawnSeconds;
-  private final Chunk chunk;
 
   private LivingEntity trackedEntity;
+  private Location location;
+  private double leashRange;
+  private long respawnSeconds;
   private long respawnTime;
   private int resetCount = 0;
+  private int chunkX;
+  private int chunkZ;
 
   public Spawner(UniqueEntity uniqueEntity, Location location, int respawnSeconds,
       double leashRange) {
@@ -22,9 +23,11 @@ public class Spawner {
     this.location = location;
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
-
-    this.chunk = location.getChunk();
     this.respawnTime = System.currentTimeMillis();
+
+    Chunk chunk = location.getChunk();
+    this.chunkX = chunk.getX();
+    this.chunkZ = chunk.getZ();
   }
 
   public UniqueEntity getUniqueEntity() {
@@ -35,8 +38,19 @@ public class Spawner {
     return location;
   }
 
+  public void setLocation(Location location) {
+    this.location = location;
+    Chunk chunk = location.getChunk();
+    this.chunkX = chunk.getX();
+    this.chunkZ = chunk.getZ();
+  }
+
   public double getLeashRange() {
     return leashRange;
+  }
+
+  public void setLeashRange(double leashRange) {
+    this.leashRange = leashRange;
   }
 
   public long getRespawnMillis() {
@@ -45,10 +59,6 @@ public class Spawner {
 
   public long getRespawnSeconds() {
     return respawnSeconds;
-  }
-
-  public Chunk getChunk() {
-    return chunk;
   }
 
   public LivingEntity getTrackedEntity() {
@@ -73,5 +83,13 @@ public class Spawner {
 
   public void setResetCount(int resetCount) {
     this.resetCount = resetCount;
+  }
+
+  public int getChunkX() {
+    return chunkX;
+  }
+
+  public int getChunkZ() {
+    return chunkZ;
   }
 }

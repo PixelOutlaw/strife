@@ -15,6 +15,12 @@ public class EntityStatData {
     perBonusLevelMap = new HashMap<>();
   }
 
+  public EntityStatData(EntityStatData entityStatData) {
+    baseValueMap = new HashMap<>(entityStatData.getBaseValueMap());
+    perLevelMap = new HashMap<>(entityStatData.getPerLevelMap());
+    perBonusLevelMap = new HashMap<>(entityStatData.getPerBonusLevelMap());
+  }
+
   public Map<StrifeAttribute, Double> getBaseValueMap() {
     return baseValueMap;
   }

@@ -1,20 +1,17 @@
 package info.faceland.strife.data;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.entity.LivingEntity;
 
 public class UniqueEntityData {
 
   private final UniqueEntity uniqueEntity;
   private LivingEntity master;
-  private Map<Ability, Long> cooldownMap;
   private int phase;
+  private Spawner spawner;
 
   public UniqueEntityData(UniqueEntity uniqueEntity) {
     this.uniqueEntity = uniqueEntity;
     this.master = null;
-    this.cooldownMap = new HashMap<>();
     this.phase = 0;
   }
 
@@ -38,15 +35,12 @@ public class UniqueEntityData {
     this.master = master;
   }
 
-  public boolean isCooledDown(Ability ability) {
-    if (cooldownMap.containsKey(ability)) {
-      return System.currentTimeMillis() > cooldownMap.get(ability);
-    }
-    return true;
-
+  public Spawner getSpawner() {
+    return spawner;
   }
 
-  public void setCooldown(Ability ability) {
-    cooldownMap.put(ability, System.currentTimeMillis() + ability.getCooldown() * 1000);
+  public void setSpawner(Spawner spawner) {
+    this.spawner = spawner;
   }
+
 }

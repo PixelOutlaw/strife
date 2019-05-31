@@ -20,85 +20,102 @@ package info.faceland.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import com.tealcube.minecraft.bukkit.shade.fanciful.FancyMessage;
-
+import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.AttributeHandler;
-import info.faceland.strife.data.Champion;
+import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.StrifeStat;
-
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.List;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
 
 public class StrifeCommand {
 
   private final StrifePlugin plugin;
+  private final String REVEAL_SUCCESS;
+  private final String REVEAL_FAIL;
+  private final String REVEAL_PREFIX;
+  private final String REVEAL_REPLACEMENT;
 
   public StrifeCommand(StrifePlugin plugin) {
     this.plugin = plugin;
+    REVEAL_SUCCESS = plugin.getSettings()
+        .getString("language.command.reveal-success", "Reveal success");
+    REVEAL_FAIL = plugin.getSettings()
+        .getString("language.command.reveal-fail", "Reveal failure");
+    REVEAL_PREFIX = TextUtils.color(plugin.getSettings()
+        .getString("language.command.reveal-prefix", "&0&k"));
+    REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
+        .getString("language.command.reveal-replace", "&f"));
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
   public void reloadCommand(CommandSender sender) {
+    // Save player data before reload continues
+    plugin.getStorage().saveAll();
+
+    // Normal enable/disable
     plugin.disable();
     plugin.enable();
+
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      plugin.getAttributeUpdateManager().updateAttributes(player);
+    }
+
     sendMessage(sender,
         plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
   }
 
   @Command(identifier = "strife profile", permissions = "strife.command.strife.profile", onlyPlayers = false)
   public void profileCommand(CommandSender sender, @Arg(name = "target") Player target) {
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     sendMessage(sender, "<gold>----------------------------------");
     sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "<gold>----------------------------------");
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
-      sendMessage(sender, ChatColor.GRAY + " - " + champion.getLevel(stat));
+      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
   }
 
   @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
   public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
       champion.setLevel(stat, 0);
     }
     champion.setHighestReachedLevel(target.getLevel());
     champion.setUnusedStatPoints(target.getLevel());
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
     sendMessage(sender, "<green>You reset <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been reset.");
-    FancyMessage message = new FancyMessage("");
-    message.then("You have unspent levelpoints! ").color(ChatColor.GOLD).then("CLICK HERE")
-        .command("/levelup")
-        .color(ChatColor.WHITE).then(" or use ").color(ChatColor.GOLD).then("/levelup")
-        .color(ChatColor.WHITE).then(" to spend them!").send(target);
-    AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    sendMessage(target, "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
+    plugin.getChampionManager().updateAll(champion);
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
   public void clearCommand(CommandSender sender, @Arg(name = "target") Player target) {
     target.setExp(0f);
     target.setLevel(0);
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+    Champion champion = plugin.getChampionManager().getChampion(target);
     for (StrifeStat stat : plugin.getStatManager().getStats()) {
       champion.setLevel(stat, 0);
     }
     champion.setUnusedStatPoints(0);
     champion.setHighestReachedLevel(0);
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
     sendMessage(sender, "<green>You cleared <white>%player%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
-    AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    plugin.getChampionManager().updateAll(champion);
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -110,13 +127,46 @@ public class StrifeCommand {
     }
     target.setExp(0f);
     target.setLevel(newLevel);
-    Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
-    plugin.getChampionManager().removeChampion(champion.getUniqueId());
-    plugin.getChampionManager().addChampion(champion);
+    Champion champion = plugin.getChampionManager().getChampion(target);
+    plugin.getChampionManager().updateAll(champion);
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
-    AttributeHandler.updateAttributes(plugin, champion.getPlayer());
+    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+  }
+
+  @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void bindCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "loreAbility") String id) {
+    LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(id);
+    if (ability == null) {
+      sendMessage(sender, "<red>Invalid loreAbility ID: " + id);
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(target);
+    boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
+    if (success) {
+      sendMessage(sender, "&aBound loreAbility " + id + " to player " + target.getName());
+    } else {
+      sendMessage(sender, "&cLoreAbility " + id + " already exists on " + target.getName());
+    }
+  }
+
+  @Command(identifier = "strife unbind", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void unbindCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "loreAbility") String abilityId) {
+    LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(abilityId);
+    if (ability == null) {
+      sendMessage(sender, "<red>Invalid loreAbility ID: " + abilityId);
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(target);
+    boolean success = plugin.getChampionManager().removeBoundLoreAbility(champion, ability);
+    if (success) {
+      sendMessage(sender, "&aUnbound loreAbility " + abilityId + " to player " + target.getName());
+    } else {
+      sendMessage(sender, "&cLoreAbility " + abilityId + " doesn't exist on " + target.getName());
+    }
   }
 
   @Command(identifier = "strife setskill", permissions = "strife.command.strife.setskill", onlyPlayers = false)
@@ -127,19 +177,59 @@ public class StrifeCommand {
       return;
     }
     if (skill.equalsIgnoreCase("crafting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(target);
       champion.getSaveData().setCraftingLevel(newLevel);
       sendMessage(target, "<green>Your skill in crafting is now " + newLevel);
       sendMessage(sender, "<green>Set crafting level of " + target + " to " + newLevel);
       return;
     } else if (skill.equalsIgnoreCase("enchanting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target.getUniqueId());
+      Champion champion = plugin.getChampionManager().getChampion(target);
       champion.getSaveData().setEnchantLevel(newLevel);
       sendMessage(target, "<green>Your skill in enchanting is now " + newLevel);
       sendMessage(sender, "<green>Set enchanting level of " + target + " to " + newLevel);
       return;
+    } else if (skill.equalsIgnoreCase("fishing")) {
+      Champion champion = plugin.getChampionManager().getChampion(target);
+      champion.getSaveData().setFishingLevel(newLevel);
+      sendMessage(target, "<green>Your skill in fishing is now " + newLevel);
+      sendMessage(sender, "<green>Set fishing level of " + target + " to " + newLevel);
+      return;
+    } else if (skill.equalsIgnoreCase("mining")) {
+      Champion champion = plugin.getChampionManager().getChampion(target);
+      champion.getSaveData().setMiningLevel(newLevel);
+      sendMessage(target, "<green>Your skill in mining is now " + newLevel);
+      sendMessage(sender, "<green>Set mining level of " + target + " to " + newLevel);
+      return;
     }
     sendMessage(sender, "<red>Cannot set level of unknown skill '" + skill + "'.");
+  }
+
+  @Command(identifier = "strife addskillxp", permissions = "strife.command.strife.setskill", onlyPlayers = false)
+  public void addSkillXp(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "skill") String skill, @Arg(name = "xpAmount") int amount) {
+    String skillName = skill.toUpperCase();
+    switch (skillName) {
+      case "CRAFTING":
+        plugin.getCraftExperienceManager().addExperience(target, amount, true);
+        sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount + "XP)");
+        break;
+      case "ENCHANTING":
+        plugin.getEnchantExperienceManager().addExperience(target, amount, true);
+        sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount + "XP)");
+        break;
+      case "FISHING":
+        plugin.getFishExperienceManager().addExperience(target, amount, true);
+        sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount + "XP)");
+        break;
+      case "MINING":
+        plugin.getMiningExperienceManager().addExperience(target, amount, true);
+        sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount + "XP)");
+        break;
+      default:
+        sendMessage(sender, "<red>Unknown skill " + skill + "??");
+        return;
+    }
+    sendMessage(sender, "&fGranted " + amount + " " + skill + " XP to " + target);
   }
 
   @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
@@ -149,18 +239,47 @@ public class StrifeCommand {
     sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
   }
 
-  @Command(identifier = "strife xpmult", permissions = "strife.command.strife.xpmult", onlyPlayers = false)
-  public void setExpMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-    sendMessage(sender, "&aBonus XP mult changed to " + amount + "x from " + (plugin
-        .getMultiplierManager().getExpMult() + 1) + "x!");
-    plugin.getMultiplierManager().setExpMult(amount);
+  @Command(identifier = "strife startBoost", permissions = "strife.command.strife.boosts", onlyPlayers = false)
+  public void startBoostCommand(CommandSender sender, @Arg(name = "boostId") String boostId,
+      @Arg(name = "creator") String creator, @Arg(name = "duration") int duration) {
+    boolean success = plugin.getGlobalBoostManager().createStatBoost(boostId, creator, duration);
+    if (!success) {
+      sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
+    }
   }
 
-  @Command(identifier = "strife dropmult", permissions = "strife.command.strife.dropmult", onlyPlayers = false)
-  public void setDropMultCommand(CommandSender sender, @Arg(name = "amount") double amount) {
-    sendMessage(sender, "&aBonus drop mult changed to " + amount + "x from " + (plugin
-        .getMultiplierManager().getDropMult() + 1) + "x!");
-    plugin.getMultiplierManager().setDropMult(amount);
+  @Command(identifier = "strife togglexp", onlyPlayers = true)
+  public void toggleExp(CommandSender sender) {
+    Champion champion = plugin.getChampionManager().getChampion((Player) sender);
+    champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
+    sendMessage(sender, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
   }
 
+  @Command(identifier = "strife reveal", permissions = "strife.command.strife.reveal", onlyPlayers = false)
+  public void reveal(CommandSender sender, @Arg(name = "target") Player target) {
+    if (target.getEquipment() == null) {
+      sendMessage(sender, "&cTarget's equipment is null, somehow.");
+    }
+    ItemStack item = target.getEquipment().getItemInMainHand();
+    if (item.getItemMeta() == null) {
+      sendMessage(target, REVEAL_FAIL);
+      return;
+    }
+    if (item.getItemMeta().getLore() == null || item.getItemMeta().getLore().size() == 0) {
+      sendMessage(target, REVEAL_FAIL);
+      return;
+    }
+    List<String> lore = item.getItemMeta().getLore();
+    for (int i = 0; i < lore.size(); i++) {
+      String loreString = lore.get(i);
+      if (loreString.contains(REVEAL_PREFIX)) {
+        lore.set(i, lore.get(i).replace(REVEAL_PREFIX, REVEAL_REPLACEMENT));
+        ItemStackExtensionsKt.setLore(item, lore);
+        target.updateInventory();
+        sendMessage(target, REVEAL_SUCCESS);
+        return;
+      }
+    }
+    sendMessage(target, REVEAL_FAIL);
+  }
 }
