@@ -45,6 +45,7 @@ import static info.faceland.strife.util.DamageUtil.restoreHealth;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
 import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
@@ -53,7 +54,6 @@ import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EvokerFangs;
