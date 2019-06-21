@@ -58,7 +58,6 @@ public class AbilityManager {
 
   public void execute(final Ability ability, final AttributedEntity caster,
       AttributedEntity target) {
-    LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + ability.getId());
     if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
@@ -152,8 +151,7 @@ public class AbilityManager {
   private void abilityPhaseCast(AttributedEntity caster, Map<Integer, List<Ability>> abilitySection,
       int phase) {
     if (phase > 5) {
-      LogUtil.printError("Attempted to use ability phase higher than 5? Likely a code bug...");
-      return;
+      throw new IllegalArgumentException("Phase cannot be higher than 5");
     }
     if (abilitySection.containsKey(phase)) {
       executeAbilityList(caster, abilitySection.get(phase));

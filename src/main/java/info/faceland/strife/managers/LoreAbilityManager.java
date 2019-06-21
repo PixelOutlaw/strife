@@ -8,6 +8,7 @@ import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,6 +97,7 @@ public class LoreAbilityManager {
   }
 
   public void applyLoreAbility(LoreAbility la, AttributedEntity caster, AttributedEntity target) {
+    LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + la.getId());
     if (la.getAbility() != null) {
       abilityManager.execute(la.getAbility(), caster, target);
     }

@@ -51,12 +51,12 @@ public class EffectManager {
       target = caster;
     }
     if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
-      LogUtil.printDebug("Conditions not met for effect. Failed.");
+      LogUtil.printDebug(" Conditions not met for effect " + effect.getName()  + "... Failed.");
       return;
     }
-    LogUtil.printDebug("Looping targets for " + effect.getName());
+    LogUtil.printDebug(" Looping targets for " + effect.getName());
     for (LivingEntity le : getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange())) {
-      LogUtil.printDebug("Applying effect to " + PlayerDataUtil.getName(le));
+      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
       effect.apply(caster, aeManager.getAttributedEntity(le));
     }
   }
