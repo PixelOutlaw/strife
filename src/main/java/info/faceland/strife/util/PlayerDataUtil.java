@@ -5,6 +5,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -14,13 +15,16 @@ public class PlayerDataUtil {
 
   public static void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
       double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
-      double lightBonus, boolean corrupt, boolean isBleedApplied) {
+      double lightBonus, boolean corrupt, boolean isBleedApplied, boolean isSneakAttack) {
     if (!(entity instanceof Player)) {
       return;
     }
     StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
     if (overBonus > 0) {
       damageString.append("&e✦");
+    }
+    if (isSneakAttack) {
+      damageString.append("&e&l!");
     }
     if (critBonus > 0) {
       damageString.append("&c✶");
@@ -46,7 +50,7 @@ public class PlayerDataUtil {
     if (isBleedApplied) {
       damageString.append("&4♦");
     }
-    MessageUtils.sendActionBar((Player)entity, damageString.toString());
+    MessageUtils.sendActionBar((Player) entity, damageString.toString());
   }
 
   public static boolean areConditionsMet(AttributedEntity caster, AttributedEntity target,
@@ -79,7 +83,8 @@ public class PlayerDataUtil {
 
   public static float getCraftMaxExp(Player player) {
     int level = getCraftLevel(player);
-    return StrifePlugin.getInstance().getCraftExperienceManager().getMaxExp(level);
+    return StrifePlugin.getInstance().getSkillExperienceManager()
+        .getMaxExp(LifeSkillType.CRAFTING, level);
   }
 
   public static int getEnchantSkill(Player player, Boolean updateEquipment) {
@@ -99,7 +104,8 @@ public class PlayerDataUtil {
 
   public static float getEnchantMaxExp(Player player) {
     int level = getEnchantLevel(player);
-    return StrifePlugin.getInstance().getEnchantExperienceManager().getMaxExp(level);
+    return StrifePlugin.getInstance().getSkillExperienceManager()
+        .getMaxExp(LifeSkillType.ENCHANTING, level);
   }
 
   public static int getFishSkill(Player player, Boolean updateEquipment) {
@@ -119,7 +125,8 @@ public class PlayerDataUtil {
 
   public static float getFishMaxExp(Player player) {
     int level = getFishLevel(player);
-    return StrifePlugin.getInstance().getFishExperienceManager().getMaxExp(level);
+    return StrifePlugin.getInstance().getSkillExperienceManager()
+        .getMaxExp(LifeSkillType.FISHING, level);
   }
 
   public static int getMineSkill(Player player, Boolean updateEquipment) {
@@ -139,7 +146,8 @@ public class PlayerDataUtil {
 
   public static float getMiningMaxExp(Player player) {
     int level = getMiningLevel(player);
-    return StrifePlugin.getInstance().getMiningExperienceManager().getMaxExp(level);
+    return StrifePlugin.getInstance().getSkillExperienceManager()
+        .getMaxExp(LifeSkillType.MINING, level);
   }
 
   public static void updatePlayerEquipment(Player player) {
