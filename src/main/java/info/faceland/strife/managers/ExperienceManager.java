@@ -18,7 +18,6 @@
  */
 package info.faceland.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.StrifePlugin;
@@ -28,7 +27,6 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.champion.Champion;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class ExperienceManager implements StrifeExperienceManager {

@@ -3,6 +3,7 @@ command:
   reveal-replace: "&5"
   reveal-success: "&8[NPC] &fVoid Mage: &7Hmmm... yes I can reveal this... here you are, let me know what you think!"
   reveal-fail: "&8[NPC] &fVoid Mage: &7I'm sorry, I cannot reveal an item without &5Void Text&7. Hold such an item in your hand, and speak to me again."
+  xp-msg: "{c}Gained &f{n} {c}XP! &f(+{a}XP)"
 skills:
   lvl-up-self: "{c}&lSkill Up! {c}Your skill level in &f{n} {c}has increased to &f{l}{c}!"
   lvl-up-broadcast: "{c}&lSkill Up! &f{p} {c}has reached &f{n} {c}skill level &f{l}{c}!"

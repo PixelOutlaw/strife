@@ -20,17 +20,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package info.faceland.strife.api;
+package info.faceland.strife.events;
 
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-public interface StrifeSkillExperienceManager {
+public class SkillExpGainEvent extends Event {
 
-  void addExperience(Player player, double amount, boolean ignoreSkillExpMult);
+  private static final HandlerList HANDLER_LIST = new HandlerList();
 
-  void addExperience(Champion champion, double amount, boolean ignoreSkillExpMult);
+  public static HandlerList getHandlerList() {
+    return HANDLER_LIST;
+  }
 
-  Integer getMaxExp(int level);
+  private final Player player;
+  private final float amount;
+  private final LifeSkillType skillType;
+
+  public SkillExpGainEvent(Player player, LifeSkillType skillType, float amount) {
+    this.player = player;
+    this.amount = amount;
+    this.skillType = skillType;
+  }
+
+  public SkillExpGainEvent(Champion champion, LifeSkillType skillType, float amount) {
+    this.player = champion.getPlayer();
+    this.amount = amount;
+    this.skillType = skillType;
+  }
+
+  @Override
+  public HandlerList getHandlers() {
+    return HANDLER_LIST;
+  }
+
+  public Player getPlayer() {
+    return player;
+  }
+
+  public float getAmount() {
+    return amount;
+  }
+
+  public LifeSkillType getSkillType() {
+    return skillType;
+  }
 
 }

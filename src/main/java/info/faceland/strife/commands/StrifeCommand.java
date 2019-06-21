@@ -24,6 +24,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.stats.StrifeStat;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -42,6 +43,8 @@ public class StrifeCommand {
   private final String REVEAL_FAIL;
   private final String REVEAL_PREFIX;
   private final String REVEAL_REPLACEMENT;
+  private final String XP_MSG;
+  private final String SET_LEVEL_MSG;
 
   public StrifeCommand(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -53,6 +56,10 @@ public class StrifeCommand {
         .getString("language.command.reveal-prefix", "&0&k"));
     REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
         .getString("language.command.reveal-replace", "&f"));
+    XP_MSG = plugin.getSettings()
+        .getString("language.command.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP))");
+    SET_LEVEL_MSG = plugin.getSettings()
+        .getString("language.command.xp-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
@@ -176,60 +183,45 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Skill must be between level 0 and 60.");
       return;
     }
-    if (skill.equalsIgnoreCase("crafting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setCraftingLevel(newLevel);
-      sendMessage(target, "<green>Your skill in crafting is now " + newLevel);
-      sendMessage(sender, "<green>Set crafting level of " + target + " to " + newLevel);
-      return;
-    } else if (skill.equalsIgnoreCase("enchanting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setEnchantLevel(newLevel);
-      sendMessage(target, "<green>Your skill in enchanting is now " + newLevel);
-      sendMessage(sender, "<green>Set enchanting level of " + target + " to " + newLevel);
-      return;
-    } else if (skill.equalsIgnoreCase("fishing")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setFishingLevel(newLevel);
-      sendMessage(target, "<green>Your skill in fishing is now " + newLevel);
-      sendMessage(sender, "<green>Set fishing level of " + target + " to " + newLevel);
-      return;
-    } else if (skill.equalsIgnoreCase("mining")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setMiningLevel(newLevel);
-      sendMessage(target, "<green>Your skill in mining is now " + newLevel);
-      sendMessage(sender, "<green>Set mining level of " + target + " to " + newLevel);
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skill.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "<red>Unknown skill " + skill + "??");
       return;
     }
-    sendMessage(sender, "<red>Cannot set level of unknown skill '" + skill + "'.");
+    String color = plugin.getSkillExperienceManager().getSkillColor(type);
+    String name = plugin.getSkillExperienceManager().getPrettySkillName(type);
+
+    plugin.getChampionManager().getChampion(target).getSaveData().setSkillLevel(type, newLevel);
+    sendMessage(target, SET_LEVEL_MSG
+        .replace("{c}", color)
+        .replace("{n}", name)
+        .replace("{a}", Integer.toString(newLevel))
+    );
+    sendMessage(sender, "Set " + name + " level of " + target.getName() + " to " + newLevel);
   }
 
   @Command(identifier = "strife addskillxp", permissions = "strife.command.strife.setskill", onlyPlayers = false)
   public void addSkillXp(CommandSender sender, @Arg(name = "target") Player target,
       @Arg(name = "skill") String skill, @Arg(name = "xpAmount") int amount) {
     String skillName = skill.toUpperCase();
-    switch (skillName) {
-      case "CRAFTING":
-        plugin.getCraftExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount + "XP)");
-        break;
-      case "ENCHANTING":
-        plugin.getEnchantExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount + "XP)");
-        break;
-      case "FISHING":
-        plugin.getFishExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount + "XP)");
-        break;
-      case "MINING":
-        plugin.getMiningExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount + "XP)");
-        break;
-      default:
-        sendMessage(sender, "<red>Unknown skill " + skill + "??");
-        return;
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skillName.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "<red>Unknown skill " + skill + "???");
+      return;
     }
-    sendMessage(sender, "&fGranted " + amount + " " + skill + " XP to " + target);
+    String color = plugin.getSkillExperienceManager().getSkillColor(type);
+    String name = plugin.getSkillExperienceManager().getPrettySkillName(type);
+
+    plugin.getSkillExperienceManager().addExperience(target, type, amount, true);
+    sendMessage(target, XP_MSG
+        .replace("{c}", color)
+        .replace("{n}", name)
+        .replace("{a}", Integer.toString(amount))
+    );
   }
 
   @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
