@@ -35,6 +35,7 @@ import static info.faceland.strife.util.DamageUtil.attemptFreeze;
 import static info.faceland.strife.util.DamageUtil.attemptIgnite;
 import static info.faceland.strife.util.DamageUtil.attemptShock;
 import static info.faceland.strife.util.DamageUtil.callCritEvent;
+import static info.faceland.strife.util.DamageUtil.callSneakAttackEvent;
 import static info.faceland.strife.util.DamageUtil.consumeEarthRunes;
 import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
@@ -52,6 +53,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
@@ -322,22 +324,22 @@ public class CombatListener implements Listener {
 
     if (isSneakAttack) {
       Player player = (Player) attackEntity;
-      int sneakSkill = plugin.getChampionManager().getChampion(player).getSneakSkill(false);
-      finalDamage += (sneakSkill + defendEntity.getMaxHealth() * sneakSkill * 0.01) * pvpMult;
+      float sneakSkill = plugin.getChampionManager().getChampion(player).getSneakSkill(false);
+      float sneakDamage = sneakSkill;
+      sneakDamage += defendEntity.getMaxHealth() * (0.1 + 0.002 * sneakSkill);
+      sneakDamage *= attackMultiplier;
+      sneakDamage *= pvpMult;
 
-      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
-          Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 1.5f);
+      SneakAttackEvent sneakEvent = callSneakAttackEvent((Player) attackEntity, defendEntity,
+          sneakSkill, sneakDamage);
 
-      if (!(defendEntity instanceof Player)) {
-        boolean finishingBlow = finalDamage > defendEntity.getHealth();
-        if (!finishingBlow) {
-          plugin.getSneakManager().tempDisableSneak((Player) attackEntity);
-        }
-        float gainedXp = plugin.getSneakManager()
-            .getSneakAttackExp(defendEntity, sneakSkill, finishingBlow);
-        plugin.getExperienceManager().addExperience(player, gainedXp, false);
+      if (!sneakEvent.isCancelled()) {
+        finalDamage += sneakEvent.getSneakAttackDamage();
+      } else {
+        isSneakAttack = false;
       }
-    } else if (attackEntity instanceof Player) {
+    }
+    if (!isSneakAttack && attackEntity instanceof Player) {
       plugin.getSneakManager().tempDisableSneak((Player) attackEntity);
     }
 

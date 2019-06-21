@@ -22,6 +22,7 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import java.util.Collection;
@@ -346,6 +347,13 @@ public class DamageUtil {
   public static void callEvadeEvent(LivingEntity evader, LivingEntity attacker) {
     EvadeEvent ev = new EvadeEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
+  }
+
+  public static SneakAttackEvent callSneakAttackEvent(Player attacker, LivingEntity victim,
+      float sneakSkill, float sneakDamage) {
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill, sneakDamage);
+    Bukkit.getPluginManager().callEvent(sneakAttackEvent);
+    return sneakAttackEvent;
   }
 
   public static void callBlockEvent(LivingEntity evader, LivingEntity attacker) {

@@ -6,6 +6,7 @@ import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
@@ -69,6 +70,15 @@ public class LoreAbilityListener implements Listener {
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_BLOCK)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getBlocker()),
           getAttrEntity(event.getAttacker()));
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onSneakAttack(SneakAttackEvent event) {
+    Champion champion = championManager.getChampion(event.getAttacker());
+    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_SNEAK_ATTACK)) {
+      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
+          getAttrEntity(event.getVictim()));
     }
   }
 
