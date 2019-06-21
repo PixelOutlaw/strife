@@ -47,6 +47,7 @@ import info.faceland.strife.listeners.HeadDropListener;
 import info.faceland.strife.listeners.HealthListener;
 import info.faceland.strife.listeners.LoreAbilityListener;
 import info.faceland.strife.listeners.SkillLevelUpListener;
+import info.faceland.strife.listeners.SneakAttackListener;
 import info.faceland.strife.listeners.SpawnListener;
 import info.faceland.strife.listeners.SummonListener;
 import info.faceland.strife.listeners.TargetingListener;
@@ -451,6 +452,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new SummonListener(uniqueEntityManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
+    Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(attributedEntityManager), this);
     Bukkit.getPluginManager().registerEvents(
         new LoreAbilityListener(attributedEntityManager, championManager, loreAbilityManager),
