@@ -20,6 +20,7 @@ package info.faceland.strife.listeners;
 
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
+import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
@@ -37,7 +38,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class TargetingListener implements Listener {
@@ -53,7 +53,7 @@ public class TargetingListener implements Listener {
   private static final float VISION_DETECTION_MAX_ANGLE = 0.3f;
   private static final float MAX_DIST_SQUARED = 1500;
   private static final float MAX_SNEAK_DIST_SQUARED = 144;
-  private static final int SNEAK_SKILL_EFFECTIVENESS = 75;
+  private static final int SNEAK_EFFECTIVENESS = 75;
 
   public TargetingListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -115,6 +115,10 @@ public class TargetingListener implements Listener {
     float lightMult = 1.0f - (float) Math.min(0.85,
         0.2f * playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel());
 
+    if (player.hasPotionEffect(INVISIBILITY)) {
+      sneakSkill += 5 + sneakSkill * 0.1;
+    }
+
     float awareness;
     if (angle > VISION_DETECTION_MAX_ANGLE || creature.hasPotionEffect(BLINDNESS)) {
       awareness = BASE_AWARENESS + level * AWARENESS_PER_LEVEL;
@@ -123,7 +127,7 @@ public class TargetingListener implements Listener {
     }
     awareness *= distanceMult;
     awareness *= lightMult;
-    awareness -= sneakSkill * SNEAK_SKILL_EFFECTIVENESS;
+    awareness -= sneakSkill * SNEAK_EFFECTIVENESS;
 
     LogUtil.printDebug(" DIST MULT: " + distanceMult);
     LogUtil.printDebug(" LIGHT MULT: " + lightMult);
