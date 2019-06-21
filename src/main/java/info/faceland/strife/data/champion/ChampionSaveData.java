@@ -27,15 +27,14 @@ public class ChampionSaveData {
 
   private int craftingLevel;
   private float craftingExp;
-
   private int fishingLevel;
   private float fishingExp;
-
   private int enchantLevel;
   private float enchantExp;
-
   private int miningLevel;
   private float miningExp;
+  private int sneakLevel;
+  private float sneakExp;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
@@ -80,7 +79,6 @@ public class ChampionSaveData {
     this.bonusLevels = bonusLevels;
   }
 
-  // CRAFTING STUFF //
   public int getCraftingLevel() {
     return craftingLevel;
   }
@@ -97,7 +95,6 @@ public class ChampionSaveData {
     this.craftingExp = craftingExp;
   }
 
-  // ENCHANTING STUFF //
   public int getEnchantLevel() {
     return enchantLevel;
   }
@@ -114,7 +111,6 @@ public class ChampionSaveData {
     this.enchantExp = enchantExp;
   }
 
-  // FISHING STUFF //
   public int getFishingLevel() {
     return fishingLevel;
   }
@@ -131,8 +127,6 @@ public class ChampionSaveData {
     this.fishingExp = fishingExp;
   }
 
-
-  // MINING STUFF //
   public int getMiningLevel() {
     return miningLevel;
   }
@@ -147,6 +141,22 @@ public class ChampionSaveData {
 
   public void setMiningExp(float miningExp) {
     this.miningExp = miningExp;
+  }
+
+  public int getSneakLevel() {
+    return sneakLevel;
+  }
+
+  public void setSneakLevel(int sneakLevel) {
+    this.sneakLevel = sneakLevel;
+  }
+
+  public float getSneakExp() {
+    return sneakExp;
+  }
+
+  public void setSneakExp(float sneakExp) {
+    this.sneakExp = sneakExp;
   }
 
   public int getUnusedStatPoints() {
@@ -181,6 +191,84 @@ public class ChampionSaveData {
     return Bukkit.getPlayer(getUniqueId());
   }
 
+  public void setSkillLevel(LifeSkillType type, int level) {
+    switch (type) {
+      case CRAFTING:
+        setCraftingLevel(level);
+        return;
+      case ENCHANTING:
+        setEnchantLevel(level);
+        return;
+      case FISHING:
+        setFishingLevel(level);
+        return;
+      case MINING:
+        setMiningLevel(level);
+        return;
+      case SNEAK:
+        setSneakLevel(level);
+        return;
+      default:
+        throw new IllegalArgumentException("Invalid life skill type!");
+    }
+  }
+
+  public void setSkillExp(LifeSkillType type, float amount) {
+    switch (type) {
+      case CRAFTING:
+        setCraftingExp(amount);
+        return;
+      case ENCHANTING:
+        setEnchantExp(amount);
+        return;
+      case FISHING:
+        setFishingExp(amount);
+        return;
+      case MINING:
+        setMiningExp(amount);
+        return;
+      case SNEAK:
+        setSneakExp(amount);
+        return;
+      default:
+        throw new IllegalArgumentException("Invalid life skill type!");
+    }
+  }
+
+  public int getSkillLevel(LifeSkillType type) {
+    switch (type) {
+      case CRAFTING:
+        return getCraftingLevel();
+      case ENCHANTING:
+        return getEnchantLevel();
+      case FISHING:
+        return getFishingLevel();
+      case MINING:
+        return getMiningLevel();
+      case SNEAK:
+        return getSneakLevel();
+      default:
+        throw new IllegalArgumentException("Invalid life skill type!");
+    }
+  }
+
+  public float getSkillExp(LifeSkillType type) {
+    switch (type) {
+      case CRAFTING:
+        return getCraftingExp();
+      case ENCHANTING:
+        return getEnchantExp();
+      case FISHING:
+        return getFishingExp();
+      case MINING:
+        return getMiningExp();
+      case SNEAK:
+        return getSneakExp();
+      default:
+        throw new IllegalArgumentException("Invalid life skill type!");
+    }
+  }
+
   public enum HealthDisplayType {
     TWO_HEALTH_HEARTS,
     FIVE_HEALTH_HEARTS,
@@ -188,5 +276,13 @@ public class ChampionSaveData {
     TEN_PERCENT_HEARTS,
     FIVE_PERCENT_HEARTS,
     THREE_PERCENT_HEARTS
+  }
+
+  public enum LifeSkillType {
+    CRAFTING,
+    ENCHANTING,
+    FISHING,
+    MINING,
+    SNEAK
   }
 }

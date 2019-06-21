@@ -3,12 +3,19 @@ package info.faceland.strife.util;
 import static info.faceland.strife.attributes.StrifeAttribute.*;
 import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
+import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.AttributedEntity;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class StatUtil {
 
@@ -256,6 +263,26 @@ public class StatUtil {
     damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
     damage *= 1 - getShadowResist(defender) / 100;
     return damage;
+  }
+
+  public static int getMobLevel(LivingEntity livingEntity) {
+    int level;
+    if (livingEntity instanceof Player) {
+      return ((Player) livingEntity).getLevel();
+    }
+    if (livingEntity.hasMetadata("LVL")) {
+      level = livingEntity.getMetadata("LVL").get(0).asInt();
+    } else {
+      if (StringUtils.isBlank(livingEntity.getCustomName())) {
+        level = -1;
+      } else {
+        String lev = CharMatcher.DIGIT.or(CharMatcher.is('-')).negate()
+            .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
+        level = NumberUtils.toInt(lev.split(" ")[0], 0);
+      }
+      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
+    }
+    return level;
   }
 
   private static double getElementalMult(AttributedEntity pStats) {

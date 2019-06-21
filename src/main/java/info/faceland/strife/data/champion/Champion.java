@@ -20,6 +20,7 @@ package info.faceland.strife.data.champion;
 
 import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 
@@ -160,6 +161,22 @@ public class Champion {
     }
     return getMiningLevel() + combinedAttributeCache
         .getOrDefault(StrifeAttribute.MINE_SKILL, 0D).intValue();
+  }
+
+  public int getSneakLevel() {
+    return saveData.getSneakLevel();
+  }
+
+  public float getSneakExp() {
+    return saveData.getSkillExp(LifeSkillType.SNEAK);
+  }
+
+  public int getSneakSkill(boolean updateEquipment) {
+    if (updateEquipment) {
+      recombineCache();
+    }
+    return getSneakLevel() + combinedAttributeCache
+        .getOrDefault(StrifeAttribute.SNEAK_SKILL, 0D).intValue();
   }
 
   public int getUnusedStatPoints() {

@@ -44,6 +44,7 @@ import static info.faceland.strife.util.DamageUtil.hasLuck;
 import static info.faceland.strife.util.DamageUtil.restoreHealth;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
 import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
+import static info.faceland.strife.util.ProjectileUtil.ATTACK_SPEED_META;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
@@ -131,6 +132,7 @@ public class CombatListener implements Listener {
           plugin.getChampionManager().getChampion((Player) attackEntity));
     }
     if (defendEntity instanceof Player) {
+      plugin.getSneakManager().tempDisableSneak((Player) defendEntity);
       plugin.getChampionManager().updateEquipmentAttributes(
           plugin.getChampionManager().getChampion((Player) defendEntity));
     }
@@ -155,8 +157,8 @@ public class CombatListener implements Listener {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
       healMultiplier = 0.3D;
-    } else if (projectile != null && projectile.hasMetadata("AS_MULT")) {
-      attackMultiplier = projectile.getMetadata("AS_MULT").get(0).asDouble();
+    } else if (projectile != null && projectile.hasMetadata(ATTACK_SPEED_META)) {
+      attackMultiplier = projectile.getMetadata(ATTACK_SPEED_META).get(0).asDouble();
     }
 
     if (attackMultiplier < 0.05) {
@@ -314,6 +316,31 @@ public class CombatListener implements Listener {
           bonusCriticalMultiplier, attackMultiplier);
     }
 
+    boolean isSneakAttack = projectile == null ?
+        plugin.getSneakManager().isMeleeSneakAttack(attackEntity, defendEntity) :
+        plugin.getSneakManager().isProjectileSneakAttack(projectile, defendEntity);
+
+    if (isSneakAttack) {
+      Player player = (Player) attackEntity;
+      int sneakSkill = plugin.getChampionManager().getChampion(player).getSneakSkill(false);
+      finalDamage += (sneakSkill + defendEntity.getMaxHealth() * sneakSkill * 0.01) * pvpMult;
+
+      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
+          Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 1.5f);
+
+      if (!(defendEntity instanceof Player)) {
+        boolean finishingBlow = finalDamage > defendEntity.getHealth();
+        if (!finishingBlow) {
+          plugin.getSneakManager().tempDisableSneak((Player) attackEntity);
+        }
+        float gainedXp = plugin.getSneakManager()
+            .getSneakAttackExp(defendEntity, sneakSkill, finishingBlow);
+        plugin.getExperienceManager().addExperience(player, gainedXp, false);
+      }
+    } else if (attackEntity instanceof Player) {
+      plugin.getSneakManager().tempDisableSneak((Player) attackEntity);
+    }
+
     doReflectedDamage(defender, attackEntity, damageType);
 
     event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamage);
@@ -329,7 +356,7 @@ public class CombatListener implements Listener {
 
     sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,
         bonusFireDamage, bonusIceDamage, bonusLightningDamage, bonusEarthDamage, bonusLightDamage,
-        corruptEffect, isBleedApplied);
+        corruptEffect, isBleedApplied, isSneakAttack);
 
     if (attackEntity instanceof Player) {
       plugin.getBossBarManager().pushBar((Player) attackEntity, defender);

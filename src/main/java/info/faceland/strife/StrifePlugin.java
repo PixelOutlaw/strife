@@ -24,6 +24,7 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
+import info.faceland.strife.api.SkillExperienceManager;
 import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
@@ -64,18 +65,15 @@ import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.BossBarManager;
 import info.faceland.strife.managers.ChampionManager;
-import info.faceland.strife.managers.CraftExperienceManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.managers.EffectManager;
-import info.faceland.strife.managers.EnchantExperienceManager;
 import info.faceland.strife.managers.EntityEquipmentManager;
 import info.faceland.strife.managers.ExperienceManager;
-import info.faceland.strife.managers.FishExperienceManager;
 import info.faceland.strife.managers.GlobalBoostManager;
 import info.faceland.strife.managers.LoreAbilityManager;
-import info.faceland.strife.managers.MiningExperienceManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.RageManager;
+import info.faceland.strife.managers.SneakManager;
 import info.faceland.strife.managers.SpawnerManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.managers.UniqueEntityManager;
@@ -92,6 +90,7 @@ import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.PruneBossBarsTask;
 import info.faceland.strife.tasks.RageTask;
 import info.faceland.strife.tasks.SaveTask;
+import info.faceland.strife.tasks.SneakTask;
 import info.faceland.strife.tasks.SpawnerLeashTask;
 import info.faceland.strife.tasks.SpawnerSpawnTask;
 import info.faceland.strife.tasks.TimedAbilityTask;
@@ -120,6 +119,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.scheduler.BukkitTask;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 public class StrifePlugin extends FacePlugin {
@@ -147,10 +147,7 @@ public class StrifePlugin extends FacePlugin {
   private StrifeStatManager statManager;
   private ChampionManager championManager;
   private StrifeExperienceManager experienceManager;
-  private CraftExperienceManager craftExperienceManager;
-  private EnchantExperienceManager enchantExperienceManager;
-  private FishExperienceManager fishExperienceManager;
-  private MiningExperienceManager miningExperienceManager;
+  private SkillExperienceManager skillExperienceManager;
   private AttackSpeedManager attackSpeedManager;
   private BlockManager blockManager;
   private BarrierManager barrierManager;
@@ -159,6 +156,7 @@ public class StrifePlugin extends FacePlugin {
   private RageManager rageManager;
   private MonsterManager monsterManager;
   private UniqueEntityManager uniqueEntityManager;
+  private SneakManager sneakManager;
   private BossBarManager bossBarManager;
   private EntityEquipmentManager equipmentManager;
   private EffectManager effectManager;
@@ -173,6 +171,7 @@ public class StrifePlugin extends FacePlugin {
   private TrackedPruneTask trackedPruneTask;
   private HealthRegenTask regenTask;
   private BleedTask bleedTask;
+  private SneakTask sneakTask;
   private BarrierTask barrierTask;
   private BossBarsTask bossBarsTask;
   private GlobalMultiplierTask globalMultiplierTask;
@@ -190,6 +189,7 @@ public class StrifePlugin extends FacePlugin {
   private LevelingRate enchantRate;
   private LevelingRate fishRate;
   private LevelingRate miningRate;
+  private LevelingRate sneakRate;
   private LevelupMenu levelupMenu;
   private StatsMenu statsMenu;
 
@@ -252,11 +252,9 @@ public class StrifePlugin extends FacePlugin {
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     bossBarManager = new BossBarManager(this);
+    sneakManager = new SneakManager();
     experienceManager = new ExperienceManager(this);
-    craftExperienceManager = new CraftExperienceManager(this);
-    enchantExperienceManager = new EnchantExperienceManager(this);
-    fishExperienceManager = new FishExperienceManager(this);
-    miningExperienceManager = new MiningExperienceManager(this);
+    skillExperienceManager = new SkillExperienceManager(this);
     attributedEntityManager = new AttributedEntityManager(this);
     abilityManager = new AbilityManager(this);
     commandHandler = new CommandHandler(this);
@@ -304,6 +302,7 @@ public class StrifePlugin extends FacePlugin {
     bleedTask = new BleedTask(bleedManager, barrierManager,
         settings.getDouble("config.mechanics.base-bleed-damage", 1D),
         settings.getDouble("config.mechanics.percent-bleed-damage", 0.1D));
+    sneakTask = new SneakTask(sneakManager);
     barrierTask = new BarrierTask(this);
     bossBarsTask = new BossBarsTask(bossBarManager);
     globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
@@ -360,6 +359,13 @@ public class StrifePlugin extends FacePlugin {
       miningRate.put(i, i, (int) Math.round(mineExpr.setVariable("LEVEL", i).evaluate()));
     }
 
+    sneakRate = new LevelingRate();
+    Expression sneakExpr = new ExpressionBuilder(settings.getString("config.leveling.sneak",
+        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+    for (int i = 0; i < maxSkillLevel; i++) {
+      sneakRate.put(i, i, (int) Math.round(sneakExpr.setVariable("LEVEL", i).evaluate()));
+    }
+
     trackedPruneTask.runTaskTimer(this,
         20L * 61, // Start save after 1 minute, 1 second cuz yolo
         20L * 60 // Run every 1 minute after that
@@ -375,6 +381,10 @@ public class StrifePlugin extends FacePlugin {
     bleedTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
         settings.getLong("config.mechanics.ticks-per-bleed", 10L)
+    );
+    sneakTask.runTaskTimer(this,
+        20L * 10, // Start timer after 10s
+        10L // Run every 1/2 second
     );
     barrierTask.runTaskTimer(this,
         2201L, // Start timer after 11s
@@ -439,7 +449,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SummonListener(uniqueEntityManager), this);
-    Bukkit.getPluginManager().registerEvents(new TargetingListener(uniqueEntityManager), this);
+    Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(attributedEntityManager), this);
     Bukkit.getPluginManager().registerEvents(
@@ -474,6 +484,7 @@ public class StrifePlugin extends FacePlugin {
     trackedPruneTask.cancel();
     regenTask.cancel();
     bleedTask.cancel();
+    sneakTask.cancel();
     barrierTask.cancel();
     bossBarsTask.cancel();
     globalMultiplierTask.cancel();
@@ -598,6 +609,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
       uniqueEntity.setExperience(cs.getInt("experience", 0));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
+      uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
 
       ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
@@ -800,20 +812,8 @@ public class StrifePlugin extends FacePlugin {
     return globalBoostManager;
   }
 
-  public CraftExperienceManager getCraftExperienceManager() {
-    return craftExperienceManager;
-  }
-
-  public EnchantExperienceManager getEnchantExperienceManager() {
-    return enchantExperienceManager;
-  }
-
-  public FishExperienceManager getFishExperienceManager() {
-    return fishExperienceManager;
-  }
-
-  public MiningExperienceManager getMiningExperienceManager() {
-    return miningExperienceManager;
+  public SkillExperienceManager getSkillExperienceManager() {
+    return skillExperienceManager;
   }
 
   public StrifeExperienceManager getExperienceManager() {
@@ -836,6 +836,10 @@ public class StrifePlugin extends FacePlugin {
 
   public ChampionManager getChampionManager() {
     return championManager;
+  }
+
+  public SneakManager getSneakManager() {
+    return sneakManager;
   }
 
   public AttributedEntityManager getAttributedEntityManager() {
@@ -876,6 +880,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelingRate getMiningRate() {
     return miningRate;
+  }
+
+  public LevelingRate getSneakRate() {
+    return sneakRate;
   }
 
   public LogLevel getLogLevel() {
