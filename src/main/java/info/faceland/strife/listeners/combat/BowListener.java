@@ -23,6 +23,7 @@ import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_SPEED;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.util.ProjectileUtil;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -71,13 +72,9 @@ public class BowListener implements Listener {
         plugin.getChampionManager().getChampion(playerEntity));
 
     Location location = event.getEntity().getLocation().clone();
-    double bowPitch = 0.9 + random.nextDouble() * 0.2;
-    playerEntity.getWorld().playSound(location, Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
-
-    double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
     double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
 
-    createArrow(playerEntity, location, attackMultiplier, projectileSpeed, shotMult);
+    createArrow(playerEntity, location, attackMultiplier, projectileSpeed);
 
     double multiShot = pStats.getAttribute(MULTISHOT) / 100;
     if (multiShot > 0) {
@@ -87,25 +84,20 @@ public class BowListener implements Listener {
       }
       for (int i = bonusProjectiles; i > 0; i--) {
         createArrow(playerEntity, location, attackMultiplier, randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), projectileSpeed,
-            shotMult);
+            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), projectileSpeed);
       }
     }
-    //Todo: enable in 1.13
-    //PacketPlayInUseEntity playInUseEntity = new PacketPlayInUseEntity();
-    //playInUseEntity.action = EntityUseAction.ATTACK;
-    //playInUseEntity.hand = HandType.MAIN_HAND;
-    //playInUseEntity.entityId = playerEntity.getEntityId();
-    //SU.tp.sendPacket(playerEntity, playInUseEntity);
+    double bowPitch = 0.9 + random.nextDouble() * 0.2;
+    playerEntity.getWorld().playSound(location, Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
+    plugin.getSneakManager().tempDisableSneak(playerEntity);
   }
 
-  private void createArrow(LivingEntity shooter, Location location, double attackMult, double power,
-      double shotMult) {
-    createArrow(shooter, location, attackMult, 0, 0, 0, power, shotMult);
+  private void createArrow(Player shooter, Location location, double attackMult, double power) {
+    createArrow(shooter, location, attackMult, 0, 0, 0, power);
   }
 
-  private void createArrow(LivingEntity shooter, Location location, double attackMult, double xOff,
-      double yOff, double zOff, double power, double shotMult) {
+  private void createArrow(Player shooter, Location location, double attackMult, double xOff,
+      double yOff, double zOff, double power) {
     Arrow arrow = shooter.getWorld().spawn(location.clone(), Arrow.class);
     arrow.setShooter(shooter);
 
@@ -114,8 +106,10 @@ public class BowListener implements Listener {
     yOff = vector.getY() * power + 0.19 + yOff;
     zOff = vector.getZ() * power + zOff;
     arrow.setVelocity(new Vector(xOff, yOff, zOff));
-    arrow.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
-    arrow.setMetadata("AC_MULT", new FixedMetadataValue(plugin, shotMult));
+    ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
+    if (shooter.isSneaking()) {
+      ProjectileUtil.setProjectileSneakMeta(arrow);
+    }
   }
 
   private double randomOffset(double magnitude) {

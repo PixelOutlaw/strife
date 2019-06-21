@@ -171,6 +171,8 @@ public class SwingListener implements Listener {
             randomOffset(bonusProjectiles));
       }
     }
+    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
+    plugin.getSneakManager().tempDisableSneak(player);
   }
 
   private double randomOffset(double magnitude) {

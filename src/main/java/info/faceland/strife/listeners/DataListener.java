@@ -108,9 +108,6 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onInteract(final PlayerInteractEntityEvent event) {
-    if (event.getRightClicked() == null) {
-      return;
-    }
     if (!(event.getRightClicked() instanceof LivingEntity) || event
         .getRightClicked() instanceof ArmorStand) {
       return;
