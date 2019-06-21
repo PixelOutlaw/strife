@@ -19,6 +19,7 @@
 package info.faceland.strife.listeners;
 
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
+import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
@@ -36,6 +37,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class TargetingListener implements Listener {
@@ -90,31 +92,31 @@ public class TargetingListener implements Listener {
       return;
     }
     Player player = (Player) event.getTarget();
+    Creature creature = (Creature) event.getEntity();
     if (!player.isSneaking()) {
       return;
     }
 
     Champion champion = plugin.getChampionManager().getChampion(player);
-    float level = StatUtil.getMobLevel((LivingEntity) event.getEntity());
+    float level = StatUtil.getMobLevel(creature);
 
     LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + level + " " +
-        event.getEntity().getType());
+        creature.getType());
 
-    Location playerLoc = event.getTarget().getLocation();
-    Location entityLoc = event.getEntity().getLocation();
+    Location playerLoc = player.getLocation();
+    Location entityLoc = creature.getLocation();
     Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
     Vector entitySightVector = entityLoc.getDirection();
 
     float angle = entitySightVector.angle(playerDifferenceVector);
     float sneakSkill = champion.getSneakSkill(true);
-    double distSquared = Math.min(MAX_DIST_SQUARED,
-        event.getEntity().getLocation().distanceSquared(event.getTarget().getLocation()));
+    double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
     float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
     float lightMult = 1.0f - (float) Math.min(0.85,
         0.2f * playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel());
 
     float awareness;
-    if (angle > VISION_DETECTION_MAX_ANGLE) {
+    if (angle > VISION_DETECTION_MAX_ANGLE || creature.hasPotionEffect(BLINDNESS)) {
       awareness = BASE_AWARENESS + level * AWARENESS_PER_LEVEL;
     } else {
       awareness = BASE_VISIBLE_AWARENESS + level * AWARENESS_VISIBLE_PER_LEVEL;
@@ -131,7 +133,7 @@ public class TargetingListener implements Listener {
     if (random.nextDouble() > Math.max(0, awareness) / DETECT_AWARENESS) {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
-      if (distSquared <= MAX_DIST_SQUARED) {
+      if (distSquared <= MAX_SNEAK_DIST_SQUARED) {
         float xp = plugin.getSneakManager().getSneakActionExp(level, sneakSkill, distanceMult);
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
