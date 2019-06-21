@@ -45,19 +45,37 @@ public class TargetingListener implements Listener {
   private final StrifePlugin plugin;
   private final Random random;
 
-  private static final float DETECT_AWARENESS = 10000;
-  private static final float BASE_AWARENESS = 500;
-  private static final float BASE_VISIBLE_AWARENESS = 1500;
-  private static final float AWARENESS_PER_LEVEL = 30;
-  private static final float AWARENESS_VISIBLE_PER_LEVEL = 80;
-  private static final float VISION_DETECTION_MAX_ANGLE = 0.3f;
+  private final float DETECTION_THRESHOLD;
+  private final float BASE_AWARENESS_UNSEEN;
+  private final float BASE_AWARENESS_SEEN;
+  private final float AWARENESS_PER_LV_UNSEEN;
+  private final float AWARENESS_PER_LV_SEEN;
+  private final float SEEN_MAX_ANGLE;
+  private final float MAX_EXP_RANGE_SQUARED;
+  private final int SNEAK_EFFECTIVENESS;
+
   private static final float MAX_DIST_SQUARED = 1500;
-  private static final float MAX_SNEAK_DIST_SQUARED = 144;
-  private static final int SNEAK_EFFECTIVENESS = 75;
 
   public TargetingListener(StrifePlugin plugin) {
     this.plugin = plugin;
     this.random = new Random();
+
+    DETECTION_THRESHOLD = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.detection-threshold");
+    BASE_AWARENESS_UNSEEN = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.base-detection-when-unseen");
+    BASE_AWARENESS_SEEN = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.base-detection-when-seen");
+    AWARENESS_PER_LV_UNSEEN = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.per-lvl-detection-when-unseen");
+    AWARENESS_PER_LV_SEEN = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.per-lvl-detection-when-seen");
+    SEEN_MAX_ANGLE = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.maximum-head-angle-for-seen");
+    MAX_EXP_RANGE_SQUARED = (float) plugin.getSettings()
+        .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
+    SNEAK_EFFECTIVENESS = plugin.getSettings()
+        .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -112,18 +130,18 @@ public class TargetingListener implements Listener {
     float sneakSkill = champion.getSneakSkill(true);
     double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
     float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
-    float lightMult = 1.0f - (float) Math.min(0.85,
-        0.2f * playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel());
+    float lightMult = (float) Math.max(0.15,
+        (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel())));
 
     if (player.hasPotionEffect(INVISIBILITY)) {
       sneakSkill += 5 + sneakSkill * 0.1;
     }
 
     float awareness;
-    if (angle > VISION_DETECTION_MAX_ANGLE || creature.hasPotionEffect(BLINDNESS)) {
-      awareness = BASE_AWARENESS + level * AWARENESS_PER_LEVEL;
+    if (angle > SEEN_MAX_ANGLE || creature.hasPotionEffect(BLINDNESS)) {
+      awareness = BASE_AWARENESS_UNSEEN + level * AWARENESS_PER_LV_UNSEEN;
     } else {
-      awareness = BASE_VISIBLE_AWARENESS + level * AWARENESS_VISIBLE_PER_LEVEL;
+      awareness = BASE_AWARENESS_SEEN + level * AWARENESS_PER_LV_SEEN;
     }
     awareness *= distanceMult;
     awareness *= lightMult;
@@ -134,10 +152,10 @@ public class TargetingListener implements Listener {
     LogUtil.printDebug(" ANGLE: " + angle);
     LogUtil.printDebug(" AWARENESS: " + awareness);
 
-    if (random.nextDouble() > Math.max(0, awareness) / DETECT_AWARENESS) {
+    if (random.nextDouble() > awareness / DETECTION_THRESHOLD) {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
-      if (distSquared <= MAX_SNEAK_DIST_SQUARED) {
+      if (distSquared <= MAX_EXP_RANGE_SQUARED) {
         float xp = plugin.getSneakManager().getSneakActionExp(level, sneakSkill, distanceMult);
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
