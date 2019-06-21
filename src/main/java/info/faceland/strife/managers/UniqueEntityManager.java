@@ -14,6 +14,7 @@ import org.bukkit.entity.LivingEntity;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Zombie;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -138,9 +139,21 @@ public class UniqueEntityManager {
 
     if (spawnedUnique instanceof Zombie) {
       ((Zombie) spawnedUnique).setBaby(uniqueEntity.isBaby());
-    }
-    if (spawnedUnique instanceof Slime) {
+    } else if (spawnedUnique instanceof Slime) {
       ((Slime) spawnedUnique).setSize(uniqueEntity.getSize());
+    } else if (spawnedUnique instanceof Phantom) {
+      ((Phantom) spawnedUnique).setSize(uniqueEntity.getSize());
+    }
+
+    if (uniqueEntity.getFollowRange() != -1) {
+      if (spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE) != null) {
+        spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(uniqueEntity.getFollowRange());
+      }
+    }
+
+    if (spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
+        .isKnockbackImmune()) {
+      spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
     if (spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
@@ -176,6 +189,9 @@ public class UniqueEntityManager {
   }
 
   private void delayedEquip(UniqueEntity uniqueEntity, LivingEntity spawnedEntity) {
+    if (spawnedEntity.getEquipment() == null) {
+      return;
+    }
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       spawnedEntity.getEquipment().clear();
       spawnedEntity.setCanPickupItems(false);

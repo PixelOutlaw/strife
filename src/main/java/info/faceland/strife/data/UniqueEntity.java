@@ -19,6 +19,7 @@ public class UniqueEntity {
 
   private boolean baby;
   private int size;
+  private int followRange = -1;
   private boolean knockbackImmune;
 
   private ItemStack mainHandItem = null;
@@ -94,6 +95,14 @@ public class UniqueEntity {
 
   public void setSize(int size) {
     this.size = size;
+  }
+
+  public int getFollowRange() {
+    return followRange;
+  }
+
+  public void setFollowRange(int followRange) {
+    this.followRange = followRange;
   }
 
   public boolean isKnockbackImmune() {
