@@ -21,6 +21,15 @@ xp-bonus: 0.0
 drops-bonus: 0.0
 
 mechanics:
+  sneak:
+    sneak-skill-effectiveness: 80
+    detection-threshold: 10000
+    base-detection-when-unseen: 500
+    base-detection-when-seen: 1500
+    per-lvl-detection-when-unseen: 30
+    per-lvl-detection-when-seen: 80
+    maximum-head-angle-for-seen: 0.3
+    maximum-sneak-exp-range-squared: 144
   base-bleed-damage: 1
   percent-bleed-damage: 0.1
   ticks-per-bleed: 12
