@@ -16,7 +16,7 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.api;
+package info.faceland.strife.managers;
 
 import static info.faceland.strife.attributes.StrifeAttribute.SKILL_XP_GAIN;
 
@@ -27,6 +27,7 @@ import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.events.SkillExpGainEvent;
 import info.faceland.strife.events.SkillLevelUpEvent;
+import info.faceland.strife.util.PlayerDataUtil;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -79,10 +80,11 @@ public class SkillExperienceManager {
     }
 
     saveData.setSkillExp(type, (float) currentExp);
-    String c = getSkillColor(type);
+    String c = PlayerDataUtil.getSkillColor(type);
     String xpMsg = XP_AB.replace("{0}", c).replace("{1}", FORMAT.format((int) currentExp))
         .replace("{2}", FORMAT.format((int) maxExp));
     MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
+    plugin.getBossBarManager().bumpSkillBar(champion, type);
   }
 
   public Integer getMaxExp(LifeSkillType type, int level) {
@@ -99,38 +101,6 @@ public class SkillExperienceManager {
         return plugin.getSneakRate().get(level);
     }
     return -1;
-  }
-
-  public String getSkillColor(LifeSkillType type) {
-    switch (type) {
-      case CRAFTING:
-        return "&e";
-      case ENCHANTING:
-        return "&d";
-      case FISHING:
-        return "&b";
-      case MINING:
-        return "&2";
-      case SNEAK:
-        return "&7";
-    }
-    return "";
-  }
-
-  public String getPrettySkillName(LifeSkillType type) {
-    switch (type) {
-      case CRAFTING:
-        return "Crafting";
-      case ENCHANTING:
-        return "Enchanting";
-      case FISHING:
-        return "Fishing";
-      case MINING:
-        return "Mining";
-      case SNEAK:
-        return "Sneak";
-    }
-    return "";
   }
 
 }
