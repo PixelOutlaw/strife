@@ -26,6 +26,7 @@ public interface Condition {
     POTION_EFFECT,
     LEVEL,
     BONUS_LEVEL,
-    ITS_OVER_ANAKIN
+    ITS_OVER_ANAKIN,
+    ENTITY_TYPE
   }
 }

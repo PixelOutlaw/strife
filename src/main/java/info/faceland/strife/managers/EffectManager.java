@@ -15,8 +15,10 @@ import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -313,6 +315,20 @@ public class EffectManager {
         break;
       case ITS_OVER_ANAKIN:
         condition = new HeightCondition(compareTarget);
+        break;
+      case ENTITY_TYPE:
+        List<String> entityTypes = cs.getStringList("types");
+        boolean whitelist = cs.getBoolean("whitelist", true);
+        Set<EntityType> typesSet = new HashSet<>();
+        try {
+          for (String s : entityTypes) {
+            typesSet.add(EntityType.valueOf(s));
+          }
+        } catch (Exception e) {
+          LogUtil.printError("Failed to load condition " + key + ". Invalid entity type!");
+          return;
+        }
+        condition = new EntityTypeCondition(typesSet, whitelist);
         break;
       default:
         LogUtil.printError("No valid conditions found for " + key + "... somehow?");
