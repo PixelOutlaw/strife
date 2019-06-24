@@ -75,9 +75,7 @@ public class LevelupMenuItem extends MenuItem {
     if (!reqList.isEmpty()) {
       lore.add(breakLine);
     }
-    for (String req : reqList) {
-      lore.add(req);
-    }
+    lore.addAll(reqList);
     lore.add(breakLine);
     for (String desc : stat.getDescription()) {
       lore.add(TextUtils.color(desc));
@@ -100,6 +98,7 @@ public class LevelupMenuItem extends MenuItem {
     if (currentLevel + 1 > plugin.getStatManager().getStatCap(stat, champion)) {
       return;
     }
+    player.playSound(player.getLocation(), stat.getClickSound(), 1f, stat.getClickPitch());
     champion.setLevel(stat, currentLevel + 1);
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() - 1);
     plugin.getChampionManager().updateAll(champion);

@@ -26,6 +26,7 @@ import info.faceland.strife.stats.StrifeStat;
 import java.util.*;
 import java.util.Map.Entry;
 import org.bukkit.DyeColor;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class StrifeStatManager {
@@ -134,6 +135,8 @@ public class StrifeStatManager {
     stat.setName(cs.getString("name"));
     stat.setDescription(cs.getStringList("description"));
     stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
+    stat.setClickSound(Sound.valueOf(cs.getString("sound", "ENTITY_CAT_HISS")));
+    stat.setClickPitch((float) cs.getDouble("pitch", 1));
     stat.setSlot(cs.getInt("slot"));
     stat.setStartCap(cs.getInt("starting-cap", 0));
     stat.setMaxCap(cs.getInt("maximum-cap", 100));
