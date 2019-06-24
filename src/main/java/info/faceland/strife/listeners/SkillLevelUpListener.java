@@ -21,6 +21,7 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.events.SkillLevelUpEvent;
+import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -40,30 +41,8 @@ public class SkillLevelUpListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSkillLevelUp(SkillLevelUpEvent event) {
-    String color;
-    String name;
-    switch (event.getSkillType()) {
-      case CRAFTING:
-        color = "&e";
-        name = "Crafting";
-        break;
-      case ENCHANTING:
-        color = "&d";
-        name = "Enchanting";
-        break;
-      case FISHING:
-        color = "&b";
-        name = "Fishing";
-        break;
-      case MINING:
-        color = "&2";
-        name = "Mining";
-        break;
-      default:
-        color = "&k";
-        name = "NULL";
-    }
-
+    String color = PlayerDataUtil.getSkillColor(event.getSkillType());
+    String name = PlayerDataUtil.getPrettySkillName(event.getSkillType());
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
     String lowerTitle = color + name + " Level &f" + level;

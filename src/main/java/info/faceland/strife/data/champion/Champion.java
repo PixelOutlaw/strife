@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.data.champion;
 
+import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
 import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
@@ -41,6 +42,14 @@ public class Champion {
   private final PlayerEquipmentCache equipmentCache;
 
   private Player player;
+
+  private static final Map<LifeSkillType, StrifeAttribute> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeAttribute>builder()
+      .put(LifeSkillType.CRAFTING, StrifeAttribute.CRAFT_SKILL)
+      .put(LifeSkillType.ENCHANTING, StrifeAttribute.ENCHANT_SKILL)
+      .put(LifeSkillType.FISHING, StrifeAttribute.FISH_SKILL)
+      .put(LifeSkillType.MINING, StrifeAttribute.MINE_SKILL)
+      .put(LifeSkillType.SNEAK, StrifeAttribute.SNEAK_SKILL)
+      .build();
 
   public Champion(Player player, ChampionSaveData saveData) {
     this.attributeBase = new HashMap<>();
@@ -99,84 +108,20 @@ public class Champion {
     return saveData.getBonusLevels();
   }
 
-  public int getCraftingLevel() {
-    return saveData.getCraftingLevel();
+  public int getLifeSkillLevel(LifeSkillType type) {
+    return saveData.getSkillLevel(type);
   }
 
-  public float getCraftingExp() {
-    return saveData.getCraftingExp();
+  public float getLifeSkillExp(LifeSkillType type) {
+    return saveData.getSkillExp(type);
   }
 
-  public int getCraftSkill(boolean updateEquipment) {
+  public float getEffectiveLifeSkillLevel(LifeSkillType type, boolean updateEquipment) {
     if (updateEquipment) {
       recombineCache();
     }
-    return getCraftingLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.CRAFT_SKILL, 0D).intValue();
-  }
-
-  public int getEnchantLevel() {
-    return saveData.getEnchantLevel();
-  }
-
-  public float getEnchantExp() {
-    return saveData.getEnchantExp();
-  }
-
-  public int getEnchantSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getEnchantLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.ENCHANT_SKILL, 0D).intValue();
-  }
-
-  public int getFishingLevel() {
-    return saveData.getFishingLevel();
-  }
-
-  public float getFishingExp() {
-    return saveData.getFishingExp();
-  }
-
-  public int getFishSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getFishingLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.FISH_SKILL, 0D).intValue();
-  }
-
-  public int getMiningLevel() {
-    return saveData.getMiningLevel();
-  }
-
-  public float getMiningExp() {
-    return saveData.getMiningExp();
-  }
-
-  public int getMineSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getMiningLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.MINE_SKILL, 0D).intValue();
-  }
-
-  public int getSneakLevel() {
-    return saveData.getSneakLevel();
-  }
-
-  public float getSneakExp() {
-    return saveData.getSkillExp(LifeSkillType.SNEAK);
-  }
-
-  public int getSneakSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getSneakLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.SNEAK_SKILL, 0D).intValue();
+    return saveData.getSkillLevel(type) + combinedAttributeCache
+        .getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0D).floatValue();
   }
 
   public int getUnusedStatPoints() {

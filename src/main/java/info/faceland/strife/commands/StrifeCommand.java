@@ -26,6 +26,7 @@ import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -190,8 +191,8 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Unknown skill " + skill + "??");
       return;
     }
-    String color = plugin.getSkillExperienceManager().getSkillColor(type);
-    String name = plugin.getSkillExperienceManager().getPrettySkillName(type);
+    String color = PlayerDataUtil.getSkillColor(type);
+    String name = PlayerDataUtil.getPrettySkillName(type);
 
     plugin.getChampionManager().getChampion(target).getSaveData().setSkillLevel(type, newLevel);
     sendMessage(target, SET_LEVEL_MSG
@@ -213,8 +214,8 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Unknown skill " + skill + "???");
       return;
     }
-    String color = plugin.getSkillExperienceManager().getSkillColor(type);
-    String name = plugin.getSkillExperienceManager().getPrettySkillName(type);
+    String color = PlayerDataUtil.getSkillColor(type);
+    String name = PlayerDataUtil.getPrettySkillName(type);
 
     plugin.getSkillExperienceManager().addExperience(target, type, amount, true);
     sendMessage(target, XP_MSG

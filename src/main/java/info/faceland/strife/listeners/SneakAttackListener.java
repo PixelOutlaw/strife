@@ -19,6 +19,7 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.events.SneakAttackEvent;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -51,6 +52,7 @@ public class SneakAttackListener implements Listener {
     boolean finishingBlow = event.getSneakAttackDamage() > event.getVictim().getHealth();
     float gainedXp = plugin.getSneakManager()
         .getSneakAttackExp(event.getVictim(), event.getSneakSkill(), finishingBlow);
-    plugin.getExperienceManager().addExperience(event.getAttacker(), gainedXp, false);
+    plugin.getSkillExperienceManager()
+        .addExperience(event.getAttacker(), LifeSkillType.SNEAK, gainedXp, false);
   }
 }

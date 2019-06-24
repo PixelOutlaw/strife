@@ -53,6 +53,7 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
@@ -324,7 +325,8 @@ public class CombatListener implements Listener {
 
     if (isSneakAttack) {
       Player player = (Player) attackEntity;
-      float sneakSkill = plugin.getChampionManager().getChampion(player).getSneakSkill(false);
+      float sneakSkill = plugin.getChampionManager().getChampion(player).getEffectiveLifeSkillLevel(
+          LifeSkillType.SNEAK, false);
       float sneakDamage = sneakSkill;
       sneakDamage += defendEntity.getMaxHealth() * (0.1 + 0.002 * sneakSkill);
       sneakDamage *= attackMultiplier;
@@ -333,10 +335,10 @@ public class CombatListener implements Listener {
       SneakAttackEvent sneakEvent = callSneakAttackEvent((Player) attackEntity, defendEntity,
           sneakSkill, sneakDamage);
 
-      if (!sneakEvent.isCancelled()) {
-        finalDamage += sneakEvent.getSneakAttackDamage();
-      } else {
+      if (sneakEvent == null || sneakEvent.isCancelled()) {
         isSneakAttack = false;
+      } else {
+        finalDamage += sneakEvent.getSneakAttackDamage();
       }
     }
     if (!isSneakAttack && attackEntity instanceof Player) {

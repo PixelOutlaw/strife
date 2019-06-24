@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.util.Vector;
@@ -35,6 +36,10 @@ public class SneakManager {
   private final Map<UUID, Integer> sneakTickMap = new ConcurrentHashMap<>();
   // Disable duration is in half seconds
   private final static int SNEAK_DISABLE_DURATION = 6;
+  private final static float BASE_SNEAK_EXP = 0.2f;
+  private final static float SNEAK_EXP_PER_LEVEL = 0.1f;
+  private final static float BASE_SNEAK_ATTACK_EXP = 1f;
+  private final static float SNEAK_ATTACK_EXP_PER_LEVEL = 0.1f;
 
   public void tempDisableSneak(Player player) {
     sneakTickMap.put(player.getUniqueId(), SNEAK_DISABLE_DURATION);
@@ -58,14 +63,14 @@ public class SneakManager {
     if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
       return false;
     }
-    return target instanceof Creature && ((Creature) target).getTarget() == null;
+    return target instanceof Monster && ((Creature) target).getTarget() == null;
   }
 
   public boolean isProjectileSneakAttack(Projectile projectile, LivingEntity target) {
     if (!projectile.hasMetadata(SNEAK_ATTACK_META)) {
       return false;
     }
-    if (!(target instanceof Creature) || ((Creature) target).getTarget() != null) {
+    if (!(target instanceof Monster) || ((Creature) target).getTarget() != null) {
       return false;
     }
     Vector entitySightVector = target.getLocation().getDirection();
@@ -73,26 +78,24 @@ public class SneakManager {
     return angle > 0.6;
   }
 
-  public float getSneakActionExp(float enemyLevel, float sneakLevel, float distMult) {
-    double levelPenaltyMult = 1;
+  public float getSneakActionExp(float enemyLevel, float sneakLevel) {
+    float levelPenaltyMult = 1;
     if (enemyLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(enemyLevel+10))));
+      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(enemyLevel+10))));
     }
-    float gainedXp = 0.1f + enemyLevel / 10f;
-    gainedXp *= 1 - distMult;
-    return gainedXp * (float)levelPenaltyMult;
+    return (BASE_SNEAK_EXP + enemyLevel * SNEAK_EXP_PER_LEVEL) * levelPenaltyMult;
   }
 
   public float getSneakAttackExp(LivingEntity victim, float sneakLevel, boolean finishingBlow) {
-    double victimLevel = StatUtil.getMobLevel(victim);
-    double levelPenaltyMult = 1;
+    float victimLevel = StatUtil.getMobLevel(victim);
+    float levelPenaltyMult = 1;
     if (victimLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(victimLevel+10))));
+      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(victimLevel+10))));
     }
-    float gainedXp = 1f + (float) (victimLevel / 10f);
+    float gainedXp = BASE_SNEAK_ATTACK_EXP + victimLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
     if (finishingBlow) {
       gainedXp *= 2;
     }
-    return gainedXp * (float)levelPenaltyMult;
+    return gainedXp * levelPenaltyMult;
   }
 }

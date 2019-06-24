@@ -127,7 +127,7 @@ public class TargetingListener implements Listener {
     Vector entitySightVector = entityLoc.getDirection();
 
     float angle = entitySightVector.angle(playerDifferenceVector);
-    float sneakSkill = champion.getSneakSkill(true);
+    float sneakSkill = (float) champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
     double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
     float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
     float lightMult = (float) Math.max(0.15,
@@ -156,7 +156,7 @@ public class TargetingListener implements Listener {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
-        float xp = plugin.getSneakManager().getSneakActionExp(level, sneakSkill, distanceMult);
+        float xp = plugin.getSneakManager().getSneakActionExp(level, sneakSkill);
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }

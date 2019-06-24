@@ -24,8 +24,13 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.SkillBossBar;
 import info.faceland.strife.data.StrifeBossBar;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.StatUtil;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -43,15 +48,18 @@ public class BossBarManager {
 
   private final StrifePlugin plugin;
   private final Map<UUID, StrifeBossBar> barMap = new ConcurrentHashMap<>();
+  private final Map<UUID, SkillBossBar> skillBarMap = new HashMap<>();
   private final List<String> deathMessages;
-  private final int duration;
+  private final int healthDuration;
+  private final int skillDuration;
   private final Random random = new Random();
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.deathMessages = TextUtils
         .color(plugin.getSettings().getStringList("language.bar-title-entity-killed"));
-    this.duration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
+    this.healthDuration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
+    this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
 
   private void createBars(AttributedEntity target) {
@@ -61,6 +69,23 @@ public class BossBarManager {
     StrifeBossBar bossBar = new StrifeBossBar(target, makeBarrierBar(target), makeHealthBar());
     updateBarTitle(bossBar, createBarTitle(target));
     barMap.put(target.getEntity().getUniqueId(), bossBar);
+  }
+
+  public void createSkillBar(Champion champion) {
+    SkillBossBar skillBar = new SkillBossBar(champion, makeSkillBar());
+    skillBar.getSkillBar().setVisible(false);
+    skillBar.getSkillBar().addPlayer(champion.getPlayer());
+    skillBarMap.put(champion.getUniqueId(), skillBar);
+  }
+
+  public void bumpSkillBar(Champion champion, LifeSkillType lifeSkillType) {
+    String name = PlayerDataUtil.getPrettySkillName(lifeSkillType);
+    String barName = name + " Lv" + champion.getSaveData().getSkillLevel(lifeSkillType);
+    SkillBossBar skillBar = skillBarMap.get(champion.getUniqueId());
+    skillBar.getSkillBar().setVisible(true);
+    skillBar.getSkillBar().setTitle(barName);
+    skillBar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(champion, lifeSkillType));
+    skillBar.setDisplayTicks(skillDuration);
   }
 
   public void pushBar(Player player, AttributedEntity target) {
@@ -77,10 +102,23 @@ public class BossBarManager {
     refreshCounter(strifeBossBar, player.getUniqueId());
   }
 
-  public void tickAllBars() {
+  public void tickHealthBars() {
     for (UUID uuid : barMap.keySet()) {
       updateBar(barMap.get(uuid).getOwner());
       tickDownBar(barMap.get(uuid));
+    }
+  }
+
+  public void tickSkillBars() {
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      SkillBossBar skillBossBar = skillBarMap.get(player.getUniqueId());
+      if (!skillBossBar.getSkillBar().isVisible()) {
+        continue;
+      }
+      skillBossBar.setDisplayTicks(skillBossBar.getDisplayTicks() - 1);
+      if (skillBossBar.getDisplayTicks() < 1) {
+        skillBossBar.getSkillBar().setVisible(false);
+      }
     }
   }
 
@@ -201,7 +239,7 @@ public class BossBarManager {
     if (strifeBossBar.isDead()) {
       return;
     }
-    strifeBossBar.getPlayerUuidTickMap().put(uuid, duration);
+    strifeBossBar.getPlayerUuidTickMap().put(uuid, healthDuration);
   }
 
   private void updateHealthProgress(StrifeBossBar bar) {
@@ -219,6 +257,11 @@ public class BossBarManager {
         .getOrDefault(bar.getOwner().getEntity().getUniqueId(), 0D);
     double maxBarrier = StatUtil.getMaximumBarrier(bar.getOwner());
     bar.getBarrierBar().setProgress(Math.min(barrier / maxBarrier, 1D));
+  }
+
+  private BossBar makeSkillBar() {
+    return plugin.getServer().createBossBar("skillbar", BarColor.GREEN, BarStyle.SOLID,
+        new BarFlag[0]);
   }
 
   private BossBar makeHealthBar() {
