@@ -23,7 +23,8 @@ import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import java.util.ArrayList;
@@ -88,14 +89,16 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
     config.set(champUuid + ".bonus-levels", champion.getBonusLevels());
-    config.set(champUuid + ".crafting-level", champion.getCraftingLevel());
-    config.set(champUuid + ".crafting-exp", champion.getCraftingExp());
-    config.set(champUuid + ".enchant-level", champion.getEnchantLevel());
-    config.set(champUuid + ".enchant-exp", champion.getEnchantExp());
-    config.set(champUuid + ".fishing-level", champion.getFishingLevel());
-    config.set(champUuid + ".fishing-exp", champion.getFishingExp());
-    config.set(champUuid + ".mining-level", champion.getMiningLevel());
-    config.set(champUuid + ".mining-exp", champion.getMiningExp());
+    config.set(champUuid + ".crafting-level", champion.getSkillLevel(LifeSkillType.CRAFTING));
+    config.set(champUuid + ".crafting-exp", champion.getSkillExp(LifeSkillType.CRAFTING));
+    config.set(champUuid + ".enchant-level", champion.getSkillLevel(LifeSkillType.ENCHANTING));
+    config.set(champUuid + ".enchant-exp", champion.getSkillExp(LifeSkillType.ENCHANTING));
+    config.set(champUuid + ".fishing-level", champion.getSkillLevel(LifeSkillType.FISHING));
+    config.set(champUuid + ".fishing-exp", champion.getSkillExp(LifeSkillType.FISHING));
+    config.set(champUuid + ".mining-level", champion.getSkillLevel(LifeSkillType.MINING));
+    config.set(champUuid + ".mining-exp", champion.getSkillExp(LifeSkillType.MINING));
+    config.set(champUuid + ".sneak-level", champion.getSkillLevel(LifeSkillType.SNEAK));
+    config.set(champUuid + ".sneak-exp", champion.getSkillExp(LifeSkillType.SNEAK));
 
     List<String> boundAbilityIds = new ArrayList<>();
     for (LoreAbility loreAbility : champion.getBoundAbilities()) {
@@ -129,14 +132,16 @@ public class FlatfileStorage implements DataStorage {
       saveData.setDisplayExp(section.getBoolean("display-exp", false));
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
       saveData.setBonusLevels(section.getInt("bonus-levels"));
-      saveData.setCraftingLevel(section.getInt("crafting-level"));
-      saveData.setCraftingExp((float) section.getDouble("crafting-exp"));
-      saveData.setEnchantLevel(section.getInt("enchant-level"));
-      saveData.setEnchantExp((float) section.getDouble("enchant-exp"));
-      saveData.setFishingLevel(section.getInt("fishing-level"));
-      saveData.setFishingExp((float) section.getDouble("fishing-exp"));
-      saveData.setMiningLevel(section.getInt("mining-level"));
-      saveData.setMiningExp((float) section.getDouble("mining-exp"));
+      saveData.setSkillLevel(LifeSkillType.CRAFTING, section.getInt("crafting-level"));
+      saveData.setSkillExp(LifeSkillType.CRAFTING, (float) section.getDouble("crafting-exp"));
+      saveData.setSkillLevel(LifeSkillType.ENCHANTING, section.getInt("enchant-level"));
+      saveData.setSkillExp(LifeSkillType.ENCHANTING, (float) section.getDouble("enchant-exp"));
+      saveData.setSkillLevel(LifeSkillType.FISHING, section.getInt("fishing-level"));
+      saveData.setSkillExp(LifeSkillType.FISHING, (float) section.getDouble("fishing-exp"));
+      saveData.setSkillLevel(LifeSkillType.MINING, section.getInt("mining-level"));
+      saveData.setSkillExp(LifeSkillType.MINING, (float) section.getDouble("mining-exp"));
+      saveData.setSkillLevel(LifeSkillType.SNEAK, section.getInt("sneak-level"));
+      saveData.setSkillExp(LifeSkillType.SNEAK, (float) section.getDouble("sneak-exp"));
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
 
       for (String s : section.getStringList("bound-lore-abilities")) {

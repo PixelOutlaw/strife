@@ -1,7 +1,6 @@
 package info.faceland.strife.data.champion;
 
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.stats.StrifeStat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,12 +15,14 @@ public class ChampionSaveData {
 
   private final UUID uniqueId;
   private final Map<StrifeStat, Integer> levelMap;
+  private final Map<StrifeStat, Integer> pendingStats;
   private final List<LoreAbility> boundAbilities;
 
   private HealthDisplayType healthDisplayType;
   private boolean displayExp;
 
   private int unusedStatPoints;
+  private int pendingUnusedStatPoints;
   private int highestReachedLevel;
   private int bonusLevels;
 
@@ -39,15 +40,9 @@ public class ChampionSaveData {
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
+    this.pendingStats = new HashMap<>();
     this.boundAbilities = new ArrayList<>();
     this.healthDisplayType = HealthDisplayType.TEN_HEALTH_HEARTS;
-  }
-
-  public int getLevel(StrifeStat stat) {
-    if (levelMap.containsKey(stat)) {
-      return levelMap.get(stat);
-    }
-    return 0;
   }
 
   public List<LoreAbility> getBoundAbilities() {
@@ -79,92 +74,20 @@ public class ChampionSaveData {
     this.bonusLevels = bonusLevels;
   }
 
-  public int getCraftingLevel() {
-    return craftingLevel;
-  }
-
-  public void setCraftingLevel(int craftingLevel) {
-    this.craftingLevel = craftingLevel;
-  }
-
-  public float getCraftingExp() {
-    return craftingExp;
-  }
-
-  public void setCraftingExp(float craftingExp) {
-    this.craftingExp = craftingExp;
-  }
-
-  public int getEnchantLevel() {
-    return enchantLevel;
-  }
-
-  public void setEnchantLevel(int enchantLevel) {
-    this.enchantLevel = enchantLevel;
-  }
-
-  public float getEnchantExp() {
-    return enchantExp;
-  }
-
-  public void setEnchantExp(float enchantExp) {
-    this.enchantExp = enchantExp;
-  }
-
-  public int getFishingLevel() {
-    return fishingLevel;
-  }
-
-  public void setFishingLevel(int fishingLevel) {
-    this.fishingLevel = fishingLevel;
-  }
-
-  public float getFishingExp() {
-    return fishingExp;
-  }
-
-  public void setFishingExp(float fishingExp) {
-    this.fishingExp = fishingExp;
-  }
-
-  public int getMiningLevel() {
-    return miningLevel;
-  }
-
-  public void setMiningLevel(int miningLevel) {
-    this.miningLevel = miningLevel;
-  }
-
-  public float getMiningExp() {
-    return miningExp;
-  }
-
-  public void setMiningExp(float miningExp) {
-    this.miningExp = miningExp;
-  }
-
-  public int getSneakLevel() {
-    return sneakLevel;
-  }
-
-  public void setSneakLevel(int sneakLevel) {
-    this.sneakLevel = sneakLevel;
-  }
-
-  public float getSneakExp() {
-    return sneakExp;
-  }
-
-  public void setSneakExp(float sneakExp) {
-    this.sneakExp = sneakExp;
-  }
-
   public int getUnusedStatPoints() {
     return unusedStatPoints;
   }
 
   public void setUnusedStatPoints(int unusedStatPoints) {
     this.unusedStatPoints = unusedStatPoints;
+  }
+
+  public int getPendingUnusedStatPoints() {
+    return pendingUnusedStatPoints;
+  }
+
+  public void setPendingUnusedStatPoints(int pendingUnusedStatPoints) {
+    this.pendingUnusedStatPoints = pendingUnusedStatPoints;
   }
 
   public int getHighestReachedLevel() {
@@ -187,26 +110,42 @@ public class ChampionSaveData {
     return new HashMap<>(levelMap);
   }
 
+  public void resetPendingStats() {
+    pendingStats.clear();
+    pendingStats.putAll(levelMap);
+    pendingUnusedStatPoints = unusedStatPoints;
+  }
+
+  public void savePendingStats() {
+    unusedStatPoints = pendingUnusedStatPoints;
+    levelMap.clear();
+    levelMap.putAll(pendingStats);
+  }
+
   public Player getPlayer() {
     return Bukkit.getPlayer(getUniqueId());
+  }
+
+  public Map<StrifeStat, Integer> getPendingLevelMap() {
+    return pendingStats;
   }
 
   public void setSkillLevel(LifeSkillType type, int level) {
     switch (type) {
       case CRAFTING:
-        setCraftingLevel(level);
+        craftingLevel = level;
         return;
       case ENCHANTING:
-        setEnchantLevel(level);
+        enchantLevel = level;
         return;
       case FISHING:
-        setFishingLevel(level);
+        fishingLevel = level;
         return;
       case MINING:
-        setMiningLevel(level);
+        miningLevel = level;
         return;
       case SNEAK:
-        setSneakLevel(level);
+        sneakLevel = level;
         return;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
@@ -216,19 +155,19 @@ public class ChampionSaveData {
   public void setSkillExp(LifeSkillType type, float amount) {
     switch (type) {
       case CRAFTING:
-        setCraftingExp(amount);
+        craftingExp = amount;
         return;
       case ENCHANTING:
-        setEnchantExp(amount);
+        enchantExp = amount;
         return;
       case FISHING:
-        setFishingExp(amount);
+        fishingExp = amount;
         return;
       case MINING:
-        setMiningExp(amount);
+        miningExp = amount;
         return;
       case SNEAK:
-        setSneakExp(amount);
+        sneakExp = amount;
         return;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
@@ -238,15 +177,15 @@ public class ChampionSaveData {
   public int getSkillLevel(LifeSkillType type) {
     switch (type) {
       case CRAFTING:
-        return getCraftingLevel();
+        return craftingLevel;
       case ENCHANTING:
-        return getEnchantLevel();
+        return enchantLevel;
       case FISHING:
-        return getFishingLevel();
+        return fishingLevel;
       case MINING:
-        return getMiningLevel();
+        return miningLevel;
       case SNEAK:
-        return getSneakLevel();
+        return sneakLevel;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
     }
@@ -255,15 +194,15 @@ public class ChampionSaveData {
   public float getSkillExp(LifeSkillType type) {
     switch (type) {
       case CRAFTING:
-        return getCraftingExp();
+        return craftingExp;
       case ENCHANTING:
-        return getEnchantExp();
+        return enchantExp;
       case FISHING:
-        return getFishingExp();
+        return fishingExp;
       case MINING:
-        return getMiningExp();
+        return miningExp;
       case SNEAK:
-        return getSneakExp();
+        return sneakExp;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
     }
