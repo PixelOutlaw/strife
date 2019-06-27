@@ -1,7 +1,7 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.util.PlayerDataUtil;
 
 public class StatCondition implements Condition {
