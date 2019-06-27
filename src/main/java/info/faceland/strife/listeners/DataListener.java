@@ -21,8 +21,6 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData;
-import info.faceland.strife.stats.StrifeStat;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
@@ -33,6 +31,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -43,8 +42,6 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 public class DataListener implements Listener {
 
   private final StrifePlugin plugin;
-  private final static String RESET_MESSAGE =
-      "&a&lYour Levelpoints have been automatically reset due to an update!";
   private final static String UNUSED_MESSAGE_1 =
       "&6&lLevelup! You have &f&l{0} &6&lunused Levelpoints!";
   private final static String UNUSED_MESSAGE_2 =
@@ -57,14 +54,7 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoinChampionStuff(final PlayerJoinEvent event) {
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
-    if (getChampionLevelpoints(champion) != event.getPlayer().getLevel()) {
-      notifyResetPoints(event.getPlayer());
-      for (StrifeStat stat : plugin.getStatManager().getStats()) {
-        champion.setLevel(stat, 0);
-      }
-      champion.setHighestReachedLevel(event.getPlayer().getLevel());
-      champion.setUnusedStatPoints(event.getPlayer().getLevel());
-    }
+    plugin.getChampionManager().verifyStatValues(champion);
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
@@ -132,24 +122,22 @@ public class DataListener implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onInvyClose(InventoryCloseEvent event) {
+    if (!plugin.getLevelupMenu().getName().equals(event.getView().getTitle())) {
+      return;
+    }
+    if (!plugin.getChampionManager().hasPendingChanges((Player) event.getPlayer())) {
+      return;
+    }
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+      plugin.getConfirmationMenu().open((Player) event.getPlayer()), 1L);
+  }
+
   private void notifyUnusedPoints(final Player player, final int unused) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
       MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
     }, 20L * 5);
-  }
-
-  private void notifyResetPoints(final Player player) {
-    Bukkit.getScheduler().runTaskLater(plugin,
-        () -> MessageUtils.sendMessage(player, RESET_MESSAGE), 20L * 3);
-  }
-
-  private int getChampionLevelpoints(Champion champion) {
-    ChampionSaveData championSaveData = champion.getSaveData();
-    int total = championSaveData.getUnusedStatPoints();
-    for (StrifeStat stat : championSaveData.getLevelMap().keySet()) {
-      total += championSaveData.getLevel(stat);
-    }
-    return total;
   }
 }
