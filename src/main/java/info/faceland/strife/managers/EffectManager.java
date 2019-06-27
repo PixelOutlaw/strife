@@ -9,7 +9,7 @@ import info.faceland.strife.conditions.Condition.ConditionType;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.effects.*;
 import info.faceland.strife.effects.DealDamage.DamageScale;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;

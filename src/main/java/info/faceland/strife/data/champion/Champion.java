@@ -26,7 +26,6 @@ import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
-import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -97,7 +96,11 @@ public class Champion {
   }
 
   public int getLevel(StrifeStat stat) {
-    return saveData.getLevel(stat);
+    return saveData.getLevelMap().getOrDefault(stat, 0);
+  }
+
+  public int getPendingLevel(StrifeStat stat) {
+    return saveData.getPendingLevelMap().getOrDefault(stat, 0);
   }
 
   public void setBonusLevels(int bonusLevels) {
@@ -132,6 +135,14 @@ public class Champion {
     saveData.setUnusedStatPoints(unusedStatPoints);
   }
 
+  public int getPendingUnusedStatPoints() {
+    return saveData.getPendingUnusedStatPoints();
+  }
+
+  public void setPendingUnusedStatPoints(int unusedStatPoints) {
+    saveData.setPendingUnusedStatPoints(unusedStatPoints);
+  }
+
   public int getHighestReachedLevel() {
     return saveData.getHighestReachedLevel();
   }
@@ -148,8 +159,16 @@ public class Champion {
     saveData.setLevel(stat, level);
   }
 
+  public void setPendingLevel(StrifeStat stat, int level) {
+    saveData.getPendingLevelMap().put(stat, level);
+  }
+
   public Map<StrifeStat, Integer> getLevelMap() {
     return saveData.getLevelMap();
+  }
+
+  public Map<StrifeStat, Integer> getPendingLevelMap() {
+    return saveData.getPendingLevelMap();
   }
 
   public Player getPlayer() {

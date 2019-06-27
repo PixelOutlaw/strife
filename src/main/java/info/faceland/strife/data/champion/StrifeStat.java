@@ -16,7 +16,7 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.stats;
+package info.faceland.strife.data.champion;
 
 import info.faceland.strife.attributes.StrifeAttribute;
 import java.util.List;
@@ -34,6 +34,8 @@ public class StrifeStat {
   private DyeColor dyeColor;
   private Sound clickSound;
   private float clickPitch;
+  private Sound levelSound;
+  private float levelPitch;
   private int slot;
   private int startCap;
   private int maxCap;
@@ -170,6 +172,22 @@ public class StrifeStat {
 
   public void setClickPitch(float clickPitch) {
     this.clickPitch = clickPitch;
+  }
+
+  public Sound getLevelSound() {
+    return levelSound;
+  }
+
+  public void setLevelSound(Sound levelSound) {
+    this.levelSound = levelSound;
+  }
+
+  public float getLevelPitch() {
+    return levelPitch;
+  }
+
+  public void setLevelPitch(float levelPitch) {
+    this.levelPitch = levelPitch;
   }
 
 }

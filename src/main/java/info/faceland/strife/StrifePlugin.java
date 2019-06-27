@@ -78,6 +78,7 @@ import info.faceland.strife.managers.SneakManager;
 import info.faceland.strife.managers.SpawnerManager;
 import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.managers.UniqueEntityManager;
+import info.faceland.strife.menus.levelup.ConfirmationMenu;
 import info.faceland.strife.menus.levelup.LevelupMenu;
 import info.faceland.strife.menus.stats.StatsMenu;
 import info.faceland.strife.storage.DataStorage;
@@ -190,7 +191,9 @@ public class StrifePlugin extends FacePlugin {
   private LevelingRate fishRate;
   private LevelingRate miningRate;
   private LevelingRate sneakRate;
+
   private LevelupMenu levelupMenu;
+  private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
 
   private int maxSkillLevel;
@@ -461,6 +464,7 @@ public class StrifePlugin extends FacePlugin {
     }
 
     levelupMenu = new LevelupMenu(this, getStatManager().getStats());
+    confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu(this);
 
     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -853,6 +857,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelupMenu getLevelupMenu() {
     return levelupMenu;
+  }
+
+  public ConfirmationMenu getConfirmationMenu() {
+    return confirmMenu;
   }
 
   public StatsMenu getStatsMenu() {

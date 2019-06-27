@@ -71,11 +71,12 @@ public class BossBarManager {
     barMap.put(target.getEntity().getUniqueId(), bossBar);
   }
 
-  public void createSkillBar(Champion champion) {
+  public SkillBossBar createSkillBar(Champion champion) {
     SkillBossBar skillBar = new SkillBossBar(champion, makeSkillBar());
     skillBar.getSkillBar().setVisible(false);
     skillBar.getSkillBar().addPlayer(champion.getPlayer());
     skillBarMap.put(champion.getUniqueId(), skillBar);
+    return skillBar;
   }
 
   public void bumpSkillBar(Champion champion, LifeSkillType lifeSkillType) {
@@ -111,7 +112,8 @@ public class BossBarManager {
 
   public void tickSkillBars() {
     for (Player player : Bukkit.getOnlinePlayers()) {
-      SkillBossBar skillBossBar = skillBarMap.get(player.getUniqueId());
+      SkillBossBar skillBossBar = skillBarMap.getOrDefault(player.getUniqueId(),
+          createSkillBar(plugin.getChampionManager().getChampion(player)));
       if (!skillBossBar.getSkillBar().isVisible()) {
         continue;
       }

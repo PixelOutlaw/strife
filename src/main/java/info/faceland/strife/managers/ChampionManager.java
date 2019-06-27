@@ -32,6 +32,7 @@ import static org.bukkit.inventory.EquipmentSlot.HEAD;
 import static org.bukkit.inventory.EquipmentSlot.LEGS;
 import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
@@ -39,7 +40,7 @@ import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.PlayerEquipmentCache;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.util.ItemUtil;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -59,6 +61,9 @@ public class ChampionManager {
   private final Map<UUID, Champion> championMap = new HashMap<>();
   private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
   private final String levelReqGeneric;
+
+  private final static String RESET_MESSAGE =
+      "&a&lYour Levelpoints have been automatically reset due to an update!";
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -95,6 +100,42 @@ public class ChampionManager {
 
   public Collection<Champion> getChampions() {
     return new HashSet<>(championMap.values());
+  }
+
+  public boolean hasPendingChanges(Player player) {
+    return hasPendingChanges(getChampion(player));
+  }
+
+  public boolean hasPendingChanges(Champion champion) {
+    return !champion.getLevelMap().equals(champion.getPendingLevelMap());
+  }
+
+  public void resetPendingStats(Champion champion) {
+    champion.getSaveData().resetPendingStats();
+  }
+
+  public void savePendingStats(Champion champion) {
+    for (StrifeStat stat : champion.getPendingLevelMap().keySet()) {
+      if (champion.getPendingLevel(stat) > champion.getLevel(stat)) {
+        sendMessage(champion.getPlayer(),
+            stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
+        champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f,
+            stat.getLevelPitch());
+      }
+    }
+    champion.getSaveData().savePendingStats();
+  }
+
+  public void verifyStatValues(Champion champion) {
+    Player player = champion.getPlayer();
+    if (getTotalChampionStats(champion) != player.getLevel()) {
+      notifyResetPoints(player);
+      for (StrifeStat stat : plugin.getStatManager().getStats()) {
+        champion.setLevel(stat, 0);
+      }
+      champion.setHighestReachedLevel(player.getLevel());
+      champion.setUnusedStatPoints(player.getLevel());
+    }
   }
 
   public void addListOfChampions(List<Champion> champions) {
@@ -278,7 +319,7 @@ public class ChampionManager {
       case HEAD:
         return ItemUtil.getTraits(equipment.getHelmet());
       case CHEST:
-        return  ItemUtil.getTraits(equipment.getChestplate());
+        return ItemUtil.getTraits(equipment.getChestplate());
       case LEGS:
         return ItemUtil.getTraits(equipment.getLeggings());
       case FEET:
@@ -290,5 +331,19 @@ public class ChampionManager {
 
   private boolean meetsLevelRequirement(Player player, Map<StrifeAttribute, Double> statMap) {
     return statMap.getOrDefault(LEVEL_REQUIREMENT, 0D) <= player.getLevel();
+  }
+
+  private int getTotalChampionStats(Champion champion) {
+    ChampionSaveData championSaveData = champion.getSaveData();
+    int total = championSaveData.getUnusedStatPoints();
+    for (StrifeStat stat : championSaveData.getLevelMap().keySet()) {
+      total += champion.getLevelMap().getOrDefault(stat, 0);
+    }
+    return total;
+  }
+
+  private void notifyResetPoints(final Player player) {
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> MessageUtils.sendMessage(player, RESET_MESSAGE), 20L * 3);
   }
 }

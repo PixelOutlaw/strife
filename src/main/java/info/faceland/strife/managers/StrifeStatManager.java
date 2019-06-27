@@ -21,7 +21,7 @@ package info.faceland.strife.managers;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.champion.StrifeStat;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -48,7 +48,7 @@ public class StrifeStatManager {
     return new ArrayList<>(statMap.values());
   }
 
-  public int getStatCap(StrifeStat stat, Champion champion) {
+  public int getPendingStatCap(StrifeStat stat, Champion champion) {
 
     int statCap = stat.getMaxCap();
     if (stat.getLevelsToRaiseCap() > 0) {
@@ -59,7 +59,7 @@ public class StrifeStatManager {
 
     for (Entry<String, Integer> baseEntry : stat.getBaseStatRequirements().entrySet()) {
       StrifeStat requirementStat = getStat(baseEntry.getKey());
-      int requirementStatValue = champion.getLevel(requirementStat);
+      int requirementStatValue = champion.getPendingLevel(requirementStat);
       int unlockRequirement = baseEntry.getValue();
       int statIncrement = stat.getStatIncreaseIncrements().get(baseEntry.getKey());
 
@@ -78,7 +78,7 @@ public class StrifeStatManager {
     List<String> requirementList = new ArrayList<>();
 
     int levelRequirement = getLevelRequirement(stat, champion);
-    int allocatedPoints = champion.getLevel(stat);
+    int allocatedPoints = champion.getPendingLevel(stat);
     if (levelRequirement > champion.getPlayer().getLevel() && allocatedPoints < stat.getMaxCap() &&
         allocatedPoints == cap) {
       requirementList.add(increaseString("Level", levelRequirement));
@@ -87,7 +87,7 @@ public class StrifeStatManager {
       int statRequirement = getStatRequirement(stat, entry.getKey(), champion);
       StrifeStat requirementStat = getStat(entry.getKey());
       if (allocatedPoints < stat.getMaxCap() && allocatedPoints == cap &&
-          champion.getLevel(requirementStat) < statRequirement) {
+          champion.getPendingLevel(requirementStat) < statRequirement) {
         requirementList.add(increaseString(requirementStat.getName(), statRequirement));
       }
     }
@@ -104,7 +104,7 @@ public class StrifeStatManager {
   }
 
   private String increaseString(String name, int value) {
-    return TextUtils.color("&f&lCap Increase: " + name + " " + value);
+    return TextUtils.color("&f&lRequires: " + name + " " + value);
   }
 
   private int getLevelRequirement(StrifeStat stat, Champion champion) {
@@ -119,14 +119,14 @@ public class StrifeStatManager {
     StrifeStat requirementStat = getStat(requiredStatName);
     int baseRequirement = stat.getBaseStatRequirements().get(requiredStatName);
     int statIncrement = stat.getStatIncreaseIncrements().get(requiredStatName);
-    if (baseRequirement > champion.getLevel(requirementStat)) {
+    if (baseRequirement > champion.getPendingLevel(requirementStat)) {
       return stat.getBaseStatRequirements().get(requiredStatName);
     }
-    if (baseRequirement + statIncrement * champion.getLevel(stat) <= champion
-        .getLevel(requirementStat)) {
+    if (baseRequirement + statIncrement * champion.getPendingLevel(stat) <= champion
+        .getPendingLevel(requirementStat)) {
       return -1;
     }
-    int nextRank = (champion.getLevel(requirementStat) - baseRequirement) / statIncrement;
+    int nextRank = (champion.getPendingLevel(requirementStat) - baseRequirement) / statIncrement;
     return stat.getBaseStatRequirements().get(requiredStatName) + (nextRank + 1) * statIncrement;
   }
 
@@ -135,8 +135,10 @@ public class StrifeStatManager {
     stat.setName(cs.getString("name"));
     stat.setDescription(cs.getStringList("description"));
     stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
-    stat.setClickSound(Sound.valueOf(cs.getString("sound", "ENTITY_CAT_HISS")));
-    stat.setClickPitch((float) cs.getDouble("pitch", 1));
+    stat.setClickSound(Sound.valueOf(cs.getString("sounds.click-sound", "ENTITY_CAT_HISS")));
+    stat.setClickPitch((float) cs.getDouble("sounds.click-pitch", 1));
+    stat.setLevelSound(Sound.valueOf(cs.getString("sounds.level-sound", "ENTITY_CAT_HISS")));
+    stat.setLevelPitch((float) cs.getDouble("sounds.level-pitch", 1));
     stat.setSlot(cs.getInt("slot"));
     stat.setStartCap(cs.getInt("starting-cap", 0));
     stat.setMaxCap(cs.getInt("maximum-cap", 100));

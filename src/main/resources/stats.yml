@@ -4,8 +4,11 @@ con:
   description:
   - "&f+4% Maximum Health"
   - "&f+2% Armor"
-  sound: BLOCK_METAL_STEP
-  pitch: 1
+  sounds:
+    level-sound: BLOCK_METAL_STEP
+    level-pitch: 1
+    click-sound: BLOCK_METAL_STEP
+    click-pitch: 1
   dye-color: YELLOW
   slot: 15
   starting-cap: 5

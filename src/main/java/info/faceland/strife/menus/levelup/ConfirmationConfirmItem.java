@@ -19,52 +19,59 @@
 package info.faceland.strife.menus.levelup;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.StrifeStat;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class LevelupPointsMenuItem extends MenuItem {
+public class ConfirmationConfirmItem extends MenuItem {
 
-  private static final String DISPLAY_NAME = "&f&nUnused Levelpoints";
-  private static final ItemStack DISPLAY_ICON = new ItemStack(Material.NETHER_STAR);
+  private static final String DISPLAY_NAME = "&a&nApply Changes";
+  private static final ItemStack DISPLAY_ICON = new ItemStack(Material.EMERALD);
   private static final String[] DISPLAY_LORE = {
-      ChatColor.GRAY + "Click a stat to spend your points!",
-      ChatColor.GREEN + "Click here to save your changes!"};
+      ChatColor.GRAY + "Are you sure you wish to apply the",
+      ChatColor.GRAY + "following changes?",
+      ChatColor.GRAY + ""
+  };
   private final StrifePlugin plugin;
 
-  public LevelupPointsMenuItem(StrifePlugin plugin) {
+  public ConfirmationConfirmItem(StrifePlugin plugin) {
     super(TextUtils.color(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
     this.plugin = plugin;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    ItemStack itemStack = super.getFinalIcon(player);
     Champion champion = plugin.getChampionManager().getChampion(player);
-    int stacks = champion.getPendingUnusedStatPoints();
-    String name = TextUtils.color("&f&nUnused Levelpoints (" + stacks + ")");
-    itemStack.getItemMeta().setDisplayName(name);
-    stacks = Math.min(stacks, 64);
-    itemStack.setAmount(Math.max(1, stacks));
-    return itemStack;
+    List<String> changesLore = new ArrayList<>(ItemStackExtensionsKt.getLore(this.getIcon()));
+    for (StrifeStat strifeStat : plugin.getStatManager().getStats()) {
+      int initial = champion.getLevel(strifeStat);
+      int newValue = champion.getPendingLevel(strifeStat);
+      if (initial < newValue) {
+        changesLore.add(strifeStat.getName() + " Lv" + initial + " -> Lv" + newValue);
+      }
+    }
+    ItemStack stack = this.getIcon().clone();
+    ItemStackExtensionsKt.setDisplayName(stack, TextUtils.color(DISPLAY_NAME));
+    ItemStackExtensionsKt.setLore(stack, TextUtils.color(changesLore));
+    return stack;
   }
 
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    event.setWillClose(true);
-    if (plugin.getChampionManager().hasPendingChanges(event.getPlayer())) {
-      Bukkit.getScheduler().runTaskLater(plugin, () ->
-          plugin.getConfirmationMenu().open(event.getPlayer()), 1L);
-    }
+    event.getPlayer().closeInventory();
+    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    plugin.getChampionManager().savePendingStats(champion);
+    plugin.getChampionManager().updateAll(champion);
+    plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
   }
-
 }
