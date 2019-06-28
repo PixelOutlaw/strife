@@ -23,7 +23,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.StrifeStat;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -51,7 +51,7 @@ public class ConfirmationConfirmItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     Champion champion = plugin.getChampionManager().getChampion(player);
-    List<String> changesLore = new ArrayList<>(ItemStackExtensionsKt.getLore(this.getIcon()));
+    List<String> changesLore = Arrays.asList(DISPLAY_LORE);
     for (StrifeStat strifeStat : plugin.getStatManager().getStats()) {
       int initial = champion.getLevel(strifeStat);
       int newValue = champion.getPendingLevel(strifeStat);

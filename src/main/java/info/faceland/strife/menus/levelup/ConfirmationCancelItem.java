@@ -21,6 +21,7 @@ package info.faceland.strife.menus.levelup;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.Arrays;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
@@ -30,7 +31,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ConfirmationCancelItem extends MenuItem {
 
-  private static final String DISPLAY_NAME = "&c&nDiscard Changes";
+  private static final String DISPLAY_NAME = TextUtils.color("&c&nDiscard Changes");
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.BARRIER);
   private static final String[] DISPLAY_LORE = {
       ChatColor.GRAY + "Click here to discard your changes"
@@ -45,7 +46,8 @@ public class ConfirmationCancelItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack stack = this.getIcon().clone();
-    ItemStackExtensionsKt.setDisplayName(stack, TextUtils.color(DISPLAY_NAME));
+    ItemStackExtensionsKt.setDisplayName(stack, DISPLAY_NAME);
+    ItemStackExtensionsKt.setLore(stack, Arrays.asList(DISPLAY_LORE));
     return stack;
   }
 
