@@ -36,6 +36,14 @@ mechanics:
   health-bar-duration: 200
   skill-bar-duration: 200
 
+custom-spawn-limits:
+  world:
+    base-spawn-limit: 200
+    per-player-spawn-limit: 10
+  hard-world:
+    base-spawn-limit: 1000
+    per-player-spawn-limit: 100
+
 leveled-monsters:
   name-format: "&7%ENTITY% &f(%LEVEL%)"
   give-skeletons-sword-chance: 0.1

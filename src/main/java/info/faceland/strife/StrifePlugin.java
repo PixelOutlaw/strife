@@ -24,7 +24,6 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
-import info.faceland.strife.managers.SkillExperienceManager;
 import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
@@ -74,6 +73,7 @@ import info.faceland.strife.managers.GlobalBoostManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.RageManager;
+import info.faceland.strife.managers.SkillExperienceManager;
 import info.faceland.strife.managers.SneakManager;
 import info.faceland.strife.managers.SpawnerManager;
 import info.faceland.strife.managers.StrifeStatManager;
@@ -89,6 +89,7 @@ import info.faceland.strife.tasks.BossBarsTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
+import info.faceland.strife.tasks.MonsterLimitTask;
 import info.faceland.strife.tasks.PruneBossBarsTask;
 import info.faceland.strife.tasks.RageTask;
 import info.faceland.strife.tasks.SaveTask;
@@ -178,6 +179,7 @@ public class StrifePlugin extends FacePlugin {
   private GlobalMultiplierTask globalMultiplierTask;
   private PruneBossBarsTask pruneBossBarsTask;
   private DarknessReductionTask darkTask;
+  private MonsterLimitTask monsterLimitTask;
   private RageTask rageTask;
   private UniquePruneTask uniquePruneTask;
   private UniqueParticleTask uniqueParticleTask;
@@ -312,6 +314,7 @@ public class StrifePlugin extends FacePlugin {
     pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     darkTask = new DarknessReductionTask(darknessManager);
     rageTask = new RageTask(rageManager, attributedEntityManager);
+    monsterLimitTask = new MonsterLimitTask(settings);
     uniquePruneTask = new UniquePruneTask(this);
     uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
     spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
@@ -409,6 +412,10 @@ public class StrifePlugin extends FacePlugin {
         20L * 14, // Start timer after 14s
         10L  // Run it every 0.5s after
     );
+    monsterLimitTask.runTaskTimer(this,
+        20L * 15, // Start timer after 15s
+        20L * 60  // Run it every minute after
+    );
     rageTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
         5L  // Run it every 0.25s after
@@ -496,6 +503,7 @@ public class StrifePlugin extends FacePlugin {
     pruneBossBarsTask.cancel();
     darkTask.cancel();
     rageTask.cancel();
+    monsterLimitTask.cancel();
     uniqueParticleTask.cancel();
     uniquePruneTask.cancel();
     spawnerLeashTask.cancel();
