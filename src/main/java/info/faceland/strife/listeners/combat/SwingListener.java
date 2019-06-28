@@ -129,7 +129,6 @@ public class SwingListener implements Listener {
     if (target == null) {
       return;
     }
-    //AttributedEntity defender = plugin.getAttributedEntityManager().getAttributedEntity(target);
     spawnSparkle(target);
     event.setCancelled(true);
   }
@@ -151,6 +150,7 @@ public class SwingListener implements Listener {
 
     double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
+    boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
     event.setCancelled(true);
 
     if (pStats.hasTrait(StrifeTrait.EXPLOSIVE_PROJECTILES)) {
@@ -158,7 +158,7 @@ public class SwingListener implements Listener {
       return;
     }
 
-    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0);
+    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
 
     if (multiShot > 0) {
       int bonusProjectiles = (int) (multiShot - (multiShot % 1));
@@ -168,7 +168,7 @@ public class SwingListener implements Listener {
       for (int i = bonusProjectiles; i > 0; i--) {
         ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed,
             randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles));
+            randomOffset(bonusProjectiles), gravity);
       }
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);

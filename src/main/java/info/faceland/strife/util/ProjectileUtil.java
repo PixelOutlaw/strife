@@ -2,6 +2,8 @@ package info.faceland.strife.util;
 
 import info.faceland.strife.StrifePlugin;
 import org.bukkit.Sound;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Arrow.PickupStatus;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,14 +20,23 @@ public class ProjectileUtil {
 
   public static void createMagicMissile(Player shooter, double attackMult, double power,
       double xOff, double yOff, double zOff) {
+    createMagicMissile(shooter, attackMult, power, xOff, yOff, zOff, true);
+  }
+
+  public static void createMagicMissile(Player shooter, double attackMult, double power,
+      double xOff, double yOff, double zOff, boolean gravity) {
     ShulkerBullet magicProj = shooter.getWorld()
         .spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
     magicProj.setShooter(shooter);
+    magicProj.setGravity(gravity);
 
     Vector vec = shooter.getLocation().getDirection();
     xOff = vec.getX() * power + xOff;
-    yOff = vec.getY() * power + yOff + 0.25;
+    yOff = vec.getY() * power + yOff;
     zOff = vec.getZ() * power + zOff;
+    if (gravity) {
+      yOff += 0.25;
+    }
     magicProj.setVelocity(new Vector(xOff, yOff, zOff));
     setProjctileAttackSpeedMeta(magicProj, attackMult);
     if (shooter.isSneaking()) {
@@ -59,6 +70,32 @@ public class ProjectileUtil {
     Vector vec = shooter.getLocation().getDirection().multiply(0.05 * power);
     skull.setVelocity(vec);
     setProjctileAttackSpeedMeta(skull, attackMult);
+  }
+
+  public static void createArrow(Player shooter, double attackMult, double power, double xOff,
+      double yOff, double zOff) {
+    createArrow(shooter, attackMult, power, xOff, yOff, zOff, true);
+  }
+
+  public static void createArrow(Player shooter, double attackMult, double power,
+      double xOff, double yOff, double zOff, boolean gravity) {
+    Arrow arrow = shooter.getWorld().spawn(shooter.getLocation(), Arrow.class);
+    arrow.setShooter(shooter);
+    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    arrow.setGravity(gravity);
+
+    Vector vector = shooter.getLocation().getDirection();
+    xOff = vector.getX() * power + xOff;
+    yOff = vector.getY() * power + yOff;
+    zOff = vector.getZ() * power + zOff;
+    if (gravity) {
+      yOff += 0.19;
+    }
+    arrow.setVelocity(new Vector(xOff, yOff, zOff));
+    ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
+    if (shooter.isSneaking()) {
+      ProjectileUtil.setProjectileSneakMeta(arrow);
+    }
   }
 
   public static void setProjctileAttackSpeedMeta(Projectile proj, double attackMult) {

@@ -19,12 +19,11 @@
 package info.faceland.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
+import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.managers.AttributeUpdateManager;
-import info.faceland.strife.attributes.StrifeAttribute;
-
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import java.util.HashMap;
 import java.util.Map;
@@ -189,5 +188,9 @@ public class Champion {
 
   public Set<StrifeTrait> getTraits() {
     return equipmentCache.getCombinedTraits();
+  }
+
+  public boolean hasTrait (StrifeTrait trait) {
+    return equipmentCache.getCombinedTraits().contains(trait);
   }
 }

@@ -32,13 +32,6 @@ public class AttributedEntity {
     return attributeCache.getOrDefault(attribute, 0D);
   }
 
-  public boolean hasTrait(StrifeTrait trait) {
-    if (champion == null) {
-      return false;
-    }
-    return champion.getTraits().contains(trait);
-  }
-
   public LivingEntity getEntity() {
     return livingEntity;
   }
@@ -69,5 +62,12 @@ public class AttributedEntity {
 
   public void setCooldown(Ability ability) {
     cooldownMap.put(ability, System.currentTimeMillis() + ability.getCooldown() * 1000);
+  }
+
+  public boolean hasTrait(StrifeTrait trait) {
+    if (champion == null) {
+      return false;
+    }
+    return champion.hasTrait(trait);
   }
 }
