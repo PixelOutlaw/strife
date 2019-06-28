@@ -12,6 +12,7 @@ import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.CompareTarget;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.conditions.Condition.ConditionType;
+import info.faceland.strife.conditions.CorruptionCondition;
 import info.faceland.strife.conditions.EntityTypeCondition;
 import info.faceland.strife.conditions.HealthCondition;
 import info.faceland.strife.conditions.HeightCondition;
@@ -316,7 +317,7 @@ public class EffectManager {
         break;
       case CHANCE:
         double chance = cs.getDouble("chance", 0.5);
-        condition = new ChanceCondition(comparison, chance);
+        condition = new ChanceCondition(chance);
         break;
       case HEALTH:
         boolean percent2 = cs.getBoolean("percentage", false);
@@ -345,6 +346,9 @@ public class EffectManager {
         break;
       case BLEEDING:
         condition = new BleedingCondition(compareTarget, cs.getBoolean("state", true));
+        break;
+      case DARKNESS:
+        condition = new CorruptionCondition(compareTarget, comparison, value);
         break;
       case BURNING:
         condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));

@@ -29,6 +29,7 @@ public interface Condition {
     ITS_OVER_ANAKIN,
     ENTITY_TYPE,
     BLEEDING,
+    DARKNESS,
     BURNING
   }
 }
