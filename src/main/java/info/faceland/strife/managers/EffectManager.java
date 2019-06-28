@@ -2,14 +2,41 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.conditions.*;
+import info.faceland.strife.conditions.AttributeCondition;
+import info.faceland.strife.conditions.BarrierCondition;
+import info.faceland.strife.conditions.BleedingCondition;
+import info.faceland.strife.conditions.BonusLevelCondition;
+import info.faceland.strife.conditions.BurningCondition;
+import info.faceland.strife.conditions.ChanceCondition;
+import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.CompareTarget;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.conditions.Condition.ConditionType;
+import info.faceland.strife.conditions.EntityTypeCondition;
+import info.faceland.strife.conditions.HealthCondition;
+import info.faceland.strife.conditions.HeightCondition;
+import info.faceland.strife.conditions.LevelCondition;
+import info.faceland.strife.conditions.PotionCondition;
+import info.faceland.strife.conditions.StatCondition;
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.effects.*;
-import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.data.champion.StrifeStat;
+import info.faceland.strife.effects.Bleed;
+import info.faceland.strife.effects.ConsumeBleed;
+import info.faceland.strife.effects.DealDamage;
+import info.faceland.strife.effects.DealDamage.DamageScale;
+import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.ForceTarget;
+import info.faceland.strife.effects.Heal;
+import info.faceland.strife.effects.Ignite;
+import info.faceland.strife.effects.Knockback;
+import info.faceland.strife.effects.Leap;
+import info.faceland.strife.effects.PotionEffectAction;
+import info.faceland.strife.effects.RestoreBarrier;
+import info.faceland.strife.effects.ShootProjectile;
+import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.effects.Speak;
+import info.faceland.strife.effects.Summon;
+import info.faceland.strife.effects.Wait;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -315,6 +342,12 @@ public class EffectManager {
         break;
       case ITS_OVER_ANAKIN:
         condition = new HeightCondition(compareTarget);
+        break;
+      case BLEEDING:
+        condition = new BleedingCondition(compareTarget, cs.getBoolean("state", true));
+        break;
+      case BURNING:
+        condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");

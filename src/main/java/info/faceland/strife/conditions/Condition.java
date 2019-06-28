@@ -27,6 +27,8 @@ public interface Condition {
     LEVEL,
     BONUS_LEVEL,
     ITS_OVER_ANAKIN,
-    ENTITY_TYPE
+    ENTITY_TYPE,
+    BLEEDING,
+    BURNING
   }
 }
