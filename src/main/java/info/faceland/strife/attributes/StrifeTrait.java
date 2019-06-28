@@ -17,9 +17,8 @@ public enum StrifeTrait {
   ACCURATE_CHARGED("Fully Charged Hits Cannot Miss"),
   ACCURATE_CRITS("Critical Strikes Cannot Miss");
 
-  // values() is dumb, so we only run it once, and hit use this to
-  // change String to enum instead of try catching or values()
-  // TODO: We map String to StrifeAttribute, why not let the user customize the string rather than declaring it in the enum?
+  // TODO: We map String to StrifeAttribute, why not let the user
+  //  customize the string rather than declaring it in the enum?
   private static final Map<String, StrifeTrait> copyOfValues = buildStringToTraitMap();
 
   private static Map<String, StrifeTrait> buildStringToTraitMap() {
