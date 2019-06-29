@@ -3,7 +3,6 @@ package info.faceland.strife.util;
 import info.faceland.strife.StrifePlugin;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Arrow.PickupStatus;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -12,6 +11,8 @@ import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
+
+//import org.bukkit.entity.Arrow.PickupStatus;
 
 public class ProjectileUtil {
 
@@ -25,17 +26,17 @@ public class ProjectileUtil {
 
   public static void createMagicMissile(Player shooter, double attackMult, double power,
       double xOff, double yOff, double zOff, boolean gravity) {
-    ShulkerBullet magicProj = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), ShulkerBullet.class);
+    ShulkerBullet magicProj = shooter.getWorld().spawn(
+        shooter.getEyeLocation().clone().add(0, -0.35, 0), ShulkerBullet.class);
     magicProj.setShooter(shooter);
     magicProj.setGravity(gravity);
 
-    Vector vec = shooter.getLocation().getDirection();
+    Vector vec = shooter.getEyeLocation().getDirection();
     xOff = vec.getX() * power + xOff;
     yOff = vec.getY() * power + yOff;
     zOff = vec.getZ() * power + zOff;
     if (gravity) {
-      yOff += 0.25;
+      yOff += 0.23;
     }
     magicProj.setVelocity(new Vector(xOff, yOff, zOff));
     setProjctileAttackSpeedMeta(magicProj, attackMult);
@@ -48,7 +49,7 @@ public class ProjectileUtil {
       double radius) {
     shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_GHAST_SHOOT, 0.7f, 1.1f);
     Fireball fireball = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), Fireball.class);
+        .spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Fireball.class);
     fireball.setShooter(shooter);
     fireball.setBounce(false);
     fireball.setIsIncendiary(false);
@@ -62,8 +63,8 @@ public class ProjectileUtil {
   public static void createWitherSkull(LivingEntity shooter, double attackMult, double power,
       double radius) {
     shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 1.1f);
-    WitherSkull skull = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.5, 0), WitherSkull.class);
+    WitherSkull skull = shooter.getWorld().spawn(
+        shooter.getEyeLocation().clone().add(0, -0.35, 0), WitherSkull.class);
     skull.setShooter(shooter);
     skull.setYield((float) (2 + radius * 0.5));
 
@@ -79,17 +80,18 @@ public class ProjectileUtil {
 
   public static void createArrow(Player shooter, double attackMult, double power,
       double xOff, double yOff, double zOff, boolean gravity) {
-    Arrow arrow = shooter.getWorld().spawn(shooter.getLocation(), Arrow.class);
+    Arrow arrow = shooter.getWorld().spawn(
+        shooter.getEyeLocation().clone().add(0, -0.35, 0), Arrow.class);
     arrow.setShooter(shooter);
-    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    //arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     arrow.setGravity(gravity);
 
-    Vector vector = shooter.getLocation().getDirection();
+    Vector vector = shooter.getEyeLocation().getDirection();
     xOff = vector.getX() * power + xOff;
     yOff = vector.getY() * power + yOff;
     zOff = vector.getZ() * power + zOff;
     if (gravity) {
-      yOff += 0.19;
+      yOff += 0.17;
     }
     arrow.setVelocity(new Vector(xOff, yOff, zOff));
     ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
