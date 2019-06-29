@@ -23,7 +23,6 @@ import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
