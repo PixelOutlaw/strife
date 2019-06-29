@@ -1,8 +1,5 @@
 package info.faceland.strife.util;
 
-import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.nbt.NbtCompound;
-import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import info.faceland.strife.attributes.StrifeTrait;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,9 +7,11 @@ import java.util.List;
 import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
 
@@ -146,10 +145,13 @@ public class ItemUtil {
     if (item.getType().getMaxDurability() < 15) {
       return;
     }
-    if (!MinecraftReflection.isCraftItemStack(item)) {
-      item = MinecraftReflection.getBukkitItemStack(item);
+    ItemMeta meta = item.getItemMeta();
+    if (meta.getAttributeModifiers() == null) {
+      return;
     }
-    NbtCompound compound = (NbtCompound) NbtFactory.fromItemTag(item);
-    compound.put(NbtFactory.ofList("AttributeModifiers"));
+    for (Attribute attr : meta.getAttributeModifiers().asMap().keySet()) {
+      meta.removeAttributeModifier(attr);
+    }
+    item.setItemMeta(meta);
   }
 }
