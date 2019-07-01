@@ -3,7 +3,7 @@ version: ${project.version}
 main: info.faceland.strife.StrifePlugin
 api-version: 1.14
 depend: [Facecore, ProtocolLib]
-softdepend: [Loot, Bullion]
+softdepend: [Loot, Bullion, LibsDisguises]
 
 commands:
   stats:

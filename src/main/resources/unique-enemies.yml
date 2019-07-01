@@ -2,6 +2,8 @@ version: "0.0.1"
 zombiechamp:
     name: "&fZombie Champion&4 (Lv 230)"
     type: ZOMBIE
+    disguise: PLAYER
+    disguise-player: "Pur3p0w3r"
     attributes:
         MELEE_DAMAGE: 1
         RANGED_DAMAGE: 1
@@ -12,7 +14,6 @@ zombiechamp:
         ACCURACY: 5
         ARMOR_PENETRATION: 10
         WARD_PENETRATION: 10
-        ACCURACY: 1
         FIRE_RESIST: -20
         DARK_RESIST: 10
         ALL_RESIST: 10
@@ -61,14 +62,6 @@ zombiechamp:
              when-hit:
              - IgniteAttacker
              - Invisible5s
-        phase4:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
 skeletonchamp:
     type: SKELETON
     name: "&fskeleton Champion&4 (Lv 230)"
@@ -82,7 +75,6 @@ skeletonchamp:
         ACCURACY: 5
         ARMOR_PENETRATION: 0.5
         WARD_PENETRATION: 0.5
-        ACCURACY: 1
         FIRE_RESIST: -20
         DARK_RESIST: 10
         ALL_RESIST: 0.35
@@ -131,7 +123,7 @@ skeletonchamp:
              when-hit:
              - IgniteAttacker
              - Invisible5s
-        phase4:
+        phase5:
             phase-begin:
             - BuffSelfResist
             on-hit:

@@ -114,6 +114,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import ninja.amp.ampmenus.MenuListener;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -624,6 +625,12 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
+
+      String disguise = cs.getString("disguise", null);
+      if (StringUtils.isNotBlank(disguise)) {
+        uniqueEntityManager
+            .cacheDisguise(uniqueEntity, disguise, cs.getString("disguise-player", null));
+      }
 
       ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
       Map<StrifeAttribute, Double> attributeMap = new HashMap<>();

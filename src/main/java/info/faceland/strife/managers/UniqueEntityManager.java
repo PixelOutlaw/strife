@@ -1,19 +1,24 @@
 package info.faceland.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.UniqueEntityData;
+import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.util.LogUtil;
+import java.util.HashMap;
+import java.util.Map;
+import me.libraryaddict.disguise.DisguiseAPI;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
+import me.libraryaddict.disguise.disguisetypes.DisguiseType;
+import me.libraryaddict.disguise.disguisetypes.MobDisguise;
+import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Zombie;
@@ -24,11 +29,13 @@ public class UniqueEntityManager {
   private final StrifePlugin plugin;
   private final Map<LivingEntity, UniqueEntityData> liveUniquesMap;
   private final Map<String, UniqueEntity> loadedUniquesMap;
+  private final Map<UniqueEntity, Disguise> cachedDisguises;
 
   public UniqueEntityManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.liveUniquesMap = new HashMap<>();
     this.loadedUniquesMap = new HashMap<>();
+    this.cachedDisguises = new HashMap<>();
   }
 
   public UniqueEntity getLivingUnique(LivingEntity livingEntity) {
@@ -133,6 +140,10 @@ public class UniqueEntityManager {
     LivingEntity spawnedUnique = (LivingEntity) entity;
     spawnedUnique.setRemoveWhenFarAway(false);
 
+    if (cachedDisguises.containsKey(uniqueEntity)) {
+      DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));
+    }
+
     double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.HEALTH, 5D);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
     spawnedUnique.setHealth(health);
@@ -147,7 +158,8 @@ public class UniqueEntityManager {
 
     if (uniqueEntity.getFollowRange() != -1) {
       if (spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE) != null) {
-        spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(uniqueEntity.getFollowRange());
+        spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE)
+            .setBaseValue(uniqueEntity.getFollowRange());
       }
     }
 
@@ -186,6 +198,20 @@ public class UniqueEntityManager {
     plugin.getAbilityManager()
         .checkPhaseChange(plugin.getAttributedEntityManager().getAttributedEntity(spawnedUnique));
     return spawnedUnique;
+  }
+
+  public void cacheDisguise(UniqueEntity uniqueEntity, String disguiseType, String playerName) {
+    DisguiseType type = DisguiseType.valueOf(disguiseType);
+    if (type == DisguiseType.PLAYER) {
+      if (StringUtils.isBlank(playerName)) {
+        playerName = "Pur3p0w3r";
+      }
+      PlayerDisguise playerDisguise = new PlayerDisguise(uniqueEntity.getName(), playerName);
+      cachedDisguises.put(uniqueEntity, playerDisguise);
+      return;
+    }
+    MobDisguise mobDisguise = new MobDisguise(type);
+    cachedDisguises.put(uniqueEntity, mobDisguise);
   }
 
   private void delayedEquip(UniqueEntity uniqueEntity, LivingEntity spawnedEntity) {
