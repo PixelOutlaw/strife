@@ -23,6 +23,8 @@ import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.ConsumeBleed;
+import info.faceland.strife.effects.ConsumeCorrupt;
+import info.faceland.strife.effects.Corrupt;
 import info.faceland.strife.effects.DealDamage;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
@@ -185,10 +187,19 @@ public class EffectManager {
         ((Bleed) effect).setAmount(cs.getInt("amount", 10));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
         break;
+      case CORRUPT:
+        effect = new Corrupt();
+        ((Corrupt) effect).setAmount(cs.getInt("amount", 10));
+        break;
       case CONSUME_BLEED:
         effect = new ConsumeBleed();
         ((ConsumeBleed) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
         ((ConsumeBleed) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
+        break;
+      case CONSUME_CORRUPT:
+        effect = new ConsumeCorrupt();
+        ((ConsumeCorrupt) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
+        ((ConsumeCorrupt) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
         break;
       case WAIT:
         effect = new Wait();
@@ -397,7 +408,9 @@ public class EffectManager {
     PROJECTILE,
     IGNITE,
     BLEED,
+    CORRUPT,
     CONSUME_BLEED,
+    CONSUME_CORRUPT,
     WAIT,
     PARTICLE,
     SPEAK,

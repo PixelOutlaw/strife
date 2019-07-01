@@ -187,14 +187,13 @@ public class DamageUtil {
 
   public static boolean attemptCorrupt(double damage, AttributedEntity attacker,
       LivingEntity defender) {
-    if (damage == 0
-        || rollDouble() >= attacker.getAttribute(StrifeAttribute.CORRUPT_CHANCE) / 100) {
+    if (damage == 0) {
       return false;
     }
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
-    defender.getWorld()
-        .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
-    getDarknessManager().applyCorruptionStacks(defender, damage);
+    if (rollDouble() >= attacker.getAttribute(StrifeAttribute.CORRUPT_CHANCE) / 100) {
+      return false;
+    }
+    applyCorrupt(defender, damage);
     return true;
   }
 
@@ -337,6 +336,12 @@ public class DamageUtil {
         .applyBleed(defender, amount);
     defender.getWorld()
         .playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
+  }
+
+  public static void applyCorrupt(LivingEntity defender, double amount) {
+    StrifePlugin.getInstance().getDarknessManager().applyCorruptionStacks(defender, amount);
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
+    defender.getWorld().spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
   }
 
   public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {
