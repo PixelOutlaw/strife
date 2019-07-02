@@ -30,13 +30,10 @@ import info.faceland.strife.util.StatUtil;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -76,27 +73,6 @@ public class TargetingListener implements Listener {
         .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
     SNEAK_EFFECTIVENESS = plugin.getSettings()
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
-  }
-
-  @EventHandler(priority = EventPriority.NORMAL)
-  public void onBossRetarget(EntityDamageByEntityEvent e) {
-    if (!(e.getEntity() instanceof Creature)) {
-      return;
-    }
-    if (!(e.getDamager() instanceof LivingEntity || e.getDamager() instanceof Projectile)) {
-      return;
-    }
-    if (!plugin.getUniqueEntityManager().isUnique((LivingEntity) e.getEntity())) {
-      return;
-    }
-    if (random.nextDouble() > 0.75) {
-      if (e.getDamager() instanceof Projectile) {
-        ((Creature) e.getEntity())
-            .setTarget((LivingEntity) ((Projectile) e.getDamager()).getShooter());
-      } else {
-        ((Creature) e.getEntity()).setTarget((LivingEntity) e.getDamager());
-      }
-    }
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
