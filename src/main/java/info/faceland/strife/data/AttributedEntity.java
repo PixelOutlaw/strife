@@ -4,28 +4,32 @@ import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
+import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.entity.LivingEntity;
 
 public class AttributedEntity {
-  private final Map<StrifeAttribute, Double> attributeCache;
+
+  private final Map<StrifeAttribute, Double> attributeCache = new HashMap<>();
+  private final Map<Ability, Long> cooldownMap = new HashMap<>();
+
   private final Champion champion;
-  private final Map<Ability, Long> cooldownMap;
   private LivingEntity livingEntity;
 
+  private final Set<AttributedEntity> minions = new ConcurrentSet<>();
+
+  private boolean despawnOnUnload = false;
+
   public AttributedEntity(Champion champion) {
-    this.attributeCache = new HashMap<>();
     this.livingEntity = champion.getPlayer();
     this.champion = champion;
-    this.cooldownMap = new HashMap<>();
   }
 
   public AttributedEntity(LivingEntity livingEntity) {
-    this.attributeCache = new HashMap<>();
     this.livingEntity = livingEntity;
     this.champion = null;
-    this.cooldownMap = new HashMap<>();
   }
 
   public double getAttribute(StrifeAttribute attribute) {
@@ -64,10 +68,35 @@ public class AttributedEntity {
     cooldownMap.put(ability, System.currentTimeMillis() + ability.getCooldown() * 1000);
   }
 
+  public boolean isMinionOf(AttributedEntity attributedEntity) {
+    return attributedEntity.getMinions().contains(this);
+  }
+
+  public boolean isMasterOf(AttributedEntity attributedEntity) {
+    return getMinions().contains(attributedEntity);
+  }
+
   public boolean hasTrait(StrifeTrait trait) {
     if (champion == null) {
       return false;
     }
     return champion.hasTrait(trait);
+  }
+
+  public Set<AttributedEntity> getMinions() {
+    for (AttributedEntity minion : minions) {
+      if (minion == null || minion.getEntity() == null || !minion.getEntity().isValid()) {
+        minions.remove(minion);
+      }
+    }
+    return minions;
+  }
+
+  public boolean isDespawnOnUnload() {
+    return despawnOnUnload;
+  }
+
+  public void setDespawnOnUnload(boolean despawnOnUnload) {
+    this.despawnOnUnload = despawnOnUnload;
   }
 }
