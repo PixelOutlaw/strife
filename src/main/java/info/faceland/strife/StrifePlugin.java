@@ -89,6 +89,7 @@ import info.faceland.strife.tasks.BossBarsTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
+import info.faceland.strife.tasks.MinionDecayTask;
 import info.faceland.strife.tasks.MonsterLimitTask;
 import info.faceland.strife.tasks.PruneBossBarsTask;
 import info.faceland.strife.tasks.RageTask;
@@ -177,6 +178,7 @@ public class StrifePlugin extends FacePlugin {
   private SneakTask sneakTask;
   private BarrierTask barrierTask;
   private BossBarsTask bossBarsTask;
+  private MinionDecayTask minionDecayTask;
   private GlobalMultiplierTask globalMultiplierTask;
   private PruneBossBarsTask pruneBossBarsTask;
   private DarknessReductionTask darkTask;
@@ -311,6 +313,7 @@ public class StrifePlugin extends FacePlugin {
     sneakTask = new SneakTask(sneakManager);
     barrierTask = new BarrierTask(this);
     bossBarsTask = new BossBarsTask(bossBarManager);
+    minionDecayTask = new MinionDecayTask();
     globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
     pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     darkTask = new DarknessReductionTask(darknessManager);
@@ -401,6 +404,10 @@ public class StrifePlugin extends FacePlugin {
         240L, // Start timer after 12s
         2L // Run it every 1/10th of a second after
     );
+    minionDecayTask.runTaskTimer(this,
+        220L, // Start timer after 11s
+        11L
+    );
     globalMultiplierTask.runTaskTimer(this,
         20L * 15, // Start timer after 15s
         20L * 60 // Run it every minute after
@@ -490,6 +497,7 @@ public class StrifePlugin extends FacePlugin {
     saveSpawners();
     storage.saveAll();
     uniqueEntityManager.killAllSpawnedUniques();
+    attributedEntityManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
     HandlerList.unregisterAll(this);
 
@@ -500,6 +508,7 @@ public class StrifePlugin extends FacePlugin {
     sneakTask.cancel();
     barrierTask.cancel();
     bossBarsTask.cancel();
+    minionDecayTask.cancel();
     globalMultiplierTask.cancel();
     pruneBossBarsTask.cancel();
     darkTask.cancel();

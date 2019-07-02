@@ -228,6 +228,7 @@ public class EffectManager {
         effect = new Summon();
         ((Summon) effect).setAmount(cs.getInt("amount", 1));
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
+        ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
         break;
       case TARGET:
         effect = new ForceTarget();

@@ -48,6 +48,14 @@ public class AttributedEntityManager {
     trackedEntities.put(entity.getUniqueId(), attributedEntity);
   }
 
+  public void despawnAllTempEntities() {
+    for (AttributedEntity attributedEntity : trackedEntities.values()) {
+      if (attributedEntity.getEntity().isValid() && attributedEntity.isDespawnOnUnload()) {
+        attributedEntity.getEntity().remove();
+      }
+    }
+  }
+
   public void doChunkDespawn(LivingEntity entity) {
     if (!isTrackedEntity(entity)) {
       return;

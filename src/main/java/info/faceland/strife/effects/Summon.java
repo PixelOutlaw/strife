@@ -4,6 +4,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.managers.UniqueEntityManager;
+import info.faceland.strife.tasks.MinionDecayTask;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
@@ -11,6 +12,7 @@ public class Summon extends Effect {
 
   private String uniqueEntity;
   private int amount;
+  private double lifespanSeconds;
   private double spawnRange;
 
   private static final AttributedEntityManager entityManager = StrifePlugin.getInstance()
@@ -24,9 +26,13 @@ public class Summon extends Effect {
       Location loc =
           target == null ? caster.getEntity().getLocation() : target.getEntity().getLocation();
       LivingEntity summon = uniqueManager.spawnUnique(uniqueEntity, loc);
+      if (summon == null) {
+        return;
+      }
       AttributedEntity summonedEntity = entityManager.getAttributedEntity(summon);
       caster.getMinions().add(summonedEntity);
       summonedEntity.setDespawnOnUnload(true);
+      MinionDecayTask.addDecayingMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
     }
   }
 
@@ -52,5 +58,13 @@ public class Summon extends Effect {
 
   public void setSpawnRange(double spawnRange) {
     this.spawnRange = spawnRange;
+  }
+
+  public double getLifespanSeconds() {
+    return lifespanSeconds;
+  }
+
+  public void setLifespanSeconds(double lifespanSeconds) {
+    this.lifespanSeconds = lifespanSeconds;
   }
 }

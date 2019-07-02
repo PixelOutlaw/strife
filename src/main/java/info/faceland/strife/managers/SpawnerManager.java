@@ -60,6 +60,9 @@ public class SpawnerManager {
         continue;
       }
       LivingEntity le = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
+      if (le == null) {
+        return;
+      }
       uniqueManager.getData(le).setSpawner(s);
       s.setTrackedEntity(le);
     }

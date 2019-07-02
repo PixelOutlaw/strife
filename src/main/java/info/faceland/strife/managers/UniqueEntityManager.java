@@ -130,6 +130,10 @@ public class UniqueEntityManager {
     Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
         e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
 
+    if (entity == null || !entity.isValid()) {
+      return null;
+    }
+
     LivingEntity spawnedUnique = (LivingEntity) entity;
     spawnedUnique.setRemoveWhenFarAway(false);
 
