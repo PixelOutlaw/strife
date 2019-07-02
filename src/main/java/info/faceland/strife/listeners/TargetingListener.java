@@ -29,7 +29,7 @@ import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.StatUtil;
 import java.util.Random;
 import org.bukkit.Location;
-import org.bukkit.entity.Creature;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -78,7 +78,7 @@ public class TargetingListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
-        .getEntity() instanceof Creature) || event.getReason() != CLOSEST_PLAYER || event
+        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER || event
         .getEntity().hasMetadata("BOSS")) {
       return;
     }
@@ -86,7 +86,7 @@ public class TargetingListener implements Listener {
       return;
     }
     Player player = (Player) event.getTarget();
-    Creature creature = (Creature) event.getEntity();
+    Mob creature = (Mob) event.getEntity();
     if (!player.isSneaking()) {
       return;
     }

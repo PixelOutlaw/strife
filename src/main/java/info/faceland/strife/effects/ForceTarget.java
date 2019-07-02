@@ -2,7 +2,7 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.util.LogUtil;
-import org.bukkit.entity.Creature;
+import org.bukkit.entity.Mob;
 
 public class ForceTarget extends Effect {
 
@@ -10,13 +10,13 @@ public class ForceTarget extends Effect {
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
-    if (caster.getEntity() instanceof Creature) {
-      if (!overwrite && ((Creature) caster.getEntity()).getTarget() != null) {
+    if (caster.getEntity() instanceof Mob) {
+      if (!overwrite && ((Mob) caster.getEntity()).getTarget() != null) {
         return;
       }
-      ((Creature) caster.getEntity()).setTarget(target.getEntity());
+      ((Mob) caster.getEntity()).setTarget(target.getEntity());
     } else {
-      LogUtil.printWarning(caster.getEntity().getName() + " is not a creature. Target failed.");
+      LogUtil.printWarning(caster.getEntity().getName() + " is not a mob. Target failed.");
     }
   }
 

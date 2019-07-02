@@ -21,9 +21,9 @@ package info.faceland.strife.listeners;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.util.LogUtil;
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -44,7 +44,7 @@ public class MinionListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    if (!(event.getEntity() instanceof Creature && event.getTarget() instanceof LivingEntity)) {
+    if (!(event.getEntity() instanceof Mob && event.getTarget() instanceof LivingEntity)) {
       return;
     }
     if (!(manager.isTrackedEntity(event.getEntity()) && manager
@@ -105,8 +105,8 @@ public class MinionListener implements Listener {
       return;
     }
     for (AttributedEntity minion : attackEntity.getMinions()) {
-      if (minion.getEntity() instanceof Creature) {
-        ((Creature) minion.getEntity()).setTarget((LivingEntity) event.getEntity());
+      if (minion.getEntity() instanceof Mob) {
+        ((Mob) minion.getEntity()).setTarget((LivingEntity) event.getEntity());
       }
     }
   }
@@ -125,11 +125,11 @@ public class MinionListener implements Listener {
     }
     AttributedEntity hitEnt = manager.getAttributedEntity((LivingEntity) event.getEntity());
     for (AttributedEntity minion : hitEnt.getMinions()) {
-      if (!(minion.getEntity() instanceof Creature)) {
+      if (!(minion.getEntity() instanceof Mob)) {
         continue;
       }
-      if (((Creature) minion.getEntity()).getTarget() == null) {
-        ((Creature) minion.getEntity()).setTarget((LivingEntity) attacker);
+      if (((Mob) minion.getEntity()).getTarget() == null) {
+        ((Mob) minion.getEntity()).setTarget((LivingEntity) attacker);
       }
     }
   }

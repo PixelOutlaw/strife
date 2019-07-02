@@ -3,12 +3,12 @@ package info.faceland.strife.managers;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
-import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.util.LogUtil;
@@ -26,10 +26,10 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Chicken;
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
 public class AbilityManager {
@@ -202,9 +202,9 @@ public class AbilityManager {
   }
 
   private LivingEntity selectFirstEntityInSight(LivingEntity caster, int range) {
-    if (caster instanceof Creature && ((Creature) caster).getTarget() != null) {
-      LogUtil.printDebug("Creature target found. Using it instead of raycast");
-      return ((Creature) caster).getTarget();
+    if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
+      LogUtil.printDebug("Mob target found. Using it instead of raycast");
+      return ((Mob) caster).getTarget();
     }
     LogUtil.printDebug("No creature target found. Using raycast");
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
