@@ -116,9 +116,11 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void onChunkUnload(ChunkUnloadEvent e) {
     for (Entity ent : e.getChunk().getEntities()) {
-      if (ent instanceof LivingEntity) {
-        plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
+      if (!(ent instanceof LivingEntity)) {
+        continue;
       }
+      plugin.getAttributedEntityManager().doChunkDespawn((LivingEntity) ent);
+      plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
     }
   }
 

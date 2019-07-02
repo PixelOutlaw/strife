@@ -80,13 +80,6 @@ public class UniqueEntityManager {
     return liveUniquesMap.get(livingEntity).getPhase();
   }
 
-  public LivingEntity getMaster(LivingEntity livingEntity) {
-    if (!liveUniquesMap.containsKey(livingEntity)) {
-      return null;
-    }
-    return liveUniquesMap.get(livingEntity).getMaster();
-  }
-
   public UniqueEntityData getData(LivingEntity livingEntity) {
     return liveUniquesMap.getOrDefault(livingEntity, null);
   }

@@ -87,6 +87,11 @@ public class EffectManager {
       return;
     }
     LogUtil.printDebug(" Looping targets for " + effect.getName());
+    if (effect.getRange() == 0) {
+      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
+      effect.apply(caster, target);
+      return;
+    }
     for (LivingEntity le : getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange())) {
       LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
       effect.apply(caster, aeManager.getAttributedEntity(le));

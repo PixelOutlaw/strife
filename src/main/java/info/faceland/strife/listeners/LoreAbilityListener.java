@@ -1,8 +1,8 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
@@ -89,7 +89,8 @@ public class LoreAbilityListener implements Listener {
     }
     Champion champion = championManager.getChampion(event.getEntity().getKiller());
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_KILL)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEntity().getKiller()), null);
+      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEntity().getKiller()),
+          attributedEntityManager.getAttributedEntity(event.getEntity()));
     }
   }
 
@@ -100,7 +101,8 @@ public class LoreAbilityListener implements Listener {
     }
     Champion champion = championManager.getChampion(event.getPlayer());
     for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_SNEAK)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getPlayer()), null);
+      loreAbilityManager
+          .applyLoreAbility(la, getAttrEntity(event.getPlayer()), getAttrEntity(event.getPlayer()));
     }
   }
 

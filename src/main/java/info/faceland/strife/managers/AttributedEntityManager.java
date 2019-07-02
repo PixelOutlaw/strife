@@ -6,7 +6,6 @@ import info.faceland.strife.data.AttributedEntity;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -49,6 +48,15 @@ public class AttributedEntityManager {
     trackedEntities.put(entity.getUniqueId(), attributedEntity);
   }
 
+  public void doChunkDespawn(LivingEntity entity) {
+    if (!isTrackedEntity(entity)) {
+      return;
+    }
+    if (trackedEntities.get(entity.getUniqueId()).isDespawnOnUnload()) {
+      entity.remove();
+    }
+  }
+
   public void removeEntity(LivingEntity entity) {
     trackedEntities.remove(entity.getUniqueId());
   }
@@ -57,13 +65,18 @@ public class AttributedEntityManager {
     trackedEntities.remove(uuid);
   }
 
-  public boolean isValid(UUID uuid) {
-    if (trackedEntities.containsKey(uuid)) {
-      Entity entity = Bukkit.getEntity(uuid);
-      if (entity == null || !entity.isValid()) {
-        return false;
-      }
+  public boolean isTrackedEntity(Entity entity) {
+    return isTrackedEntity(entity.getUniqueId());
+  }
+
+  public boolean isTrackedEntity(UUID uuid) {
+    return trackedEntities.containsKey(uuid);
+  }
+
+  public LivingEntity getLivingEntity(UUID uuid) {
+    if (!isTrackedEntity(uuid)) {
+      return null;
     }
-    return true;
+    return trackedEntities.get(uuid).getEntity();
   }
 }
