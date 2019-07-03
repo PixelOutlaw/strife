@@ -73,7 +73,7 @@ public class PlayerDataUtil {
   }
 
   public static void playExpSound(Player player) {
-    player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.4f,
+    player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2f,
         0.8f + (float) Math.random() * 0.4f);
   }
 

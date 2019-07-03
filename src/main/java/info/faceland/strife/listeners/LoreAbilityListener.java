@@ -1,5 +1,14 @@
 package info.faceland.strife.listeners;
 
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_BLOCK;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_CRIT;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_EVADE;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_HIT;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_KILL;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK_ATTACK;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
+
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
@@ -10,7 +19,6 @@ import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
-import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -43,7 +51,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     Champion champion = championManager.getChampion((Player) event.getAttacker());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_CRIT)) {
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_CRIT)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
           getAttrEntity(event.getVictim()));
     }
@@ -55,7 +63,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     Champion champion = championManager.getChampion((Player) event.getEvader());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_EVADE)) {
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_EVADE)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEvader()),
           getAttrEntity(event.getAttacker()));
     }
@@ -67,30 +75,33 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     Champion champion = championManager.getChampion((Player) event.getBlocker());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_BLOCK)) {
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_BLOCK)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getBlocker()),
           getAttrEntity(event.getAttacker()));
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onSneakAttack(SneakAttackEvent event) {
     Champion champion = championManager.getChampion(event.getAttacker());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_SNEAK_ATTACK)) {
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_SNEAK_ATTACK)) {
       loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
           getAttrEntity(event.getVictim()));
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(EntityDeathEvent event) {
     if (event.getEntity().getKiller() == null) {
       return;
     }
     Champion champion = championManager.getChampion(event.getEntity().getKiller());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_KILL)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEntity().getKiller()),
-          attributedEntityManager.getAttributedEntity(event.getEntity()));
+    AttributedEntity attributedEntity = getAttrEntity(event.getEntity().getKiller());
+    if (attributedEntity.isMasterOf(event.getEntity())) {
+      return;
+    }
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_KILL)) {
+      loreAbilityManager.applyLoreAbility(la, attributedEntity, getAttrEntity(event.getEntity()));
     }
   }
 
@@ -100,7 +111,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     Champion champion = championManager.getChampion(event.getPlayer());
-    for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_SNEAK)) {
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_SNEAK)) {
       loreAbilityManager
           .applyLoreAbility(la, getAttrEntity(event.getPlayer()), getAttrEntity(event.getPlayer()));
     }
@@ -117,16 +128,22 @@ public class LoreAbilityListener implements Listener {
     LivingEntity attacker = getAttacker(event.getDamager());
     LivingEntity defender = (LivingEntity) event.getEntity();
 
+    AttributedEntity attackEntity = getAttrEntity(attacker);
+    AttributedEntity defendEntity = getAttrEntity(defender);
     if (attacker instanceof Player) {
-      Champion champion = championManager.getChampion((Player) attacker);
-      for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.ON_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, getAttrEntity(attacker), getAttrEntity(defender));
+      if (attackEntity.isMasterOf(defendEntity)) {
+        return;
+      }
+      for (LoreAbility la : attackEntity.getChampion().getLoreAbilities().get(ON_HIT)) {
+        loreAbilityManager.applyLoreAbility(la, attackEntity, defendEntity);
       }
     }
     if (attacker != null && defender instanceof Player) {
-      Champion champion = championManager.getChampion((Player) defender);
-      for (LoreAbility la : champion.getLoreAbilities().get(TriggerType.WHEN_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, getAttrEntity(defender), getAttrEntity(attacker));
+      if (attackEntity.isMasterOf(defendEntity)) {
+        return;
+      }
+      for (LoreAbility la : defendEntity.getChampion().getLoreAbilities().get(WHEN_HIT)) {
+        loreAbilityManager.applyLoreAbility(la, defendEntity, attackEntity);
       }
     }
   }
@@ -142,7 +159,6 @@ public class LoreAbilityListener implements Listener {
     return null;
   }
 
-  // Just to make things prettier, so sue me
   private AttributedEntity getAttrEntity(LivingEntity livingEntity) {
     return attributedEntityManager.getAttributedEntity(livingEntity);
   }
