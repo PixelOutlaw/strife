@@ -1,6 +1,6 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.util.PlayerDataUtil;
 
@@ -19,7 +19,7 @@ public class StatCondition implements Condition {
     this.value = value;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     if (compareTarget == CompareTarget.SELF && attacker.getChampion() == null ||
         compareTarget == CompareTarget.OTHER && target.getChampion() == null) {
       return false;

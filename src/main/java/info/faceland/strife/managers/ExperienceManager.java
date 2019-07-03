@@ -23,7 +23,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeExperienceManager;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
@@ -45,7 +45,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     double maxFaceExp = (double) getMaxFaceExp(player.getLevel());
     double currentExpPercent = player.getExp();
 
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
 
     if (!exact) {
       double statsMult = pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100;

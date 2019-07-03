@@ -1,10 +1,10 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 
 public interface Condition {
 
-  boolean isMet(AttributedEntity attacker, AttributedEntity target);
+  boolean isMet(StrifeMob attacker, StrifeMob target);
 
   enum Comparison {
     GREATER_THAN,

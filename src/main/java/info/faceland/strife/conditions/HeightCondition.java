@@ -1,6 +1,6 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 
 public class HeightCondition implements Condition {
 
@@ -10,7 +10,7 @@ public class HeightCondition implements Condition {
     this.compareTarget = compareTarget;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     if (compareTarget == CompareTarget.SELF) {
       return attacker.getEntity().getLocation().getY() > target.getEntity().getLocation().getY();
     } else {

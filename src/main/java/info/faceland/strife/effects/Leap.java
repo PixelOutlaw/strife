@@ -1,6 +1,6 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import org.bukkit.util.Vector;
 
 public class Leap extends Effect {
@@ -9,7 +9,7 @@ public class Leap extends Effect {
   private double forward;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     caster.getEntity().setVelocity(caster.getEntity().getVelocity().add(new Vector(0, height, 0)
         .add(caster.getEntity().getEyeLocation().getDirection().multiply(forward))));
   }

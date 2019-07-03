@@ -24,11 +24,13 @@ import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.StatUtil;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -38,10 +40,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
@@ -65,7 +63,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
     ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

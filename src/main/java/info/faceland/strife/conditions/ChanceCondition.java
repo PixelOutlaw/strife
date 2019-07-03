@@ -1,7 +1,7 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.DamageUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class ChanceCondition implements Condition {
     this.chance = chance;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double bonusChance = 1;
     for (StrifeAttribute attr : statMults.keySet()) {
       bonusChance += attacker.getAttribute(attr) * statMults.get(attr);

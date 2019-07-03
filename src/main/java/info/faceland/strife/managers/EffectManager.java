@@ -19,7 +19,7 @@ import info.faceland.strife.conditions.HeightCondition;
 import info.faceland.strife.conditions.LevelCondition;
 import info.faceland.strife.conditions.PotionCondition;
 import info.faceland.strife.conditions.StatCondition;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.StrifeStat;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.ConsumeBleed;
@@ -59,18 +59,18 @@ import org.bukkit.potion.PotionEffectType;
 public class EffectManager {
 
   private final StrifeStatManager strifeStatManager;
-  private final AttributedEntityManager aeManager;
+  private final StrifeMobManager aeManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  public EffectManager(StrifeStatManager strifeStatManager, AttributedEntityManager aeManager) {
+  public EffectManager(StrifeStatManager strifeStatManager, StrifeMobManager aeManager) {
     this.strifeStatManager = strifeStatManager;
     this.aeManager = aeManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
   }
 
-  public void execute(String effectName, AttributedEntity caster, AttributedEntity target) {
+  public void execute(String effectName, StrifeMob caster, StrifeMob target) {
     Effect effect = getEffect(effectName);
     if (effect == null) {
       return;
@@ -78,7 +78,7 @@ public class EffectManager {
     execute(effect, caster, target);
   }
 
-  public void execute(Effect effect, AttributedEntity caster, AttributedEntity target) {
+  public void execute(Effect effect, StrifeMob caster, StrifeMob target) {
     if (effect.isForceTargetCaster()) {
       target = caster;
     }

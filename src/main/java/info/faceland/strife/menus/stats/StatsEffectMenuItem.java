@@ -23,8 +23,8 @@ import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeTrait;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public class StatsEffectMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
     ItemStack itemStack = new ItemStack(Material.EMERALD);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

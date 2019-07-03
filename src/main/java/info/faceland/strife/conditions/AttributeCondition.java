@@ -1,7 +1,7 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.PlayerDataUtil;
 
 public class AttributeCondition implements Condition {
@@ -19,7 +19,7 @@ public class AttributeCondition implements Condition {
     this.value = value;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     long attributeValue = compareTarget == CompareTarget.SELF ?
         Math.round(attacker.getAttribute(strifeAttribute)) :
         Math.round(target.getAttribute(strifeAttribute));

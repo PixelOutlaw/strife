@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import org.bukkit.entity.LivingEntity;
 
-public class AttributedEntity {
+public class StrifeMob {
 
   private final Map<StrifeAttribute, Double> attributeCache = new HashMap<>();
   private final Map<Ability, Long> cooldownMap = new HashMap<>();
@@ -18,16 +18,16 @@ public class AttributedEntity {
   private final Champion champion;
   private LivingEntity livingEntity;
 
-  private final Set<AttributedEntity> minions = new ConcurrentSet<>();
+  private final Set<StrifeMob> minions = new ConcurrentSet<>();
 
   private boolean despawnOnUnload = false;
 
-  public AttributedEntity(Champion champion) {
+  public StrifeMob(Champion champion) {
     this.livingEntity = champion.getPlayer();
     this.champion = champion;
   }
 
-  public AttributedEntity(LivingEntity livingEntity) {
+  public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = livingEntity;
     this.champion = null;
   }
@@ -68,17 +68,17 @@ public class AttributedEntity {
     cooldownMap.put(ability, System.currentTimeMillis() + ability.getCooldown() * 1000);
   }
 
-  public boolean isMinionOf(AttributedEntity attributedEntity) {
-    return attributedEntity.getMinions().contains(this);
+  public boolean isMinionOf(StrifeMob strifeMob) {
+    return strifeMob.getMinions().contains(this);
   }
 
-  public boolean isMasterOf(AttributedEntity attributedEntity) {
-    return getMinions().contains(attributedEntity);
+  public boolean isMasterOf(StrifeMob strifeMob) {
+    return getMinions().contains(strifeMob);
   }
 
   public boolean isMasterOf(LivingEntity entity) {
-    for (AttributedEntity attributedEntity : minions) {
-      if (attributedEntity.getEntity() == entity) {
+    for (StrifeMob strifeMob : minions) {
+      if (strifeMob.getEntity() == entity) {
         return true;
       }
     }
@@ -92,8 +92,8 @@ public class AttributedEntity {
     return champion.hasTrait(trait);
   }
 
-  public Set<AttributedEntity> getMinions() {
-    for (AttributedEntity minion : minions) {
+  public Set<StrifeMob> getMinions() {
+    for (StrifeMob minion : minions) {
       if (minion == null || minion.getEntity() == null || !minion.getEntity().isValid()) {
         minions.remove(minion);
       }

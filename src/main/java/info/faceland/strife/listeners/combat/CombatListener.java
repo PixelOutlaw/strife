@@ -51,7 +51,7 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.events.SneakAttackEvent;
@@ -145,9 +145,9 @@ public class CombatListener implements Listener {
 
     AttackType damageType = DamageUtil.getAttackType(event);
 
-    AttributedEntity attacker = plugin.getAttributedEntityManager()
+    StrifeMob attacker = plugin.getStrifeMobManager()
         .getAttributedEntity(attackEntity);
-    AttributedEntity defender = plugin.getAttributedEntityManager()
+    StrifeMob defender = plugin.getStrifeMobManager()
         .getAttributedEntity(defendEntity);
 
     if (damageType == AttackType.MELEE) {
@@ -372,7 +372,7 @@ public class CombatListener implements Listener {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    AttributedEntity killer = plugin.getAttributedEntityManager()
+    StrifeMob killer = plugin.getStrifeMobManager()
         .getAttributedEntity(event.getEntity().getKiller());
     if (killer.getAttribute(HP_ON_KILL) > 0.1) {
       restoreHealth(event.getEntity().getKiller(), killer.getAttribute(HP_ON_KILL));
@@ -383,7 +383,7 @@ public class CombatListener implements Listener {
     }
   }
 
-  private void doReflectedDamage(AttributedEntity defender, LivingEntity attacker,
+  private void doReflectedDamage(StrifeMob defender, LivingEntity attacker,
       AttackType damageType) {
     if (defender.getAttribute(DAMAGE_REFLECT) < 0.1) {
       return;
@@ -398,7 +398,7 @@ public class CombatListener implements Listener {
     }
   }
 
-  private boolean doCriticalHit(AttributedEntity attacker, AttributedEntity defender) {
+  private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender) {
     if (attacker.getAttribute(StrifeAttribute.CRITICAL_RATE) / 100 >= rollDouble(
         hasLuck(attacker.getEntity()))) {
       callCritEvent(attacker.getEntity(), attacker.getEntity());

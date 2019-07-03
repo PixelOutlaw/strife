@@ -18,19 +18,41 @@
  */
 package info.faceland.strife.menus.stats;
 
-import static info.faceland.strife.attributes.StrifeAttribute.*;
+import static info.faceland.strife.attributes.StrifeAttribute.ACCURACY;
+import static info.faceland.strife.attributes.StrifeAttribute.ARMOR_PENETRATION;
+import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.CORRUPT_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_RATE;
+import static info.faceland.strife.attributes.StrifeAttribute.DARK_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.DOGE;
+import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.FREEZE_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
+import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_KILL;
+import static info.faceland.strife.attributes.StrifeAttribute.ICE_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.IGNITE_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.LIFE_STEAL;
+import static info.faceland.strife.attributes.StrifeAttribute.LIGHTNING_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.LIGHT_DAMAGE;
+import static info.faceland.strife.attributes.StrifeAttribute.MAX_EARTH_RUNES;
+import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
+import static info.faceland.strife.attributes.StrifeAttribute.SHOCK_CHANCE;
+import static info.faceland.strife.attributes.StrifeAttribute.WARD_PENETRATION;
 import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -40,10 +62,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatsOffenseMenuItem extends MenuItem {
 
@@ -66,7 +84,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
     Map<StrifeAttribute, Double> bases = plugin.getMonsterManager()
         .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon

@@ -1,6 +1,6 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Mob;
 
@@ -9,7 +9,7 @@ public class ForceTarget extends Effect {
   private boolean overwrite;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     if (caster.getEntity() instanceof Mob) {
       if (!overwrite && ((Mob) caster.getEntity()).getTarget() != null) {
         return;

@@ -25,7 +25,7 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.bullion.GoldDropEvent;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -47,7 +47,7 @@ public class BullionListener implements Listener {
         if (event.getKiller() == null) {
             return;
         }
-        AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(event.getKiller());
+        StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(event.getKiller());
         double amount = event.getAmount() + event.getAmount() * (1 + pStats.getAttribute(StrifeAttribute.GOLD_FIND) / 100);
         event.setAmount(amount);
     }

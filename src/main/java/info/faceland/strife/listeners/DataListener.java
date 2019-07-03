@@ -75,7 +75,7 @@ public class DataListener implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       UUID uuid = event.getEntity().getUniqueId();
       Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getAttributedEntityManager().removeEntity(uuid), 20L * 30);
+          () -> plugin.getStrifeMobManager().removeEntity(uuid), 20L * 30);
     }
   }
 
@@ -94,7 +94,7 @@ public class DataListener implements Listener {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager()
         .createBarrierEntry(
-            plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+            plugin.getStrifeMobManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -108,9 +108,9 @@ public class DataListener implements Listener {
     }
     final Player player = event.getPlayer();
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
-    plugin.getAttributedEntityManager().getAttributedEntity(entity);
+    plugin.getStrifeMobManager().getAttributedEntity(entity);
     plugin.getBossBarManager()
-        .pushBar(player, plugin.getAttributedEntityManager().getAttributedEntity(entity));
+        .pushBar(player, plugin.getStrifeMobManager().getAttributedEntity(entity));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -119,7 +119,7 @@ public class DataListener implements Listener {
       if (!(ent instanceof LivingEntity)) {
         continue;
       }
-      plugin.getAttributedEntityManager().doChunkDespawn((LivingEntity) ent);
+      plugin.getStrifeMobManager().doChunkDespawn((LivingEntity) ent);
       plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
     }
   }

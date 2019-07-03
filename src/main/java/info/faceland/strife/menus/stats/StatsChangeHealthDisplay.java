@@ -20,7 +20,6 @@ package info.faceland.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
@@ -80,7 +79,7 @@ public class StatsChangeHealthDisplay extends MenuItem {
     }
     champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
     plugin.getAttributeUpdateManager()
-        .updateHealth(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+        .updateHealth(plugin.getStrifeMobManager().getAttributedEntity(event.getPlayer()));
     plugin.getStatsMenu().setItem(position, this);
     MessageUtils.sendMessage(champion.getPlayer(),
         "&c&lHealth Display: &f&c" + WordUtils.capitalize(

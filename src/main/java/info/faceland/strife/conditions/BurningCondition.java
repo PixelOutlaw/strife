@@ -1,6 +1,6 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import org.bukkit.entity.LivingEntity;
 
 public class BurningCondition implements Condition {
@@ -13,7 +13,7 @@ public class BurningCondition implements Condition {
     this.isBurning = isBurning;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     if (compareTarget == CompareTarget.SELF) {
       return isBurning(attacker.getEntity()) == isBurning;
     } else {

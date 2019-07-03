@@ -1,7 +1,7 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
@@ -12,7 +12,7 @@ public class Heal extends Effect {
   private DamageScale damageScale;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity attributedTarget) {
+  public void apply(StrifeMob caster, StrifeMob attributedTarget) {
     double heal = amount;
     for (StrifeAttribute attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);

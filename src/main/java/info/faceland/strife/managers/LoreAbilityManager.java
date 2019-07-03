@@ -2,9 +2,9 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import info.faceland.strife.data.ability.Ability;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
@@ -96,7 +96,7 @@ public class LoreAbilityManager {
     LogUtil.printInfo("Loaded lore ability " + key + " successfully.");
   }
 
-  public void applyLoreAbility(LoreAbility la, AttributedEntity caster, AttributedEntity target) {
+  public void applyLoreAbility(LoreAbility la, StrifeMob caster, StrifeMob target) {
     LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + la.getId());
     if (la.getAbility() != null) {
       abilityManager.execute(la.getAbility(), caster, target);

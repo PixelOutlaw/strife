@@ -1,7 +1,7 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
@@ -14,7 +14,7 @@ public class DealDamage extends Effect {
   private boolean applyEffects;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     double damage = amount;
     for (StrifeAttribute attr : getStatMults().keySet()) {
       damage += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);

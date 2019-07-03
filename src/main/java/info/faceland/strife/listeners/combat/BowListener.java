@@ -24,7 +24,7 @@ import static info.faceland.strife.util.ProjectileUtil.createArrow;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import java.util.Random;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
@@ -56,7 +56,7 @@ public class BowListener implements Listener {
     event.setCancelled(true);
 
     Player player = (Player) event.getEntity().getShooter();
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 

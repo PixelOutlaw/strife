@@ -22,10 +22,11 @@ import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import java.util.ArrayList;
+import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -34,9 +35,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatsBonusMenuItem extends MenuItem {
 
@@ -59,7 +57,7 @@ public class StatsBonusMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
     ItemStack itemStack = new ItemStack(Material.GOLD_INGOT);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

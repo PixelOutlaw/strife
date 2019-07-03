@@ -1,7 +1,7 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.BleedManager;
 
 public class BleedingCondition implements Condition {
@@ -16,7 +16,7 @@ public class BleedingCondition implements Condition {
     this.isBleeding = isBleeding;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     if (compareTarget == CompareTarget.SELF) {
       return BLEED_MANAGER.isBleeding(attacker.getEntity()) == isBleeding;
     } else {

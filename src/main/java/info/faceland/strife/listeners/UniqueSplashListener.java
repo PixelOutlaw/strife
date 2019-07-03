@@ -4,10 +4,10 @@ import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
 
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.managers.AttributedEntityManager;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.EffectManager;
+import info.faceland.strife.managers.StrifeMobManager;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -18,13 +18,13 @@ import org.bukkit.event.entity.PotionSplashEvent;
 
 public class UniqueSplashListener implements Listener {
 
-  private final AttributedEntityManager attributedEntityManager;
+  private final StrifeMobManager strifeMobManager;
   private final BlockManager blockManager;
   private final EffectManager effectManager;
 
-  public UniqueSplashListener(AttributedEntityManager attributedEntityManager, BlockManager blockManager,
+  public UniqueSplashListener(StrifeMobManager strifeMobManager, BlockManager blockManager,
       EffectManager effectManager) {
-    this.attributedEntityManager = attributedEntityManager;
+    this.strifeMobManager = strifeMobManager;
     this.blockManager = blockManager;
     this.effectManager = effectManager;
   }
@@ -43,13 +43,13 @@ public class UniqueSplashListener implements Listener {
       return;
     }
     LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
-    AttributedEntity attacker = attributedEntityManager.getAttributedEntity(attackEntity);
+    StrifeMob attacker = strifeMobManager.getAttributedEntity(attackEntity);
     for (Entity e : event.getAffectedEntities()) {
       if (!(e instanceof LivingEntity)) {
         continue;
       }
       LivingEntity defendEntity = (LivingEntity) e;
-      AttributedEntity defender = attributedEntityManager.getAttributedEntity(defendEntity);
+      StrifeMob defender = strifeMobManager.getAttributedEntity(defendEntity);
 
       double evasionMultiplier = StatUtil.getMinimumEvasionMult(attacker, defender);
       evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));

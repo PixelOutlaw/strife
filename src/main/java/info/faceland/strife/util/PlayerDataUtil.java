@@ -4,7 +4,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import java.util.Set;
@@ -54,7 +54,7 @@ public class PlayerDataUtil {
     MessageUtils.sendActionBar((Player) entity, damageString.toString());
   }
 
-  public static boolean areConditionsMet(AttributedEntity caster, AttributedEntity target,
+  public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
       Set<Condition> conditions) {
     if (target == null && conditions.size() > 0) {
       return false;

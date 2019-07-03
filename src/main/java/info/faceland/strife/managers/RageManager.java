@@ -19,8 +19,8 @@
 package info.faceland.strife.managers;
 
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.RageData;
+import info.faceland.strife.data.StrifeMob;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,7 +59,7 @@ public class RageManager {
     return rageMap.get(entity.getUniqueId()).getRageStacks();
   }
 
-  public void setRage(AttributedEntity aEntity, double amount) {
+  public void setRage(StrifeMob aEntity, double amount) {
     if (!rageMap.containsKey(aEntity.getEntity().getUniqueId())) {
       return;
     }
@@ -67,21 +67,21 @@ public class RageManager {
     attributeUpdateManager.updateAttackSpeed(aEntity);
   }
 
-  public void addRage(AttributedEntity attributedEntity, double amount) {
-    LivingEntity entity = attributedEntity.getEntity();
-    if (attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE) < 1) {
+  public void addRage(StrifeMob strifeMob, double amount) {
+    LivingEntity entity = strifeMob.getEntity();
+    if (strifeMob.getAttribute(StrifeAttribute.MAXIMUM_RAGE) < 1) {
       return;
     }
     if (!rageMap.containsKey(entity.getUniqueId())) {
       rageMap.put(entity.getUniqueId(), new RageData(
-          Math.min(amount, attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE)),
+          Math.min(amount, strifeMob.getAttribute(StrifeAttribute.MAXIMUM_RAGE)),
           RAGE_GRACE_TICKS));
       return;
     }
 
     rageMap.get(entity.getUniqueId()).setRageStacks(
         Math.min(rageMap.get(entity.getUniqueId()).getRageStacks() + amount,
-            attributedEntity.getAttribute(StrifeAttribute.MAXIMUM_RAGE)));
+            strifeMob.getAttribute(StrifeAttribute.MAXIMUM_RAGE)));
     refreshRage(entity);
   }
 

@@ -1,6 +1,6 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.PlayerDataUtil;
 import org.bukkit.entity.Player;
 
@@ -14,7 +14,7 @@ public class LevelCondition implements Condition {
     this.level = level;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     if (attacker.getEntity() instanceof Player) {
       return PlayerDataUtil
           .conditionCompare(comparison, ((Player) attacker.getEntity()).getLevel(), level);

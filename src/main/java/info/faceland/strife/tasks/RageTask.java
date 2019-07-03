@@ -20,9 +20,9 @@ package info.faceland.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.data.RageData;
 import info.faceland.strife.managers.RageManager;
+import info.faceland.strife.managers.StrifeMobManager;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
@@ -33,11 +33,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class RageTask extends BukkitRunnable {
 
   private final RageManager rageManager;
-  private final AttributedEntityManager attributedEntityManager;
+  private final StrifeMobManager strifeMobManager;
 
-  public RageTask(RageManager rageManager, AttributedEntityManager attributedEntityManager) {
+  public RageTask(RageManager rageManager, StrifeMobManager strifeMobManager) {
     this.rageManager = rageManager;
-    this.attributedEntityManager = attributedEntityManager;
+    this.strifeMobManager = strifeMobManager;
   }
 
   @Override
@@ -60,7 +60,7 @@ public class RageTask extends BukkitRunnable {
         continue;
       }
 
-      rageManager.setRage(attributedEntityManager.getAttributedEntity(entity), data.getRageStacks() - 5);
+      rageManager.setRage(strifeMobManager.getAttributedEntity(entity), data.getRageStacks() - 5);
       String msg = TextUtils.color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
       MessageUtils.sendActionBar((Player) entity, msg);
 

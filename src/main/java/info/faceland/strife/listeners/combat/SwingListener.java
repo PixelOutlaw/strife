@@ -25,7 +25,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.attributes.StrifeTrait;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.ProjectileUtil;
 import java.util.ArrayList;
@@ -96,7 +96,7 @@ public class SwingListener implements Listener {
       doMeleeSwing(event.getPlayer(), event, true);
     }
     plugin.getAttributeUpdateManager().updateAttackSpeed(
-        plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+        plugin.getStrifeMobManager().getAttributedEntity(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -113,7 +113,7 @@ public class SwingListener implements Listener {
   }
 
   private void doMeleeSwing(Player player, Cancellable event, boolean resetAttack) {
-    AttributedEntity attacker = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob attacker = plugin.getStrifeMobManager().getAttributedEntity(player);
 
     double attackMultiplier = plugin.getAttackSpeedManager()
         .getAttackMultiplier(attacker, resetAttack);
@@ -134,7 +134,7 @@ public class SwingListener implements Listener {
   }
 
   private void shootWand(Player player, Cancellable event) {
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 

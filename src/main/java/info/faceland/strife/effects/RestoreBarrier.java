@@ -2,7 +2,7 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.util.DamageUtil;
 
@@ -12,7 +12,7 @@ public class RestoreBarrier extends Effect {
   private DamageScale damageScale;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity attributedTarget) {
+  public void apply(StrifeMob caster, StrifeMob attributedTarget) {
     if (attributedTarget.getAttribute(StrifeAttribute.BARRIER) == 0) {
       return;
     }

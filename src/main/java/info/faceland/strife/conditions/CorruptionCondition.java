@@ -1,7 +1,7 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.DarknessManager;
 
 public class CorruptionCondition implements Condition {
@@ -19,7 +19,7 @@ public class CorruptionCondition implements Condition {
     this.value = value;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double stacks;
     if (compareTarget == CompareTarget.SELF) {
       stacks = DARKNESS_MANAGER.getCorruptionStacks(attacker.getEntity());

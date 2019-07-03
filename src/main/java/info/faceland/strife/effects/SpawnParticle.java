@@ -1,6 +1,6 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 
@@ -11,7 +11,7 @@ public class SpawnParticle extends Effect {
   private float speed;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     Location loc = target.getEntity().getLocation().clone()
         .add(target.getEntity().getEyeLocation());
     loc.multiply(0.5);

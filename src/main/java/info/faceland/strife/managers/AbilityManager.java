@@ -4,7 +4,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
 import info.faceland.strife.data.ability.EntityAbilitySet;
@@ -56,8 +56,8 @@ public class AbilityManager {
     return null;
   }
 
-  public void execute(final Ability ability, final AttributedEntity caster,
-      AttributedEntity target) {
+  public void execute(final Ability ability, final StrifeMob caster,
+      StrifeMob target) {
     if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
@@ -82,7 +82,7 @@ public class AbilityManager {
         LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
         return;
       }
-      target = plugin.getAttributedEntityManager().getAttributedEntity(targetEntity);
+      target = plugin.getStrifeMobManager().getAttributedEntity(targetEntity);
     } else {
       targetEntity = target.getEntity();
     }
@@ -109,11 +109,11 @@ public class AbilityManager {
     }
   }
 
-  public void execute(Ability ability, final AttributedEntity caster) {
+  public void execute(Ability ability, final StrifeMob caster) {
     execute(ability, caster, null);
   }
 
-  public void uniqueAbilityCast(AttributedEntity caster, AbilityType type) {
+  public void uniqueAbilityCast(StrifeMob caster, AbilityType type) {
     EntityAbilitySet abilitySet = plugin.getUniqueEntityManager().getAbilitySet(caster.getEntity());
     if (abilitySet == null) {
       return;
@@ -141,19 +141,19 @@ public class AbilityManager {
       return;
     }
     LogUtil.printDebug("Checking phase switch");
-    AttributedEntity attributedEntity = plugin.getAttributedEntityManager()
+    StrifeMob strifeMob = plugin.getStrifeMobManager()
         .getAttributedEntity(entity);
-    int currentPhase = plugin.getUniqueEntityManager().getPhase(attributedEntity.getEntity());
+    int currentPhase = plugin.getUniqueEntityManager().getPhase(strifeMob.getEntity());
     int newPhase =
         6 - (int) Math.ceil((entity.getHealth() / entity.getMaxHealth()) / 0.2);
     LogUtil.printDebug("currentPhase: " + currentPhase + " | newPhase: " + newPhase);
     if (newPhase > currentPhase) {
       plugin.getUniqueEntityManager().getLiveUniquesMap().get(entity).setPhase(newPhase);
-      uniqueAbilityCast(attributedEntity, AbilityType.PHASE_SHIFT);
+      uniqueAbilityCast(strifeMob, AbilityType.PHASE_SHIFT);
     }
   }
 
-  private void abilityPhaseCast(AttributedEntity caster, Map<Integer, List<Ability>> abilitySection,
+  private void abilityPhaseCast(StrifeMob caster, Map<Integer, List<Ability>> abilitySection,
       int phase) {
     if (phase > 5) {
       throw new IllegalArgumentException("Phase cannot be higher than 5");
@@ -167,13 +167,13 @@ public class AbilityManager {
     }
   }
 
-  private void executeAbilityList(AttributedEntity caster, List<Ability> abilities) {
+  private void executeAbilityList(StrifeMob caster, List<Ability> abilities) {
     for (Ability a : abilities) {
       execute(a, caster);
     }
   }
 
-  private void runEffects(AttributedEntity caster, AttributedEntity target, List<Effect> effectList,
+  private void runEffects(StrifeMob caster, StrifeMob target, List<Effect> effectList,
       int delay) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       LogUtil.printDebug("Effect task started - " + effectList.toString());
@@ -189,7 +189,7 @@ public class AbilityManager {
     }, delay);
   }
 
-  private LivingEntity getTarget(AttributedEntity caster, Ability ability) {
+  private LivingEntity getTarget(StrifeMob caster, Ability ability) {
     switch (ability.getTargetType()) {
       case SELF:
         return caster.getEntity();

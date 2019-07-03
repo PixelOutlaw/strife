@@ -195,7 +195,7 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
 
-    plugin.getAttributedEntityManager()
+    plugin.getStrifeMobManager()
         .setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
     plugin.getAbilityManager().checkPhaseChange(spawnedUnique);

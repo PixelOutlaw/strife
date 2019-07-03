@@ -18,9 +18,9 @@
  */
 package info.faceland.strife.listeners;
 
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.managers.AttributedEntityManager;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.MinionManager;
+import info.faceland.strife.managers.StrifeMobManager;
 import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -35,10 +35,10 @@ import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 
 public class MinionListener implements Listener {
 
-  private final AttributedEntityManager entityManager;
+  private final StrifeMobManager entityManager;
   private final MinionManager minionManager;
 
-  public MinionListener(AttributedEntityManager entityManager, MinionManager minionManager) {
+  public MinionListener(StrifeMobManager entityManager, MinionManager minionManager) {
     this.entityManager = entityManager;
     this.minionManager = minionManager;
   }
@@ -66,7 +66,7 @@ public class MinionListener implements Listener {
     if (!entityManager.isTrackedEntity(event.getEntity())) {
       return;
     }
-    AttributedEntity attrEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    StrifeMob attrEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
     if (attrEnt.isMasterOf((LivingEntity) event.getEntity())) {
       LogUtil.printDebug("Ignoring targeting of minion for " + attrEnt.getEntity().getCustomName());
       event.setCancelled(true);
@@ -90,7 +90,7 @@ public class MinionListener implements Listener {
     if (!(entityManager.isTrackedEntity(event.getEntity()) && entityManager.isTrackedEntity(attacker))) {
       return;
     }
-    AttributedEntity defend = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    StrifeMob defend = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
     if (defend.isMasterOf((LivingEntity)attacker)) {
       LogUtil.printDebug("Ignoring attacking of master for " + attacker.getCustomName());
       event.setCancelled(true);
@@ -109,12 +109,12 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    AttributedEntity attackEntity = entityManager.getAttributedEntity((LivingEntity) attacker);
+    StrifeMob attackEntity = entityManager.getAttributedEntity((LivingEntity) attacker);
     if (attackEntity.getMinions()
         .contains(entityManager.getAttributedEntity((LivingEntity) event.getEntity()))) {
       return;
     }
-    for (AttributedEntity minion : attackEntity.getMinions()) {
+    for (StrifeMob minion : attackEntity.getMinions()) {
       if (minion.getEntity() instanceof Mob) {
         ((Mob) minion.getEntity()).setTarget((LivingEntity) event.getEntity());
       }
@@ -133,8 +133,8 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    AttributedEntity hitEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
-    for (AttributedEntity minion : hitEnt.getMinions()) {
+    StrifeMob hitEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    for (StrifeMob minion : hitEnt.getMinions()) {
       if (!(minion.getEntity() instanceof Mob)) {
         continue;
       }

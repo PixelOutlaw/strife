@@ -1,9 +1,9 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.managers.AttributedEntityManager;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.MinionManager;
+import info.faceland.strife.managers.StrifeMobManager;
 import info.faceland.strife.managers.UniqueEntityManager;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
@@ -15,14 +15,14 @@ public class Summon extends Effect {
   private double lifespanSeconds;
   private double spawnRange;
 
-  private static final AttributedEntityManager entityManager = StrifePlugin.getInstance()
-      .getAttributedEntityManager();
+  private static final StrifeMobManager entityManager = StrifePlugin.getInstance()
+      .getStrifeMobManager();
   private static final UniqueEntityManager uniqueManager = StrifePlugin.getInstance()
       .getUniqueEntityManager();
   private static final MinionManager minionManager = StrifePlugin.getInstance().getMinionManager();
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     for (int i = 0; i < amount; i++) {
       Location loc =
           target == null ? caster.getEntity().getLocation() : target.getEntity().getLocation();
@@ -30,7 +30,7 @@ public class Summon extends Effect {
       if (summon == null) {
         return;
       }
-      AttributedEntity summonedEntity = entityManager.getAttributedEntity(summon);
+      StrifeMob summonedEntity = entityManager.getAttributedEntity(summon);
       caster.getMinions().add(summonedEntity);
       summonedEntity.setDespawnOnUnload(true);
       minionManager.getMinionDecayMap().put(summon, (int) ((lifespanSeconds * 20D) / 11D));

@@ -20,8 +20,8 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.util.StatUtil.getAttackTime;
 
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LastAttackTracker;
+import info.faceland.strife.data.StrifeMob;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -40,11 +40,11 @@ public class AttackSpeedManager {
     lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
   }
 
-  public double getAttackMultiplier(AttributedEntity attacker) {
+  public double getAttackMultiplier(StrifeMob attacker) {
     return getAttackMultiplier(attacker, true);
   }
 
-  public double getAttackMultiplier(AttributedEntity attacker, boolean resetTime) {
+  public double getAttackMultiplier(StrifeMob attacker, boolean resetTime) {
     if (!(attacker.getEntity() instanceof Player)) {
       return 1.0;
     }

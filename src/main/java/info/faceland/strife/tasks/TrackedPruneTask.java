@@ -34,17 +34,17 @@ public class TrackedPruneTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    int startSize = plugin.getAttributedEntityManager().getTrackedEntities().size();
-    for (UUID uuid : plugin.getAttributedEntityManager().getTrackedEntities().keySet()) {
-      if (!plugin.getAttributedEntityManager().isTrackedEntity(uuid)) {
+    int startSize = plugin.getStrifeMobManager().getTrackedEntities().size();
+    for (UUID uuid : plugin.getStrifeMobManager().getTrackedEntities().keySet()) {
+      if (!plugin.getStrifeMobManager().isTrackedEntity(uuid)) {
         continue;
       }
-      if (isValidEntity(plugin.getAttributedEntityManager().getLivingEntity(uuid))) {
+      if (isValidEntity(plugin.getStrifeMobManager().getLivingEntity(uuid))) {
         continue;
       }
-      plugin.getAttributedEntityManager().removeEntity(uuid);
+      plugin.getStrifeMobManager().removeEntity(uuid);
     }
-    int newSize = plugin.getAttributedEntityManager().getTrackedEntities().size();
+    int newSize = plugin.getStrifeMobManager().getTrackedEntities().size();
     LogUtil.printDebug("Cleared " + (startSize - newSize) + " invalid attributed entities.");
   }
 

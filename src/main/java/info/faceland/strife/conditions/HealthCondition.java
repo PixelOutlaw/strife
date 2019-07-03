@@ -1,6 +1,6 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.PlayerDataUtil;
 
 public class HealthCondition implements Condition {
@@ -17,7 +17,7 @@ public class HealthCondition implements Condition {
     this.percentage = percentage;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double healthValue;
     if (percentage) {
       healthValue = compareTarget == CompareTarget.SELF ?

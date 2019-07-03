@@ -19,7 +19,6 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
@@ -111,11 +110,11 @@ public class AttributeUpdateListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerQuit(PlayerQuitEvent event) {
-    plugin.getAttributedEntityManager().removeEntity(event.getPlayer());
+    plugin.getStrifeMobManager().removeEntity(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerKick(PlayerKickEvent event) {
-    plugin.getAttributedEntityManager().removeEntity(event.getPlayer());
+    plugin.getStrifeMobManager().removeEntity(event.getPlayer());
   }
 }

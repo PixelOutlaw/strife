@@ -18,19 +18,19 @@
  */
 package info.faceland.strife.listeners.combat;
 
+import static info.faceland.strife.util.DamageUtil.getResistPotionMult;
+
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.*;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-
-import static info.faceland.strife.util.DamageUtil.getResistPotionMult;
 
 public class DOTListener implements Listener {
 
@@ -49,7 +49,7 @@ public class DOTListener implements Listener {
       return;
     }
     LivingEntity entity = (LivingEntity) event.getEntity();
-    AttributedEntity statEntity = plugin.getAttributedEntityManager().getAttributedEntity(entity);
+    StrifeMob statEntity = plugin.getStrifeMobManager().getAttributedEntity(entity);
 
     if (event.getCause() == DamageCause.FIRE_TICK) {
       double damage = (1 + entity.getHealth() * 0.04) * getResistPotionMult(entity) * (1

@@ -9,16 +9,16 @@ import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_SN
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK_ATTACK;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
 
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
-import info.faceland.strife.managers.AttributedEntityManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
+import info.faceland.strife.managers.StrifeMobManager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -33,14 +33,14 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 public class LoreAbilityListener implements Listener {
 
-  private final AttributedEntityManager attributedEntityManager;
+  private final StrifeMobManager strifeMobManager;
   private final ChampionManager championManager;
   private final LoreAbilityManager loreAbilityManager;
 
-  public LoreAbilityListener(AttributedEntityManager attributedEntityManager,
+  public LoreAbilityListener(StrifeMobManager strifeMobManager,
       ChampionManager championManager,
       LoreAbilityManager loreAbilityManager) {
-    this.attributedEntityManager = attributedEntityManager;
+    this.strifeMobManager = strifeMobManager;
     this.championManager = championManager;
     this.loreAbilityManager = loreAbilityManager;
   }
@@ -96,12 +96,12 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     Champion champion = championManager.getChampion(event.getEntity().getKiller());
-    AttributedEntity attributedEntity = getAttrEntity(event.getEntity().getKiller());
-    if (attributedEntity.isMasterOf(event.getEntity())) {
+    StrifeMob strifeMob = getAttrEntity(event.getEntity().getKiller());
+    if (strifeMob.isMasterOf(event.getEntity())) {
       return;
     }
     for (LoreAbility la : champion.getLoreAbilities().get(ON_KILL)) {
-      loreAbilityManager.applyLoreAbility(la, attributedEntity, getAttrEntity(event.getEntity()));
+      loreAbilityManager.applyLoreAbility(la, strifeMob, getAttrEntity(event.getEntity()));
     }
   }
 
@@ -128,8 +128,8 @@ public class LoreAbilityListener implements Listener {
     LivingEntity attacker = getAttacker(event.getDamager());
     LivingEntity defender = (LivingEntity) event.getEntity();
 
-    AttributedEntity attackEntity = getAttrEntity(attacker);
-    AttributedEntity defendEntity = getAttrEntity(defender);
+    StrifeMob attackEntity = getAttrEntity(attacker);
+    StrifeMob defendEntity = getAttrEntity(defender);
     if (attacker instanceof Player) {
       if (attackEntity.isMasterOf(defendEntity)) {
         return;
@@ -159,7 +159,7 @@ public class LoreAbilityListener implements Listener {
     return null;
   }
 
-  private AttributedEntity getAttrEntity(LivingEntity livingEntity) {
-    return attributedEntityManager.getAttributedEntity(livingEntity);
+  private StrifeMob getAttrEntity(LivingEntity livingEntity) {
+    return strifeMobManager.getAttributedEntity(livingEntity);
   }
 }

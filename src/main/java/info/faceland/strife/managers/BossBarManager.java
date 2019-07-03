@@ -23,9 +23,9 @@ import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.SkillBossBar;
 import info.faceland.strife.data.StrifeBossBar;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -62,7 +62,7 @@ public class BossBarManager {
     this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
 
-  private void createBars(AttributedEntity target) {
+  private void createBars(StrifeMob target) {
     if (barMap.containsKey(target.getEntity().getUniqueId())) {
       return;
     }
@@ -92,7 +92,7 @@ public class BossBarManager {
     skillBar.setDisplayTicks(skillDuration);
   }
 
-  public void pushBar(Player player, AttributedEntity target) {
+  public void pushBar(Player player, StrifeMob target) {
     createBars(target);
     StrifeBossBar strifeBossBar = barMap.get(target.getEntity().getUniqueId());
     for (StrifeBossBar bossBar : barMap.values()) {
@@ -206,7 +206,7 @@ public class BossBarManager {
     pruneBarIfNoOwners(strifeBossBar.getOwner().getEntity().getUniqueId());
   }
 
-  private void updateBar(AttributedEntity barOwner) {
+  private void updateBar(StrifeMob barOwner) {
     UUID uuid = barOwner.getEntity().getUniqueId();
     StrifeBossBar strifeBossBar = barMap.get(uuid);
     if (!strifeBossBar.isDead() && !strifeBossBar.getOwner().getEntity().isValid()) {
@@ -274,7 +274,7 @@ public class BossBarManager {
         new BarFlag[0]);
   }
 
-  private BossBar makeBarrierBar(AttributedEntity entity) {
+  private BossBar makeBarrierBar(StrifeMob entity) {
     if (StatUtil.getMaximumBarrier(entity) < 1) {
       return null;
     }
@@ -282,7 +282,7 @@ public class BossBarManager {
         new BarFlag[0]);
   }
 
-  private String createBarTitle(AttributedEntity barOwner) {
+  private String createBarTitle(StrifeMob barOwner) {
     String customName = barOwner.getEntity().getCustomName();
     if (StringUtils.isBlank(customName)) {
       return StringUtils.capitalize(barOwner.getEntity().getName().replace('_', ' '));

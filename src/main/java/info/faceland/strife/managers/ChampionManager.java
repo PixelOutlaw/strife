@@ -259,7 +259,7 @@ public class ChampionManager {
 
   private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
-    plugin.getAttributedEntityManager().setEntityStats(champion.getPlayer(), AttributeUpdateManager
+    plugin.getStrifeMobManager().setEntityStats(champion.getPlayer(), AttributeUpdateManager
         .combineMaps(champion.getCombinedCache(), plugin.getGlobalBoostManager().getAttributes()));
   }
 

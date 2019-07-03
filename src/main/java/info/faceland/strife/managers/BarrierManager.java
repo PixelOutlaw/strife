@@ -20,7 +20,7 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import java.util.Map;
@@ -36,53 +36,53 @@ public class BarrierManager {
   private final Map<UUID, Double> barrierMap = new ConcurrentHashMap<>();
   private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
 
-  public void createBarrierEntry(AttributedEntity attributedEntity) {
-    if (attributedEntity.getEntity() == null || !attributedEntity.getEntity().isValid()) {
+  public void createBarrierEntry(StrifeMob strifeMob) {
+    if (strifeMob.getEntity() == null || !strifeMob.getEntity().isValid()) {
       return;
     }
-    if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
-      updateShieldDisplay(attributedEntity);
+    if (strifeMob.getAttribute(BARRIER) <= 0.1) {
+      updateShieldDisplay(strifeMob);
       return;
     }
-    if (barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
-      updateShieldDisplay(attributedEntity);
+    if (barrierMap.containsKey(strifeMob.getEntity().getUniqueId())) {
+      updateShieldDisplay(strifeMob);
       return;
     }
-    setEntityBarrier(attributedEntity.getEntity().getUniqueId(),
-        attributedEntity.getAttribute(BARRIER));
-    updateShieldDisplay(attributedEntity);
+    setEntityBarrier(strifeMob.getEntity().getUniqueId(),
+        strifeMob.getAttribute(BARRIER));
+    updateShieldDisplay(strifeMob);
   }
 
-  public boolean isBarrierUp(AttributedEntity attributedEntity) {
-    createBarrierEntry(attributedEntity);
-    UUID uuid = attributedEntity.getEntity().getUniqueId();
+  public boolean isBarrierUp(StrifeMob strifeMob) {
+    createBarrierEntry(strifeMob);
+    UUID uuid = strifeMob.getEntity().getUniqueId();
     return barrierMap.containsKey(uuid) && barrierMap.get(uuid) > 0;
   }
 
-  public double getCurrentBarrier(AttributedEntity attributedEntity) {
-    createBarrierEntry(attributedEntity);
-    return barrierMap.getOrDefault(attributedEntity.getEntity().getUniqueId(), 0D);
+  public double getCurrentBarrier(StrifeMob strifeMob) {
+    createBarrierEntry(strifeMob);
+    return barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0D);
   }
 
   public void setEntityBarrier(UUID uuid, double amount) {
     barrierMap.put(uuid, amount);
   }
 
-  public void updateShieldDisplay(AttributedEntity attributedEntity) {
-    if (!(attributedEntity.getEntity() instanceof Player)) {
+  public void updateShieldDisplay(StrifeMob strifeMob) {
+    if (!(strifeMob.getEntity() instanceof Player)) {
       return;
     }
-    if (!barrierMap.containsKey(attributedEntity.getEntity().getUniqueId())) {
-      setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+    if (!barrierMap.containsKey(strifeMob.getEntity().getUniqueId())) {
+      setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
-    if (attributedEntity.getAttribute(BARRIER) <= 0.1) {
-      setPlayerArmor((Player) attributedEntity.getEntity(), 0);
+    if (strifeMob.getAttribute(BARRIER) <= 0.1) {
+      setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
-    double percent = barrierMap.get(attributedEntity.getEntity().getUniqueId()) / attributedEntity
+    double percent = barrierMap.get(strifeMob.getEntity().getUniqueId()) / strifeMob
         .getAttribute(BARRIER);
-    setPlayerArmor((Player) attributedEntity.getEntity(), percent);
+    setPlayerArmor((Player) strifeMob.getEntity(), percent);
   }
 
   public void removeEntity(LivingEntity entity) {
@@ -115,35 +115,35 @@ public class BarrierManager {
     tickMap.put(uuid, tickMap.get(uuid) - 1);
   }
 
-  public double damageBarrier(AttributedEntity attributedEntity, double amount) {
-    interruptBarrier(attributedEntity.getEntity());
-    if (!isBarrierUp(attributedEntity)) {
+  public double damageBarrier(StrifeMob strifeMob, double amount) {
+    interruptBarrier(strifeMob.getEntity());
+    if (!isBarrierUp(strifeMob)) {
       return amount;
     }
-    LivingEntity entity = attributedEntity.getEntity();
+    LivingEntity entity = strifeMob.getEntity();
     double remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
     if (remainingBarrier > 0) {
       setEntityBarrier(entity.getUniqueId(), remainingBarrier);
-      updateShieldDisplay(attributedEntity);
+      updateShieldDisplay(strifeMob);
       return 0;
     }
     setEntityBarrier(entity.getUniqueId(), 0);
-    updateShieldDisplay(attributedEntity);
+    updateShieldDisplay(strifeMob);
     return Math.abs(remainingBarrier);
   }
 
-  public void restoreBarrier(AttributedEntity attributedEntity, double amount) {
-    if (attributedEntity.getAttribute(BARRIER) == 0) {
+  public void restoreBarrier(StrifeMob strifeMob, double amount) {
+    if (strifeMob.getAttribute(BARRIER) == 0) {
       return;
     }
-    UUID uuid = attributedEntity.getEntity().getUniqueId();
-    LogUtil.printDebug("restoreBarrier: " + PlayerDataUtil.getName(attributedEntity.getEntity()));
+    UUID uuid = strifeMob.getEntity().getUniqueId();
+    LogUtil.printDebug("restoreBarrier: " + PlayerDataUtil.getName(strifeMob.getEntity()));
     LogUtil.printDebug(" starting barrier: " + barrierMap.get(uuid));
     double newBarrierValue = Math
-        .min(barrierMap.get(uuid) + amount, attributedEntity.getAttribute(BARRIER));
+        .min(barrierMap.get(uuid) + amount, strifeMob.getAttribute(BARRIER));
     setEntityBarrier(uuid, newBarrierValue);
     LogUtil.printDebug(" ending barrier: " + barrierMap.get(uuid));
-    updateShieldDisplay(attributedEntity);
+    updateShieldDisplay(strifeMob);
   }
 
   public Map<UUID, Integer> getTickMap() {
