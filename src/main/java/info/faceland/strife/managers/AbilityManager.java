@@ -135,15 +135,20 @@ public class AbilityManager {
     }
   }
 
-  public void checkPhaseChange(AttributedEntity attributedEntity) {
+  public void checkPhaseChange(LivingEntity entity) {
+    if (plugin.getUniqueEntityManager().isUniqueEntity(entity)) {
+      LogUtil.printDebug("Trying to check phase on non-unique: " + PlayerDataUtil.getName(entity));
+      return;
+    }
     LogUtil.printDebug("Checking phase switch");
-    LivingEntity livingEntity = attributedEntity.getEntity();
+    AttributedEntity attributedEntity = plugin.getAttributedEntityManager()
+        .getAttributedEntity(entity);
     int currentPhase = plugin.getUniqueEntityManager().getPhase(attributedEntity.getEntity());
     int newPhase =
-        6 - (int) Math.ceil((livingEntity.getHealth() / livingEntity.getMaxHealth()) / 0.2);
+        6 - (int) Math.ceil((entity.getHealth() / entity.getMaxHealth()) / 0.2);
     LogUtil.printDebug("currentPhase: " + currentPhase + " | newPhase: " + newPhase);
     if (newPhase > currentPhase) {
-      plugin.getUniqueEntityManager().getLiveUniquesMap().get(livingEntity).setPhase(newPhase);
+      plugin.getUniqueEntityManager().getLiveUniquesMap().get(entity).setPhase(newPhase);
       uniqueAbilityCast(attributedEntity, AbilityType.PHASE_SHIFT);
     }
   }

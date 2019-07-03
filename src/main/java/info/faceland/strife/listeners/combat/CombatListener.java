@@ -351,11 +351,11 @@ public class CombatListener implements Listener {
 
     if (plugin.getUniqueEntityManager().isUnique(attackEntity)) {
       plugin.getAbilityManager().uniqueAbilityCast(attacker, AbilityType.ON_HIT);
-      plugin.getAbilityManager().checkPhaseChange(attacker);
+      plugin.getAbilityManager().checkPhaseChange(attackEntity);
     }
     if (plugin.getUniqueEntityManager().isUnique(defendEntity)) {
       plugin.getAbilityManager().uniqueAbilityCast(defender, AbilityType.WHEN_HIT);
-      plugin.getAbilityManager().checkPhaseChange(defender);
+      plugin.getAbilityManager().checkPhaseChange(defendEntity);
     }
 
     sendActionbarDamage(attackEntity, rawDamage, bonusOverchargeMultiplier, bonusCriticalMultiplier,

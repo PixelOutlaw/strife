@@ -9,6 +9,7 @@ import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
@@ -33,7 +34,7 @@ public class UniqueEntityManager {
 
   public UniqueEntityManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.liveUniquesMap = new HashMap<>();
+    this.liveUniquesMap = new ConcurrentHashMap<>();
     this.loadedUniquesMap = new HashMap<>();
     this.cachedDisguises = new HashMap<>();
   }
@@ -109,6 +110,10 @@ public class UniqueEntityManager {
 
   public boolean isLoadedUnique(String name) {
     return loadedUniquesMap.containsKey(name);
+  }
+
+  public boolean isUniqueEntity(LivingEntity livingEntity) {
+    return liveUniquesMap.containsKey(livingEntity);
   }
 
   public LivingEntity spawnUnique(String unique, Location location) {
@@ -193,8 +198,7 @@ public class UniqueEntityManager {
     plugin.getAttributedEntityManager()
         .setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
-    plugin.getAbilityManager()
-        .checkPhaseChange(plugin.getAttributedEntityManager().getAttributedEntity(spawnedUnique));
+    plugin.getAbilityManager().checkPhaseChange(spawnedUnique);
     return spawnedUnique;
   }
 
