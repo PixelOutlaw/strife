@@ -71,6 +71,7 @@ import info.faceland.strife.managers.EntityEquipmentManager;
 import info.faceland.strife.managers.ExperienceManager;
 import info.faceland.strife.managers.GlobalBoostManager;
 import info.faceland.strife.managers.LoreAbilityManager;
+import info.faceland.strife.managers.MinionManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.RageManager;
 import info.faceland.strife.managers.SkillExperienceManager;
@@ -162,6 +163,7 @@ public class StrifePlugin extends FacePlugin {
   private UniqueEntityManager uniqueEntityManager;
   private SneakManager sneakManager;
   private BossBarManager bossBarManager;
+  private MinionManager minionManager;
   private EntityEquipmentManager equipmentManager;
   private EffectManager effectManager;
   private AbilityManager abilityManager;
@@ -260,6 +262,7 @@ public class StrifePlugin extends FacePlugin {
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     bossBarManager = new BossBarManager(this);
+    minionManager = new MinionManager();
     sneakManager = new SneakManager();
     experienceManager = new ExperienceManager(this);
     skillExperienceManager = new SkillExperienceManager(this);
@@ -313,7 +316,7 @@ public class StrifePlugin extends FacePlugin {
     sneakTask = new SneakTask(sneakManager);
     barrierTask = new BarrierTask(this);
     bossBarsTask = new BossBarsTask(bossBarManager);
-    minionDecayTask = new MinionDecayTask();
+    minionDecayTask = new MinionDecayTask(minionManager);
     globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
     pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     darkTask = new DarknessReductionTask(darknessManager);
@@ -466,7 +469,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new MinionListener(attributedEntityManager), this);
+    Bukkit.getPluginManager()
+        .registerEvents(new MinionListener(attributedEntityManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
     Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
@@ -823,6 +827,10 @@ public class StrifePlugin extends FacePlugin {
 
   public BossBarManager getBossBarManager() {
     return bossBarManager;
+  }
+
+  public MinionManager getMinionManager() {
+    return minionManager;
   }
 
   public EffectManager getEffectManager() {

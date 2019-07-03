@@ -3,8 +3,8 @@ package info.faceland.strife.effects;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.managers.AttributedEntityManager;
+import info.faceland.strife.managers.MinionManager;
 import info.faceland.strife.managers.UniqueEntityManager;
-import info.faceland.strife.tasks.MinionDecayTask;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
@@ -19,6 +19,7 @@ public class Summon extends Effect {
       .getAttributedEntityManager();
   private static final UniqueEntityManager uniqueManager = StrifePlugin.getInstance()
       .getUniqueEntityManager();
+  private static final MinionManager minionManager = StrifePlugin.getInstance().getMinionManager();
 
   @Override
   public void apply(AttributedEntity caster, AttributedEntity target) {
@@ -32,7 +33,7 @@ public class Summon extends Effect {
       AttributedEntity summonedEntity = entityManager.getAttributedEntity(summon);
       caster.getMinions().add(summonedEntity);
       summonedEntity.setDespawnOnUnload(true);
-      MinionDecayTask.addDecayingMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
+      minionManager.getMinionDecayMap().put(summon, (int) ((lifespanSeconds * 20D) / 11D));
     }
   }
 

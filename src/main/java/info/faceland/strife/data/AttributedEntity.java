@@ -76,6 +76,15 @@ public class AttributedEntity {
     return getMinions().contains(attributedEntity);
   }
 
+  public boolean isMasterOf(LivingEntity entity) {
+    for (AttributedEntity attributedEntity : minions) {
+      if (attributedEntity.getEntity() == entity) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public boolean hasTrait(StrifeTrait trait) {
     if (champion == null) {
       return false;

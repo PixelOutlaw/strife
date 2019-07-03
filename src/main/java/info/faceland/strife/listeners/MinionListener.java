@@ -20,6 +20,7 @@ package info.faceland.strife.listeners;
 
 import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.managers.AttributedEntityManager;
+import info.faceland.strife.managers.MinionManager;
 import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -30,34 +31,44 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 
 public class MinionListener implements Listener {
 
-  private final AttributedEntityManager manager;
+  private final AttributedEntityManager entityManager;
+  private final MinionManager minionManager;
 
-  public MinionListener(AttributedEntityManager attributedEntityManager) {
-    this.manager = attributedEntityManager;
+  public MinionListener(AttributedEntityManager entityManager, MinionManager minionManager) {
+    this.entityManager = entityManager;
+    this.minionManager = minionManager;
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onTargetMasterOrMinion(final EntityTargetEvent event) {
+  public void onMinionTargetAnything(final EntityTargetEvent event) {
+    if (event.isCancelled() || event.getReason() == TargetReason.CUSTOM) {
+      return;
+    }
+    if (event.getEntity() instanceof LivingEntity) {
+      if (minionManager.isMinion((LivingEntity) event.getEntity())) {
+        event.setCancelled(true);
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onMasterTargetMinion(final EntityTargetEvent event) {
     if (event.isCancelled()) {
       return;
     }
-    if (!(event.getEntity() instanceof Mob && event.getTarget() instanceof LivingEntity)) {
+    if (!(event.getEntity() instanceof Mob) || !(event.getTarget() instanceof LivingEntity)) {
       return;
     }
-    if (!(manager.isTrackedEntity(event.getEntity()) && manager
-        .isTrackedEntity(event.getTarget()))) {
+    if (!entityManager.isTrackedEntity(event.getEntity())) {
       return;
     }
-    AttributedEntity attrEnt = manager.getAttributedEntity((LivingEntity) event.getEntity());
-    AttributedEntity target = manager.getAttributedEntity((LivingEntity) event.getTarget());
-    if (attrEnt.isMasterOf(target)) {
+    AttributedEntity attrEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    if (attrEnt.isMasterOf((LivingEntity) event.getEntity())) {
       LogUtil.printDebug("Ignoring targeting of minion for " + attrEnt.getEntity().getCustomName());
-      event.setCancelled(true);
-    } else if (attrEnt.isMinionOf(target)) {
-      LogUtil.printDebug("Ignoring targeting of master for " + attrEnt.getEntity().getCustomName());
       event.setCancelled(true);
     }
   }
@@ -76,18 +87,17 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    if (!(manager.isTrackedEntity(event.getEntity()) && manager.isTrackedEntity(attacker))) {
+    if (!(entityManager.isTrackedEntity(event.getEntity()) && entityManager.isTrackedEntity(attacker))) {
       return;
     }
-    AttributedEntity attack = manager.getAttributedEntity((LivingEntity) attacker);
-    AttributedEntity defend = manager.getAttributedEntity((LivingEntity) event.getEntity());
-    if (attack.isMinionOf(defend)) {
+    AttributedEntity defend = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    if (defend.isMasterOf((LivingEntity)attacker)) {
       LogUtil.printDebug("Ignoring attacking of master for " + attacker.getCustomName());
       event.setCancelled(true);
     }
   }
 
-  @EventHandler(priority = EventPriority.LOW)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onMasterAttack(final EntityDamageByEntityEvent event) {
     if (event.isCancelled()) {
       return;
@@ -99,9 +109,9 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    AttributedEntity attackEntity = manager.getAttributedEntity((LivingEntity) attacker);
+    AttributedEntity attackEntity = entityManager.getAttributedEntity((LivingEntity) attacker);
     if (attackEntity.getMinions()
-        .contains(manager.getAttributedEntity((LivingEntity) event.getEntity()))) {
+        .contains(entityManager.getAttributedEntity((LivingEntity) event.getEntity()))) {
       return;
     }
     for (AttributedEntity minion : attackEntity.getMinions()) {
@@ -111,7 +121,7 @@ public class MinionListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOW)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onMasterHit(final EntityDamageByEntityEvent event) {
     if (event.isCancelled()) {
       return;
@@ -123,7 +133,7 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    AttributedEntity hitEnt = manager.getAttributedEntity((LivingEntity) event.getEntity());
+    AttributedEntity hitEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
     for (AttributedEntity minion : hitEnt.getMinions()) {
       if (!(minion.getEntity() instanceof Mob)) {
         continue;

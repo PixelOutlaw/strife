@@ -130,7 +130,8 @@ public class UniqueEntityManager {
     Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
         e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
 
-    if (entity == null || !entity.isValid()) {
+    if (entity == null) {
+      LogUtil.printWarning("Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
       return null;
     }
 

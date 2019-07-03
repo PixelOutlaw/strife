@@ -16,33 +16,21 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.tasks;
+package info.faceland.strife.managers;
 
-import info.faceland.strife.managers.MinionManager;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.scheduler.BukkitRunnable;
 
-public class MinionDecayTask extends BukkitRunnable {
+public class MinionManager {
 
-  private MinionManager minionManager;
+  private final Map<LivingEntity, Integer> minionDecayMap = new ConcurrentHashMap<>();
 
-  public MinionDecayTask(MinionManager minionManager) {
-    this.minionManager = minionManager;
+  public Map<LivingEntity, Integer> getMinionDecayMap() {
+    return minionDecayMap;
   }
 
-  @Override
-  public void run() {
-    for (LivingEntity le : minionManager.getMinionDecayMap().keySet()) {
-      if (le == null || !le.isValid()) {
-        minionManager.getMinionDecayMap().remove(le);
-        continue;
-      }
-      int ticks = minionManager.getMinionDecayMap().get(le);
-      if (ticks > 0) {
-        minionManager.getMinionDecayMap().put(le, ticks-1);
-        continue;
-      }
-      le.damage(le.getMaxHealth() / 10);
-    }
+  public boolean isMinion(LivingEntity livingEntity) {
+    return minionDecayMap.containsKey(livingEntity);
   }
 }
