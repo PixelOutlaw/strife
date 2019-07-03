@@ -176,24 +176,6 @@ public class StrifePlugin extends FacePlugin {
   private DataStorage storage;
 
   private List<BukkitTask> taskList = new ArrayList<>();
-  private SaveTask saveTask;
-  private TrackedPruneTask trackedPruneTask;
-  private HealthRegenTask regenTask;
-  private BleedTask bleedTask;
-  private SneakTask sneakTask;
-  private BarrierTask barrierTask;
-  private BossBarsTask bossBarsTask;
-  private MinionDecayTask minionDecayTask;
-  private GlobalMultiplierTask globalMultiplierTask;
-  private PruneBossBarsTask pruneBossBarsTask;
-  private DarknessReductionTask darkTask;
-  private MonsterLimitTask monsterLimitTask;
-  private RageTask rageTask;
-  private UniquePruneTask uniquePruneTask;
-  private UniqueParticleTask uniqueParticleTask;
-  private TimedAbilityTask timedAbilityTask;
-  private SpawnerSpawnTask spawnerSpawnTask;
-  private SpawnerLeashTask spawnerLeashTask;
 
   private LevelingRate levelingRate;
   private LevelingRate craftingRate;
@@ -310,26 +292,26 @@ public class StrifePlugin extends FacePlugin {
     buildUniqueEnemies();
     loadSpawners();
 
-    saveTask = new SaveTask(this);
-    trackedPruneTask = new TrackedPruneTask(this);
-    regenTask = new HealthRegenTask(this);
-    bleedTask = new BleedTask(bleedManager, barrierManager,
+    SaveTask saveTask = new SaveTask(this);
+    TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
+    HealthRegenTask regenTask = new HealthRegenTask(this);
+    BleedTask bleedTask = new BleedTask(bleedManager, barrierManager,
         settings.getDouble("config.mechanics.base-bleed-damage", 1D),
         settings.getDouble("config.mechanics.percent-bleed-damage", 0.1D));
-    sneakTask = new SneakTask(sneakManager);
-    barrierTask = new BarrierTask(this);
-    bossBarsTask = new BossBarsTask(bossBarManager);
-    minionDecayTask = new MinionDecayTask(minionManager);
-    globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
-    pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
-    darkTask = new DarknessReductionTask(darknessManager);
-    rageTask = new RageTask(rageManager, attributedEntityManager);
-    monsterLimitTask = new MonsterLimitTask(settings);
-    uniquePruneTask = new UniquePruneTask(this);
-    uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
-    spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
-    spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
-    timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
+    SneakTask sneakTask = new SneakTask(sneakManager);
+    BarrierTask barrierTask = new BarrierTask(this);
+    BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
+    MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
+    GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
+    PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
+    DarknessReductionTask darkTask = new DarknessReductionTask(darknessManager);
+    RageTask rageTask = new RageTask(rageManager, attributedEntityManager);
+    MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
+    UniquePruneTask uniquePruneTask = new UniquePruneTask(this);
+    UniqueParticleTask uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
+    SpawnerLeashTask spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
+    SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
+    TimedAbilityTask timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
         attributedEntityManager);
 
     commandHandler.registerCommands(new AttributesCommand(this));
