@@ -58,7 +58,7 @@ public class DataListener implements Listener {
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    plugin.getBossBarManager().createSkillBar(champion);
+    plugin.getBossBarManager().getSkillBar(champion);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
