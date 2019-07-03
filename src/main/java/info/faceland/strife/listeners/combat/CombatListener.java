@@ -288,7 +288,7 @@ public class CombatListener implements Listener {
     standardDamage *= StatUtil.getDamageMult(attacker);
     standardDamage *= pvpMult;
 
-    applyLifeSteal(attacker, standardDamage, healMultiplier);
+    applyLifeSteal(attacker, Math.min(standardDamage, defendEntity.getHealth()), healMultiplier);
     applyHealthOnHit(attacker, attackMultiplier, healMultiplier);
 
     if (attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
