@@ -125,6 +125,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.scheduler.BukkitTask;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 public class StrifePlugin extends FacePlugin {
@@ -148,6 +149,7 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration globalBoostsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
+  private AttributedEntityManager attributedEntityManager;
   private AttributeUpdateManager attributeUpdateManager;
   private StrifeStatManager statManager;
   private ChampionManager championManager;
@@ -172,7 +174,8 @@ public class StrifePlugin extends FacePlugin {
   private GlobalBoostManager globalBoostManager;
 
   private DataStorage storage;
-  private AttributedEntityManager attributedEntityManager;
+
+  private List<BukkitTask> taskList = new ArrayList<>();
   private SaveTask saveTask;
   private TrackedPruneTask trackedPruneTask;
   private HealthRegenTask regenTask;
@@ -379,78 +382,78 @@ public class StrifePlugin extends FacePlugin {
       sneakRate.put(i, i, (int) Math.round(sneakExpr.setVariable("LEVEL", i).evaluate()));
     }
 
-    trackedPruneTask.runTaskTimer(this,
+    taskList.add(trackedPruneTask.runTaskTimer(this,
         20L * 61, // Start save after 1 minute, 1 second cuz yolo
         20L * 60 // Run every 1 minute after that
-    );
-    saveTask.runTaskTimer(this,
+    ));
+    taskList.add(saveTask.runTaskTimer(this,
         20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
         20L * 600 // Run every 10 minutes after that
-    );
-    regenTask.runTaskTimer(this,
+    ));
+    taskList.add(regenTask.runTaskTimer(this,
         20L * 9, // Start timer after 9s
         20L * 2 // Run it every 2s after
-    );
-    bleedTask.runTaskTimer(this,
+    ));
+    taskList.add(bleedTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
         settings.getLong("config.mechanics.ticks-per-bleed", 10L)
-    );
-    sneakTask.runTaskTimer(this,
+    ));
+    taskList.add(sneakTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
         10L // Run every 1/2 second
-    );
-    barrierTask.runTaskTimer(this,
+    ));
+    taskList.add(barrierTask.runTaskTimer(this,
         2201L, // Start timer after 11s
         4L // Run it every 1/5th of a second after
-    );
-    bossBarsTask.runTaskTimer(this,
+    ));
+    taskList.add(bossBarsTask.runTaskTimer(this,
         240L, // Start timer after 12s
         2L // Run it every 1/10th of a second after
-    );
-    minionDecayTask.runTaskTimer(this,
+    ));
+    taskList.add(minionDecayTask.runTaskTimer(this,
         220L, // Start timer after 11s
         11L
-    );
-    globalMultiplierTask.runTaskTimer(this,
+    ));
+    taskList.add(globalMultiplierTask.runTaskTimer(this,
         20L * 15, // Start timer after 15s
         20L * 60 // Run it every minute after
-    );
-    pruneBossBarsTask.runTaskTimer(this,
+    ));
+    taskList.add(pruneBossBarsTask.runTaskTimer(this,
         20L * 13, // Start timer after 13s
         20L * 60 * 7 // Run it every 7 minutes
-    );
-    darkTask.runTaskTimer(this,
+    ));
+    taskList.add(darkTask.runTaskTimer(this,
         20L * 14, // Start timer after 14s
         10L  // Run it every 0.5s after
-    );
-    monsterLimitTask.runTaskTimer(this,
+    ));
+    taskList.add(monsterLimitTask.runTaskTimer(this,
         20L * 15, // Start timer after 15s
         20L * 60  // Run it every minute after
-    );
-    rageTask.runTaskTimer(this,
+    ));
+    taskList.add(rageTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
         5L  // Run it every 0.25s after
-    );
-    uniquePruneTask.runTaskTimer(this,
+    ));
+    taskList.add(uniquePruneTask.runTaskTimer(this,
         30 * 20L,
         30 * 20L
-    );
-    uniqueParticleTask.runTaskTimer(this,
+    ));
+    taskList.add(uniqueParticleTask.runTaskTimer(this,
         20 * 20L,
         2L
-    );
-    spawnerSpawnTask.runTaskTimer(this,
+    ));
+    taskList.add(spawnerSpawnTask.runTaskTimer(this,
         20 * 20L, // Start timer after 20s
         6 * 20L // Run it every 6 seconds
-    );
-    timedAbilityTask.runTaskTimer(this,
+    ));
+    taskList.add(timedAbilityTask.runTaskTimer(this,
         20 * 20L, // Start timer after 20s
         2 * 20L // Run it every 2 seconds
-    );
-    spawnerLeashTask.runTaskTimer(this,
+    ));
+    taskList.add(spawnerLeashTask.runTaskTimer(this,
         20 * 20L, // Start timer after 20s
         5 * 20L // Run it every 5s
-    );
+    ));
 
     globalBoostManager.startScheduledEvents();
 
@@ -505,24 +508,9 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager.removeAllBars();
     HandlerList.unregisterAll(this);
 
-    saveTask.cancel();
-    trackedPruneTask.cancel();
-    regenTask.cancel();
-    bleedTask.cancel();
-    sneakTask.cancel();
-    barrierTask.cancel();
-    bossBarsTask.cancel();
-    minionDecayTask.cancel();
-    globalMultiplierTask.cancel();
-    pruneBossBarsTask.cancel();
-    darkTask.cancel();
-    rageTask.cancel();
-    monsterLimitTask.cancel();
-    uniqueParticleTask.cancel();
-    uniquePruneTask.cancel();
-    spawnerLeashTask.cancel();
-    spawnerSpawnTask.cancel();
-    timedAbilityTask.cancel();
+    for (BukkitTask task : taskList) {
+      task.cancel();
+    }
 
     LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
