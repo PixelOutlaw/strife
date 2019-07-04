@@ -19,12 +19,12 @@
 package info.faceland.strife.menus.levelup;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -36,11 +36,13 @@ public class LevelupPointsMenuItem extends MenuItem {
   private static final String DISPLAY_NAME = "&f&nUnused Levelpoints";
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.NETHER_STAR);
   private static final String[] DISPLAY_LORE = {
-      ChatColor.GRAY + "Click a stat to spend your points!",
-      ChatColor.GREEN + "Click here to save your changes!"};
+      ChatColor.GRAY + "Click an attribute to upgrade!"
+  };
+  private static final String CLICK_TO_SAVE_TEXT = TextUtils.color("&e&lClick to apply changes!");
+
   private final StrifePlugin plugin;
 
-  public LevelupPointsMenuItem(StrifePlugin plugin) {
+  LevelupPointsMenuItem(StrifePlugin plugin) {
     super(TextUtils.color(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
     this.plugin = plugin;
   }
@@ -48,10 +50,19 @@ public class LevelupPointsMenuItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack itemStack = super.getFinalIcon(player);
+    List<String> lore = ItemStackExtensionsKt.getLore(itemStack);
+
     Champion champion = plugin.getChampionManager().getChampion(player);
     int stacks = champion.getPendingUnusedStatPoints();
     String name = TextUtils.color("&f&nUnused Levelpoints (" + stacks + ")");
-    itemStack.getItemMeta().setDisplayName(name);
+
+    if (champion.getPendingLevelMap().size() > 0) {
+      lore.add(CLICK_TO_SAVE_TEXT);
+    }
+
+    ItemStackExtensionsKt.setDisplayName(itemStack, name);
+    ItemStackExtensionsKt.setLore(itemStack, lore);
+
     stacks = Math.min(stacks, 64);
     itemStack.setAmount(Math.max(1, stacks));
     return itemStack;

@@ -35,11 +35,12 @@ public class ConfirmationCancelItem extends MenuItem {
   private static final String DISPLAY_NAME = TextUtils.color("&c&nDiscard Changes");
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.BARRIER);
   private static final String[] DISPLAY_LORE = {
-      ChatColor.GRAY + "Click here to discard your changes"
+      ChatColor.GRAY + "Click here to discard",
+      ChatColor.GRAY + "your attribute changes"
   };
   private final StrifePlugin plugin;
 
-  public ConfirmationCancelItem(StrifePlugin plugin) {
+  ConfirmationCancelItem(StrifePlugin plugin) {
     super(TextUtils.color(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
     this.plugin = plugin;
   }

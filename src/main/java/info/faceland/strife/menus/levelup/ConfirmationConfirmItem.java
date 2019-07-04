@@ -35,16 +35,16 @@ import org.bukkit.inventory.ItemStack;
 
 public class ConfirmationConfirmItem extends MenuItem {
 
-  private static final String DISPLAY_NAME = "&a&nApply Changes";
+  private static final String DISPLAY_NAME = "&a&nApply Attributes Changes";
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.EMERALD);
   private static final String[] DISPLAY_LORE = {
-      ChatColor.GRAY + "Are you sure you wish to apply the",
-      ChatColor.GRAY + "following changes?",
+      ChatColor.GRAY + "Do you want to raise the",
+      ChatColor.GRAY + "following attributes?",
       ChatColor.GRAY + ""
   };
   private final StrifePlugin plugin;
 
-  public ConfirmationConfirmItem(StrifePlugin plugin) {
+  ConfirmationConfirmItem(StrifePlugin plugin) {
     super(TextUtils.color(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
     this.plugin = plugin;
   }

@@ -18,16 +18,16 @@
  */
 package info.faceland.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import java.util.List;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.ChatColor;
 
 public class LevelupMenu extends ItemMenu {
 
   public LevelupMenu(StrifePlugin plugin, List<StrifeAttribute> attributes) {
-    super(ChatColor.BLACK + "Levelup Menu",
+    super(TextUtils.color("&0&lLevel Up!"),
         Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
         plugin);
 

@@ -42,7 +42,7 @@ public class LevelupMenuItem extends MenuItem {
 
   private static final String breakLine = TextUtils.color("&7&m---------------------------");
 
-  public LevelupMenuItem(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
+  LevelupMenuItem(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
     super(TextUtils.color(strifeAttribute.getName()), new Dye().toItemStack());
     this.plugin = plugin;
     this.attribute = strifeAttribute;

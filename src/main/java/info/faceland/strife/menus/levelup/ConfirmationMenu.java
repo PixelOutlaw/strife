@@ -25,7 +25,7 @@ import org.bukkit.ChatColor;
 public class ConfirmationMenu extends ItemMenu {
 
   public ConfirmationMenu(StrifePlugin plugin) {
-    super(ChatColor.BLACK + "Apply Levelpoints?", Size.fit(27), plugin);
+    super(ChatColor.BLACK + "Apply Points?", Size.fit(27), plugin);
     setItem(15, new ConfirmationCancelItem(plugin));
     setItem(11, new ConfirmationConfirmItem(plugin));
   }
