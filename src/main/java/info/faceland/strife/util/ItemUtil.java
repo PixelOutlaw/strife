@@ -1,6 +1,6 @@
 package info.faceland.strife.util;
 
-import info.faceland.strife.attributes.StrifeTrait;
+import info.faceland.strife.stats.StrifeTrait;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

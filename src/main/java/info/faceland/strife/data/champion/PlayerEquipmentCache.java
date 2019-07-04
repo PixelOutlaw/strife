@@ -1,11 +1,11 @@
 package info.faceland.strife.data.champion;
 
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,12 +18,12 @@ public class PlayerEquipmentCache {
 
   private final Map<EquipmentSlot, Integer> slotHashCodeMap = new HashMap<>();
 
-  private final Map<EquipmentSlot, Map<StrifeAttribute, Double>> slotStatMap = new HashMap<>();
+  private final Map<EquipmentSlot, Map<StrifeStat, Double>> slotStatMap = new HashMap<>();
   private final Map<EquipmentSlot, List<LoreAbility>> slotAbilityMap = new HashMap<>();
   private final Map<EquipmentSlot, List<StrifeTrait>> slotTraitMap = new HashMap<>();
 
   private final Map<TriggerType, Set<LoreAbility>> loreAbilities = new HashMap<>();
-  private final Map<StrifeAttribute, Double> combinedStats = new HashMap<>();
+  private final Map<StrifeStat, Double> combinedStats = new HashMap<>();
   private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
   public final static EquipmentSlot[] itemSlots = EquipmentSlot.values();
@@ -40,12 +40,12 @@ public class PlayerEquipmentCache {
     }
   }
 
-  public void setSlotStats(EquipmentSlot slot, Map<StrifeAttribute, Double> stats) {
+  public void setSlotStats(EquipmentSlot slot, Map<StrifeStat, Double> stats) {
     this.slotStatMap.get(slot).clear();
     this.slotStatMap.get(slot).putAll(stats);
   }
 
-  public Map<StrifeAttribute, Double> getSlotStats(EquipmentSlot slot) {
+  public Map<StrifeStat, Double> getSlotStats(EquipmentSlot slot) {
     return this.slotStatMap.get(slot);
   }
 
@@ -81,7 +81,7 @@ public class PlayerEquipmentCache {
     this.slotTraitMap.get(slot).clear();
   }
 
-  public Map<StrifeAttribute, Double> getCombinedStats() {
+  public Map<StrifeStat, Double> getCombinedStats() {
     return combinedStats;
   }
 

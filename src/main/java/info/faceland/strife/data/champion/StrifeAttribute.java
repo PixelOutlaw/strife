@@ -18,15 +18,14 @@
  */
 package info.faceland.strife.data.champion;
 
-import info.faceland.strife.attributes.StrifeAttribute;
-import java.util.List;
-import org.bukkit.DyeColor;
-
+import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.bukkit.DyeColor;
 import org.bukkit.Sound;
 
-public class StrifeStat {
+public class StrifeAttribute {
 
   private final String key;
   private String name;
@@ -42,7 +41,7 @@ public class StrifeStat {
   private int levelsToRaiseCap;
   private Map<String, Integer> baseStatRequirements;
   private Map<String, Integer> statIncreaseIncrements;
-  private Map<StrifeAttribute, Double> attributeMap;
+  private Map<StrifeStat, Double> attributeMap;
 
   public int getLevelsToRaiseCap() {
     return levelsToRaiseCap;
@@ -84,7 +83,7 @@ public class StrifeStat {
     this.statIncreaseIncrements = statIncreaseIncrements;
   }
 
-  public StrifeStat(String key) {
+  public StrifeAttribute(String key) {
     this.key = key;
   }
 
@@ -108,15 +107,15 @@ public class StrifeStat {
     this.description = description;
   }
 
-  public Map<StrifeAttribute, Double> getAttributeMap() {
+  public Map<StrifeStat, Double> getAttributeMap() {
     return new HashMap<>(attributeMap);
   }
 
-  public void setAttributeMap(Map<StrifeAttribute, Double> attributeMap) {
+  public void setAttributeMap(Map<StrifeStat, Double> attributeMap) {
     this.attributeMap = attributeMap;
   }
 
-  public double getAttribute(StrifeAttribute attribute) {
+  public double getAttribute(StrifeStat attribute) {
     if (attributeMap.containsKey(attribute)) {
       return attributeMap.get(attribute);
     }
@@ -133,11 +132,11 @@ public class StrifeStat {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof StrifeStat)) {
+    if (!(o instanceof StrifeAttribute)) {
       return false;
     }
 
-    StrifeStat that = (StrifeStat) o;
+    StrifeAttribute that = (StrifeAttribute) o;
 
     return !(key != null ? !key.equals(that.key) : that.key != null);
   }

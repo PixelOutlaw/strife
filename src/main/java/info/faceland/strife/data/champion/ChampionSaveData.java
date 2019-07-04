@@ -14,8 +14,8 @@ public class ChampionSaveData {
   public static final HealthDisplayType[] DISPLAY_OPTIONS = HealthDisplayType.values();
 
   private final UUID uniqueId;
-  private final Map<StrifeStat, Integer> levelMap;
-  private final Map<StrifeStat, Integer> pendingStats;
+  private final Map<StrifeAttribute, Integer> levelMap;
+  private final Map<StrifeAttribute, Integer> pendingStats;
   private final List<LoreAbility> boundAbilities;
 
   private HealthDisplayType healthDisplayType;
@@ -102,11 +102,11 @@ public class ChampionSaveData {
     return uniqueId;
   }
 
-  public void setLevel(StrifeStat stat, int level) {
+  public void setLevel(StrifeAttribute stat, int level) {
     levelMap.put(stat, level);
   }
 
-  public Map<StrifeStat, Integer> getLevelMap() {
+  public Map<StrifeAttribute, Integer> getLevelMap() {
     return new HashMap<>(levelMap);
   }
 
@@ -126,7 +126,7 @@ public class ChampionSaveData {
     return Bukkit.getPlayer(getUniqueId());
   }
 
-  public Map<StrifeStat, Integer> getPendingLevelMap() {
+  public Map<StrifeAttribute, Integer> getPendingLevelMap() {
     return pendingStats;
   }
 

@@ -36,13 +36,3 @@ permissions:
     default: op
   strife.xp:
     default: false
-  strife.mult.75:
-    default: false
-  strife.mult.125:
-    default: false
-  strife.mult.150:
-    default: false
-  strife.mult.175:
-    default: false
-  strife.mult.200:
-    default: false

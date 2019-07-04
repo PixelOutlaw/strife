@@ -1,7 +1,7 @@
 version: 0.0.1
 
 melee-damage-under-10:
-  type: ATTRIBUTE
+  type: STAT
   comparison: LESS_THAN
   target: SELF
   value: 10

@@ -18,7 +18,7 @@
  */
 package info.faceland.strife.managers;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
+import static info.faceland.strife.stats.StrifeStat.BARRIER;
 
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.LogUtil;

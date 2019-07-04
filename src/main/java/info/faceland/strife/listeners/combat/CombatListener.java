@@ -18,14 +18,14 @@
  */
 package info.faceland.strife.listeners.combat;
 
-import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_REFLECT;
-import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_KILL;
-import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
-import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_HIT;
-import static info.faceland.strife.attributes.StrifeAttribute.RAGE_ON_KILL;
-import static info.faceland.strife.attributes.StrifeAttribute.RAGE_WHEN_HIT;
-import static info.faceland.strife.attributes.StrifeAttribute.TRUE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DAMAGE_REFLECT;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_KILL;
+import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
+import static info.faceland.strife.stats.StrifeStat.RAGE_ON_HIT;
+import static info.faceland.strife.stats.StrifeStat.RAGE_ON_KILL;
+import static info.faceland.strife.stats.StrifeStat.RAGE_WHEN_HIT;
+import static info.faceland.strife.stats.StrifeStat.TRUE_DAMAGE;
 import static info.faceland.strife.util.DamageUtil.AttackType;
 import static info.faceland.strife.util.DamageUtil.applyHealthOnHit;
 import static info.faceland.strife.util.DamageUtil.applyLifeSteal;
@@ -49,12 +49,12 @@ import static info.faceland.strife.util.ProjectileUtil.ATTACK_SPEED_META;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.events.SneakAttackEvent;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
@@ -300,7 +300,7 @@ public class CombatListener implements Listener {
     elementalDamage *= StatUtil.getDamageMult(attacker);
     elementalDamage *= pvpMult;
 
-    double damageReduction = defender.getAttribute(StrifeAttribute.DAMAGE_REDUCTION) * pvpMult;
+    double damageReduction = defender.getAttribute(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
     double rawDamage = (standardDamage + elementalDamage) * (blocked ? 0.6 : 1.0);
     rawDamage = Math.max(0D, rawDamage - damageReduction);
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
@@ -399,7 +399,7 @@ public class CombatListener implements Listener {
   }
 
   private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender) {
-    if (attacker.getAttribute(StrifeAttribute.CRITICAL_RATE) / 100 >= rollDouble(
+    if (attacker.getAttribute(StrifeStat.CRITICAL_RATE) / 100 >= rollDouble(
         hasLuck(attacker.getEntity()))) {
       callCritEvent(attacker.getEntity(), attacker.getEntity());
       defender.getEntity().getWorld().playSound(

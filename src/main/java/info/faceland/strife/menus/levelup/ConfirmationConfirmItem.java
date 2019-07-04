@@ -21,8 +21,9 @@ package info.faceland.strife.menus.levelup;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.StrifeStat;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -51,12 +52,12 @@ public class ConfirmationConfirmItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     Champion champion = plugin.getChampionManager().getChampion(player);
-    List<String> changesLore = Arrays.asList(DISPLAY_LORE);
-    for (StrifeStat strifeStat : plugin.getStatManager().getStats()) {
-      int initial = champion.getLevel(strifeStat);
-      int newValue = champion.getPendingLevel(strifeStat);
+    List<String> changesLore = new ArrayList<>(Arrays.asList(DISPLAY_LORE));
+    for (StrifeAttribute strifeAttribute : plugin.getAttributeManager().getAttributes()) {
+      int initial = champion.getLevel(strifeAttribute);
+      int newValue = champion.getPendingLevel(strifeAttribute);
       if (initial < newValue) {
-        changesLore.add(strifeStat.getName() + " Lv" + initial + " -> Lv" + newValue);
+        changesLore.add(strifeAttribute.getName() + " Lv" + initial + " -> Lv" + newValue);
       }
     }
     ItemStack stack = this.getIcon().clone();

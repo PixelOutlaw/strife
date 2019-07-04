@@ -1,7 +1,7 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 
 public class Corrupt extends Effect {
@@ -11,7 +11,7 @@ public class Corrupt extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     double corruptionStacks = amount;
-    for (StrifeAttribute attr : getStatMults().keySet()) {
+    for (StrifeStat attr : getStatMults().keySet()) {
       corruptionStacks += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
     }
     DamageUtil.applyCorrupt(target.getEntity(), corruptionStacks);

@@ -18,35 +18,35 @@
  */
 package info.faceland.strife.menus.stats;
 
-import static info.faceland.strife.attributes.StrifeAttribute.ACCURACY;
-import static info.faceland.strife.attributes.StrifeAttribute.ARMOR_PENETRATION;
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.CORRUPT_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_RATE;
-import static info.faceland.strife.attributes.StrifeAttribute.DARK_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.DOGE;
-import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.FREEZE_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
-import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_KILL;
-import static info.faceland.strife.attributes.StrifeAttribute.ICE_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.IGNITE_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.LIFE_STEAL;
-import static info.faceland.strife.attributes.StrifeAttribute.LIGHTNING_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.LIGHT_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.MAX_EARTH_RUNES;
-import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
-import static info.faceland.strife.attributes.StrifeAttribute.SHOCK_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.WARD_PENETRATION;
 import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
+import static info.faceland.strife.stats.StrifeStat.ACCURACY;
+import static info.faceland.strife.stats.StrifeStat.ARMOR_PENETRATION;
+import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.CORRUPT_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.CRITICAL_RATE;
+import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DOGE;
+import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.FREEZE_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_KILL;
+import static info.faceland.strife.stats.StrifeStat.ICE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.IGNITE_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.LIFE_STEAL;
+import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAX_EARTH_RUNES;
+import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
+import static info.faceland.strife.stats.StrifeStat.SHOCK_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
@@ -85,7 +85,7 @@ public class StatsOffenseMenuItem extends MenuItem {
       player = this.player;
     }
     StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
-    Map<StrifeAttribute, Double> bases = plugin.getMonsterManager()
+    Map<StrifeStat, Double> bases = plugin.getMonsterManager()
         .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic
@@ -148,16 +148,16 @@ public class StatsOffenseMenuItem extends MenuItem {
           addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getAttribute(BLEED_DAMAGE), "%",
               INT_FORMAT));
     }
-    if (pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE) > 0 &&
-        pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT) > 0 ||
-        pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL) > 0) {
+    if (pStats.getAttribute(StrifeStat.MAXIMUM_RAGE) > 0 &&
+        pStats.getAttribute(StrifeStat.RAGE_ON_HIT) > 0 ||
+        pStats.getAttribute(StrifeStat.RAGE_ON_KILL) > 0) {
       lore.add(breakLine);
       lore.add(
-          addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
+          addStat("Maximum Rage: ", pStats.getAttribute(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
       lore.add(
-          addStat("Rage On Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT), INT_FORMAT));
+          addStat("Rage On Hit: ", pStats.getAttribute(StrifeStat.RAGE_ON_HIT), INT_FORMAT));
       lore.add(
-          addStat("Rage On Kill: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL), INT_FORMAT));
+          addStat("Rage On Kill: ", pStats.getAttribute(StrifeStat.RAGE_ON_KILL), INT_FORMAT));
     }
     if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
         || pStats.getAttribute(HP_ON_KILL) > 0) {

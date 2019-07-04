@@ -19,22 +19,21 @@
 package info.faceland.strife.storage;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
-import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
-import info.faceland.strife.data.champion.StrifeStat;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.bukkit.configuration.ConfigurationSection;
-
-import java.io.File;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.configuration.ConfigurationSection;
 
 public class FlatfileStorage implements DataStorage {
 
@@ -80,7 +79,7 @@ public class FlatfileStorage implements DataStorage {
           new File(plugin.getDataFolder() + "/data", champUuid + ".json"));
     }
 
-    for (Map.Entry<StrifeStat, Integer> entry : champion.getLevelMap().entrySet()) {
+    for (Map.Entry<StrifeAttribute, Integer> entry : champion.getLevelMap().entrySet()) {
       config.set(champUuid + ".stats." + entry.getKey().getKey(), entry.getValue());
     }
 
@@ -159,11 +158,11 @@ public class FlatfileStorage implements DataStorage {
 
       if (section.isConfigurationSection("stats")) {
         ConfigurationSection statsSection = section.getConfigurationSection("stats");
-        for (StrifeStat s : plugin.getStatManager().getStats()) {
+        for (StrifeAttribute s : plugin.getAttributeManager().getAttributes()) {
           saveData.setLevel(s, statsSection.getInt(s.getKey(), 0));
         }
       } else {
-        for (StrifeStat s : plugin.getStatManager().getStats()) {
+        for (StrifeAttribute s : plugin.getAttributeManager().getAttributes()) {
           saveData.setLevel(s, 0);
         }
       }

@@ -18,9 +18,9 @@
  */
 package info.faceland.strife.managers;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.RageData;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,19 +69,19 @@ public class RageManager {
 
   public void addRage(StrifeMob strifeMob, double amount) {
     LivingEntity entity = strifeMob.getEntity();
-    if (strifeMob.getAttribute(StrifeAttribute.MAXIMUM_RAGE) < 1) {
+    if (strifeMob.getAttribute(StrifeStat.MAXIMUM_RAGE) < 1) {
       return;
     }
     if (!rageMap.containsKey(entity.getUniqueId())) {
       rageMap.put(entity.getUniqueId(), new RageData(
-          Math.min(amount, strifeMob.getAttribute(StrifeAttribute.MAXIMUM_RAGE)),
+          Math.min(amount, strifeMob.getAttribute(StrifeStat.MAXIMUM_RAGE)),
           RAGE_GRACE_TICKS));
       return;
     }
 
     rageMap.get(entity.getUniqueId()).setRageStacks(
         Math.min(rageMap.get(entity.getUniqueId()).getRageStacks() + amount,
-            strifeMob.getAttribute(StrifeAttribute.MAXIMUM_RAGE)));
+            strifeMob.getAttribute(StrifeStat.MAXIMUM_RAGE)));
     refreshRage(entity);
   }
 

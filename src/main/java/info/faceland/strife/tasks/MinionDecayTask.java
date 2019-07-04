@@ -19,7 +19,6 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.managers.MinionManager;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class MinionDecayTask extends BukkitRunnable {
@@ -32,17 +31,6 @@ public class MinionDecayTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    for (LivingEntity le : minionManager.getMinionDecayMap().keySet()) {
-      if (le == null || !le.isValid()) {
-        minionManager.getMinionDecayMap().remove(le);
-        continue;
-      }
-      int ticks = minionManager.getMinionDecayMap().get(le);
-      if (ticks > 0) {
-        minionManager.getMinionDecayMap().put(le, ticks-1);
-        continue;
-      }
-      le.damage(le.getMaxHealth() / 10);
-    }
+    minionManager.tickMinions();
   }
 }

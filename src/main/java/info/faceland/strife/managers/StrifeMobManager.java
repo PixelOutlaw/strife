@@ -1,8 +1,8 @@
 package info.faceland.strife.managers;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +42,7 @@ public class StrifeMobManager {
     return strifeMob;
   }
 
-  public void setEntityStats(LivingEntity entity, Map<StrifeAttribute, Double> statMap) {
+  public void setEntityStats(LivingEntity entity, Map<StrifeStat, Double> statMap) {
     StrifeMob strifeMob = getAttributedEntity(entity);
     strifeMob.setAttributes(statMap);
     trackedEntities.put(entity.getUniqueId(), strifeMob);

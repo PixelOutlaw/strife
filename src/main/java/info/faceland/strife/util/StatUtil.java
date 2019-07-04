@@ -1,55 +1,55 @@
 package info.faceland.strife.util;
 
-import static info.faceland.strife.attributes.StrifeAttribute.ACCURACY;
-import static info.faceland.strife.attributes.StrifeAttribute.ACCURACY_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.ALL_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.APEN_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.ARMOR;
-import static info.faceland.strife.attributes.StrifeAttribute.ARMOR_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.ARMOR_PENETRATION;
-import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
-import static info.faceland.strife.attributes.StrifeAttribute.BARRIER_SPEED;
-import static info.faceland.strife.attributes.StrifeAttribute.CRITICAL_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.DAMAGE_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.DARK_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.DARK_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.EARTH_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.ELEMENTAL_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.EVASION;
-import static info.faceland.strife.attributes.StrifeAttribute.EVASION_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.FIRE_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.FIRE_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.HEALTH;
-import static info.faceland.strife.attributes.StrifeAttribute.HEALTH_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.ICE_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.ICE_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.LIFE_STEAL;
-import static info.faceland.strife.attributes.StrifeAttribute.LIGHTNING_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.LIGHTNING_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.LIGHT_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.LIGHT_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.MAGIC_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.MAGIC_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.MELEE_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.MELEE_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.OVERCHARGE;
-import static info.faceland.strife.attributes.StrifeAttribute.RANGED_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.RANGED_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.REGENERATION;
-import static info.faceland.strife.attributes.StrifeAttribute.REGEN_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.WARDING;
-import static info.faceland.strife.attributes.StrifeAttribute.WARD_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.WARD_PENETRATION;
-import static info.faceland.strife.attributes.StrifeAttribute.WPEN_MULT;
+import static info.faceland.strife.stats.StrifeStat.ACCURACY;
+import static info.faceland.strife.stats.StrifeStat.ACCURACY_MULT;
+import static info.faceland.strife.stats.StrifeStat.ALL_RESIST;
+import static info.faceland.strife.stats.StrifeStat.APEN_MULT;
+import static info.faceland.strife.stats.StrifeStat.ARMOR;
+import static info.faceland.strife.stats.StrifeStat.ARMOR_MULT;
+import static info.faceland.strife.stats.StrifeStat.ARMOR_PENETRATION;
+import static info.faceland.strife.stats.StrifeStat.BARRIER;
+import static info.faceland.strife.stats.StrifeStat.BARRIER_SPEED;
+import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DAMAGE_MULT;
+import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DARK_RESIST;
+import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.EARTH_RESIST;
+import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
+import static info.faceland.strife.stats.StrifeStat.EVASION;
+import static info.faceland.strife.stats.StrifeStat.EVASION_MULT;
+import static info.faceland.strife.stats.StrifeStat.FIRE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.FIRE_RESIST;
+import static info.faceland.strife.stats.StrifeStat.HEALTH;
+import static info.faceland.strife.stats.StrifeStat.HEALTH_MULT;
+import static info.faceland.strife.stats.StrifeStat.ICE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.ICE_RESIST;
+import static info.faceland.strife.stats.StrifeStat.LIFE_STEAL;
+import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIGHTNING_RESIST;
+import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIGHT_RESIST;
+import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
+import static info.faceland.strife.stats.StrifeStat.MELEE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MELEE_MULT;
+import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
+import static info.faceland.strife.stats.StrifeStat.RANGED_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.RANGED_MULT;
+import static info.faceland.strife.stats.StrifeStat.REGENERATION;
+import static info.faceland.strife.stats.StrifeStat.REGEN_MULT;
+import static info.faceland.strife.stats.StrifeStat.WARDING;
+import static info.faceland.strife.stats.StrifeStat.WARD_MULT;
+import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
+import static info.faceland.strife.stats.StrifeStat.WPEN_MULT;
 import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
@@ -118,7 +118,7 @@ public class StatUtil {
 
   public static double getAttackTime(StrifeMob ae) {
     double attackTime = BASE_ATTACK_SECONDS;
-    double attackBonus = ae.getAttribute(StrifeAttribute.ATTACK_SPEED);
+    double attackBonus = ae.getAttribute(StrifeStat.ATTACK_SPEED);
     if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
     }
@@ -245,62 +245,62 @@ public class StatUtil {
   }
 
   public static double getBaseFireDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeAttribute.FIRE_DAMAGE);
+    double damage = attacker.getAttribute(StrifeStat.FIRE_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getFireResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseIceDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeAttribute.ICE_DAMAGE);
+    double damage = attacker.getAttribute(StrifeStat.ICE_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getIceResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseLightningDamage(StrifeMob attacker,
       StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeAttribute.LIGHTNING_DAMAGE);
+    double damage = attacker.getAttribute(StrifeStat.LIGHTNING_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightningResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseEarthDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeAttribute.EARTH_DAMAGE);
+    double damage = attacker.getAttribute(StrifeStat.EARTH_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getEarthResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseLightDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeAttribute.LIGHT_DAMAGE);
+    double damage = attacker.getAttribute(StrifeStat.LIGHT_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseShadowDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeAttribute.DARK_DAMAGE);
+    double damage = attacker.getAttribute(StrifeStat.DARK_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeAttribute.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getShadowResist(defender) / 100;
     return damage;
   }

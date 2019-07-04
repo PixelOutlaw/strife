@@ -1,12 +1,12 @@
 package info.faceland.strife.util;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
-import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
-import static info.faceland.strife.attributes.StrifeAttribute.TENACITY;
+import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
+import static info.faceland.strife.stats.StrifeStat.PROJECTILE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
+import static info.faceland.strife.stats.StrifeStat.TENACITY;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
 import static info.faceland.strife.util.StatUtil.getIceResist;
@@ -17,7 +17,6 @@ import static info.faceland.strife.util.StatUtil.getWardingMult;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
@@ -25,6 +24,7 @@ import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -91,7 +91,7 @@ public class DamageUtil {
 
   public static double attemptIgnite(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.IGNITE_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeStat.IGNITE_CHANCE) / 100) {
       return 0D;
     }
     double bonusDamage = defender.getFireTicks() > 0 ? damage : 1D;
@@ -105,7 +105,7 @@ public class DamageUtil {
 
   public static double attemptShock(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.SHOCK_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeStat.SHOCK_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.5;
@@ -129,7 +129,7 @@ public class DamageUtil {
 
   public static double attemptFreeze(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.FREEZE_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeStat.FREEZE_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.25 + 0.25 * (StatUtil.getHealth(attacker) / 100);
@@ -190,7 +190,7 @@ public class DamageUtil {
     if (damage == 0) {
       return false;
     }
-    if (rollDouble() >= attacker.getAttribute(StrifeAttribute.CORRUPT_CHANCE) / 100) {
+    if (rollDouble() >= attacker.getAttribute(StrifeStat.CORRUPT_CHANCE) / 100) {
       return false;
     }
     applyCorrupt(defender, damage);

@@ -25,7 +25,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
-import info.faceland.strife.data.champion.StrifeStat;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -87,7 +87,7 @@ public class StrifeCommand {
     sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "<gold>----------------------------------");
-    for (StrifeStat stat : plugin.getStatManager().getStats()) {
+    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
       sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
@@ -96,7 +96,7 @@ public class StrifeCommand {
   @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
   public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
     Champion champion = plugin.getChampionManager().getChampion(target);
-    for (StrifeStat stat : plugin.getStatManager().getStats()) {
+    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
       champion.setLevel(stat, 0);
     }
     champion.setHighestReachedLevel(target.getLevel());
@@ -114,7 +114,7 @@ public class StrifeCommand {
     target.setExp(0f);
     target.setLevel(0);
     Champion champion = plugin.getChampionManager().getChampion(target);
-    for (StrifeStat stat : plugin.getStatManager().getStats()) {
+    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
       champion.setLevel(stat, 0);
     }
     champion.setUnusedStatPoints(0);

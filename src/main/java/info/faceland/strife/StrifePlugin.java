@@ -25,7 +25,6 @@ import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import info.faceland.strife.api.StrifeExperienceManager;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.SpawnerCommand;
@@ -76,12 +75,13 @@ import info.faceland.strife.managers.RageManager;
 import info.faceland.strife.managers.SkillExperienceManager;
 import info.faceland.strife.managers.SneakManager;
 import info.faceland.strife.managers.SpawnerManager;
+import info.faceland.strife.managers.StrifeAttributeManager;
 import info.faceland.strife.managers.StrifeMobManager;
-import info.faceland.strife.managers.StrifeStatManager;
 import info.faceland.strife.managers.UniqueEntityManager;
 import info.faceland.strife.menus.levelup.ConfirmationMenu;
 import info.faceland.strife.menus.levelup.LevelupMenu;
 import info.faceland.strife.menus.stats.StatsMenu;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.FlatfileStorage;
 import info.faceland.strife.tasks.BarrierTask;
@@ -138,7 +138,7 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   private VersionedSmartYamlConfiguration configYAML;
   private VersionedSmartYamlConfiguration langYAML;
-  private VersionedSmartYamlConfiguration statsYAML;
+  private VersionedSmartYamlConfiguration attributesYAML;
   private VersionedSmartYamlConfiguration baseStatsYAML;
   private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
   private VersionedSmartYamlConfiguration equipmentYAML;
@@ -151,7 +151,7 @@ public class StrifePlugin extends FacePlugin {
 
   private StrifeMobManager strifeMobManager;
   private AttributeUpdateManager attributeUpdateManager;
-  private StrifeStatManager statManager;
+  private StrifeAttributeManager attributeManager;
   private ChampionManager championManager;
   private StrifeExperienceManager experienceManager;
   private SkillExperienceManager skillExperienceManager;
@@ -203,42 +203,25 @@ public class StrifePlugin extends FacePlugin {
     setInstance(this);
     debugPrinter = new PluginLogger(this);
 
-    configYAML = defaultSettingsLoad("config.yml");
-    langYAML = defaultSettingsLoad("language.yml");
-    statsYAML = defaultSettingsLoad("stats.yml");
-    baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml");
-    uniqueEnemiesYAML = defaultSettingsLoad("unique-enemies.yml");
-    equipmentYAML = defaultSettingsLoad("equipment.yml");
-    conditionYAML = defaultSettingsLoad("conditions.yml");
-    effectYAML = defaultSettingsLoad("effects.yml");
-    abilityYAML = defaultSettingsLoad("abilities.yml");
-    loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml");
-    globalBoostsYAML = defaultSettingsLoad("global-boosts.yml");
+    List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();
+    configurations.add(configYAML = defaultSettingsLoad("config.yml"));
+    configurations.add(langYAML = defaultSettingsLoad("language.yml"));
+    configurations.add(attributesYAML = defaultSettingsLoad("attributes.yml"));
+    configurations.add(baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml"));
+    configurations.add(uniqueEnemiesYAML = defaultSettingsLoad("unique-enemies.yml"));
+    configurations.add(equipmentYAML = defaultSettingsLoad("equipment.yml"));
+    configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
+    configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
+    configurations.add(abilityYAML = defaultSettingsLoad("abilities.yml"));
+    configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
+    configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
+
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
-    if (configYAML.update()) {
-      getLogger().info("Updating config.yml");
-    }
-    if (langYAML.update()) {
-      getLogger().info("Updating language.yml");
-    }
-    if (statsYAML.update()) {
-      getLogger().info("Updating stats.yml");
-    }
-    if (baseStatsYAML.update()) {
-      getLogger().info("Updating base-entity-stats.yml");
-    }
-    if (uniqueEnemiesYAML.update()) {
-      getLogger().info("Updating unique-enemies.yml");
-    }
-    if (equipmentYAML.update()) {
-      getLogger().info("Updating equipment.yml");
-    }
-    if (effectYAML.update()) {
-      getLogger().info("Updating effects.yml");
-    }
-    if (abilityYAML.update()) {
-      getLogger().info("Updating abilities.yml");
+    for (VersionedSmartYamlConfiguration config : configurations) {
+      if (config.update()) {
+        getLogger().info("Updating " + config.getFileName());
+      }
     }
 
     settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
@@ -254,7 +237,7 @@ public class StrifePlugin extends FacePlugin {
     strifeMobManager = new StrifeMobManager(this);
     abilityManager = new AbilityManager(this);
     commandHandler = new CommandHandler(this);
-    statManager = new StrifeStatManager();
+    attributeManager = new StrifeAttributeManager();
     blockManager = new BlockManager();
     bleedManager = new BleedManager();
     darknessManager = new DarknessManager();
@@ -265,7 +248,7 @@ public class StrifePlugin extends FacePlugin {
     attributeUpdateManager = new AttributeUpdateManager(strifeMobManager);
     rageManager = new RageManager(attributeUpdateManager);
     monsterManager = new MonsterManager(championManager);
-    effectManager = new EffectManager(statManager, strifeMobManager);
+    effectManager = new EffectManager(attributeManager, strifeMobManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
 
@@ -275,7 +258,7 @@ public class StrifePlugin extends FacePlugin {
       logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
     } catch (Exception e) {
       logLevel = LogLevel.ERROR;
-      LogUtil.printError("You don't have an acceptable log level you dangus");
+      LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + LogLevel.values());
     }
 
     buildEquipment();
@@ -467,7 +450,7 @@ public class StrifePlugin extends FacePlugin {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
 
-    levelupMenu = new LevelupMenu(this, getStatManager().getStats());
+    levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu(this);
 
@@ -488,6 +471,32 @@ public class StrifePlugin extends FacePlugin {
     uniqueEntityManager.killAllSpawnedUniques();
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
+
+    championManager = null;
+    uniqueEntityManager = null;
+    bossBarManager = null;
+    minionManager = null;
+    sneakManager = null;
+    experienceManager = null;
+    skillExperienceManager = null;
+    strifeMobManager = null;
+    abilityManager = null;
+    commandHandler = null;
+    attributeManager = null;
+    blockManager = null;
+    bleedManager = null;
+    darknessManager = null;
+    attackSpeedManager = null;
+    equipmentManager = null;
+    globalBoostManager = null;
+    barrierManager = null;
+    attributeUpdateManager = null;
+    rageManager = null;
+    monsterManager = null;
+    effectManager = null;
+    spawnerManager = null;
+    loreAbilityManager = null;
+
     HandlerList.unregisterAll(this);
 
     for (BukkitTask task : taskList) {
@@ -555,12 +564,12 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void buildLevelpointStats() {
-    for (String key : statsYAML.getKeys(false)) {
-      if (!statsYAML.isConfigurationSection(key)) {
+    for (String key : attributesYAML.getKeys(false)) {
+      if (!attributesYAML.isConfigurationSection(key)) {
         continue;
       }
-      ConfigurationSection cs = statsYAML.getConfigurationSection(key);
-      statManager.loadStat(key, cs);
+      ConfigurationSection cs = attributesYAML.getConfigurationSection(key);
+      attributeManager.loadStat(key, cs);
     }
   }
 
@@ -615,10 +624,10 @@ public class StrifePlugin extends FacePlugin {
             .cacheDisguise(uniqueEntity, disguise, cs.getString("disguise-player", null));
       }
 
-      ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
-      Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
+      ConfigurationSection attrCS = cs.getConfigurationSection("stats");
+      Map<StrifeStat, Double> attributeMap = new HashMap<>();
       for (String k : attrCS.getKeys(false)) {
-        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        StrifeStat attr = StrifeStat.valueOf(k);
         attributeMap.put(attr, attrCS.getDouble(k));
       }
       uniqueEntity.setAttributeMap(attributeMap);
@@ -763,8 +772,8 @@ public class StrifePlugin extends FacePlugin {
     return attackSpeedManager;
   }
 
-  public StrifeStatManager getStatManager() {
-    return statManager;
+  public StrifeAttributeManager getAttributeManager() {
+    return attributeManager;
   }
 
   public BlockManager getBlockManager() {

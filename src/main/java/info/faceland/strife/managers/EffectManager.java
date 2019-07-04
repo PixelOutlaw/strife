@@ -1,7 +1,6 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.conditions.AttributeCondition;
 import info.faceland.strife.conditions.BarrierCondition;
 import info.faceland.strife.conditions.BleedingCondition;
@@ -20,7 +19,7 @@ import info.faceland.strife.conditions.LevelCondition;
 import info.faceland.strife.conditions.PotionCondition;
 import info.faceland.strife.conditions.StatCondition;
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.data.champion.StrifeStat;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.ConsumeBleed;
 import info.faceland.strife.effects.ConsumeCorrupt;
@@ -40,6 +39,7 @@ import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -58,13 +58,13 @@ import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
 
-  private final StrifeStatManager strifeStatManager;
+  private final StrifeAttributeManager strifeAttributeManager;
   private final StrifeMobManager aeManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  public EffectManager(StrifeStatManager strifeStatManager, StrifeMobManager aeManager) {
-    this.strifeStatManager = strifeStatManager;
+  public EffectManager(StrifeAttributeManager strifeAttributeManager, StrifeMobManager aeManager) {
+    this.strifeAttributeManager = strifeAttributeManager;
     this.aeManager = aeManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
@@ -310,23 +310,23 @@ public class EffectManager {
 
     Condition condition;
     switch (conditionType) {
-      case ATTRIBUTE:
-        StrifeAttribute attr;
-        try {
-          attr = StrifeAttribute.valueOf(cs.getString("attribute", null));
-        } catch (Exception e) {
-          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
-          return;
-        }
-        condition = new AttributeCondition(attr, compareTarget, comparison, value);
-        break;
       case STAT:
-        StrifeStat stat = strifeStatManager.getStat(cs.getString("stat", null));
-        if (stat == null) {
+        StrifeStat stat;
+        try {
+          stat = StrifeStat.valueOf(cs.getString("stat", null));
+        } catch (Exception e) {
           LogUtil.printError("Failed to load condition " + key + ". Invalid stat.");
           return;
         }
         condition = new StatCondition(stat, compareTarget, comparison, value);
+        break;
+      case ATTRIBUTE:
+        StrifeAttribute attribute = strifeAttributeManager.getAttribute(cs.getString("attribute", null));
+        if (attribute == null) {
+          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
+          return;
+        }
+        condition = new AttributeCondition(attribute, compareTarget, comparison, value);
         break;
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);

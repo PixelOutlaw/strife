@@ -5,8 +5,6 @@ PLAYER:
     ARMOR: 10
     WARDING: 20
     REGENERATION: 1
-    ARMOR: 10
-    WARDING: 20
   per-level:
       HEALTH: 1
       BASE-REGEN: 0.04

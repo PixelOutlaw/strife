@@ -1,12 +1,11 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.ability.EntityAbilitySet;
+import info.faceland.strife.stats.StrifeStat;
+import java.util.Map;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.Map;
 
 public class UniqueEntity {
 
@@ -14,7 +13,7 @@ public class UniqueEntity {
   private EntityType type;
   private String name;
   private int experience;
-  private Map<StrifeAttribute, Double> attributeMap;
+  private Map<StrifeStat, Double> attributeMap;
   private EntityAbilitySet abilitySet;
 
   private boolean baby;
@@ -65,11 +64,11 @@ public class UniqueEntity {
     this.experience = experience;
   }
 
-  public Map<StrifeAttribute, Double> getAttributeMap() {
+  public Map<StrifeStat, Double> getAttributeMap() {
     return attributeMap;
   }
 
-  public void setAttributeMap(Map<StrifeAttribute, Double> attributeMap) {
+  public void setAttributeMap(Map<StrifeStat, Double> attributeMap) {
     this.attributeMap = attributeMap;
   }
 

@@ -19,22 +19,21 @@
 package info.faceland.strife.menus.levelup;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.champion.StrifeStat;
+import info.faceland.strife.data.champion.StrifeAttribute;
+import java.util.List;
 import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.ChatColor;
 
-import java.util.List;
-
 public class LevelupMenu extends ItemMenu {
 
-  public LevelupMenu(StrifePlugin plugin, List<StrifeStat> stats) {
+  public LevelupMenu(StrifePlugin plugin, List<StrifeAttribute> attributes) {
     super(ChatColor.BLACK + "Levelup Menu",
         Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
         plugin);
 
-    for (StrifeStat stat : stats) {
-      int slot = stat.getSlot();
-      setItem(slot, new LevelupMenuItem(plugin, stat));
+    for (StrifeAttribute attribute : attributes) {
+      int slot = attribute.getSlot();
+      setItem(slot, new LevelupMenuItem(plugin, attribute));
     }
 
     int slot = plugin.getSettings().getInt("config.menu.unused-slot");

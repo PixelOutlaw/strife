@@ -23,8 +23,8 @@ import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.ArrayList;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -66,17 +66,17 @@ public class StatsBonusMenuItem extends MenuItem {
     lore.add(breakLine);
 
     lore.add(ChatColor.GREEN + "Combat Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.XP_GAIN)) + "%");
+        .format(pStats.getAttribute(StrifeStat.XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Skill Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.SKILL_XP_GAIN)) + "%");
+        .format(pStats.getAttribute(StrifeStat.SKILL_XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY)) + "%");
+        .format(pStats.getAttribute(StrifeStat.ITEM_DISCOVERY)) + "%");
     lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.ITEM_RARITY)) + "%");
+        .format(pStats.getAttribute(StrifeStat.ITEM_RARITY)) + "%");
     lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND)) + "%");
+        .format(pStats.getAttribute(StrifeStat.GOLD_FIND)) + "%");
     lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP)) + "%");
+        .format(pStats.getAttribute(StrifeStat.HEAD_DROP)) + "%");
 
     lore.add(breakLine);
 

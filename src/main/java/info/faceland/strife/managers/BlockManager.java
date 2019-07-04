@@ -18,14 +18,14 @@
  */
 package info.faceland.strife.managers;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BLOCK;
-import static info.faceland.strife.attributes.StrifeAttribute.BLOCK_RECOVERY;
-import static info.faceland.strife.attributes.StrifeAttribute.EARTH_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.MAX_EARTH_RUNES;
+import static info.faceland.strife.stats.StrifeStat.BLOCK;
+import static info.faceland.strife.stats.StrifeStat.BLOCK_RECOVERY;
+import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAX_EARTH_RUNES;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.BlockData;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class BlockManager {
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
   public boolean rollBlock(StrifeMob strifeMob, boolean isBlocking) {
-    if (strifeMob.getAttribute(StrifeAttribute.BLOCK) < 1) {
+    if (strifeMob.getAttribute(StrifeStat.BLOCK) < 1) {
       return false;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();

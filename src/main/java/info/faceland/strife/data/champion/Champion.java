@@ -19,12 +19,12 @@
 package info.faceland.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,20 +33,20 @@ import org.bukkit.entity.Player;
 
 public class Champion {
 
-  private final Map<StrifeAttribute, Double> attributeBase;
-  private final Map<StrifeAttribute, Double> attributeLevelPoint;
-  private final Map<StrifeAttribute, Double> combinedAttributeCache;
+  private final Map<StrifeStat, Double> attributeBase;
+  private final Map<StrifeStat, Double> attributeLevelPoint;
+  private final Map<StrifeStat, Double> combinedAttributeCache;
   private final ChampionSaveData saveData;
   private final PlayerEquipmentCache equipmentCache;
 
   private Player player;
 
-  private static final Map<LifeSkillType, StrifeAttribute> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeAttribute>builder()
-      .put(LifeSkillType.CRAFTING, StrifeAttribute.CRAFT_SKILL)
-      .put(LifeSkillType.ENCHANTING, StrifeAttribute.ENCHANT_SKILL)
-      .put(LifeSkillType.FISHING, StrifeAttribute.FISH_SKILL)
-      .put(LifeSkillType.MINING, StrifeAttribute.MINE_SKILL)
-      .put(LifeSkillType.SNEAK, StrifeAttribute.SNEAK_SKILL)
+  private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
+      .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
+      .put(LifeSkillType.ENCHANTING, StrifeStat.ENCHANT_SKILL)
+      .put(LifeSkillType.FISHING, StrifeStat.FISH_SKILL)
+      .put(LifeSkillType.MINING, StrifeStat.MINE_SKILL)
+      .put(LifeSkillType.SNEAK, StrifeStat.SNEAK_SKILL)
       .build();
 
   public Champion(Player player, ChampionSaveData saveData) {
@@ -58,7 +58,7 @@ public class Champion {
     this.saveData = saveData;
   }
 
-  public Map<StrifeAttribute, Double> getCombinedCache() {
+  public Map<StrifeStat, Double> getCombinedCache() {
     return new HashMap<>(combinedAttributeCache);
   }
 
@@ -80,12 +80,12 @@ public class Champion {
     ));
   }
 
-  public void setAttributeBaseCache(Map<StrifeAttribute, Double> map) {
+  public void setAttributeBaseCache(Map<StrifeStat, Double> map) {
     attributeBase.clear();
     attributeBase.putAll(map);
   }
 
-  public void setAttributeLevelPointCache(Map<StrifeAttribute, Double> map) {
+  public void setAttributeLevelPointCache(Map<StrifeStat, Double> map) {
     attributeLevelPoint.clear();
     attributeLevelPoint.putAll(map);
   }
@@ -94,11 +94,11 @@ public class Champion {
     return saveData;
   }
 
-  public int getLevel(StrifeStat stat) {
+  public int getLevel(StrifeAttribute stat) {
     return saveData.getLevelMap().getOrDefault(stat, 0);
   }
 
-  public int getPendingLevel(StrifeStat stat) {
+  public int getPendingLevel(StrifeAttribute stat) {
     return saveData.getPendingLevelMap().getOrDefault(stat, 0);
   }
 
@@ -154,19 +154,19 @@ public class Champion {
     return saveData.getUniqueId();
   }
 
-  public void setLevel(StrifeStat stat, int level) {
+  public void setLevel(StrifeAttribute stat, int level) {
     saveData.setLevel(stat, level);
   }
 
-  public void setPendingLevel(StrifeStat stat, int level) {
+  public void setPendingLevel(StrifeAttribute stat, int level) {
     saveData.getPendingLevelMap().put(stat, level);
   }
 
-  public Map<StrifeStat, Integer> getLevelMap() {
+  public Map<StrifeAttribute, Integer> getLevelMap() {
     return saveData.getLevelMap();
   }
 
-  public Map<StrifeStat, Integer> getPendingLevelMap() {
+  public Map<StrifeAttribute, Integer> getPendingLevelMap() {
     return saveData.getPendingLevelMap();
   }
 

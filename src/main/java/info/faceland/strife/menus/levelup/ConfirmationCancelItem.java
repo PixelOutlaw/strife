@@ -21,6 +21,7 @@ package info.faceland.strife.menus.levelup;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.Arrays;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -47,7 +48,7 @@ public class ConfirmationCancelItem extends MenuItem {
   public ItemStack getFinalIcon(Player player) {
     ItemStack stack = this.getIcon().clone();
     ItemStackExtensionsKt.setDisplayName(stack, DISPLAY_NAME);
-    ItemStackExtensionsKt.setLore(stack, Arrays.asList(DISPLAY_LORE));
+    ItemStackExtensionsKt.setLore(stack, new ArrayList<>(Arrays.asList(DISPLAY_LORE)));
     return stack;
   }
 

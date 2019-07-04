@@ -16,12 +16,12 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package info.faceland.strife.attributes;
+package info.faceland.strife.stats;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public enum StrifeAttribute {
+public enum StrifeStat {
 
   LEVEL_REQUIREMENT("Level Requirement"),
 
@@ -138,31 +138,31 @@ public enum StrifeAttribute {
 
   // values() is dumb, so we only run it once, and hit use this to
   // change String to enum instead of try catching or values()
-  // TODO: We map String to StrifeAttribute, why not let the user customize the string rather than declaring it in the enum?
-  private static final Map<String, StrifeAttribute> copyOfValues = buildStringToAttributeMap();
+  // TODO: We map String to StrifeStat, why not let the user customize the string rather than declaring it in the enum?
+  private static final Map<String, StrifeStat> copyOfValues = buildStringToAttributeMap();
 
-  private static Map<String, StrifeAttribute> buildStringToAttributeMap() {
-    Map<String, StrifeAttribute> values = new HashMap<>();
-    for (StrifeAttribute attribute : StrifeAttribute.values()) {
-      if (attribute.getName() == null) {
+  private static Map<String, StrifeStat> buildStringToAttributeMap() {
+    Map<String, StrifeStat> values = new HashMap<>();
+    for (StrifeStat stat : StrifeStat.values()) {
+      if (stat.getName() == null) {
         continue;
       }
-      values.put(attribute.getName(), attribute);
+      values.put(stat.getName(), stat);
     }
     return values;
   }
 
-  public static StrifeAttribute fromName(String name) {
+  public static StrifeStat fromName(String name) {
     return copyOfValues.getOrDefault(name, null);
   }
 
   private final String name;
 
-  StrifeAttribute(String name) {
+  StrifeStat(String name) {
     this.name = name;
   }
 
-  StrifeAttribute() {
+  StrifeStat() {
     this.name = null;
   }
 

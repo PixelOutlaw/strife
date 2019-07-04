@@ -23,8 +23,8 @@ import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.ArrayList;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -66,22 +66,22 @@ public class StatsMiscMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
-        pStats.getAttribute(StrifeAttribute.MOVEMENT_SPEED)));
+        pStats.getAttribute(StrifeStat.MOVEMENT_SPEED)));
     lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
-        100 + pStats.getAttribute(StrifeAttribute.EFFECT_DURATION)) + "%");
-    if (pStats.getAttribute(StrifeAttribute.DOGE) > 0) {
+        100 + pStats.getAttribute(StrifeStat.EFFECT_DURATION)) + "%");
+    if (pStats.getAttribute(StrifeStat.DOGE) > 0) {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN
           + "many levels");
       lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
     }
     lore.add(ChatColor.DARK_AQUA + "Crafting Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeAttribute.CRAFT_SKILL)));
+        INT_FORMAT.format(pStats.getAttribute(StrifeStat.CRAFT_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Enchanting Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeAttribute.ENCHANT_SKILL)));
+        INT_FORMAT.format(pStats.getAttribute(StrifeStat.ENCHANT_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Fishing Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeAttribute.FISH_SKILL)));
+        INT_FORMAT.format(pStats.getAttribute(StrifeStat.FISH_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Mining Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeAttribute.MINE_SKILL)));
+        INT_FORMAT.format(pStats.getAttribute(StrifeStat.MINE_SKILL)));
 
     lore.add(breakLine);
 

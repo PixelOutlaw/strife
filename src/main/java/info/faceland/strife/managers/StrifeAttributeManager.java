@@ -19,80 +19,83 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.StrifeStat;
-
-import java.util.*;
+import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import org.bukkit.DyeColor;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
-public class StrifeStatManager {
+public class StrifeAttributeManager {
 
-  private static Map<String, StrifeStat> statMap;
+  private static Map<String, StrifeAttribute> attributeMap;
   private static final String upgradeAvailable = TextUtils.color("&a&lCLICK TO UPGRADE!");
   private static final String pointCapReached = TextUtils.color("&f&lMaxed Out!");
   private static final String noUnspentPoints = TextUtils.color("&f&lNo Unspent Points");
 
-  public StrifeStatManager() {
-    statMap = new LinkedHashMap<>();
+  public StrifeAttributeManager() {
+    attributeMap = new LinkedHashMap<>();
   }
 
-  public StrifeStat getStat(String name) {
-    return statMap.getOrDefault(name, null);
+  public StrifeAttribute getAttribute(String name) {
+    return attributeMap.getOrDefault(name, null);
   }
 
-  public List<StrifeStat> getStats() {
-    return new ArrayList<>(statMap.values());
+  public List<StrifeAttribute> getAttributes() {
+    return new ArrayList<>(attributeMap.values());
   }
 
-  public int getPendingStatCap(StrifeStat stat, Champion champion) {
+  public int getPendingStatCap(StrifeAttribute attr, Champion champion) {
 
-    int statCap = stat.getMaxCap();
-    if (stat.getLevelsToRaiseCap() > 0) {
-      double levelCap = stat.getStartCap() + (double) champion.getPlayer().getLevel() / stat
+    int statCap = attr.getMaxCap();
+    if (attr.getLevelsToRaiseCap() > 0) {
+      double levelCap = attr.getStartCap() + (double) champion.getPlayer().getLevel() / attr
           .getLevelsToRaiseCap();
-      statCap = Math.max(stat.getStartCap(), (int) Math.floor(levelCap));
+      statCap = Math.max(attr.getStartCap(), (int) Math.floor(levelCap));
     }
 
-    for (Entry<String, Integer> baseEntry : stat.getBaseStatRequirements().entrySet()) {
-      StrifeStat requirementStat = getStat(baseEntry.getKey());
+    for (Entry<String, Integer> baseEntry : attr.getBaseStatRequirements().entrySet()) {
+      StrifeAttribute requirementStat = getAttribute(baseEntry.getKey());
       int requirementStatValue = champion.getPendingLevel(requirementStat);
       int unlockRequirement = baseEntry.getValue();
-      int statIncrement = stat.getStatIncreaseIncrements().get(baseEntry.getKey());
+      int statIncrement = attr.getStatIncreaseIncrements().get(baseEntry.getKey());
 
       if (requirementStatValue < unlockRequirement) {
         return 0;
       }
 
-      int newStatCap = stat.getStartCap();
+      int newStatCap = attr.getStartCap();
       newStatCap += (requirementStatValue - unlockRequirement) / statIncrement;
       statCap = Math.min(statCap, newStatCap);
     }
-    return Math.min(statCap, stat.getMaxCap());
+    return Math.min(statCap, attr.getMaxCap());
   }
 
-  public List<String> generateRequirementString(StrifeStat stat, Champion champion, int cap) {
+  public List<String> generateRequirementString(StrifeAttribute attr, Champion champion, int cap) {
     List<String> requirementList = new ArrayList<>();
 
-    int levelRequirement = getLevelRequirement(stat, champion);
-    int allocatedPoints = champion.getPendingLevel(stat);
-    if (levelRequirement > champion.getPlayer().getLevel() && allocatedPoints < stat.getMaxCap() &&
+    int levelRequirement = getLevelRequirement(attr, champion);
+    int allocatedPoints = champion.getPendingLevel(attr);
+    if (levelRequirement > champion.getPlayer().getLevel() && allocatedPoints < attr.getMaxCap() &&
         allocatedPoints == cap) {
       requirementList.add(increaseString("Level", levelRequirement));
     }
-    for (Entry<String, Integer> entry : stat.getBaseStatRequirements().entrySet()) {
-      int statRequirement = getStatRequirement(stat, entry.getKey(), champion);
-      StrifeStat requirementStat = getStat(entry.getKey());
-      if (allocatedPoints < stat.getMaxCap() && allocatedPoints == cap &&
+    for (Entry<String, Integer> entry : attr.getBaseStatRequirements().entrySet()) {
+      int statRequirement = getStatRequirement(attr, entry.getKey(), champion);
+      StrifeAttribute requirementStat = getAttribute(entry.getKey());
+      if (allocatedPoints < attr.getMaxCap() && allocatedPoints == cap &&
           champion.getPendingLevel(requirementStat) < statRequirement) {
         requirementList.add(increaseString(requirementStat.getName(), statRequirement));
       }
     }
     if (requirementList.isEmpty()) {
-      if (allocatedPoints == stat.getMaxCap()) {
+      if (allocatedPoints == attr.getMaxCap()) {
         requirementList.add(pointCapReached);
       } else if (champion.getUnusedStatPoints() == 0) {
         requirementList.add(noUnspentPoints);
@@ -107,31 +110,31 @@ public class StrifeStatManager {
     return TextUtils.color("&f&lRequires: " + name + " " + value);
   }
 
-  private int getLevelRequirement(StrifeStat stat, Champion champion) {
-    if (stat.getLevelsToRaiseCap() <= 0) {
+  private int getLevelRequirement(StrifeAttribute attr, Champion champion) {
+    if (attr.getLevelsToRaiseCap() <= 0) {
       return 0;
     }
-    int requirementIncrease = champion.getPlayer().getLevel() / stat.getLevelsToRaiseCap();
-    return stat.getLevelsToRaiseCap() + requirementIncrease * stat.getLevelsToRaiseCap();
+    int requirementIncrease = champion.getPlayer().getLevel() / attr.getLevelsToRaiseCap();
+    return attr.getLevelsToRaiseCap() + requirementIncrease * attr.getLevelsToRaiseCap();
   }
 
-  private int getStatRequirement(StrifeStat stat, String requiredStatName, Champion champion) {
-    StrifeStat requirementStat = getStat(requiredStatName);
-    int baseRequirement = stat.getBaseStatRequirements().get(requiredStatName);
-    int statIncrement = stat.getStatIncreaseIncrements().get(requiredStatName);
+  private int getStatRequirement(StrifeAttribute attr, String requiredStatName, Champion champion) {
+    StrifeAttribute requirementStat = getAttribute(requiredStatName);
+    int baseRequirement = attr.getBaseStatRequirements().get(requiredStatName);
+    int statIncrement = attr.getStatIncreaseIncrements().get(requiredStatName);
     if (baseRequirement > champion.getPendingLevel(requirementStat)) {
-      return stat.getBaseStatRequirements().get(requiredStatName);
+      return attr.getBaseStatRequirements().get(requiredStatName);
     }
-    if (baseRequirement + statIncrement * champion.getPendingLevel(stat) <= champion
+    if (baseRequirement + statIncrement * champion.getPendingLevel(attr) <= champion
         .getPendingLevel(requirementStat)) {
       return -1;
     }
     int nextRank = (champion.getPendingLevel(requirementStat) - baseRequirement) / statIncrement;
-    return stat.getBaseStatRequirements().get(requiredStatName) + (nextRank + 1) * statIncrement;
+    return attr.getBaseStatRequirements().get(requiredStatName) + (nextRank + 1) * statIncrement;
   }
 
   public void loadStat(String key, ConfigurationSection cs) {
-    StrifeStat stat = new StrifeStat(key);
+    StrifeAttribute stat = new StrifeAttribute(key);
     stat.setName(cs.getString("name"));
     stat.setDescription(cs.getStringList("description"));
     stat.setDyeColor(DyeColor.valueOf(cs.getString("dye-color", "WHITE")));
@@ -157,17 +160,17 @@ public class StrifeStatManager {
         raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
       }
     }
-    Map<StrifeAttribute, Double> attributeMap = new HashMap<>();
-    if (cs.isConfigurationSection("attributes")) {
-      ConfigurationSection attrCS = cs.getConfigurationSection("attributes");
+    Map<StrifeStat, Double> attributeMap = new HashMap<>();
+    if (cs.isConfigurationSection("stats")) {
+      ConfigurationSection attrCS = cs.getConfigurationSection("stats");
       for (String k : attrCS.getKeys(false)) {
-        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        StrifeStat attr = StrifeStat.valueOf(k);
         attributeMap.put(attr, attrCS.getDouble(k));
       }
     }
     stat.setStatIncreaseIncrements(raiseStatCapAttributes);
     stat.setBaseStatRequirements(baseStatRequirements);
     stat.setAttributeMap(attributeMap);
-    statMap.put(stat.getKey(), stat);
+    StrifeAttributeManager.attributeMap.put(stat.getKey(), stat);
   }
 }

@@ -1,8 +1,8 @@
 package info.faceland.strife.listeners;
 
-import static info.faceland.strife.attributes.StrifeAttribute.HEALTH;
-import static info.faceland.strife.attributes.StrifeAttribute.HEALTH_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.MOVEMENT_SPEED;
+import static info.faceland.strife.stats.StrifeStat.HEALTH;
+import static info.faceland.strife.stats.StrifeStat.HEALTH_MULT;
+import static info.faceland.strife.stats.StrifeStat.MOVEMENT_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
@@ -10,7 +10,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Map;
@@ -105,7 +105,7 @@ public class SpawnListener implements Listener {
     level += -2 + random.nextInt(5);
     level = Math.max(level, 1);
 
-    Map<StrifeAttribute, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
+    Map<StrifeStat, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
     if (statMap.isEmpty()) {
       return;
     }

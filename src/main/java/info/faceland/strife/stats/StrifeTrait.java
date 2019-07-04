@@ -1,4 +1,4 @@
-package info.faceland.strife.attributes;
+package info.faceland.strife.stats;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ public enum StrifeTrait {
   ACCURATE_CHARGED("Fully Charged Hits Cannot Miss"),
   ACCURATE_CRITS("Critical Strikes Cannot Miss");
 
-  // TODO: We map String to StrifeAttribute, why not let the user
+  // TODO: We map String to StrifeStat, why not let the user
   //  customize the string rather than declaring it in the enum?
   private static final Map<String, StrifeTrait> copyOfValues = buildStringToTraitMap();
 

@@ -1,8 +1,8 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
 import java.util.List;
 import org.bukkit.entity.EntityType;
@@ -31,7 +31,7 @@ public class ShootProjectile extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     double projectiles = 1;
     if (projectileEntity != EntityType.FIREBALL) {
-      projectiles = quantity * (1 + caster.getAttribute(StrifeAttribute.MULTISHOT) / 100);
+      projectiles = quantity * (1 + caster.getAttribute(StrifeStat.MULTISHOT) / 100);
     }
     Vector castDirection;
     if (targeted) {

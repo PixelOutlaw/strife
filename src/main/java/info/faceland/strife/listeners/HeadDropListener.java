@@ -18,9 +18,9 @@
  */
 package info.faceland.strife.listeners;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.StrifeMobManager;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Creeper;
@@ -50,10 +50,10 @@ public class HeadDropListener implements Listener {
       return;
     }
     StrifeMob pStats = aeManager.getAttributedEntity(event.getEntity().getKiller());
-    if (pStats.getAttribute(StrifeAttribute.HEAD_DROP) < 1) {
+    if (pStats.getAttribute(StrifeStat.HEAD_DROP) < 1) {
       return;
     }
-    if (DamageUtil.rollBool(pStats.getAttribute(StrifeAttribute.HEAD_DROP) / 100)) {
+    if (DamageUtil.rollBool(pStats.getAttribute(StrifeStat.HEAD_DROP) / 100)) {
       LivingEntity livingEntity = event.getEntity();
       ItemStack skull = null;
       if (livingEntity instanceof Skeleton) {

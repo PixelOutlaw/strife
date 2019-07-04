@@ -2,10 +2,10 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.UniqueEntityData;
 import info.faceland.strife.data.ability.EntityAbilitySet;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -147,7 +147,7 @@ public class UniqueEntityManager {
       DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));
     }
 
-    double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.HEALTH, 5D);
+    double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.HEALTH, 5D);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
     spawnedUnique.setHealth(health);
 
@@ -178,14 +178,14 @@ public class UniqueEntityManager {
 
     if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
       double speed =
-          uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.MOVEMENT_SPEED, 100D) / 100D;
+          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100D) / 100D;
       spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(
           spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue() * speed);
     }
 
     if (spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) {
       double speed =
-          uniqueEntity.getAttributeMap().getOrDefault(StrifeAttribute.MOVEMENT_SPEED, 100D) / 100D;
+          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100D) / 100D;
       spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(
           spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue() * speed);
     }

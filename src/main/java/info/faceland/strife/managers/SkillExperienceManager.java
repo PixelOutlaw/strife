@@ -18,7 +18,7 @@
  */
 package info.faceland.strife.managers;
 
-import static info.faceland.strife.attributes.StrifeAttribute.SKILL_XP_GAIN;
+import static info.faceland.strife.stats.StrifeStat.SKILL_XP_GAIN;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;

@@ -1,9 +1,9 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ import org.bukkit.entity.LivingEntity;
 
 public class StrifeMob {
 
-  private final Map<StrifeAttribute, Double> attributeCache = new HashMap<>();
+  private final Map<StrifeStat, Double> attributeCache = new HashMap<>();
   private final Map<Ability, Long> cooldownMap = new HashMap<>();
 
   private final Champion champion;
@@ -32,7 +32,7 @@ public class StrifeMob {
     this.champion = null;
   }
 
-  public double getAttribute(StrifeAttribute attribute) {
+  public double getAttribute(StrifeStat attribute) {
     return attributeCache.getOrDefault(attribute, 0D);
   }
 
@@ -48,11 +48,11 @@ public class StrifeMob {
     return champion;
   }
 
-  public Map<StrifeAttribute, Double> getAttributes() {
+  public Map<StrifeStat, Double> getAttributes() {
     return attributeCache;
   }
 
-  public void setAttributes(Map<StrifeAttribute, Double> attributes) {
+  public void setAttributes(Map<StrifeStat, Double> attributes) {
     attributeCache.clear();
     attributeCache.putAll(attributes);
   }

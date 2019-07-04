@@ -18,13 +18,13 @@
  */
 package info.faceland.strife.listeners.combat;
 
-import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
+import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
 import static info.faceland.strife.util.ProjectileUtil.createArrow;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import java.util.Random;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
@@ -68,7 +68,7 @@ public class BowListener implements Listener {
     plugin.getChampionManager().updateEquipmentAttributes(
         plugin.getChampionManager().getChampion(player));
 
-    double projectileSpeed = 2.5 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
+    double projectileSpeed = 2.5 + (pStats.getAttribute(StrifeStat.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getAttribute(MULTISHOT) / 100;
     boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
 

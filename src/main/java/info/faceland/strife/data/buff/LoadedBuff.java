@@ -1,19 +1,19 @@
 package info.faceland.strife.data.buff;
 
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Map;
 
 public class LoadedBuff {
 
   private final String name;
-  private final Map<StrifeAttribute, Double> flatStats;
-  private final Map<StrifeAttribute, Double> multStats;
+  private final Map<StrifeStat, Double> flatStats;
+  private final Map<StrifeStat, Double> multStats;
   private final int maxStacks;
   private final int tickDuration;
   private final boolean slowFalloff;
 
-  public LoadedBuff(String name, Map<StrifeAttribute, Double> flatStats,
-      Map<StrifeAttribute, Double> multStats, int maxStacks, int tickDuration, boolean slowFalloff) {
+  public LoadedBuff(String name, Map<StrifeStat, Double> flatStats,
+      Map<StrifeStat, Double> multStats, int maxStacks, int tickDuration, boolean slowFalloff) {
     this.name = name;
     this.flatStats = flatStats;
     this.multStats = multStats;
@@ -26,11 +26,11 @@ public class LoadedBuff {
     return name;
   }
 
-  public Map<StrifeAttribute, Double> getFlatStats() {
+  public Map<StrifeStat, Double> getFlatStats() {
     return flatStats;
   }
 
-  public Map<StrifeAttribute, Double> getMultStats() {
+  public Map<StrifeStat, Double> getMultStats() {
     return multStats;
   }
 

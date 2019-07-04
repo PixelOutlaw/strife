@@ -1,9 +1,9 @@
 package info.faceland.strife.listeners.combat;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.StrifeMobManager;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Random;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -34,7 +34,7 @@ public class DogeListener implements Listener {
     }
     StrifeMob attacker = strifeMobManager
         .getAttributedEntity((LivingEntity) event.getEntity());
-    if (random.nextDouble() <= attacker.getAttribute(StrifeAttribute.DOGE) / 100) {
+    if (random.nextDouble() <= attacker.getAttribute(StrifeStat.DOGE) / 100) {
       MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
     }
   }
