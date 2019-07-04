@@ -69,19 +69,19 @@ public class RageManager {
 
   public void addRage(StrifeMob strifeMob, double amount) {
     LivingEntity entity = strifeMob.getEntity();
-    if (strifeMob.getAttribute(StrifeStat.MAXIMUM_RAGE) < 1) {
+    if (strifeMob.getStat(StrifeStat.MAXIMUM_RAGE) < 1) {
       return;
     }
     if (!rageMap.containsKey(entity.getUniqueId())) {
       rageMap.put(entity.getUniqueId(), new RageData(
-          Math.min(amount, strifeMob.getAttribute(StrifeStat.MAXIMUM_RAGE)),
+          Math.min(amount, strifeMob.getStat(StrifeStat.MAXIMUM_RAGE)),
           RAGE_GRACE_TICKS));
       return;
     }
 
     rageMap.get(entity.getUniqueId()).setRageStacks(
         Math.min(rageMap.get(entity.getUniqueId()).getRageStacks() + amount,
-            strifeMob.getAttribute(StrifeStat.MAXIMUM_RAGE)));
+            strifeMob.getStat(StrifeStat.MAXIMUM_RAGE)));
     refreshRage(entity);
   }
 

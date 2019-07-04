@@ -14,7 +14,7 @@ public class Bleed extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     double bleedAmount = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
-      bleedAmount += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+      bleedAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
     // TODO: Add logic for ignore armor false
     if (!ignoreArmor) {

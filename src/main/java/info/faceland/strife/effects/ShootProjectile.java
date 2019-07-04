@@ -31,7 +31,7 @@ public class ShootProjectile extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     double projectiles = 1;
     if (projectileEntity != EntityType.FIREBALL) {
-      projectiles = quantity * (1 + caster.getAttribute(StrifeStat.MULTISHOT) / 100);
+      projectiles = quantity * (1 + caster.getStat(StrifeStat.MULTISHOT) / 100);
     }
     Vector castDirection;
     if (targeted) {

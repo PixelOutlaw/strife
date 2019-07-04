@@ -71,29 +71,29 @@ public class StatsDefenseMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
 
     lore.add(breakLine);
-    if (pStats.getAttribute(StrifeStat.BARRIER) > 0) {
+    if (pStats.getStat(StrifeStat.BARRIER) > 0) {
       lore.add(
-          addStat("Maximum Barrier: ", pStats.getAttribute(StrifeStat.BARRIER), INT_FORMAT));
+          addStat("Maximum Barrier: ", pStats.getStat(StrifeStat.BARRIER), INT_FORMAT));
       lore.add(
           addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
     }
 
     lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
     lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMAL));
-    if (pStats.getAttribute(StrifeStat.MAXIMUM_RAGE) > 0 && pStats.getAttribute(StrifeStat.RAGE_WHEN_HIT) > 0) {
+    if (pStats.getStat(StrifeStat.MAXIMUM_RAGE) > 0 && pStats.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
-      lore.add(addStat("Maximum Rage: ", pStats.getAttribute(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
-      lore.add(addStat("Rage When Hit: ", pStats.getAttribute(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
+      lore.add(addStat("Maximum Rage: ", pStats.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
+      lore.add(addStat("Rage When Hit: ", pStats.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
     }
     lore.add(breakLine);
     lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
     lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
     lore.add(addStat("Evasion Rating: ", StatUtil.getMinimumEvasionMult(pStats), INT_FORMAT));
-    if (pStats.getAttribute(StrifeStat.BLOCK) > 0) {
-      lore.add(addStat("Block Rating: ", pStats.getAttribute(StrifeStat.BLOCK), INT_FORMAT));
+    if (pStats.getStat(StrifeStat.BLOCK) > 0) {
+      lore.add(addStat("Block Rating: ", pStats.getStat(StrifeStat.BLOCK), INT_FORMAT));
     }
-    if (pStats.getAttribute(StrifeStat.DAMAGE_REFLECT) > 0) {
-      lore.add(addStat("Reflected Damage: ", pStats.getAttribute(StrifeStat.DAMAGE_REFLECT),
+    if (pStats.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
+      lore.add(addStat("Reflected Damage: ", pStats.getStat(StrifeStat.DAMAGE_REFLECT),
           INT_FORMAT));
     }
     lore.add(breakLine);

@@ -34,7 +34,7 @@ public class DogeListener implements Listener {
     }
     StrifeMob attacker = strifeMobManager
         .getAttributedEntity((LivingEntity) event.getEntity());
-    if (random.nextDouble() <= attacker.getAttribute(StrifeStat.DOGE) / 100) {
+    if (random.nextDouble() <= attacker.getStat(StrifeStat.DOGE) / 100) {
       MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
     }
   }

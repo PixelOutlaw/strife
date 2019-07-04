@@ -118,8 +118,8 @@ public class SwingListener implements Listener {
     double attackMultiplier = plugin.getAttackSpeedManager()
         .getAttackMultiplier(attacker, resetAttack);
 
-    double range = attacker.getAttribute(StrifeStat.SPELL_STRIKE_RANGE);
-    if (attacker.getAttribute(StrifeStat.SPELL_STRIKE_RANGE) < 0.5) {
+    double range = attacker.getStat(StrifeStat.SPELL_STRIKE_RANGE);
+    if (attacker.getStat(StrifeStat.SPELL_STRIKE_RANGE) < 0.5) {
       return;
     }
     if (attackMultiplier < 0.95) {
@@ -148,8 +148,8 @@ public class SwingListener implements Listener {
     plugin.getChampionManager().updateEquipmentAttributes(
         plugin.getChampionManager().getChampion(player));
 
-    double projectileSpeed = 1 + (pStats.getAttribute(StrifeStat.PROJECTILE_SPEED) / 100);
-    double multiShot = pStats.getAttribute(StrifeStat.MULTISHOT) / 100;
+    double projectileSpeed = 1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    double multiShot = pStats.getStat(StrifeStat.MULTISHOT) / 100;
     boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
     event.setCancelled(true);
 

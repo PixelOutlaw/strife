@@ -50,11 +50,11 @@ public class BarrierTask extends BukkitRunnable {
         continue;
       }
       StrifeMob player = plugin.getStrifeMobManager().getAttributedEntity(entity);
-      if (player.getAttribute(BARRIER) < 0.1) {
+      if (player.getStat(BARRIER) < 0.1) {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
-      if (entry.getValue() >= player.getAttribute(BARRIER)) {
+      if (entry.getValue() >= player.getStat(BARRIER)) {
         continue;
       }
       // Restore this amount per barrier tick (4 MC ticks, 0.2s)

@@ -51,7 +51,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
 
     if (!exact) {
-      double statsMult = pStats.getAttribute(StrifeStat.XP_GAIN) / 100;
+      double statsMult = pStats.getStat(StrifeStat.XP_GAIN) / 100;
       if (pStats.getChampion().getSaveData().isDisplayExp()) {
         String xp = FORMAT.format(amount * (1 + statsMult));
         MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));

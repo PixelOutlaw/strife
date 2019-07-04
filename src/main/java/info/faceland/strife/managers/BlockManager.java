@@ -43,7 +43,7 @@ public class BlockManager {
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
   public boolean rollBlock(StrifeMob strifeMob, boolean isBlocking) {
-    if (strifeMob.getAttribute(StrifeStat.BLOCK) < 1) {
+    if (strifeMob.getStat(StrifeStat.BLOCK) < 1) {
       return false;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();
@@ -79,14 +79,14 @@ public class BlockManager {
   }
 
   public void bumpRunes(StrifeMob aEntity) {
-    if (aEntity.getAttribute(EARTH_DAMAGE) < 1) {
+    if (aEntity.getStat(EARTH_DAMAGE) < 1) {
       return;
     }
     UUID uuid = aEntity.getEntity().getUniqueId();
     if (!blockDataMap.containsKey(uuid)) {
       return;
     }
-    if (blockDataMap.get(uuid).getRunes() < Math.round(aEntity.getAttribute(MAX_EARTH_RUNES))) {
+    if (blockDataMap.get(uuid).getRunes() < Math.round(aEntity.getStat(MAX_EARTH_RUNES))) {
       blockDataMap.get(uuid).addRune();
     }
   }
@@ -97,11 +97,11 @@ public class BlockManager {
       BlockData data = new BlockData(System.currentTimeMillis() - DEFAULT_BLOCK_MILLIS, 0);
       blockDataMap.put(uuid, data);
     }
-    double maximumBlock = strifeMob.getAttribute(BLOCK);
+    double maximumBlock = strifeMob.getStat(BLOCK);
     double block = blockDataMap.get(uuid).getStoredBlock();
     double restoredBlock = FLAT_BLOCK_S + PERCENT_BLOCK_S * maximumBlock;
-    if (strifeMob.getAttribute(BLOCK_RECOVERY) > 1) {
-      restoredBlock *= 1 + strifeMob.getAttribute(BLOCK_RECOVERY) / 100;
+    if (strifeMob.getStat(BLOCK_RECOVERY) > 1) {
+      restoredBlock *= 1 + strifeMob.getStat(BLOCK_RECOVERY) / 100;
     }
 
     block += restoredBlock * getSecondsSinceBlock(uuid);

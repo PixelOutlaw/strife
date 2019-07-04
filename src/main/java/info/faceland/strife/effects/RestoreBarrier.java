@@ -13,12 +13,12 @@ public class RestoreBarrier extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob attributedTarget) {
-    if (attributedTarget.getAttribute(StrifeStat.BARRIER) == 0) {
+    if (attributedTarget.getStat(StrifeStat.BARRIER) == 0) {
       return;
     }
     double restoreAmount = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
-      restoreAmount += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+      restoreAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
     switch (damageScale) {
       case FLAT:
@@ -32,11 +32,11 @@ public class RestoreBarrier extends Effect {
         double curBarrier2 = StrifePlugin.getInstance().getBarrierManager()
             .getCurrentBarrier(attributedTarget);
         restoreAmount = restoreAmount * (1 - curBarrier2 / attributedTarget
-            .getAttribute(StrifeStat.BARRIER));
+            .getStat(StrifeStat.BARRIER));
         DamageUtil.restoreBarrier(attributedTarget, restoreAmount);
       case MAXIMUM:
         DamageUtil.restoreBarrier(attributedTarget,
-            restoreAmount * attributedTarget.getAttribute(StrifeStat.BARRIER));
+            restoreAmount * attributedTarget.getStat(StrifeStat.BARRIER));
     }
   }
 

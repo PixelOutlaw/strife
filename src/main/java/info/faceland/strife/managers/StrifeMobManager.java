@@ -33,7 +33,7 @@ public class StrifeMobManager {
       } else {
         strifeMob = new StrifeMob(entity);
       }
-      strifeMob.setAttributes(plugin.getMonsterManager().getBaseStats(entity));
+      strifeMob.setStats(plugin.getMonsterManager().getBaseStats(entity));
       trackedEntities.put(entity.getUniqueId(), strifeMob);
     }
     StrifeMob strifeMob = trackedEntities.get(entity.getUniqueId());
@@ -44,7 +44,7 @@ public class StrifeMobManager {
 
   public void setEntityStats(LivingEntity entity, Map<StrifeStat, Double> statMap) {
     StrifeMob strifeMob = getAttributedEntity(entity);
-    strifeMob.setAttributes(statMap);
+    strifeMob.setStats(statMap);
     trackedEntities.put(entity.getUniqueId(), strifeMob);
   }
 

@@ -14,7 +14,7 @@ public class PotionEffectAction extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     int effectDuration = (int) (duration * (1 + (
-        caster.getAttribute(StrifeStat.EFFECT_DURATION) / 100)));
+        caster.getStat(StrifeStat.EFFECT_DURATION) / 100)));
     if (isForceTargetCaster()) {
       DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, effectDuration);
     } else {

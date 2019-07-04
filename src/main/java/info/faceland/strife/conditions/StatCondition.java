@@ -21,8 +21,8 @@ public class StatCondition implements Condition {
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     long attributeValue = compareTarget == CompareTarget.SELF ?
-        Math.round(attacker.getAttribute(strifeStat)) :
-        Math.round(target.getAttribute(strifeStat));
+        Math.round(attacker.getStat(strifeStat)) :
+        Math.round(target.getStat(strifeStat));
     return PlayerDataUtil.conditionCompare(comparison, (int) attributeValue, value);
   }
 }

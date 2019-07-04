@@ -50,10 +50,10 @@ public class HeadDropListener implements Listener {
       return;
     }
     StrifeMob pStats = aeManager.getAttributedEntity(event.getEntity().getKiller());
-    if (pStats.getAttribute(StrifeStat.HEAD_DROP) < 1) {
+    if (pStats.getStat(StrifeStat.HEAD_DROP) < 1) {
       return;
     }
-    if (DamageUtil.rollBool(pStats.getAttribute(StrifeStat.HEAD_DROP) / 100)) {
+    if (DamageUtil.rollBool(pStats.getStat(StrifeStat.HEAD_DROP) / 100)) {
       LivingEntity livingEntity = event.getEntity();
       ItemStack skull = null;
       if (livingEntity instanceof Skeleton) {

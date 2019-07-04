@@ -113,7 +113,7 @@ public class AttributeUpdateManager {
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
     double speed =
-        strifeMob.getAttributes().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
+        strifeMob.getStats().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
     if (entity instanceof Player) {
       ((Player) entity).setWalkSpeed(0.2f * (float) speed);
       ((Player) entity).setFlySpeed(0.2f * (float) speed);

@@ -15,7 +15,7 @@ public class Heal extends Effect {
   public void apply(StrifeMob caster, StrifeMob attributedTarget) {
     double heal = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
-      heal += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+      heal += getStatMults().get(attr) * caster.getStat(attr);
     }
     LivingEntity target = attributedTarget.getEntity();
     switch (damageScale) {

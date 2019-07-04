@@ -12,7 +12,7 @@ import org.bukkit.entity.LivingEntity;
 
 public class StrifeMob {
 
-  private final Map<StrifeStat, Double> attributeCache = new HashMap<>();
+  private final Map<StrifeStat, Double> statCache = new HashMap<>();
   private final Map<Ability, Long> cooldownMap = new HashMap<>();
 
   private final Champion champion;
@@ -32,8 +32,12 @@ public class StrifeMob {
     this.champion = null;
   }
 
-  public double getAttribute(StrifeStat attribute) {
-    return attributeCache.getOrDefault(attribute, 0D);
+  public double getStat(StrifeStat stat) {
+    return statCache.getOrDefault(stat, 0D);
+  }
+
+  public void forceSetStat(StrifeStat stat, double value) {
+    statCache.put(stat, value);
   }
 
   public LivingEntity getEntity() {
@@ -48,13 +52,13 @@ public class StrifeMob {
     return champion;
   }
 
-  public Map<StrifeStat, Double> getAttributes() {
-    return attributeCache;
+  public Map<StrifeStat, Double> getStats() {
+    return new HashMap<>(statCache);
   }
 
-  public void setAttributes(Map<StrifeStat, Double> attributes) {
-    attributeCache.clear();
-    attributeCache.putAll(attributes);
+  public void setStats(Map<StrifeStat, Double> stats) {
+    statCache.clear();
+    statCache.putAll(stats);
   }
 
   public boolean isCooledDown(Ability ability) {

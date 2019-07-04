@@ -12,7 +12,7 @@ public class Corrupt extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     double corruptionStacks = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
-      corruptionStacks += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+      corruptionStacks += getStatMults().get(attr) * caster.getStat(attr);
     }
     DamageUtil.applyCorrupt(target.getEntity(), corruptionStacks);
   }

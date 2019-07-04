@@ -28,16 +28,16 @@ public class BarrierCondition implements Condition {
     double barrierValue;
     if (percentage) {
       if (compareTarget == CompareTarget.SELF) {
-        if (attacker.getAttribute(StrifeStat.BARRIER) == 0D) {
+        if (attacker.getStat(StrifeStat.BARRIER) == 0D) {
           return PlayerDataUtil.conditionCompare(comparison, 0D, value);
         }
-        barrierValue = barrierManager.getCurrentBarrier(attacker) / attacker.getAttribute(
+        barrierValue = barrierManager.getCurrentBarrier(attacker) / attacker.getStat(
             StrifeStat.BARRIER);
       } else {
-        if (target.getAttribute(StrifeStat.BARRIER) == 0D) {
+        if (target.getStat(StrifeStat.BARRIER) == 0D) {
           return PlayerDataUtil.conditionCompare(comparison, 0D, value);
         }
-        barrierValue = barrierManager.getCurrentBarrier(target) / target.getAttribute(StrifeStat.BARRIER);
+        barrierValue = barrierManager.getCurrentBarrier(target) / target.getStat(StrifeStat.BARRIER);
       }
     } else {
       barrierValue = compareTarget == CompareTarget.SELF ?

@@ -66,22 +66,22 @@ public class StatsMiscMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
-        pStats.getAttribute(StrifeStat.MOVEMENT_SPEED)));
+        pStats.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
-        100 + pStats.getAttribute(StrifeStat.EFFECT_DURATION)) + "%");
-    if (pStats.getAttribute(StrifeStat.DOGE) > 0) {
+        100 + pStats.getStat(StrifeStat.EFFECT_DURATION)) + "%");
+    if (pStats.getStat(StrifeStat.DOGE) > 0) {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN
           + "many levels");
       lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
     }
     lore.add(ChatColor.DARK_AQUA + "Crafting Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeStat.CRAFT_SKILL)));
+        INT_FORMAT.format(pStats.getStat(StrifeStat.CRAFT_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Enchanting Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeStat.ENCHANT_SKILL)));
+        INT_FORMAT.format(pStats.getStat(StrifeStat.ENCHANT_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Fishing Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeStat.FISH_SKILL)));
+        INT_FORMAT.format(pStats.getStat(StrifeStat.FISH_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Mining Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getAttribute(StrifeStat.MINE_SKILL)));
+        INT_FORMAT.format(pStats.getStat(StrifeStat.MINE_SKILL)));
 
     lore.add(breakLine);
 

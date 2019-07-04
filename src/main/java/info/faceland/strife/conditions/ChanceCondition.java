@@ -19,7 +19,7 @@ public class ChanceCondition implements Condition {
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double bonusChance = 1;
     for (StrifeStat attr : statMults.keySet()) {
-      bonusChance += attacker.getAttribute(attr) * statMults.get(attr);
+      bonusChance += attacker.getStat(attr) * statMults.get(attr);
     }
     return DamageUtil.rollBool(chance * bonusChance,
         attacker.getEntity().hasPotionEffect(PotionEffectType.LUCK));

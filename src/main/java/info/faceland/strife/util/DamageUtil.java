@@ -6,7 +6,6 @@ import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
 import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
-import static info.faceland.strife.stats.StrifeStat.TENACITY;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
 import static info.faceland.strife.util.StatUtil.getIceResist;
@@ -91,7 +90,7 @@ public class DamageUtil {
 
   public static double attemptIgnite(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeStat.IGNITE_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.IGNITE_CHANCE) / 100) {
       return 0D;
     }
     double bonusDamage = defender.getFireTicks() > 0 ? damage : 1D;
@@ -105,7 +104,7 @@ public class DamageUtil {
 
   public static double attemptShock(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeStat.SHOCK_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.SHOCK_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.5;
@@ -129,7 +128,7 @@ public class DamageUtil {
 
   public static double attemptFreeze(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeStat.FREEZE_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.FREEZE_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.25 + 0.25 * (StatUtil.getHealth(attacker) / 100);
@@ -190,7 +189,7 @@ public class DamageUtil {
     if (damage == 0) {
       return false;
     }
-    if (rollDouble() >= attacker.getAttribute(StrifeStat.CORRUPT_CHANCE) / 100) {
+    if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
       return false;
     }
     applyCorrupt(defender, damage);
@@ -225,15 +224,6 @@ public class DamageUtil {
     if (attacker instanceof Player) {
       MessageUtils.sendActionBar((Player) attacker, ATTACK_BLOCKED);
     }
-  }
-
-  public static double getTenacityMult(StrifeMob defender) {
-    if (defender.getAttribute(TENACITY) < 1) {
-      return 1.0D;
-    }
-    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
-    double maxReduction = 1 - Math.pow(0.5, defender.getAttribute(TENACITY) / 200);
-    return 1 - (maxReduction * Math.pow(1 - percent, 1.5));
   }
 
   public static double getPotionMult(LivingEntity attacker, LivingEntity defender) {
@@ -278,7 +268,7 @@ public class DamageUtil {
 
   public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
     return Math.max(0.05D,
-        1 + (atk.getAttribute(PROJECTILE_DAMAGE) - def.getAttribute(PROJECTILE_REDUCTION)) / 100);
+        1 + (atk.getStat(PROJECTILE_DAMAGE) - def.getStat(PROJECTILE_REDUCTION)) / 100);
   }
 
   public static void applyLifeSteal(StrifeMob attacker, double damage,
@@ -299,7 +289,7 @@ public class DamageUtil {
 
   public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier,
       double healMultiplier) {
-    double health = attacker.getAttribute(HP_ON_HIT) * attackMultiplier;
+    double health = attacker.getStat(HP_ON_HIT) * attackMultiplier;
     if (health <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
       return;
     }
@@ -317,13 +307,13 @@ public class DamageUtil {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
-    if (defender.getAttribute(BLEED_RESIST) > 99) {
+    if (defender.getStat(BLEED_RESIST) > 99) {
       return false;
     }
-    if (attackMult * (attacker.getAttribute(BLEED_CHANCE) / 100) >= rollDouble()) {
+    if (attackMult * (attacker.getStat(BLEED_CHANCE) / 100) >= rollDouble()) {
       double amount = damage + damage * critMult;
-      amount *= 1 + attacker.getAttribute(BLEED_DAMAGE) / 100;
-      amount *= 1 - defender.getAttribute(BLEED_RESIST) / 100;
+      amount *= 1 + attacker.getStat(BLEED_DAMAGE) / 100;
+      amount *= 1 - defender.getStat(BLEED_RESIST) / 100;
       amount *= BLEED_PERCENT;
       applyBleed(defender.getEntity(), amount);
       return true;
