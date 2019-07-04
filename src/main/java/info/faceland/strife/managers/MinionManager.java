@@ -30,7 +30,26 @@ public class MinionManager {
     return minionDecayMap;
   }
 
+  public void addMinion(LivingEntity livingEntity, int ticks) {
+    minionDecayMap.put(livingEntity, ticks);
+  }
+
   public boolean isMinion(LivingEntity livingEntity) {
     return minionDecayMap.containsKey(livingEntity);
+  }
+
+  public void tickMinions() {
+    for (LivingEntity le : minionDecayMap.keySet()) {
+      if (le == null || !le.isValid()) {
+        minionDecayMap.remove(le);
+        continue;
+      }
+      int ticks = minionDecayMap.get(le);
+      if (ticks > 0) {
+        minionDecayMap.put(le, ticks - 1);
+        continue;
+      }
+      le.damage(le.getMaxHealth() / 10);
+    }
   }
 }
