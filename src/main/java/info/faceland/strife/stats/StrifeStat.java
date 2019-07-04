@@ -98,6 +98,9 @@ public enum StrifeStat {
 
   MULTISHOT("Multishot"),
 
+  MINION_DAMAGE("Minion Damage"),
+  MAX_MINIONS("Maximum Minions"),
+
   MOVEMENT_SPEED("Movement Speed"),
   TRUE_DAMAGE("True Damage"),
 
@@ -132,6 +135,7 @@ public enum StrifeStat {
   ACCURACY_MULT(),
   APEN_MULT(),
   WPEN_MULT(),
+  MINION_MULT_INTERNAL(),
 
   SPELL_STRIKE_RANGE("Spell Strike Range"),
   EFFECT_DURATION("Effect Duration");

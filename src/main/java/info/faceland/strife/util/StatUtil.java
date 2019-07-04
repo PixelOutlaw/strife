@@ -33,11 +33,13 @@ import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
 import static info.faceland.strife.stats.StrifeStat.MELEE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MELEE_MULT;
+import static info.faceland.strife.stats.StrifeStat.MINION_MULT_INTERNAL;
 import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
 import static info.faceland.strife.stats.StrifeStat.RANGED_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.RANGED_MULT;
 import static info.faceland.strife.stats.StrifeStat.REGENERATION;
 import static info.faceland.strife.stats.StrifeStat.REGEN_MULT;
+import static info.faceland.strife.stats.StrifeStat.TENACITY;
 import static info.faceland.strife.stats.StrifeStat.WARDING;
 import static info.faceland.strife.stats.StrifeStat.WARD_MULT;
 import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
@@ -63,36 +65,49 @@ public class StatUtil {
   private static final double BASE_EVASION_MULT = 0.8D;
   private static final double EVASION_ACCURACY_MULT = 0.6D;
 
+  public static double getTenacityMult(StrifeMob defender) {
+    if (defender.getStat(TENACITY) < 1) {
+      return 1.0D;
+    }
+    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
+    double maxReduction = 1 - Math.pow(0.5, defender.getStat(TENACITY) / 200);
+    return 1 - (maxReduction * Math.pow(1 - percent, 1.5));
+  }
+
+  public static double getMinionMult(StrifeMob mob) {
+    return 1 + mob.getStat(MINION_MULT_INTERNAL) / 100;
+  }
+
   public static double getRegen(StrifeMob ae) {
-    return ae.getAttribute(REGENERATION) * (1 + ae.getAttribute(REGEN_MULT) / 100);
+    return ae.getStat(REGENERATION) * (1 + ae.getStat(REGEN_MULT) / 100);
   }
 
   public static double getHealth(StrifeMob ae) {
-    return ae.getAttribute(HEALTH) * (1 + ae.getAttribute(HEALTH_MULT) / 100);
+    return ae.getStat(HEALTH) * (1 + ae.getStat(HEALTH_MULT) / 100);
   }
 
   public static double getMaximumBarrier(StrifeMob ae) {
-    return ae.getAttribute(BARRIER);
+    return ae.getStat(BARRIER);
   }
 
   public static double getBarrierPerSecond(StrifeMob ae) {
-    return (4 + (ae.getAttribute(BARRIER) * 0.08)) * (1 + (ae.getAttribute(BARRIER_SPEED) / 100));
+    return (4 + (ae.getStat(BARRIER) * 0.08)) * (1 + (ae.getStat(BARRIER_SPEED) / 100));
   }
 
   public static double getDamageMult(StrifeMob ae) {
-    return 1 + ae.getAttribute(DAMAGE_MULT) / 100;
+    return 1 + ae.getStat(DAMAGE_MULT) / 100;
   }
 
   public static double getMeleeDamage(StrifeMob ae) {
-    return ae.getAttribute(MELEE_DAMAGE) * (1 + ae.getAttribute(MELEE_MULT) / 100);
+    return ae.getStat(MELEE_DAMAGE) * (1 + ae.getStat(MELEE_MULT) / 100);
   }
 
   public static double getRangedDamage(StrifeMob ae) {
-    return ae.getAttribute(RANGED_DAMAGE) * (1 + ae.getAttribute(RANGED_MULT) / 100);
+    return ae.getStat(RANGED_DAMAGE) * (1 + ae.getStat(RANGED_MULT) / 100);
   }
 
   public static double getMagicDamage(StrifeMob ae) {
-    return ae.getAttribute(MAGIC_DAMAGE) * (1 + ae.getAttribute(MAGIC_MULT) / 100);
+    return ae.getStat(MAGIC_DAMAGE) * (1 + ae.getStat(MAGIC_MULT) / 100);
   }
 
   public static double getBaseMeleeDamage(StrifeMob attacker, StrifeMob defender) {
@@ -118,7 +133,7 @@ public class StatUtil {
 
   public static double getAttackTime(StrifeMob ae) {
     double attackTime = BASE_ATTACK_SECONDS;
-    double attackBonus = ae.getAttribute(StrifeStat.ATTACK_SPEED);
+    double attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
     if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
     }
@@ -134,39 +149,39 @@ public class StatUtil {
   }
 
   public static double getOverchargeMultiplier(StrifeMob ae) {
-    return 1 + (ae.getAttribute(OVERCHARGE) / 100);
+    return 1 + (ae.getStat(OVERCHARGE) / 100);
   }
 
   public static double getCriticalMultiplier(StrifeMob ae) {
-    return 1 + (ae.getAttribute(CRITICAL_DAMAGE) / 100);
+    return 1 + (ae.getStat(CRITICAL_DAMAGE) / 100);
   }
 
   public static double getArmor(StrifeMob ae) {
-    return ae.getAttribute(ARMOR) * (1 + ae.getAttribute(ARMOR_MULT) / 100);
+    return ae.getStat(ARMOR) * (1 + ae.getStat(ARMOR_MULT) / 100);
   }
 
   public static double getWarding(StrifeMob ae) {
-    return ae.getAttribute(WARDING) * (1 + ae.getAttribute(WARD_MULT) / 100);
+    return ae.getStat(WARDING) * (1 + ae.getStat(WARD_MULT) / 100);
   }
 
   public static double getMinimumEvasionMult(StrifeMob ae) {
-    return getFlatEvasion(ae) * (1 + ae.getAttribute(EVASION_MULT) / 100);
+    return getFlatEvasion(ae) * (1 + ae.getStat(EVASION_MULT) / 100);
   }
 
   public static double getFlatEvasion(StrifeMob ae) {
-    return ae.getAttribute(EVASION);
+    return ae.getStat(EVASION);
   }
 
   public static double getArmorPen(StrifeMob ae) {
-    return ae.getAttribute(ARMOR_PENETRATION) * (1 + (ae.getAttribute(APEN_MULT) / 100));
+    return ae.getStat(ARMOR_PENETRATION) * (1 + (ae.getStat(APEN_MULT) / 100));
   }
 
   public static double getWardPen(StrifeMob ae) {
-    return ae.getAttribute(WARD_PENETRATION) * (1 + (ae.getAttribute(WPEN_MULT) / 100));
+    return ae.getStat(WARD_PENETRATION) * (1 + (ae.getStat(WPEN_MULT) / 100));
   }
 
   public static double getAccuracy(StrifeMob ae) {
-    return ae.getAttribute(ACCURACY) * (1 + (ae.getAttribute(ACCURACY_MULT) / 100));
+    return ae.getStat(ACCURACY) * (1 + (ae.getStat(ACCURACY_MULT) / 100));
   }
 
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {
@@ -187,120 +202,120 @@ public class StatUtil {
   }
 
   public static double getFireResist(StrifeMob ae) {
-    double amount = ae.getAttribute(FIRE_RESIST) + ae.getAttribute(ALL_RESIST);
+    double amount = ae.getStat(FIRE_RESIST) + ae.getStat(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getIceResist(StrifeMob ae) {
-    double amount = ae.getAttribute(ICE_RESIST) + ae.getAttribute(ALL_RESIST);
+    double amount = ae.getStat(ICE_RESIST) + ae.getStat(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLightningResist(StrifeMob ae) {
-    double amount = ae.getAttribute(LIGHTNING_RESIST) + ae.getAttribute(ALL_RESIST);
+    double amount = ae.getStat(LIGHTNING_RESIST) + ae.getStat(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getEarthResist(StrifeMob ae) {
-    double amount = ae.getAttribute(EARTH_RESIST) + ae.getAttribute(ALL_RESIST);
+    double amount = ae.getStat(EARTH_RESIST) + ae.getStat(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLightResist(StrifeMob ae) {
-    double amount = ae.getAttribute(LIGHT_RESIST) + ae.getAttribute(ALL_RESIST);
+    double amount = ae.getStat(LIGHT_RESIST) + ae.getStat(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getShadowResist(StrifeMob ae) {
-    double amount = ae.getAttribute(DARK_RESIST) + ae.getAttribute(ALL_RESIST);
+    double amount = ae.getStat(DARK_RESIST) + ae.getStat(ALL_RESIST);
     return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static double getLifestealPercentage(StrifeMob attacker) {
-    return attacker.getAttribute(LIFE_STEAL) / 100;
+    return attacker.getStat(LIFE_STEAL) / 100;
   }
 
   public static double getFireDamage(StrifeMob attacker) {
-    return attacker.getAttribute(FIRE_DAMAGE) * getElementalMult(attacker);
+    return attacker.getStat(FIRE_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getIceDamage(StrifeMob attacker) {
-    return attacker.getAttribute(ICE_DAMAGE) * getElementalMult(attacker);
+    return attacker.getStat(ICE_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getLightningDamage(StrifeMob attacker) {
-    return attacker.getAttribute(LIGHTNING_DAMAGE) * getElementalMult(attacker);
+    return attacker.getStat(LIGHTNING_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getEarthDamage(StrifeMob attacker) {
-    return attacker.getAttribute(EARTH_DAMAGE) * getElementalMult(attacker);
+    return attacker.getStat(EARTH_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getLightDamage(StrifeMob attacker) {
-    return attacker.getAttribute(LIGHT_DAMAGE) * getElementalMult(attacker);
+    return attacker.getStat(LIGHT_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getShadowDamage(StrifeMob attacker) {
-    return attacker.getAttribute(DARK_DAMAGE) * getElementalMult(attacker);
+    return attacker.getStat(DARK_DAMAGE) * getElementalMult(attacker);
   }
 
   public static double getBaseFireDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeStat.FIRE_DAMAGE);
+    double damage = attacker.getStat(StrifeStat.FIRE_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getFireResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseIceDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeStat.ICE_DAMAGE);
+    double damage = attacker.getStat(StrifeStat.ICE_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getIceResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseLightningDamage(StrifeMob attacker,
       StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeStat.LIGHTNING_DAMAGE);
+    double damage = attacker.getStat(StrifeStat.LIGHTNING_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightningResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseEarthDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeStat.EARTH_DAMAGE);
+    double damage = attacker.getStat(StrifeStat.EARTH_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getEarthResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseLightDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeStat.LIGHT_DAMAGE);
+    double damage = attacker.getStat(StrifeStat.LIGHT_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightResist(defender) / 100;
     return damage;
   }
 
   public static double getBaseShadowDamage(StrifeMob attacker, StrifeMob defender) {
-    double damage = attacker.getAttribute(StrifeStat.DARK_DAMAGE);
+    double damage = attacker.getStat(StrifeStat.DARK_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getAttribute(StrifeStat.ELEMENTAL_MULT) / 100;
+    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getShadowResist(defender) / 100;
     return damage;
   }
@@ -326,7 +341,7 @@ public class StatUtil {
   }
 
   private static double getElementalMult(StrifeMob pStats) {
-    return 1 + (pStats.getAttribute(ELEMENTAL_MULT) / 100);
+    return 1 + (pStats.getStat(ELEMENTAL_MULT) / 100);
   }
 
   private static boolean itemCanUseRage(ItemStack item) {

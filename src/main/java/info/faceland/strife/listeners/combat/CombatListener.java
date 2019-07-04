@@ -199,13 +199,13 @@ public class CombatListener implements Listener {
       return;
     }
 
-    if (attacker.getAttribute(RAGE_ON_HIT) > 0.1) {
+    if (attacker.getStat(RAGE_ON_HIT) > 0.1) {
       plugin.getRageManager()
-          .addRage(attacker, attacker.getAttribute(RAGE_ON_HIT) * attackMultiplier);
+          .addRage(attacker, attacker.getStat(RAGE_ON_HIT) * attackMultiplier);
     }
-    if (defender.getAttribute(RAGE_WHEN_HIT) > 0.1) {
+    if (defender.getStat(RAGE_WHEN_HIT) > 0.1) {
       plugin.getRageManager()
-          .addRage(defender, defender.getAttribute(RAGE_WHEN_HIT));
+          .addRage(defender, defender.getStat(RAGE_WHEN_HIT));
     }
 
     double pvpMult = 1D;
@@ -270,10 +270,10 @@ public class CombatListener implements Listener {
     double bonusOverchargeMultiplier = 0;
 
     if (doCriticalHit(attacker, defender)) {
-      bonusCriticalMultiplier = attacker.getAttribute(CRITICAL_DAMAGE) / 100;
+      bonusCriticalMultiplier = attacker.getStat(CRITICAL_DAMAGE) / 100;
     }
     if (doOvercharge(attackMultiplier)) {
-      bonusOverchargeMultiplier = attacker.getAttribute(OVERCHARGE) / 100;
+      bonusOverchargeMultiplier = attacker.getStat(OVERCHARGE) / 100;
     }
 
     double standardDamage = physicalBaseDamage + magicBaseDamage;
@@ -300,15 +300,16 @@ public class CombatListener implements Listener {
     elementalDamage *= StatUtil.getDamageMult(attacker);
     elementalDamage *= pvpMult;
 
-    double damageReduction = defender.getAttribute(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
+    double damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
     double rawDamage = (standardDamage + elementalDamage) * (blocked ? 0.6 : 1.0);
     rawDamage = Math.max(0D, rawDamage - damageReduction);
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defendEntity));
     if (projectile != null) {
       rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
     }
-    rawDamage *= DamageUtil.getTenacityMult(defender);
-    rawDamage += attacker.getAttribute(TRUE_DAMAGE) * attackMultiplier;
+    rawDamage *= StatUtil.getTenacityMult(defender);
+    rawDamage *= StatUtil.getMinionMult(attacker);
+    rawDamage += attacker.getStat(TRUE_DAMAGE) * attackMultiplier;
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
@@ -374,21 +375,21 @@ public class CombatListener implements Listener {
     }
     StrifeMob killer = plugin.getStrifeMobManager()
         .getAttributedEntity(event.getEntity().getKiller());
-    if (killer.getAttribute(HP_ON_KILL) > 0.1) {
-      restoreHealth(event.getEntity().getKiller(), killer.getAttribute(HP_ON_KILL));
+    if (killer.getStat(HP_ON_KILL) > 0.1) {
+      restoreHealth(event.getEntity().getKiller(), killer.getStat(HP_ON_KILL));
     }
-    if (killer.getAttribute(RAGE_ON_KILL) > 0.1) {
+    if (killer.getStat(RAGE_ON_KILL) > 0.1) {
       plugin.getRageManager()
-          .addRage(killer, killer.getAttribute(RAGE_ON_KILL));
+          .addRage(killer, killer.getStat(RAGE_ON_KILL));
     }
   }
 
   private void doReflectedDamage(StrifeMob defender, LivingEntity attacker,
       AttackType damageType) {
-    if (defender.getAttribute(DAMAGE_REFLECT) < 0.1) {
+    if (defender.getStat(DAMAGE_REFLECT) < 0.1) {
       return;
     }
-    double reflectDamage = defender.getAttribute(DAMAGE_REFLECT);
+    double reflectDamage = defender.getStat(DAMAGE_REFLECT);
     reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
     attacker.getWorld().playSound(attacker.getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
     if (attacker.getHealth() > reflectDamage) {
@@ -399,7 +400,7 @@ public class CombatListener implements Listener {
   }
 
   private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender) {
-    if (attacker.getAttribute(StrifeStat.CRITICAL_RATE) / 100 >= rollDouble(
+    if (attacker.getStat(StrifeStat.CRITICAL_RATE) / 100 >= rollDouble(
         hasLuck(attacker.getEntity()))) {
       callCritEvent(attacker.getEntity(), attacker.getEntity());
       defender.getEntity().getWorld().playSound(
