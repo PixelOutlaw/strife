@@ -112,6 +112,14 @@ public class ExperienceListener implements Listener {
     event.setAmount(0);
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onKillMinion(EntityDeathEvent event) {
+    if (plugin.getMinionManager().isMinion(event.getEntity())) {
+      event.setDroppedExp(0);
+      event.getDrops().clear();
+    }
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathAutoOrb(EntityDeathEvent event) {
     if (event.getEntity().getKiller() == null) {

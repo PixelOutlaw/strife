@@ -22,9 +22,9 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeExperienceManager;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.stats.StrifeStat;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -41,6 +41,9 @@ public class ExperienceManager implements StrifeExperienceManager {
   }
 
   public void addExperience(Player player, double amount, boolean exact) {
+    if (amount < 0.001) {
+      return;
+    }
     // Get all the values!
     double maxFaceExp = (double) getMaxFaceExp(player.getLevel());
     double currentExpPercent = player.getExp();
@@ -48,7 +51,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
 
     if (!exact) {
-      double statsMult = pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100;
+      double statsMult = pStats.getAttribute(StrifeStat.XP_GAIN) / 100;
       if (pStats.getChampion().getSaveData().isDisplayExp()) {
         String xp = FORMAT.format(amount * (1 + statsMult));
         MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));
