@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 public class Summon extends Effect {
 
   private String uniqueEntity;
+  private String soundEffect;
   private int amount;
   private double lifespanSeconds;
   private double spawnRange;
@@ -37,38 +38,32 @@ public class Summon extends Effect {
       summonedEntity.setDespawnOnUnload(true);
       StrifePlugin.getInstance().getMinionManager()
           .addMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
+      if (soundEffect != null) {
+        PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager()
+            .getEffect(soundEffect);
+        summon.getWorld().playSound(summon.getLocation(),
+            sound.getSound(), sound.getVolume(), sound.getPitch());
+      }
     }
-  }
-
-  public String getUniqueEntity() {
-    return uniqueEntity;
   }
 
   public void setUniqueEntity(String uniqueEntity) {
     this.uniqueEntity = uniqueEntity;
   }
 
-  public int getAmount() {
-    return amount;
-  }
-
   public void setAmount(int amount) {
     this.amount = amount;
-  }
-
-  public double getSpawnRange() {
-    return spawnRange;
   }
 
   public void setSpawnRange(double spawnRange) {
     this.spawnRange = spawnRange;
   }
 
-  public double getLifespanSeconds() {
-    return lifespanSeconds;
-  }
-
   public void setLifespanSeconds(double lifespanSeconds) {
     this.lifespanSeconds = lifespanSeconds;
+  }
+
+  public void setSoundEffect(String soundEffect) {
+    this.soundEffect = soundEffect;
   }
 }

@@ -32,6 +32,7 @@ import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.Leap;
+import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.RestoreBarrier;
 import info.faceland.strife.effects.ShootProjectile;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -229,6 +231,7 @@ public class EffectManager {
         ((Summon) effect).setAmount(cs.getInt("amount", 1));
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
         ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
+        ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
         break;
       case TARGET:
         effect = new ForceTarget();
@@ -246,6 +249,19 @@ public class EffectManager {
         ((PotionEffectAction) effect).setPotionEffectType(potionType);
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
+        break;
+      case SOUND:
+        effect = new PlaySound();
+        Sound sound;
+        try {
+          sound = Sound.valueOf((cs.getString("sound-type")));
+        } catch (Exception e) {
+          LogUtil.printWarning("Invalid sound effect type in effect " + key + ". Skipping.");
+          return;
+        }
+        ((PlaySound) effect).setSound(sound);
+        ((PlaySound) effect).setVolume((float) cs.getDouble("volume", 1));
+        ((PlaySound) effect).setPitch((float) cs.getDouble("pitch", 1));
         break;
       case PARTICLE:
         effect = new SpawnParticle();
@@ -418,6 +434,7 @@ public class EffectManager {
     CONSUME_BLEED,
     CONSUME_CORRUPT,
     WAIT,
+    SOUND,
     PARTICLE,
     SPEAK,
     KNOCKBACK,
