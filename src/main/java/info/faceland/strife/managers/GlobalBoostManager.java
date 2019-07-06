@@ -49,7 +49,7 @@ public class GlobalBoostManager {
   public Map<StrifeStat, Double> getAttributes() {
     Map<StrifeStat, Double> attrMap = new HashMap<>();
     for (GlobalStatBoost boost : runningBoosts) {
-      attrMap.putAll(AttributeUpdateManager.combineMaps(attrMap, boost.getAttributes()));
+      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getAttributes()));
     }
     return attrMap;
   }

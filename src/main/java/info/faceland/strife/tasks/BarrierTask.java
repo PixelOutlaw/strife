@@ -49,7 +49,7 @@ public class BarrierTask extends BukkitRunnable {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
-      StrifeMob player = plugin.getStrifeMobManager().getAttributedEntity(entity);
+      StrifeMob player = plugin.getStrifeMobManager().getStatMob(entity);
       if (player.getStat(BARRIER) < 0.1) {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;

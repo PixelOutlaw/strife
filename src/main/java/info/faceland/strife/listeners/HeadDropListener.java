@@ -49,7 +49,7 @@ public class HeadDropListener implements Listener {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    StrifeMob pStats = aeManager.getAttributedEntity(event.getEntity().getKiller());
+    StrifeMob pStats = aeManager.getStatMob(event.getEntity().getKiller());
     if (pStats.getStat(StrifeStat.HEAD_DROP) < 1) {
       return;
     }

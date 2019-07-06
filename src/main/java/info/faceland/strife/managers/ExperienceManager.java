@@ -48,7 +48,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     double maxFaceExp = (double) getMaxFaceExp(player.getLevel());
     double currentExpPercent = player.getExp();
 
-    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
 
     if (!exact) {
       double statsMult = pStats.getStat(StrifeStat.XP_GAIN) / 100;

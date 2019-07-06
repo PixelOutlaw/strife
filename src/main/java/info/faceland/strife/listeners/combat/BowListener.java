@@ -56,7 +56,7 @@ public class BowListener implements Listener {
     event.setCancelled(true);
 
     Player player = (Player) event.getEntity().getShooter();
-    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
@@ -65,7 +65,7 @@ public class BowListener implements Listener {
       return;
     }
 
-    plugin.getChampionManager().updateEquipmentAttributes(
+    plugin.getChampionManager().updateEquipmentStats(
         plugin.getChampionManager().getChampion(player));
 
     double projectileSpeed = 2.5 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);

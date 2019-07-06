@@ -74,10 +74,10 @@ public class MonsterManager {
       for (StrifeStat attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
         bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
       }
-      return AttributeUpdateManager
+      return StatUpdateManager
           .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats, bonusStats);
     }
-    return AttributeUpdateManager
+    return StatUpdateManager
         .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
   }
 

@@ -42,7 +42,7 @@ public class TimedAbilityTask extends BukkitRunnable {
   public void run() {
     for (LivingEntity livingEntity : uniqueEntityManager.getLiveUniquesMap().keySet()) {
       abilityManager
-          .uniqueAbilityCast(strifeMobManager.getAttributedEntity(livingEntity), AbilityType.TIMER);
+          .uniqueAbilityCast(strifeMobManager.getStatMob(livingEntity), AbilityType.TIMER);
     }
   }
 

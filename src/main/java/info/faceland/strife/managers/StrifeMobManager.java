@@ -24,7 +24,7 @@ public class StrifeMobManager {
     return trackedEntities;
   }
 
-  public StrifeMob getAttributedEntity(LivingEntity entity) {
+  public StrifeMob getStatMob(LivingEntity entity) {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       StrifeMob strifeMob;
       if (entity instanceof Player) {
@@ -43,7 +43,7 @@ public class StrifeMobManager {
   }
 
   public void setEntityStats(LivingEntity entity, Map<StrifeStat, Double> statMap) {
-    StrifeMob strifeMob = getAttributedEntity(entity);
+    StrifeMob strifeMob = getStatMob(entity);
     strifeMob.setStats(statMap);
     trackedEntities.put(entity.getUniqueId(), strifeMob);
   }

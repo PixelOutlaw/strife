@@ -66,7 +66,7 @@ public class MinionListener implements Listener {
     if (!entityManager.isTrackedEntity(event.getEntity())) {
       return;
     }
-    StrifeMob attrEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    StrifeMob attrEnt = entityManager.getStatMob((LivingEntity) event.getEntity());
     if (attrEnt.isMasterOf((LivingEntity) event.getEntity())) {
       LogUtil.printDebug("Ignoring targeting of minion for " + attrEnt.getEntity().getCustomName());
       event.setCancelled(true);
@@ -90,7 +90,7 @@ public class MinionListener implements Listener {
     if (!(entityManager.isTrackedEntity(event.getEntity()) && entityManager.isTrackedEntity(attacker))) {
       return;
     }
-    StrifeMob defend = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    StrifeMob defend = entityManager.getStatMob((LivingEntity) event.getEntity());
     if (defend.isMasterOf((LivingEntity)attacker)) {
       LogUtil.printDebug("Ignoring attacking of master for " + attacker.getCustomName());
       event.setCancelled(true);
@@ -109,9 +109,9 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    StrifeMob attackEntity = entityManager.getAttributedEntity((LivingEntity) attacker);
+    StrifeMob attackEntity = entityManager.getStatMob((LivingEntity) attacker);
     if (attackEntity.getMinions()
-        .contains(entityManager.getAttributedEntity((LivingEntity) event.getEntity()))) {
+        .contains(entityManager.getStatMob((LivingEntity) event.getEntity()))) {
       return;
     }
     for (StrifeMob minion : attackEntity.getMinions()) {
@@ -133,7 +133,7 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    StrifeMob hitEnt = entityManager.getAttributedEntity((LivingEntity) event.getEntity());
+    StrifeMob hitEnt = entityManager.getStatMob((LivingEntity) event.getEntity());
     for (StrifeMob minion : hitEnt.getMinions()) {
       if (!(minion.getEntity() instanceof Mob)) {
         continue;

@@ -1,9 +1,9 @@
 package info.faceland.strife.data.champion;
 
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
+import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import java.util.ArrayList;
@@ -95,7 +95,7 @@ public class PlayerEquipmentCache {
 
   public void recombineStats() {
     combinedStats.clear();
-    combinedStats.putAll(AttributeUpdateManager.combineMaps(
+    combinedStats.putAll(StatUpdateManager.combineMaps(
         slotStatMap.get(EquipmentSlot.HAND),
         slotStatMap.get(EquipmentSlot.OFF_HAND),
         slotStatMap.get(EquipmentSlot.HEAD),

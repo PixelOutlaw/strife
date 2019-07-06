@@ -73,7 +73,7 @@ public class StrifeCommand {
     plugin.enable();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      plugin.getAttributeUpdateManager().updateAttributes(player);
+      plugin.getStatUpdateManager().updateAttributes(player);
     }
 
     sendMessage(sender,
@@ -106,7 +106,7 @@ public class StrifeCommand {
     sendMessage(target, "<green>Your stats have been reset.");
     sendMessage(target, "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
     plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -123,7 +123,7 @@ public class StrifeCommand {
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
     plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -140,7 +140,7 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
-    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)

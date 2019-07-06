@@ -57,7 +57,7 @@ public class StatsBonusMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.GOLD_INGOT);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

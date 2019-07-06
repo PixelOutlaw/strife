@@ -95,8 +95,8 @@ public class SwingListener implements Listener {
     } else {
       doMeleeSwing(event.getPlayer(), event, true);
     }
-    plugin.getAttributeUpdateManager().updateAttackSpeed(
-        plugin.getStrifeMobManager().getAttributedEntity(event.getPlayer()));
+    plugin.getStatUpdateManager().updateAttackSpeed(
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -113,7 +113,7 @@ public class SwingListener implements Listener {
   }
 
   private void doMeleeSwing(Player player, Cancellable event, boolean resetAttack) {
-    StrifeMob attacker = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(player);
 
     double attackMultiplier = plugin.getAttackSpeedManager()
         .getAttackMultiplier(attacker, resetAttack);
@@ -134,7 +134,7 @@ public class SwingListener implements Listener {
   }
 
   private void shootWand(Player player, Cancellable event) {
-    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
@@ -145,7 +145,7 @@ public class SwingListener implements Listener {
       return;
     }
 
-    plugin.getChampionManager().updateEquipmentAttributes(
+    plugin.getChampionManager().updateEquipmentStats(
         plugin.getChampionManager().getChampion(player));
 
     double projectileSpeed = 1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);

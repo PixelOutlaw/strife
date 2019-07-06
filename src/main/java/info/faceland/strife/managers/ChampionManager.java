@@ -244,7 +244,11 @@ public class ChampionManager {
     pushChampionUpdate(champion);
   }
 
-  public void updateEquipmentAttributes(Champion champion) {
+  public void updateEquipmentStats(Player player) {
+    updateEquipmentStats(getChampion(player));
+  }
+
+  public void updateEquipmentStats(Champion champion) {
     buildEquipmentAttributes(champion);
     pushChampionUpdate(champion);
   }
@@ -259,7 +263,7 @@ public class ChampionManager {
 
   private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
-    plugin.getStrifeMobManager().setEntityStats(champion.getPlayer(), AttributeUpdateManager
+    plugin.getStrifeMobManager().setEntityStats(champion.getPlayer(), StatUpdateManager
         .combineMaps(champion.getCombinedCache(), plugin.getGlobalBoostManager().getAttributes()));
   }
 
@@ -288,20 +292,20 @@ public class ChampionManager {
   private Map<StrifeStat, Double> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
     switch (slot) {
       case HAND:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInMainHand());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
       case OFF_HAND:
         if (!ItemUtil.isValidOffhand(equipment)) {
           return new HashMap<>();
         }
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInOffHand());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInOffHand());
       case HEAD:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getHelmet());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getHelmet());
       case CHEST:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getChestplate());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getChestplate());
       case LEGS:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getLeggings());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getLeggings());
       case FEET:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getBoots());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getBoots());
       default:
         return new HashMap<>();
     }

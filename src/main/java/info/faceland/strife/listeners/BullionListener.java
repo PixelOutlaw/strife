@@ -47,7 +47,7 @@ public class BullionListener implements Listener {
         if (event.getKiller() == null) {
             return;
         }
-        StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(event.getKiller());
+        StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(event.getKiller());
         double amount = event.getAmount() + event.getAmount() * (1 + pStats.getStat(StrifeStat.GOLD_FIND) / 100);
         event.setAmount(amount);
     }

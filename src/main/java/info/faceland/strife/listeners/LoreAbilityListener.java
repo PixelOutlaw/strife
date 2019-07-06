@@ -160,6 +160,6 @@ public class LoreAbilityListener implements Listener {
   }
 
   private StrifeMob getAttrEntity(LivingEntity livingEntity) {
-    return strifeMobManager.getAttributedEntity(livingEntity);
+    return strifeMobManager.getStatMob(livingEntity);
   }
 }

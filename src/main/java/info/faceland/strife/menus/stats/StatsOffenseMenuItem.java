@@ -84,7 +84,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     Map<StrifeStat, Double> bases = plugin.getMonsterManager()
         .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon

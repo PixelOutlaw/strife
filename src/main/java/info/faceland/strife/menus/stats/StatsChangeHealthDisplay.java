@@ -78,8 +78,8 @@ public class StatsChangeHealthDisplay extends MenuItem {
       ordinal = 0;
     }
     champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
-    plugin.getAttributeUpdateManager()
-        .updateHealth(plugin.getStrifeMobManager().getAttributedEntity(event.getPlayer()));
+    plugin.getStatUpdateManager()
+        .updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatsMenu().setItem(position, this);
     MessageUtils.sendMessage(champion.getPlayer(),
         "&c&lHealth Display: &f&c" + WordUtils.capitalize(

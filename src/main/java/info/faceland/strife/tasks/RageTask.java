@@ -60,7 +60,7 @@ public class RageTask extends BukkitRunnable {
         continue;
       }
 
-      rageManager.setRage(strifeMobManager.getAttributedEntity(entity), data.getRageStacks() - 5);
+      rageManager.setRage(strifeMobManager.getStatMob(entity), data.getRageStacks() - 5);
       String msg = TextUtils.color("&cRage Remaining: " + (int) Math.max(data.getRageStacks(), 0));
       MessageUtils.sendActionBar((Player) entity, msg);
 

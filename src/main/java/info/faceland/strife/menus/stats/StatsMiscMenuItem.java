@@ -58,7 +58,7 @@ public class StatsMiscMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    StrifeMob pStats = plugin.getStrifeMobManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

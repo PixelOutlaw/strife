@@ -49,7 +49,7 @@ public class DOTListener implements Listener {
       return;
     }
     LivingEntity entity = (LivingEntity) event.getEntity();
-    StrifeMob statEntity = plugin.getStrifeMobManager().getAttributedEntity(entity);
+    StrifeMob statEntity = plugin.getStrifeMobManager().getStatMob(entity);
 
     if (event.getCause() == DamageCause.FIRE_TICK) {
       double damage = (1 + entity.getHealth() * 0.04) * getResistPotionMult(entity) * (1

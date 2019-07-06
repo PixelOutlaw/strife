@@ -266,6 +266,13 @@ public class DamageUtil {
     return mult;
   }
 
+  public static boolean canAttack(Player attacker, Player defender) {
+    EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(attacker, defender,
+        DamageCause.ENTITY_ATTACK, 0);
+    Bukkit.getPluginManager().callEvent(event);
+    return !event.isCancelled();
+  }
+
   public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
     return Math.max(0.05D,
         1 + (atk.getStat(PROJECTILE_DAMAGE) - def.getStat(PROJECTILE_REDUCTION)) / 100);
@@ -331,7 +338,8 @@ public class DamageUtil {
   public static void applyCorrupt(LivingEntity defender, double amount) {
     StrifePlugin.getInstance().getDarknessManager().applyCorruptionStacks(defender, amount);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
-    defender.getWorld().spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
+    defender.getWorld()
+        .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
   }
 
   public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {
@@ -346,7 +354,8 @@ public class DamageUtil {
 
   public static SneakAttackEvent callSneakAttackEvent(Player attacker, LivingEntity victim,
       float sneakSkill, float sneakDamage) {
-    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill, sneakDamage);
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill,
+        sneakDamage);
     Bukkit.getPluginManager().callEvent(sneakAttackEvent);
     return sneakAttackEvent;
   }

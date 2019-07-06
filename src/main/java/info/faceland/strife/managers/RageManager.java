@@ -28,12 +28,12 @@ import org.bukkit.entity.LivingEntity;
 
 public class RageManager {
 
-  private final AttributeUpdateManager attributeUpdateManager;
+  private final StatUpdateManager statUpdateManager;
   private final Map<UUID, RageData> rageMap = new ConcurrentHashMap<>();
   private static final int RAGE_GRACE_TICKS = 25;
 
-  public RageManager(AttributeUpdateManager attributeUpdateManager) {
-    this.attributeUpdateManager = attributeUpdateManager;
+  public RageManager(StatUpdateManager statUpdateManager) {
+    this.statUpdateManager = statUpdateManager;
   }
 
   public Map<UUID, RageData> getRageMap() {
@@ -64,7 +64,7 @@ public class RageManager {
       return;
     }
     rageMap.get(aEntity.getEntity().getUniqueId()).setRageStacks(amount);
-    attributeUpdateManager.updateAttackSpeed(aEntity);
+    statUpdateManager.updateAttackSpeed(aEntity);
   }
 
   public void addRage(StrifeMob strifeMob, double amount) {

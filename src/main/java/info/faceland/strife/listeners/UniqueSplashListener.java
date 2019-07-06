@@ -43,13 +43,13 @@ public class UniqueSplashListener implements Listener {
       return;
     }
     LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
-    StrifeMob attacker = strifeMobManager.getAttributedEntity(attackEntity);
+    StrifeMob attacker = strifeMobManager.getStatMob(attackEntity);
     for (Entity e : event.getAffectedEntities()) {
       if (!(e instanceof LivingEntity)) {
         continue;
       }
       LivingEntity defendEntity = (LivingEntity) e;
-      StrifeMob defender = strifeMobManager.getAttributedEntity(defendEntity);
+      StrifeMob defender = strifeMobManager.getStatMob(defendEntity);
 
       double evasionMultiplier = StatUtil.getMinimumEvasionMult(attacker, defender);
       evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));

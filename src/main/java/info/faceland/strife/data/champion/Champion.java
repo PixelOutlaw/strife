@@ -21,8 +21,8 @@ package info.faceland.strife.data.champion;
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
-import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
+import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import java.util.HashMap;
@@ -73,7 +73,7 @@ public class Champion {
 
   public void recombineCache() {
     clearCombinedCache();
-    combinedAttributeCache.putAll(AttributeUpdateManager.combineMaps(
+    combinedAttributeCache.putAll(StatUpdateManager.combineMaps(
         attributeBase,
         attributeLevelPoint,
         equipmentCache.getCombinedStats()

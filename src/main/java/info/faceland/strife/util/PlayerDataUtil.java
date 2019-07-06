@@ -68,7 +68,7 @@ public class PlayerDataUtil {
   }
 
   public static void updatePlayerEquipment(Player player) {
-    StrifePlugin.getInstance().getChampionManager().updateEquipmentAttributes(
+    StrifePlugin.getInstance().getChampionManager().updateEquipmentStats(
         StrifePlugin.getInstance().getChampionManager().getChampion(player));
   }
 

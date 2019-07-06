@@ -43,11 +43,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class AttributeUpdateManager {
+public class StatUpdateManager {
 
   private final StrifeMobManager strifeMobManager;
 
-  public AttributeUpdateManager(final StrifeMobManager strifeMobManager) {
+  public StatUpdateManager(final StrifeMobManager strifeMobManager) {
     this.strifeMobManager = strifeMobManager;
   }
 
@@ -133,7 +133,7 @@ public class AttributeUpdateManager {
   }
 
   public void updateAttributes(Player player) {
-    updateAttributes(strifeMobManager.getAttributedEntity(player));
+    updateAttributes(strifeMobManager.getStatMob(player));
   }
 
   public void updateAttributes(StrifeMob strifeMob) {

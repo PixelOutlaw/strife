@@ -131,12 +131,12 @@ public class CombatListener implements Listener {
     }
 
     if (attackEntity instanceof Player) {
-      plugin.getChampionManager().updateEquipmentAttributes(
+      plugin.getChampionManager().updateEquipmentStats(
           plugin.getChampionManager().getChampion((Player) attackEntity));
     }
     if (defendEntity instanceof Player) {
       plugin.getSneakManager().tempDisableSneak((Player) defendEntity);
-      plugin.getChampionManager().updateEquipmentAttributes(
+      plugin.getChampionManager().updateEquipmentStats(
           plugin.getChampionManager().getChampion((Player) defendEntity));
     }
 
@@ -146,9 +146,9 @@ public class CombatListener implements Listener {
     AttackType damageType = DamageUtil.getAttackType(event);
 
     StrifeMob attacker = plugin.getStrifeMobManager()
-        .getAttributedEntity(attackEntity);
+        .getStatMob(attackEntity);
     StrifeMob defender = plugin.getStrifeMobManager()
-        .getAttributedEntity(defendEntity);
+        .getStatMob(defendEntity);
 
     if (damageType == AttackType.MELEE) {
       if (ItemUtil.isWand(attackEntity.getEquipment().getItemInMainHand())) {
@@ -374,7 +374,7 @@ public class CombatListener implements Listener {
       return;
     }
     StrifeMob killer = plugin.getStrifeMobManager()
-        .getAttributedEntity(event.getEntity().getKiller());
+        .getStatMob(event.getEntity().getKiller());
     if (killer.getStat(HP_ON_KILL) > 0.1) {
       restoreHealth(event.getEntity().getKiller(), killer.getStat(HP_ON_KILL));
     }

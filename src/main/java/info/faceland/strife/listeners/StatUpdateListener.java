@@ -27,20 +27,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.PlayerInventory;
 
-public class AttributeUpdateListener implements Listener {
+public class StatUpdateListener implements Listener {
 
   private final StrifePlugin plugin;
 
-  public AttributeUpdateListener(StrifePlugin plugin) {
+  public StatUpdateListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
@@ -49,26 +47,8 @@ public class AttributeUpdateListener implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().updateAll(
           plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
+      plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
     }, 20L);
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onChangeHeldItem(PlayerItemHeldEvent event) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      plugin.getChampionManager().updateEquipmentAttributes(
-          plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
-    }, 1L);
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onChangeHeldItem(PlayerSwapHandItemsEvent event) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      plugin.getChampionManager().updateEquipmentAttributes(
-          plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
-    }, 1L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -96,16 +76,16 @@ public class AttributeUpdateListener implements Listener {
     if (player.isDead() || player.getHealth() <= 0D) {
       return;
     }
-    plugin.getChampionManager().updateEquipmentAttributes(
+    plugin.getChampionManager().updateEquipmentStats(
         plugin.getChampionManager().getChampion((Player)event.getPlayer()));
-    plugin.getAttributeUpdateManager().updateAttributes(player);
+    plugin.getStatUpdateManager().updateAttributes(player);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerJoin(PlayerJoinEvent event) {
     plugin.getChampionManager().updateAll(
         plugin.getChampionManager().getChampion(event.getPlayer()));
-    plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
