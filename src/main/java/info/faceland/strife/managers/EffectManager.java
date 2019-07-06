@@ -41,6 +41,7 @@ import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -56,6 +57,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
@@ -94,9 +96,24 @@ public class EffectManager {
       effect.apply(caster, target);
       return;
     }
-    for (LivingEntity le : getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange())) {
+
+    List<LivingEntity> targets = getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange());
+
+    if (!effect.isFriendly()) {
+      targets.remove(caster.getEntity());
+      for (StrifeMob mob : caster.getMinions()) {
+        targets.remove(mob.getEntity());
+      }
+    }
+
+    for (LivingEntity le : targets) {
       LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
-      effect.apply(caster, aeManager.getAttributedEntity(le));
+      if (!effect.isFriendly() && caster.getEntity() instanceof Player && le instanceof Player) {
+        if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
+          continue;
+        }
+      }
+      effect.apply(caster, aeManager.getStatMob(le));
     }
   }
 
