@@ -331,7 +331,7 @@ public class StatUtil {
       if (StringUtils.isBlank(livingEntity.getCustomName())) {
         level = -1;
       } else {
-        String lev = CharMatcher.DIGIT.or(CharMatcher.is('-')).negate()
+        String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
             .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
         level = NumberUtils.toInt(lev.split(" ")[0], 0);
       }

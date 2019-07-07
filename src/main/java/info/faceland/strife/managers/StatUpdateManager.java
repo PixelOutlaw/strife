@@ -69,13 +69,13 @@ public class StatUpdateManager {
 
     for (String s : strippedLore) {
       double amount = 0;
-      String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
-
+      String retained = CharMatcher.forPredicate(Character::isLetter).or(CharMatcher.is(' '))
+          .retainFrom(s).trim();
       StrifeStat attribute = StrifeStat.fromName(retained);
       if (attribute == null) {
         continue;
       }
-      amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+      amount += NumberUtils.toDouble(CharMatcher.digit().or(CharMatcher.is('-')).retainFrom(s));
       if (amount == 0) {
         continue;
       }

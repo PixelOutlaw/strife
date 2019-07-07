@@ -69,7 +69,7 @@ public class MonsterManager {
       levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
     }
     if (type == EntityType.PLAYER && level >= 100) {
-      int bLevel = championManager.getChampion((Player)livingEntity).getBonusLevels();
+      int bLevel = championManager.getChampion((Player) livingEntity).getBonusLevels();
       Map<StrifeStat, Double> bonusStats = new HashMap<>();
       for (StrifeStat attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
         bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
@@ -133,6 +133,6 @@ public class MonsterManager {
       return 0;
     }
     return NumberUtils
-        .toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
+        .toInt(CharMatcher.digit().retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
   }
 }
