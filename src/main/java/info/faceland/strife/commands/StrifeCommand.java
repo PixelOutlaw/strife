@@ -23,9 +23,11 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -141,6 +143,34 @@ public class StrifeCommand {
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
     plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
+  }
+
+  @Command(identifier = "strife ability set", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void setAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "ability") String id, @Arg(name = "slot") int slot) {
+    Ability ability = plugin.getAbilityManager().getAbility(id.replace("_", " "));
+    if (ability == null) {
+      sendMessage(sender, "<red>Invalid ability ID: " + id);
+      return;
+    }
+    AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
+    if (abilitySlot == AbilitySlot.INVALID) {
+      sendMessage(sender, "<red>Invalid slot: " + slot);
+      return;
+    }
+    plugin.getAbilityIconManager().setAbilityIcon(target, abilitySlot, ability);
+  }
+
+  @Command(identifier = "strife ability remove", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void removeAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "slot") int slot) {
+    AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
+    if (abilitySlot == AbilitySlot.INVALID) {
+      sendMessage(sender, "<red>Invalid slot: " + slot);
+      return;
+    }
+    target.getInventory().setItem(slot, null);
+    plugin.getAbilityIconManager().updateIcons(target);
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
