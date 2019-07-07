@@ -52,8 +52,10 @@ public class DataListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onPlayerJoinChampionStuff(final PlayerJoinEvent event) {
+  public void onPlayerJoin(final PlayerJoinEvent event) {
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    plugin.getAbilityManager().addPlayerAbilityEntry(event.getPlayer());
+    plugin.getAbilityIconManager().addPlayerToMap(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
@@ -64,7 +66,7 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoinUpdateAttributes(final PlayerJoinEvent event) {
     event.getPlayer().setHealthScaled(false);
-    plugin.getAttributeUpdateManager().updateAttributes(event.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -94,7 +96,7 @@ public class DataListener implements Listener {
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager()
         .createBarrierEntry(
-            plugin.getStrifeMobManager().getAttributedEntity(event.getPlayer()));
+            plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -108,9 +110,9 @@ public class DataListener implements Listener {
     }
     final Player player = event.getPlayer();
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
-    plugin.getStrifeMobManager().getAttributedEntity(entity);
+    plugin.getStrifeMobManager().getStatMob(entity);
     plugin.getBossBarManager()
-        .pushBar(player, plugin.getStrifeMobManager().getAttributedEntity(entity));
+        .pushBar(player, plugin.getStrifeMobManager().getStatMob(entity));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

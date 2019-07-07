@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,9 +37,9 @@ public class AbilityManager {
 
   private final StrifePlugin plugin;
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
+  private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private final Set<Material> ignoredMaterials = new HashSet<>();
 
-  private static final String ON_COOLDOWN = TextUtils.color("&f&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
   private static final String TEST_CHICKEN = ChatColor.RED + "TEST CHICKEN PLS IGNORE";
 
@@ -56,13 +57,49 @@ public class AbilityManager {
     return null;
   }
 
+  public void addPlayerAbilityEntry(Player player) {
+    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
+  }
+
+  public void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
+    }
+    coolingDownAbilities.get(livingEntity).put(ability, ability.getCooldown() * 20);
+  }
+
+  public double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      return 0;
+    }
+    return coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
+  }
+
+  public void tickAbilityCooldowns(int tickRate) {
+    for (LivingEntity le : coolingDownAbilities.keySet()) {
+      if (le == null || !le.isValid()) {
+        coolingDownAbilities.remove(le);
+        continue;
+      }
+      for (Ability ability : coolingDownAbilities.get(le).keySet()) {
+        int ticks = coolingDownAbilities.get(le).get(ability);
+        if (ticks <= tickRate) {
+          coolingDownAbilities.get(le).remove(ability);
+          continue;
+        }
+        coolingDownAbilities.get(le).put(ability, ticks - tickRate);
+      }
+    }
+  }
+
+  public boolean isCooledDown(LivingEntity livingEntity, Ability ability) {
+    return !coolingDownAbilities.get(livingEntity).containsKey(ability);
+  }
+
   public void execute(final Ability ability, final StrifeMob caster,
       StrifeMob target) {
-    if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
+    if (ability.getCooldown() != 0 && !isCooledDown(caster.getEntity(), ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
-      if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
-        MessageUtils.sendActionBar((Player) caster.getEntity(), ON_COOLDOWN);
-      }
       return;
     }
     if (ability.getTargetType() == TargetType.SELF) {
@@ -82,13 +119,13 @@ public class AbilityManager {
         LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
         return;
       }
-      target = plugin.getStrifeMobManager().getAttributedEntity(targetEntity);
+      target = plugin.getStrifeMobManager().getStatMob(targetEntity);
     } else {
       targetEntity = target.getEntity();
     }
     LogUtil.printDebug("Target: " + PlayerDataUtil.getName(targetEntity));
     if (ability.getCooldown() != 0) {
-      caster.setCooldown(ability);
+      startAbilityCooldown(caster.getEntity(), ability);
     }
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
@@ -142,7 +179,7 @@ public class AbilityManager {
     }
     LogUtil.printDebug("Checking phase switch");
     StrifeMob strifeMob = plugin.getStrifeMobManager()
-        .getAttributedEntity(entity);
+        .getStatMob(entity);
     int currentPhase = plugin.getUniqueEntityManager().getPhase(strifeMob.getEntity());
     int newPhase =
         6 - (int) Math.ceil((entity.getHealth() / entity.getMaxHealth()) / 0.2);

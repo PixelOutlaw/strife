@@ -35,7 +35,6 @@ import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
-import info.faceland.strife.listeners.AttributeUpdateListener;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
 import info.faceland.strife.listeners.EntityMagicListener;
@@ -43,11 +42,13 @@ import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.FallListener;
 import info.faceland.strife.listeners.HeadDropListener;
 import info.faceland.strife.listeners.HealthListener;
+import info.faceland.strife.listeners.HeldItemChangeListener;
 import info.faceland.strife.listeners.LoreAbilityListener;
 import info.faceland.strife.listeners.MinionListener;
 import info.faceland.strife.listeners.SkillLevelUpListener;
 import info.faceland.strife.listeners.SneakAttackListener;
 import info.faceland.strife.listeners.SpawnListener;
+import info.faceland.strife.listeners.StatUpdateListener;
 import info.faceland.strife.listeners.TargetingListener;
 import info.faceland.strife.listeners.UniqueSplashListener;
 import info.faceland.strife.listeners.combat.BowListener;
@@ -55,9 +56,9 @@ import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.combat.DogeListener;
 import info.faceland.strife.listeners.combat.SwingListener;
+import info.faceland.strife.managers.AbilityIconManager;
 import info.faceland.strife.managers.AbilityManager;
 import info.faceland.strife.managers.AttackSpeedManager;
-import info.faceland.strife.managers.AttributeUpdateManager;
 import info.faceland.strife.managers.BarrierManager;
 import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.BlockManager;
@@ -75,6 +76,7 @@ import info.faceland.strife.managers.RageManager;
 import info.faceland.strife.managers.SkillExperienceManager;
 import info.faceland.strife.managers.SneakManager;
 import info.faceland.strife.managers.SpawnerManager;
+import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.managers.StrifeAttributeManager;
 import info.faceland.strife.managers.StrifeMobManager;
 import info.faceland.strife.managers.UniqueEntityManager;
@@ -84,6 +86,7 @@ import info.faceland.strife.menus.stats.StatsMenu;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.FlatfileStorage;
+import info.faceland.strife.tasks.AbilityTickTask;
 import info.faceland.strife.tasks.BarrierTask;
 import info.faceland.strife.tasks.BleedTask;
 import info.faceland.strife.tasks.BossBarsTask;
@@ -150,7 +153,7 @@ public class StrifePlugin extends FacePlugin {
   private SmartYamlConfiguration spawnerYAML;
 
   private StrifeMobManager strifeMobManager;
-  private AttributeUpdateManager attributeUpdateManager;
+  private StatUpdateManager statUpdateManager;
   private StrifeAttributeManager attributeManager;
   private ChampionManager championManager;
   private StrifeExperienceManager experienceManager;
@@ -170,6 +173,7 @@ public class StrifePlugin extends FacePlugin {
   private EffectManager effectManager;
   private AbilityManager abilityManager;
   private LoreAbilityManager loreAbilityManager;
+  private AbilityIconManager abilityIconManager;
   private SpawnerManager spawnerManager;
   private GlobalBoostManager globalBoostManager;
 
@@ -245,12 +249,13 @@ public class StrifePlugin extends FacePlugin {
     equipmentManager = new EntityEquipmentManager();
     globalBoostManager = new GlobalBoostManager();
     barrierManager = new BarrierManager();
-    attributeUpdateManager = new AttributeUpdateManager(strifeMobManager);
-    rageManager = new RageManager(attributeUpdateManager);
+    statUpdateManager = new StatUpdateManager(strifeMobManager);
+    rageManager = new RageManager(statUpdateManager);
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(attributeManager, strifeMobManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
+    abilityIconManager = new AbilityIconManager(this);
 
     MenuListener.getInstance().register(this);
 
@@ -296,6 +301,7 @@ public class StrifePlugin extends FacePlugin {
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     TimedAbilityTask timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
         strifeMobManager);
+    AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager, 4);
 
     commandHandler.registerCommands(new AttributesCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
@@ -368,7 +374,7 @@ public class StrifePlugin extends FacePlugin {
         10L // Run every 1/2 second
     ));
     taskList.add(barrierTask.runTaskTimer(this,
-        2201L, // Start timer after 11s
+        11 * 20L, // Start timer after 11s
         4L // Run it every 1/5th of a second after
     ));
     taskList.add(bossBarsTask.runTaskTimer(this,
@@ -419,6 +425,10 @@ public class StrifePlugin extends FacePlugin {
         20 * 20L, // Start timer after 20s
         5 * 20L // Run it every 5s
     ));
+    taskList.add(iconDuraTask.runTaskTimer(this,
+        3 * 20L, // Start timer after 3s
+        4L // Run it every 4 ticks
+    ));
 
     globalBoostManager.startScheduledEvents();
 
@@ -434,7 +444,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
-    Bukkit.getPluginManager().registerEvents(new AttributeUpdateListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager()
@@ -444,8 +454,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(
-        new LoreAbilityListener(strifeMobManager, championManager, loreAbilityManager),
-        this);
+        new LoreAbilityListener(strifeMobManager, championManager, loreAbilityManager), this);
+    Bukkit.getPluginManager().registerEvents(new HeldItemChangeListener(this), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
@@ -456,7 +466,9 @@ public class StrifePlugin extends FacePlugin {
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       getChampionManager().updateAll(championManager.getChampion(player));
-      attributeUpdateManager.updateAttributes(player);
+      statUpdateManager.updateAttributes(player);
+      abilityManager.addPlayerAbilityEntry(player);
+      abilityIconManager.addPlayerToMap(player);
     }
 
     LogUtil.printInfo("+===================================+");
@@ -471,31 +483,6 @@ public class StrifePlugin extends FacePlugin {
     uniqueEntityManager.killAllSpawnedUniques();
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
-
-    championManager = null;
-    uniqueEntityManager = null;
-    bossBarManager = null;
-    minionManager = null;
-    sneakManager = null;
-    experienceManager = null;
-    skillExperienceManager = null;
-    strifeMobManager = null;
-    abilityManager = null;
-    commandHandler = null;
-    attributeManager = null;
-    blockManager = null;
-    bleedManager = null;
-    darknessManager = null;
-    attackSpeedManager = null;
-    equipmentManager = null;
-    globalBoostManager = null;
-    barrierManager = null;
-    attributeUpdateManager = null;
-    rageManager = null;
-    monsterManager = null;
-    effectManager = null;
-    spawnerManager = null;
-    loreAbilityManager = null;
 
     HandlerList.unregisterAll(this);
 
@@ -764,8 +751,8 @@ public class StrifePlugin extends FacePlugin {
     spawnerYAML.save();
   }
 
-  public AttributeUpdateManager getAttributeUpdateManager() {
-    return attributeUpdateManager;
+  public StatUpdateManager getStatUpdateManager() {
+    return statUpdateManager;
   }
 
   public AttackSpeedManager getAttackSpeedManager() {
@@ -840,10 +827,8 @@ public class StrifePlugin extends FacePlugin {
     return loreAbilityManager;
   }
 
-  public void debug(Level level, String... messages) {
-    if (debugPrinter != null) {
-      debugPrinter.log(level, Arrays.asList(messages));
-    }
+  public AbilityIconManager getAbilityIconManager() {
+    return abilityIconManager;
   }
 
   public DataStorage getStorage() {
@@ -908,5 +893,11 @@ public class StrifePlugin extends FacePlugin {
 
   public LogLevel getLogLevel() {
     return logLevel;
+  }
+
+  public void debug(Level level, String... messages) {
+    if (debugPrinter != null) {
+      debugPrinter.log(level, Arrays.asList(messages));
+    }
   }
 }

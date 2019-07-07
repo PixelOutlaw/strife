@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -50,7 +51,7 @@ public class LevelupPointsMenuItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack itemStack = super.getFinalIcon(player);
-    List<String> lore = ItemStackExtensionsKt.getLore(itemStack);
+    List<String> lore = new ArrayList<>(ItemStackExtensionsKt.getLore(itemStack));
 
     Champion champion = plugin.getChampionManager().getChampion(player);
     int stacks = champion.getPendingUnusedStatPoints();

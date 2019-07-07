@@ -1,13 +1,18 @@
 package info.faceland.strife.util;
 
+import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.stats.StrifeTrait;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.server.v1_14_R1.PacketPlayOutSetSlot;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftItemStack;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -136,6 +141,22 @@ public class ItemUtil {
       return hash == -1;
     }
     return itemStack.hashCode() == hash;
+  }
+
+  public static short getPercentageDamage(ItemStack stack, double percent) {
+    return (short) ((double) stack.getType().getMaxDurability() * percent);
+  }
+
+  public static void sendAbilityIconPacket(AbilityIconData data, Player player, int slot,
+      double percent) {
+    ((CraftPlayer) player).getHandle().playerConnection
+        .sendPacket(buildPacket(36+slot, data.getItemStack(), percent));
+  }
+
+  private static PacketPlayOutSetSlot buildPacket(int slot, ItemStack stack, double percent) {
+    ItemStack sentStack = stack.clone();
+    sentStack.setDurability(getPercentageDamage(sentStack, percent));
+    return new PacketPlayOutSetSlot(0, slot, CraftItemStack.asNMSCopy(sentStack));
   }
 
   public static void removeAttributes(ItemStack item) {
