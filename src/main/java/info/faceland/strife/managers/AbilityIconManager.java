@@ -6,12 +6,14 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
+import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.ItemUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,9 +24,6 @@ public class AbilityIconManager {
   private final Map<UUID, Map<AbilitySlot, AbilityIconData>> abilitySlotMap;
 
   private static final String ABILITY_PREFIX = "Ability: ";
-  public static final int SLOT_A_SLOT = 0;
-  public static final int SLOT_B_SLOT = 1;
-  public static final int SLOT_C_SLOT = 2;
 
   private final String ON_COOLDOWN;
 
@@ -36,18 +35,26 @@ public class AbilityIconManager {
   }
 
   public void addPlayerToMap(Player player) {
-    //if (abilitySlotMap.containsKey(player.getUniqueId())) {
-    //  return;
-    //}
-    abilitySlotMap.put(player.getUniqueId(), getPlayerIcons(player));
+    if (abilitySlotMap.containsKey(player.getUniqueId())) {
+      return;
+    }
+    abilitySlotMap.put(player.getUniqueId(), updateAbilityIcons(player));
   }
 
-  public Map<AbilitySlot, AbilityIconData> getPlayerIcons(Player player) {
+  public Map<AbilitySlot, AbilityIconData> updateAbilityIcons(Player player) {
     Map<AbilitySlot, AbilityIconData> iconMap = new HashMap<>();
-    iconMap.put(AbilitySlot.SLOT_A, getAbilityIcon(player, SLOT_A_SLOT));
-    iconMap.put(AbilitySlot.SLOT_B, getAbilityIcon(player, SLOT_B_SLOT));
-    iconMap.put(AbilitySlot.SLOT_C, getAbilityIcon(player, SLOT_C_SLOT));
+    iconMap.put(AbilitySlot.SLOT_A, getAbilityIcon(player, AbilitySlot.SLOT_A.getSlotIndex()));
+    iconMap.put(AbilitySlot.SLOT_B, getAbilityIcon(player, AbilitySlot.SLOT_B.getSlotIndex()));
+    iconMap.put(AbilitySlot.SLOT_C, getAbilityIcon(player, AbilitySlot.SLOT_C.getSlotIndex()));
     return iconMap;
+  }
+
+  public void setAbilityIcon(Player player, AbilitySlot slot, Ability ability) {
+    addPlayerToMap(player);
+    ItemStack stack = new ItemStack(Material.DIAMOND_CHESTPLATE);
+    ItemStackExtensionsKt.setDisplayName(stack, ABILITY_PREFIX + ability.getId());
+    player.getInventory().setItem(slot.getSlotIndex(), stack);
+    abilitySlotMap.get(player.getUniqueId()).put(slot, new AbilityIconData(ability, stack));
   }
 
   public boolean isAbilityIcon(ItemStack stack) {
@@ -75,7 +82,7 @@ public class AbilityIconManager {
   }
 
   public boolean triggerAbility(Player player, int slot) {
-    AbilitySlot abilitySlot = getAbilitySlotFromSlotIndex(slot);
+    AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
     if (abilitySlot == AbilitySlot.INVALID) {
       return false;
     }
@@ -115,25 +122,5 @@ public class AbilityIconManager {
     double cooldownTicks = data.getAbility().getCooldown() * 20;
     double percent = (remainingTicks - 4) / cooldownTicks;
     ItemUtil.sendAbilityIconPacket(data, player, slot, percent);
-  }
-
-  private AbilitySlot getAbilitySlotFromSlotIndex(int index) {
-    if (index == SLOT_A_SLOT) {
-      return AbilitySlot.SLOT_A;
-    }
-    if (index == SLOT_B_SLOT) {
-      return AbilitySlot.SLOT_B;
-    }
-    if (index == SLOT_C_SLOT) {
-      return AbilitySlot.SLOT_C;
-    }
-    return AbilitySlot.INVALID;
-  }
-
-  public enum AbilitySlot {
-    SLOT_A,
-    SLOT_B,
-    SLOT_C,
-    INVALID
   }
 }

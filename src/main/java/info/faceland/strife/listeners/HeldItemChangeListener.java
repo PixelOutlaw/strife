@@ -8,9 +8,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class HeldItemChangeListener implements Listener {
 
@@ -36,10 +38,20 @@ public class HeldItemChangeListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onItemSwap(InventoryClickEvent event) {
-    if (plugin.getAbilityIconManager().isAbilityIcon(event.getCurrentItem()) || plugin
-        .getAbilityIconManager().isAbilityIcon(event.getCursor())) {
-      MessageUtils.sendMessage((Player) event.getInventory().getHolder(), NO_MOVE_ABILITY);
+  public void onInvyClick(InventoryClickEvent event) {
+    if (!(event.getWhoClicked() instanceof Player)) {
+      return;
+    }
+    if (event.getClick() == ClickType.NUMBER_KEY) {
+      if (isIcon(event.getWhoClicked().getInventory().getItem(event.getHotbarButton())) || isIcon(
+          event.getCurrentItem())) {
+        MessageUtils.sendMessage(event.getWhoClicked(), NO_MOVE_ABILITY);
+        event.setCancelled(true);
+      }
+      return;
+    }
+    if (isIcon(event.getCursor()) || isIcon(event.getCurrentItem())) {
+      MessageUtils.sendMessage(event.getWhoClicked(), NO_MOVE_ABILITY);
       event.setCancelled(true);
     }
   }
@@ -50,5 +62,9 @@ public class HeldItemChangeListener implements Listener {
       plugin.getChampionManager().updateEquipmentStats(event.getPlayer());
       plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
     }, 1L);
+  }
+
+  private boolean isIcon(ItemStack stack) {
+    return plugin.getAbilityIconManager().isAbilityIcon(stack);
   }
 }
