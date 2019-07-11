@@ -4,16 +4,16 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AbilityIconData;
+import info.faceland.strife.data.HotbarIconData;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.ItemUtil;
+import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -21,9 +21,9 @@ import org.bukkit.inventory.ItemStack;
 public class AbilityIconManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, Map<AbilitySlot, AbilityIconData>> abilitySlotMap;
+  private final Map<UUID, Map<AbilitySlot, HotbarIconData>> abilitySlotMap;
 
-  private static final String ABILITY_PREFIX = "Ability: ";
+  public static final String ABILITY_PREFIX = "Ability: ";
 
   private final String ON_COOLDOWN;
 
@@ -38,23 +38,44 @@ public class AbilityIconManager {
     if (abilitySlotMap.containsKey(player.getUniqueId())) {
       return;
     }
-    abilitySlotMap.put(player.getUniqueId(), updateAbilityIcons(player));
+    abilitySlotMap.put(player.getUniqueId(), setAllAbilityIcons(player));
   }
 
-  public Map<AbilitySlot, AbilityIconData> updateAbilityIcons(Player player) {
-    Map<AbilitySlot, AbilityIconData> iconMap = new HashMap<>();
+  public Map<AbilitySlot, HotbarIconData> setAllAbilityIcons(Player player) {
+    Map<AbilitySlot, HotbarIconData> iconMap = new HashMap<>();
     iconMap.put(AbilitySlot.SLOT_A, getAbilityIcon(player, AbilitySlot.SLOT_A.getSlotIndex()));
     iconMap.put(AbilitySlot.SLOT_B, getAbilityIcon(player, AbilitySlot.SLOT_B.getSlotIndex()));
     iconMap.put(AbilitySlot.SLOT_C, getAbilityIcon(player, AbilitySlot.SLOT_C.getSlotIndex()));
     return iconMap;
   }
 
-  public void setAbilityIcon(Player player, AbilitySlot slot, Ability ability) {
+  public void setAbilityIcon(Player player, Ability ability) {
     addPlayerToMap(player);
-    ItemStack stack = new ItemStack(Material.DIAMOND_CHESTPLATE);
-    ItemStackExtensionsKt.setDisplayName(stack, ABILITY_PREFIX + ability.getId());
-    player.getInventory().setItem(slot.getSlotIndex(), stack);
-    abilitySlotMap.get(player.getUniqueId()).put(slot, new AbilityIconData(ability, stack));
+    if (ability.getAbilityIconData() == null
+        || ability.getAbilityIconData().getAbilitySlot() == AbilitySlot.INVALID) {
+      LogUtil.printWarning(player.getName() + " set no-slot ability " + ability.getId());
+      return;
+    }
+    AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
+    ItemStack displacedItem = player.getInventory().getItem(slot.getSlotIndex());
+    player.getInventory().setItem(slot.getSlotIndex(), ability.getAbilityIconData().getStack());
+    if (displacedItem != null && !isAbilityIcon(displacedItem)) {
+      HashMap<Integer, ItemStack> excessItems = player.getInventory().addItem(displacedItem);
+      for (ItemStack extraStack : excessItems.values()) {
+        player.getWorld().dropItem(player.getLocation(), extraStack);
+      }
+    }
+    abilitySlotMap.get(player.getUniqueId())
+        .put(slot, new HotbarIconData(ability, ability.getAbilityIconData().getStack()));
+  }
+
+  public boolean playerHasAbilityIcon(Player player, Ability ability) {
+    for (HotbarIconData data : abilitySlotMap.get(player.getUniqueId()).values()) {
+      if (data.getAbility() == ability) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public boolean isAbilityIcon(ItemStack stack) {
@@ -68,7 +89,7 @@ public class AbilityIconManager {
     return true;
   }
 
-  public AbilityIconData getAbilityIcon(Player player, int slot) {
+  private HotbarIconData getAbilityIcon(Player player, int slot) {
     ItemStack stack = player.getInventory().getItem(slot);
     if (stack == null) {
       return null;
@@ -78,7 +99,11 @@ public class AbilityIconManager {
       return null;
     }
     Ability ability = plugin.getAbilityManager().getAbility(name.replace(ABILITY_PREFIX, ""));
-    return new AbilityIconData(ability, stack);
+    if (ability.getAbilityIconData() == null) {
+      player.getInventory().setItem(slot, null);
+      return null;
+    }
+    return new HotbarIconData(ability, stack);
   }
 
   public boolean triggerAbility(Player player, int slot) {
@@ -86,7 +111,7 @@ public class AbilityIconManager {
     if (abilitySlot == AbilitySlot.INVALID) {
       return false;
     }
-    AbilityIconData data = abilitySlotMap.get(player.getUniqueId()).get(abilitySlot);
+    HotbarIconData data = abilitySlotMap.get(player.getUniqueId()).get(abilitySlot);
     if (data == null) {
       return false;
     }
@@ -100,18 +125,21 @@ public class AbilityIconManager {
     plugin.getAbilityManager()
         .execute(data.getAbility(), plugin.getStrifeMobManager().getStatMob(player));
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
-    updateIcons(player);
+    updateAbilityIconDamageMeters(player);
     return true;
   }
 
-  public void updateIcons(Player player) {
-    Map<AbilitySlot, AbilityIconData> iconMap = abilitySlotMap.get(player.getUniqueId());
+  public void updateAbilityIconDamageMeters(Player player) {
+    if (player.isDead()) {
+      return;
+    }
+    Map<AbilitySlot, HotbarIconData> iconMap = abilitySlotMap.get(player.getUniqueId());
     for (AbilitySlot slot : iconMap.keySet()) {
       setIconDamage(player, iconMap.get(slot), slot.ordinal());
     }
   }
 
-  private void setIconDamage(Player player, AbilityIconData data, int slot) {
+  private void setIconDamage(Player player, HotbarIconData data, int slot) {
     if (data == null || data.getAbility() == null || data.getItemStack() == null) {
       return;
     }

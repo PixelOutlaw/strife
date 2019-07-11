@@ -4,21 +4,27 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Wait;
+import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -32,12 +38,14 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class AbilityManager {
 
   private final StrifePlugin plugin;
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
   private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
+  private final Map<UUID, Map<Ability, Integer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
   private final Set<Material> ignoredMaterials = new HashSet<>();
 
   private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
@@ -55,10 +63,6 @@ public class AbilityManager {
     }
     LogUtil.printWarning("Attempted to get unknown ability '" + name + "'.");
     return null;
-  }
-
-  public void addPlayerAbilityEntry(Player player) {
-    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
   }
 
   public void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
@@ -90,6 +94,22 @@ public class AbilityManager {
         coolingDownAbilities.get(le).put(ability, ticks - tickRate);
       }
     }
+  }
+
+  public void savePlayerCooldowns(Player player) {
+    if (coolingDownAbilities.containsKey(player)) {
+      savedPlayerCooldowns.put(player.getUniqueId(), coolingDownAbilities.get(player));
+      coolingDownAbilities.remove(player);
+    }
+  }
+
+  public void loadPlayerCooldowns(Player player) {
+    if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
+      coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
+      savedPlayerCooldowns.remove(player.getUniqueId());
+      return;
+    }
+    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
   }
 
   public boolean isCooledDown(LivingEntity livingEntity, Ability ability) {
@@ -325,8 +345,51 @@ public class AbilityManager {
       }
       conditions.add(plugin.getEffectManager().getConditions().get(s));
     }
+    AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     loadedAbilities.put(key,
-        new Ability(key, name, effects, targetType, range, cooldown, displayCd, conditions));
+        new Ability(key, name, effects, targetType, range, cooldown, displayCd, conditions,
+            abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
+  }
+
+  private AbilityIconData buildIconData(String key, ConfigurationSection iconSection) {
+    if (iconSection == null) {
+      return null;
+    }
+    LogUtil.printDebug("Ability " + key + " has icon!");
+    String format = TextUtils.color(iconSection.getString("format", "&f&l"));
+    Material material = Material.valueOf(iconSection.getString("material"));
+    List<String> lore = TextUtils.color(iconSection.getStringList("lore"));
+    ItemStack icon = new ItemStack(material);
+    ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
+    ItemStackExtensionsKt.setLore(icon, lore);
+
+    AbilityIconData data = new AbilityIconData(icon);
+
+    data.setAbilitySlot(AbilitySlot.valueOf(iconSection.getString("trigger-slot")));
+    data.setLevelRequirement(iconSection.getInt("level-requirement", 0));
+    data.setBonusLevelRequirement(iconSection.getInt("bonus-level-requirement", 0));
+
+    Map<StrifeAttribute, Integer> attrReqs = new HashMap<>();
+    ConfigurationSection attrSection = iconSection.getConfigurationSection("attribute-requirements");
+    if (attrSection != null) {
+      for (String s : attrSection.getKeys(false)) {
+        StrifeAttribute attr = plugin.getAttributeManager().getAttribute(s);
+        int value = attrSection.getInt(s);
+        attrReqs.put(attr, value);
+      }
+    }
+    Map<LifeSkillType, Integer> skillReqs = new HashMap<>();
+    ConfigurationSection skillSecion = iconSection.getConfigurationSection("skill-requirements");
+    if (skillSecion != null) {
+      for (String s : skillSecion.getKeys(false)) {
+        LifeSkillType skill = LifeSkillType.valueOf(s);
+        int value = skillSecion.getInt(s);
+        skillReqs.put(skill, value);
+      }
+    }
+    data.setAttributeRequirement(attrReqs);
+    data.setLifeSkillRequirements(skillReqs);
+    return data;
   }
 }

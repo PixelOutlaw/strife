@@ -90,7 +90,7 @@ public class StrifeCommand {
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "<gold>----------------------------------");
     for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
-      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getLevel(stat));
+      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
   }
@@ -147,18 +147,26 @@ public class StrifeCommand {
 
   @Command(identifier = "strife ability set", permissions = "strife.command.strife.binding", onlyPlayers = false)
   public void setAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
-      @Arg(name = "ability") String id, @Arg(name = "slot") int slot) {
+      @Arg(name = "ability") String id) {
     Ability ability = plugin.getAbilityManager().getAbility(id.replace("_", " "));
     if (ability == null) {
       sendMessage(sender, "<red>Invalid ability ID: " + id);
       return;
     }
-    AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
-    if (abilitySlot == AbilitySlot.INVALID) {
-      sendMessage(sender, "<red>Invalid slot: " + slot);
+    if (ability.getAbilityIconData() == null) {
+      sendMessage(sender, "<red>Invalid ability - No ability icon data");
       return;
     }
-    plugin.getAbilityIconManager().setAbilityIcon(target, abilitySlot, ability);
+    if (ability.getAbilityIconData().getAbilitySlot() == null) {
+      sendMessage(sender, "<red>Invalid ability - No ability slot set");
+      return;
+    }
+    if (ability.getAbilityIconData().getStack() == null) {
+      sendMessage(sender, "<red>Cannot use this command for an ability without an icon!");
+      return;
+    }
+    plugin.getAbilityIconManager().setAbilityIcon(target, ability);
+    plugin.getAbilityIconManager().setAllAbilityIcons(target);
   }
 
   @Command(identifier = "strife ability remove", permissions = "strife.command.strife.binding", onlyPlayers = false)
@@ -170,7 +178,7 @@ public class StrifeCommand {
       return;
     }
     target.getInventory().setItem(slot, null);
-    plugin.getAbilityIconManager().updateIcons(target);
+    plugin.getAbilityIconManager().setAllAbilityIcons(target);
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
@@ -271,7 +279,7 @@ public class StrifeCommand {
     }
   }
 
-  @Command(identifier = "strife togglexp", onlyPlayers = true)
+  @Command(identifier = "strife togglexp")
   public void toggleExp(CommandSender sender) {
     Champion champion = plugin.getChampionManager().getChampion((Player) sender);
     champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());

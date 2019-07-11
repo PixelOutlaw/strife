@@ -116,7 +116,7 @@ public class ChampionManager {
 
   public void savePendingStats(Champion champion) {
     for (StrifeAttribute stat : champion.getPendingLevelMap().keySet()) {
-      if (champion.getPendingLevel(stat) > champion.getLevel(stat)) {
+      if (champion.getPendingLevel(stat) > champion.getAttributeLevel(stat)) {
         sendMessage(champion.getPlayer(),
             stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
         champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f,

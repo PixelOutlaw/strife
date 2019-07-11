@@ -80,6 +80,8 @@ import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.managers.StrifeAttributeManager;
 import info.faceland.strife.managers.StrifeMobManager;
 import info.faceland.strife.managers.UniqueEntityManager;
+import info.faceland.strife.menus.abilities.AbilityPickerMenu;
+import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import info.faceland.strife.menus.levelup.ConfirmationMenu;
 import info.faceland.strife.menus.levelup.LevelupMenu;
 import info.faceland.strife.menus.stats.StatsMenu;
@@ -188,6 +190,7 @@ public class StrifePlugin extends FacePlugin {
   private LevelingRate miningRate;
   private LevelingRate sneakRate;
 
+  private Map<AbilityMenuType, AbilityPickerMenu> abilityMenus;
   private LevelupMenu levelupMenu;
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
@@ -460,6 +463,12 @@ public class StrifePlugin extends FacePlugin {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
 
+    // TODO: Clean up ability menus
+    abilityMenus = new HashMap<>();
+    for (AbilityMenuType menuType : AbilityMenuType.values()) {
+      List<String> abilities = settings.getStringList("config.ability-menus." + menuType);
+      abilityMenus.put(menuType, new AbilityPickerMenu(this, menuType.name(), abilities));
+    }
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu(this);
@@ -467,7 +476,7 @@ public class StrifePlugin extends FacePlugin {
     for (Player player : Bukkit.getOnlinePlayers()) {
       getChampionManager().updateAll(championManager.getChampion(player));
       statUpdateManager.updateAttributes(player);
-      abilityManager.addPlayerAbilityEntry(player);
+      abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.addPlayerToMap(player);
     }
 
@@ -857,6 +866,10 @@ public class StrifePlugin extends FacePlugin {
 
   public ConfirmationMenu getConfirmationMenu() {
     return confirmMenu;
+  }
+
+  public AbilityPickerMenu getAbilityPicker(AbilityMenuType type) {
+    return abilityMenus.get(type);
   }
 
   public StatsMenu getStatsMenu() {

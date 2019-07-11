@@ -1,6 +1,7 @@
 package info.faceland.strife.data.ability;
 
 import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.effects.Effect;
 import java.util.List;
 import java.util.Set;
@@ -15,9 +16,10 @@ public class Ability {
   private final int cooldown;
   private final boolean displayCd;
   private final Set<Condition> conditions;
+  private final AbilityIconData abilityIconData;
 
   public Ability(String id, String name, List<Effect> effects, TargetType targetType, double range,
-      int cooldown, boolean displayCd, Set<Condition> conditions) {
+      int cooldown, boolean displayCd, Set<Condition> conditions, AbilityIconData abilityIconData) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -26,6 +28,7 @@ public class Ability {
     this.range = range;
     this.displayCd = displayCd;
     this.conditions = conditions;
+    this.abilityIconData = abilityIconData;
   }
 
   public String getId() {
@@ -58,6 +61,10 @@ public class Ability {
 
   public Set<Condition> getConditions() {
     return conditions;
+  }
+
+  public AbilityIconData getAbilityIconData() {
+    return abilityIconData;
   }
 
   public enum TargetType {

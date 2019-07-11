@@ -94,8 +94,8 @@ public class Champion {
     return saveData;
   }
 
-  public int getLevel(StrifeAttribute stat) {
-    return saveData.getLevelMap().getOrDefault(stat, 0);
+  public int getAttributeLevel(StrifeAttribute attr) {
+    return saveData.getLevelMap().getOrDefault(attr, 0);
   }
 
   public int getPendingLevel(StrifeAttribute stat) {

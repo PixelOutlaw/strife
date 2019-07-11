@@ -1,6 +1,6 @@
 package info.faceland.strife.util;
 
-import info.faceland.strife.data.AbilityIconData;
+import info.faceland.strife.data.HotbarIconData;
 import info.faceland.strife.stats.StrifeTrait;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -147,7 +147,7 @@ public class ItemUtil {
     return (short) ((double) stack.getType().getMaxDurability() * percent);
   }
 
-  public static void sendAbilityIconPacket(AbilityIconData data, Player player, int slot,
+  public static void sendAbilityIconPacket(HotbarIconData data, Player player, int slot,
       double percent) {
     ((CraftPlayer) player).getHandle().playerConnection
         .sendPacket(buildPacket(36+slot, data.getItemStack(), percent));

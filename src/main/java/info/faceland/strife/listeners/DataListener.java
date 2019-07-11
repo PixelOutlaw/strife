@@ -54,7 +54,7 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
-    plugin.getAbilityManager().addPlayerAbilityEntry(event.getPlayer());
+    plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getAbilityIconManager().addPlayerToMap(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
     if (champion.getUnusedStatPoints() > 0) {
@@ -74,7 +74,9 @@ public class DataListener implements Listener {
     plugin.getBossBarManager().doBarDeath(event.getEntity());
     plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());
-    if (!(event.getEntity() instanceof Player)) {
+    if (event.getEntity() instanceof Player) {
+      plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
+    } else {
       UUID uuid = event.getEntity().getUniqueId();
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getStrifeMobManager().removeEntity(uuid), 20L * 30);
@@ -83,19 +85,21 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(final PlayerQuitEvent event) {
+    plugin.getAbilityManager().savePlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerKick(final PlayerKickEvent event) {
+    plugin.getAbilityManager().savePlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
+    plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
-    plugin.getBarrierManager()
-        .createBarrierEntry(
+    plugin.getBarrierManager().createBarrierEntry(
             plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 

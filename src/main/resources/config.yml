@@ -10,6 +10,18 @@ menu:
   close-marker-x: 8
   close-marker-y: 5
 
+ability-menus:
+  BASIC_LEVEL_MENU:
+    - "instant-ignite"
+  MELEE_ABILITY:
+     - "instant-ignite"
+  MAGIC_ABILITY:
+    - "instant-ignite"
+  ARCHERY_ABILITY:
+    - "instant-ignite"
+  LIFE_SKILL:
+    - "instant-ignite"
+
 global-multipliers:
   pvp-damage: 0.5
   combat-exp: 0.0

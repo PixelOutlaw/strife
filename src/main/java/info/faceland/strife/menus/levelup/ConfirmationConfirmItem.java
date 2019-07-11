@@ -54,7 +54,7 @@ public class ConfirmationConfirmItem extends MenuItem {
     Champion champion = plugin.getChampionManager().getChampion(player);
     List<String> changesLore = new ArrayList<>(Arrays.asList(DISPLAY_LORE));
     for (StrifeAttribute strifeAttribute : plugin.getAttributeManager().getAttributes()) {
-      int initial = champion.getLevel(strifeAttribute);
+      int initial = champion.getAttributeLevel(strifeAttribute);
       int newValue = champion.getPendingLevel(strifeAttribute);
       if (initial < newValue) {
         changesLore.add(strifeAttribute.getName() + " Lv" + initial + " -> Lv" + newValue);
