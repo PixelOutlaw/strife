@@ -78,13 +78,6 @@
       <version>9.8.2</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>craftbukkit</groupId>
-      <artifactId>craftbukkit</artifactId>
-      <version>1.14.3-R0.1-SNAPSHOT</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/craftbukkit.jar</systemPath>
-    </dependency>
   </dependencies>
 
   <build>

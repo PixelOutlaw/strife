@@ -1,21 +1,24 @@
 package info.faceland.strife.util;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
 import info.faceland.strife.data.HotbarIconData;
 import info.faceland.strife.stats.StrifeTrait;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.server.v1_14_R1.PacketPlayOutSetSlot;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
@@ -149,14 +152,25 @@ public class ItemUtil {
 
   public static void sendAbilityIconPacket(HotbarIconData data, Player player, int slot,
       double percent) {
-    ((CraftPlayer) player).getHandle().playerConnection
-        .sendPacket(buildPacket(36+slot, data.getItemStack(), percent));
+    try {
+      ProtocolLibrary.getProtocolManager().sendServerPacket(player, buildPacketContainer(36+slot, data.getItemStack(), percent));
+    } catch (InvocationTargetException e) {
+      e.printStackTrace();
+    }
   }
 
-  private static PacketPlayOutSetSlot buildPacket(int slot, ItemStack stack, double percent) {
+  private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent) {
     ItemStack sentStack = stack.clone();
-    sentStack.setDurability(getPercentageDamage(sentStack, percent));
-    return new PacketPlayOutSetSlot(0, slot, CraftItemStack.asNMSCopy(sentStack));
+    ItemMeta sentStackMeta = sentStack.getItemMeta();
+    if (sentStackMeta instanceof Damageable) {
+      ((Damageable) sentStackMeta).setDamage(getPercentageDamage(sentStack, percent));
+      sentStack.setItemMeta(sentStackMeta);
+    }
+    PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.SET_SLOT);
+    packetContainer.getIntegers().write(0, 0);
+    packetContainer.getIntegers().write(1, slot);
+    packetContainer.getItemModifier().write(0, sentStack);
+    return packetContainer;
   }
 
   public static void removeAttributes(ItemStack item) {
