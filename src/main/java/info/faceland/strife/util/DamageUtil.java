@@ -83,8 +83,12 @@ public class DamageUtil {
         break;
     }
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    defender.getEntity().damage(damage);
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
+    if (defender.getEntity().getNoDamageTicks() > 0) {
+      defender.getEntity().setHealth(Math.max(0D, defender.getEntity().getHealth() - damage));
+      return damage;
+    }
+    defender.getEntity().damage(damage);
     return damage;
   }
 
