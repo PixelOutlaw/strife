@@ -20,6 +20,7 @@ import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.StrifeMobManager;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -155,6 +156,8 @@ public class LoreAbilityListener implements Listener {
       if (((Projectile) entity).getShooter() instanceof LivingEntity) {
         return (LivingEntity) ((Projectile) entity).getShooter();
       }
+    } else if (entity instanceof EvokerFangs) {
+      return ((EvokerFangs) entity).getOwner();
     }
     return null;
   }
