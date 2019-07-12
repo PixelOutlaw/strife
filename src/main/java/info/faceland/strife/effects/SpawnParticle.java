@@ -3,6 +3,7 @@ package info.faceland.strife.effects;
 import info.faceland.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.LivingEntity;
 
 public class SpawnParticle extends Effect {
 
@@ -10,10 +11,11 @@ public class SpawnParticle extends Effect {
   private int quantity;
   private float spread;
   private float speed;
+  private ParticleOriginLocation particleOriginLocation = ParticleOriginLocation.CENTER;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    Location loc = target.getEntity().getLocation().clone().add(target.getEntity().getEyeLocation());
+    Location loc = getLoc(target.getEntity());
     target.getEntity().getWorld()
         .spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
   }
@@ -34,4 +36,27 @@ public class SpawnParticle extends Effect {
     this.spread = spread;
   }
 
+  public void setParticleOriginLocation(
+      ParticleOriginLocation particleOriginLocation) {
+    this.particleOriginLocation = particleOriginLocation;
+  }
+
+  private Location getLoc(LivingEntity le) {
+    switch (particleOriginLocation) {
+      case HEAD:
+        return le.getEyeLocation();
+      case CENTER:
+        return le.getEyeLocation().clone()
+            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
+      case GROUND:
+        return le.getLocation();
+    }
+    return null;
+  }
+
+  public enum ParticleOriginLocation {
+    HEAD,
+    CENTER,
+    GROUND
+  }
 }
