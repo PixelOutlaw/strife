@@ -34,6 +34,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -90,6 +91,19 @@ public class DamageUtil {
     }
     defender.getEntity().damage(damage);
     return damage;
+  }
+
+  public static LivingEntity getAttacker(Entity entity) {
+    if (entity instanceof LivingEntity) {
+      return (LivingEntity) entity;
+    } else if (entity instanceof Projectile) {
+      if (((Projectile) entity).getShooter() instanceof LivingEntity) {
+        return (LivingEntity) ((Projectile) entity).getShooter();
+      }
+    } else if (entity instanceof EvokerFangs) {
+      return ((EvokerFangs) entity).getOwner();
+    }
+    return null;
   }
 
   public static double attemptIgnite(double damage, StrifeMob attacker,

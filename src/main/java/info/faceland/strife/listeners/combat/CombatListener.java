@@ -39,6 +39,7 @@ import static info.faceland.strife.util.DamageUtil.callSneakAttackEvent;
 import static info.faceland.strife.util.DamageUtil.consumeEarthRunes;
 import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
+import static info.faceland.strife.util.DamageUtil.getAttacker;
 import static info.faceland.strife.util.DamageUtil.getLightBonus;
 import static info.faceland.strife.util.DamageUtil.getPotionMult;
 import static info.faceland.strife.util.DamageUtil.hasLuck;
@@ -60,7 +61,6 @@ import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -73,7 +73,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.projectiles.ProjectileSource;
 
 public class CombatListener implements Listener {
 
@@ -98,35 +97,29 @@ public class CombatListener implements Listener {
     }
 
     LivingEntity defendEntity = (LivingEntity) event.getEntity();
-    LivingEntity attackEntity;
+    LivingEntity attackEntity = getAttacker(event.getDamager());
 
     Projectile projectile = null;
     String[] projectileEffect = null;
+
+    if (attackEntity == null) {
+      event.setDamage(1);
+      return;
+    }
+
     if (event.getDamager() instanceof Projectile) {
       projectile = (Projectile) event.getDamager();
-      ProjectileSource shooter = projectile.getShooter();
       if (defendEntity.hasMetadata("NPC")) {
-        projectile.remove();
+        event.getDamager().remove();
         return;
       }
-      if (!(shooter instanceof LivingEntity)) {
-        return;
-      }
-      attackEntity = (LivingEntity) shooter;
       if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
         projectileEffect = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString().split("~");
       }
-    } else if (event.getDamager() instanceof EvokerFangs) {
-      attackEntity = ((EvokerFangs) event.getDamager()).getOwner();
     } else if (event.getDamager() instanceof TNTPrimed) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       double explosionMult = Math.max(0.3, 4 / (distance + 3));
       event.setDamage(explosionMult * (10 + defendEntity.getMaxHealth() * 0.4));
-      return;
-    } else if (event.getDamager() instanceof LivingEntity) {
-      attackEntity = (LivingEntity) event.getDamager();
-    } else {
-      event.setDamage(1);
       return;
     }
 

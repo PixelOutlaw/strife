@@ -19,11 +19,9 @@ import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.StrifeMobManager;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EvokerFangs;
+import info.faceland.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -126,7 +124,7 @@ public class LoreAbilityListener implements Listener {
     if (!(event.getEntity() instanceof LivingEntity)) {
       return;
     }
-    LivingEntity attacker = getAttacker(event.getDamager());
+    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
     LivingEntity defender = (LivingEntity) event.getEntity();
 
     StrifeMob attackEntity = getAttrEntity(attacker);
@@ -147,19 +145,6 @@ public class LoreAbilityListener implements Listener {
         loreAbilityManager.applyLoreAbility(la, defendEntity, attackEntity);
       }
     }
-  }
-
-  private LivingEntity getAttacker(Entity entity) {
-    if (entity instanceof LivingEntity) {
-      return (LivingEntity) entity;
-    } else if (entity instanceof Projectile) {
-      if (((Projectile) entity).getShooter() instanceof LivingEntity) {
-        return (LivingEntity) ((Projectile) entity).getShooter();
-      }
-    } else if (entity instanceof EvokerFangs) {
-      return ((EvokerFangs) entity).getOwner();
-    }
-    return null;
   }
 
   private StrifeMob getAttrEntity(LivingEntity livingEntity) {
