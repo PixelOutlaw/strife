@@ -3,6 +3,7 @@ package info.faceland.strife.conditions;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.util.PlayerDataUtil;
 
 public class CorruptionCondition implements Condition {
 
@@ -26,15 +27,6 @@ public class CorruptionCondition implements Condition {
     } else {
       stacks = DARKNESS_MANAGER.getCorruptionStacks(target.getEntity());
     }
-    switch (comparison) {
-      case EQUAL:
-        return stacks == value;
-      case LESS_THAN:
-        return stacks < value;
-      case GREATER_THAN:
-        return stacks > value;
-      default:
-        return false;
-    }
+    return PlayerDataUtil.conditionCompare(comparison, stacks, value);
   }
 }

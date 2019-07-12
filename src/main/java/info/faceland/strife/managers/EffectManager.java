@@ -13,6 +13,7 @@ import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.conditions.Condition.ConditionType;
 import info.faceland.strife.conditions.CorruptionCondition;
 import info.faceland.strife.conditions.EntityTypeCondition;
+import info.faceland.strife.conditions.GroundedCondition;
 import info.faceland.strife.conditions.HealthCondition;
 import info.faceland.strife.conditions.HeightCondition;
 import info.faceland.strife.conditions.LevelCondition;
@@ -330,13 +331,12 @@ public class EffectManager {
       return;
     }
 
-    String compType = cs.getString("comparison", "NULL").toUpperCase();
+    String compType = cs.getString("comparison", "NONE").toUpperCase();
     Comparison comparison;
     try {
       comparison = Comparison.valueOf(compType);
     } catch (Exception e) {
-      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + compType + ")");
-      return;
+      comparison = Comparison.NONE;
     }
 
     String compareTargetString = cs.getString("target", "SELF");
@@ -406,6 +406,9 @@ public class EffectManager {
         break;
       case BURNING:
         condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
+        break;
+      case GROUNDED:
+        condition = new GroundedCondition();
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");

@@ -86,6 +86,8 @@ public class PlayerDataUtil {
         return val1 < val2;
       case EQUAL:
         return val1 == val2;
+      case NONE:
+        throw new IllegalArgumentException("Compare condition is NONE! Invalid usage!");
     }
     return false;
   }

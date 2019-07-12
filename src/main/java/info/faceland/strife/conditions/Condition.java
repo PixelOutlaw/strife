@@ -9,7 +9,8 @@ public interface Condition {
   enum Comparison {
     GREATER_THAN,
     LESS_THAN,
-    EQUAL
+    EQUAL,
+    NONE
   }
 
   enum CompareTarget {
@@ -28,6 +29,7 @@ public interface Condition {
     BONUS_LEVEL,
     ITS_OVER_ANAKIN,
     ENTITY_TYPE,
+    GROUNDED,
     BLEEDING,
     DARKNESS,
     BURNING
