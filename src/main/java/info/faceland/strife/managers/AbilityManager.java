@@ -114,11 +114,13 @@ public class AbilityManager {
   }
 
   public boolean isCooledDown(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
+    }
     return !coolingDownAbilities.get(livingEntity).containsKey(ability);
   }
 
-  public void execute(final Ability ability, final StrifeMob caster,
-      StrifeMob target) {
+  public void execute(final Ability ability, final StrifeMob caster, StrifeMob target) {
     if (ability.getCooldown() != 0 && !isCooledDown(caster.getEntity(), ability)) {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       return;
@@ -194,7 +196,7 @@ public class AbilityManager {
   }
 
   public void checkPhaseChange(LivingEntity entity) {
-    if (plugin.getUniqueEntityManager().isUniqueEntity(entity)) {
+    if (!plugin.getUniqueEntityManager().isUniqueEntity(entity)) {
       LogUtil.printDebug("Trying to check phase on non-unique: " + PlayerDataUtil.getName(entity));
       return;
     }
