@@ -3,6 +3,7 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
+import ninja.amp.ampmenus.menus.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,6 +41,9 @@ public class HeldItemChangeListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onInvyClick(InventoryClickEvent event) {
     if (!(event.getWhoClicked() instanceof Player)) {
+      return;
+    }
+    if (event.getInventory().getHolder() instanceof MenuHolder) {
       return;
     }
     if (event.getClick() == ClickType.NUMBER_KEY) {

@@ -15,6 +15,7 @@ import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -38,6 +39,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 public class AbilityManager {
@@ -104,12 +106,11 @@ public class AbilityManager {
   }
 
   public void loadPlayerCooldowns(Player player) {
+    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
     if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
       coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
       savedPlayerCooldowns.remove(player.getUniqueId());
-      return;
     }
-    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
   }
 
   public boolean isCooledDown(LivingEntity livingEntity, Ability ability) {
@@ -328,7 +329,7 @@ public class AbilityManager {
     for (String s : effectStrings) {
       Effect effect = plugin.getEffectManager().getEffect(s);
       if (effect == null) {
-        LogUtil.printWarning(" Failed to add unknown effect '" + s + "' to ability '" + s + "'");
+        LogUtil.printWarning(" Failed to add unknown effect '" + s + "' to ability '" + key + "'");
         continue;
       }
       effects.add(effect);
@@ -363,6 +364,8 @@ public class AbilityManager {
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     ItemStackExtensionsKt.setLore(icon, lore);
+    ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
+    ItemUtil.removeAttributes(icon);
 
     AbilityIconData data = new AbilityIconData(icon);
 

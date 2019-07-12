@@ -1,5 +1,6 @@
 package info.faceland.strife.data;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
@@ -103,14 +104,14 @@ public class AbilityIconData {
     }
     for (LifeSkillType type : data.lifeSkillRequirements.keySet()) {
       if (champion.getLifeSkillLevel(type) < data.lifeSkillRequirements.get(type)) {
-        strings.add("Requirement: " + type.name() + data.lifeSkillRequirements.get(type));
+        strings.add("Requirement: " + type.name() + " " + data.lifeSkillRequirements.get(type));
       }
     }
     for (StrifeAttribute attr : data.attributeRequirement.keySet()) {
       if (champion.getAttributeLevel(attr) < data.attributeRequirement.get(attr)) {
-        strings.add("Requirement: " + attr.getName() + data.attributeRequirement.get(attr));
+        strings.add("Requirement: " + attr.getName() + " " + data.attributeRequirement.get(attr));
       }
     }
-    return strings;
+    return TextUtils.color(strings);
   }
 }

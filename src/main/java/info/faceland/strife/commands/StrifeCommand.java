@@ -27,6 +27,7 @@ import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -179,6 +180,13 @@ public class StrifeCommand {
     }
     target.getInventory().setItem(slot, null);
     plugin.getAbilityIconManager().setAllAbilityIcons(target);
+  }
+
+  @Command(identifier = "strife ability menu", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void menuAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "menu") String id) {
+    AbilityMenuType menuType = AbilityMenuType.valueOf(id);
+    plugin.getAbilityPicker(menuType).open(target);
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)

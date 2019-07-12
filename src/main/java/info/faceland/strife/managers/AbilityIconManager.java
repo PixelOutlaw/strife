@@ -49,6 +49,13 @@ public class AbilityIconManager {
     return iconMap;
   }
 
+  public void clearAbilityIcon(Player player, AbilitySlot slot) {
+    if (abilitySlotMap.get(player.getUniqueId()).get(slot) != null) {
+      abilitySlotMap.get(player.getUniqueId()).put(slot, null);
+      player.getInventory().setItem(slot.getSlotIndex(), null);
+    }
+  }
+
   public void setAbilityIcon(Player player, Ability ability) {
     addPlayerToMap(player);
     if (ability.getAbilityIconData() == null
@@ -71,6 +78,9 @@ public class AbilityIconManager {
 
   public boolean playerHasAbilityIcon(Player player, Ability ability) {
     for (HotbarIconData data : abilitySlotMap.get(player.getUniqueId()).values()) {
+      if (data == null) {
+        return false;
+      }
       if (data.getAbility() == ability) {
         return true;
       }
@@ -87,6 +97,18 @@ public class AbilityIconManager {
       return false;
     }
     return true;
+  }
+
+  public Ability getAbilityFromSlot(Player player, AbilitySlot slot) {
+    ItemStack stack = player.getInventory().getItem(slot.getSlotIndex());
+    if (stack == null) {
+      return null;
+    }
+    String name = ChatColor.stripColor(ItemStackExtensionsKt.getDisplayName(stack));
+    if (StringUtils.isBlank(name) || !name.startsWith(ABILITY_PREFIX) || name.contains("✫")) {
+      return null;
+    }
+    return plugin.getAbilityManager().getAbility(name.replace(ABILITY_PREFIX, ""));
   }
 
   private HotbarIconData getAbilityIcon(Player player, int slot) {

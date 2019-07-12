@@ -37,6 +37,7 @@ import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.RestoreBarrier;
 import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.effects.SpawnParticle.ParticleOriginLocation;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
@@ -293,6 +294,8 @@ public class EffectManager {
         ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
         ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
         ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
+        ((SpawnParticle) effect).setParticleOriginLocation(
+            ParticleOriginLocation.valueOf(cs.getString("origin", "HEAD")));
         break;
     }
     if (effectType != EffectType.WAIT) {

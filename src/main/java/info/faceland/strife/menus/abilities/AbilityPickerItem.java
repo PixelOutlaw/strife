@@ -18,9 +18,11 @@
  */
 package info.faceland.strife.menus.abilities;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
+import info.faceland.strife.stats.AbilitySlot;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -57,12 +59,24 @@ public class AbilityPickerItem extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    if (plugin.getAbilityIconManager().playerHasAbilityIcon(event.getPlayer(), ability)) {
-      event.getPlayer().getInventory()
-          .setItem(ability.getAbilityIconData().getAbilitySlot().ordinal(), null);
-      plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
+
+    AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
+    Ability oldAbility = plugin.getAbilityIconManager().getAbilityFromSlot(event.getPlayer(), slot);
+    if (oldAbility == null) {
+      plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability);
+      event.setWillUpdate(true);
+      return;
+    }
+    if (!plugin.getAbilityManager().isCooledDown(event.getPlayer(), oldAbility)) {
+      MessageUtils.sendMessage(event.getPlayer(), "&eCannot swap out an ability that isn't cooled down!");
+      return;
+    }
+    if (oldAbility == ability) {
+      plugin.getAbilityIconManager().clearAbilityIcon(event.getPlayer(), slot);
+      event.setWillUpdate(true);
       return;
     }
     plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability);
+    event.setWillUpdate(true);
   }
 }

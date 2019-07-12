@@ -34,7 +34,7 @@ public class LoreAbilityManager {
     this.effectManager = effectManager;
   }
 
-  public Set<LoreAbility> getAbilities(ItemStack stack) {
+  Set<LoreAbility> getAbilities(ItemStack stack) {
     List<String> lore = ItemUtil.getLore(stack);
     Set<LoreAbility> abilities = new HashSet<>();
     if (lore.isEmpty()) {
@@ -81,7 +81,7 @@ public class LoreAbilityManager {
       }
     }
     if (ability == null && effectList.isEmpty()) {
-      LogUtil.printError("Failed to load " + key + ". No valid ability and no effects defined!");
+      LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
     }
     List<String> description = TextUtils.color(cs.getStringList("description"));
@@ -106,15 +106,11 @@ public class LoreAbilityManager {
     }
   }
 
-  public LoreAbility getLoreAbilityFromString(String loreString) {
+  private LoreAbility getLoreAbilityFromString(String loreString) {
     return loreStringToAbilityMap.getOrDefault(loreString, null);
   }
   public LoreAbility getLoreAbilityFromId(String id) {
     return loreIdToAbilityMap.getOrDefault(id, null);
-  }
-
-  public Map<String, LoreAbility> getLoreStringToAbilityMap() {
-    return loreStringToAbilityMap;
   }
 
   public enum TriggerType {

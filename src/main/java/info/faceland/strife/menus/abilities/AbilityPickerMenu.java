@@ -31,8 +31,8 @@ public class AbilityPickerMenu extends ItemMenu {
     super(ChatColor.BLACK + name, Size.fit(27), plugin);
 
     List<Ability> abilityList = abilities.stream()
-        .map(a -> plugin.getAbilityManager().getAbility(a))
-        .collect(Collectors.toList());
+          .map(a -> plugin.getAbilityManager().getAbility(a))
+          .collect(Collectors.toList());
 
     int index = 0;
     for (Ability ability : abilityList) {
