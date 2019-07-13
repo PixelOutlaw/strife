@@ -19,9 +19,11 @@ import info.faceland.strife.conditions.HeightCondition;
 import info.faceland.strife.conditions.LevelCondition;
 import info.faceland.strife.conditions.PotionCondition;
 import info.faceland.strife.conditions.StatCondition;
+import info.faceland.strife.conditions.TimeCondition;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Bleed;
+import info.faceland.strife.effects.BuffEffect;
 import info.faceland.strife.effects.ConsumeBleed;
 import info.faceland.strife.effects.ConsumeCorrupt;
 import info.faceland.strife.effects.Corrupt;
@@ -227,6 +229,10 @@ public class EffectManager {
         ((ConsumeCorrupt) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
         ((ConsumeCorrupt) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
         break;
+      case BUFF_EFFECT:
+        effect = new BuffEffect();
+        ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
+        break;
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));
@@ -389,6 +395,11 @@ public class EffectManager {
         condition = new PotionCondition(potionEffectType, compareTarget, comparison,
             potionIntensity);
         break;
+      case TIME:
+        long minTime = cs.getLong("min-time", 0);
+        long maxTime = cs.getLong("max-time", 0);
+        condition = new TimeCondition(minTime, maxTime);
+        break;
       case LEVEL:
         condition = new LevelCondition(comparison, (int) value);
         break;
@@ -457,6 +468,7 @@ public class EffectManager {
     CORRUPT,
     CONSUME_BLEED,
     CONSUME_CORRUPT,
+    BUFF_EFFECT,
     WAIT,
     SOUND,
     PARTICLE,

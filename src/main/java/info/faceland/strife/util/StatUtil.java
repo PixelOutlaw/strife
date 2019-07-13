@@ -52,8 +52,11 @@ import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -318,6 +321,21 @@ public class StatUtil {
     damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getShadowResist(defender) / 100;
     return damage;
+  }
+
+  public static Map<StrifeStat, Double> getStatMapFromSection(ConfigurationSection statSection) {
+    Map<StrifeStat, Double> statMap = new HashMap<>();
+    for (String statString : statSection.getKeys(false)) {
+      StrifeStat strifeStat;
+      try {
+        strifeStat = StrifeStat.valueOf(statString);
+      } catch (Exception e) {
+        LogUtil.printWarning("Invalid stat " + statString + ". Skipping...");
+        continue;
+      }
+      statMap.put(strifeStat, statSection.getDouble(statString));
+    }
+    return statMap;
   }
 
   public static int getMobLevel(LivingEntity livingEntity) {

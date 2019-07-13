@@ -6,43 +6,34 @@ import java.util.Map;
 public class LoadedBuff {
 
   private final String name;
-  private final Map<StrifeStat, Double> flatStats;
-  private final Map<StrifeStat, Double> multStats;
+  private final Map<StrifeStat, Double> stats;
   private final int maxStacks;
-  private final int tickDuration;
-  private final boolean slowFalloff;
+  private final double seconds;
 
-  public LoadedBuff(String name, Map<StrifeStat, Double> flatStats,
-      Map<StrifeStat, Double> multStats, int maxStacks, int tickDuration, boolean slowFalloff) {
+  public LoadedBuff(String name, Map<StrifeStat, Double> stats, int maxStacks, double seconds) {
     this.name = name;
-    this.flatStats = flatStats;
-    this.multStats = multStats;
+    this.stats = stats;
     this.maxStacks = maxStacks;
-    this.tickDuration = tickDuration;
-    this.slowFalloff = slowFalloff;
+    this.seconds = seconds;
   }
 
   public String getName() {
     return name;
   }
 
-  public Map<StrifeStat, Double> getFlatStats() {
-    return flatStats;
-  }
-
-  public Map<StrifeStat, Double> getMultStats() {
-    return multStats;
+  public Map<StrifeStat, Double> getStats() {
+    return stats;
   }
 
   public int getMaxStacks() {
     return maxStacks;
   }
 
-  public int getTickDuration() {
-    return tickDuration;
+  public double getSeconds() {
+    return seconds;
   }
 
-  public boolean isSlowFalloff() {
-    return slowFalloff;
+  public static Buff createBuffFromLoadedBuff(LoadedBuff loadedBuff) {
+    return new Buff(loadedBuff.stats, loadedBuff.maxStacks);
   }
 }

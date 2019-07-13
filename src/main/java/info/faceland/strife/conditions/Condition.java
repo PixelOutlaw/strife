@@ -25,6 +25,7 @@ public interface Condition {
     HEALTH,
     BARRIER,
     POTION_EFFECT,
+    TIME,
     LEVEL,
     BONUS_LEVEL,
     ITS_OVER_ANAKIN,

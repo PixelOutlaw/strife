@@ -23,6 +23,7 @@ import info.faceland.strife.data.GlobalStatBoost;
 import info.faceland.strife.data.LoadedStatBoost;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.StatUtil;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -99,17 +100,7 @@ public class GlobalBoostManager {
       List<String> announceEnd = TextUtils.color(boost.getStringList("announcement-end"));
 
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");
-      Map<StrifeStat, Double> attrMap = new HashMap<>();
-      for (String attr : attrSection.getKeys(false)) {
-        StrifeStat attribute;
-        try {
-          attribute = StrifeStat.valueOf(attr);
-        } catch (Exception e) {
-          LogUtil.printWarning("Invalid attribute " + attr + ". Skipping...");
-          continue;
-        }
-        attrMap.put(attribute, attrSection.getDouble(attr));
-      }
+      Map<StrifeStat, Double> attrMap = StatUtil.getStatMapFromSection(attrSection);
 
       LoadedStatBoost loadedStatBoost = new LoadedStatBoost(creator, announceInterval, duration);
       loadedStatBoost.getAnnounceStart().addAll(announceStart);

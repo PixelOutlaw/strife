@@ -63,6 +63,7 @@ import info.faceland.strife.managers.BarrierManager;
 import info.faceland.strife.managers.BleedManager;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.BossBarManager;
+import info.faceland.strife.managers.BuffManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.managers.EffectManager;
@@ -151,6 +152,7 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration effectYAML;
   private VersionedSmartYamlConfiguration abilityYAML;
   private VersionedSmartYamlConfiguration loreAbilityYAML;
+  private VersionedSmartYamlConfiguration buffsYAML;
   private VersionedSmartYamlConfiguration globalBoostsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
@@ -176,6 +178,7 @@ public class StrifePlugin extends FacePlugin {
   private AbilityManager abilityManager;
   private LoreAbilityManager loreAbilityManager;
   private AbilityIconManager abilityIconManager;
+  private BuffManager buffManager;
   private SpawnerManager spawnerManager;
   private GlobalBoostManager globalBoostManager;
 
@@ -221,6 +224,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
     configurations.add(abilityYAML = defaultSettingsLoad("abilities.yml"));
     configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
+    configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
 
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
@@ -259,6 +263,7 @@ public class StrifePlugin extends FacePlugin {
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
+    buffManager = new BuffManager();
 
     MenuListener.getInstance().register(this);
 
@@ -269,6 +274,7 @@ public class StrifePlugin extends FacePlugin {
       LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + LogLevel.values());
     }
 
+    buildBuffs();
     buildEquipment();
     buildLevelpointStats();
     buildBaseStats();
@@ -559,6 +565,16 @@ public class StrifePlugin extends FacePlugin {
     }
   }
 
+  private void buildBuffs() {
+    for (String buffId : buffsYAML.getKeys(false)) {
+      if (!buffsYAML.isConfigurationSection(buffId)) {
+        continue;
+      }
+      ConfigurationSection cs = buffsYAML.getConfigurationSection(buffId);
+      buffManager.loadBuff(buffId, cs);
+    }
+  }
+
   private void buildLevelpointStats() {
     for (String key : attributesYAML.getKeys(false)) {
       if (!attributesYAML.isConfigurationSection(key)) {
@@ -838,6 +854,10 @@ public class StrifePlugin extends FacePlugin {
 
   public AbilityIconManager getAbilityIconManager() {
     return abilityIconManager;
+  }
+
+  public BuffManager getBuffManager() {
+    return buffManager;
   }
 
   public DataStorage getStorage() {
