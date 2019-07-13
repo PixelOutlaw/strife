@@ -2,7 +2,7 @@ package info.faceland.strife.data;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.stats.AbilitySlot;
 import java.util.ArrayList;
@@ -17,8 +17,9 @@ public class AbilityIconData {
   private AbilitySlot abilitySlot;
   private int levelRequirement = 0;
   private int bonusLevelRequirement = 0;
-  private Map<LifeSkillType, Integer> lifeSkillRequirements = new HashMap<>();
-  private Map<StrifeAttribute, Integer> attributeRequirement = new HashMap<>();
+  private final Map<LifeSkillType, Integer> lifeSkillRequirements = new HashMap<>();
+  private final Map<StrifeAttribute, Integer> attributeRequirement = new HashMap<>();
+  private final Map<LifeSkillType, Float> expWeights = new HashMap<>();
 
   public AbilityIconData(ItemStack stack) {
     this.stack = stack;
@@ -60,18 +61,12 @@ public class AbilityIconData {
     return lifeSkillRequirements;
   }
 
-  public void setLifeSkillRequirements(
-      Map<LifeSkillType, Integer> lifeSkillRequirements) {
-    this.lifeSkillRequirements = lifeSkillRequirements;
-  }
-
   public Map<StrifeAttribute, Integer> getAttributeRequirement() {
     return attributeRequirement;
   }
 
-  public void setAttributeRequirement(
-      Map<StrifeAttribute, Integer> attributeRequirement) {
-    this.attributeRequirement = attributeRequirement;
+  public Map<LifeSkillType, Float> getExpWeights() {
+    return expWeights;
   }
 
   public boolean isRequirementMet(Champion champion) {

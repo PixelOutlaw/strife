@@ -24,7 +24,7 @@ import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.StatUtil;
 import java.util.Random;

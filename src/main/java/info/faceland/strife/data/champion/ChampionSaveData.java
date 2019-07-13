@@ -37,6 +37,19 @@ public class ChampionSaveData {
   private int sneakLevel;
   private float sneakExp;
 
+  private int swordLevel;
+  private float swordExp;
+  private int axeLevel;
+  private float axeExp;
+  private int dualLevel;
+  private float dualExp;
+  private int shieldLevel;
+  private float shieldExp;
+  private int archeryLevel;
+  private float archeryExp;
+  private int magicLevel;
+  private float magicExp;
+
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
     this.levelMap = new HashMap<>();
@@ -147,6 +160,24 @@ public class ChampionSaveData {
       case SNEAK:
         sneakLevel = level;
         return;
+      case SWORDSMANSHIP:
+        swordLevel = level;
+        return;
+      case AXE_MASTERY:
+        axeLevel = level;
+        return;
+      case DUAL_WIELDING:
+        dualLevel = level;
+        return;
+      case SHIELD_MASTERY:
+        shieldLevel = level;
+        return;
+      case ARCHERY:
+        archeryLevel = level;
+        return;
+      case MAGECRAFT:
+        magicLevel = level;
+        return;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
     }
@@ -169,6 +200,24 @@ public class ChampionSaveData {
       case SNEAK:
         sneakExp = amount;
         return;
+      case SWORDSMANSHIP:
+        swordExp = amount;
+        return;
+      case AXE_MASTERY:
+        axeExp = amount;
+        return;
+      case DUAL_WIELDING:
+        dualExp = amount;
+        return;
+      case SHIELD_MASTERY:
+        shieldExp = amount;
+        return;
+      case ARCHERY:
+        archeryExp = amount;
+        return;
+      case MAGECRAFT:
+        magicExp = amount;
+        return;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
     }
@@ -186,6 +235,18 @@ public class ChampionSaveData {
         return miningLevel;
       case SNEAK:
         return sneakLevel;
+      case SWORDSMANSHIP:
+        return swordLevel;
+      case AXE_MASTERY:
+        return axeLevel;
+      case DUAL_WIELDING:
+        return dualLevel;
+      case SHIELD_MASTERY:
+        return shieldLevel;
+      case ARCHERY:
+        return archeryLevel;
+      case MAGECRAFT:
+        return magicLevel;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
     }
@@ -203,6 +264,18 @@ public class ChampionSaveData {
         return miningExp;
       case SNEAK:
         return sneakExp;
+      case SWORDSMANSHIP:
+        return swordExp;
+      case AXE_MASTERY:
+        return axeExp;
+      case DUAL_WIELDING:
+        return dualExp;
+      case SHIELD_MASTERY:
+        return shieldExp;
+      case ARCHERY:
+        return archeryExp;
+      case MAGECRAFT:
+        return magicExp;
       default:
         throw new IllegalArgumentException("Invalid life skill type!");
     }
@@ -215,13 +288,5 @@ public class ChampionSaveData {
     TEN_PERCENT_HEARTS,
     FIVE_PERCENT_HEARTS,
     THREE_PERCENT_HEARTS
-  }
-
-  public enum LifeSkillType {
-    CRAFTING,
-    ENCHANTING,
-    FISHING,
-    MINING,
-    SNEAK
   }
 }

@@ -21,6 +21,7 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.util.DamageUtil;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
@@ -30,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -49,6 +51,21 @@ public class DataListener implements Listener {
 
   public DataListener(StrifePlugin plugin) {
     this.plugin = plugin;
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerJoin(final EntityDamageByEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
+    if (attacker instanceof Player) {
+      plugin.getCombatStatusManager().addPlayer((Player) attacker);
+      return;
+    }
+    if (event.getEntity() instanceof Player) {
+      plugin.getCombatStatusManager().addPlayer((Player) event.getEntity());
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

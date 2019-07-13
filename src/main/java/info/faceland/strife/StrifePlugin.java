@@ -65,6 +65,7 @@ import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.BossBarManager;
 import info.faceland.strife.managers.BuffManager;
 import info.faceland.strife.managers.ChampionManager;
+import info.faceland.strife.managers.CombatStatusManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.managers.EffectManager;
 import info.faceland.strife.managers.EntityEquipmentManager;
@@ -93,6 +94,7 @@ import info.faceland.strife.tasks.AbilityTickTask;
 import info.faceland.strife.tasks.BarrierTask;
 import info.faceland.strife.tasks.BleedTask;
 import info.faceland.strife.tasks.BossBarsTask;
+import info.faceland.strife.tasks.CombatStatusTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
@@ -179,6 +181,7 @@ public class StrifePlugin extends FacePlugin {
   private LoreAbilityManager loreAbilityManager;
   private AbilityIconManager abilityIconManager;
   private BuffManager buffManager;
+  private CombatStatusManager combatStatusManager;
   private SpawnerManager spawnerManager;
   private GlobalBoostManager globalBoostManager;
 
@@ -192,6 +195,7 @@ public class StrifePlugin extends FacePlugin {
   private LevelingRate fishRate;
   private LevelingRate miningRate;
   private LevelingRate sneakRate;
+  private LevelingRate combatSkillRate;
 
   private Map<AbilityMenuType, AbilityPickerMenu> abilityMenus;
   private LevelupMenu levelupMenu;
@@ -264,6 +268,7 @@ public class StrifePlugin extends FacePlugin {
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     buffManager = new BuffManager();
+    combatStatusManager = new CombatStatusManager(this);
 
     MenuListener.getInstance().register(this);
 
@@ -311,6 +316,7 @@ public class StrifePlugin extends FacePlugin {
     TimedAbilityTask timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
         strifeMobManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager, 4);
+    CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
 
     commandHandler.registerCommands(new AttributesCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
@@ -361,6 +367,15 @@ public class StrifePlugin extends FacePlugin {
     for (int i = 0; i < maxSkillLevel; i++) {
       sneakRate.put(i, i, (int) Math.round(sneakExpr.setVariable("LEVEL", i).evaluate()));
     }
+
+    combatSkillRate = new LevelingRate();
+    Expression combatExpr = new ExpressionBuilder(settings.getString("config.leveling.combat",
+        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
+    for (int i = 0; i < maxSkillLevel; i++) {
+      combatSkillRate.put(i, i, (int) Math.round(combatExpr.setVariable("LEVEL", i).evaluate()));
+    }
+
+
 
     taskList.add(trackedPruneTask.runTaskTimer(this,
         20L * 61, // Start save after 1 minute, 1 second cuz yolo
@@ -437,6 +452,10 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(iconDuraTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s
         4L // Run it every 4 ticks
+    ));
+    taskList.add(combatStatusTask.runTaskTimer(this,
+        3 * 20L + 2L, // Start timer after 3s
+        20L // Run it every 4 ticks
     ));
 
     globalBoostManager.startScheduledEvents();
@@ -860,6 +879,10 @@ public class StrifePlugin extends FacePlugin {
     return buffManager;
   }
 
+  public CombatStatusManager getCombatStatusManager() {
+    return combatStatusManager;
+  }
+
   public DataStorage getStorage() {
     return storage;
   }
@@ -922,6 +945,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelingRate getSneakRate() {
     return sneakRate;
+  }
+
+  public LevelingRate getCombatSkillRate() {
+    return combatSkillRate;
   }
 
   public LogLevel getLogLevel() {

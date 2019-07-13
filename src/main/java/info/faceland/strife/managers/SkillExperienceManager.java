@@ -24,7 +24,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.events.SkillExpGainEvent;
 import info.faceland.strife.events.SkillLevelUpEvent;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -99,8 +99,15 @@ public class SkillExperienceManager {
         return plugin.getMiningRate().get(level);
       case SNEAK:
         return plugin.getSneakRate().get(level);
+      case SWORDSMANSHIP:
+      case AXE_MASTERY:
+      case SHIELD_MASTERY:
+      case DUAL_WIELDING:
+      case ARCHERY:
+      case MAGECRAFT:
+        return plugin.getCombatSkillRate().get(level);
     }
-    return -1;
+    return 1000000000;
   }
 
 }

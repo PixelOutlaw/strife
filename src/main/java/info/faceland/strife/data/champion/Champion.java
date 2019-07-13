@@ -19,8 +19,8 @@
 package info.faceland.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
+import info.faceland.strife.data.CombatDetailsContainer;
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.stats.StrifeStat;
@@ -40,6 +40,7 @@ public class Champion {
   private final PlayerEquipmentCache equipmentCache;
 
   private Player player;
+  private CombatDetailsContainer detailsContainer = new CombatDetailsContainer();
 
   private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
       .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
@@ -176,6 +177,10 @@ public class Champion {
 
   public void setPlayer(Player player) {
     this.player = player;
+  }
+
+  public CombatDetailsContainer getDetailsContainer() {
+    return detailsContainer;
   }
 
   public PlayerEquipmentCache getEquipmentCache() {

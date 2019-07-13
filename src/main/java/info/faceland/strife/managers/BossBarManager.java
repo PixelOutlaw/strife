@@ -27,7 +27,7 @@ import info.faceland.strife.data.SkillBossBar;
 import info.faceland.strife.data.StrifeBossBar;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.StatUtil;
 import java.util.HashMap;
@@ -83,7 +83,7 @@ public class BossBarManager {
   }
 
   public void bumpSkillBar(Champion champion, LifeSkillType lifeSkillType) {
-    String name = PlayerDataUtil.getPrettySkillName(lifeSkillType);
+    String name = lifeSkillType.getName();
     String barName = name + " Lv" + champion.getSaveData().getSkillLevel(lifeSkillType);
     SkillBossBar skillBar = getSkillBar(champion);
     skillBar.getSkillBar().setVisible(true);

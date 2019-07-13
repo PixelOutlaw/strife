@@ -6,7 +6,7 @@ import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -150,31 +150,23 @@ public class PlayerDataUtil {
   public static String getSkillColor(LifeSkillType type) {
     switch (type) {
       case CRAFTING:
+      case SHIELD_MASTERY:
         return "&e";
       case ENCHANTING:
         return "&d";
       case FISHING:
         return "&b";
       case MINING:
+      case ARCHERY:
+      case DUAL_WIELDING:
         return "&2";
       case SNEAK:
         return "&7";
-    }
-    return "";
-  }
-
-  public static String getPrettySkillName(LifeSkillType type) {
-    switch (type) {
-      case CRAFTING:
-        return "Crafting";
-      case ENCHANTING:
-        return "Enchanting";
-      case FISHING:
-        return "Fishing";
-      case MINING:
-        return "Mining";
-      case SNEAK:
-        return "Sneak";
+      case SWORDSMANSHIP:
+      case AXE_MASTERY:
+        return "&c";
+      case MAGECRAFT:
+        return "&9";
     }
     return "";
   }

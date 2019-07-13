@@ -25,7 +25,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import info.faceland.strife.stats.AbilitySlot;
@@ -238,7 +238,7 @@ public class StrifeCommand {
       return;
     }
     String color = PlayerDataUtil.getSkillColor(type);
-    String name = PlayerDataUtil.getPrettySkillName(type);
+    String name = type.getName();
 
     plugin.getChampionManager().getChampion(target).getSaveData().setSkillLevel(type, newLevel);
     sendMessage(target, SET_LEVEL_MSG
@@ -261,7 +261,7 @@ public class StrifeCommand {
       return;
     }
     String color = PlayerDataUtil.getSkillColor(type);
-    String name = PlayerDataUtil.getPrettySkillName(type);
+    String name = type.getName();
 
     plugin.getSkillExperienceManager().addExperience(target, type, amount, true);
     sendMessage(target, XP_MSG

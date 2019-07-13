@@ -21,7 +21,6 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.util.PlayerDataUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -128,7 +127,6 @@ public class ExperienceListener implements Listener {
     }
     plugin.getExperienceManager()
         .addExperience(event.getEntity().getKiller(), event.getDroppedExp(), false);
-    PlayerDataUtil.playExpSound(event.getEntity().getKiller());
     event.setDroppedExp(0);
   }
 

@@ -19,7 +19,7 @@
 package info.faceland.strife.listeners;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.events.SneakAttackEvent;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;

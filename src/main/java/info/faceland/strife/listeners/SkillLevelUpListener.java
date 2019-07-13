@@ -42,7 +42,7 @@ public class SkillLevelUpListener implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSkillLevelUp(SkillLevelUpEvent event) {
     String color = PlayerDataUtil.getSkillColor(event.getSkillType());
-    String name = PlayerDataUtil.getPrettySkillName(event.getSkillType());
+    String name = event.getSkillType().getName();
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
     String lowerTitle = color + name + " Level &f" + level;

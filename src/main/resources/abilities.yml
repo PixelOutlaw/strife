@@ -19,6 +19,9 @@ speaky-talk-move:
       FISHING: 20
     attribute-requirements:
       dex: 20
+    exp-weights:
+      FISHING: 0.2
+      SNEAK: 1
     lore:
       - "&fAbility Slot: [A]"
       - ""

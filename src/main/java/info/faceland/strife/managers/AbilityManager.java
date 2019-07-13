@@ -10,7 +10,7 @@ import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
-import info.faceland.strife.data.champion.ChampionSaveData.LifeSkillType;
+import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Wait;
@@ -149,6 +149,12 @@ public class AbilityManager {
     LogUtil.printDebug("Target: " + PlayerDataUtil.getName(targetEntity));
     if (ability.getCooldown() != 0) {
       startAbilityCooldown(caster.getEntity(), ability);
+    }
+    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
+      for (LifeSkillType type : ability.getAbilityIconData().getExpWeights().keySet()) {
+        caster.getChampion().getDetailsContainer()
+            .addWeight(type, ability.getAbilityIconData().getExpWeights().get(type));
+      }
     }
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
@@ -376,7 +382,8 @@ public class AbilityManager {
     data.setBonusLevelRequirement(iconSection.getInt("bonus-level-requirement", 0));
 
     Map<StrifeAttribute, Integer> attrReqs = new HashMap<>();
-    ConfigurationSection attrSection = iconSection.getConfigurationSection("attribute-requirements");
+    ConfigurationSection attrSection = iconSection
+        .getConfigurationSection("attribute-requirements");
     if (attrSection != null) {
       for (String s : attrSection.getKeys(false)) {
         StrifeAttribute attr = plugin.getAttributeManager().getAttribute(s);
@@ -393,8 +400,21 @@ public class AbilityManager {
         skillReqs.put(skill, value);
       }
     }
-    data.setAttributeRequirement(attrReqs);
-    data.setLifeSkillRequirements(skillReqs);
+    Map<LifeSkillType, Float> expWeight = new HashMap<>();
+    ConfigurationSection weightSection = iconSection.getConfigurationSection("exp-weights");
+    if (weightSection != null) {
+      for (String s : weightSection.getKeys(false)) {
+        LifeSkillType skill = LifeSkillType.valueOf(s);
+        double value = weightSection.getDouble(s);
+        expWeight.put(skill, (float) value);
+      }
+    }
+    data.getAttributeRequirement().clear();
+    data.getAttributeRequirement().putAll(attrReqs);
+    data.getLifeSkillRequirements().clear();
+    data.getLifeSkillRequirements().putAll(skillReqs);
+    data.getExpWeights().clear();
+    data.getExpWeights().putAll(expWeight);
     return data;
   }
 }
