@@ -29,14 +29,13 @@ import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHTNING_RESIST;
 import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHT_RESIST;
-import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAGICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
-import static info.faceland.strife.stats.StrifeStat.MELEE_DAMAGE;
-import static info.faceland.strife.stats.StrifeStat.MELEE_MULT;
+import static info.faceland.strife.stats.StrifeStat.MELEE_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.MINION_MULT_INTERNAL;
 import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
-import static info.faceland.strife.stats.StrifeStat.RANGED_DAMAGE;
-import static info.faceland.strife.stats.StrifeStat.RANGED_MULT;
+import static info.faceland.strife.stats.StrifeStat.PHYSICAL_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.RANGED_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.REGENERATION;
 import static info.faceland.strife.stats.StrifeStat.REGEN_MULT;
 import static info.faceland.strife.stats.StrifeStat.TENACITY;
@@ -102,15 +101,15 @@ public class StatUtil {
   }
 
   public static double getMeleeDamage(StrifeMob ae) {
-    return ae.getStat(MELEE_DAMAGE) * (1 + ae.getStat(MELEE_MULT) / 100);
+    return ae.getStat(PHYSICAL_DAMAGE) * (1 + ae.getStat(MELEE_PHYSICAL_MULT) / 100);
   }
 
   public static double getRangedDamage(StrifeMob ae) {
-    return ae.getStat(RANGED_DAMAGE) * (1 + ae.getStat(RANGED_MULT) / 100);
+    return ae.getStat(PHYSICAL_DAMAGE) * (1 + ae.getStat(RANGED_PHYSICAL_MULT) / 100);
   }
 
   public static double getMagicDamage(StrifeMob ae) {
-    return ae.getStat(MAGIC_DAMAGE) * (1 + ae.getStat(MAGIC_MULT) / 100);
+    return ae.getStat(MAGICAL_DAMAGE) * (1 + ae.getStat(MAGIC_MULT) / 100);
   }
 
   public static double getBaseMeleeDamage(StrifeMob attacker, StrifeMob defender) {
@@ -262,12 +261,29 @@ public class StatUtil {
     return attacker.getStat(DARK_DAMAGE) * getElementalMult(attacker);
   }
 
+  public static double getBasePhysicalDamage(StrifeMob attacker, StrifeMob defender) {
+    double damage = attacker.getStat(StrifeStat.PHYSICAL_DAMAGE);
+    if (damage == 0) {
+      return 0D;
+    }
+    damage *= 1 - getArmorMult(attacker, defender) / 100;
+    return damage;
+  }
+
+  public static double getBaseMagicalDamage(StrifeMob attacker, StrifeMob defender) {
+    double damage = attacker.getStat(StrifeStat.MAGICAL_DAMAGE);
+    if (damage == 0) {
+      return 0D;
+    }
+    damage *= 1 - getWardingMult(attacker, defender) / 100;
+    return damage;
+  }
+
   public static double getBaseFireDamage(StrifeMob attacker, StrifeMob defender) {
     double damage = attacker.getStat(StrifeStat.FIRE_DAMAGE);
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getFireResist(defender) / 100;
     return damage;
   }
@@ -277,7 +293,6 @@ public class StatUtil {
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getIceResist(defender) / 100;
     return damage;
   }
@@ -288,7 +303,6 @@ public class StatUtil {
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightningResist(defender) / 100;
     return damage;
   }
@@ -298,7 +312,6 @@ public class StatUtil {
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getEarthResist(defender) / 100;
     return damage;
   }
@@ -308,7 +321,6 @@ public class StatUtil {
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getLightResist(defender) / 100;
     return damage;
   }
@@ -318,7 +330,6 @@ public class StatUtil {
     if (damage == 0) {
       return 0D;
     }
-    damage *= 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     damage *= 1 - getShadowResist(defender) / 100;
     return damage;
   }

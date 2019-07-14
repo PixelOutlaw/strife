@@ -22,14 +22,9 @@ ability-menus:
   LIFE_SKILL:
     - "instant-ignite"
 
-global-multipliers:
-  pvp-damage: 0.5
-  combat-exp: 0.0
-  skill-exp: 0.0
-  item-drop: 0.0
-  item-rarity: 0.0
-
 mechanics:
+  pvp-damage: 0.5
+  evasion-threshold: 0.5
   sneak:
     sneak-skill-effectiveness: 80
     detection-threshold: 10000

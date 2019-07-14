@@ -20,6 +20,7 @@ public interface Condition {
 
   enum ConditionType {
     ATTRIBUTE,
+    EQUIPMENT,
     CHANCE,
     STAT,
     HEALTH,

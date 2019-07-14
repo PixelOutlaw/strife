@@ -138,7 +138,7 @@ public class AbilityIconManager {
       return false;
     }
     if (!plugin.getAbilityManager().isCooledDown(player, data.getAbility())) {
-      if (data.getAbility().isDisplayCd()) {
+      if (data.getAbility().isShowMessages()) {
         MessageUtils.sendActionBar(player, ON_COOLDOWN);
       }
       player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1, 1.5f);

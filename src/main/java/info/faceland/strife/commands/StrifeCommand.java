@@ -61,7 +61,7 @@ public class StrifeCommand {
     REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
         .getString("language.command.reveal-replace", "&f"));
     XP_MSG = plugin.getSettings()
-        .getString("language.command.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP))");
+        .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
     SET_LEVEL_MSG = plugin.getSettings()
         .getString("language.command.xp-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
   }

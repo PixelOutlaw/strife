@@ -31,6 +31,9 @@ public enum StrifeStat {
   BARRIER("Maximum Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
 
+  PHYSICAL_DAMAGE("Physical Damage"),
+  MAGICAL_DAMAGE("Magical Damage"),
+
   ARMOR("Armor"),
   WARDING("Warding"),
   EVASION("Evasion"),
@@ -54,10 +57,6 @@ public enum StrifeStat {
   PROJECTILE_SPEED("Projectile Speed"),
   PROJECTILE_DAMAGE("Projectile Damage"),
   PROJECTILE_REDUCTION("Projectile Damage Reduction"),
-
-  MELEE_DAMAGE("Melee Damage"),
-  RANGED_DAMAGE("Ranged Damage"),
-  MAGIC_DAMAGE("Magic Damage"),
 
   ATTACK_SPEED("Attack Speed"),
   OVERCHARGE("Overcharge"),
@@ -127,9 +126,11 @@ public enum StrifeStat {
   ARMOR_MULT(),
   EVASION_MULT(),
   WARD_MULT(),
-  MELEE_MULT(),
-  RANGED_MULT(),
+
+  MELEE_PHYSICAL_MULT(),
+  RANGED_PHYSICAL_MULT(),
   MAGIC_MULT(),
+
   DAMAGE_MULT(),
   ELEMENTAL_MULT("Elemental Damage"),
   ACCURACY_MULT(),

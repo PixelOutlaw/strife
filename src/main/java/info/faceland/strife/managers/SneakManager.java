@@ -59,14 +59,14 @@ public class SneakManager {
     }
   }
 
-  public boolean isMeleeSneakAttack(LivingEntity attacker, LivingEntity target) {
+  public boolean isSneakAttack(LivingEntity attacker, LivingEntity target) {
     if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
       return false;
     }
     return target instanceof Monster && ((Mob) target).getTarget() == null;
   }
 
-  public boolean isProjectileSneakAttack(Projectile projectile, LivingEntity target) {
+  public boolean isSneakAttack(Projectile projectile, LivingEntity target) {
     if (!projectile.hasMetadata(SNEAK_ATTACK_META)) {
       return false;
     }

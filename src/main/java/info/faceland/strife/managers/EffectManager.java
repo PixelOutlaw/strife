@@ -13,6 +13,7 @@ import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.conditions.Condition.ConditionType;
 import info.faceland.strife.conditions.CorruptionCondition;
 import info.faceland.strife.conditions.EntityTypeCondition;
+import info.faceland.strife.conditions.EquipmentCondition;
 import info.faceland.strife.conditions.GroundedCondition;
 import info.faceland.strife.conditions.HealthCondition;
 import info.faceland.strife.conditions.HeightCondition;
@@ -55,6 +56,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -90,18 +93,13 @@ public class EffectManager {
     if (effect.isForceTargetCaster()) {
       target = caster;
     }
-    if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
-      LogUtil.printDebug(" Conditions not met for effect " + effect.getName()  + "... Failed.");
-      return;
-    }
-    LogUtil.printDebug(" Looping targets for " + effect.getName());
-    if (effect.getRange() == 0) {
-      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
-      effect.apply(caster, target);
-      return;
-    }
 
-    List<LivingEntity> targets = getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange());
+    List<LivingEntity> targets;
+    if (target != null) {
+      targets = getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange());
+    } else {
+      targets = getEffectTargets(caster.getEntity(), loc, effect.getRange());
+    }
 
     if (!effect.isFriendly()) {
       targets.remove(caster.getEntity());
@@ -109,19 +107,28 @@ public class EffectManager {
         targets.remove(mob.getEntity());
       }
     }
+    applyEffectToTargets(effect, caster, targets);
+  }
 
+  private void applyEffectToTargets(Effect effect, StrifeMob caster, List<LivingEntity> targets) {
     for (LivingEntity le : targets) {
-      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
       if (!effect.isFriendly() && caster.getEntity() instanceof Player && le instanceof Player) {
         if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
           continue;
         }
       }
+      StrifeMob targetMob = aeManager.getStatMob(le);
+      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
+      if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+        LogUtil.printDebug(" Condition not met! Continuing...");
+        continue;
+      }
       effect.apply(caster, aeManager.getStatMob(le));
     }
   }
 
-  private List<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
+  private List<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target,
+      double range) {
     List<LivingEntity> targets = new ArrayList<>();
     if (target == null) {
       LogUtil.printError(" Missing targets! Returning empty list");
@@ -134,6 +141,18 @@ public class EffectManager {
     }
     for (Entity e : target.getNearbyEntities(range, range, range)) {
       if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
+        targets.add((LivingEntity) e);
+      }
+    }
+    targets.remove(caster);
+    LogUtil.printDebug(" Targeting " + targets.size() + " targets!");
+    return targets;
+  }
+
+  private List<LivingEntity> getEffectTargets(LivingEntity caster, Location loc, double range) {
+    List<LivingEntity> targets = new ArrayList<>();
+    for (Entity e : loc.getWorld().getNearbyEntities(loc, range, range, range)) {
+      if (e instanceof LivingEntity) {
         targets.add((LivingEntity) e);
       }
     }
@@ -364,7 +383,8 @@ public class EffectManager {
         condition = new StatCondition(stat, compareTarget, comparison, value);
         break;
       case ATTRIBUTE:
-        StrifeAttribute attribute = strifeAttributeManager.getAttribute(cs.getString("attribute", null));
+        StrifeAttribute attribute = strifeAttributeManager
+            .getAttribute(cs.getString("attribute", null));
         if (attribute == null) {
           LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
           return;
@@ -394,6 +414,19 @@ public class EffectManager {
         int potionIntensity = cs.getInt("intensity", 0);
         condition = new PotionCondition(potionEffectType, compareTarget, comparison,
             potionIntensity);
+        break;
+      case EQUIPMENT:
+        Set<Material> materials = new HashSet<>();
+        for (String s : cs.getStringList("materials")) {
+          try {
+            materials.add(Material.valueOf(s));
+          } catch (Exception e) {
+            LogUtil.printError("Failed to load " + key + ". Invalid material type (" + s + ")");
+            return;
+          }
+        }
+        boolean strict = cs.getBoolean("strict", false);
+        condition = new EquipmentCondition(materials, strict);
         break;
       case TIME:
         long minTime = cs.getLong("min-time", 0);

@@ -28,14 +28,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -48,15 +46,12 @@ public class AbilityManager {
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
   private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private final Map<UUID, Map<Ability, Integer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
-  private final Set<Material> ignoredMaterials = new HashSet<>();
 
-  private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
-  private static final String TEST_CHICKEN = ChatColor.RED + "TEST CHICKEN PLS IGNORE";
+  private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
+  private static final String NO_REQUIRE = TextUtils.color("&c&lAbility Requirements Not Met!");
 
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.ignoredMaterials.add(Material.AIR);
-    this.ignoredMaterials.add(Material.TALL_GRASS);
   }
 
   public Ability getAbility(String name) {
@@ -128,24 +123,41 @@ public class AbilityManager {
     if (ability.getTargetType() == TargetType.SELF) {
       target = caster;
     }
-    if (!PlayerDataUtil.areConditionsMet(caster, target, ability.getConditions())) {
-      LogUtil.printDebug("Conditions not met for ability. Failed.");
-      return;
-    }
     LivingEntity targetEntity;
-    if (target == null) {
+    Location targetLocation;
+
+    if (target != null) {
+      targetEntity = target.getEntity();
+    } else {
       targetEntity = getTarget(caster, ability);
-      if (targetEntity == null) {
-        if (ability.isDisplayCd() && caster instanceof Player) {
+    }
+
+    if (targetEntity == null) {
+      targetLocation = whatever;
+      if (targetLocation == null) {
+        if (ability.isShowMessages() && caster instanceof Player) {
           MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
         }
         LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
+        ((Player) caster.getEntity()).playSound(
+            caster.getEntity().getLocation(),
+            Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
+            1f, 1f);
         return;
       }
-      target = plugin.getStrifeMobManager().getStatMob(targetEntity);
-    } else {
-      targetEntity = target.getEntity();
     }
+
+    if (!PlayerDataUtil.areConditionsMet(caster, target, ability.getConditions())) {
+      LogUtil.printDebug("Conditions not met for ability. Failed.");
+      if (ability.isShowMessages() && caster instanceof Player) {
+        MessageUtils.sendActionBar((Player) caster.getEntity(), NO_REQUIRE);
+        ((Player) caster.getEntity())
+            .playSound(caster.getEntity().getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f,
+                1f);
+      }
+      return;
+    }
+
     LogUtil.printDebug("Target: " + PlayerDataUtil.getName(targetEntity));
     if (ability.getCooldown() != 0) {
       startAbilityCooldown(caster.getEntity(), ability);
@@ -170,9 +182,6 @@ public class AbilityManager {
       LogUtil.printDebug("Added effect " + effect.getName() + " to task list");
     }
     runEffects(caster, target, taskEffects, waitTicks);
-    if (TEST_CHICKEN.equals(targetEntity.getCustomName())) {
-      targetEntity.remove();
-    }
   }
 
   public void execute(Ability ability, final StrifeMob caster) {
@@ -239,8 +248,7 @@ public class AbilityManager {
     }
   }
 
-  private void runEffects(StrifeMob caster, StrifeMob target, List<Effect> effectList,
-      int delay) {
+  private void runEffects(StrifeMob caster, StrifeMob target, List<Effect> effectList, int delay) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       LogUtil.printDebug("Effect task started - " + effectList.toString());
       if (!caster.getEntity().isValid()) {
@@ -260,14 +268,8 @@ public class AbilityManager {
       case SELF:
         return caster.getEntity();
       case OTHER:
-        return selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
       case RANGE:
-        LivingEntity target = selectFirstEntityInSight(caster.getEntity(),
-            (int) ability.getRange());
-        if (target == null) {
-          target = getBackupEntity(caster.getEntity(), ability.getRange());
-        }
-        return target;
+        return selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
     }
     return null;
   }
@@ -277,9 +279,9 @@ public class AbilityManager {
       LogUtil.printDebug("Mob target found. Using it instead of raycast");
       return ((Mob) caster).getTarget();
     }
-    LogUtil.printDebug("No creature target found. Using raycast");
+    LogUtil.printDebug("No mob target found. Using raycast");
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    ArrayList<Block> sightBlock = (ArrayList<Block>) caster.getLineOfSight(ignoredMaterials, range);
+    ArrayList<Block> sightBlock = (ArrayList<Block>) caster.getLineOfSight(null, range);
     ArrayList<Location> sight = new ArrayList<>();
     for (Block b : sightBlock) {
       sight.add(b.getLocation());
@@ -299,22 +301,6 @@ public class AbilityManager {
       }
     }
     return null;
-  }
-
-  private LivingEntity getBackupEntity(LivingEntity caster, double range) {
-    Block block = caster.getTargetBlock(null, (int) range);
-    Location location;
-    if (block != null) {
-      location = block.getLocation().clone();
-      location.subtract(caster.getLocation().getDirection().normalize().multiply(0.65));
-    } else {
-      location = caster.getLocation().clone();
-      location.add(location.getDirection().normalize().multiply(range - 0.65));
-    }
-    LivingEntity chicken = (Chicken) location.getWorld().spawnEntity(location, EntityType.CHICKEN);
-    chicken.setCustomNameVisible(true);
-    chicken.setCustomName(TEST_CHICKEN);
-    return chicken;
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {
@@ -343,7 +329,7 @@ public class AbilityManager {
       effects.add(effect);
       LogUtil.printDebug(" Added effect '" + s + "' to ability '" + key + "'");
     }
-    boolean displayCd = cs.getBoolean("show-cooldown-messages", false);
+    boolean showMessages = cs.getBoolean("show-messages", false);
     List<String> conditionStrings = cs.getStringList("conditions");
     Set<Condition> conditions = new HashSet<>();
     for (String s : conditionStrings) {
@@ -356,7 +342,7 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     loadedAbilities.put(key,
-        new Ability(key, name, effects, targetType, range, cooldown, displayCd, conditions,
+        new Ability(key, name, effects, targetType, range, cooldown, showMessages, conditions,
             abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }

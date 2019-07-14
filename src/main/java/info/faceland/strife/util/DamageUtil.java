@@ -3,6 +3,7 @@ package info.faceland.strife.util;
 import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
+import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
@@ -202,15 +203,16 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static boolean attemptCorrupt(double damage, StrifeMob attacker,
+  public static boolean attemptCorrupt(double baseDamage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0) {
+    if (baseDamage == 0) {
       return false;
     }
+    baseDamage *= 1 + attacker.getStat(ELEMENTAL_MULT) / 100;
     if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
       return false;
     }
-    applyCorrupt(defender, damage);
+    applyCorrupt(defender, baseDamage);
     return true;
   }
 

@@ -30,7 +30,7 @@ public class CombatStatusManager {
   private final StrifePlugin plugin;
   private final Map<Player, Integer> tickMap = new ConcurrentHashMap<>();
 
-  private static final int SECONDS_TILL_EXPIRY = 10;
+  private static final int SECONDS_TILL_EXPIRY = 8;
 
   public CombatStatusManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -56,7 +56,7 @@ public class CombatStatusManager {
         tickMap.remove(player);
         continue;
       }
-      tickMap.put(player, ticksLeft-1);
+      tickMap.put(player, ticksLeft - 1);
     }
   }
 

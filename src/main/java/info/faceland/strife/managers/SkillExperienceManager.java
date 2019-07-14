@@ -37,9 +37,12 @@ public class SkillExperienceManager {
   private final StrifePlugin plugin;
   private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
   private static final String XP_AB = "{0}( &f&l{1} {0}/ &f&l{2} XP {0})";
+  private final String XP_MSG;
 
   public SkillExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    XP_MSG = plugin.getSettings()
+        .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP))");
   }
 
   public void addExperience(Player player, LifeSkillType type, double amount, boolean exact) {
@@ -57,6 +60,12 @@ public class SkillExperienceManager {
     if (!exact) {
       double statsMult = champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
       amount *= 1 + statsMult;
+      String xp = FORMAT.format(amount * (1 + statsMult));
+      MessageUtils.sendMessage(champion.getPlayer(), XP_MSG
+          .replace("{c}", PlayerDataUtil.getSkillColor(type))
+          .replace("{n}", type.getName())
+          .replace("{a}", xp)
+      );
     }
 
     SkillExpGainEvent xpEvent = new SkillExpGainEvent(champion, type, (float) amount);

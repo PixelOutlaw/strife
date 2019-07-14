@@ -18,7 +18,8 @@
  */
 package info.faceland.strife.menus.abilities;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
@@ -59,7 +60,11 @@ public class AbilityPickerItem extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-
+    if (!ability.getAbilityIconData()
+        .isRequirementMet(plugin.getChampionManager().getChampion(event.getPlayer()))) {
+      sendMessage(event.getPlayer(), "&eYou don't meet the requirements for this skill!");
+      return;
+    }
     AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
     Ability oldAbility = plugin.getAbilityIconManager().getAbilityFromSlot(event.getPlayer(), slot);
     if (oldAbility == null) {
@@ -68,7 +73,7 @@ public class AbilityPickerItem extends MenuItem {
       return;
     }
     if (!plugin.getAbilityManager().isCooledDown(event.getPlayer(), oldAbility)) {
-      MessageUtils.sendMessage(event.getPlayer(), "&eCannot swap out an ability that isn't cooled down!");
+      sendMessage(event.getPlayer(), "&eCannot swap out an ability that isn't cooled down!");
       return;
     }
     if (oldAbility == ability) {

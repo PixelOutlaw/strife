@@ -28,11 +28,11 @@ import org.bukkit.ChatColor;
 public class AbilityPickerMenu extends ItemMenu {
 
   public AbilityPickerMenu(StrifePlugin plugin, String name, List<String> abilities) {
-    super(ChatColor.BLACK + name, Size.fit(27), plugin);
+    super(ChatColor.BLACK + name, Size.fit(36), plugin);
 
     List<Ability> abilityList = abilities.stream()
-          .map(a -> plugin.getAbilityManager().getAbility(a))
-          .collect(Collectors.toList());
+        .map(a -> plugin.getAbilityManager().getAbility(a))
+        .collect(Collectors.toList());
 
     int index = 0;
     for (Ability ability : abilityList) {
