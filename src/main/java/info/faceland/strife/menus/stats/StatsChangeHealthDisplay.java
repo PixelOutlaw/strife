@@ -37,15 +37,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsChangeHealthDisplay extends MenuItem {
 
   private final StrifePlugin plugin;
-  private Player player;
   private int position;
-
-  StatsChangeHealthDisplay(StrifePlugin plugin, Player player, int postion) {
-    super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
-    this.plugin = plugin;
-    this.player = player;
-    this.position = postion;
-  }
 
   StatsChangeHealthDisplay(StrifePlugin plugin, int position) {
     super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
