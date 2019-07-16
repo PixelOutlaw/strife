@@ -18,13 +18,16 @@
  */
 package info.faceland.strife.tasks;
 
+import static org.bukkit.potion.PotionEffectType.POISON;
+import static org.bukkit.potion.PotionEffectType.WITHER;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class HealthRegenTask extends BukkitRunnable {
@@ -41,25 +44,27 @@ public class HealthRegenTask extends BukkitRunnable {
       if (player.getHealth() <= 0 || player.isDead()) {
         continue;
       }
+      StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+      if (plugin.getBarrierManager().hasBarrierEntry(player)) {
+        plugin.getBarrierManager().restoreBarrier(pStats, pStats.getStat(StrifeStat.BARRIER_REGEN));
+      }
       if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
         continue;
       }
-      StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+      if (player.hasPotionEffect(WITHER) || player.hasPotionEffect(POISON)) {
+        return;
+      }
       // Restore 40% of your regen per 2s tick (This task runs every 2s)
       // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
-      double amount = StatUtil.getRegen(pStats) * 0.4;
+      double lifeAmount = StatUtil.getRegen(pStats) * 0.4;
       // Bonus for players that have just eaten
       if (player.getSaturation() > 0.1) {
-        amount *= 1.6;
-      }
-      // These are not 'penalties', they're 'mechanics' :^)
-      if (player.hasPotionEffect(PotionEffectType.POISON)) {
-        amount *= 0.3;
+        lifeAmount *= 1.6;
       }
       if (player.getFoodLevel() <= 6) {
-        amount *= player.getFoodLevel() / 6;
+        lifeAmount *= player.getFoodLevel() / 6F;
       }
-      player.setHealth(Math.min(player.getHealth() + amount,
+      player.setHealth(Math.min(player.getHealth() + lifeAmount,
           player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
     }
   }

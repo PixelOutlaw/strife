@@ -25,14 +25,15 @@ public enum StrifeStat {
 
   LEVEL_REQUIREMENT("Level Requirement"),
 
-  HEALTH("Health"),
-  REGENERATION("Base Regeneration"),
+  HEALTH("Maximum Life"),
+  REGENERATION("Base Life Regeneration"),
 
   BARRIER("Maximum Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
+  BARRIER_REGEN("Barrier Regeneration"),
 
   PHYSICAL_DAMAGE("Physical Damage"),
-  MAGICAL_DAMAGE("Magical Damage"),
+  MAGIC_DAMAGE("Magical Damage"),
 
   ARMOR("Armor"),
   WARDING("Warding"),
@@ -61,7 +62,7 @@ public enum StrifeStat {
   ATTACK_SPEED("Attack Speed"),
   OVERCHARGE("Overcharge"),
 
-  CRITICAL_RATE("Critical Rate"),
+  CRITICAL_RATE("Critical Chance"),
   CRITICAL_DAMAGE("Critical Damage"),
 
   ARMOR_PENETRATION("Armor Penetration"),
@@ -92,8 +93,8 @@ public enum StrifeStat {
   BLEED_RESIST("Bleed Resistance"),
 
   LIFE_STEAL("Life Steal"),
-  HP_ON_HIT("Health On Hit"),
-  HP_ON_KILL("Health On Kill"),
+  HP_ON_HIT("Life On Hit"),
+  HP_ON_KILL("Life On Kill"),
 
   MULTISHOT("Multishot"),
 
@@ -122,7 +123,7 @@ public enum StrifeStat {
   DOGE("Doge Chance"),
 
   HEALTH_MULT(),
-  REGEN_MULT("Regeneration"),
+  REGEN_MULT("Life Regeneration"),
   ARMOR_MULT(),
   EVASION_MULT(),
   WARD_MULT(),
