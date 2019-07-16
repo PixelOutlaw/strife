@@ -18,21 +18,24 @@
  */
 package info.faceland.strife.managers;
 
-import static info.faceland.strife.attributes.StrifeAttribute.LEVEL_REQUIREMENT;
-import static info.faceland.strife.attributes.StrifeAttribute.MOVEMENT_SPEED;
+import static info.faceland.strife.stats.StrifeStat.LEVEL_REQUIREMENT;
+import static info.faceland.strife.stats.StrifeStat.MOVEMENT_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
-
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -40,28 +43,23 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+public class StatUpdateManager {
 
-public class AttributeUpdateManager {
+  private final StrifeMobManager strifeMobManager;
 
-  private final AttributedEntityManager attributedEntityManager;
-
-  public AttributeUpdateManager(final AttributedEntityManager attributedEntityManager) {
-    this.attributedEntityManager = attributedEntityManager;
+  public StatUpdateManager(final StrifeMobManager strifeMobManager) {
+    this.strifeMobManager = strifeMobManager;
   }
 
-  public Map<StrifeAttribute, Double> getItemStats(ItemStack stack) {
+  public Map<StrifeStat, Double> getItemStats(ItemStack stack) {
     return getItemStats(stack, 1.0);
   }
 
-  public Map<StrifeAttribute, Double> getItemStats(ItemStack stack, double multiplier) {
+  public Map<StrifeStat, Double> getItemStats(ItemStack stack, double multiplier) {
     if (stack == null || stack.getType() == Material.AIR) {
       return new HashMap<>();
     }
-    Map<StrifeAttribute, Double> itemStats = new HashMap<>();
+    Map<StrifeStat, Double> itemStats = new HashMap<>();
 
     List<String> lore = ItemStackExtensionsKt.getLore(stack);
     if (lore.isEmpty()) {
@@ -71,13 +69,13 @@ public class AttributeUpdateManager {
 
     for (String s : strippedLore) {
       double amount = 0;
-      String retained = CharMatcher.JAVA_LETTER.or(CharMatcher.is(' ')).retainFrom(s).trim();
-
-      StrifeAttribute attribute = StrifeAttribute.fromName(retained);
+      String retained = CharMatcher.forPredicate(Character::isLetter).or(CharMatcher.is(' '))
+          .retainFrom(s).trim();
+      StrifeStat attribute = StrifeStat.fromName(retained);
       if (attribute == null) {
         continue;
       }
-      amount += NumberUtils.toDouble(CharMatcher.DIGIT.or(CharMatcher.is('-')).retainFrom(s));
+      amount += NumberUtils.toDouble(CharMatcher.digit().or(CharMatcher.is('-')).retainFrom(s));
       if (amount == 0) {
         continue;
       }
@@ -100,7 +98,7 @@ public class AttributeUpdateManager {
     return stripped;
   }
 
-  public void updateHealth(AttributedEntity aEntity) {
+  public void updateHealth(StrifeMob aEntity) {
     double maxHealth = Math.max(StatUtil.getHealth(aEntity), 1);
     aEntity.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     HealthDisplayType displayType = aEntity.getChampion().getSaveData().getHealthDisplayType();
@@ -112,10 +110,9 @@ public class AttributeUpdateManager {
     ((Player) aEntity.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
   }
 
-  public void updateMovementSpeed(AttributedEntity attributedEntity) {
-    LivingEntity entity = attributedEntity.getEntity();
-    double speed =
-        attributedEntity.getAttributes().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
+  public void updateMovementSpeed(StrifeMob strifeMob) {
+    LivingEntity entity = strifeMob.getEntity();
+    double speed = strifeMob.getFinalStats().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
     if (entity instanceof Player) {
       ((Player) entity).setWalkSpeed(0.2f * (float) speed);
       ((Player) entity).setFlySpeed(0.2f * (float) speed);
@@ -129,22 +126,22 @@ public class AttributeUpdateManager {
     }
   }
 
-  public void updateAttackSpeed(AttributedEntity attributedEntity) {
-    double attacksPerSecond = 1 / StatUtil.getAttackTime(attributedEntity);
-    attributedEntity.getEntity().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
+  public void updateAttackSpeed(StrifeMob strifeMob) {
+    double attacksPerSecond = 1 / StatUtil.getAttackTime(strifeMob);
+    strifeMob.getEntity().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
   }
 
   public void updateAttributes(Player player) {
-    updateAttributes(attributedEntityManager.getAttributedEntity(player));
+    updateAttributes(strifeMobManager.getStatMob(player));
   }
 
-  public void updateAttributes(AttributedEntity attributedEntity) {
-    updateMovementSpeed(attributedEntity);
-    updateAttackSpeed(attributedEntity);
-    updateHealth(attributedEntity);
+  public void updateAttributes(StrifeMob strifeMob) {
+    updateMovementSpeed(strifeMob);
+    updateAttackSpeed(strifeMob);
+    updateHealth(strifeMob);
 
-    StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(attributedEntity);
-    attributedEntity.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+    StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(strifeMob);
+    strifeMob.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
   }
 
   private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {
@@ -165,10 +162,10 @@ public class AttributeUpdateManager {
   }
 
   @SafeVarargs
-  public static Map<StrifeAttribute, Double> combineMaps(Map<StrifeAttribute, Double>... maps) {
-    Map<StrifeAttribute, Double> combinedMap = new HashMap<>();
-    for (Map<StrifeAttribute, Double> map : maps) {
-      for (Map.Entry<StrifeAttribute, Double> statMap : map.entrySet()) {
+  public static Map<StrifeStat, Double> combineMaps(Map<StrifeStat, Double>... maps) {
+    Map<StrifeStat, Double> combinedMap = new HashMap<>();
+    for (Map<StrifeStat, Double> map : maps) {
+      for (Map.Entry<StrifeStat, Double> statMap : map.entrySet()) {
         double old = combinedMap.getOrDefault(statMap.getKey(), 0D);
         double combinedValue = old + statMap.getValue();
         combinedMap.put(statMap.getKey(), combinedValue);

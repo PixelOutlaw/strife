@@ -19,10 +19,11 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.GlobalStatBoost;
 import info.faceland.strife.data.LoadedStatBoost;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.StatUtil;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class GlobalBoostManager {
   private final Map<String, LoadedStatBoost> loadedBoosts = new HashMap<>();
   private final List<GlobalStatBoost> runningBoosts = new ArrayList<>();
 
-  public double getAttribute(StrifeAttribute attribute) {
+  public double getAttribute(StrifeStat attribute) {
     double amount = 0;
     for (GlobalStatBoost boost : runningBoosts) {
       amount += boost.getAttribute(attribute);
@@ -46,10 +47,10 @@ public class GlobalBoostManager {
     return amount;
   }
 
-  public Map<StrifeAttribute, Double> getAttributes() {
-    Map<StrifeAttribute, Double> attrMap = new HashMap<>();
+  public Map<StrifeStat, Double> getAttributes() {
+    Map<StrifeStat, Double> attrMap = new HashMap<>();
     for (GlobalStatBoost boost : runningBoosts) {
-      attrMap.putAll(AttributeUpdateManager.combineMaps(attrMap, boost.getAttributes()));
+      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getAttributes()));
     }
     return attrMap;
   }
@@ -98,18 +99,8 @@ public class GlobalBoostManager {
       List<String> announceRun = TextUtils.color(boost.getStringList("announcement-running"));
       List<String> announceEnd = TextUtils.color(boost.getStringList("announcement-end"));
 
-      ConfigurationSection attrSection = boost.getConfigurationSection("attributes");
-      Map<StrifeAttribute, Double> attrMap = new HashMap<>();
-      for (String attr : attrSection.getKeys(false)) {
-        StrifeAttribute attribute;
-        try {
-          attribute = StrifeAttribute.valueOf(attr);
-        } catch (Exception e) {
-          LogUtil.printWarning("Invalid attribute " + attr + ". Skipping...");
-          continue;
-        }
-        attrMap.put(attribute, attrSection.getDouble(attr));
-      }
+      ConfigurationSection attrSection = boost.getConfigurationSection("stats");
+      Map<StrifeStat, Double> attrMap = StatUtil.getStatMapFromSection(attrSection);
 
       LoadedStatBoost loadedStatBoost = new LoadedStatBoost(creator, announceInterval, duration);
       loadedStatBoost.getAnnounceStart().addAll(announceStart);

@@ -1,12 +1,12 @@
 package info.faceland.strife.util;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_CHANCE;
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.BLEED_RESIST;
-import static info.faceland.strife.attributes.StrifeAttribute.HP_ON_HIT;
-import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_DAMAGE;
-import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_REDUCTION;
-import static info.faceland.strife.attributes.StrifeAttribute.TENACITY;
+import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
+import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
+import static info.faceland.strife.stats.StrifeStat.PROJECTILE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getFireResist;
 import static info.faceland.strife.util.StatUtil.getIceResist;
@@ -17,23 +17,29 @@ import static info.faceland.strife.util.StatUtil.getWardingMult;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
+import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -59,7 +65,7 @@ public class DamageUtil {
 
   private static final double BLEED_PERCENT = 0.5;
 
-  public static double dealDirectDamage(AttributedEntity attacker, AttributedEntity defender,
+  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender,
       double damage, DamageType damageType) {
     LogUtil.printDebug("[Pre-Mitigation] Dealing " + damage + " of type " + damageType);
     switch (damageType) {
@@ -83,14 +89,31 @@ public class DamageUtil {
         break;
     }
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    defender.getEntity().damage(damage);
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
+    if (defender.getEntity().getNoDamageTicks() > 0) {
+      defender.getEntity().setHealth(Math.max(0D, defender.getEntity().getHealth() - damage));
+      return damage;
+    }
+    defender.getEntity().damage(damage);
     return damage;
   }
 
-  public static double attemptIgnite(double damage, AttributedEntity attacker,
+  public static LivingEntity getAttacker(Entity entity) {
+    if (entity instanceof LivingEntity) {
+      return (LivingEntity) entity;
+    } else if (entity instanceof Projectile) {
+      if (((Projectile) entity).getShooter() instanceof LivingEntity) {
+        return (LivingEntity) ((Projectile) entity).getShooter();
+      }
+    } else if (entity instanceof EvokerFangs) {
+      return ((EvokerFangs) entity).getOwner();
+    }
+    return null;
+  }
+
+  public static double attemptIgnite(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.IGNITE_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.IGNITE_CHANCE) / 100) {
       return 0D;
     }
     double bonusDamage = defender.getFireTicks() > 0 ? damage : 1D;
@@ -102,9 +125,9 @@ public class DamageUtil {
     return bonusDamage;
   }
 
-  public static double attemptShock(double damage, AttributedEntity attacker,
+  public static double attemptShock(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.SHOCK_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.SHOCK_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.5;
@@ -126,9 +149,9 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static double attemptFreeze(double damage, AttributedEntity attacker,
+  public static double attemptFreeze(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getAttribute(StrifeAttribute.FREEZE_CHANCE) / 100) {
+    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.FREEZE_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.25 + 0.25 * (StatUtil.getHealth(attacker) / 100);
@@ -142,7 +165,7 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static double consumeEarthRunes(double damage, AttributedEntity attacker,
+  public static double consumeEarthRunes(double damage, StrifeMob attacker,
       LivingEntity defender) {
     if (damage == 0) {
       return 0;
@@ -163,7 +186,7 @@ public class DamageUtil {
     return damage * 0.5 * runes;
   }
 
-  public static double getLightBonus(double damage, AttributedEntity attacker,
+  public static double getLightBonus(double damage, StrifeMob attacker,
       LivingEntity defender) {
     if (damage == 0) {
       return 0;
@@ -184,16 +207,16 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static boolean attemptCorrupt(double damage, AttributedEntity attacker,
+  public static boolean attemptCorrupt(double baseDamage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0
-        || rollDouble() >= attacker.getAttribute(StrifeAttribute.CORRUPT_CHANCE) / 100) {
+    if (baseDamage == 0) {
       return false;
     }
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
-    defender.getWorld()
-        .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
-    getDarknessManager().applyCorruptionStacks(defender, damage);
+    baseDamage *= 1 + attacker.getStat(ELEMENTAL_MULT) / 100;
+    if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
+      return false;
+    }
+    applyCorrupt(defender, baseDamage);
     return true;
   }
 
@@ -225,15 +248,6 @@ public class DamageUtil {
     if (attacker instanceof Player) {
       MessageUtils.sendActionBar((Player) attacker, ATTACK_BLOCKED);
     }
-  }
-
-  public static double getTenacityMult(AttributedEntity defender) {
-    if (defender.getAttribute(TENACITY) < 1) {
-      return 1.0D;
-    }
-    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
-    double maxReduction = 1 - Math.pow(0.5, defender.getAttribute(TENACITY) / 200);
-    return 1 - (maxReduction * Math.pow(1 - percent, 1.5));
   }
 
   public static double getPotionMult(LivingEntity attacker, LivingEntity defender) {
@@ -276,12 +290,19 @@ public class DamageUtil {
     return mult;
   }
 
-  public static double getProjectileMultiplier(AttributedEntity atk, AttributedEntity def) {
-    return Math.max(0.05D,
-        1 + (atk.getAttribute(PROJECTILE_DAMAGE) - def.getAttribute(PROJECTILE_REDUCTION)) / 100);
+  public static boolean canAttack(Player attacker, Player defender) {
+    EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(attacker, defender,
+        DamageCause.ENTITY_ATTACK, 0);
+    Bukkit.getPluginManager().callEvent(event);
+    return !event.isCancelled();
   }
 
-  public static void applyLifeSteal(AttributedEntity attacker, double damage,
+  public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
+    return Math.max(0.05D,
+        1 + (atk.getStat(PROJECTILE_DAMAGE) - def.getStat(PROJECTILE_REDUCTION)) / 100);
+  }
+
+  public static void applyLifeSteal(StrifeMob attacker, double damage,
       double healMultiplier) {
     double lifeSteal = StatUtil.getLifestealPercentage(attacker);
     if (lifeSteal <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
@@ -297,9 +318,9 @@ public class DamageUtil {
     restoreHealth(attacker.getEntity(), lifeStolen * healMultiplier);
   }
 
-  public static void applyHealthOnHit(AttributedEntity attacker, double attackMultiplier,
+  public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier,
       double healMultiplier) {
-    double health = attacker.getAttribute(HP_ON_HIT) * attackMultiplier;
+    double health = attacker.getStat(HP_ON_HIT) * attackMultiplier;
     if (health <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
       return;
     }
@@ -312,18 +333,18 @@ public class DamageUtil {
     restoreHealth(attacker.getEntity(), health * healMultiplier);
   }
 
-  public static boolean attemptBleed(AttributedEntity attacker, AttributedEntity defender,
+  public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender,
       double damage, double critMult, double attackMult) {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
-    if (defender.getAttribute(BLEED_RESIST) > 99) {
+    if (defender.getStat(BLEED_RESIST) > 99) {
       return false;
     }
-    if (attackMult * (attacker.getAttribute(BLEED_CHANCE) / 100) >= rollDouble()) {
+    if (attackMult * (attacker.getStat(BLEED_CHANCE) / 100) >= rollDouble()) {
       double amount = damage + damage * critMult;
-      amount *= 1 + attacker.getAttribute(BLEED_DAMAGE) / 100;
-      amount *= 1 - defender.getAttribute(BLEED_RESIST) / 100;
+      amount *= 1 + attacker.getStat(BLEED_DAMAGE) / 100;
+      amount *= 1 - defender.getStat(BLEED_RESIST) / 100;
       amount *= BLEED_PERCENT;
       applyBleed(defender.getEntity(), amount);
       return true;
@@ -338,6 +359,13 @@ public class DamageUtil {
         .playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
 
+  public static void applyCorrupt(LivingEntity defender, double amount) {
+    StrifePlugin.getInstance().getDarknessManager().applyCorruptionStacks(defender, amount);
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
+    defender.getWorld()
+        .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
+  }
+
   public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {
     CriticalEvent c = new CriticalEvent(attacker, victim);
     Bukkit.getPluginManager().callEvent(c);
@@ -346,6 +374,14 @@ public class DamageUtil {
   public static void callEvadeEvent(LivingEntity evader, LivingEntity attacker) {
     EvadeEvent ev = new EvadeEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
+  }
+
+  public static SneakAttackEvent callSneakAttackEvent(Player attacker, LivingEntity victim,
+      float sneakSkill, float sneakDamage) {
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill,
+        sneakDamage);
+    Bukkit.getPluginManager().callEvent(sneakAttackEvent);
+    return sneakAttackEvent;
   }
 
   public static void callBlockEvent(LivingEntity evader, LivingEntity attacker) {
@@ -362,8 +398,8 @@ public class DamageUtil {
         livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
   }
 
-  public static void restoreBarrier(AttributedEntity attributedEntity, double amount) {
-    StrifePlugin.getInstance().getBarrierManager().restoreBarrier(attributedEntity, amount);
+  public static void restoreBarrier(StrifeMob strifeMob, double amount) {
+    StrifePlugin.getInstance().getBarrierManager().restoreBarrier(strifeMob, amount);
   }
 
   public static void applyPotionEffect(LivingEntity entity, PotionEffectType type, int power,
@@ -407,6 +443,28 @@ public class DamageUtil {
         event.setDamage(modifier, 0D);
       }
     }
+  }
+
+  public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
+    ArmorStand stando = buildAndRemoveDetectionStand(loc);
+    Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius/2, radius);
+    Set<LivingEntity> validTargets = new HashSet<>();
+    for (Entity e : targetList) {
+      if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
+        validTargets.add((LivingEntity) e);
+      }
+    }
+    targetList.remove(stando);
+    LogUtil.printDebug(" Targeting " + targetList.size() + " targets!");
+    return validTargets;
+  }
+
+  private static ArmorStand buildAndRemoveDetectionStand(Location location) {
+    ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class);
+    stando.setVisible(false);
+    stando.setSmall(true);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
+    return stando;
   }
 
   public static double rollDouble(boolean lucky) {

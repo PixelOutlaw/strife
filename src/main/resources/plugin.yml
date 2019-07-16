@@ -1,8 +1,9 @@
 name: Strife
 version: ${project.version}
 main: info.faceland.strife.StrifePlugin
+api-version: 1.14
 depend: [Facecore, ProtocolLib]
-softdepend: [Loot, Bullion, Beast]
+softdepend: [Loot, Bullion, LibsDisguises]
 
 commands:
   stats:
@@ -34,14 +35,4 @@ permissions:
   strife.command.reload:
     default: op
   strife.xp:
-    default: false
-  strife.mult.75:
-    default: false
-  strife.mult.125:
-    default: false
-  strife.mult.150:
-    default: false
-  strife.mult.175:
-    default: false
-  strife.mult.200:
     default: false

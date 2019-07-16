@@ -1,9 +1,9 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.BarrierManager;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.PlayerDataUtil;
 
 public class BarrierCondition implements Condition {
@@ -24,19 +24,20 @@ public class BarrierCondition implements Condition {
     this.percentage = percentage;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double barrierValue;
     if (percentage) {
       if (compareTarget == CompareTarget.SELF) {
-        if (attacker.getAttribute(StrifeAttribute.BARRIER) == 0D) {
+        if (attacker.getStat(StrifeStat.BARRIER) == 0D) {
           return PlayerDataUtil.conditionCompare(comparison, 0D, value);
         }
-        barrierValue = barrierManager.getCurrentBarrier(attacker) / attacker.getAttribute(StrifeAttribute.BARRIER);
+        barrierValue = barrierManager.getCurrentBarrier(attacker) / attacker.getStat(
+            StrifeStat.BARRIER);
       } else {
-        if (target.getAttribute(StrifeAttribute.BARRIER) == 0D) {
+        if (target.getStat(StrifeStat.BARRIER) == 0D) {
           return PlayerDataUtil.conditionCompare(comparison, 0D, value);
         }
-        barrierValue = barrierManager.getCurrentBarrier(target) / target.getAttribute(StrifeAttribute.BARRIER);
+        barrierValue = barrierManager.getCurrentBarrier(target) / target.getStat(StrifeStat.BARRIER);
       }
     } else {
       barrierValue = compareTarget == CompareTarget.SELF ?

@@ -18,23 +18,21 @@
  */
 package info.faceland.strife.listeners.combat;
 
-import static info.faceland.strife.attributes.StrifeAttribute.MULTISHOT;
-import static info.faceland.strife.attributes.StrifeAttribute.PROJECTILE_SPEED;
+import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
+import static info.faceland.strife.util.ProjectileUtil.createArrow;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import java.util.Random;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.Vector;
 
 public class BowListener implements Listener {
 
@@ -57,8 +55,8 @@ public class BowListener implements Listener {
 
     event.setCancelled(true);
 
-    Player playerEntity = (Player) event.getEntity().getShooter();
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(playerEntity);
+    Player player = (Player) event.getEntity().getShooter();
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
@@ -67,55 +65,28 @@ public class BowListener implements Listener {
       return;
     }
 
-    plugin.getChampionManager().updateEquipmentAttributes(
-        plugin.getChampionManager().getChampion(playerEntity));
+    plugin.getChampionManager().updateEquipmentStats(
+        plugin.getChampionManager().getChampion(player));
 
-    Location location = event.getEntity().getLocation().clone();
-    double bowPitch = 0.9 + random.nextDouble() * 0.2;
-    playerEntity.getWorld().playSound(location, Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
+    double projectileSpeed = 2.5 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    double multiShot = pStats.getStat(MULTISHOT) / 100;
+    boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
 
-    double shotMult = 1 + event.getEntity().getVelocity().length() / 3;
-    double projectileSpeed = 2.5 * (1 + pStats.getAttribute(PROJECTILE_SPEED) / 100);
+    createArrow(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
 
-    createArrow(playerEntity, location, attackMultiplier, projectileSpeed, shotMult);
-
-    double multiShot = pStats.getAttribute(MULTISHOT) / 100;
     if (multiShot > 0) {
       int bonusProjectiles = (int) (multiShot - (multiShot % 1));
       if (multiShot % 1 >= random.nextDouble()) {
         bonusProjectiles++;
       }
       for (int i = bonusProjectiles; i > 0; i--) {
-        createArrow(playerEntity, location, attackMultiplier, randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), projectileSpeed,
-            shotMult);
+        createArrow(player, attackMultiplier, projectileSpeed, randomOffset(bonusProjectiles),
+            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), gravity);
       }
     }
-    //Todo: enable in 1.13
-    //PacketPlayInUseEntity playInUseEntity = new PacketPlayInUseEntity();
-    //playInUseEntity.action = EntityUseAction.ATTACK;
-    //playInUseEntity.hand = HandType.MAIN_HAND;
-    //playInUseEntity.entityId = playerEntity.getEntityId();
-    //SU.tp.sendPacket(playerEntity, playInUseEntity);
-  }
-
-  private void createArrow(LivingEntity shooter, Location location, double attackMult, double power,
-      double shotMult) {
-    createArrow(shooter, location, attackMult, 0, 0, 0, power, shotMult);
-  }
-
-  private void createArrow(LivingEntity shooter, Location location, double attackMult, double xOff,
-      double yOff, double zOff, double power, double shotMult) {
-    Arrow arrow = shooter.getWorld().spawn(location.clone(), Arrow.class);
-    arrow.setShooter(shooter);
-
-    Vector vector = shooter.getLocation().getDirection();
-    xOff = vector.getX() * power + xOff;
-    yOff = vector.getY() * power + 0.19 + yOff;
-    zOff = vector.getZ() * power + zOff;
-    arrow.setVelocity(new Vector(xOff, yOff, zOff));
-    arrow.setMetadata("AS_MULT", new FixedMetadataValue(plugin, attackMult));
-    arrow.setMetadata("AC_MULT", new FixedMetadataValue(plugin, shotMult));
+    double bowPitch = 0.9 + random.nextDouble() * 0.2;
+    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
+    plugin.getSneakManager().tempDisableSneak(player);
   }
 
   private double randomOffset(double magnitude) {

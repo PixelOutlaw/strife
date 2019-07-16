@@ -22,10 +22,11 @@ import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
+import java.util.ArrayList;
+import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -34,9 +35,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatsBonusMenuItem extends MenuItem {
 
@@ -59,7 +57,7 @@ public class StatsBonusMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.GOLD_INGOT);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
@@ -68,17 +66,17 @@ public class StatsBonusMenuItem extends MenuItem {
     lore.add(breakLine);
 
     lore.add(ChatColor.GREEN + "Combat Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.XP_GAIN)) + "%");
+        .format(pStats.getStat(StrifeStat.XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Skill Experience Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.SKILL_XP_GAIN)) + "%");
+        .format(pStats.getStat(StrifeStat.SKILL_XP_GAIN)) + "%");
     lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.ITEM_DISCOVERY)) + "%");
+        .format(pStats.getStat(StrifeStat.ITEM_DISCOVERY)) + "%");
     lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.ITEM_RARITY)) + "%");
+        .format(pStats.getStat(StrifeStat.ITEM_RARITY)) + "%");
     lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.GOLD_FIND)) + "%");
+        .format(pStats.getStat(StrifeStat.GOLD_FIND)) + "%");
     lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + INT_FORMAT
-        .format(pStats.getAttribute(StrifeAttribute.HEAD_DROP)) + "%");
+        .format(pStats.getStat(StrifeStat.HEAD_DROP)) + "%");
 
     lore.add(breakLine);
 

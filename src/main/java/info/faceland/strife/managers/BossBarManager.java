@@ -23,9 +23,14 @@ import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.SkillBossBar;
 import info.faceland.strife.data.StrifeBossBar;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.LifeSkillType;
+import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.StatUtil;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -43,18 +48,21 @@ public class BossBarManager {
 
   private final StrifePlugin plugin;
   private final Map<UUID, StrifeBossBar> barMap = new ConcurrentHashMap<>();
+  private final Map<UUID, SkillBossBar> skillBarMap = new HashMap<>();
   private final List<String> deathMessages;
-  private final int duration;
+  private final int healthDuration;
+  private final int skillDuration;
   private final Random random = new Random();
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.deathMessages = TextUtils
         .color(plugin.getSettings().getStringList("language.bar-title-entity-killed"));
-    this.duration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
+    this.healthDuration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
+    this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
 
-  private void createBars(AttributedEntity target) {
+  private void createBars(StrifeMob target) {
     if (barMap.containsKey(target.getEntity().getUniqueId())) {
       return;
     }
@@ -63,7 +71,28 @@ public class BossBarManager {
     barMap.put(target.getEntity().getUniqueId(), bossBar);
   }
 
-  public void pushBar(Player player, AttributedEntity target) {
+  public SkillBossBar getSkillBar(Champion champion) {
+    if (skillBarMap.containsKey(champion.getUniqueId())) {
+      return skillBarMap.get(champion.getUniqueId());
+    }
+    SkillBossBar skillBar = new SkillBossBar(champion, makeSkillBar());
+    skillBar.getSkillBar().setVisible(false);
+    skillBar.getSkillBar().addPlayer(champion.getPlayer());
+    skillBarMap.put(champion.getUniqueId(), skillBar);
+    return skillBar;
+  }
+
+  public void bumpSkillBar(Champion champion, LifeSkillType lifeSkillType) {
+    String name = lifeSkillType.getName();
+    String barName = name + " Lv" + champion.getSaveData().getSkillLevel(lifeSkillType);
+    SkillBossBar skillBar = getSkillBar(champion);
+    skillBar.getSkillBar().setVisible(true);
+    skillBar.getSkillBar().setTitle(barName);
+    skillBar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(champion, lifeSkillType));
+    skillBar.setDisplayTicks(skillDuration);
+  }
+
+  public void pushBar(Player player, StrifeMob target) {
     createBars(target);
     StrifeBossBar strifeBossBar = barMap.get(target.getEntity().getUniqueId());
     for (StrifeBossBar bossBar : barMap.values()) {
@@ -77,10 +106,24 @@ public class BossBarManager {
     refreshCounter(strifeBossBar, player.getUniqueId());
   }
 
-  public void tickAllBars() {
+  public void tickHealthBars() {
     for (UUID uuid : barMap.keySet()) {
       updateBar(barMap.get(uuid).getOwner());
       tickDownBar(barMap.get(uuid));
+    }
+  }
+
+  public void tickSkillBars() {
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      SkillBossBar skillBossBar = skillBarMap.getOrDefault(player.getUniqueId(),
+          getSkillBar(plugin.getChampionManager().getChampion(player)));
+      if (!skillBossBar.getSkillBar().isVisible()) {
+        continue;
+      }
+      skillBossBar.setDisplayTicks(skillBossBar.getDisplayTicks() - 1);
+      if (skillBossBar.getDisplayTicks() < 1) {
+        skillBossBar.getSkillBar().setVisible(false);
+      }
     }
   }
 
@@ -163,7 +206,7 @@ public class BossBarManager {
     pruneBarIfNoOwners(strifeBossBar.getOwner().getEntity().getUniqueId());
   }
 
-  private void updateBar(AttributedEntity barOwner) {
+  private void updateBar(StrifeMob barOwner) {
     UUID uuid = barOwner.getEntity().getUniqueId();
     StrifeBossBar strifeBossBar = barMap.get(uuid);
     if (!strifeBossBar.isDead() && !strifeBossBar.getOwner().getEntity().isValid()) {
@@ -201,7 +244,7 @@ public class BossBarManager {
     if (strifeBossBar.isDead()) {
       return;
     }
-    strifeBossBar.getPlayerUuidTickMap().put(uuid, duration);
+    strifeBossBar.getPlayerUuidTickMap().put(uuid, healthDuration);
   }
 
   private void updateHealthProgress(StrifeBossBar bar) {
@@ -221,12 +264,17 @@ public class BossBarManager {
     bar.getBarrierBar().setProgress(Math.min(barrier / maxBarrier, 1D));
   }
 
+  private BossBar makeSkillBar() {
+    return plugin.getServer().createBossBar("skillbar", BarColor.GREEN, BarStyle.SOLID,
+        new BarFlag[0]);
+  }
+
   private BossBar makeHealthBar() {
     return plugin.getServer().createBossBar("healthbar", BarColor.RED, BarStyle.SOLID,
         new BarFlag[0]);
   }
 
-  private BossBar makeBarrierBar(AttributedEntity entity) {
+  private BossBar makeBarrierBar(StrifeMob entity) {
     if (StatUtil.getMaximumBarrier(entity) < 1) {
       return null;
     }
@@ -234,7 +282,7 @@ public class BossBarManager {
         new BarFlag[0]);
   }
 
-  private String createBarTitle(AttributedEntity barOwner) {
+  private String createBarTitle(StrifeMob barOwner) {
     String customName = barOwner.getEntity().getCustomName();
     if (StringUtils.isBlank(customName)) {
       return StringUtils.capitalize(barOwner.getEntity().getName().replace('_', ' '));

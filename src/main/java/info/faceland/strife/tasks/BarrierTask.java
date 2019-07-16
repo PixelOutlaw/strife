@@ -18,12 +18,11 @@
  */
 package info.faceland.strife.tasks;
 
-import static info.faceland.strife.attributes.StrifeAttribute.BARRIER;
+import static info.faceland.strife.stats.StrifeStat.BARRIER;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.StatUtil;
-import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -50,12 +49,12 @@ public class BarrierTask extends BukkitRunnable {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
-      AttributedEntity player = plugin.getAttributedEntityManager().getAttributedEntity(entity);
-      if (player.getAttribute(BARRIER) < 0.1) {
+      StrifeMob player = plugin.getStrifeMobManager().getStatMob(entity);
+      if (player.getStat(BARRIER) < 0.1) {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
-      if (entry.getValue() >= player.getAttribute(BARRIER)) {
+      if (entry.getValue() >= player.getStat(BARRIER)) {
         continue;
       }
       // Restore this amount per barrier tick (4 MC ticks, 0.2s)

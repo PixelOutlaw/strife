@@ -22,6 +22,7 @@
  */
 package info.faceland.strife.events;
 
+import info.faceland.strife.data.champion.LifeSkillType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -59,12 +60,5 @@ public class SkillLevelUpEvent extends Event {
 
   public int getNewSkillLevel() {
     return newSkillLevel;
-  }
-
-  public enum LifeSkillType {
-    CRAFTING,
-    ENCHANTING,
-    FISHING,
-    MINING
   }
 }

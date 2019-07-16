@@ -1,6 +1,6 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -10,7 +10,7 @@ public class Teleport extends Effect {
   private boolean relative;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     if (relative) {
       target.getEntity().getLocation().add(vector);
     } else {

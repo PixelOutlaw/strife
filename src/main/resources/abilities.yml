@@ -4,22 +4,54 @@ speaky-talk-move:
   cooldown: 5
   range: 30
   effects:
-  - ignite-warning
-  - wait-one-second
-  - ignite-warning
-  - wait-one-second
-  - ignite-200-ticks
+    - ignite-warning
+    - wait-one-second
+    - ignite-warning
+    - wait-one-second
+    - ignite-200-ticks
+  icon:
+    format: "&c&l"
+    material: DIAMOND_CHESTPLATE
+    trigger-slot: SLOT_A
+    level-requirement: 10
+    bonus-level-requirement: 20
+    skill-requirements:
+      FISHING: 20
+    attribute-requirements:
+      dex: 20
+    exp-weights:
+      FISHING: 0.2
+      SNEAK: 1
+    lore:
+      - "&fAbility Slot: [A]"
+      - ""
+      - "&7wow thats a cool effect!"
+      - "&7poisons or some shit"
+      - ""
+      - "&ecan critically strike"
+
 instant-ignite:
   target-type: SELF
   cooldown: 5
   range: 30
   effects:
-  - ignite-200-ticks
+    - ignite-200-ticks
+  icon:
+    format: "&c&l"
+    material: DIAMOND_CHESTPLATE
+    slot: SLOT_B
+    lore:
+      - "&fAbility Slot: [B]"
+      - ""
+      - "&7wow thats a cool effect!"
+      - "&7shoot boll of fyre"
+      - ""
+      - "&ecan dew work"
 poison-bash:
   target-type: SELF
   cooldown: 5
   range: 30
   effects:
-  - begone-fool
-  - mass-poison
-  - knockback-p20
+    - begone-fool
+    - mass-poison
+    - knockback-p20

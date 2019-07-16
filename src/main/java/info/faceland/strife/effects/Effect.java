@@ -1,8 +1,8 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.conditions.Condition;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,10 +15,10 @@ public class Effect {
   private boolean friendly;
   private double range;
 
-  private final Map<StrifeAttribute, Double> statMults = new HashMap<>();
+  private final Map<StrifeStat, Double> statMults = new HashMap<>();
   private final Set<Condition> conditions = new HashSet<>();
 
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
 
   }
 
@@ -54,11 +54,11 @@ public class Effect {
     this.range = range;
   }
 
-  public Map<StrifeAttribute, Double> getStatMults() {
+  public Map<StrifeStat, Double> getStatMults() {
     return statMults;
   }
 
-  public void setStatMults(Map<StrifeAttribute, Double> statMults) {
+  public void setStatMults(Map<StrifeStat, Double> statMults) {
     this.statMults.clear();
     this.statMults.putAll(statMults);
   }

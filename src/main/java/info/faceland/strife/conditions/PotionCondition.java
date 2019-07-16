@@ -1,8 +1,9 @@
 package info.faceland.strife.conditions;
 
-import static info.faceland.strife.conditions.Condition.CompareTarget.*;
+import static info.faceland.strife.conditions.Condition.CompareTarget.OTHER;
+import static info.faceland.strife.conditions.Condition.CompareTarget.SELF;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.PlayerDataUtil;
 import org.bukkit.potion.PotionEffectType;
 
@@ -21,7 +22,7 @@ public class PotionCondition implements Condition {
     this.intensity = intensity;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
     if (compareTarget == SELF && !attacker.getEntity().hasPotionEffect(potionEffect) ||
         compareTarget == OTHER && !target.getEntity().hasPotionEffect(potionEffect)) {
       return false;

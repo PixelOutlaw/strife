@@ -21,8 +21,8 @@ package info.faceland.strife.managers;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
-import info.faceland.strife.attributes.StrifeAttribute;
 import info.faceland.strife.data.EntityStatData;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,12 +52,12 @@ public class MonsterManager {
     entityStatDataMap.put(type, data);
   }
 
-  public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity) {
+  public Map<StrifeStat, Double> getBaseStats(LivingEntity livingEntity) {
     return getBaseStats(livingEntity, -1);
   }
 
-  public Map<StrifeAttribute, Double> getBaseStats(LivingEntity livingEntity, int level) {
-    Map<StrifeAttribute, Double> levelStats = new HashMap<>();
+  public Map<StrifeStat, Double> getBaseStats(LivingEntity livingEntity, int level) {
+    Map<StrifeStat, Double> levelStats = new HashMap<>();
     EntityType type = livingEntity.getType();
     if (!entityStatDataMap.containsKey(type)) {
       return levelStats;
@@ -65,19 +65,19 @@ public class MonsterManager {
     if (level == -1) {
       level = getEntityLevel(livingEntity);
     }
-    for (StrifeAttribute attr : entityStatDataMap.get(type).getPerLevelMap().keySet()) {
+    for (StrifeStat attr : entityStatDataMap.get(type).getPerLevelMap().keySet()) {
       levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
     }
     if (type == EntityType.PLAYER && level >= 100) {
-      int bLevel = championManager.getChampion((Player)livingEntity).getBonusLevels();
-      Map<StrifeAttribute, Double> bonusStats = new HashMap<>();
-      for (StrifeAttribute attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
+      int bLevel = championManager.getChampion((Player) livingEntity).getBonusLevels();
+      Map<StrifeStat, Double> bonusStats = new HashMap<>();
+      for (StrifeStat attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
         bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
       }
-      return AttributeUpdateManager
+      return StatUpdateManager
           .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats, bonusStats);
     }
-    return AttributeUpdateManager
+    return StatUpdateManager
         .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
   }
 
@@ -100,21 +100,21 @@ public class MonsterManager {
     if (cs.isConfigurationSection("base-values")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
       for (String k : attrCS.getKeys(false)) {
-        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        StrifeStat attr = StrifeStat.valueOf(k);
         data.putBaseValue(attr, attrCS.getDouble(k));
       }
     }
     if (cs.isConfigurationSection("per-level")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
       for (String k : attrCS.getKeys(false)) {
-        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        StrifeStat attr = StrifeStat.valueOf(k);
         data.putPerLevel(attr, attrCS.getDouble(k));
       }
     }
     if (cs.isConfigurationSection("per-bonus-level")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
       for (String k : attrCS.getKeys(false)) {
-        StrifeAttribute attr = StrifeAttribute.valueOf(k);
+        StrifeStat attr = StrifeStat.valueOf(k);
         data.putPerBonusLevel(attr, attrCS.getDouble(k));
       }
     }
@@ -133,6 +133,6 @@ public class MonsterManager {
       return 0;
     }
     return NumberUtils
-        .toInt(CharMatcher.DIGIT.retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
+        .toInt(CharMatcher.digit().retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
   }
 }

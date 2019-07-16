@@ -1,68 +1,141 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.conditions.*;
+import info.faceland.strife.conditions.AttributeCondition;
+import info.faceland.strife.conditions.BarrierCondition;
+import info.faceland.strife.conditions.BleedingCondition;
+import info.faceland.strife.conditions.BonusLevelCondition;
+import info.faceland.strife.conditions.BurningCondition;
+import info.faceland.strife.conditions.ChanceCondition;
+import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.CompareTarget;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.conditions.Condition.ConditionType;
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.effects.*;
+import info.faceland.strife.conditions.CorruptionCondition;
+import info.faceland.strife.conditions.EntityTypeCondition;
+import info.faceland.strife.conditions.EquipmentCondition;
+import info.faceland.strife.conditions.GroundedCondition;
+import info.faceland.strife.conditions.HealthCondition;
+import info.faceland.strife.conditions.HeightCondition;
+import info.faceland.strife.conditions.LevelCondition;
+import info.faceland.strife.conditions.PotionCondition;
+import info.faceland.strife.conditions.StatCondition;
+import info.faceland.strife.conditions.TimeCondition;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.effects.Bleed;
+import info.faceland.strife.effects.BuffEffect;
+import info.faceland.strife.effects.ConsumeBleed;
+import info.faceland.strife.effects.ConsumeCorrupt;
+import info.faceland.strife.effects.Corrupt;
+import info.faceland.strife.effects.DealDamage;
 import info.faceland.strife.effects.DealDamage.DamageScale;
+import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.ForceTarget;
+import info.faceland.strife.effects.Heal;
+import info.faceland.strife.effects.Ignite;
+import info.faceland.strife.effects.Knockback;
+import info.faceland.strife.effects.Leap;
+import info.faceland.strife.effects.PlaySound;
+import info.faceland.strife.effects.PotionEffectAction;
+import info.faceland.strife.effects.RestoreBarrier;
+import info.faceland.strife.effects.ShootProjectile;
+import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.effects.SpawnParticle.ParticleOriginLocation;
+import info.faceland.strife.effects.SpawnParticle.ParticleStyle;
+import info.faceland.strife.effects.Speak;
+import info.faceland.strife.effects.Summon;
+import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
 
-  private final StrifeStatManager strifeStatManager;
-  private final AttributedEntityManager aeManager;
+  private final StrifeAttributeManager strifeAttributeManager;
+  private final StrifeMobManager aeManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  public EffectManager(StrifeStatManager strifeStatManager, AttributedEntityManager aeManager) {
-    this.strifeStatManager = strifeStatManager;
+  public EffectManager(StrifeAttributeManager strifeAttributeManager, StrifeMobManager aeManager) {
+    this.strifeAttributeManager = strifeAttributeManager;
     this.aeManager = aeManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
   }
 
-  public void execute(String effectName, AttributedEntity caster, AttributedEntity target) {
-    Effect effect = getEffect(effectName);
-    if (effect == null) {
-      return;
-    }
-    execute(effect, caster, target);
+  public void execute(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
+    applyEffectToTargets(effect, caster, targets);
   }
 
-  public void execute(Effect effect, AttributedEntity caster, AttributedEntity target) {
-    if (effect.isForceTargetCaster()) {
-      target = caster;
+  public void execute(Effect effect, StrifeMob caster, StrifeMob strifeMob) {
+    applyEffectToTarget(effect, caster, strifeMob);
+  }
+
+  private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
+    Set<LivingEntity> finalTargets = new HashSet<>(targets);
+    for (LivingEntity le : targets) {
+      finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
     }
+    if (!effect.isFriendly()) {
+      finalTargets.remove(caster.getEntity());
+      for (StrifeMob mob : caster.getMinions()) {
+        finalTargets.remove(mob.getEntity());
+      }
+    }
+    for (LivingEntity le : finalTargets) {
+      if (!effect.isFriendly() && caster.getEntity() instanceof Player && le instanceof Player) {
+        if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
+          continue;
+        }
+      }
+      StrifeMob targetMob = aeManager.getStatMob(le);
+      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
+      if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+        LogUtil.printDebug(" Condition not met! Continuing...");
+        continue;
+      }
+      effect.apply(caster, aeManager.getStatMob(le));
+    }
+  }
+
+  private void applyEffectToTarget(Effect effect, StrifeMob caster, StrifeMob target) {
+    if (!effect.isFriendly()) {
+      if (caster.getMinions().contains(target)) {
+        return;
+      }
+      if (caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
+        if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) target.getEntity())) {
+          return;
+        }
+      }
+    }
+    LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
     if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
-      LogUtil.printDebug("Conditions not met for effect. Failed.");
+      LogUtil.printDebug(" Condition not met! Skipping...");
       return;
     }
-    LogUtil.printDebug("Looping targets for " + effect.getName());
-    for (LivingEntity le : getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange())) {
-      LogUtil.printDebug("Applying effect to " + PlayerDataUtil.getName(le));
-      effect.apply(caster, aeManager.getAttributedEntity(le));
-    }
+    effect.apply(caster, target);
   }
 
-  private List<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
-    List<LivingEntity> targets = new ArrayList<>();
+  private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
+    Set<LivingEntity> targets = new HashSet<>();
     if (target == null) {
       LogUtil.printError(" Missing targets! Returning empty list");
       return targets;
@@ -72,7 +145,7 @@ public class EffectManager {
       targets.add(target);
       return targets;
     }
-    for (Entity e : target.getNearbyEntities(range, range, range)) {
+    for (Entity e : target.getNearbyEntities(range, range/2, range)) {
       if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
         targets.add((LivingEntity) e);
       }
@@ -155,10 +228,23 @@ public class EffectManager {
         ((Bleed) effect).setAmount(cs.getInt("amount", 10));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
         break;
+      case CORRUPT:
+        effect = new Corrupt();
+        ((Corrupt) effect).setAmount(cs.getInt("amount", 10));
+        break;
       case CONSUME_BLEED:
         effect = new ConsumeBleed();
         ((ConsumeBleed) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
         ((ConsumeBleed) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
+        break;
+      case CONSUME_CORRUPT:
+        effect = new ConsumeCorrupt();
+        ((ConsumeCorrupt) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
+        ((ConsumeCorrupt) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
+        break;
+      case BUFF_EFFECT:
+        effect = new BuffEffect();
+        ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
         break;
       case WAIT:
         effect = new Wait();
@@ -182,6 +268,8 @@ public class EffectManager {
         effect = new Summon();
         ((Summon) effect).setAmount(cs.getInt("amount", 1));
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
+        ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
+        ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
         break;
       case TARGET:
         effect = new ForceTarget();
@@ -200,6 +288,19 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         break;
+      case SOUND:
+        effect = new PlaySound();
+        Sound sound;
+        try {
+          sound = Sound.valueOf((cs.getString("sound-type")));
+        } catch (Exception e) {
+          LogUtil.printWarning("Invalid sound effect type in effect " + key + ". Skipping.");
+          return;
+        }
+        ((PlaySound) effect).setSound(sound);
+        ((PlaySound) effect).setVolume((float) cs.getDouble("volume", 1));
+        ((PlaySound) effect).setPitch((float) cs.getDouble("pitch", 1));
+        break;
       case PARTICLE:
         effect = new SpawnParticle();
         Particle particle;
@@ -212,6 +313,11 @@ public class EffectManager {
         ((SpawnParticle) effect).setParticle(particle);
         ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
         ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
+        ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
+        ((SpawnParticle) effect).setParticleOriginLocation(
+            ParticleOriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((SpawnParticle) effect).setStyle(ParticleStyle.valueOf(cs.getString("style", "NORMAL")));
+        ((SpawnParticle) effect).setSize(cs.getDouble("size", 1));
         break;
     }
     if (effectType != EffectType.WAIT) {
@@ -246,13 +352,12 @@ public class EffectManager {
       return;
     }
 
-    String compType = cs.getString("comparison", "NULL").toUpperCase();
+    String compType = cs.getString("comparison", "NONE").toUpperCase();
     Comparison comparison;
     try {
       comparison = Comparison.valueOf(compType);
     } catch (Exception e) {
-      LogUtil.printError("Failed to load " + key + ". Invalid comparison type (" + compType + ")");
-      return;
+      comparison = Comparison.NONE;
     }
 
     String compareTargetString = cs.getString("target", "SELF");
@@ -263,23 +368,24 @@ public class EffectManager {
 
     Condition condition;
     switch (conditionType) {
-      case ATTRIBUTE:
-        StrifeAttribute attr;
-        try {
-          attr = StrifeAttribute.valueOf(cs.getString("attribute", null));
-        } catch (Exception e) {
-          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
-          return;
-        }
-        condition = new AttributeCondition(attr, compareTarget, comparison, value);
-        break;
       case STAT:
-        StrifeStat stat = strifeStatManager.getStat(cs.getString("stat", null));
-        if (stat == null) {
+        StrifeStat stat;
+        try {
+          stat = StrifeStat.valueOf(cs.getString("stat", null));
+        } catch (Exception e) {
           LogUtil.printError("Failed to load condition " + key + ". Invalid stat.");
           return;
         }
         condition = new StatCondition(stat, compareTarget, comparison, value);
+        break;
+      case ATTRIBUTE:
+        StrifeAttribute attribute = strifeAttributeManager
+            .getAttribute(cs.getString("attribute", null));
+        if (attribute == null) {
+          LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
+          return;
+        }
+        condition = new AttributeCondition(attribute, compareTarget, comparison, value);
         break;
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);
@@ -287,7 +393,7 @@ public class EffectManager {
         break;
       case CHANCE:
         double chance = cs.getDouble("chance", 0.5);
-        condition = new ChanceCondition(comparison, chance);
+        condition = new ChanceCondition(chance);
         break;
       case HEALTH:
         boolean percent2 = cs.getBoolean("percentage", false);
@@ -305,6 +411,24 @@ public class EffectManager {
         condition = new PotionCondition(potionEffectType, compareTarget, comparison,
             potionIntensity);
         break;
+      case EQUIPMENT:
+        Set<Material> materials = new HashSet<>();
+        for (String s : cs.getStringList("materials")) {
+          try {
+            materials.add(Material.valueOf(s));
+          } catch (Exception e) {
+            LogUtil.printError("Failed to load " + key + ". Invalid material type (" + s + ")");
+            return;
+          }
+        }
+        boolean strict = cs.getBoolean("strict", false);
+        condition = new EquipmentCondition(materials, strict);
+        break;
+      case TIME:
+        long minTime = cs.getLong("min-time", 0);
+        long maxTime = cs.getLong("max-time", 0);
+        condition = new TimeCondition(minTime, maxTime);
+        break;
       case LEVEL:
         condition = new LevelCondition(comparison, (int) value);
         break;
@@ -313,6 +437,32 @@ public class EffectManager {
         break;
       case ITS_OVER_ANAKIN:
         condition = new HeightCondition(compareTarget);
+        break;
+      case BLEEDING:
+        condition = new BleedingCondition(compareTarget, cs.getBoolean("state", true));
+        break;
+      case DARKNESS:
+        condition = new CorruptionCondition(compareTarget, comparison, value);
+        break;
+      case BURNING:
+        condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
+        break;
+      case GROUNDED:
+        condition = new GroundedCondition();
+        break;
+      case ENTITY_TYPE:
+        List<String> entityTypes = cs.getStringList("types");
+        boolean whitelist = cs.getBoolean("whitelist", true);
+        Set<EntityType> typesSet = new HashSet<>();
+        try {
+          for (String s : entityTypes) {
+            typesSet.add(EntityType.valueOf(s));
+          }
+        } catch (Exception e) {
+          LogUtil.printError("Failed to load condition " + key + ". Invalid entity type!");
+          return;
+        }
+        condition = new EntityTypeCondition(typesSet, whitelist);
         break;
       default:
         LogUtil.printError("No valid conditions found for " + key + "... somehow?");
@@ -344,8 +494,12 @@ public class EffectManager {
     PROJECTILE,
     IGNITE,
     BLEED,
+    CORRUPT,
     CONSUME_BLEED,
+    CONSUME_CORRUPT,
+    BUFF_EFFECT,
     WAIT,
+    SOUND,
     PARTICLE,
     SPEAK,
     KNOCKBACK,

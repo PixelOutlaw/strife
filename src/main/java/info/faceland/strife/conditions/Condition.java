@@ -1,15 +1,16 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 
 public interface Condition {
 
-  boolean isMet(AttributedEntity attacker, AttributedEntity target);
+  boolean isMet(StrifeMob attacker, StrifeMob target);
 
   enum Comparison {
     GREATER_THAN,
     LESS_THAN,
-    EQUAL
+    EQUAL,
+    NONE
   }
 
   enum CompareTarget {
@@ -19,13 +20,20 @@ public interface Condition {
 
   enum ConditionType {
     ATTRIBUTE,
+    EQUIPMENT,
     CHANCE,
     STAT,
     HEALTH,
     BARRIER,
     POTION_EFFECT,
+    TIME,
     LEVEL,
     BONUS_LEVEL,
-    ITS_OVER_ANAKIN
+    ITS_OVER_ANAKIN,
+    ENTITY_TYPE,
+    GROUNDED,
+    BLEEDING,
+    DARKNESS,
+    BURNING
   }
 }

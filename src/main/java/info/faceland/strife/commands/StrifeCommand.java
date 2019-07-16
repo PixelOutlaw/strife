@@ -23,8 +23,13 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.champion.LifeSkillType;
+import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
+import info.faceland.strife.stats.AbilitySlot;
+import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -42,6 +47,8 @@ public class StrifeCommand {
   private final String REVEAL_FAIL;
   private final String REVEAL_PREFIX;
   private final String REVEAL_REPLACEMENT;
+  private final String XP_MSG;
+  private final String SET_LEVEL_MSG;
 
   public StrifeCommand(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -53,6 +60,10 @@ public class StrifeCommand {
         .getString("language.command.reveal-prefix", "&0&k"));
     REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
         .getString("language.command.reveal-replace", "&f"));
+    XP_MSG = plugin.getSettings()
+        .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
+    SET_LEVEL_MSG = plugin.getSettings()
+        .getString("language.command.xp-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
@@ -65,7 +76,7 @@ public class StrifeCommand {
     plugin.enable();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      plugin.getAttributeUpdateManager().updateAttributes(player);
+      plugin.getStatUpdateManager().updateAttributes(player);
     }
 
     sendMessage(sender,
@@ -79,8 +90,8 @@ public class StrifeCommand {
     sendMessage(sender, "<gray>Unused Stat Points: <white>%amount%",
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "<gold>----------------------------------");
-    for (StrifeStat stat : plugin.getStatManager().getStats()) {
-      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getLevel(stat));
+    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
+      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
   }
@@ -88,7 +99,7 @@ public class StrifeCommand {
   @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
   public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
     Champion champion = plugin.getChampionManager().getChampion(target);
-    for (StrifeStat stat : plugin.getStatManager().getStats()) {
+    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
       champion.setLevel(stat, 0);
     }
     champion.setHighestReachedLevel(target.getLevel());
@@ -98,7 +109,7 @@ public class StrifeCommand {
     sendMessage(target, "<green>Your stats have been reset.");
     sendMessage(target, "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
     plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife clear", permissions = "strife.command.strife.clear", onlyPlayers = false)
@@ -106,7 +117,7 @@ public class StrifeCommand {
     target.setExp(0f);
     target.setLevel(0);
     Champion champion = plugin.getChampionManager().getChampion(target);
-    for (StrifeStat stat : plugin.getStatManager().getStats()) {
+    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
       champion.setLevel(stat, 0);
     }
     champion.setUnusedStatPoints(0);
@@ -115,7 +126,7 @@ public class StrifeCommand {
         new String[][]{{"%player%", target.getDisplayName()}});
     sendMessage(target, "<green>Your stats have been cleared.");
     plugin.getChampionManager().updateAll(champion);
-    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
   }
 
   @Command(identifier = "strife raise", permissions = "strife.command.strife.raise", onlyPlayers = false)
@@ -132,7 +143,50 @@ public class StrifeCommand {
     sendMessage(sender, "<green>You raised <white>%player%<green> to level <white>%level%<green>.",
         new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
     sendMessage(target, "<green>Your level has been raised.");
-    plugin.getAttributeUpdateManager().updateAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAttributes(champion.getPlayer());
+  }
+
+  @Command(identifier = "strife ability set", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void setAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "ability") String id) {
+    Ability ability = plugin.getAbilityManager().getAbility(id.replace("_", " "));
+    if (ability == null) {
+      sendMessage(sender, "<red>Invalid ability ID: " + id);
+      return;
+    }
+    if (ability.getAbilityIconData() == null) {
+      sendMessage(sender, "<red>Invalid ability - No ability icon data");
+      return;
+    }
+    if (ability.getAbilityIconData().getAbilitySlot() == null) {
+      sendMessage(sender, "<red>Invalid ability - No ability slot set");
+      return;
+    }
+    if (ability.getAbilityIconData().getStack() == null) {
+      sendMessage(sender, "<red>Cannot use this command for an ability without an icon!");
+      return;
+    }
+    plugin.getAbilityIconManager().setAbilityIcon(target, ability);
+    plugin.getAbilityIconManager().setAllAbilityIcons(target);
+  }
+
+  @Command(identifier = "strife ability remove", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void removeAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "slot") int slot) {
+    AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
+    if (abilitySlot == AbilitySlot.INVALID) {
+      sendMessage(sender, "<red>Invalid slot: " + slot);
+      return;
+    }
+    target.getInventory().setItem(slot, null);
+    plugin.getAbilityIconManager().setAllAbilityIcons(target);
+  }
+
+  @Command(identifier = "strife ability menu", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void menuAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "menu") String id) {
+    AbilityMenuType menuType = AbilityMenuType.valueOf(id);
+    plugin.getAbilityPicker(menuType).open(target);
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
@@ -176,60 +230,45 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Skill must be between level 0 and 60.");
       return;
     }
-    if (skill.equalsIgnoreCase("crafting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setCraftingLevel(newLevel);
-      sendMessage(target, "<green>Your skill in crafting is now " + newLevel);
-      sendMessage(sender, "<green>Set crafting level of " + target + " to " + newLevel);
-      return;
-    } else if (skill.equalsIgnoreCase("enchanting")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setEnchantLevel(newLevel);
-      sendMessage(target, "<green>Your skill in enchanting is now " + newLevel);
-      sendMessage(sender, "<green>Set enchanting level of " + target + " to " + newLevel);
-      return;
-    } else if (skill.equalsIgnoreCase("fishing")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setFishingLevel(newLevel);
-      sendMessage(target, "<green>Your skill in fishing is now " + newLevel);
-      sendMessage(sender, "<green>Set fishing level of " + target + " to " + newLevel);
-      return;
-    } else if (skill.equalsIgnoreCase("mining")) {
-      Champion champion = plugin.getChampionManager().getChampion(target);
-      champion.getSaveData().setMiningLevel(newLevel);
-      sendMessage(target, "<green>Your skill in mining is now " + newLevel);
-      sendMessage(sender, "<green>Set mining level of " + target + " to " + newLevel);
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skill.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "<red>Unknown skill " + skill + "??");
       return;
     }
-    sendMessage(sender, "<red>Cannot set level of unknown skill '" + skill + "'.");
+    String color = PlayerDataUtil.getSkillColor(type);
+    String name = type.getName();
+
+    plugin.getChampionManager().getChampion(target).getSaveData().setSkillLevel(type, newLevel);
+    sendMessage(target, SET_LEVEL_MSG
+        .replace("{c}", color)
+        .replace("{n}", name)
+        .replace("{a}", Integer.toString(newLevel))
+    );
+    sendMessage(sender, "Set " + name + " level of " + target.getName() + " to " + newLevel);
   }
 
   @Command(identifier = "strife addskillxp", permissions = "strife.command.strife.setskill", onlyPlayers = false)
   public void addSkillXp(CommandSender sender, @Arg(name = "target") Player target,
       @Arg(name = "skill") String skill, @Arg(name = "xpAmount") int amount) {
     String skillName = skill.toUpperCase();
-    switch (skillName) {
-      case "CRAFTING":
-        plugin.getCraftExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&eGained &fCrafting &eXP! &f(+" + amount + "XP)");
-        break;
-      case "ENCHANTING":
-        plugin.getEnchantExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&dGained &fEnchanting &dXP! &f(+" + amount + "XP)");
-        break;
-      case "FISHING":
-        plugin.getFishExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&bGained &fFishing &bXP! &f(+" + amount + "XP)");
-        break;
-      case "MINING":
-        plugin.getMiningExperienceManager().addExperience(target, amount, true);
-        sendMessage(target, "&2Gained &fMining &2XP! &f(+" + amount + "XP)");
-        break;
-      default:
-        sendMessage(sender, "<red>Unknown skill " + skill + "??");
-        return;
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skillName.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "<red>Unknown skill " + skill + "???");
+      return;
     }
-    sendMessage(sender, "&fGranted " + amount + " " + skill + " XP to " + target);
+    String color = PlayerDataUtil.getSkillColor(type);
+    String name = type.getName();
+
+    plugin.getSkillExperienceManager().addExperience(target, type, amount, true);
+    sendMessage(target, XP_MSG
+        .replace("{c}", color)
+        .replace("{n}", name)
+        .replace("{a}", Integer.toString(amount))
+    );
   }
 
   @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
@@ -248,7 +287,7 @@ public class StrifeCommand {
     }
   }
 
-  @Command(identifier = "strife togglexp", onlyPlayers = true)
+  @Command(identifier = "strife togglexp")
   public void toggleExp(CommandSender sender) {
     Champion champion = plugin.getChampionManager().getChampion((Player) sender);
     champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());

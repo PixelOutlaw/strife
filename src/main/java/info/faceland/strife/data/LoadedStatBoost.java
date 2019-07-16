@@ -1,6 +1,6 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +11,7 @@ public class LoadedStatBoost {
   private final String creator;
   private final int duration;
   private final int announceInterval;
-  private final Map<StrifeAttribute, Double> stats;
+  private final Map<StrifeStat, Double> stats;
   private final List<String> announceStart;
   private final List<String> announceRun;
   private final List<String> announceEnd;
@@ -26,7 +26,7 @@ public class LoadedStatBoost {
     this.announceEnd = new ArrayList<>();
   }
 
-  public Map<StrifeAttribute, Double> getStats() {
+  public Map<StrifeStat, Double> getStats() {
     return stats;
   }
 

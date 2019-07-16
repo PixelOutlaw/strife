@@ -1,14 +1,15 @@
-package info.faceland.strife.attributes;
+package info.faceland.strife.stats;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public enum StrifeTrait {
 
-  EXPLOSIVE_PROJECTILES("Projectile Type: Ghast Ball"),
-  SNOWBALL_PROJECTILES("Projectile Type: Snowball"),
-  FIREBALL_PROJECTILES("Projectile Type: Fireball"),
-  WITHER_SKULL_PROJECTILES("Projectile Type: Wither Skull"),
+  EXPLOSIVE_PROJECTILES("Projectiles Are Ghast Balls"),
+  SNOWBALL_PROJECTILES("Projectiles Are Snowballs"),
+  FIREBALL_PROJECTILES("Projectiles Are Fireballs"),
+  WITHER_SKULL_PROJECTILES("Projectiles Are Wither Skulls"),
+  NO_GRAVITY_PROJECTILES("Projectiles Have No Gravity"),
   ELEMENTAL_CRITS("Elemental Damage Can Critically Strike"),
   NO_HEALTH_REGEN("Health Cannot Be Regenerated"),
   NO_BARRIER_ALLOWED("Maximum Barrier Is Always Zero"),
@@ -16,9 +17,8 @@ public enum StrifeTrait {
   ACCURATE_CHARGED("Fully Charged Hits Cannot Miss"),
   ACCURATE_CRITS("Critical Strikes Cannot Miss");
 
-  // values() is dumb, so we only run it once, and hit use this to
-  // change String to enum instead of try catching or values()
-  // TODO: We map String to StrifeAttribute, why not let the user customize the string rather than declaring it in the enum?
+  // TODO: We map String to StrifeStat, why not let the user
+  //  customize the string rather than declaring it in the enum?
   private static final Map<String, StrifeTrait> copyOfValues = buildStringToTraitMap();
 
   private static Map<String, StrifeTrait> buildStringToTraitMap() {

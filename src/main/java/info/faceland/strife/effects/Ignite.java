@@ -1,13 +1,13 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 
 public class Ignite extends Effect {
 
   private int duration = 0;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     target.getEntity().setFireTicks(Math.max(duration, target.getEntity().getFireTicks()));
   }
 

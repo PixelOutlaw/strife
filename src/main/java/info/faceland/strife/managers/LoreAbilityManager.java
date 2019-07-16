@@ -2,12 +2,13 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import info.faceland.strife.data.ability.Ability;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +34,7 @@ public class LoreAbilityManager {
     this.effectManager = effectManager;
   }
 
-  public Set<LoreAbility> getAbilities(ItemStack stack) {
+  Set<LoreAbility> getAbilities(ItemStack stack) {
     List<String> lore = ItemUtil.getLore(stack);
     Set<LoreAbility> abilities = new HashSet<>();
     if (lore.isEmpty()) {
@@ -80,7 +81,7 @@ public class LoreAbilityManager {
       }
     }
     if (ability == null && effectList.isEmpty()) {
-      LogUtil.printError("Failed to load " + key + ". No valid ability and no effects defined!");
+      LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
     }
     List<String> description = TextUtils.color(cs.getStringList("description"));
@@ -95,24 +96,21 @@ public class LoreAbilityManager {
     LogUtil.printInfo("Loaded lore ability " + key + " successfully.");
   }
 
-  public void applyLoreAbility(LoreAbility la, AttributedEntity caster, AttributedEntity target) {
+  public void applyLoreAbility(LoreAbility la, StrifeMob caster, StrifeMob target) {
+    LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + la.getId());
     if (la.getAbility() != null) {
-      abilityManager.execute(la.getAbility(), caster, target);
+      abilityManager.execute(la.getAbility(), caster, target.getEntity());
     }
     for (Effect effect : la.getEffects()) {
       effectManager.execute(effect, caster, target);
     }
   }
 
-  public LoreAbility getLoreAbilityFromString(String loreString) {
+  private LoreAbility getLoreAbilityFromString(String loreString) {
     return loreStringToAbilityMap.getOrDefault(loreString, null);
   }
   public LoreAbility getLoreAbilityFromId(String id) {
     return loreIdToAbilityMap.getOrDefault(id, null);
-  }
-
-  public Map<String, LoreAbility> getLoreStringToAbilityMap() {
-    return loreStringToAbilityMap;
   }
 
   public enum TriggerType {
@@ -122,6 +120,7 @@ public class LoreAbilityManager {
     ON_CRIT,
     ON_BLOCK,
     ON_EVADE,
-    ON_SNEAK
+    ON_SNEAK,
+    ON_SNEAK_ATTACK
   }
 }

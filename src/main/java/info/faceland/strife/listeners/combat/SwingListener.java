@@ -23,9 +23,9 @@ import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.ProjectileUtil;
 import java.util.ArrayList;
@@ -95,8 +95,8 @@ public class SwingListener implements Listener {
     } else {
       doMeleeSwing(event.getPlayer(), event, true);
     }
-    plugin.getAttributeUpdateManager().updateAttackSpeed(
-        plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+    plugin.getStatUpdateManager().updateAttackSpeed(
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -113,13 +113,13 @@ public class SwingListener implements Listener {
   }
 
   private void doMeleeSwing(Player player, Cancellable event, boolean resetAttack) {
-    AttributedEntity attacker = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(player);
 
     double attackMultiplier = plugin.getAttackSpeedManager()
         .getAttackMultiplier(attacker, resetAttack);
 
-    double range = attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE);
-    if (attacker.getAttribute(StrifeAttribute.SPELL_STRIKE_RANGE) < 0.5) {
+    double range = attacker.getStat(StrifeStat.SPELL_STRIKE_RANGE);
+    if (attacker.getStat(StrifeStat.SPELL_STRIKE_RANGE) < 0.5) {
       return;
     }
     if (attackMultiplier < 0.95) {
@@ -129,13 +129,12 @@ public class SwingListener implements Listener {
     if (target == null) {
       return;
     }
-    //AttributedEntity defender = plugin.getAttributedEntityManager().getAttributedEntity(target);
     spawnSparkle(target);
     event.setCancelled(true);
   }
 
   private void shootWand(Player player, Cancellable event) {
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
@@ -146,11 +145,12 @@ public class SwingListener implements Listener {
       return;
     }
 
-    plugin.getChampionManager().updateEquipmentAttributes(
+    plugin.getChampionManager().updateEquipmentStats(
         plugin.getChampionManager().getChampion(player));
 
-    double projectileSpeed = 1 + (pStats.getAttribute(StrifeAttribute.PROJECTILE_SPEED) / 100);
-    double multiShot = pStats.getAttribute(StrifeAttribute.MULTISHOT) / 100;
+    double projectileSpeed = 1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    double multiShot = pStats.getStat(StrifeStat.MULTISHOT) / 100;
+    boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
     event.setCancelled(true);
 
     if (pStats.hasTrait(StrifeTrait.EXPLOSIVE_PROJECTILES)) {
@@ -158,7 +158,7 @@ public class SwingListener implements Listener {
       return;
     }
 
-    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0);
+    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
 
     if (multiShot > 0) {
       int bonusProjectiles = (int) (multiShot - (multiShot % 1));
@@ -168,9 +168,11 @@ public class SwingListener implements Listener {
       for (int i = bonusProjectiles; i > 0; i--) {
         ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed,
             randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles));
+            randomOffset(bonusProjectiles), gravity);
       }
     }
+    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
+    plugin.getSneakManager().tempDisableSneak(player);
   }
 
   private double randomOffset(double magnitude) {

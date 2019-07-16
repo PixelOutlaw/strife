@@ -4,7 +4,9 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.conditions.Condition.Comparison;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.LifeSkillType;
 import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -14,13 +16,16 @@ public class PlayerDataUtil {
 
   public static void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
       double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
-      double lightBonus, boolean corrupt, boolean isBleedApplied) {
+      double lightBonus, boolean corrupt, boolean isBleedApplied, boolean isSneakAttack) {
     if (!(entity instanceof Player)) {
       return;
     }
     StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
     if (overBonus > 0) {
       damageString.append("&e✦");
+    }
+    if (isSneakAttack) {
+      damageString.append("&e&l!");
     }
     if (critBonus > 0) {
       damageString.append("&c✶");
@@ -46,10 +51,10 @@ public class PlayerDataUtil {
     if (isBleedApplied) {
       damageString.append("&4♦");
     }
-    MessageUtils.sendActionBar((Player)entity, damageString.toString());
+    MessageUtils.sendActionBar((Player) entity, damageString.toString());
   }
 
-  public static boolean areConditionsMet(AttributedEntity caster, AttributedEntity target,
+  public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
       Set<Condition> conditions) {
     if (target == null && conditions.size() > 0) {
       return false;
@@ -62,93 +67,13 @@ public class PlayerDataUtil {
     return true;
   }
 
-  public static int getCraftSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getCraftSkill(updateEquipment);
-  }
-
-  public static int getCraftLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getCraftingLevel();
-  }
-
-  public static float getCraftExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getCraftingExp();
-  }
-
-  public static float getCraftMaxExp(Player player) {
-    int level = getCraftLevel(player);
-    return StrifePlugin.getInstance().getCraftExperienceManager().getMaxExp(level);
-  }
-
-  public static int getEnchantSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getEnchantSkill(updateEquipment);
-  }
-
-  public static int getEnchantLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getEnchantLevel();
-  }
-
-  public static float getEnchantExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getEnchantExp();
-  }
-
-  public static float getEnchantMaxExp(Player player) {
-    int level = getEnchantLevel(player);
-    return StrifePlugin.getInstance().getEnchantExperienceManager().getMaxExp(level);
-  }
-
-  public static int getFishSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getFishSkill(updateEquipment);
-  }
-
-  public static int getFishLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getFishingLevel();
-  }
-
-  public static float getFishExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getFishingExp();
-  }
-
-  public static float getFishMaxExp(Player player) {
-    int level = getFishLevel(player);
-    return StrifePlugin.getInstance().getFishExperienceManager().getMaxExp(level);
-  }
-
-  public static int getMineSkill(Player player, Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getMineSkill(updateEquipment);
-  }
-
-  public static int getMiningLevel(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getMiningLevel();
-  }
-
-  public static float getMiningExp(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getMiningExp();
-  }
-
-  public static float getMiningMaxExp(Player player) {
-    int level = getMiningLevel(player);
-    return StrifePlugin.getInstance().getMiningExperienceManager().getMaxExp(level);
-  }
-
   public static void updatePlayerEquipment(Player player) {
-    StrifePlugin.getInstance().getChampionManager().updateEquipmentAttributes(
+    StrifePlugin.getInstance().getChampionManager().updateEquipmentStats(
         StrifePlugin.getInstance().getChampionManager().getChampion(player));
   }
 
   public static void playExpSound(Player player) {
-    player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.4f,
+    player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2f,
         0.8f + (float) Math.random() * 0.4f);
   }
 
@@ -161,14 +86,16 @@ public class PlayerDataUtil {
         return val1 < val2;
       case EQUAL:
         return val1 == val2;
+      case NONE:
+        throw new IllegalArgumentException("Compare condition is NONE! Invalid usage!");
     }
     return false;
   }
 
-  // TODO: Something better with the crap below here...
   public static int getMaxItemDestroyLevel(Player player) {
     return getMaxItemDestroyLevel(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player).getCraftingLevel());
+        StrifePlugin.getInstance().getChampionManager().getChampion(player)
+            .getLifeSkillLevel(LifeSkillType.CRAFTING));
   }
 
   private static int getMaxItemDestroyLevel(int craftLvl) {
@@ -177,7 +104,8 @@ public class PlayerDataUtil {
 
   public static int getMaxCraftItemLevel(Player player) {
     return getMaxCraftItemLevel(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player).getCraftingLevel());
+        StrifePlugin.getInstance().getChampionManager().getChampion(player)
+            .getLifeSkillLevel(LifeSkillType.CRAFTING));
   }
 
   public static int getMaxCraftItemLevel(int craftLvl) {
@@ -190,5 +118,56 @@ public class PlayerDataUtil {
     }
     return livingEntity.getCustomName() == null ? livingEntity.getName()
         : livingEntity.getCustomName();
+  }
+
+  public static double getEffectiveLifeSkill(Player player, LifeSkillType type,
+      Boolean updateEquipment) {
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
+        .getEffectiveLifeSkillLevel(type, updateEquipment);
+  }
+
+  public static int getLifeSkillLevel(Player player, LifeSkillType type) {
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
+        .getLifeSkillLevel(type);
+  }
+
+  public static float getLifeSkillExp(Player player, LifeSkillType type) {
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
+        .getLifeSkillExp(type);
+  }
+
+  public static float getFishMaxExp(Player player, LifeSkillType type) {
+    int level = getLifeSkillLevel(player, type);
+    return StrifePlugin.getInstance().getSkillExperienceManager()
+        .getMaxExp(type, level);
+  }
+
+  public static float getSkillProgress(Champion champion, LifeSkillType type) {
+    return champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
+        .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));
+  }
+
+  public static String getSkillColor(LifeSkillType type) {
+    switch (type) {
+      case CRAFTING:
+      case SHIELD_MASTERY:
+        return "&e";
+      case ENCHANTING:
+        return "&d";
+      case FISHING:
+        return "&b";
+      case MINING:
+      case ARCHERY:
+      case DUAL_WIELDING:
+        return "&2";
+      case SNEAK:
+        return "&7";
+      case SWORDSMANSHIP:
+      case AXE_MASTERY:
+        return "&c";
+      case MAGECRAFT:
+        return "&9";
+    }
+    return "";
   }
 }

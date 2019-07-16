@@ -1,7 +1,7 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 
 public class ConsumeBleed extends Effect {
 
@@ -9,9 +9,12 @@ public class ConsumeBleed extends Effect {
   private double healRatio;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     double value = StrifePlugin.getInstance().getBleedManager()
         .getBleedOnEntity(target.getEntity());
+    if (value <= 0) {
+      return;
+    }
     StrifePlugin.getInstance().getBleedManager().removeEntity(target.getEntity());
     target.getEntity().damage(value * damageRatio, caster.getEntity());
 

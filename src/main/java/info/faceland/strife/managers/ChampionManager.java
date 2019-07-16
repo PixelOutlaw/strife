@@ -19,8 +19,8 @@
 package info.faceland.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
-import static info.faceland.strife.attributes.StrifeAttribute.ATTACK_SPEED;
-import static info.faceland.strife.attributes.StrifeAttribute.LEVEL_REQUIREMENT;
+import static info.faceland.strife.stats.StrifeStat.ATTACK_SPEED;
+import static info.faceland.strife.stats.StrifeStat.LEVEL_REQUIREMENT;
 import static info.faceland.strife.util.ItemUtil.doesHashMatch;
 import static info.faceland.strife.util.ItemUtil.getItem;
 import static info.faceland.strife.util.ItemUtil.hashItem;
@@ -32,14 +32,15 @@ import static org.bukkit.inventory.EquipmentSlot.HEAD;
 import static org.bukkit.inventory.EquipmentSlot.LEGS;
 import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.attributes.StrifeTrait;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.PlayerEquipmentCache;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.ItemUtil;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -59,6 +61,9 @@ public class ChampionManager {
   private final Map<UUID, Champion> championMap = new HashMap<>();
   private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
   private final String levelReqGeneric;
+
+  private final static String RESET_MESSAGE =
+      "&a&lYour Levelpoints have been automatically reset due to an update!";
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -97,6 +102,42 @@ public class ChampionManager {
     return new HashSet<>(championMap.values());
   }
 
+  public boolean hasPendingChanges(Player player) {
+    return hasPendingChanges(getChampion(player));
+  }
+
+  public boolean hasPendingChanges(Champion champion) {
+    return !champion.getLevelMap().equals(champion.getPendingLevelMap());
+  }
+
+  public void resetPendingStats(Champion champion) {
+    champion.getSaveData().resetPendingStats();
+  }
+
+  public void savePendingStats(Champion champion) {
+    for (StrifeAttribute stat : champion.getPendingLevelMap().keySet()) {
+      if (champion.getPendingLevel(stat) > champion.getAttributeLevel(stat)) {
+        sendMessage(champion.getPlayer(),
+            stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
+        champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f,
+            stat.getLevelPitch());
+      }
+    }
+    champion.getSaveData().savePendingStats();
+  }
+
+  public void verifyStatValues(Champion champion) {
+    Player player = champion.getPlayer();
+    if (getTotalChampionStats(champion) != player.getLevel()) {
+      notifyResetPoints(player);
+      for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
+        champion.setLevel(stat, 0);
+      }
+      champion.setHighestReachedLevel(player.getLevel());
+      champion.setUnusedStatPoints(player.getLevel());
+    }
+  }
+
   public void addListOfChampions(List<Champion> champions) {
     for (Champion c : champions) {
       championMap.put(c.getUniqueId(), c);
@@ -112,13 +153,13 @@ public class ChampionManager {
   }
 
   private void buildPointAttributes(Champion champion) {
-    Map<StrifeAttribute, Double> attributeDoubleMap = new HashMap<>();
-    for (StrifeStat stat : champion.getLevelMap().keySet()) {
+    Map<StrifeStat, Double> attributeDoubleMap = new HashMap<>();
+    for (StrifeAttribute stat : champion.getLevelMap().keySet()) {
       int statLevel = champion.getLevelMap().get(stat);
       if (statLevel == 0) {
         continue;
       }
-      for (StrifeAttribute attr : stat.getAttributeMap().keySet()) {
+      for (StrifeStat attr : stat.getAttributeMap().keySet()) {
         double amount = stat.getAttributeMap().get(attr) * statLevel;
         if (attributeDoubleMap.containsKey(attr)) {
           amount += attributeDoubleMap.get(attr);
@@ -160,7 +201,7 @@ public class ChampionManager {
   }
 
   private void applyDualWieldStatChanges(PlayerEquipmentCache cache, EquipmentSlot slot) {
-    for (StrifeAttribute attribute : cache.getSlotStats(slot).keySet()) {
+    for (StrifeStat attribute : cache.getSlotStats(slot).keySet()) {
       cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7D);
     }
     cache.getSlotStats(slot)
@@ -203,7 +244,11 @@ public class ChampionManager {
     pushChampionUpdate(champion);
   }
 
-  public void updateEquipmentAttributes(Champion champion) {
+  public void updateEquipmentStats(Player player) {
+    updateEquipmentStats(getChampion(player));
+  }
+
+  public void updateEquipmentStats(Champion champion) {
     buildEquipmentAttributes(champion);
     pushChampionUpdate(champion);
   }
@@ -218,7 +263,7 @@ public class ChampionManager {
 
   private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
-    plugin.getAttributedEntityManager().setEntityStats(champion.getPlayer(), AttributeUpdateManager
+    plugin.getStrifeMobManager().setEntityStats(champion.getPlayer(), StatUpdateManager
         .combineMaps(champion.getCombinedCache(), plugin.getGlobalBoostManager().getAttributes()));
   }
 
@@ -244,23 +289,23 @@ public class ChampionManager {
     }
   }
 
-  private Map<StrifeAttribute, Double> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
+  private Map<StrifeStat, Double> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
     switch (slot) {
       case HAND:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInMainHand());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
       case OFF_HAND:
         if (!ItemUtil.isValidOffhand(equipment)) {
           return new HashMap<>();
         }
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getItemInOffHand());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInOffHand());
       case HEAD:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getHelmet());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getHelmet());
       case CHEST:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getChestplate());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getChestplate());
       case LEGS:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getLeggings());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getLeggings());
       case FEET:
-        return plugin.getAttributeUpdateManager().getItemStats(equipment.getBoots());
+        return plugin.getStatUpdateManager().getItemStats(equipment.getBoots());
       default:
         return new HashMap<>();
     }
@@ -278,7 +323,7 @@ public class ChampionManager {
       case HEAD:
         return ItemUtil.getTraits(equipment.getHelmet());
       case CHEST:
-        return  ItemUtil.getTraits(equipment.getChestplate());
+        return ItemUtil.getTraits(equipment.getChestplate());
       case LEGS:
         return ItemUtil.getTraits(equipment.getLeggings());
       case FEET:
@@ -288,7 +333,21 @@ public class ChampionManager {
     }
   }
 
-  private boolean meetsLevelRequirement(Player player, Map<StrifeAttribute, Double> statMap) {
+  private boolean meetsLevelRequirement(Player player, Map<StrifeStat, Double> statMap) {
     return statMap.getOrDefault(LEVEL_REQUIREMENT, 0D) <= player.getLevel();
+  }
+
+  private int getTotalChampionStats(Champion champion) {
+    ChampionSaveData championSaveData = champion.getSaveData();
+    int total = championSaveData.getUnusedStatPoints();
+    for (StrifeAttribute stat : championSaveData.getLevelMap().keySet()) {
+      total += champion.getLevelMap().getOrDefault(stat, 0);
+    }
+    return total;
+  }
+
+  private void notifyResetPoints(final Player player) {
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> MessageUtils.sendMessage(player, RESET_MESSAGE), 20L * 3);
   }
 }

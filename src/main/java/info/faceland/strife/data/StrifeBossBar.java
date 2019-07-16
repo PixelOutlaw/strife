@@ -7,14 +7,14 @@ import org.bukkit.boss.BossBar;
 
 public class StrifeBossBar {
 
-  private AttributedEntity owner;
+  private StrifeMob owner;
   private Map<UUID, Integer> playerUuidTickMap;
   private BossBar barrierBar;
   private BossBar healthBar;
 
   private boolean dead;
 
-  public StrifeBossBar(AttributedEntity owner, BossBar barrierBar, BossBar healthBar) {
+  public StrifeBossBar(StrifeMob owner, BossBar barrierBar, BossBar healthBar) {
     this.owner = owner;
     this.healthBar = healthBar;
     this.barrierBar = barrierBar;
@@ -22,7 +22,7 @@ public class StrifeBossBar {
     this.dead = false;
   }
 
-  public AttributedEntity getOwner() {
+  public StrifeMob getOwner() {
     return owner;
   }
 

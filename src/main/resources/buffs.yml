@@ -1,0 +1,12 @@
+version: 0.0.1
+burnin-4-u:
+  stats:
+    FIRE_DAMAGE: 100
+    IGNITE_CHANCE: 100
+  duration-seconds: 10
+ice-ice-baby:
+  stats:
+    ICE_DAMAGE: 10
+    FREEZE_CHANCE: 10
+  duration-seconds: 10
+  max-stacks: 10

@@ -18,13 +18,13 @@
  */
 package info.faceland.strife.data.champion;
 
-import info.faceland.strife.attributes.StrifeTrait;
+import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
+import info.faceland.strife.data.CombatDetailsContainer;
 import info.faceland.strife.data.LoreAbility;
-import info.faceland.strife.managers.AttributeUpdateManager;
-import info.faceland.strife.attributes.StrifeAttribute;
-
 import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
+import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.stats.StrifeTrait;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,13 +33,22 @@ import org.bukkit.entity.Player;
 
 public class Champion {
 
-  private final Map<StrifeAttribute, Double> attributeBase;
-  private final Map<StrifeAttribute, Double> attributeLevelPoint;
-  private final Map<StrifeAttribute, Double> combinedAttributeCache;
+  private final Map<StrifeStat, Double> attributeBase;
+  private final Map<StrifeStat, Double> attributeLevelPoint;
+  private final Map<StrifeStat, Double> combinedAttributeCache;
   private final ChampionSaveData saveData;
   private final PlayerEquipmentCache equipmentCache;
 
   private Player player;
+  private CombatDetailsContainer detailsContainer = new CombatDetailsContainer();
+
+  private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
+      .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
+      .put(LifeSkillType.ENCHANTING, StrifeStat.ENCHANT_SKILL)
+      .put(LifeSkillType.FISHING, StrifeStat.FISH_SKILL)
+      .put(LifeSkillType.MINING, StrifeStat.MINE_SKILL)
+      .put(LifeSkillType.SNEAK, StrifeStat.SNEAK_SKILL)
+      .build();
 
   public Champion(Player player, ChampionSaveData saveData) {
     this.attributeBase = new HashMap<>();
@@ -50,7 +59,7 @@ public class Champion {
     this.saveData = saveData;
   }
 
-  public Map<StrifeAttribute, Double> getCombinedCache() {
+  public Map<StrifeStat, Double> getCombinedCache() {
     return new HashMap<>(combinedAttributeCache);
   }
 
@@ -65,19 +74,19 @@ public class Champion {
 
   public void recombineCache() {
     clearCombinedCache();
-    combinedAttributeCache.putAll(AttributeUpdateManager.combineMaps(
+    combinedAttributeCache.putAll(StatUpdateManager.combineMaps(
         attributeBase,
         attributeLevelPoint,
         equipmentCache.getCombinedStats()
     ));
   }
 
-  public void setAttributeBaseCache(Map<StrifeAttribute, Double> map) {
+  public void setAttributeBaseCache(Map<StrifeStat, Double> map) {
     attributeBase.clear();
     attributeBase.putAll(map);
   }
 
-  public void setAttributeLevelPointCache(Map<StrifeAttribute, Double> map) {
+  public void setAttributeLevelPointCache(Map<StrifeStat, Double> map) {
     attributeLevelPoint.clear();
     attributeLevelPoint.putAll(map);
   }
@@ -86,8 +95,12 @@ public class Champion {
     return saveData;
   }
 
-  public int getLevel(StrifeStat stat) {
-    return saveData.getLevel(stat);
+  public int getAttributeLevel(StrifeAttribute attr) {
+    return saveData.getLevelMap().getOrDefault(attr, 0);
+  }
+
+  public int getPendingLevel(StrifeAttribute stat) {
+    return saveData.getPendingLevelMap().getOrDefault(stat, 0);
   }
 
   public void setBonusLevels(int bonusLevels) {
@@ -98,68 +111,20 @@ public class Champion {
     return saveData.getBonusLevels();
   }
 
-  public int getCraftingLevel() {
-    return saveData.getCraftingLevel();
+  public int getLifeSkillLevel(LifeSkillType type) {
+    return saveData.getSkillLevel(type);
   }
 
-  public float getCraftingExp() {
-    return saveData.getCraftingExp();
+  public float getLifeSkillExp(LifeSkillType type) {
+    return saveData.getSkillExp(type);
   }
 
-  public int getCraftSkill(boolean updateEquipment) {
+  public float getEffectiveLifeSkillLevel(LifeSkillType type, boolean updateEquipment) {
     if (updateEquipment) {
       recombineCache();
     }
-    return getCraftingLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.CRAFT_SKILL, 0D).intValue();
-  }
-
-  public int getEnchantLevel() {
-    return saveData.getEnchantLevel();
-  }
-
-  public float getEnchantExp() {
-    return saveData.getEnchantExp();
-  }
-
-  public int getEnchantSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getEnchantLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.ENCHANT_SKILL, 0D).intValue();
-  }
-
-  public int getFishingLevel() {
-    return saveData.getFishingLevel();
-  }
-
-  public float getFishingExp() {
-    return saveData.getFishingExp();
-  }
-
-  public int getFishSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getFishingLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.FISH_SKILL, 0D).intValue();
-  }
-
-  public int getMiningLevel() {
-    return saveData.getMiningLevel();
-  }
-
-  public float getMiningExp() {
-    return saveData.getMiningExp();
-  }
-
-  public int getMineSkill(boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return getMiningLevel() + combinedAttributeCache
-        .getOrDefault(StrifeAttribute.MINE_SKILL, 0D).intValue();
+    return saveData.getSkillLevel(type) + combinedAttributeCache
+        .getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0D).floatValue();
   }
 
   public int getUnusedStatPoints() {
@@ -168,6 +133,14 @@ public class Champion {
 
   public void setUnusedStatPoints(int unusedStatPoints) {
     saveData.setUnusedStatPoints(unusedStatPoints);
+  }
+
+  public int getPendingUnusedStatPoints() {
+    return saveData.getPendingUnusedStatPoints();
+  }
+
+  public void setPendingUnusedStatPoints(int unusedStatPoints) {
+    saveData.setPendingUnusedStatPoints(unusedStatPoints);
   }
 
   public int getHighestReachedLevel() {
@@ -182,12 +155,20 @@ public class Champion {
     return saveData.getUniqueId();
   }
 
-  public void setLevel(StrifeStat stat, int level) {
+  public void setLevel(StrifeAttribute stat, int level) {
     saveData.setLevel(stat, level);
   }
 
-  public Map<StrifeStat, Integer> getLevelMap() {
+  public void setPendingLevel(StrifeAttribute stat, int level) {
+    saveData.getPendingLevelMap().put(stat, level);
+  }
+
+  public Map<StrifeAttribute, Integer> getLevelMap() {
     return saveData.getLevelMap();
+  }
+
+  public Map<StrifeAttribute, Integer> getPendingLevelMap() {
+    return saveData.getPendingLevelMap();
   }
 
   public Player getPlayer() {
@@ -196,6 +177,10 @@ public class Champion {
 
   public void setPlayer(Player player) {
     this.player = player;
+  }
+
+  public CombatDetailsContainer getDetailsContainer() {
+    return detailsContainer;
   }
 
   public PlayerEquipmentCache getEquipmentCache() {
@@ -208,5 +193,9 @@ public class Champion {
 
   public Set<StrifeTrait> getTraits() {
     return equipmentCache.getCombinedTraits();
+  }
+
+  public boolean hasTrait (StrifeTrait trait) {
+    return equipmentCache.getCombinedTraits().contains(trait);
   }
 }

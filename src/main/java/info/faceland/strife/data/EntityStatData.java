@@ -1,13 +1,13 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
 import java.util.Map;
 
 public class EntityStatData {
-  private Map<StrifeAttribute, Double> baseValueMap;
-  private Map<StrifeAttribute, Double> perLevelMap;
-  private Map<StrifeAttribute, Double> perBonusLevelMap;
+  private Map<StrifeStat, Double> baseValueMap;
+  private Map<StrifeStat, Double> perLevelMap;
+  private Map<StrifeStat, Double> perBonusLevelMap;
 
   public EntityStatData() {
     baseValueMap = new HashMap<>();
@@ -21,27 +21,27 @@ public class EntityStatData {
     perBonusLevelMap = new HashMap<>(entityStatData.getPerBonusLevelMap());
   }
 
-  public Map<StrifeAttribute, Double> getBaseValueMap() {
+  public Map<StrifeStat, Double> getBaseValueMap() {
     return baseValueMap;
   }
 
-  public Map<StrifeAttribute, Double> getPerLevelMap() {
+  public Map<StrifeStat, Double> getPerLevelMap() {
     return perLevelMap;
   }
 
-  public Map<StrifeAttribute, Double> getPerBonusLevelMap() {
+  public Map<StrifeStat, Double> getPerBonusLevelMap() {
     return perBonusLevelMap;
   }
 
-  public void putBaseValue(StrifeAttribute attribute, double value) {
+  public void putBaseValue(StrifeStat attribute, double value) {
     baseValueMap.put(attribute, value);
   }
 
-  public void putPerLevel(StrifeAttribute attribute, double value) {
+  public void putPerLevel(StrifeStat attribute, double value) {
     perLevelMap.put(attribute, value);
   }
 
-  public void putPerBonusLevel(StrifeAttribute attribute, double value) {
+  public void putPerBonusLevel(StrifeStat attribute, double value) {
     perBonusLevelMap.put(attribute, value);
   }
 }

@@ -33,8 +33,12 @@ public class BleedManager {
     return bleedMap;
   }
 
+  public boolean isBleeding(LivingEntity livingEntity) {
+    return getBleedOnEntity(livingEntity) != -1;
+  }
+
   public double getBleedOnEntity(LivingEntity entity) {
-    return bleedMap.get(entity);
+    return bleedMap.getOrDefault(entity, -1D);
   }
 
   public void removeEntity(LivingEntity entity) {

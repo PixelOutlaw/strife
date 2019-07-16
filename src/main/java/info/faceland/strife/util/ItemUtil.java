@@ -1,18 +1,25 @@
 package info.faceland.strife.util;
 
-import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.nbt.NbtCompound;
-import com.comphenix.protocol.wrappers.nbt.NbtFactory;
-import info.faceland.strife.attributes.StrifeTrait;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import info.faceland.strife.data.HotbarIconData;
+import info.faceland.strife.stats.StrifeTrait;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
 
@@ -139,6 +146,33 @@ public class ItemUtil {
     return itemStack.hashCode() == hash;
   }
 
+  public static short getPercentageDamage(ItemStack stack, double percent) {
+    return (short) ((double) stack.getType().getMaxDurability() * percent);
+  }
+
+  public static void sendAbilityIconPacket(HotbarIconData data, Player player, int slot,
+      double percent) {
+    try {
+      ProtocolLibrary.getProtocolManager().sendServerPacket(player, buildPacketContainer(36+slot, data.getItemStack(), percent));
+    } catch (InvocationTargetException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent) {
+    ItemStack sentStack = stack.clone();
+    ItemMeta sentStackMeta = sentStack.getItemMeta();
+    if (sentStackMeta instanceof Damageable) {
+      ((Damageable) sentStackMeta).setDamage(getPercentageDamage(sentStack, percent));
+      sentStack.setItemMeta(sentStackMeta);
+    }
+    PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.SET_SLOT);
+    packetContainer.getIntegers().write(0, 0);
+    packetContainer.getIntegers().write(1, slot);
+    packetContainer.getItemModifier().write(0, sentStack);
+    return packetContainer;
+  }
+
   public static void removeAttributes(ItemStack item) {
     if (item == null || item.getType() == Material.AIR) {
       return;
@@ -146,10 +180,13 @@ public class ItemUtil {
     if (item.getType().getMaxDurability() < 15) {
       return;
     }
-    if (!MinecraftReflection.isCraftItemStack(item)) {
-      item = MinecraftReflection.getBukkitItemStack(item);
+    ItemMeta meta = item.getItemMeta();
+    if (meta.getAttributeModifiers() == null) {
+      return;
     }
-    NbtCompound compound = (NbtCompound) NbtFactory.fromItemTag(item);
-    compound.put(NbtFactory.ofList("AttributeModifiers"));
+    for (Attribute attr : meta.getAttributeModifiers().asMap().keySet()) {
+      meta.removeAttributeModifier(attr);
+    }
+    item.setItemMeta(meta);
   }
 }

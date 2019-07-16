@@ -24,11 +24,13 @@ import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.StatUtil;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -39,15 +41,12 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 public class StatsDefenseMenuItem extends MenuItem {
 
   private final StrifePlugin plugin;
   private Player player;
   private static final String hpPerFive = TextUtils.color("&7 (HP/5s)");
+  private static final String brPerFive = TextUtils.color("&7 (BR/5s)");
 
   StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
@@ -65,7 +64,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
@@ -73,29 +72,33 @@ public class StatsDefenseMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
 
     lore.add(breakLine);
-    if (pStats.getAttribute(StrifeAttribute.BARRIER) > 0) {
+    if (pStats.getStat(StrifeStat.BARRIER) > 0) {
       lore.add(
-          addStat("Maximum Barrier: ", pStats.getAttribute(StrifeAttribute.BARRIER), INT_FORMAT));
+          addStat("Maximum Barrier: ", pStats.getStat(StrifeStat.BARRIER), INT_FORMAT));
       lore.add(
           addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
+      if (pStats.getStat(StrifeStat.BARRIER_REGEN) > 0) {
+        lore.add(
+            addStat("Barrier Regeneration: ", StatUtil.getRegen(pStats), brPerFive, TWO_DECIMAL));
+      }
     }
 
-    lore.add(addStat("Maximum Health: ", StatUtil.getHealth(pStats), INT_FORMAT));
-    lore.add(addStat("Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMAL));
-    if (pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE) > 0 && pStats.getAttribute(StrifeAttribute.RAGE_WHEN_HIT) > 0) {
+    lore.add(addStat("Maximum Life: ", StatUtil.getHealth(pStats), INT_FORMAT));
+    lore.add(addStat("Life Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMAL));
+    if (pStats.getStat(StrifeStat.MAXIMUM_RAGE) > 0 && pStats.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
-      lore.add(addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
-      lore.add(addStat("Rage When Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_WHEN_HIT), ONE_DECIMAL));
+      lore.add(addStat("Maximum Rage: ", pStats.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
+      lore.add(addStat("Rage When Hit: ", pStats.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
     }
     lore.add(breakLine);
     lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
     lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
     lore.add(addStat("Evasion Rating: ", StatUtil.getMinimumEvasionMult(pStats), INT_FORMAT));
-    if (pStats.getAttribute(StrifeAttribute.BLOCK) > 0) {
-      lore.add(addStat("Block Rating: ", pStats.getAttribute(StrifeAttribute.BLOCK), INT_FORMAT));
+    if (pStats.getStat(StrifeStat.BLOCK) > 0) {
+      lore.add(addStat("Block Rating: ", pStats.getStat(StrifeStat.BLOCK), INT_FORMAT));
     }
-    if (pStats.getAttribute(StrifeAttribute.DAMAGE_REFLECT) > 0) {
-      lore.add(addStat("Reflected Damage: ", pStats.getAttribute(StrifeAttribute.DAMAGE_REFLECT),
+    if (pStats.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
+      lore.add(addStat("Reflected Damage: ", pStats.getStat(StrifeStat.DAMAGE_REFLECT),
           INT_FORMAT));
     }
     lore.add(breakLine);

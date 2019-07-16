@@ -1,48 +1,39 @@
 package info.faceland.strife.data.buff;
 
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Map;
 
 public class LoadedBuff {
 
   private final String name;
-  private final Map<StrifeAttribute, Double> flatStats;
-  private final Map<StrifeAttribute, Double> multStats;
+  private final Map<StrifeStat, Double> stats;
   private final int maxStacks;
-  private final int tickDuration;
-  private final boolean slowFalloff;
+  private final double seconds;
 
-  public LoadedBuff(String name, Map<StrifeAttribute, Double> flatStats,
-      Map<StrifeAttribute, Double> multStats, int maxStacks, int tickDuration, boolean slowFalloff) {
+  public LoadedBuff(String name, Map<StrifeStat, Double> stats, int maxStacks, double seconds) {
     this.name = name;
-    this.flatStats = flatStats;
-    this.multStats = multStats;
+    this.stats = stats;
     this.maxStacks = maxStacks;
-    this.tickDuration = tickDuration;
-    this.slowFalloff = slowFalloff;
+    this.seconds = seconds;
   }
 
   public String getName() {
     return name;
   }
 
-  public Map<StrifeAttribute, Double> getFlatStats() {
-    return flatStats;
-  }
-
-  public Map<StrifeAttribute, Double> getMultStats() {
-    return multStats;
+  public Map<StrifeStat, Double> getStats() {
+    return stats;
   }
 
   public int getMaxStacks() {
     return maxStacks;
   }
 
-  public int getTickDuration() {
-    return tickDuration;
+  public double getSeconds() {
+    return seconds;
   }
 
-  public boolean isSlowFalloff() {
-    return slowFalloff;
+  public static Buff createBuffFromLoadedBuff(LoadedBuff loadedBuff) {
+    return new Buff(loadedBuff.stats, loadedBuff.maxStacks);
   }
 }

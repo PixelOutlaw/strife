@@ -1,17 +1,17 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import java.util.Map;
 
 public class GlobalStatBoost {
 
   private final String boostId;
   private final String creator;
-  private final Map<StrifeAttribute, Double> attributes;
+  private final Map<StrifeStat, Double> attributes;
 
   private int minutesRemaining;
 
-  public GlobalStatBoost(String boostId, String creator, Map<StrifeAttribute, Double> attrs,
+  public GlobalStatBoost(String boostId, String creator, Map<StrifeStat, Double> attrs,
       int minutesRemaining) {
     this.boostId = boostId;
     this.creator = creator;
@@ -27,11 +27,11 @@ public class GlobalStatBoost {
     return creator;
   }
 
-  public Map<StrifeAttribute, Double> getAttributes() {
+  public Map<StrifeStat, Double> getAttributes() {
     return attributes;
   }
 
-  public double getAttribute(StrifeAttribute attribute) {
+  public double getAttribute(StrifeStat attribute) {
     return attributes.getOrDefault(attribute, 0D);
   }
 

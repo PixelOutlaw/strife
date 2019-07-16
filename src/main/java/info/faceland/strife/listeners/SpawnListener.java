@@ -1,16 +1,18 @@
 package info.faceland.strife.listeners;
 
-import static info.faceland.strife.attributes.StrifeAttribute.HEALTH;
-import static info.faceland.strife.attributes.StrifeAttribute.HEALTH_MULT;
-import static info.faceland.strife.attributes.StrifeAttribute.MOVEMENT_SPEED;
+import static info.faceland.strife.stats.StrifeStat.HEALTH;
+import static info.faceland.strife.stats.StrifeStat.HEALTH_MULT;
+import static info.faceland.strife.stats.StrifeStat.MOVEMENT_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Map;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
@@ -21,12 +23,14 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Witch;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class SpawnListener implements Listener {
 
@@ -52,7 +56,9 @@ public class SpawnListener implements Listener {
       return;
     }
     LivingEntity entity = event.getEntity();
-    if (entity instanceof Witch) {
+    if (entity instanceof Zombie) {
+      entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(22);
+    } else if (entity instanceof Witch) {
       if (random.nextDouble() < plugin.getSettings()
           .getDouble("config.leveled-monsters.replace-witch-evoker", 0.1)) {
         entity.getWorld().spawnEntity(event.getLocation(), EntityType.EVOKER);
@@ -65,8 +71,7 @@ public class SpawnListener implements Listener {
         event.setCancelled(true);
         return;
       }
-    }
-    if (entity instanceof Rabbit) {
+    } else if (entity instanceof Rabbit) {
       if (random.nextDouble() > plugin.getSettings()
           .getDouble("config.leveled-monsters.killer-bunny-chance", 0.05)) {
         return;
@@ -100,7 +105,7 @@ public class SpawnListener implements Listener {
     level += -2 + random.nextInt(5);
     level = Math.max(level, 1);
 
-    Map<StrifeAttribute, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
+    Map<StrifeStat, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
     if (statMap.isEmpty()) {
       return;
     }
@@ -141,50 +146,54 @@ public class SpawnListener implements Listener {
     if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
       entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(speed);
     }
+    entity.setMetadata("LVL", new FixedMetadataValue(plugin, level));
   }
 
   private void equipEntity(LivingEntity livingEntity) {
+    EntityEquipment entityEquipment = livingEntity.getEquipment();
+    if (entityEquipment == null) {
+      LogUtil.printWarning("Attempting to equip entity with no equipment slots!");
+      return;
+    }
     switch (livingEntity.getType()) {
       case PIG_ZOMBIE:
-        livingEntity.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
+        entityEquipment.setHelmet(new ItemStack(Material.GOLDEN_HELMET));
         if (random.nextDouble() < 0.5) {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
+          entityEquipment.setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
         } else {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
+          entityEquipment.setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
         }
-        livingEntity.getEquipment().setItemInMainHandDropChance(0f);
-        livingEntity.getEquipment().setHelmetDropChance(0f);
+        entityEquipment.setItemInMainHandDropChance(0f);
+        entityEquipment.setHelmetDropChance(0f);
         break;
       case SKELETON:
         if (random.nextDouble() < plugin.getSettings()
             .getDouble("config.leveled-monsters.give-skeletons-sword-chance", 0.1)) {
-          livingEntity.getEquipment().setItemInMainHand(skeletonSword);
+          entityEquipment.setItemInMainHand(skeletonSword);
         } else if (random.nextDouble() < plugin.getSettings()
             .getDouble("config.leveled-monsters.give-skeletons-wand-chance", 0.1)) {
-          livingEntity.getEquipment().setItemInMainHand(skeletonWand);
-          livingEntity.getEquipment().setHelmet(witchHat);
-          livingEntity.getEquipment().setHelmetDropChance(0f);
+          entityEquipment.setItemInMainHand(skeletonWand);
+          entityEquipment.setHelmet(witchHat);
+          entityEquipment.setHelmetDropChance(0f);
         } else {
-          livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
+          entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
         }
-        livingEntity.getEquipment().setItemInMainHandDropChance(0f);
+        entityEquipment.setItemInMainHandDropChance(0f);
         break;
       case VINDICATOR:
-        livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_AXE));
-        livingEntity.getEquipment().setItemInMainHandDropChance(0f);
+        entityEquipment.setItemInMainHand(new ItemStack(Material.IRON_AXE));
+        entityEquipment.setItemInMainHandDropChance(0f);
         break;
       case ILLUSIONER:
-        livingEntity.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
-        livingEntity.getEquipment().setItemInMainHandDropChance(0f);
+        entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
+        entityEquipment.setItemInMainHandDropChance(0f);
         break;
     }
   }
 
   static ItemStack buildSkeletonWand() {
     ItemStack wand = new ItemStack(Material.BOW);
-    ItemMeta wandMeta = wand.getItemMeta();
-    wandMeta.setDisplayName("WAND");
-    wand.setItemMeta(wandMeta);
+    ItemStackExtensionsKt.setDisplayName(wand, "WAND");
     return wand;
   }
 
@@ -195,8 +204,7 @@ public class SpawnListener implements Listener {
   private static ItemStack buildWitchHat() {
     ItemStack hat = new ItemStack(Material.SHEARS);
     hat.setDurability((short) 2);
-    ItemMeta itemMeta = hat.getItemMeta();
-    itemMeta.setUnbreakable(true);
+    ItemStackExtensionsKt.setUnbreakable(hat, true);
     return hat;
   }
 }

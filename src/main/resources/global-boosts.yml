@@ -19,7 +19,7 @@ boost-templates:
     announcement-end:
     - " &aWow! {name} has bought a double xp boost!"
     - " &fThere's {duration} minutes remaining! Have fun!"
-    attributes:
+    stats:
       XP_GAIN: 100
   weekend-double-exp:
     creator: SERVER
@@ -34,7 +34,7 @@ boost-templates:
     announcement-end:
     - " &aWow! {name} has bought a double xp boost!"
     - " &fThere's {duration} minutes remaining! Have fun!"
-    attributes:
+    stats:
       XP_GAIN: 100
   cash-shop-xp-boost:
     creator: SERVER
@@ -49,7 +49,7 @@ boost-templates:
     announcement-end:
     - " &aWow! {name} has bought a double xp boost!"
     - " &fThere's {duration} minutes remaining! Have fun!"
-    attributes:
+    stats:
       XP_GAIN: 100
   shitty-move-and-attack-speed-boost:
     creator: SERVER
@@ -64,6 +64,6 @@ boost-templates:
     announcement-end:
     - " &aWow! {name} has bought a double xp boost!"
     - " &fThere's {duration} minutes remaining! Have fun!"
-    attributes:
+    stats:
       MOVEMENT_SPEED: 100
       ATTACK_SPEED: 100

@@ -18,17 +18,15 @@
  */
 package info.faceland.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.api.StrifeExperienceManager;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.stats.StrifeStat;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class ExperienceManager implements StrifeExperienceManager {
@@ -43,19 +41,23 @@ public class ExperienceManager implements StrifeExperienceManager {
   }
 
   public void addExperience(Player player, double amount, boolean exact) {
+    if (amount < 0.001) {
+      return;
+    }
     // Get all the values!
     double maxFaceExp = (double) getMaxFaceExp(player.getLevel());
     double currentExpPercent = player.getExp();
 
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
 
     if (!exact) {
-      double statsMult = pStats.getAttribute(StrifeAttribute.XP_GAIN) / 100;
+      double statsMult = pStats.getStat(StrifeStat.XP_GAIN) / 100;
       if (pStats.getChampion().getSaveData().isDisplayExp()) {
         String xp = FORMAT.format(amount * (1 + statsMult));
         MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));
       }
       amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)));
+      pStats.getChampion().getDetailsContainer().addExp((float) amount / 100);
       amount *= 1 + statsMult;
     }
 

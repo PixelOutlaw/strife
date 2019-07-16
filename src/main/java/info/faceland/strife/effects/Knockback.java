@@ -1,6 +1,6 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
@@ -9,7 +9,7 @@ public class Knockback extends Effect {
   private double power;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     target.getEntity().setVelocity(target.getEntity().getVelocity()
         .add(getVelocity(caster.getEntity(), target.getEntity()).multiply(power)));
   }

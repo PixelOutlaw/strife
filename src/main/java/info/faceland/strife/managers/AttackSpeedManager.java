@@ -18,49 +18,55 @@
  */
 package info.faceland.strife.managers;
 
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.util.StatUtil;
-import org.bukkit.entity.Player;
+import static info.faceland.strife.util.StatUtil.getAttackTime;
 
+import info.faceland.strife.data.LastAttackTracker;
+import info.faceland.strife.data.StrifeMob;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.entity.Player;
 
 public class AttackSpeedManager {
 
-  private final Map<UUID, Long> lastAttackMap;
+  private final Map<UUID, LastAttackTracker> lastAttackMap;
 
   public AttackSpeedManager() {
     this.lastAttackMap = new HashMap<>();
   }
 
-  public void setAttackTime(UUID uuid) {
-    lastAttackMap.put(uuid, System.currentTimeMillis());
+  public void setAttackTime(UUID uuid, long fullAttackMillis) {
+    lastAttackMap.get(uuid).setFullAttackMs(fullAttackMillis);
+    lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
   }
 
-  public double getAttackMultiplier(AttributedEntity attacker) {
+  public double getAttackMultiplier(StrifeMob attacker) {
     return getAttackMultiplier(attacker, true);
   }
 
-  public double getAttackMultiplier(AttributedEntity attacker, boolean resetTime) {
+  public double getAttackMultiplier(StrifeMob attacker, boolean resetTime) {
     if (!(attacker.getEntity() instanceof Player)) {
       return 1.0;
     }
-    double attackTime = 1000 * StatUtil.getAttackTime(attacker);
-    long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
-    if (resetTime) {
-      setAttackTime(attacker.getEntity().getUniqueId());
+    if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
+      lastAttackMap.put(attacker.getEntity().getUniqueId(), new LastAttackTracker(1L, 1L));
     }
-    if (millisPassed > attackTime) {
+    long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
+    long fullAttackMillis = getFullAttackMillis(attacker.getEntity().getUniqueId());
+    if (resetTime) {
+      setAttackTime(attacker.getEntity().getUniqueId(), (long) (1000 * getAttackTime(attacker)));
+    }
+    if (millisPassed > fullAttackMillis) {
       return 1.0;
     }
-    return (double) millisPassed / attackTime;
+    return (double) millisPassed / fullAttackMillis;
+  }
+
+  private long getFullAttackMillis(UUID uuid) {
+    return lastAttackMap.get(uuid).getFullAttackMs();
   }
 
   private long getMillisPassed(UUID uuid) {
-    if (!lastAttackMap.containsKey(uuid)) {
-      return 100000L;
-    }
-    return System.currentTimeMillis() - lastAttackMap.get(uuid);
+    return System.currentTimeMillis() - lastAttackMap.get(uuid).getLastAttackStamp();
   }
 }

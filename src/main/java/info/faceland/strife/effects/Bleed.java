@@ -1,7 +1,7 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.StatUtil;
 
@@ -11,10 +11,10 @@ public class Bleed extends Effect {
   private boolean ignoreArmor;
 
   @Override
-  public void apply(AttributedEntity caster, AttributedEntity target) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     double bleedAmount = amount;
-    for (StrifeAttribute attr : getStatMults().keySet()) {
-      bleedAmount += getStatMults().get(attr) * caster.getAttributes().getOrDefault(attr, 0D);
+    for (StrifeStat attr : getStatMults().keySet()) {
+      bleedAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
     // TODO: Add logic for ignore armor false
     if (!ignoreArmor) {

@@ -18,19 +18,41 @@
  */
 package info.faceland.strife.menus.stats;
 
-import static info.faceland.strife.attributes.StrifeAttribute.*;
 import static info.faceland.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static info.faceland.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static info.faceland.strife.menus.stats.StatsMenu.breakLine;
+import static info.faceland.strife.stats.StrifeStat.ACCURACY;
+import static info.faceland.strife.stats.StrifeStat.ARMOR_PENETRATION;
+import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.CORRUPT_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.CRITICAL_RATE;
+import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DOGE;
+import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.FREEZE_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
+import static info.faceland.strife.stats.StrifeStat.HP_ON_KILL;
+import static info.faceland.strife.stats.StrifeStat.ICE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.IGNITE_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.LIFE_STEAL;
+import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAX_EARTH_RUNES;
+import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
+import static info.faceland.strife.stats.StrifeStat.SHOCK_CHANCE;
+import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -40,10 +62,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatsOffenseMenuItem extends MenuItem {
 
@@ -66,8 +84,8 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (this.player != null) {
       player = this.player;
     }
-    AttributedEntity pStats = plugin.getAttributedEntityManager().getAttributedEntity(player);
-    Map<StrifeAttribute, Double> bases = plugin.getMonsterManager()
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+    Map<StrifeStat, Double> bases = plugin.getMonsterManager()
         .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic
@@ -97,84 +115,84 @@ public class StatsOffenseMenuItem extends MenuItem {
         itemStack.setType(Material.BLAZE_ROD);
         break;
     }
-    double acc = 100 + pStats.getAttribute(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
+    double acc = 100 + pStats.getStat(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
     lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
     lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
     lore.add(breakLine);
     lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x",
         TWO_DECIMAL));
-    if (pStats.getAttribute(MULTISHOT) > 0 && type != AttackType.MELEE) {
-      if (pStats.getAttribute(DOGE) > 0) {
-        lore.add(addStat("MultiTHOT: ", pStats.getAttribute(MULTISHOT), "%", INT_FORMAT));
+    if (pStats.getStat(MULTISHOT) > 0 && type != AttackType.MELEE) {
+      if (pStats.getStat(DOGE) > 0) {
+        lore.add(addStat("MultiTHOT: ", pStats.getStat(MULTISHOT), "%", INT_FORMAT));
       } else {
-        lore.add(addStat("Multishot: ", pStats.getAttribute(MULTISHOT), "%", INT_FORMAT));
+        lore.add(addStat("Multishot: ", pStats.getStat(MULTISHOT), "%", INT_FORMAT));
       }
     }
-    lore.add(addStat("Critical Rate: ", pStats.getAttribute(CRITICAL_RATE), "%", INT_FORMAT));
+    lore.add(addStat("Critical Rate: ", pStats.getStat(CRITICAL_RATE), "%", INT_FORMAT));
     lore.add(
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
     double aPen =
-        pStats.getAttribute(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
+        pStats.getStat(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
     if (aPen != 0 && type != AttackType.MAGIC) {
       lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
     }
-    double wPen = pStats.getAttribute(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
+    double wPen = pStats.getStat(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
     if (wPen != 0 && type == AttackType.MAGIC) {
       lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
     }
-    if (pStats.getAttribute(BLEED_CHANCE) > 0) {
-      lore.add(addStat("Bleed Chance: ", pStats.getAttribute(BLEED_CHANCE), "%", INT_FORMAT));
+    if (pStats.getStat(BLEED_CHANCE) > 0) {
+      lore.add(addStat("Bleed Chance: ", pStats.getStat(BLEED_CHANCE), "%", INT_FORMAT));
     }
-    if (pStats.getAttribute(BLEED_DAMAGE) > 0) {
+    if (pStats.getStat(BLEED_DAMAGE) > 0) {
       lore.add(
-          addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getAttribute(BLEED_DAMAGE), "%",
+          addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getStat(BLEED_DAMAGE), "%",
               INT_FORMAT));
     }
-    if (pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE) > 0 &&
-        pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT) > 0 ||
-        pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL) > 0) {
+    if (pStats.getStat(StrifeStat.MAXIMUM_RAGE) > 0 &&
+        pStats.getStat(StrifeStat.RAGE_ON_HIT) > 0 ||
+        pStats.getStat(StrifeStat.RAGE_ON_KILL) > 0) {
       lore.add(breakLine);
       lore.add(
-          addStat("Maximum Rage: ", pStats.getAttribute(StrifeAttribute.MAXIMUM_RAGE), INT_FORMAT));
+          addStat("Maximum Rage: ", pStats.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
       lore.add(
-          addStat("Rage On Hit: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_HIT), INT_FORMAT));
+          addStat("Rage On Hit: ", pStats.getStat(StrifeStat.RAGE_ON_HIT), INT_FORMAT));
       lore.add(
-          addStat("Rage On Kill: ", pStats.getAttribute(StrifeAttribute.RAGE_ON_KILL), INT_FORMAT));
+          addStat("Rage On Kill: ", pStats.getStat(StrifeStat.RAGE_ON_KILL), INT_FORMAT));
     }
-    if (pStats.getAttribute(HP_ON_HIT) > 0 || pStats.getAttribute(LIFE_STEAL) > 0
-        || pStats.getAttribute(HP_ON_KILL) > 0) {
+    if (pStats.getStat(HP_ON_HIT) > 0 || pStats.getStat(LIFE_STEAL) > 0
+        || pStats.getStat(HP_ON_KILL) > 0) {
       lore.add(breakLine);
-      if (pStats.getAttribute(LIFE_STEAL) > 0) {
-        lore.add(addStat("Life Steal: ", pStats.getAttribute(LIFE_STEAL), "%", INT_FORMAT));
+      if (pStats.getStat(LIFE_STEAL) > 0) {
+        lore.add(addStat("Life Steal: ", pStats.getStat(LIFE_STEAL), "%", INT_FORMAT));
       }
-      if (pStats.getAttribute(HP_ON_HIT) > 0) {
-        lore.add(addStat("Health On Hit: ", pStats.getAttribute(HP_ON_HIT), INT_FORMAT));
+      if (pStats.getStat(HP_ON_HIT) > 0) {
+        lore.add(addStat("Health On Hit: ", pStats.getStat(HP_ON_HIT), INT_FORMAT));
       }
-      if (pStats.getAttribute(HP_ON_KILL) > 0) {
-        lore.add(addStat("Health On Kill: ", pStats.getAttribute(HP_ON_KILL), INT_FORMAT));
+      if (pStats.getStat(HP_ON_KILL) > 0) {
+        lore.add(addStat("Health On Kill: ", pStats.getStat(HP_ON_KILL), INT_FORMAT));
       }
     }
     lore.add(breakLine);
     lore.add(addStat("Fire Damage: ", StatUtil.getFireDamage(pStats), INT_FORMAT));
-    lore.add(addStat("Ignite Chance: ", pStats.getAttribute(IGNITE_CHANCE), "%", INT_FORMAT));
-    if (pStats.getAttribute(ICE_DAMAGE) > 0) {
+    lore.add(addStat("Ignite Chance: ", pStats.getStat(IGNITE_CHANCE), "%", INT_FORMAT));
+    if (pStats.getStat(ICE_DAMAGE) > 0) {
       lore.add(addStat("Ice Damage: ", StatUtil.getIceDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Freeze Chance: ", pStats.getAttribute(FREEZE_CHANCE), "%", INT_FORMAT));
+      lore.add(addStat("Freeze Chance: ", pStats.getStat(FREEZE_CHANCE), "%", INT_FORMAT));
     }
-    if (pStats.getAttribute(LIGHTNING_DAMAGE) > 0) {
+    if (pStats.getStat(LIGHTNING_DAMAGE) > 0) {
       lore.add(addStat("Lightning Damage: ", StatUtil.getLightningDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Shock Chance: ", pStats.getAttribute(SHOCK_CHANCE), "%", INT_FORMAT));
+      lore.add(addStat("Shock Chance: ", pStats.getStat(SHOCK_CHANCE), "%", INT_FORMAT));
     }
-    if (pStats.getAttribute(EARTH_DAMAGE) > 0) {
+    if (pStats.getStat(EARTH_DAMAGE) > 0) {
       lore.add(addStat("Earth Damage: ", StatUtil.getEarthDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Maximum Earth Runes: ", pStats.getAttribute(MAX_EARTH_RUNES), INT_FORMAT));
+      lore.add(addStat("Maximum Earth Runes: ", pStats.getStat(MAX_EARTH_RUNES), INT_FORMAT));
     }
-    if (pStats.getAttribute(LIGHT_DAMAGE) > 0) {
+    if (pStats.getStat(LIGHT_DAMAGE) > 0) {
       lore.add(addStat("Light Damage: ", StatUtil.getLightDamage(pStats), INT_FORMAT));
     }
-    if (pStats.getAttribute(DARK_DAMAGE) > 0) {
+    if (pStats.getStat(DARK_DAMAGE) > 0) {
       lore.add(addStat("Shadow Damage: ", StatUtil.getShadowDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Corrupt Chance: ", pStats.getAttribute(CORRUPT_CHANCE), "%", INT_FORMAT));
+      lore.add(addStat("Corrupt Chance: ", pStats.getStat(CORRUPT_CHANCE), "%", INT_FORMAT));
     }
     lore.add(breakLine);
     lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));

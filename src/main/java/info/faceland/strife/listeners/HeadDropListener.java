@@ -18,13 +18,17 @@
  */
 package info.faceland.strife.listeners;
 
-import info.faceland.strife.attributes.StrifeAttribute;
-import info.faceland.strife.data.AttributedEntity;
-import info.faceland.strife.managers.AttributedEntityManager;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.managers.StrifeMobManager;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
-import io.pixeloutlaw.minecraft.spigot.hilt.HiltSkull;
-import org.bukkit.*;
-import org.bukkit.entity.*;
+import org.bukkit.Material;
+import org.bukkit.entity.Creeper;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -34,10 +38,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 public class HeadDropListener implements Listener {
 
-  private final AttributedEntityManager aeManager;
+  private final StrifeMobManager aeManager;
 
-  public HeadDropListener(AttributedEntityManager attributedEntityManager) {
-    this.aeManager = attributedEntityManager;
+  public HeadDropListener(StrifeMobManager strifeMobManager) {
+    this.aeManager = strifeMobManager;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -45,11 +49,11 @@ public class HeadDropListener implements Listener {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    AttributedEntity pStats = aeManager.getAttributedEntity(event.getEntity().getKiller());
-    if (pStats.getAttribute(StrifeAttribute.HEAD_DROP) < 1) {
+    StrifeMob pStats = aeManager.getStatMob(event.getEntity().getKiller());
+    if (pStats.getStat(StrifeStat.HEAD_DROP) < 1) {
       return;
     }
-    if (DamageUtil.rollBool(pStats.getAttribute(StrifeAttribute.HEAD_DROP) / 100)) {
+    if (DamageUtil.rollBool(pStats.getStat(StrifeStat.HEAD_DROP) / 100)) {
       LivingEntity livingEntity = event.getEntity();
       ItemStack skull = null;
       if (livingEntity instanceof Skeleton) {

@@ -1,0 +1,64 @@
+version: 0.0.4
+con:
+  name: "&e&lConstitution"
+  description:
+  - "&f+4% Maximum Health"
+  - "&f+2% Armor"
+  sounds:
+    level-sound: BLOCK_METAL_STEP
+    level-pitch: 1
+    click-sound: BLOCK_METAL_STEP
+    click-pitch: 1
+  dye-color: YELLOW
+  slot: 15
+  starting-cap: 5
+  maximum-cap: 50
+  levels-to-raise-cap: 2
+  stats:
+    HEALTH_MULT: 4
+    ARMOR_MULT: 2
+str:
+  name: "&c&lStrength"
+  description:
+  - "&f+2% Melee Damage"
+  - "&f+1% Overcharge"
+  chat-color: RED
+  dye-color: RED
+  slot: 11
+  starting-cap: 5
+  maximum-cap: 50
+  levels-to-raise-cap: 2
+  stats:
+    MELEE_MULT: 2
+    OVERCHARGE: 1
+int:
+  name: "&9&lIntelligence"
+  description:
+  - "&f+2 Maximum Barrier"
+  - "&f+2% Magic Damage"
+  dye-color: BLUE
+  slot: 33
+  starting-cap: 5
+  maximum-cap: 50
+  levels-to-raise-cap: 2
+  stats:
+    MAGIC_MULT: 2
+    BARRIER: 2
+savagery:
+  name: "&c&lSavagery"
+  description:
+  - "&f+5 Melee Damage"
+  - "&f+4 Life Steal"
+  - "&f+5% Bleed Chance"
+  dye-color: RED
+  slot: 01
+  starting-cap: 1
+  maximum-cap: 3
+  base-stat-requirements:
+    str: 30
+  stats-to-raise-cap:
+    str: 10
+  stats:
+    MELEE_DAMAGE: 5
+    BLEED_CHANCE: 5
+    LIFE_STEAL: 5

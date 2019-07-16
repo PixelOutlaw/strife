@@ -20,7 +20,6 @@ package info.faceland.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
@@ -38,15 +37,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsChangeHealthDisplay extends MenuItem {
 
   private final StrifePlugin plugin;
-  private Player player;
   private int position;
-
-  StatsChangeHealthDisplay(StrifePlugin plugin, Player player, int postion) {
-    super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
-    this.plugin = plugin;
-    this.player = player;
-    this.position = postion;
-  }
 
   StatsChangeHealthDisplay(StrifePlugin plugin, int position) {
     super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
@@ -79,8 +70,8 @@ public class StatsChangeHealthDisplay extends MenuItem {
       ordinal = 0;
     }
     champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
-    plugin.getAttributeUpdateManager()
-        .updateHealth(plugin.getAttributedEntityManager().getAttributedEntity(event.getPlayer()));
+    plugin.getStatUpdateManager()
+        .updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatsMenu().setItem(position, this);
     MessageUtils.sendMessage(champion.getPlayer(),
         "&c&lHealth Display: &f&c" + WordUtils.capitalize(

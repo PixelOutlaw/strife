@@ -3,49 +3,59 @@ package info.faceland.strife.managers;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.data.AbilityIconData;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
-import info.faceland.strife.data.AttributedEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
-import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.data.champion.LifeSkillType;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Wait;
+import info.faceland.strife.stats.AbilitySlot;
+import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Chicken;
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 public class AbilityManager {
 
   private final StrifePlugin plugin;
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
-  private final Set<Material> ignoredMaterials = new HashSet<>();
+  private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
+  private final Map<UUID, Map<Ability, Integer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
 
-  private static final String ON_COOLDOWN = TextUtils.color("&f&lAbility On Cooldown!");
-  private static final String NO_TARGET = TextUtils.color("&e&lNo Target Found!");
-  private static final String TEST_CHICKEN = ChatColor.RED + "TEST CHICKEN PLS IGNORE";
+  private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
+  private static final String NO_REQUIRE = TextUtils.color("&c&lAbility Requirements Not Met!");
 
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.ignoredMaterials.add(Material.AIR);
-    this.ignoredMaterials.add(Material.TALL_GRASS);
   }
 
   public Ability getAbility(String name) {
@@ -56,47 +66,85 @@ public class AbilityManager {
     return null;
   }
 
-  public void execute(final Ability ability, final AttributedEntity caster,
-      AttributedEntity target) {
-    LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + ability.getId());
-    if (ability.getCooldown() != 0 && !caster.isCooledDown(ability)) {
-      LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
-      if (ability.isDisplayCd() && caster.getEntity() instanceof Player) {
-        MessageUtils.sendActionBar((Player) caster.getEntity(), ON_COOLDOWN);
+  public void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
+    }
+    coolingDownAbilities.get(livingEntity).put(ability, ability.getCooldown() * 20);
+  }
+
+  public double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      return 0;
+    }
+    return coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
+  }
+
+  public void tickAbilityCooldowns(int tickRate) {
+    for (LivingEntity le : coolingDownAbilities.keySet()) {
+      if (le == null || !le.isValid()) {
+        coolingDownAbilities.remove(le);
+        continue;
       }
-      return;
-    }
-    if (ability.getTargetType() == TargetType.SELF) {
-      target = caster;
-    }
-    if (!PlayerDataUtil.areConditionsMet(caster, target, ability.getConditions())) {
-      LogUtil.printDebug("Conditions not met for ability. Failed.");
-      return;
-    }
-    LivingEntity targetEntity;
-    if (target == null) {
-      targetEntity = getTarget(caster, ability);
-      if (targetEntity == null) {
-        if (ability.isDisplayCd() && caster instanceof Player) {
-          MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
+      for (Ability ability : coolingDownAbilities.get(le).keySet()) {
+        int ticks = coolingDownAbilities.get(le).get(ability);
+        if (ticks <= tickRate) {
+          coolingDownAbilities.get(le).remove(ability);
+          continue;
         }
-        LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
-        return;
+        coolingDownAbilities.get(le).put(ability, ticks - tickRate);
       }
-      target = plugin.getAttributedEntityManager().getAttributedEntity(targetEntity);
-    } else {
-      targetEntity = target.getEntity();
     }
-    LogUtil.printDebug("Target: " + PlayerDataUtil.getName(targetEntity));
+  }
+
+  public void savePlayerCooldowns(Player player) {
+    if (coolingDownAbilities.containsKey(player)) {
+      savedPlayerCooldowns.put(player.getUniqueId(), coolingDownAbilities.get(player));
+      coolingDownAbilities.remove(player);
+    }
+  }
+
+  public void loadPlayerCooldowns(Player player) {
+    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
+    if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
+      coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
+      savedPlayerCooldowns.remove(player.getUniqueId());
+    }
+  }
+
+  public boolean isCooledDown(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
+    }
+    return !coolingDownAbilities.get(livingEntity).containsKey(ability);
+  }
+
+  public void execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
+    if (ability.getCooldown() != 0 && !isCooledDown(caster.getEntity(), ability)) {
+      LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
+      return;
+    }
+    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
+      caster.getChampion().getDetailsContainer().addWeights(ability);
+    }
+    Set<LivingEntity> targets = getTargets(caster, target, ability);
+    if (targets == null) {
+      LogUtil.printError("Null ability target list for " + ability.getName() + "! Somethin bork");
+      return;
+    }
+    if (targets.isEmpty() && ability.getTargetType() == TargetType.SINGLE_OTHER) {
+      doTargetNotFoundPrompt(caster, ability);
+      return;
+    }
     if (ability.getCooldown() != 0) {
-      caster.setCooldown(ability);
+      startAbilityCooldown(caster.getEntity(), ability);
     }
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
       if (effect instanceof Wait) {
         LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
-        runEffects(caster, target, taskEffects, waitTicks);
+        runEffects(caster, targets, taskEffects, waitTicks);
         waitTicks += ((Wait) effect).getTickDelay();
         taskEffects = new ArrayList<>();
         continue;
@@ -104,17 +152,14 @@ public class AbilityManager {
       taskEffects.add(effect);
       LogUtil.printDebug("Added effect " + effect.getName() + " to task list");
     }
-    runEffects(caster, target, taskEffects, waitTicks);
-    if (TEST_CHICKEN.equals(targetEntity.getCustomName())) {
-      targetEntity.remove();
-    }
+    runEffects(caster, targets, taskEffects, waitTicks);
   }
 
-  public void execute(Ability ability, final AttributedEntity caster) {
+  public void execute(Ability ability, final StrifeMob caster) {
     execute(ability, caster, null);
   }
 
-  public void uniqueAbilityCast(AttributedEntity caster, AbilityType type) {
+  public void uniqueAbilityCast(StrifeMob caster, AbilityType type) {
     EntityAbilitySet abilitySet = plugin.getUniqueEntityManager().getAbilitySet(caster.getEntity());
     if (abilitySet == null) {
       return;
@@ -136,24 +181,27 @@ public class AbilityManager {
     }
   }
 
-  public void checkPhaseChange(AttributedEntity attributedEntity) {
-    LogUtil.printDebug("Checking phase switch");
-    LivingEntity livingEntity = attributedEntity.getEntity();
-    int currentPhase = plugin.getUniqueEntityManager().getPhase(attributedEntity.getEntity());
-    int newPhase =
-        6 - (int) Math.ceil((livingEntity.getHealth() / livingEntity.getMaxHealth()) / 0.2);
-    LogUtil.printDebug("currentPhase: " + currentPhase + " | newPhase: " + newPhase);
+  public void checkPhaseChange(LivingEntity entity) {
+    if (!plugin.getUniqueEntityManager().isUniqueEntity(entity)) {
+      LogUtil.printDebug("Trying to check phase on non-unique: " + PlayerDataUtil.getName(entity));
+      return;
+    }
+    LogUtil.printDebug(" - Checking phase switch");
+    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(entity);
+    int currentPhase = plugin.getUniqueEntityManager().getPhase(strifeMob.getEntity());
+    LogUtil.printDebug(" - Current Phase: " + currentPhase);
+    int newPhase = 6 - (int) Math.ceil((entity.getHealth() / entity.getMaxHealth()) / 0.2);
+    LogUtil.printDebug(" - New Phase: " + newPhase);
     if (newPhase > currentPhase) {
-      plugin.getUniqueEntityManager().getLiveUniquesMap().get(livingEntity).setPhase(newPhase);
-      uniqueAbilityCast(attributedEntity, AbilityType.PHASE_SHIFT);
+      plugin.getUniqueEntityManager().getLiveUniquesMap().get(entity).setPhase(newPhase);
+      uniqueAbilityCast(strifeMob, AbilityType.PHASE_SHIFT);
     }
   }
 
-  private void abilityPhaseCast(AttributedEntity caster, Map<Integer, List<Ability>> abilitySection,
+  private void abilityPhaseCast(StrifeMob caster, Map<Integer, List<Ability>> abilitySection,
       int phase) {
     if (phase > 5) {
-      LogUtil.printError("Attempted to use ability phase higher than 5? Likely a code bug...");
-      return;
+      throw new IllegalArgumentException("Phase cannot be higher than 5");
     }
     if (abilitySection.containsKey(phase)) {
       executeAbilityList(caster, abilitySection.get(phase));
@@ -164,65 +212,76 @@ public class AbilityManager {
     }
   }
 
-  private void executeAbilityList(AttributedEntity caster, List<Ability> abilities) {
+  private void executeAbilityList(StrifeMob caster, List<Ability> abilities) {
     for (Ability a : abilities) {
       execute(a, caster);
     }
   }
 
-  private void runEffects(AttributedEntity caster, AttributedEntity target, List<Effect> effectList,
+  private void runEffects(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList,
       int delay) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      LogUtil.printDebug("Effect task started - " + effectList.toString());
+      LogUtil.printDebug("Effect task (Location) started - " + effectList.toString());
       if (!caster.getEntity().isValid()) {
-        LogUtil.printDebug("Task cancelled, caster is dead");
+        LogUtil.printDebug(" - Task cancelled, caster is dead");
         return;
       }
       for (Effect effect : effectList) {
-        LogUtil.printDebug("Executing effect " + effect.getName());
-        plugin.getEffectManager().execute(effect, caster, target);
+        LogUtil.printDebug(" - Executing effect " + effect.getName());
+        plugin.getEffectManager().execute(effect, caster, targets);
       }
-      LogUtil.printDebug("Completed effect task.");
+      LogUtil.printDebug(" - Completed effect task.");
     }, delay);
   }
 
-  private LivingEntity getTarget(AttributedEntity caster, Ability ability) {
+  private Set<LivingEntity> getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
+    Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF:
-        return caster.getEntity();
-      case OTHER:
-        return selectFirstEntityInSight(caster.getEntity(), (int) ability.getRange());
-      case RANGE:
-        LivingEntity target = selectFirstEntityInSight(caster.getEntity(),
-            (int) ability.getRange());
-        if (target == null) {
-          target = getBackupEntity(caster.getEntity(), ability.getRange());
+        targets.add(caster.getEntity());
+        return targets;
+      case SINGLE_OTHER:
+        if (target != null) {
+          targets.add(target);
+        } else {
+          targets.add(selectFirstEntityInSight(caster.getEntity(), ability.getRange()));
         }
-        return target;
+        return targets;
+      case AREA_LINE:
+        return getEntitiesInLine(caster.getEntity(), ability.getRange());
+      case AREA_RADIUS:
+        return getEntitiesInRadius(caster.getEntity(), ability.getRange());
+      case TARGET_AREA:
+        if (target == null) {
+          target = selectFirstEntityInSight(caster.getEntity(), ability.getRange());
+        }
+        if (target == null) {
+          return getEntitiesInRadius(
+              getTargetLocation(caster.getEntity(), (int) ability.getRange()), ability.getRadius());
+        }
+        return getEntitiesInRadius(target, ability.getRadius());
     }
     return null;
   }
 
-  private LivingEntity selectFirstEntityInSight(LivingEntity caster, int range) {
-    if (caster instanceof Creature && ((Creature) caster).getTarget() != null) {
-      LogUtil.printDebug("Creature target found. Using it instead of raycast");
-      return ((Creature) caster).getTarget();
+  private LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
+    if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
+      LogUtil.printDebug("Mob target found. Using it instead of raycast");
+      return ((Mob) caster).getTarget();
     }
-    LogUtil.printDebug("No creature target found. Using raycast");
+    LogUtil.printDebug("No mob target found. Using raycast");
+    Location eyeLoc = caster.getEyeLocation();
+    Vector direction = caster.getEyeLocation().getDirection();
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    ArrayList<Block> sightBlock = (ArrayList<Block>) caster.getLineOfSight(ignoredMaterials, range);
-    ArrayList<Location> sight = new ArrayList<>();
-    for (Block b : sightBlock) {
-      sight.add(b.getLocation());
-    }
-    for (Location loc : sight) {
+    for (double incRange = 0; incRange >= range; incRange += 1) {
+      Location loc = eyeLoc.clone().add(direction.multiply(incRange));
       for (Entity entity : entities) {
         if (!(entity instanceof LivingEntity)) {
           continue;
         }
-        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1.3) {
-          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 1.5) {
-            if (Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1.3) {
+        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1) {
+          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 1) {
+            if (Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
               return (LivingEntity) entity;
             }
           }
@@ -232,20 +291,75 @@ public class AbilityManager {
     return null;
   }
 
-  private LivingEntity getBackupEntity(LivingEntity caster, double range) {
-    Block block = caster.getTargetBlock(null, (int) range);
-    Location location;
-    if (block != null) {
-      location = block.getLocation().clone();
-      location.subtract(caster.getLocation().getDirection().normalize().multiply(0.65));
-    } else {
-      location = caster.getLocation().clone();
-      location.add(location.getDirection().normalize().multiply(range - 0.65));
+  private Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
+    Set<LivingEntity> targets = new HashSet<>();
+    Location eyeLoc = caster.getEyeLocation();
+    Vector direction = caster.getEyeLocation().getDirection();
+    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
+    for (double incRange = 0; incRange >= range; incRange += 1) {
+      Location loc = eyeLoc.clone().add(direction.multiply(incRange));
+      for (Entity entity : entities) {
+        if (!(entity instanceof LivingEntity)) {
+          continue;
+        }
+        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1) {
+          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 1) {
+            if (Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
+              targets.add((LivingEntity) entity);
+            }
+          }
+        }
+      }
     }
-    LivingEntity chicken = (Chicken) location.getWorld().spawnEntity(location, EntityType.CHICKEN);
-    chicken.setCustomNameVisible(true);
-    chicken.setCustomName(TEST_CHICKEN);
-    return chicken;
+    return targets;
+  }
+
+  private Set<LivingEntity> getEntitiesInRadius(LivingEntity center, double range) {
+    Set<LivingEntity> targets = new HashSet<>();
+    if (center == null) {
+      LogUtil.printWarning("Null center for getEntitiesInRadius... some ability is borked...");
+      return targets;
+    }
+    ArrayList<Entity> entities = (ArrayList<Entity>) center.getNearbyEntities(range, range, range);
+    for (Entity entity : entities) {
+      if (!(entity instanceof LivingEntity)) {
+        continue;
+      }
+      if (center.hasLineOfSight(entity)) {
+        targets.add((LivingEntity) entity);
+      }
+    }
+    return targets;
+  }
+
+  private Set<LivingEntity> getEntitiesInRadius(Location location, double range) {
+    return DamageUtil.getLOSEntitiesAroundLocation(location, range);
+  }
+
+  private Location getTargetLocation(LivingEntity caster, double range) {
+    Block sightBlock = caster.getTargetBlock(null, (int) range);
+    if (sightBlock == null || sightBlock.getType() == Material.AIR) {
+      System.out.println("using max distance");
+      return caster.getEyeLocation().clone().add(
+          caster.getEyeLocation().getDirection().multiply(range));
+    }
+    System.out.println("using targetblock minus eye direction");
+    double dist = sightBlock.getLocation().distance(caster.getEyeLocation()) - 0.65;
+    return caster.getEyeLocation().clone().add(
+        caster.getEyeLocation().getDirection().multiply(dist));
+  }
+
+  private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {
+    if (!(ability.isShowMessages() && caster instanceof Player)) {
+      return;
+    }
+    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
+    LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
+    ((Player) caster.getEntity()).playSound(
+        caster.getEntity().getLocation(),
+        Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
+        1f,
+        1f);
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {
@@ -259,6 +373,11 @@ public class AbilityManager {
     }
     int cooldown = cs.getInt("cooldown", 0);
     int range = cs.getInt("range", 0);
+    double radius = cs.getDouble("radius", 0);
+    if (targetType == TargetType.TARGET_AREA && radius == 0) {
+      LogUtil.printWarning("Skipping ability " + key + ". TARGET_AREA requires 'radius' > 0.");
+      return;
+    }
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");
@@ -268,13 +387,13 @@ public class AbilityManager {
     for (String s : effectStrings) {
       Effect effect = plugin.getEffectManager().getEffect(s);
       if (effect == null) {
-        LogUtil.printWarning(" Failed to add unknown effect '" + s + "' to ability '" + s + "'");
+        LogUtil.printWarning(" Failed to add unknown effect '" + s + "' to ability '" + key + "'");
         continue;
       }
       effects.add(effect);
       LogUtil.printDebug(" Added effect '" + s + "' to ability '" + key + "'");
     }
-    boolean displayCd = cs.getBoolean("show-cooldown-messages", false);
+    boolean showMessages = cs.getBoolean("show-messages", false);
     List<String> conditionStrings = cs.getStringList("conditions");
     Set<Condition> conditions = new HashSet<>();
     for (String s : conditionStrings) {
@@ -285,8 +404,71 @@ public class AbilityManager {
       }
       conditions.add(plugin.getEffectManager().getConditions().get(s));
     }
-    loadedAbilities.put(key,
-        new Ability(key, name, effects, targetType, range, cooldown, displayCd, conditions));
+    AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
+    String particle = cs.getString("particle");
+    SpawnParticle abilityParticle = null;
+    if (StringUtils.isNotBlank(particle)) {
+      abilityParticle = (SpawnParticle) plugin.getEffectManager().getEffect(particle);
+    }
+    loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, radius, cooldown,
+        showMessages, conditions, abilityIconData, abilityParticle));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
+  }
+
+  private AbilityIconData buildIconData(String key, ConfigurationSection iconSection) {
+    if (iconSection == null) {
+      return null;
+    }
+    LogUtil.printDebug("Ability " + key + " has icon!");
+    String format = TextUtils.color(iconSection.getString("format", "&f&l"));
+    Material material = Material.valueOf(iconSection.getString("material"));
+    List<String> lore = TextUtils.color(iconSection.getStringList("lore"));
+    ItemStack icon = new ItemStack(material);
+    ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
+    ItemStackExtensionsKt.setLore(icon, lore);
+    ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
+    ItemUtil.removeAttributes(icon);
+
+    AbilityIconData data = new AbilityIconData(icon);
+
+    data.setAbilitySlot(AbilitySlot.valueOf(iconSection.getString("trigger-slot")));
+    data.setLevelRequirement(iconSection.getInt("level-requirement", 0));
+    data.setBonusLevelRequirement(iconSection.getInt("bonus-level-requirement", 0));
+
+    Map<StrifeAttribute, Integer> attrReqs = new HashMap<>();
+    ConfigurationSection attrSection = iconSection
+        .getConfigurationSection("attribute-requirements");
+    if (attrSection != null) {
+      for (String s : attrSection.getKeys(false)) {
+        StrifeAttribute attr = plugin.getAttributeManager().getAttribute(s);
+        int value = attrSection.getInt(s);
+        attrReqs.put(attr, value);
+      }
+    }
+    Map<LifeSkillType, Integer> skillReqs = new HashMap<>();
+    ConfigurationSection skillSecion = iconSection.getConfigurationSection("skill-requirements");
+    if (skillSecion != null) {
+      for (String s : skillSecion.getKeys(false)) {
+        LifeSkillType skill = LifeSkillType.valueOf(s);
+        int value = skillSecion.getInt(s);
+        skillReqs.put(skill, value);
+      }
+    }
+    Map<LifeSkillType, Float> expWeight = new HashMap<>();
+    ConfigurationSection weightSection = iconSection.getConfigurationSection("exp-weights");
+    if (weightSection != null) {
+      for (String s : weightSection.getKeys(false)) {
+        LifeSkillType skill = LifeSkillType.valueOf(s);
+        double value = weightSection.getDouble(s);
+        expWeight.put(skill, (float) value);
+      }
+    }
+    data.getAttributeRequirement().clear();
+    data.getAttributeRequirement().putAll(attrReqs);
+    data.getLifeSkillRequirements().clear();
+    data.getLifeSkillRequirements().putAll(skillReqs);
+    data.getExpWeights().clear();
+    data.getExpWeights().putAll(expWeight);
+    return data;
   }
 }

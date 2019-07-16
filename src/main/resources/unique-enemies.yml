@@ -1,141 +1,133 @@
 version: "0.0.1"
 zombiechamp:
-    name: "&fZombie Champion&4 (Lv 230)"
-    type: ZOMBIE
-    attributes:
-        MELEE_DAMAGE: 1
-        RANGED_DAMAGE: 1
-        MAGIC_DAMAGE: 1
-        ARMOR: 10
-        WARDING: 5
-        EVASION: 5
-        ACCURACY: 5
-        ARMOR_PENETRATION: 10
-        WARD_PENETRATION: 10
-        ACCURACY: 1
-        FIRE_RESIST: -20
-        DARK_RESIST: 10
-        ALL_RESIST: 10
-        DAMAGE_REDUCTION: 0.1
-    equipment:
-        main-hand: item-name-two
-        off-hand: item-name-two
-        helmet: item-name-two
-        chestplate: item-name-two
-        leggings: item-name-two
-        boots: item-name-two
-    particles:
-        radius: 2
-        count: 20
-        effect: FLAME
-    abilities:
-        phase1:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
-        phase2:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
-        phase3:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
-        phase4:
-             phase-begin:
-             - BuffSelfResist
-             on-hit:
-             - Fireball
-             when-hit:
-             - IgniteAttacker
-             - Invisible5s
-        phase4:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
+  name: "&fZombie Champion&4 (Lv 230)"
+  type: ZOMBIE
+  disguise: PLAYER
+  disguise-player: "Pur3p0w3r"
+  stats:
+    MELEE_DAMAGE: 1
+    RANGED_DAMAGE: 1
+    MAGIC_DAMAGE: 1
+    ARMOR: 10
+    WARDING: 5
+    EVASION: 5
+    ACCURACY: 5
+    ARMOR_PENETRATION: 10
+    WARD_PENETRATION: 10
+    FIRE_RESIST: -20
+    DARK_RESIST: 10
+    ALL_RESIST: 10
+    DAMAGE_REDUCTION: 0.1
+  equipment:
+    main-hand: item-name-two
+    off-hand: item-name-two
+    helmet: item-name-two
+    chestplate: item-name-two
+    leggings: item-name-two
+    boots: item-name-two
+  particles:
+    radius: 2
+    count: 20
+    effect: FLAME
+  abilities:
+    phase1:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase2:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase3:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase4:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
 skeletonchamp:
-    type: SKELETON
-    name: "&fskeleton Champion&4 (Lv 230)"
-    attributes:
-        MELEE_DAMAGE: 1
-        RANGED_DAMAGE: 1
-        MAGIC_DAMAGE: 1
-        ARMOR: 10
-        WARDING: 5
-        EVASION: 5
-        ACCURACY: 5
-        ARMOR_PENETRATION: 0.5
-        WARD_PENETRATION: 0.5
-        ACCURACY: 1
-        FIRE_RESIST: -20
-        DARK_RESIST: 10
-        ALL_RESIST: 0.35
-        DAMAGE_REDUCTION: 0.1
-    equipment:
-        main-hand: item-name
-        off-hand: item-name
-        helmet: item-name
-        chestplate: item-name
-        leggings: item-name
-        boots: item-name
-    particles:
-        radius: 2
-        count: 20
-        effect: FLAME
-    abilities:
-        phase1:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
-        phase2:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
-        phase3:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
-        phase4:
-             phase-begin:
-             - BuffSelfResist
-             on-hit:
-             - Fireball
-             when-hit:
-             - IgniteAttacker
-             - Invisible5s
-        phase4:
-            phase-begin:
-            - BuffSelfResist
-            on-hit:
-            - Fireball
-            when-hit:
-            - IgniteAttacker
-            - Invisible5s
+  type: SKELETON
+  name: "&fskeleton Champion&4 (Lv 230)"
+  stats:
+    MELEE_DAMAGE: 1
+    RANGED_DAMAGE: 1
+    MAGIC_DAMAGE: 1
+    ARMOR: 10
+    WARDING: 5
+    EVASION: 5
+    ACCURACY: 5
+    ARMOR_PENETRATION: 0.5
+    WARD_PENETRATION: 0.5
+    FIRE_RESIST: -20
+    DARK_RESIST: 10
+    ALL_RESIST: 0.35
+    DAMAGE_REDUCTION: 0.1
+  equipment:
+    main-hand: item-name
+    off-hand: item-name
+    helmet: item-name
+    chestplate: item-name
+    leggings: item-name
+    boots: item-name
+  particles:
+    radius: 2
+    count: 20
+    effect: FLAME
+  abilities:
+    phase1:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase2:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase3:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase4:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s
+    phase5:
+      phase-begin:
+        - BuffSelfResist
+      on-hit:
+        - Fireball
+      when-hit:
+        - IgniteAttacker
+        - Invisible5s

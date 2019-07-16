@@ -1,20 +1,27 @@
 package info.faceland.strife.conditions;
 
-import info.faceland.strife.data.AttributedEntity;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.potion.PotionEffectType;
 
 public class ChanceCondition implements Condition {
 
   private final double chance;
-  private final Comparison comparison;
+  private final Map<StrifeStat, Double> statMults = new HashMap<>();
 
-  public ChanceCondition(Comparison comparison, double chance) {
-    this.comparison = comparison;
+  public ChanceCondition(double chance) {
     this.chance = chance;
   }
 
-  public boolean isMet(AttributedEntity attacker, AttributedEntity target) {
-    return DamageUtil.rollBool(chance, attacker.getEntity().hasPotionEffect(PotionEffectType.LUCK));
+  public boolean isMet(StrifeMob attacker, StrifeMob target) {
+    double bonusChance = 1;
+    for (StrifeStat attr : statMults.keySet()) {
+      bonusChance += attacker.getStat(attr) * statMults.get(attr);
+    }
+    return DamageUtil.rollBool(chance * bonusChance,
+        attacker.getEntity().hasPotionEffect(PotionEffectType.LUCK));
   }
 }
