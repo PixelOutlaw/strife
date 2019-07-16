@@ -26,14 +26,18 @@ import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EvokerFangs;
@@ -439,6 +443,28 @@ public class DamageUtil {
         event.setDamage(modifier, 0D);
       }
     }
+  }
+
+  public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
+    ArmorStand stando = buildAndRemoveDetectionStand(loc);
+    Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius/2, radius);
+    Set<LivingEntity> validTargets = new HashSet<>();
+    for (Entity e : targetList) {
+      if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
+        validTargets.add((LivingEntity) e);
+      }
+    }
+    targetList.remove(stando);
+    LogUtil.printDebug(" Targeting " + targetList.size() + " targets!");
+    return validTargets;
+  }
+
+  private static ArmorStand buildAndRemoveDetectionStand(Location location) {
+    ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class);
+    stando.setVisible(false);
+    stando.setSmall(true);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
+    return stando;
   }
 
   public static double rollDouble(boolean lucky) {

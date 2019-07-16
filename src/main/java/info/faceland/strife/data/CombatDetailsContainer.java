@@ -1,5 +1,6 @@
 package info.faceland.strife.data;
 
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.LifeSkillType;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +10,10 @@ public class CombatDetailsContainer {
   private Map<LifeSkillType, Float> skillWeight = new HashMap<>();
   private float totalExp = 0;
 
-  public void addWeight(LifeSkillType type, float amount) {
-    skillWeight.put(type, skillWeight.getOrDefault(type, 0f) + amount);
+  public void addWeights(Ability ability) {
+    for (LifeSkillType type : ability.getAbilityIconData().getExpWeights().keySet()) {
+      skillWeight.put(type, skillWeight.getOrDefault(type, 0f) + ability.getAbilityIconData().getExpWeights().get(type));
+    }
   }
 
   public void addExp(float amount) {

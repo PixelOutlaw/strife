@@ -1,6 +1,7 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.AttributeCondition;
 import info.faceland.strife.conditions.BarrierCondition;
 import info.faceland.strife.conditions.BleedingCondition;
@@ -42,6 +43,7 @@ import info.faceland.strife.effects.RestoreBarrier;
 import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.SpawnParticle.ParticleOriginLocation;
+import info.faceland.strife.effects.SpawnParticle.ParticleStyle;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
@@ -51,16 +53,19 @@ import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -81,37 +86,26 @@ public class EffectManager {
     this.conditions = new HashMap<>();
   }
 
-  public void execute(String effectName, StrifeMob caster, StrifeMob target) {
-    Effect effect = getEffect(effectName);
-    if (effect == null) {
-      return;
-    }
-    execute(effect, caster, target);
-  }
-
-  public void execute(Effect effect, StrifeMob caster, StrifeMob target) {
-    if (effect.isForceTargetCaster()) {
-      target = caster;
-    }
-
-    List<LivingEntity> targets;
-    if (target != null) {
-      targets = getEffectTargets(caster.getEntity(), target.getEntity(), effect.getRange());
-    } else {
-      targets = getEffectTargets(caster.getEntity(), loc, effect.getRange());
-    }
-
-    if (!effect.isFriendly()) {
-      targets.remove(caster.getEntity());
-      for (StrifeMob mob : caster.getMinions()) {
-        targets.remove(mob.getEntity());
-      }
-    }
+  public void execute(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
     applyEffectToTargets(effect, caster, targets);
   }
 
-  private void applyEffectToTargets(Effect effect, StrifeMob caster, List<LivingEntity> targets) {
+  public void execute(Effect effect, StrifeMob caster, StrifeMob strifeMob) {
+    applyEffectToTarget(effect, caster, strifeMob);
+  }
+
+  private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
+    Set<LivingEntity> finalTargets = new HashSet<>(targets);
     for (LivingEntity le : targets) {
+      finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
+    }
+    if (!effect.isFriendly()) {
+      finalTargets.remove(caster.getEntity());
+      for (StrifeMob mob : caster.getMinions()) {
+        finalTargets.remove(mob.getEntity());
+      }
+    }
+    for (LivingEntity le : finalTargets) {
       if (!effect.isFriendly() && caster.getEntity() instanceof Player && le instanceof Player) {
         if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
           continue;
@@ -127,9 +121,27 @@ public class EffectManager {
     }
   }
 
-  private List<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target,
-      double range) {
-    List<LivingEntity> targets = new ArrayList<>();
+  private void applyEffectToTarget(Effect effect, StrifeMob caster, StrifeMob target) {
+    if (!effect.isFriendly()) {
+      if (caster.getMinions().contains(target)) {
+        return;
+      }
+      if (caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
+        if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) target.getEntity())) {
+          return;
+        }
+      }
+    }
+    LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
+    if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
+      LogUtil.printDebug(" Condition not met! Skipping...");
+      return;
+    }
+    effect.apply(caster, target);
+  }
+
+  private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
+    Set<LivingEntity> targets = new HashSet<>();
     if (target == null) {
       LogUtil.printError(" Missing targets! Returning empty list");
       return targets;
@@ -139,20 +151,8 @@ public class EffectManager {
       targets.add(target);
       return targets;
     }
-    for (Entity e : target.getNearbyEntities(range, range, range)) {
+    for (Entity e : target.getNearbyEntities(range, range/2, range)) {
       if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
-        targets.add((LivingEntity) e);
-      }
-    }
-    targets.remove(caster);
-    LogUtil.printDebug(" Targeting " + targets.size() + " targets!");
-    return targets;
-  }
-
-  private List<LivingEntity> getEffectTargets(LivingEntity caster, Location loc, double range) {
-    List<LivingEntity> targets = new ArrayList<>();
-    for (Entity e : loc.getWorld().getNearbyEntities(loc, range, range, range)) {
-      if (e instanceof LivingEntity) {
         targets.add((LivingEntity) e);
       }
     }
@@ -322,6 +322,8 @@ public class EffectManager {
         ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
         ((SpawnParticle) effect).setParticleOriginLocation(
             ParticleOriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((SpawnParticle) effect).setStyle(ParticleStyle.valueOf(cs.getString("style", "NORMAL")));
+        ((SpawnParticle) effect).setSize(cs.getDouble("size", 1));
         break;
     }
     if (effectType != EffectType.WAIT) {

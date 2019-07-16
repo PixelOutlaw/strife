@@ -99,7 +99,7 @@ public class LoreAbilityManager {
   public void applyLoreAbility(LoreAbility la, StrifeMob caster, StrifeMob target) {
     LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + la.getId());
     if (la.getAbility() != null) {
-      abilityManager.execute(la.getAbility(), caster, target);
+      abilityManager.execute(la.getAbility(), caster, target.getEntity());
     }
     for (Effect effect : la.getEffects()) {
       effectManager.execute(effect, caster, target);

@@ -64,6 +64,10 @@ public class BarrierManager {
     return barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0D);
   }
 
+  public boolean hasBarrierEntry(LivingEntity livingEntity) {
+    return barrierMap.containsKey(livingEntity.getUniqueId());
+  }
+
   public void setEntityBarrier(UUID uuid, double amount) {
     barrierMap.put(uuid, amount);
   }
@@ -137,12 +141,8 @@ public class BarrierManager {
       return;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();
-    LogUtil.printDebug("restoreBarrier: " + PlayerDataUtil.getName(strifeMob.getEntity()));
-    LogUtil.printDebug(" starting barrier: " + barrierMap.get(uuid));
-    double newBarrierValue = Math
-        .min(barrierMap.get(uuid) + amount, strifeMob.getStat(BARRIER));
+    double newBarrierValue = Math.min(barrierMap.get(uuid) + amount, strifeMob.getStat(BARRIER));
     setEntityBarrier(uuid, newBarrierValue);
-    LogUtil.printDebug(" ending barrier: " + barrierMap.get(uuid));
     updateShieldDisplay(strifeMob);
   }
 

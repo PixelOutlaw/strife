@@ -132,7 +132,7 @@ public class StrifeDamageEventListener implements Listener {
         if (StringUtils.isBlank(s)) {
           continue;
         }
-        plugin.getEffectManager().execute(s, attacker, defender);
+        plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, defender);
       }
       defender.getEntity().damage(0, attacker.getEntity());
       return;
