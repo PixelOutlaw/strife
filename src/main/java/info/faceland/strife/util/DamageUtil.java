@@ -454,14 +454,14 @@ public class DamageUtil {
         validTargets.add((LivingEntity) e);
       }
     }
-    targetList.remove(stando);
+    validTargets.remove(stando);
     LogUtil.printDebug(" Targeting " + targetList.size() + " targets!");
     return validTargets;
   }
 
   private static ArmorStand buildAndRemoveDetectionStand(Location location) {
-    ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class);
-    stando.setVisible(false);
+    ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class,
+        e -> e.setVisible(false));
     stando.setSmall(true);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
     return stando;
