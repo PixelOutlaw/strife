@@ -335,7 +335,7 @@ public class AbilityManager {
   }
 
   private Location getTargetLocation(LivingEntity caster, double range) {
-    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range);
+    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range+1);
     Block sightBlock = null;
     while (bi.hasNext()) {
       Block b = bi.next();
