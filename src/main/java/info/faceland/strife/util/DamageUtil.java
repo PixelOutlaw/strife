@@ -485,6 +485,9 @@ public class DamageUtil {
         if (!(e instanceof LivingEntity)) {
           continue;
         }
+        if (!e.isValid()) {
+          continue;
+        }
         Location l = e.getLocation();
         double ex = l.getX();
         double ey = l.getY();
