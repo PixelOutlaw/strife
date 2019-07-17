@@ -44,8 +44,8 @@ public class AbilityPickerMenu extends ItemMenu {
   public enum AbilityMenuType {
     BASIC_LEVEL_MENU,
     MELEE_ABILITY,
-    MAGIC_ABILITY,
     ARCHERY_ABILITY,
+    MAGIC_ABILITY,
     LIFE_SKILL
   }
 

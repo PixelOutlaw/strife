@@ -27,6 +27,7 @@ import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
@@ -54,6 +56,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BlockIterator;
 
 public class DamageUtil {
 
@@ -447,7 +450,8 @@ public class DamageUtil {
 
   public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
     ArmorStand stando = buildAndRemoveDetectionStand(loc);
-    Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius/2, radius);
+    Collection<Entity> targetList = loc.getWorld()
+        .getNearbyEntities(loc, radius, radius / 2, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity e : targetList) {
       if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
@@ -455,7 +459,6 @@ public class DamageUtil {
       }
     }
     validTargets.remove(stando);
-    LogUtil.printDebug(" Targeting " + targetList.size() + " targets!");
     return validTargets;
   }
 
@@ -465,6 +468,35 @@ public class DamageUtil {
     stando.setSmall(true);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
     return stando;
+  }
+
+  public static LivingEntity getFirstEntityInLOS(LivingEntity le, int range) {
+    List<Entity> targetList = le.getNearbyEntities(range, range, range);
+    BlockIterator bi = new BlockIterator(le, range);
+    Entity target = null;
+    while (bi.hasNext()) {
+      Block b = bi.next();
+      int bx = b.getX();
+      int by = b.getY();
+      int bz = b.getZ();
+      if (b.getType().isSolid()) {
+        break;
+      }
+      for (Entity e : targetList) {
+        if (!(e instanceof LivingEntity)) {
+          continue;
+        }
+        Location l = e.getLocation();
+        double ex = l.getX();
+        double ey = l.getY();
+        double ez = l.getZ();
+        if ((bx - .75 <= ex && ex <= bx + 1.75) && (bz - .75 <= ez && ez <= bz + 1.75) && (
+            by - 1 <= ey && ey <= by + 2.5)) {
+          target = e;
+        }
+      }
+    }
+    return (LivingEntity) target;
   }
 
   public static double rollDouble(boolean lucky) {
@@ -498,6 +530,8 @@ public class DamageUtil {
     FIRE,
     ICE,
     LIGHTNING,
+    EARTH,
+    LIGHT,
     DARK
   }
 

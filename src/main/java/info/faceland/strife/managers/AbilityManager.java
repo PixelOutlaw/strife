@@ -248,18 +248,18 @@ public class AbilityManager {
         }
         return targets;
       case AREA_LINE:
-        return getEntitiesInLine(caster.getEntity(), ability.getRange());
+        return getEntitiesInLine(caster.getEntity(), ability, ability.getRange());
       case AREA_RADIUS:
-        return getEntitiesInRadius(caster.getEntity(), ability.getRange());
+        return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
         if (target == null) {
           target = selectFirstEntityInSight(caster.getEntity(), ability.getRange());
         }
         if (target == null) {
-          return getEntitiesInRadius(
-              getTargetLocation(caster.getEntity(), (int) ability.getRange()), ability.getRadius());
+          Location location = getTargetLocation(caster.getEntity(), (int) ability.getRange());
+          return getEntitiesInRadius(location, ability, ability.getRadius());
         }
-        return getEntitiesInRadius(target, ability.getRadius());
+        return getEntitiesInRadius(target, ability, ability.getRadius());
     }
     return null;
   }
@@ -270,28 +270,10 @@ public class AbilityManager {
       return ((Mob) caster).getTarget();
     }
     LogUtil.printDebug("No mob target found. Using raycast");
-    Location eyeLoc = caster.getEyeLocation();
-    Vector direction = caster.getEyeLocation().getDirection();
-    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    for (double incRange = 0; incRange >= range; incRange += 1) {
-      Location loc = eyeLoc.clone().add(direction.multiply(incRange));
-      for (Entity entity : entities) {
-        if (!(entity instanceof LivingEntity)) {
-          continue;
-        }
-        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1) {
-          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 1) {
-            if (Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
-              return (LivingEntity) entity;
-            }
-          }
-        }
-      }
-    }
-    return null;
+    return DamageUtil.getFirstEntityInLOS(caster, (int) range);
   }
 
-  private Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
+  private Set<LivingEntity> getEntitiesInLine(LivingEntity caster, Ability ability, double range) {
     Set<LivingEntity> targets = new HashSet<>();
     Location eyeLoc = caster.getEyeLocation();
     Vector direction = caster.getEyeLocation().getDirection();
@@ -311,42 +293,56 @@ public class AbilityManager {
         }
       }
     }
+    SpawnParticle particle = ability.getAbilityParticle();
+    if (particle != null) {
+      ability.getAbilityParticle()
+          .playAtLocation(caster.getEyeLocation(), caster.getEyeLocation().getDirection());
+    }
     return targets;
   }
 
-  private Set<LivingEntity> getEntitiesInRadius(LivingEntity center, double range) {
+  private Set<LivingEntity> getEntitiesInRadius(LivingEntity le, Ability ability, double range) {
     Set<LivingEntity> targets = new HashSet<>();
-    if (center == null) {
+    if (le == null) {
       LogUtil.printWarning("Null center for getEntitiesInRadius... some ability is borked...");
       return targets;
     }
-    ArrayList<Entity> entities = (ArrayList<Entity>) center.getNearbyEntities(range, range, range);
+    ArrayList<Entity> entities = (ArrayList<Entity>) le.getNearbyEntities(range, range, range);
     for (Entity entity : entities) {
       if (!(entity instanceof LivingEntity)) {
         continue;
       }
-      if (center.hasLineOfSight(entity)) {
+      if (le.hasLineOfSight(entity)) {
         targets.add((LivingEntity) entity);
       }
+    }
+    SpawnParticle particle = ability.getAbilityParticle();
+    if (particle != null) {
+      particle.playAtLocation(SpawnParticle.getLoc(particle.getOrigin(), le),
+          le.getEyeLocation().getDirection());
     }
     return targets;
   }
 
-  private Set<LivingEntity> getEntitiesInRadius(Location location, double range) {
+  private Set<LivingEntity> getEntitiesInRadius(Location location, Ability ability, double range) {
+    SpawnParticle particle = ability.getAbilityParticle();
+    if (particle != null) {
+      ability.getAbilityParticle().playAtLocation(location, location.getDirection());
+    }
     return DamageUtil.getLOSEntitiesAroundLocation(location, range);
   }
 
   private Location getTargetLocation(LivingEntity caster, double range) {
     Block sightBlock = caster.getTargetBlock(null, (int) range);
     if (sightBlock == null || sightBlock.getType() == Material.AIR) {
-      System.out.println("using max distance");
+      LogUtil.printDebug(" - Using MAX DISTANCE target location calculation");
       return caster.getEyeLocation().clone().add(
           caster.getEyeLocation().getDirection().multiply(range));
     }
-    System.out.println("using targetblock minus eye direction");
-    double dist = sightBlock.getLocation().distance(caster.getEyeLocation()) - 0.65;
-    return caster.getEyeLocation().clone().add(
-        caster.getEyeLocation().getDirection().multiply(dist));
+    LogUtil.printDebug(" - Using TARGET BLOCK target location calculation");
+    double dist = sightBlock.getLocation().add(0.5, 0.5, 0.5).distance(caster.getEyeLocation());
+    return caster.getEyeLocation().add(
+        caster.getEyeLocation().getDirection().multiply(Math.max(0, dist - 1)));
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {

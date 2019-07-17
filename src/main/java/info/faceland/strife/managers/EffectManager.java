@@ -44,10 +44,12 @@ import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.SpawnParticle.ParticleOriginLocation;
 import info.faceland.strife.effects.SpawnParticle.ParticleStyle;
 import info.faceland.strife.effects.Speak;
+import info.faceland.strife.effects.StandardDamage;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -60,6 +62,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -106,9 +109,9 @@ public class EffectManager {
         }
       }
       StrifeMob targetMob = aeManager.getStatMob(le);
-      LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(le));
+      LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(le));
       if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-        LogUtil.printDebug(" Condition not met! Continuing...");
+        LogUtil.printDebug(" - Condition not met! Continuing...");
         continue;
       }
       effect.apply(caster, aeManager.getStatMob(le));
@@ -126,9 +129,9 @@ public class EffectManager {
         }
       }
     }
-    LogUtil.printDebug(" Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
+    LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
     if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
-      LogUtil.printDebug(" Condition not met! Skipping...");
+      LogUtil.printDebug(" - Condition not met! Skipping...");
       return;
     }
     effect.apply(caster, target);
@@ -137,21 +140,21 @@ public class EffectManager {
   private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
     Set<LivingEntity> targets = new HashSet<>();
     if (target == null) {
-      LogUtil.printError(" Missing targets! Returning empty list");
       return targets;
     }
     if (range < 1) {
-      LogUtil.printDebug(" Self casting, low or no range");
       targets.add(target);
       return targets;
     }
     for (Entity e : target.getNearbyEntities(range, range/2, range)) {
+      if (e instanceof ArmorStand) {
+        continue;
+      }
       if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
         targets.add((LivingEntity) e);
       }
     }
     targets.remove(caster);
-    LogUtil.printDebug(" Targeting " + targets.size() + " targets!");
     return targets;
   }
 
@@ -188,6 +191,18 @@ public class EffectManager {
           LogUtil.printError("Skipping effect " + key + " for invalid damage scale/type");
           return;
         }
+        break;
+      case STANDARD_DAMAGE:
+        effect = new StandardDamage();
+        ((StandardDamage) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 1D));
+        ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
+        ConfigurationSection modCs = cs.getConfigurationSection("mods");
+        Map<DamageType, Double> modMap = new HashMap<>();
+        for (String k : modCs.getKeys(false)) {
+          DamageType mod = DamageType.valueOf(k);
+          modMap.put(mod, modCs.getDouble(k));
+        }
+        ((StandardDamage) effect).getDamageModifiers().putAll(modMap);
         break;
       case PROJECTILE:
         effect = new ShootProjectile();
@@ -488,6 +503,7 @@ public class EffectManager {
   }
 
   public enum EffectType {
+    STANDARD_DAMAGE,
     DAMAGE,
     HEAL,
     RESTORE_BARRIER,

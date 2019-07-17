@@ -2,6 +2,7 @@ package info.faceland.strife.data;
 
 import info.faceland.strife.data.buff.Buff;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import io.netty.util.internal.ConcurrentSet;
@@ -17,6 +18,7 @@ public class StrifeMob {
 
   private final Map<StrifeStat, Double> baseStats = new HashMap<>();
   private final Map<StrifeStat, Double> statCache = new HashMap<>();
+  private final Map<StrifeStat, Double> tempBonuses = new HashMap<>();
 
   private final Champion champion;
   private LivingEntity livingEntity;
@@ -66,9 +68,7 @@ public class StrifeMob {
   }
 
   public Map<StrifeStat, Double> getFinalStats() {
-    Map<StrifeStat, Double> returnMap = new HashMap<>(baseStats);
-    returnMap.putAll(getBuffStats());
-    return returnMap;
+    return StatUpdateManager.combineMaps(baseStats, getBuffStats(), tempBonuses);
   }
 
   public void setStats(Map<StrifeStat, Double> stats) {

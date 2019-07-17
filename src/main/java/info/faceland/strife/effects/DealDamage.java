@@ -11,7 +11,6 @@ public class DealDamage extends Effect {
   private double amount;
   private DamageScale damageScale;
   private DamageType damageType;
-  private boolean applyEffects;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -46,10 +45,6 @@ public class DealDamage extends Effect {
 
   public void setDamageType(DamageType damageType) {
     this.damageType = damageType;
-  }
-
-  public void setApplyEffects(boolean applyEffects) {
-    this.applyEffects = applyEffects;
   }
 
   public enum DamageScale {

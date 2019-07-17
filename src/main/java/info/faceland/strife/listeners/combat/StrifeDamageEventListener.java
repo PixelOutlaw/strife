@@ -56,6 +56,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AttackType;
+import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.StatUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -145,14 +146,22 @@ public class StrifeDamageEventListener implements Listener {
 
     double potionMult = getPotionMult(attacker.getEntity(), defender.getEntity());
 
-    double physicalBaseDamage = StatUtil.getBasePhysicalDamage(attacker, defender);
-    double magicBaseDamage = StatUtil.getBaseMagicalDamage(attacker, defender);
-    double fireBaseDamage = StatUtil.getBaseFireDamage(attacker, defender);
-    double iceBaseDamage = StatUtil.getBaseIceDamage(attacker, defender);
-    double lightningBaseDamage = StatUtil.getBaseLightningDamage(attacker, defender);
-    double earthBaseDamage = StatUtil.getBaseEarthDamage(attacker, defender);
-    double lightBaseDamage = StatUtil.getBaseLightDamage(attacker, defender);
-    double shadowBaseDamage = StatUtil.getBaseShadowDamage(attacker, defender);
+    double physicalBaseDamage = StatUtil.getBasePhysicalDamage(attacker, defender) *
+        event.getDamageMod(DamageType.PHYSICAL);
+    double magicBaseDamage = StatUtil.getBaseMagicalDamage(attacker, defender) *
+        event.getDamageMod(DamageType.MAGICAL);
+    double fireBaseDamage = StatUtil.getBaseFireDamage(attacker, defender) *
+        event.getDamageMod(DamageType.FIRE);
+    double iceBaseDamage = StatUtil.getBaseIceDamage(attacker, defender) *
+        event.getDamageMod(DamageType.ICE);
+    double lightningBaseDamage = StatUtil.getBaseLightningDamage(attacker, defender) *
+        event.getDamageMod(DamageType.LIGHTNING);
+    double earthBaseDamage = StatUtil.getBaseEarthDamage(attacker, defender) *
+        event.getDamageMod(DamageType.EARTH);
+    double lightBaseDamage = StatUtil.getBaseLightDamage(attacker, defender) *
+        event.getDamageMod(DamageType.LIGHT);
+    double shadowBaseDamage = StatUtil.getBaseShadowDamage(attacker, defender) *
+        event.getDamageMod(DamageType.DARK);
 
     switch (event.getAttackType()) {
       case MELEE:

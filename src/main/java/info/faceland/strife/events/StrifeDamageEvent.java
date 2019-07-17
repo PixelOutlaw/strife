@@ -19,8 +19,8 @@
 package info.faceland.strife.events;
 
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.AttackType;
+import info.faceland.strife.util.DamageUtil.DamageType;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Projectile;
@@ -42,17 +42,23 @@ public class StrifeDamageEvent extends Event implements Cancellable {
 
   private double attackMultiplier = 1;
   private double healMultiplier = 1;
+  private final Map<DamageType, Double> damageModifiers = new HashMap<>();
   private boolean isBlocking = false;
   private Projectile projectile;
   private String[] extraEffects;
-  private final Map<StrifeStat, Double> attackerBonuses = new HashMap<>();
-  private final Map<StrifeStat, Double> defenderBonuses = new HashMap<>();
   private boolean cancel;
 
   public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, AttackType attackType) {
     this.attacker = attacker;
     this.defender = defender;
     this.attackType = attackType;
+  }
+
+  public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, AttackType attackType, double attackMultiplier) {
+    this.attacker = attacker;
+    this.defender = defender;
+    this.attackType = attackType;
+    this.attackMultiplier = attackMultiplier;
   }
 
   @Override
@@ -112,12 +118,12 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     this.extraEffects = extraEffects;
   }
 
-  public Map<StrifeStat, Double> getAttackerBonuses() {
-    return attackerBonuses;
+  public Map<DamageType, Double> getDamageModifiers() {
+    return damageModifiers;
   }
 
-  public Map<StrifeStat, Double> getDefenderBonuses() {
-    return defenderBonuses;
+  public double getDamageMod(DamageType damageType) {
+    return damageModifiers.getOrDefault(damageType, 1D);
   }
 
   public void setCancelled(boolean cancel) {

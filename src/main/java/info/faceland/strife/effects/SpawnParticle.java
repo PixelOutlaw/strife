@@ -54,6 +54,10 @@ public class SpawnParticle extends Effect {
     this.particleOriginLocation = particleOriginLocation;
   }
 
+  public ParticleOriginLocation getOrigin() {
+    return particleOriginLocation;
+  }
+
   public void setStyle(ParticleStyle style) {
     this.style = style;
   }
@@ -66,7 +70,7 @@ public class SpawnParticle extends Effect {
     this.size = size;
   }
 
-  private Location getLoc(LivingEntity le) {
+  public Location getLoc(LivingEntity le) {
     switch (particleOriginLocation) {
       case HEAD:
         return le.getEyeLocation();
@@ -77,6 +81,19 @@ public class SpawnParticle extends Effect {
         return le.getLocation();
     }
     return null;
+  }
+
+  public static Location getLoc(ParticleOriginLocation origin, LivingEntity le) {
+    switch (origin) {
+      case HEAD:
+        return le.getEyeLocation();
+      case CENTER:
+        return le.getEyeLocation().clone()
+            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
+      case GROUND:
+      default:
+        return le.getLocation();
+    }
   }
 
   private void spawnParticleCircle(Location center, double radius) {
