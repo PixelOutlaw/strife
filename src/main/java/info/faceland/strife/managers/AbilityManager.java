@@ -36,12 +36,14 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 public class AbilityManager {
@@ -266,10 +268,8 @@ public class AbilityManager {
 
   private LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
     if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
-      LogUtil.printDebug("Mob target found. Using it instead of raycast");
       return ((Mob) caster).getTarget();
     }
-    LogUtil.printDebug("No mob target found. Using raycast");
     return DamageUtil.getFirstEntityInLOS(caster, (int) range);
   }
 
@@ -307,9 +307,10 @@ public class AbilityManager {
       LogUtil.printWarning("Null center for getEntitiesInRadius... some ability is borked...");
       return targets;
     }
+    LogUtil.printDebug(" - Using TARGET ENTITY target location calculation");
     ArrayList<Entity> entities = (ArrayList<Entity>) le.getNearbyEntities(range, range, range);
     for (Entity entity : entities) {
-      if (!(entity instanceof LivingEntity)) {
+      if (!(entity instanceof LivingEntity) || entity instanceof ArmorStand) {
         continue;
       }
       if (le.hasLineOfSight(entity)) {
@@ -321,6 +322,7 @@ public class AbilityManager {
       particle.playAtLocation(SpawnParticle.getLoc(particle.getOrigin(), le),
           le.getEyeLocation().getDirection());
     }
+    targets.add(le);
     return targets;
   }
 
@@ -333,8 +335,16 @@ public class AbilityManager {
   }
 
   private Location getTargetLocation(LivingEntity caster, double range) {
-    Block sightBlock = caster.getTargetBlock(null, (int) range);
-    if (sightBlock == null || sightBlock.getType() == Material.AIR) {
+    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range);
+    Block sightBlock = null;
+    while (bi.hasNext()) {
+      Block b = bi.next();
+      if (b.getType().isSolid()) {
+        sightBlock = b;
+        break;
+      }
+    }
+    if (sightBlock == null) {
       LogUtil.printDebug(" - Using MAX DISTANCE target location calculation");
       return caster.getEyeLocation().clone().add(
           caster.getEyeLocation().getDirection().multiply(range));

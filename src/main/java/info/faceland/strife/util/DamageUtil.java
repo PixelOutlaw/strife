@@ -471,9 +471,8 @@ public class DamageUtil {
   }
 
   public static LivingEntity getFirstEntityInLOS(LivingEntity le, int range) {
-    List<Entity> targetList = le.getNearbyEntities(range, range, range);
-    BlockIterator bi = new BlockIterator(le, range);
-    Entity target = null;
+    List<Entity> targetList = le.getNearbyEntities(range+1, range+1, range+1);
+    BlockIterator bi = new BlockIterator(le.getEyeLocation(), 0, range);
     while (bi.hasNext()) {
       Block b = bi.next();
       int bx = b.getX();
@@ -492,11 +491,11 @@ public class DamageUtil {
         double ez = l.getZ();
         if ((bx - .75 <= ex && ex <= bx + 1.75) && (bz - .75 <= ez && ez <= bz + 1.75) && (
             by - 1 <= ey && ey <= by + 2.5)) {
-          target = e;
+          return (LivingEntity) e;
         }
       }
     }
-    return (LivingEntity) target;
+    return null;
   }
 
   public static double rollDouble(boolean lucky) {
