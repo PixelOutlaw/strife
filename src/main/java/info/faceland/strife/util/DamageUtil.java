@@ -22,6 +22,7 @@ import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
+import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.stats.StrifeStat;
@@ -68,8 +69,8 @@ public class DamageUtil {
 
   private static final double BLEED_PERCENT = 0.5;
 
-  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender,
-      double damage, DamageType damageType) {
+  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, double damage,
+      DamageType damageType) {
     LogUtil.printDebug("[Pre-Mitigation] Dealing " + damage + " of type " + damageType);
     switch (damageType) {
       case PHYSICAL:
@@ -93,12 +94,14 @@ public class DamageUtil {
     }
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
     LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
-    if (defender.getEntity().getNoDamageTicks() > 0) {
-      defender.getEntity().setHealth(Math.max(0D, defender.getEntity().getHealth() - damage));
-      return damage;
-    }
-    defender.getEntity().damage(damage);
+    forceCustomDamage(attacker.getEntity(), defender.getEntity(), damage);
     return damage;
+  }
+
+  public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
+    target.setNoDamageTicks(0);
+    CombatListener.addAttack(attacker, amount);
+    target.damage(amount, attacker);
   }
 
   public static LivingEntity getAttacker(Entity entity) {
@@ -471,13 +474,13 @@ public class DamageUtil {
   }
 
   public static LivingEntity getFirstEntityInLOS(LivingEntity le, int range) {
-    List<Entity> targetList = le.getNearbyEntities(range+1, range+1, range+1);
+    List<Entity> targetList = le.getNearbyEntities(range + 1, range + 1, range + 1);
     BlockIterator bi = new BlockIterator(le.getEyeLocation(), 0, range);
     while (bi.hasNext()) {
       Block b = bi.next();
-      int bx = b.getX();
-      int by = b.getY();
-      int bz = b.getZ();
+      double bx = b.getX() + 0.5;
+      double by = b.getY() + 0.5;
+      double bz = b.getZ() + 0.5;
       if (b.getType().isSolid()) {
         break;
       }
@@ -492,8 +495,7 @@ public class DamageUtil {
         double ex = l.getX();
         double ey = l.getY();
         double ez = l.getZ();
-        if ((bx - .75 <= ex && ex <= bx + 1.75) && (bz - .75 <= ez && ez <= bz + 1.75) && (
-            by - 1 <= ey && ey <= by + 2.5)) {
+        if (Math.abs(bx - ex) < 0.5 && Math.abs(bz - ez) < 0.5 && Math.abs(by - ey) < 2.5) {
           return (LivingEntity) e;
         }
       }

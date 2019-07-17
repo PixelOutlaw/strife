@@ -136,6 +136,7 @@ public class StrifeDamageEventListener implements Listener {
         plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, defender);
       }
       defender.getEntity().damage(0, attacker.getEntity());
+      event.setCancelled(true);
       return;
     }
 
@@ -289,7 +290,7 @@ public class StrifeDamageEventListener implements Listener {
       plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender);
     }
 
-    defender.getEntity().damage(finalDamage);
+    event.setFinalDamage(finalDamage);
   }
 
   private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender) {

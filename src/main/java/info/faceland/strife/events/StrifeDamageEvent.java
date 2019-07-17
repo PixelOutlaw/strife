@@ -36,6 +36,8 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     return HANDLER_LIST;
   }
 
+  private double finalDamage;
+
   private final StrifeMob attacker;
   private final StrifeMob defender;
   private final AttackType attackType;
@@ -124,6 +126,14 @@ public class StrifeDamageEvent extends Event implements Cancellable {
 
   public double getDamageMod(DamageType damageType) {
     return damageModifiers.getOrDefault(damageType, 1D);
+  }
+
+  public double getFinalDamage() {
+    return finalDamage;
+  }
+
+  public void setFinalDamage(double finalDamage) {
+    this.finalDamage = finalDamage;
   }
 
   public void setCancelled(boolean cancel) {

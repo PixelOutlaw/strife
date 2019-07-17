@@ -31,6 +31,8 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.events.StrifeDamageEvent;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
@@ -46,9 +48,14 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
+  private static final Map<LivingEntity, Double> HANDLED_ATTACKS = new HashMap<>();
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
+  }
+
+  public static void addAttack(LivingEntity entity, double damage) {
+    HANDLED_ATTACKS.put(entity, damage);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -66,21 +73,24 @@ public class CombatListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
-    if (event.isCancelled()) {
-      return;
-    }
-    // Catch the spoofed damage from abilities
-    if (event.getCause() == DamageCause.CUSTOM) {
+    if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
-      return;
+        return;
     }
 
     LivingEntity defendEntity = (LivingEntity) event.getEntity();
     LivingEntity attackEntity = getAttacker(event.getDamager());
 
     if (attackEntity == null) {
+      return;
+    }
+
+    if (HANDLED_ATTACKS.containsKey(attackEntity)) {
+      DamageUtil.removeDamageModifiers(event);
+      event.setDamage(HANDLED_ATTACKS.get(attackEntity));
+      HANDLED_ATTACKS.remove(attackEntity);
       return;
     }
 
@@ -125,23 +135,25 @@ public class CombatListener implements Listener {
     }
 
     if (attackMultiplier < 0.05) {
-      DamageUtil.removeDamageModifiers(event);
-      event.setDamage(0);
       event.setCancelled(true);
       return;
     }
 
     boolean blocked = event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0;
-
-    StrifeDamageEvent damageEvent = new StrifeDamageEvent(attacker, defender, damageType);
-    damageEvent.setExtraEffects(extraEffects);
-    damageEvent.setHealMultiplier(healMultiplier);
-    damageEvent.setAttackMultiplier(attackMultiplier);
-    damageEvent.setBlocking(blocked);
-    Bukkit.getPluginManager().callEvent(damageEvent);
-
     DamageUtil.removeDamageModifiers(event);
-    event.setDamage(0);
+
+    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageType);
+    strifeDamageEvent.setExtraEffects(extraEffects);
+    strifeDamageEvent.setHealMultiplier(healMultiplier);
+    strifeDamageEvent.setAttackMultiplier(attackMultiplier);
+    strifeDamageEvent.setBlocking(blocked);
+    Bukkit.getPluginManager().callEvent(strifeDamageEvent);
+
+    if (strifeDamageEvent.isCancelled()) {
+      event.setCancelled(true);
+      return;
+    }
+    event.setDamage(strifeDamageEvent.getFinalDamage());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -149,14 +161,12 @@ public class CombatListener implements Listener {
     if (event.getEntity().getKiller() == null) {
       return;
     }
-    StrifeMob killer = plugin.getStrifeMobManager()
-        .getStatMob(event.getEntity().getKiller());
+    StrifeMob killer = plugin.getStrifeMobManager().getStatMob(event.getEntity().getKiller());
     if (killer.getStat(HP_ON_KILL) > 0.1) {
       restoreHealth(event.getEntity().getKiller(), killer.getStat(HP_ON_KILL));
     }
     if (killer.getStat(RAGE_ON_KILL) > 0.1) {
-      plugin.getRageManager()
-          .addRage(killer, killer.getStat(RAGE_ON_KILL));
+      plugin.getRageManager().addRage(killer, killer.getStat(RAGE_ON_KILL));
     }
   }
 }

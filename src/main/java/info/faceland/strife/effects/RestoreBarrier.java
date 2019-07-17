@@ -12,8 +12,8 @@ public class RestoreBarrier extends Effect {
   private DamageScale damageScale;
 
   @Override
-  public void apply(StrifeMob caster, StrifeMob attributedTarget) {
-    if (attributedTarget.getStat(StrifeStat.BARRIER) == 0) {
+  public void apply(StrifeMob caster, StrifeMob target) {
+    if (target.getStat(StrifeStat.BARRIER) == 0) {
       return;
     }
     double restoreAmount = amount;
@@ -22,21 +22,25 @@ public class RestoreBarrier extends Effect {
     }
     switch (damageScale) {
       case FLAT:
-        DamageUtil.restoreBarrier(attributedTarget, restoreAmount);
-        break;
-      case CURRENT:
-        double curBarrier = StrifePlugin.getInstance().getBarrierManager()
-            .getCurrentBarrier(attributedTarget);
-        DamageUtil.restoreBarrier(attributedTarget, restoreAmount * curBarrier);
-      case MISSING:
-        double curBarrier2 = StrifePlugin.getInstance().getBarrierManager()
-            .getCurrentBarrier(attributedTarget);
-        restoreAmount = restoreAmount * (1 - curBarrier2 / attributedTarget
-            .getStat(StrifeStat.BARRIER));
-        DamageUtil.restoreBarrier(attributedTarget, restoreAmount);
-      case MAXIMUM:
-        DamageUtil.restoreBarrier(attributedTarget,
-            restoreAmount * attributedTarget.getStat(StrifeStat.BARRIER));
+        DamageUtil.restoreBarrier(target, restoreAmount);
+        return;
+      case TARGET_CURRENT_BARRIER:
+        DamageUtil.restoreBarrier(target, restoreAmount * getCurrentBarrier(target));
+        return;
+      case TARGET_MISSING_BARRIER:
+        DamageUtil.restoreBarrier(target, restoreAmount * getMissingBarrier(target));
+        return;
+      case TARGET_MAX_BARRIER:
+        DamageUtil.restoreBarrier(target, restoreAmount * target.getStat(StrifeStat.BARRIER));
+        return;
+      case CASTER_CURRENT_BARRIER:
+        DamageUtil.restoreBarrier(target, restoreAmount * getCurrentBarrier(caster));
+        return;
+      case CASTER_MISSING_BARRIER:
+        DamageUtil.restoreBarrier(target, restoreAmount * getMissingBarrier(caster));
+        return;
+      case CASTER_MAX_BARRIER:
+        DamageUtil.restoreBarrier(target, restoreAmount * target.getStat(StrifeStat.BARRIER));
     }
   }
 
@@ -46,5 +50,13 @@ public class RestoreBarrier extends Effect {
 
   public void setDamageScale(DamageScale damageScale) {
     this.damageScale = damageScale;
+  }
+
+  private double getCurrentBarrier(StrifeMob mob) {
+    return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(mob);
+  }
+
+  private double getMissingBarrier(StrifeMob mob) {
+    return 1 - getCurrentBarrier(mob) / mob.getStat(StrifeStat.BARRIER);
   }
 }

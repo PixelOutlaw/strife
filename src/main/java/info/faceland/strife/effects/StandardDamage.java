@@ -2,6 +2,7 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.events.StrifeDamageEvent;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import java.util.HashMap;
@@ -17,9 +18,10 @@ public class StandardDamage extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    StrifeDamageEvent damageEvent = new StrifeDamageEvent(caster, target, attackType, attackMultiplier);
-    damageEvent.getDamageModifiers().putAll(damageModifiers);
-    Bukkit.getPluginManager().callEvent(damageEvent);
+    StrifeDamageEvent event = new StrifeDamageEvent(caster, target, attackType, attackMultiplier);
+    event.getDamageModifiers().putAll(damageModifiers);
+    Bukkit.getPluginManager().callEvent(event);
+    DamageUtil.forceCustomDamage(caster.getEntity(), target.getEntity(), event.getFinalDamage());
   }
 
   public double getAttackMultiplier() {

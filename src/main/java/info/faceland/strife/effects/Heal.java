@@ -12,24 +12,32 @@ public class Heal extends Effect {
   private DamageScale damageScale;
 
   @Override
-  public void apply(StrifeMob caster, StrifeMob attributedTarget) {
+  public void apply(StrifeMob caster, StrifeMob target) {
     double heal = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getStat(attr);
     }
-    LivingEntity target = attributedTarget.getEntity();
     switch (damageScale) {
       case FLAT:
-        DamageUtil.restoreHealth(target, heal);
-        break;
-      case CURRENT:
-        heal = heal * (target.getHealth() / target.getMaxHealth());
-        DamageUtil.restoreHealth(target, heal * target.getHealth());
-      case MISSING:
-        heal = heal * (1 - target.getHealth() / target.getMaxHealth());
-        DamageUtil.restoreHealth(target, heal);
-      case MAXIMUM:
-        DamageUtil.restoreHealth(target, heal * target.getMaxHealth());
+        DamageUtil.restoreHealth(target.getEntity(), heal);
+        return;
+      case TARGET_CURRENT_HEALTH:
+        DamageUtil.restoreHealth(target.getEntity(), heal * getCurrentHealth(target.getEntity()));
+        return;
+      case TARGET_MISSING_HEALTH:
+        DamageUtil.restoreHealth(target.getEntity(), heal * getMissingHealth(target.getEntity()));
+        return;
+      case TARGET_MAX_HEALTH:
+        DamageUtil.restoreHealth(target.getEntity(), heal * target.getEntity().getMaxHealth());
+        return;
+      case CASTER_CURRENT_HEALTH:
+        DamageUtil.restoreHealth(target.getEntity(), heal * getCurrentHealth(caster.getEntity()));
+        return;
+      case CASTER_MISSING_HEALTH:
+        DamageUtil.restoreHealth(target.getEntity(), heal * getMissingHealth(caster.getEntity()));
+        return;
+      case CASTER_MAX_HEALTH:
+        DamageUtil.restoreHealth(target.getEntity(), heal * caster.getEntity().getMaxHealth());
     }
   }
 
@@ -39,5 +47,13 @@ public class Heal extends Effect {
 
   public void setDamageScale(DamageScale damageScale) {
     this.damageScale = damageScale;
+  }
+
+  private double getCurrentHealth(LivingEntity ent) {
+    return ent.getHealth() / ent.getMaxHealth();
+  }
+
+  private double getMissingHealth(LivingEntity ent) {
+    return 1 - ent.getHealth() / ent.getMaxHealth();
   }
 }
