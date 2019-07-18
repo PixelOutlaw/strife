@@ -30,8 +30,8 @@ public class Summon extends Effect {
       if (summon == null) {
         return;
       }
-      StrifeMob summonedEntity = StrifePlugin.getInstance()
-          .getStrifeMobManager().getStatMob(summon);
+      StrifeMob summonedEntity = StrifePlugin.getInstance().getStrifeMobManager()
+          .getStatMob(summon);
       summonedEntity.forceSetStat(StrifeStat.MINION_MULT_INTERNAL,
           caster.getStat(StrifeStat.MINION_DAMAGE));
       caster.getMinions().add(summonedEntity);

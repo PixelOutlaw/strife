@@ -77,7 +77,7 @@ public class StrifeDamageEventListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.NORMAL)
   public void strifeDamageHandler(StrifeDamageEvent event) {
     if (event.isCancelled()) {
       return;
@@ -133,7 +133,8 @@ public class StrifeDamageEventListener implements Listener {
         if (StringUtils.isBlank(s)) {
           continue;
         }
-        plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, defender);
+        plugin.getEffectManager()
+            .execute(plugin.getEffectManager().getEffect(s), attacker, defender);
       }
       defender.getEntity().damage(0, attacker.getEntity());
       event.setCancelled(true);
@@ -325,8 +326,8 @@ public class StrifeDamageEventListener implements Listener {
     }
     double reflectDamage = defender.getStat(DAMAGE_REFLECT);
     reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
-    attacker.getEntity().getWorld()
-        .playSound(attacker.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }
 }

@@ -113,10 +113,8 @@ public class CombatListener implements Listener {
 
     AttackType damageType = DamageUtil.getAttackType(event);
 
-    StrifeMob attacker = plugin.getStrifeMobManager()
-        .getStatMob(attackEntity);
-    StrifeMob defender = plugin.getStrifeMobManager()
-        .getStatMob(defendEntity);
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+    StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
     if (projectile != null && projectile.hasMetadata(ATTACK_SPEED_META)) {
       attackMultiplier = projectile.getMetadata(ATTACK_SPEED_META).get(0).asDouble();
