@@ -2,7 +2,9 @@ package info.faceland.strife.listeners;
 
 import static info.faceland.strife.stats.StrifeStat.HEALTH;
 import static info.faceland.strife.stats.StrifeStat.HEALTH_MULT;
+import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MOVEMENT_SPEED;
+import static info.faceland.strife.stats.StrifeStat.PHYSICAL_DAMAGE;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
@@ -10,10 +12,9 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.util.Map;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
@@ -22,8 +23,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Slime;
-import org.bukkit.entity.Witch;
-import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -37,6 +36,10 @@ public class SpawnListener implements Listener {
   private final StrifePlugin plugin;
   private final Random random;
 
+  private final String LVL_MOB_NAME;
+  private final double WITCH_TO_EVOKER_CHANCE;
+  private final double WITCH_TO_ILLUSIONER_CHANCE;
+
   private final ItemStack skeletonSword;
   private final ItemStack skeletonWand;
   private final ItemStack witchHat;
@@ -47,6 +50,13 @@ public class SpawnListener implements Listener {
     this.skeletonSword = buildSkeletonSword();
     this.skeletonWand = buildSkeletonWand();
     this.witchHat = buildWitchHat();
+
+    LVL_MOB_NAME = TextUtils.color(plugin.getSettings()
+        .getString("config.leveled-monsters.name-format", "&f%ENTITY% - %LEVEL%"));
+    WITCH_TO_EVOKER_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.replace-witch-evoker", 0.1);
+    WITCH_TO_ILLUSIONER_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.replace-witch-illusioner", 0.02);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -55,63 +65,47 @@ public class SpawnListener implements Listener {
         event.getEntity().hasMetadata("NPC")) {
       return;
     }
+
     LivingEntity entity = event.getEntity();
-    if (entity instanceof Zombie) {
-      entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(22);
-    } else if (entity instanceof Witch) {
-      if (random.nextDouble() < plugin.getSettings()
-          .getDouble("config.leveled-monsters.replace-witch-evoker", 0.1)) {
-        entity.getWorld().spawnEntity(event.getLocation(), EntityType.EVOKER);
-        event.setCancelled(true);
-        return;
-      }
-      if (random.nextDouble() < plugin.getSettings()
-          .getDouble("config.leveled-monsters.replace-witch-illusioner", 0.1)) {
-        entity.getWorld().spawnEntity(event.getLocation(), EntityType.ILLUSIONER);
-        event.setCancelled(true);
-        return;
-      }
-    } else if (entity instanceof Rabbit) {
-      if (random.nextDouble() > plugin.getSettings()
-          .getDouble("config.leveled-monsters.killer-bunny-chance", 0.05)) {
-        return;
-      }
-      if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
-        return;
-      }
-      Rabbit rabbit = (Rabbit) entity;
-      rabbit.setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
-      rabbit.setAdult();
-      rabbit.setAgeLock(true);
-    }
-    if (!plugin.getMonsterManager().containsEntityType(entity.getType())) {
+    if (!plugin.getMonsterManager().containsEntityType(event.getEntityType())) {
       return;
     }
-    int startingLevel = plugin.getSettings().getInt(
-        "config.leveled-monsters.enabled-worlds." + event.getLocation().getWorld().getName()
-            + ".starting-level",
-        -1);
+
+    int startingLevel = plugin.getSettings().getInt("config.leveled-monsters.enabled-worlds." +
+        event.getLocation().getWorld().getName() + ".starting-level", -1);
     if (startingLevel <= 0) {
       return;
     }
-    double distance = event.getLocation()
-        .distance(event.getLocation().getWorld().getSpawnLocation());
 
-    double pow = plugin.getSettings().getInt(
-        "config.leveled-monsters.enabled-worlds." + event.getLocation().getWorld().getName()
-            + ".distance-per-level",
-        150);
-    int level = (int) (startingLevel + distance / pow);
-    level += -2 + random.nextInt(5);
-    level = Math.max(level, 1);
-
-    Map<StrifeStat, Double> statMap = plugin.getMonsterManager().getBaseStats(entity, level);
-    if (statMap.isEmpty()) {
-      return;
+    switch (entity.getType()) {
+      case ZOMBIE:
+        entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(22);
+      case WITCH:
+        if (random.nextDouble() < WITCH_TO_EVOKER_CHANCE) {
+          entity.getWorld().spawnEntity(event.getLocation(), EntityType.EVOKER);
+          event.setCancelled(true);
+          return;
+        }
+        if (random.nextDouble() < WITCH_TO_ILLUSIONER_CHANCE) {
+          entity.getWorld().spawnEntity(event.getLocation(), EntityType.ILLUSIONER);
+          event.setCancelled(true);
+          return;
+        }
+      case RABBIT:
+        if (random.nextDouble() > plugin.getSettings()
+            .getDouble("config.leveled-monsters.killer-bunny-chance", 0.05)) {
+          return;
+        }
+        if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
+          return;
+        }
+        Rabbit rabbit = (Rabbit) entity;
+        rabbit.setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
+        rabbit.setAdult();
+        rabbit.setAgeLock(true);
     }
 
-    entity.getEquipment().clear();
-    equipEntity(entity);
+    int level = getLevelFromWorldLocation(event, startingLevel);
 
     String rankName = "";
     if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER) {
@@ -119,34 +113,19 @@ public class SpawnListener implements Listener {
     }
 
     String mobName = WordUtils.capitalizeFully(entity.getType().toString().replace("_", " "));
-    String name = TextUtils.color(
-        plugin.getSettings()
-            .getString("config.leveled-monsters.name-format", "&f%ENTITY% - %LEVEL%")
-            .replace("%ENTITY%", mobName).replace("%LEVEL%", "" + level));
+    String name = LVL_MOB_NAME.replace("%ENTITY%", mobName).replace("%LEVEL%", "" + level);
 
     name = rankName + name;
 
+    entity.setMetadata("LVL", new FixedMetadataValue(plugin, level));
     entity.setCustomName(name);
     entity.setCanPickupItems(false);
 
-    double health = statMap.getOrDefault(HEALTH, 10D) * (1 + statMap
-        .getOrDefault(HEALTH_MULT, 0D));
-    if (entity instanceof Slime) {
-      health *= 0.6 + (double) ((Slime) entity).getSize() / 3.0;
-    }
-    entity.getAttribute(GENERIC_MAX_HEALTH).setBaseValue(health);
-    entity.setHealth(health);
+    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(entity);
 
-    double speed = entity.getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue() *
-        statMap.getOrDefault(MOVEMENT_SPEED, 80D) / 100;
-
-    if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
-      entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
-    }
-    if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
-      entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(speed);
-    }
-    entity.setMetadata("LVL", new FixedMetadataValue(plugin, level));
+    setEntityAttributes(strifeMob, entity);
+    entity.getEquipment().clear();
+    equipEntity(entity);
   }
 
   private void equipEntity(LivingEntity livingEntity) {
@@ -175,6 +154,10 @@ public class SpawnListener implements Listener {
           entityEquipment.setItemInMainHand(skeletonWand);
           entityEquipment.setHelmet(witchHat);
           entityEquipment.setHelmetDropChance(0f);
+          StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
+          double damage = mob.getStat(PHYSICAL_DAMAGE);
+          mob.forceSetStat(PHYSICAL_DAMAGE, 0);
+          mob.forceSetStat(MAGIC_DAMAGE, damage);
         } else {
           entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
         }
@@ -188,6 +171,25 @@ public class SpawnListener implements Listener {
         entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
         entityEquipment.setItemInMainHandDropChance(0f);
         break;
+    }
+  }
+
+  private void setEntityAttributes(StrifeMob strifeMob, LivingEntity entity) {
+    double health = strifeMob.getStat(HEALTH) * (1 + strifeMob.getStat(HEALTH_MULT));
+    if (entity instanceof Slime) {
+      health *= 0.6 + (double) ((Slime) entity).getSize() / 3.0;
+    }
+    entity.getAttribute(GENERIC_MAX_HEALTH).setBaseValue(health);
+    entity.setHealth(health);
+
+    double speed = entity.getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue() *
+        strifeMob.getFinalStats().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
+
+    if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
+      entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
+    }
+    if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
+      entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(speed);
     }
   }
 
@@ -206,5 +208,16 @@ public class SpawnListener implements Listener {
     hat.setDurability((short) 2);
     ItemStackExtensionsKt.setUnbreakable(hat, true);
     return hat;
+  }
+
+  private int getLevelFromWorldLocation(CreatureSpawnEvent event, int startingLevel) {
+    double distance = event.getLocation()
+        .distance(event.getLocation().getWorld().getSpawnLocation());
+    double pow = plugin.getSettings().getInt("config.leveled-monsters.enabled-worlds." +
+        event.getLocation().getWorld().getName() + ".distance-per-level", 150);
+
+    int level = (int) (startingLevel + distance / pow);
+    level += -2 + random.nextInt(5);
+    return Math.max(level, 1);
   }
 }
