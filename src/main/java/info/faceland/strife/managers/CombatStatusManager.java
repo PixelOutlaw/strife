@@ -65,6 +65,9 @@ public class CombatStatusManager {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(player);
+    if (champion.getDetailsContainer().getExpValues() == null) {
+      return;
+    }
     for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
       plugin.getSkillExperienceManager()
           .addExperience(champion, type, champion.getDetailsContainer().getExpValues().get(type),

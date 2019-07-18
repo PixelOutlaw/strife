@@ -11,6 +11,9 @@ public class CombatDetailsContainer {
   private float totalExp = 0;
 
   public void addWeights(Ability ability) {
+    if (totalExp == 0 && !skillWeight.isEmpty()) {
+      skillWeight.clear();
+    }
     for (LifeSkillType type : ability.getAbilityIconData().getExpWeights().keySet()) {
       skillWeight.put(type, skillWeight.getOrDefault(type, 0f) + ability.getAbilityIconData().getExpWeights().get(type));
     }
@@ -21,12 +24,14 @@ public class CombatDetailsContainer {
   }
 
   public Map<LifeSkillType, Float> getExpValues() {
+    if (totalExp == 0) {
+      return null;
+    }
     float totalWeight = 0;
     for (double amount : skillWeight.values()) {
       totalWeight += amount;
     }
     float xpTotal = totalExp;
-    xpTotal *= 1 + ((double) totalWeight / 1000);
     xpTotal += 0.05 * totalWeight;
     xpTotal *= (0.9f + Math.random() * 0.2f);
     Map<LifeSkillType, Float> rewards = new HashMap<>();
