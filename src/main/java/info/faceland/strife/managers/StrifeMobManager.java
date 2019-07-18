@@ -28,8 +28,7 @@ public class StrifeMobManager {
     if (!trackedEntities.containsKey(entity.getUniqueId())) {
       StrifeMob strifeMob;
       if (entity instanceof Player) {
-        strifeMob = new StrifeMob(
-            plugin.getChampionManager().getChampion((Player) entity));
+        strifeMob = new StrifeMob(plugin.getChampionManager().getChampion((Player) entity));
       } else {
         strifeMob = new StrifeMob(entity);
       }

@@ -18,15 +18,12 @@
  */
 package info.faceland.strife.managers;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
-import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import info.faceland.strife.data.EntityStatData;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.StatUtil;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -63,7 +60,7 @@ public class MonsterManager {
       return levelStats;
     }
     if (level == -1) {
-      level = getEntityLevel(livingEntity);
+      level = StatUtil.getMobLevel(livingEntity);
     }
     for (StrifeStat attr : entityStatDataMap.get(type).getPerLevelMap().keySet()) {
       levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
@@ -123,16 +120,5 @@ public class MonsterManager {
     } else {
       addEntityData(entityType, data);
     }
-  }
-
-  private int getEntityLevel(LivingEntity entity) {
-    if (entity instanceof Player) {
-      return ((Player) entity).getLevel();
-    }
-    if (StringUtils.isBlank(entity.getCustomName())) {
-      return 0;
-    }
-    return NumberUtils
-        .toInt(CharMatcher.digit().retainFrom(ChatColor.stripColor(entity.getCustomName())), 0);
   }
 }

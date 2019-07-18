@@ -1,6 +1,48 @@
 package info.faceland.strife.util;
 
-import static info.faceland.strife.stats.StrifeStat.*;
+import static info.faceland.strife.stats.StrifeStat.ACCURACY;
+import static info.faceland.strife.stats.StrifeStat.ACCURACY_MULT;
+import static info.faceland.strife.stats.StrifeStat.ALL_RESIST;
+import static info.faceland.strife.stats.StrifeStat.APEN_MULT;
+import static info.faceland.strife.stats.StrifeStat.ARMOR;
+import static info.faceland.strife.stats.StrifeStat.ARMOR_MULT;
+import static info.faceland.strife.stats.StrifeStat.ARMOR_PENETRATION;
+import static info.faceland.strife.stats.StrifeStat.BARRIER;
+import static info.faceland.strife.stats.StrifeStat.BARRIER_SPEED;
+import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DAMAGE_MULT;
+import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.DARK_RESIST;
+import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.EARTH_RESIST;
+import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
+import static info.faceland.strife.stats.StrifeStat.EVASION;
+import static info.faceland.strife.stats.StrifeStat.EVASION_MULT;
+import static info.faceland.strife.stats.StrifeStat.FIRE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.FIRE_RESIST;
+import static info.faceland.strife.stats.StrifeStat.HEALTH;
+import static info.faceland.strife.stats.StrifeStat.HEALTH_MULT;
+import static info.faceland.strife.stats.StrifeStat.ICE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.ICE_RESIST;
+import static info.faceland.strife.stats.StrifeStat.LIFE_STEAL;
+import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIGHTNING_RESIST;
+import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIGHT_RESIST;
+import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
+import static info.faceland.strife.stats.StrifeStat.MELEE_PHYSICAL_MULT;
+import static info.faceland.strife.stats.StrifeStat.MINION_MULT_INTERNAL;
+import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
+import static info.faceland.strife.stats.StrifeStat.PHYSICAL_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.RANGED_PHYSICAL_MULT;
+import static info.faceland.strife.stats.StrifeStat.REGENERATION;
+import static info.faceland.strife.stats.StrifeStat.REGEN_MULT;
+import static info.faceland.strife.stats.StrifeStat.TENACITY;
+import static info.faceland.strife.stats.StrifeStat.WARDING;
+import static info.faceland.strife.stats.StrifeStat.WARD_MULT;
+import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
+import static info.faceland.strife.stats.StrifeStat.WPEN_MULT;
 import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -24,6 +66,7 @@ public class StatUtil {
   private static final double BASE_ATTACK_SECONDS = 2.0D;
   private static final double BASE_EVASION_MULT = 0.8D;
   private static final double EVASION_ACCURACY_MULT = 0.6D;
+  private static final double SWORDSMANSHIP_EVASION_REDUCE = 0.25D / 60D;
 
   public static double getTenacityMult(StrifeMob defender) {
     if (defender.getStat(TENACITY) < 1) {
@@ -70,27 +113,6 @@ public class StatUtil {
     return ae.getStat(MAGIC_DAMAGE) * (1 + ae.getStat(MAGIC_MULT) / 100);
   }
 
-  public static double getBaseMeleeDamage(StrifeMob attacker, StrifeMob defender) {
-    double rawDamage = getMeleeDamage(attacker);
-    return rawDamage * getArmorMult(attacker, defender);
-  }
-
-  public static double getBaseRangedDamage(StrifeMob attacker, StrifeMob defender) {
-    double rawDamage = getRangedDamage(attacker);
-    return rawDamage * getArmorMult(attacker, defender);
-  }
-
-  public static double getBaseMagicDamage(StrifeMob attacker, StrifeMob defender) {
-    double rawDamage = getMagicDamage(attacker);
-    return rawDamage * getWardingMult(attacker, defender);
-  }
-
-  public static double getBaseExplosionDamage(StrifeMob attacker,
-      StrifeMob defender) {
-    double rawDamage = getMagicDamage(attacker);
-    return rawDamage * getArmorMult(attacker, defender);
-  }
-
   public static double getAttackTime(StrifeMob ae) {
     double attackTime = BASE_ATTACK_SECONDS;
     double attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
@@ -124,7 +146,7 @@ public class StatUtil {
     return ae.getStat(WARDING) * (1 + ae.getStat(WARD_MULT) / 100);
   }
 
-  public static double getMinimumEvasionMult(StrifeMob ae) {
+  public static double getTotalEvasion(StrifeMob ae) {
     return getFlatEvasion(ae) * (1 + ae.getStat(EVASION_MULT) / 100);
   }
 
@@ -155,7 +177,7 @@ public class StatUtil {
   }
 
   public static double getMinimumEvasionMult(StrifeMob attacker, StrifeMob defender) {
-    double evasion = getMinimumEvasionMult(defender);
+    double evasion = getTotalEvasion(defender);
     double accuracy = getAccuracy(attacker);
     double bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (1 + accuracy));
     return Math.min(1, BASE_EVASION_MULT - bonusMultiplier);
@@ -310,20 +332,17 @@ public class StatUtil {
   public static int getMobLevel(LivingEntity livingEntity) {
     int level;
     if (livingEntity instanceof Player) {
-      return ((Player) livingEntity).getLevel();
-    }
-    if (livingEntity.hasMetadata("LVL")) {
+      level = ((Player) livingEntity).getLevel();
+    } else if (livingEntity.hasMetadata("LVL")) {
       level = livingEntity.getMetadata("LVL").get(0).asInt();
+    } else if (StringUtils.isBlank(livingEntity.getCustomName())) {
+      level = 0;
     } else {
-      if (StringUtils.isBlank(livingEntity.getCustomName())) {
-        level = -1;
-      } else {
-        String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
-            .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
-        level = NumberUtils.toInt(lev.split(" ")[0], 0);
-      }
-      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
+      String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
+          .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
+      level = NumberUtils.toInt(lev.split(" ")[0], 0);
     }
+    livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     return level;
   }
 
