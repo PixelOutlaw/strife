@@ -126,8 +126,8 @@ public class FlatfileStorage implements DataStorage {
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
       saveData.setBonusLevels(section.getInt("bonus-levels"));
       for (LifeSkillType type : LifeSkillType.types) {
-        saveData.setSkillLevel(type, section.getInt(type.getDataName() + "-level"));
-        saveData.setSkillExp(type, (float) section.getDouble(type.getDataName() + "-exp"));
+        saveData.setSkillLevel(type, section.getInt(type.getDataName() + "-level", 0));
+        saveData.setSkillExp(type, (float) section.getDouble(type.getDataName() + "-exp", 0f));
       }
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
 
