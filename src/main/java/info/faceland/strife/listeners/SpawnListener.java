@@ -39,17 +39,25 @@ public class SpawnListener implements Listener {
   private final String LVL_MOB_NAME;
   private final double WITCH_TO_EVOKER_CHANCE;
   private final double WITCH_TO_ILLUSIONER_CHANCE;
+  private final double KILLER_BUNNY_CHANCE;
+  private final double SKELETON_SWORD_CHANCE;
+  private final double SKELETON_WAND_CHANCE;
+  private final double WITHER_SKELETON_SWORD_CHANCE;
+  private final double WITHER_SKELETON_WAND_CHANCE;
 
-  private final ItemStack skeletonSword;
-  private final ItemStack skeletonWand;
-  private final ItemStack witchHat;
+  private final ItemStack SKELETON_SWORD;
+  private final ItemStack WITHER_SKELETON_SWORD;
+  private final ItemStack SKELETON_WAND;
+  private final ItemStack WITCH_HAT;
 
   public SpawnListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.random = new Random(System.currentTimeMillis());
-    this.skeletonSword = buildSkeletonSword();
-    this.skeletonWand = buildSkeletonWand();
-    this.witchHat = buildWitchHat();
+
+    random = new Random(System.currentTimeMillis());
+    SKELETON_SWORD = buildSkeletonSword();
+    WITHER_SKELETON_SWORD = buildWitherSkeletonSword();
+    SKELETON_WAND = buildSkeletonWand();
+    WITCH_HAT = buildWitchHat();
 
     LVL_MOB_NAME = TextUtils.color(plugin.getSettings()
         .getString("config.leveled-monsters.name-format", "&f%ENTITY% - %LEVEL%"));
@@ -57,12 +65,23 @@ public class SpawnListener implements Listener {
         .getDouble("config.leveled-monsters.replace-witch-evoker", 0.1);
     WITCH_TO_ILLUSIONER_CHANCE = plugin.getSettings()
         .getDouble("config.leveled-monsters.replace-witch-illusioner", 0.02);
+    KILLER_BUNNY_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.killer-bunny-chance", 0.05);
+    SKELETON_SWORD_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.give-skeletons-sword-chance", 0.1);
+    SKELETON_WAND_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.give-skeletons-wand-chance", 0.1);
+    WITHER_SKELETON_SWORD_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.give-wither-skeletons-sword-chance", 0.8);
+    WITHER_SKELETON_WAND_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.give-wither-skeletons-wand-chance", 0.1);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
     if (event.isCancelled() || event.getEntity().hasMetadata("BOSS") ||
-        event.getEntity().hasMetadata("NPC")) {
+        event.getEntity().hasMetadata("NPC")
+        || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
       return;
     }
 
@@ -79,7 +98,11 @@ public class SpawnListener implements Listener {
 
     switch (entity.getType()) {
       case ZOMBIE:
+      case HUSK:
+      case ZOMBIE_VILLAGER:
+      case DROWNED:
         entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(22);
+        break;
       case WITCH:
         if (random.nextDouble() < WITCH_TO_EVOKER_CHANCE) {
           entity.getWorld().spawnEntity(event.getLocation(), EntityType.EVOKER);
@@ -91,18 +114,14 @@ public class SpawnListener implements Listener {
           event.setCancelled(true);
           return;
         }
+        break;
       case RABBIT:
-        if (random.nextDouble() > plugin.getSettings()
-            .getDouble("config.leveled-monsters.killer-bunny-chance", 0.05)) {
-          return;
-        }
-        if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
+        if (random.nextDouble() > KILLER_BUNNY_CHANCE) {
           return;
         }
         Rabbit rabbit = (Rabbit) entity;
         rabbit.setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
         rabbit.setAdult();
-        rabbit.setAgeLock(true);
     }
 
     int level = getLevelFromWorldLocation(event, startingLevel);
@@ -146,22 +165,40 @@ public class SpawnListener implements Listener {
         entityEquipment.setHelmetDropChance(0f);
         break;
       case SKELETON:
-        if (random.nextDouble() < plugin.getSettings()
-            .getDouble("config.leveled-monsters.give-skeletons-sword-chance", 0.1)) {
-          entityEquipment.setItemInMainHand(skeletonSword);
-        } else if (random.nextDouble() < plugin.getSettings()
-            .getDouble("config.leveled-monsters.give-skeletons-wand-chance", 0.1)) {
-          entityEquipment.setItemInMainHand(skeletonWand);
-          entityEquipment.setHelmet(witchHat);
+        entityEquipment.setItemInMainHandDropChance(0f);
+        if (random.nextDouble() < SKELETON_SWORD_CHANCE) {
+          entityEquipment.setItemInMainHand(SKELETON_SWORD);
+          break;
+        }
+        if (random.nextDouble() < SKELETON_WAND_CHANCE) {
+          entityEquipment.setItemInMainHand(SKELETON_WAND);
+          entityEquipment.setHelmet(WITCH_HAT);
           entityEquipment.setHelmetDropChance(0f);
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
           double damage = mob.getStat(PHYSICAL_DAMAGE);
           mob.forceSetStat(PHYSICAL_DAMAGE, 0);
           mob.forceSetStat(MAGIC_DAMAGE, damage);
-        } else {
-          entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
+          break;
         }
+        entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
+        break;
+      case WITHER_SKELETON:
         entityEquipment.setItemInMainHandDropChance(0f);
+        if (random.nextDouble() < WITHER_SKELETON_SWORD_CHANCE) {
+          entityEquipment.setItemInMainHand(WITHER_SKELETON_SWORD);
+          break;
+        }
+        if (random.nextDouble() < WITHER_SKELETON_WAND_CHANCE) {
+          entityEquipment.setItemInMainHand(SKELETON_WAND);
+          entityEquipment.setHelmet(WITCH_HAT);
+          entityEquipment.setHelmetDropChance(0f);
+          StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
+          double damage = mob.getStat(PHYSICAL_DAMAGE);
+          mob.forceSetStat(PHYSICAL_DAMAGE, 0);
+          mob.forceSetStat(MAGIC_DAMAGE, damage);
+          break;
+        }
+        entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
         break;
       case VINDICATOR:
         entityEquipment.setItemInMainHand(new ItemStack(Material.IRON_AXE));
@@ -201,6 +238,10 @@ public class SpawnListener implements Listener {
 
   private static ItemStack buildSkeletonSword() {
     return new ItemStack(Material.STONE_SWORD);
+  }
+
+  private static ItemStack buildWitherSkeletonSword() {
+    return new ItemStack(Material.IRON_SWORD);
   }
 
   private static ItemStack buildWitchHat() {
