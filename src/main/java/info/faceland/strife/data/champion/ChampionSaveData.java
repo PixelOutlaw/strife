@@ -26,29 +26,8 @@ public class ChampionSaveData {
   private int highestReachedLevel;
   private int bonusLevels;
 
-  private int craftingLevel;
-  private float craftingExp;
-  private int fishingLevel;
-  private float fishingExp;
-  private int enchantLevel;
-  private float enchantExp;
-  private int miningLevel;
-  private float miningExp;
-  private int sneakLevel;
-  private float sneakExp;
-
-  private int swordLevel;
-  private float swordExp;
-  private int axeLevel;
-  private float axeExp;
-  private int dualLevel;
-  private float dualExp;
-  private int shieldLevel;
-  private float shieldExp;
-  private int archeryLevel;
-  private float archeryExp;
-  private int magicLevel;
-  private float magicExp;
+  private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
+  private final Map<LifeSkillType, Float> skillExpMap = new HashMap<>();
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
@@ -144,141 +123,19 @@ public class ChampionSaveData {
   }
 
   public void setSkillLevel(LifeSkillType type, int level) {
-    switch (type) {
-      case CRAFTING:
-        craftingLevel = level;
-        return;
-      case ENCHANTING:
-        enchantLevel = level;
-        return;
-      case FISHING:
-        fishingLevel = level;
-        return;
-      case MINING:
-        miningLevel = level;
-        return;
-      case SNEAK:
-        sneakLevel = level;
-        return;
-      case SWORDSMANSHIP:
-        swordLevel = level;
-        return;
-      case AXE_MASTERY:
-        axeLevel = level;
-        return;
-      case DUAL_WIELDING:
-        dualLevel = level;
-        return;
-      case SHIELD_MASTERY:
-        shieldLevel = level;
-        return;
-      case ARCHERY:
-        archeryLevel = level;
-        return;
-      case MAGECRAFT:
-        magicLevel = level;
-        return;
-      default:
-        throw new IllegalArgumentException("Invalid life skill type!");
-    }
+    skillLevelMap.put(type, level);
   }
 
   public void setSkillExp(LifeSkillType type, float amount) {
-    switch (type) {
-      case CRAFTING:
-        craftingExp = amount;
-        return;
-      case ENCHANTING:
-        enchantExp = amount;
-        return;
-      case FISHING:
-        fishingExp = amount;
-        return;
-      case MINING:
-        miningExp = amount;
-        return;
-      case SNEAK:
-        sneakExp = amount;
-        return;
-      case SWORDSMANSHIP:
-        swordExp = amount;
-        return;
-      case AXE_MASTERY:
-        axeExp = amount;
-        return;
-      case DUAL_WIELDING:
-        dualExp = amount;
-        return;
-      case SHIELD_MASTERY:
-        shieldExp = amount;
-        return;
-      case ARCHERY:
-        archeryExp = amount;
-        return;
-      case MAGECRAFT:
-        magicExp = amount;
-        return;
-      default:
-        throw new IllegalArgumentException("Invalid life skill type!");
-    }
+    skillExpMap.put(type, amount);
   }
 
   public int getSkillLevel(LifeSkillType type) {
-    switch (type) {
-      case CRAFTING:
-        return craftingLevel;
-      case ENCHANTING:
-        return enchantLevel;
-      case FISHING:
-        return fishingLevel;
-      case MINING:
-        return miningLevel;
-      case SNEAK:
-        return sneakLevel;
-      case SWORDSMANSHIP:
-        return swordLevel;
-      case AXE_MASTERY:
-        return axeLevel;
-      case DUAL_WIELDING:
-        return dualLevel;
-      case SHIELD_MASTERY:
-        return shieldLevel;
-      case ARCHERY:
-        return archeryLevel;
-      case MAGECRAFT:
-        return magicLevel;
-      default:
-        throw new IllegalArgumentException("Invalid life skill type!");
-    }
+    return skillLevelMap.getOrDefault(type, 0);
   }
 
   public float getSkillExp(LifeSkillType type) {
-    switch (type) {
-      case CRAFTING:
-        return craftingExp;
-      case ENCHANTING:
-        return enchantExp;
-      case FISHING:
-        return fishingExp;
-      case MINING:
-        return miningExp;
-      case SNEAK:
-        return sneakExp;
-      case SWORDSMANSHIP:
-        return swordExp;
-      case AXE_MASTERY:
-        return axeExp;
-      case DUAL_WIELDING:
-        return dualExp;
-      case SHIELD_MASTERY:
-        return shieldExp;
-      case ARCHERY:
-        return archeryExp;
-      case MAGECRAFT:
-        return magicExp;
-      default:
-        throw new IllegalArgumentException("Invalid life skill type!");
-    }
+    return skillExpMap.getOrDefault(type, 0f);
   }
 
   public enum HealthDisplayType {
