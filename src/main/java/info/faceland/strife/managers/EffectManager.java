@@ -272,12 +272,15 @@ public class EffectManager {
         break;
       case KNOCKBACK:
         effect = new Knockback();
-        ((Knockback) effect).setPower(cs.getDouble("power", 1));
+        ((Knockback) effect).setPower(cs.getDouble("power", 10));
+        ((Knockback) effect).setHeight(cs.getDouble("height", 10));
+        ((Knockback) effect).setZeroVelocity(cs.getBoolean("zero-velocity", false));
         break;
       case LEAP:
         effect = new Leap();
-        ((Leap) effect).setForward(cs.getDouble("forward", 1));
-        ((Leap) effect).setHeight(cs.getDouble("height", 1));
+        ((Leap) effect).setForward(cs.getDouble("forward", 10));
+        ((Leap) effect).setHeight(cs.getDouble("height", 10));
+        ((Leap) effect).setZeroVelocity(cs.getBoolean("zero-velocity", false));
         break;
       case SUMMON:
         effect = new Summon();
