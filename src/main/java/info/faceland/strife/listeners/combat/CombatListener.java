@@ -71,6 +71,11 @@ public class CombatListener implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void handledAttackResolver(EntityDamageByEntityEvent event) {
+    HANDLED_ATTACKS.remove(getAttacker(event.getDamager()));
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
     if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
@@ -90,7 +95,6 @@ public class CombatListener implements Listener {
     if (HANDLED_ATTACKS.containsKey(attackEntity)) {
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(HANDLED_ATTACKS.get(attackEntity));
-      HANDLED_ATTACKS.remove(attackEntity);
       return;
     }
 
