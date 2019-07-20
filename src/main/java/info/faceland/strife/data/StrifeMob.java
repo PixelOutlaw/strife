@@ -14,7 +14,7 @@ import org.bukkit.entity.LivingEntity;
 
 public class StrifeMob {
 
-  private final static int BUFF_CHECK_FREQUANCY_MS = 200;
+  private final static int BUFF_CHECK_FREQUENCY_MS = 200;
 
   private final Map<StrifeStat, Double> baseStats = new HashMap<>();
   private final Map<StrifeStat, Double> statCache = new HashMap<>();
@@ -44,7 +44,7 @@ public class StrifeMob {
     if (runningBuffs.isEmpty()) {
       return baseStats.getOrDefault(stat, 0D);
     }
-    if (System.currentTimeMillis() - buffCacheStamp > BUFF_CHECK_FREQUANCY_MS) {
+    if (System.currentTimeMillis() - buffCacheStamp > BUFF_CHECK_FREQUENCY_MS) {
       statCache.clear();
       statCache.putAll(getFinalStats());
     }
@@ -77,7 +77,6 @@ public class StrifeMob {
   }
 
   public void addBuff(String buffId, Buff buff, double duration) {
-    duration *= 1 + getStat(StrifeStat.EFFECT_DURATION) / 100;
     if (runningBuffs.get(buffId) == null || runningBuffs.get(buffId).isExpired()) {
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.put(buffId, buff);
