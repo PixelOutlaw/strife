@@ -22,6 +22,9 @@ public class DealDamage extends Effect {
     switch (damageScale) {
       case FLAT:
         break;
+      case CASTER_DAMAGE:
+        damage *= DamageUtil.getRawDamage(caster, target, damageType);
+        break;
       case TARGET_CURRENT_HEALTH:
         damage *= target.getEntity().getHealth() / target.getEntity().getMaxHealth();
         break;
@@ -60,6 +63,7 @@ public class DealDamage extends Effect {
 
   public enum DamageScale {
     FLAT,
+    CASTER_DAMAGE,
     TARGET_CURRENT_HEALTH,
     CASTER_CURRENT_HEALTH,
     TARGET_MISSING_HEALTH,
