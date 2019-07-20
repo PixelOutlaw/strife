@@ -12,7 +12,9 @@ public enum LifeSkillType {
   DUAL_WIELDING("Dual Wielding", "dual"),
   SHIELD_MASTERY("Shield Mastery", "shield"),
   ARCHERY("Archery", "archery"),
-  MAGECRAFT("Magecraft", "magic");
+  ARCANE_MAGICS("Arcane Magics", "magic"),
+  AUGMENTATION("Augmentation", "enhancement"),
+  SUMMONING("Summoning", "summoning");
 
   public final static LifeSkillType[] types = LifeSkillType.values();
 

@@ -82,6 +82,6 @@ public class Ability {
   }
 
   public enum TargetType {
-    SELF, SINGLE_OTHER, AREA_LINE, TARGET_AREA, AREA_RADIUS, NONE
+    SELF, PARTY, SINGLE_OTHER, AREA_LINE, TARGET_AREA, AREA_RADIUS, NONE
   }
 }

@@ -165,7 +165,7 @@ public class PlayerDataUtil {
       case SWORDSMANSHIP:
       case AXE_MASTERY:
         return "&c";
-      case MAGECRAFT:
+      case ARCANE_MAGICS:
         return "&9";
     }
     return "";

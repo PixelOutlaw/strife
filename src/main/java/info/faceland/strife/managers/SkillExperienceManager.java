@@ -113,7 +113,9 @@ public class SkillExperienceManager {
       case SHIELD_MASTERY:
       case DUAL_WIELDING:
       case ARCHERY:
-      case MAGECRAFT:
+      case SUMMONING:
+      case ARCANE_MAGICS:
+      case AUGMENTATION:
         return plugin.getCombatSkillRate().get(level);
     }
     return 1000000000;

@@ -240,6 +240,7 @@ public class AbilityManager {
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF:
+      case PARTY:
         targets.add(caster.getEntity());
         return targets;
       case SINGLE_OTHER:

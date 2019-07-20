@@ -122,8 +122,7 @@ public class StrifeDamageEventListener implements Listener {
           .addRage(attacker, attacker.getStat(RAGE_ON_HIT) * event.getAttackMultiplier());
     }
     if (defender.getStat(RAGE_WHEN_HIT) > 0.1) {
-      plugin.getRageManager()
-          .addRage(defender, defender.getStat(RAGE_WHEN_HIT));
+      plugin.getRageManager().addRage(defender, defender.getStat(RAGE_WHEN_HIT));
     }
 
     // Handle projectiles created by abilities/effects. Has to be done after
