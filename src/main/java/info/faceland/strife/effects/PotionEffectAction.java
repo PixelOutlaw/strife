@@ -10,15 +10,18 @@ public class PotionEffectAction extends Effect {
   private PotionEffectType potionEffectType;
   private double duration;
   private int intensity;
+  private boolean strictDuration;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    int effectDuration = (int) (duration * (1 + (
-        caster.getStat(StrifeStat.EFFECT_DURATION) / 100)));
+    double duration = this.duration;
+    if (!strictDuration) {
+      duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+    }
     if (isForceTargetCaster()) {
-      DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, effectDuration);
+      DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, (int) duration);
     } else {
-      DamageUtil.applyPotionEffect(target.getEntity(), potionEffectType, intensity, effectDuration);
+      DamageUtil.applyPotionEffect(target.getEntity(), potionEffectType, intensity, (int) duration);
     }
   }
 
@@ -36,5 +39,9 @@ public class PotionEffectAction extends Effect {
 
   public void setIntensity(int intensity) {
     this.intensity = intensity;
+  }
+
+  public void setStrictDuration(boolean strictDuration) {
+    this.strictDuration = strictDuration;
   }
 }

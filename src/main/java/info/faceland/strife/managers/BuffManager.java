@@ -42,8 +42,12 @@ public class BuffManager {
   }
 
   public void applyBuff(LoadedBuff loadedBuff, StrifeMob strifeMob) {
+    applyBuff(loadedBuff, strifeMob, 1D);
+  }
+
+  public void applyBuff(LoadedBuff loadedBuff, StrifeMob strifeMob, double durationMult) {
     Buff buff = LoadedBuff.createBuffFromLoadedBuff(loadedBuff);
-    strifeMob.addBuff(loadedBuff.getName(), buff, loadedBuff.getSeconds());
+    strifeMob.addBuff(loadedBuff.getName(), buff, loadedBuff.getSeconds() * durationMult);
   }
 
   public LoadedBuff getBuffFromId(String buffId) {
