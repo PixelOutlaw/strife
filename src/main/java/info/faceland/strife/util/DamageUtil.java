@@ -3,7 +3,6 @@ package info.faceland.strife.util;
 import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
-import static info.faceland.strife.stats.StrifeStat.DAMAGE_MULT;
 import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
@@ -12,10 +11,12 @@ import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.ICE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
 import static info.faceland.strife.stats.StrifeStat.PHYSICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
+import static info.faceland.strife.stats.StrifeStat.TRUE_DAMAGE;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getEarthResist;
 import static info.faceland.strife.util.StatUtil.getFireResist;
@@ -115,39 +116,29 @@ public class DamageUtil {
     return damage;
   }
 
-  public static double getRawDamage(StrifeMob attacker, StrifeMob defender, DamageType damageType) {
-    double damage;
+  public static double getRawDamage(StrifeMob attacker, DamageType damageType) {
     switch (damageType) {
       case PHYSICAL:
-        damage = attacker.getStat(PHYSICAL_DAMAGE);
-        break;
+        return attacker.getStat(PHYSICAL_DAMAGE);
       case MAGICAL:
-        damage = attacker.getStat(PHYSICAL_DAMAGE) * (1 + attacker.getStat(MAGIC_MULT) / 100);
-        break;
+        return attacker.getStat(MAGIC_DAMAGE) * (1 + attacker.getStat(MAGIC_MULT) / 100);
       case FIRE:
-        damage = attacker.getStat(FIRE_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
-        break;
+        return attacker.getStat(FIRE_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
       case ICE:
-        damage = attacker.getStat(ICE_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
-        break;
+        return attacker.getStat(ICE_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
       case LIGHTNING:
-        damage = attacker.getStat(LIGHTNING_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
-        break;
+        return attacker.getStat(LIGHTNING_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
       case DARK:
-        damage = attacker.getStat(DARK_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
-        break;
+        return attacker.getStat(DARK_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
       case EARTH:
-        damage = attacker.getStat(EARTH_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
-        break;
+        return attacker.getStat(EARTH_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
       case LIGHT:
-        damage = attacker.getStat(LIGHT_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
-        break;
+        return attacker.getStat(LIGHT_DAMAGE) * (1 + attacker.getStat(ELEMENTAL_MULT) / 100);
+      case TRUE_DAMAGE:
+        return attacker.getStat(TRUE_DAMAGE);
       default:
-        damage = 0;
+        return 0;
     }
-    damage *= DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
-    damage *= 1 + (attacker.getStat(DAMAGE_MULT) / 100);
-    return damage;
   }
 
   public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
