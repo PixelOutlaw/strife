@@ -34,6 +34,7 @@ import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.ForceTarget;
 import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
+import info.faceland.strife.effects.IncreaseRage;
 import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.Leap;
 import info.faceland.strife.effects.PlaySound;
@@ -137,7 +138,8 @@ public class EffectManager {
     effect.apply(caster, target);
   }
 
-  private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target, double range) {
+  private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target,
+      double range) {
     Set<LivingEntity> targets = new HashSet<>();
     if (target == null) {
       return targets;
@@ -146,7 +148,7 @@ public class EffectManager {
       targets.add(target);
       return targets;
     }
-    for (Entity e : target.getNearbyEntities(range, range/2, range)) {
+    for (Entity e : target.getNearbyEntities(range, range / 2, range)) {
       if (e instanceof ArmorStand) {
         continue;
       }
@@ -179,6 +181,10 @@ public class EffectManager {
         ((RestoreBarrier) effect).setAmount(cs.getDouble("amount", 1));
         ((RestoreBarrier) effect)
             .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        break;
+      case INCREASE_RAGE:
+        effect = new IncreaseRage();
+        ((IncreaseRage) effect).setAmount(cs.getDouble("amount", 1));
         break;
       case DAMAGE:
         effect = new DealDamage();
@@ -260,6 +266,7 @@ public class EffectManager {
       case BUFF_EFFECT:
         effect = new BuffEffect();
         ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
+        ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         break;
       case WAIT:
         effect = new Wait();
@@ -305,6 +312,7 @@ public class EffectManager {
         ((PotionEffectAction) effect).setPotionEffectType(potionType);
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
+        ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         break;
       case SOUND:
         effect = new PlaySound();
@@ -510,6 +518,7 @@ public class EffectManager {
     DAMAGE,
     HEAL,
     RESTORE_BARRIER,
+    INCREASE_RAGE,
     PROJECTILE,
     IGNITE,
     BLEED,
