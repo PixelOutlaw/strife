@@ -101,6 +101,7 @@ import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.MinionDecayTask;
 import info.faceland.strife.tasks.MonsterLimitTask;
+import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.tasks.PruneBossBarsTask;
 import info.faceland.strife.tasks.RageTask;
 import info.faceland.strife.tasks.SaveTask;
@@ -109,7 +110,6 @@ import info.faceland.strife.tasks.SpawnerLeashTask;
 import info.faceland.strife.tasks.SpawnerSpawnTask;
 import info.faceland.strife.tasks.TimedAbilityTask;
 import info.faceland.strife.tasks.TrackedPruneTask;
-import info.faceland.strife.tasks.UniqueParticleTask;
 import info.faceland.strife.tasks.UniquePruneTask;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
@@ -311,7 +311,7 @@ public class StrifePlugin extends FacePlugin {
     RageTask rageTask = new RageTask(rageManager, strifeMobManager);
     MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
     UniquePruneTask uniquePruneTask = new UniquePruneTask(this);
-    UniqueParticleTask uniqueParticleTask = new UniqueParticleTask(uniqueEntityManager);
+    ParticleTask particleTask = new ParticleTask(uniqueEntityManager);
     SpawnerLeashTask spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     TimedAbilityTask timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
@@ -434,7 +434,7 @@ public class StrifePlugin extends FacePlugin {
         30 * 20L,
         30 * 20L
     ));
-    taskList.add(uniqueParticleTask.runTaskTimer(this,
+    taskList.add(particleTask.runTaskTimer(this,
         20 * 20L,
         2L
     ));

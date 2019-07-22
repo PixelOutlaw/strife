@@ -1,6 +1,7 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.tasks.ParticleTask;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
@@ -13,12 +14,21 @@ public class SpawnParticle extends Effect {
   private float spread;
   private float speed;
   private double size;
+  private int tickDuration;
   private ParticleStyle style;
   private ParticleOriginLocation particleOriginLocation = ParticleOriginLocation.CENTER;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    if (tickDuration > 0) {
+      ParticleTask.addContinuousParticle(caster.getEntity(), this, tickDuration);
+      return;
+    }
     playAtLocation(getLoc(target.getEntity()), caster.getEntity().getEyeLocation().getDirection());
+  }
+
+  public void playAtLocation(LivingEntity livingEntity) {
+    playAtLocation(getLoc(livingEntity), livingEntity.getLocation().getDirection());
   }
 
   public void playAtLocation(Location location, Vector direction) {
@@ -32,6 +42,10 @@ public class SpawnParticle extends Effect {
       default:
         location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
     }
+  }
+
+  public void setTickDuration(int tickDuration) {
+    this.tickDuration = tickDuration;
   }
 
   public void setParticle(Particle particle) {
@@ -68,6 +82,30 @@ public class SpawnParticle extends Effect {
 
   public void setSize(double size) {
     this.size = size;
+  }
+
+  public Particle getParticle() {
+    return particle;
+  }
+
+  public int getQuantity() {
+    return quantity;
+  }
+
+  public float getSpread() {
+    return spread;
+  }
+
+  public float getSpeed() {
+    return speed;
+  }
+
+  public ParticleStyle getStyle() {
+    return style;
+  }
+
+  public ParticleOriginLocation getParticleOriginLocation() {
+    return particleOriginLocation;
   }
 
   public Location getLoc(LivingEntity le) {

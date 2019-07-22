@@ -338,6 +338,7 @@ public class EffectManager {
         }
         ((SpawnParticle) effect).setParticle(particle);
         ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
+        ((SpawnParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));
         ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
         ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
         ((SpawnParticle) effect).setParticleOriginLocation(
