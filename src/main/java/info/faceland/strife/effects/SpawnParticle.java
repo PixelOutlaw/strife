@@ -38,6 +38,10 @@ public class SpawnParticle extends Effect {
         return;
       case LINE:
         spawnParticleLine(location, direction, size);
+        return;
+      case PILLAR:
+        spawnParticlePillar(location, size);
+        return;
       case NORMAL:
       default:
         location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
@@ -109,16 +113,7 @@ public class SpawnParticle extends Effect {
   }
 
   public Location getLoc(LivingEntity le) {
-    switch (particleOriginLocation) {
-      case HEAD:
-        return le.getEyeLocation();
-      case CENTER:
-        return le.getEyeLocation().clone()
-            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
-      case GROUND:
-        return le.getLocation();
-    }
-    return null;
+    return getLoc(particleOriginLocation, le);
   }
 
   public static Location getLoc(ParticleOriginLocation origin, LivingEntity le) {
@@ -143,9 +138,18 @@ public class SpawnParticle extends Effect {
     }
   }
 
+  private void spawnParticlePillar(Location center, double size) {
+    for (int i = 0; i < size; i++) {
+      Location loc = center.clone();
+      loc.add(0, i, 0);
+      loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
+      spawnParticleCircle(center, size);
+    }
+  }
+
   private void spawnParticleLine(Location center, Vector direction, double length) {
-    Location loc = center.clone();
     for (double dist = 0; dist < length; dist += 0.3) {
+      Location loc = center.clone();
       loc.add(direction.multiply(dist));
       loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
     }
