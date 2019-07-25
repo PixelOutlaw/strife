@@ -23,11 +23,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.material.MaterialData;
+import org.bukkit.inventory.ItemStack;
 
 public class BleedManager {
 
   private Map<LivingEntity, Double> bleedMap = new ConcurrentHashMap<>();
+  private static final ItemStack BLOCK_DATA = new ItemStack(Material.REDSTONE);
 
   public Map<LivingEntity, Double> getBleedMap() {
     return bleedMap;
@@ -59,11 +60,12 @@ public class BleedManager {
   public void spawnBleedParticles(LivingEntity livingEntity, double damage) {
     int particleAmount = 10 + (int) (damage * 20);
     livingEntity.getWorld().spawnParticle(
-        Particle.BLOCK_CRACK,
+        Particle.ITEM_CRACK,
         livingEntity.getEyeLocation().clone().add(0, -0.7, 0),
         particleAmount,
         0.0, 0.0, 0.0,
-        new MaterialData(Material.REDSTONE_WIRE)
+        0.1,
+        BLOCK_DATA
     );
   }
 
