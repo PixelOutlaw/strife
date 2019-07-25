@@ -316,6 +316,9 @@ public class StatUtil {
 
   public static Map<StrifeStat, Double> getStatMapFromSection(ConfigurationSection statSection) {
     Map<StrifeStat, Double> statMap = new HashMap<>();
+    if (statSection == null) {
+      return statMap;
+    }
     for (String statString : statSection.getKeys(false)) {
       StrifeStat strifeStat;
       try {
