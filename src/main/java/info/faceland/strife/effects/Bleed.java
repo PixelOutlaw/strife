@@ -8,15 +8,19 @@ import info.faceland.strife.util.StatUtil;
 public class Bleed extends Effect {
 
   private double amount;
+  private boolean applyBleedMods;
   private boolean ignoreArmor;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     double bleedAmount = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      bleedAmount += getStatMults().get(attr) * caster.getStat(attr);
+    if (applyBleedMods) {
+      bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;
+      bleedAmount *= 1 - target.getStat(StrifeStat.BLEED_RESIST) / 100;
     }
-    // TODO: Add logic for ignore armor false
+    for (StrifeStat attr : getStatMults().keySet()) {
+      bleedAmount *= 1 + (getStatMults().get(attr) * caster.getStat(attr));
+    }
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
     }
@@ -29,5 +33,9 @@ public class Bleed extends Effect {
 
   public void setIgnoreArmor(boolean ignoreArmor) {
     this.ignoreArmor = ignoreArmor;
+  }
+
+  public void setApplyBleedMods(boolean applyBleedMods) {
+    this.applyBleedMods = applyBleedMods;
   }
 }
