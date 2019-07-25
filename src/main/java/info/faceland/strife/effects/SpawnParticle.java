@@ -31,12 +31,19 @@ public class SpawnParticle extends Effect {
     playAtLocation(getLoc(livingEntity), livingEntity.getLocation().getDirection());
   }
 
+  public void playAtLocation(Location location) {
+    playAtLocation(location, null);
+  }
+
   public void playAtLocation(Location location, Vector direction) {
     switch (style) {
       case CIRCLE:
         spawnParticleCircle(location, size);
         return;
       case LINE:
+        if (direction == null) {
+          throw new IllegalArgumentException("Cannot use LINE particle without defined direction");
+        }
         spawnParticleLine(location, direction, size);
         return;
       case PILLAR:

@@ -22,7 +22,7 @@ import static info.faceland.strife.stats.StrifeStat.HP_ON_KILL;
 import static info.faceland.strife.stats.StrifeStat.RAGE_ON_KILL;
 import static info.faceland.strife.util.DamageUtil.AttackType;
 import static info.faceland.strife.util.DamageUtil.getAttacker;
-import static info.faceland.strife.util.DamageUtil.restoreHealth;
+import static info.faceland.strife.util.DamageUtil.restoreHealthWithPenalties;
 import static info.faceland.strife.util.ProjectileUtil.ATTACK_SPEED_META;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
@@ -165,7 +165,7 @@ public class CombatListener implements Listener {
     }
     StrifeMob killer = plugin.getStrifeMobManager().getStatMob(event.getEntity().getKiller());
     if (killer.getStat(HP_ON_KILL) > 0.1) {
-      restoreHealth(event.getEntity().getKiller(), killer.getStat(HP_ON_KILL));
+      restoreHealthWithPenalties(event.getEntity().getKiller(), killer.getStat(HP_ON_KILL));
     }
     if (killer.getStat(RAGE_ON_KILL) > 0.1) {
       plugin.getRageManager().addRage(killer, killer.getStat(RAGE_ON_KILL));

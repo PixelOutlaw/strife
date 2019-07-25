@@ -320,8 +320,7 @@ public class AbilityManager {
     }
     SpawnParticle particle = ability.getAbilityParticle();
     if (particle != null) {
-      particle.playAtLocation(SpawnParticle.getLoc(particle.getOrigin(), le),
-          le.getEyeLocation().getDirection());
+      particle.playAtLocation(SpawnParticle.getLoc(particle.getOrigin(), le));
     }
     targets.add(le);
     return targets;
@@ -330,7 +329,7 @@ public class AbilityManager {
   private Set<LivingEntity> getEntitiesInRadius(Location location, Ability ability, double range) {
     SpawnParticle particle = ability.getAbilityParticle();
     if (particle != null) {
-      ability.getAbilityParticle().playAtLocation(location, location.getDirection());
+      ability.getAbilityParticle().playAtLocation(location);
     }
     return DamageUtil.getLOSEntitiesAroundLocation(location, range);
   }
