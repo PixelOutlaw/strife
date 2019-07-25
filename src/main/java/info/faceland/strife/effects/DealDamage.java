@@ -26,7 +26,7 @@ public class DealDamage extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     double damage = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
-      damage += getStatMults().get(attr) * caster.getStat(attr);
+      damage *= 1 + (getStatMults().get(attr) * caster.getStat(attr));
     }
     LogUtil.printDebug("Damage Effect! " + damage + " | " + damageScale + " | " + damageType);
     switch (damageScale) {
