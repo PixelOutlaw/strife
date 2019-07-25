@@ -306,22 +306,16 @@ public class DamageUtil {
     for (PotionEffect effect : attackerEffects) {
       if (effect.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
         potionMult += 0.1 * (effect.getAmplifier() + 1);
-        continue;
-      }
-      if (effect.getType().equals(PotionEffectType.WEAKNESS)) {
+      } else if (effect.getType().equals(PotionEffectType.WEAKNESS)) {
         potionMult -= 0.1 * (effect.getAmplifier() + 1);
-        continue;
       }
     }
 
     for (PotionEffect effect : defenderEffects) {
       if (effect.getType().equals(PotionEffectType.WITHER)) {
         potionMult += 0.15 * (effect.getAmplifier() + 1);
-        continue;
-      }
-      if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE)) {
+      } else if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE)) {
         potionMult -= 0.1 * (effect.getAmplifier() + 1);
-        continue;
       }
     }
     return Math.max(0, potionMult);
@@ -351,35 +345,15 @@ public class DamageUtil {
         1 + (atk.getStat(PROJECTILE_DAMAGE) - def.getStat(PROJECTILE_REDUCTION)) / 100);
   }
 
-  public static void applyLifeSteal(StrifeMob attacker, double damage,
-      double healMultiplier) {
+  public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier) {
     double lifeSteal = StatUtil.getLifestealPercentage(attacker);
-    if (lifeSteal <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
-      return;
-    }
-    double lifeStolen = damage * lifeSteal;
-    if (attacker instanceof Player) {
-      lifeStolen *= Math.min(((Player) attacker).getFoodLevel() / 7.0D, 1.0D);
-    }
-    if (attacker.getEntity().hasPotionEffect(PotionEffectType.POISON)) {
-      lifeStolen *= 0.3;
-    }
-    restoreHealth(attacker.getEntity(), lifeStolen * healMultiplier);
+    restoreHealthWithPenalties(attacker.getEntity(), damage * lifeSteal * healMultiplier);
   }
 
   public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier,
       double healMultiplier) {
-    double health = attacker.getStat(HP_ON_HIT) * attackMultiplier;
-    if (health <= 0 || attacker.getEntity().getHealth() <= 0 || attacker.getEntity().isDead()) {
-      return;
-    }
-    if (attacker instanceof Player) {
-      health *= Math.min(((Player) attacker).getFoodLevel() / 7.0D, 1.0D);
-    }
-    if (attacker.getEntity().hasPotionEffect(PotionEffectType.POISON)) {
-      health *= 0.3;
-    }
-    restoreHealth(attacker.getEntity(), health * healMultiplier);
+    double health = attacker.getStat(HP_ON_HIT) * attackMultiplier * healMultiplier;
+    restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender,
@@ -402,10 +376,11 @@ public class DamageUtil {
   }
 
   public static void applyBleed(LivingEntity defender, double amount) {
-    StrifePlugin.getInstance().getBleedManager()
-        .applyBleed(defender, amount);
-    defender.getWorld()
-        .playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
+    if (amount < 0.5) {
+      return;
+    }
+    StrifePlugin.getInstance().getBleedManager().applyBleed(defender, amount);
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
 
   public static void applyCorrupt(LivingEntity defender, double amount) {
@@ -442,7 +417,27 @@ public class DamageUtil {
     return entity.hasPotionEffect(PotionEffectType.LUCK);
   }
 
+  public static double applyHealPenalties(LivingEntity entity, double amount) {
+    if (entity.hasPotionEffect(PotionEffectType.POISON)) {
+      return 0;
+    }
+    if (amount <= 0 || entity.getHealth() <= 0 || entity.isDead()) {
+      return 0;
+    }
+    if (entity instanceof Player) {
+      amount *= Math.min(((Player) entity).getFoodLevel() / 7.0D, 1.0D);
+    }
+    return amount;
+  }
+
+  public static void restoreHealthWithPenalties(LivingEntity entity, double amount) {
+    restoreHealth(entity, applyHealPenalties(entity, amount));
+  }
+
   public static void restoreHealth(LivingEntity livingEntity, double amount) {
+    if (amount == 0) {
+      return;
+    }
     livingEntity.setHealth(Math.min(livingEntity.getHealth() + amount,
         livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
   }
@@ -497,14 +492,16 @@ public class DamageUtil {
   public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
     ArmorStand stando = buildAndRemoveDetectionStand(loc);
     Collection<Entity> targetList = loc.getWorld()
-        .getNearbyEntities(loc, radius, radius / 2, radius);
+        .getNearbyEntities(loc, radius, radius * 0.75, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity e : targetList) {
+      if (e == stando || e instanceof ArmorStand) {
+        continue;
+      }
       if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
         validTargets.add((LivingEntity) e);
       }
     }
-    validTargets.remove(stando);
     return validTargets;
   }
 
