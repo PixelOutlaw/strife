@@ -22,12 +22,14 @@ import info.faceland.strife.conditions.PotionCondition;
 import info.faceland.strife.conditions.StatCondition;
 import info.faceland.strife.conditions.TimeCondition;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.WorldSpaceEffectEntity;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.BuffEffect;
 import info.faceland.strife.effects.ConsumeBleed;
 import info.faceland.strife.effects.ConsumeCorrupt;
 import info.faceland.strife.effects.Corrupt;
+import info.faceland.strife.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.effects.DealDamage;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
@@ -54,6 +56,8 @@ import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
+import info.faceland.strife.util.StatUtil;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,12 +80,14 @@ public class EffectManager {
   private final StrifeMobManager aeManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
+  private final Set<WorldSpaceEffectEntity> worldSpaceEffects;
 
   public EffectManager(StrifeAttributeManager strifeAttributeManager, StrifeMobManager aeManager) {
     this.strifeAttributeManager = strifeAttributeManager;
     this.aeManager = aeManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
+    this.worldSpaceEffects = new HashSet<>();
   }
 
   public void execute(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
@@ -102,6 +108,7 @@ public class EffectManager {
       for (StrifeMob mob : caster.getMinions()) {
         finalTargets.remove(mob.getEntity());
       }
+      //TODO: Remove party members
     }
     for (LivingEntity le : finalTargets) {
       if (!effect.isFriendly() && caster.getEntity() instanceof Player && le instanceof Player) {
@@ -136,6 +143,25 @@ public class EffectManager {
       return;
     }
     effect.apply(caster, target);
+  }
+
+  public void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
+    LogUtil.printDebug(" - Added worldspace entity to effect manager");
+    worldSpaceEffects.add(worldSpaceEffectEntity);
+  }
+
+  public void tickAllWorldSpaceEffects() {
+    List<WorldSpaceEffectEntity> expiredEffects = new ArrayList<>();
+    for (WorldSpaceEffectEntity effect : worldSpaceEffects) {
+      boolean isAlive = effect.tick();
+      if (!isAlive) {
+        expiredEffects.add(effect);
+      }
+    }
+    for (WorldSpaceEffectEntity effect : expiredEffects) {
+      LogUtil.printDebug(" - Remove expired worldspace entity from effect manager");
+      worldSpaceEffects.remove(effect);
+    }
   }
 
   private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target,
@@ -210,6 +236,20 @@ public class EffectManager {
         }
         ((StandardDamage) effect).getDamageModifiers().putAll(modMap);
         break;
+      case WORLD_SPACE_ENTITY:
+        effect = new CreateWorldSpaceEntity();
+        Map<Integer, List<String>> effectSchedule = new HashMap<>();
+        ConfigurationSection scheduleSection = cs.getConfigurationSection("schedule");
+        for (String intKey : scheduleSection.getKeys(false)) {
+          int val = Integer.valueOf(intKey);
+          List<String> effects = scheduleSection.getStringList(intKey);
+          effectSchedule.put(val, effects);
+        }
+        ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
+        ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
+        ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
+        ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("velocity", 1));
+        break;
       case PROJECTILE:
         effect = new ShootProjectile();
         ((ShootProjectile) effect).setQuantity(cs.getInt("quantity", 1));
@@ -248,6 +288,7 @@ public class EffectManager {
         effect = new Bleed();
         ((Bleed) effect).setAmount(cs.getInt("amount", 10));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
+        ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
         break;
       case CORRUPT:
         effect = new Corrupt();
@@ -352,6 +393,9 @@ public class EffectManager {
       effect.setRange(cs.getDouble("range", 0));
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
+      Map<StrifeStat, Double> statMults = StatUtil
+          .getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
+      effect.setStatMults(statMults);
     } else {
       effect.setName("wait");
     }
@@ -517,6 +561,7 @@ public class EffectManager {
   public enum EffectType {
     STANDARD_DAMAGE,
     DAMAGE,
+    WORLD_SPACE_ENTITY,
     HEAL,
     RESTORE_BARRIER,
     INCREASE_RAGE,

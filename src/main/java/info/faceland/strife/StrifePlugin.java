@@ -111,6 +111,7 @@ import info.faceland.strife.tasks.SpawnerSpawnTask;
 import info.faceland.strife.tasks.TimedAbilityTask;
 import info.faceland.strife.tasks.TrackedPruneTask;
 import info.faceland.strife.tasks.UniquePruneTask;
+import info.faceland.strife.tasks.WorldSpaceEffectTask;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
@@ -317,6 +318,7 @@ public class StrifePlugin extends FacePlugin {
     TimedAbilityTask timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
         strifeMobManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager, 4);
+    WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(effectManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
 
     commandHandler.registerCommands(new AttributesCommand(this));
@@ -453,6 +455,10 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(iconDuraTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s
         4L // Run it every 4 ticks
+    ));
+    taskList.add(worldSpaceEffectTask.runTaskTimer(this,
+        3 * 20L, // Start timer after 3s
+        2L // Run it every 2 ticks
     ));
     taskList.add(combatStatusTask.runTaskTimer(this,
         3 * 20L + 2L, // Start timer after 3s
