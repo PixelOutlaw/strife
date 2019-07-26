@@ -273,7 +273,7 @@ public class StrifeDamageEventListener implements Listener {
 
     doReflectedDamage(defender, attacker, event.getAttackType());
 
-    if (plugin.getUniqueEntityManager().isUnique(defender.getEntity())) {
+    if (plugin.getUniqueEntityManager().isUnique(attacker.getEntity())) {
       plugin.getAbilityManager().uniqueAbilityCast(attacker, AbilityType.ON_HIT);
       plugin.getAbilityManager().checkPhaseChange(defender.getEntity());
     }
