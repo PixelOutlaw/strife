@@ -1,5 +1,7 @@
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.data.ability.Ability.TargetType.SINGLE_OTHER;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
@@ -34,16 +36,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 public class AbilityManager {
@@ -130,11 +129,7 @@ public class AbilityManager {
       caster.getChampion().getDetailsContainer().addWeights(ability);
     }
     Set<LivingEntity> targets = getTargets(caster, target, ability);
-    if (targets == null) {
-      LogUtil.printError("Null ability target list for " + ability.getName() + "! Somethin bork");
-      return;
-    }
-    if (targets.isEmpty() && ability.getTargetType() == TargetType.SINGLE_OTHER) {
+    if (targets != null && targets.isEmpty() && ability.getTargetType() == SINGLE_OTHER) {
       doTargetNotFoundPrompt(caster, ability);
       return;
     }
@@ -243,35 +238,29 @@ public class AbilityManager {
       case PARTY:
         targets.add(caster.getEntity());
         return targets;
+      case NONE:
+        return null;
+      case MINIONS:
+        for (StrifeMob mob : caster.getMinions()) {
+          targets.add(mob.getEntity());
+        }
+        return targets;
       case SINGLE_OTHER:
         if (target != null) {
           targets.add(target);
-        } else {
-          targets.add(selectFirstEntityInSight(caster.getEntity(), ability.getRange()));
+          return targets;
         }
+        targets.add(DamageUtil.selectFirstEntityInSight(caster.getEntity(), ability.getRange()));
         return targets;
       case AREA_LINE:
         return getEntitiesInLine(caster.getEntity(), ability, ability.getRange());
       case AREA_RADIUS:
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
-        if (target == null) {
-          target = selectFirstEntityInSight(caster.getEntity(), ability.getRange());
-        }
-        if (target == null) {
-          Location location = getTargetLocation(caster.getEntity(), (int) ability.getRange());
-          return getEntitiesInRadius(location, ability, ability.getRadius());
-        }
-        return getEntitiesInRadius(target, ability, ability.getRadius());
+        Location loc = DamageUtil.getTargetArea(caster.getEntity(), target, ability.getRange());
+        return getEntitiesInRadius(loc, ability, ability.getRadius());
     }
     return null;
-  }
-
-  private LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
-    if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
-      return ((Mob) caster).getTarget();
-    }
-    return DamageUtil.getFirstEntityInLOS(caster, (int) range);
   }
 
   private Set<LivingEntity> getEntitiesInLine(LivingEntity caster, Ability ability, double range) {
@@ -332,27 +321,6 @@ public class AbilityManager {
       ability.getAbilityParticle().playAtLocation(location);
     }
     return DamageUtil.getLOSEntitiesAroundLocation(location, range);
-  }
-
-  private Location getTargetLocation(LivingEntity caster, double range) {
-    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range+1);
-    Block sightBlock = null;
-    while (bi.hasNext()) {
-      Block b = bi.next();
-      if (b.getType().isSolid()) {
-        sightBlock = b;
-        break;
-      }
-    }
-    if (sightBlock == null) {
-      LogUtil.printDebug(" - Using MAX DISTANCE target location calculation");
-      return caster.getEyeLocation().clone().add(
-          caster.getEyeLocation().getDirection().multiply(range));
-    }
-    LogUtil.printDebug(" - Using TARGET BLOCK target location calculation");
-    double dist = sightBlock.getLocation().add(0.5, 0.5, 0.5).distance(caster.getEyeLocation());
-    return caster.getEyeLocation().add(
-        caster.getEyeLocation().getDirection().multiply(Math.max(0, dist - 1)));
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {

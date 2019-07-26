@@ -146,16 +146,15 @@ public class SpawnParticle extends Effect {
   }
 
   private void spawnParticlePillar(Location center, double size) {
-    for (int i = 0; i < size; i++) {
+    for (double i = 0; i < size; i += 0.25) {
       Location loc = center.clone();
       loc.add(0, i, 0);
       loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
-      spawnParticleCircle(center, size);
     }
   }
 
   private void spawnParticleLine(Location center, Vector direction, double length) {
-    for (double dist = 0; dist < length; dist += 0.3) {
+    for (double dist = 0; dist < length; dist += 0.25) {
       Location loc = center.clone();
       loc.add(direction.multiply(dist));
       loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);

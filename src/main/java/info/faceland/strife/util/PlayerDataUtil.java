@@ -7,6 +7,7 @@ import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.LifeSkillType;
+import info.faceland.strife.util.DamageUtil.DamageType;
 import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -15,8 +16,8 @@ import org.bukkit.entity.Player;
 public class PlayerDataUtil {
 
   public static void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
-      double critBonus, double fireBonus, double iceBonus, double lightningBonus, double earthBonus,
-      double lightBonus, boolean corrupt, boolean isBleedApplied, boolean isSneakAttack) {
+      double critBonus, Set<DamageType> triggeredElements, boolean isBleedApplied,
+      boolean isSneakAttack) {
     if (!(entity instanceof Player)) {
       return;
     }
@@ -30,22 +31,22 @@ public class PlayerDataUtil {
     if (critBonus > 0) {
       damageString.append("&c✶");
     }
-    if (fireBonus > 0) {
+    if (triggeredElements.contains(DamageType.FIRE)) {
       damageString.append("&6☀");
     }
-    if (iceBonus > 0) {
+    if (triggeredElements.contains(DamageType.ICE)) {
       damageString.append("&b❊");
     }
-    if (lightningBonus > 0) {
+    if (triggeredElements.contains(DamageType.LIGHTNING)) {
       damageString.append("&7⚡");
     }
-    if (earthBonus > 0) {
+    if (triggeredElements.contains(DamageType.EARTH)) {
       damageString.append("&2▼");
     }
-    if (lightBonus > 0) {
+    if (triggeredElements.contains(DamageType.LIGHT)) {
       damageString.append("&f❂");
     }
-    if (corrupt) {
+    if (triggeredElements.contains(DamageType.DARK)) {
       damageString.append("&8❂");
     }
     if (isBleedApplied) {

@@ -13,9 +13,11 @@ import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
+import static info.faceland.strife.stats.StrifeStat.MELEE_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.PHYSICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
+import static info.faceland.strife.stats.StrifeStat.RANGED_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.TRUE_DAMAGE;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
 import static info.faceland.strife.util.StatUtil.getEarthResist;
@@ -39,8 +41,10 @@ import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,6 +61,7 @@ import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
@@ -78,40 +83,12 @@ public class DamageUtil {
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   private static final Random RANDOM = new Random(System.currentTimeMillis());
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
+  private static final DamageType[] DMG_TYPES = DamageType.values();
 
   private static final double BLEED_PERCENT = 0.5;
 
-  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, double damage,
-      DamageType damageType) {
-    LogUtil.printDebug("[Pre-Mitigation] Dealing " + damage + " of type " + damageType);
-    switch (damageType) {
-      case PHYSICAL:
-        damage *= getArmorMult(attacker, defender);
-        break;
-      case MAGICAL:
-        damage *= getWardingMult(attacker, defender);
-        break;
-      case FIRE:
-        damage *= 1 - getFireResist(defender) / 100;
-        break;
-      case ICE:
-        damage *= 1 - getIceResist(defender) / 100;
-        break;
-      case LIGHTNING:
-        damage *= 1 - getLightningResist(defender) / 100;
-        break;
-      case DARK:
-        damage *= 1 - getShadowResist(defender) / 100;
-        break;
-      case LIGHT:
-        damage *= 1 - getLightResist(defender) / 100;
-        break;
-      case EARTH:
-        damage *= 1 - getEarthResist(defender) / 100;
-        break;
-    }
+  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, double damage) {
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    LogUtil.printDebug("[Post-Mitigation] Dealing " + damage + " of type " + damageType);
     forceCustomDamage(attacker.getEntity(), defender.getEntity(), damage);
     return damage;
   }
@@ -141,6 +118,114 @@ public class DamageUtil {
     }
   }
 
+  public static Map<DamageType, Double> buildDamageMap(StrifeMob attacker) {
+    Map<DamageType, Double> damageMap = new HashMap<>();
+    for (DamageType damageType : DMG_TYPES) {
+      double amount = getRawDamage(attacker, damageType);
+      if (amount > 0) {
+        damageMap.put(damageType, getRawDamage(attacker, damageType));
+      }
+    }
+    return damageMap;
+  }
+
+  public static void applyApplicableDamageReductions(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Double> damageMap) {
+    for (DamageType type : damageMap.keySet()) {
+      damageMap.put(type, damageMap.get(type) * getDamageReduction(type, attacker, defender));
+    }
+  }
+
+  public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
+      Map<DamageType, Double> damageMap) {
+    if (attackType == AttackType.MELEE && damageMap.containsKey(DamageType.PHYSICAL)) {
+      damageMap.put(DamageType.PHYSICAL,
+          damageMap.get(DamageType.PHYSICAL) * 1 + attacker.getStat(MELEE_PHYSICAL_MULT) / 100);
+    } else if (attackType == AttackType.RANGED && damageMap.containsKey(DamageType.PHYSICAL)) {
+      damageMap.put(DamageType.PHYSICAL,
+          damageMap.get(DamageType.PHYSICAL) * 1 + attacker.getStat(RANGED_PHYSICAL_MULT) / 100);
+    }
+  }
+
+  public static Set<DamageType> applyElementalEffects(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Double> damageMap) {
+    Set<DamageType> triggeredElements = new HashSet<>();
+    for (DamageType type : damageMap.keySet()) {
+      double bonus;
+      switch (type) {
+        case FIRE:
+          bonus = attemptIgnite(damageMap.get(type), attacker, defender.getEntity());
+          if (bonus != 0) {
+            triggeredElements.add(type);
+            damageMap.put(type, damageMap.get(type) + bonus);
+          }
+          break;
+        case ICE:
+          bonus = attemptFreeze(damageMap.get(type), attacker, defender.getEntity());
+          if (bonus != 0) {
+            triggeredElements.add(type);
+            damageMap.put(type, damageMap.get(type) + bonus);
+          }
+          break;
+        case LIGHTNING:
+          bonus = attemptShock(damageMap.get(type), attacker, defender.getEntity());
+          if (bonus != 0) {
+            triggeredElements.add(type);
+            damageMap.put(type, damageMap.get(type) + bonus);
+          }
+          break;
+        case DARK:
+          bonus =
+              damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
+          boolean corrupt = attemptCorrupt(damageMap.get(type), attacker, defender.getEntity());
+          if (corrupt) {
+            triggeredElements.add(type);
+            damageMap.put(type, damageMap.get(type) + bonus);
+          }
+          break;
+        case EARTH:
+          bonus = consumeEarthRunes(damageMap.get(type), attacker, defender.getEntity());
+          if (bonus != 0) {
+            triggeredElements.add(type);
+            damageMap.put(type, damageMap.get(type) + bonus);
+          }
+          break;
+        case LIGHT:
+          bonus = getLightBonus(damageMap.get(type), attacker, defender.getEntity());
+          if (bonus > damageMap.get(type) / 2) {
+            triggeredElements.add(type);
+            damageMap.put(type, damageMap.get(type) + bonus);
+          }
+          break;
+      }
+    }
+    return triggeredElements;
+  }
+
+  public static double getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend) {
+    switch (type) {
+      case PHYSICAL:
+        return getArmorMult(attack, defend);
+      case MAGICAL:
+        return getWardingMult(attack, defend);
+      case FIRE:
+        return 1 - getFireResist(defend) / 100;
+      case ICE:
+        return 1 - getIceResist(defend) / 100;
+      case LIGHTNING:
+        return 1 - getLightningResist(defend) / 100;
+      case DARK:
+        return 1 - getShadowResist(defend) / 100;
+      case EARTH:
+        return 1 - getEarthResist(defend) / 100;
+      case LIGHT:
+        return 1 - getLightResist(defend) / 100;
+      case TRUE_DAMAGE:
+      default:
+        return 1;
+    }
+  }
+
   public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
     target.setNoDamageTicks(0);
     CombatListener.addAttack(attacker, amount);
@@ -162,7 +247,7 @@ public class DamageUtil {
 
   public static double attemptIgnite(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.IGNITE_CHANCE) / 100) {
+    if (rollDouble() >= attacker.getStat(StrifeStat.IGNITE_CHANCE) / 100) {
       return 0D;
     }
     double bonusDamage = defender.getFireTicks() > 0 ? damage : 1D;
@@ -176,7 +261,7 @@ public class DamageUtil {
 
   public static double attemptShock(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.SHOCK_CHANCE) / 100) {
+    if (rollDouble() >= attacker.getStat(StrifeStat.SHOCK_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.5;
@@ -200,7 +285,7 @@ public class DamageUtil {
 
   public static double attemptFreeze(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0 || rollDouble() >= attacker.getStat(StrifeStat.FREEZE_CHANCE) / 100) {
+    if (rollDouble() >= attacker.getStat(StrifeStat.FREEZE_CHANCE) / 100) {
       return 0D;
     }
     double multiplier = 0.25 + 0.25 * (StatUtil.getHealth(attacker) / 100);
@@ -214,11 +299,7 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static double consumeEarthRunes(double damage, StrifeMob attacker,
-      LivingEntity defender) {
-    if (damage == 0) {
-      return 0;
-    }
+  public static double consumeEarthRunes(double damage, StrifeMob attacker, LivingEntity defender) {
     int runes = getBlockManager().getEarthRunes(attacker.getEntity().getUniqueId());
     getBlockManager().setEarthRunes(attacker.getEntity().getUniqueId(), 0);
     if (runes == 0) {
@@ -237,9 +318,6 @@ public class DamageUtil {
 
   public static double getLightBonus(double damage, StrifeMob attacker,
       LivingEntity defender) {
-    if (damage == 0) {
-      return 0;
-    }
     double light = attacker.getEntity().getLocation().getBlock().getLightLevel();
     double multiplier = (light - 4) / 10;
     if (multiplier >= 0.5) {
@@ -258,10 +336,6 @@ public class DamageUtil {
 
   public static boolean attemptCorrupt(double baseDamage, StrifeMob attacker,
       LivingEntity defender) {
-    if (baseDamage == 0) {
-      return false;
-    }
-    baseDamage *= 1 + attacker.getStat(ELEMENTAL_MULT) / 100;
     if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
       return false;
     }
@@ -491,8 +565,7 @@ public class DamageUtil {
 
   public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
     ArmorStand stando = buildAndRemoveDetectionStand(loc);
-    Collection<Entity> targetList = loc.getWorld()
-        .getNearbyEntities(loc, radius, radius * 0.75, radius);
+    Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity e : targetList) {
       if (e == stando || e instanceof ArmorStand) {
@@ -505,7 +578,7 @@ public class DamageUtil {
     return validTargets;
   }
 
-  private static ArmorStand buildAndRemoveDetectionStand(Location location) {
+  public static ArmorStand buildAndRemoveDetectionStand(Location location) {
     ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class,
         e -> e.setVisible(false));
     stando.setSmall(true);
@@ -541,6 +614,44 @@ public class DamageUtil {
       }
     }
     return null;
+  }
+
+  public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
+    if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
+      return ((Mob) caster).getTarget();
+    }
+    return DamageUtil.getFirstEntityInLOS(caster, (int) range);
+  }
+
+  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range) {
+    if (target == null) {
+      target = selectFirstEntityInSight(caster, range);
+    }
+    if (target != null) {
+      return target.getLocation();
+    }
+    return getTargetLocation(caster, range);
+  }
+
+  private static Location getTargetLocation(LivingEntity caster, double range) {
+    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range + 1);
+    Block sightBlock = null;
+    while (bi.hasNext()) {
+      Block b = bi.next();
+      if (b.getType().isSolid()) {
+        sightBlock = b;
+        break;
+      }
+    }
+    if (sightBlock == null) {
+      LogUtil.printDebug(" - Using MAX DISTANCE target location calculation");
+      return caster.getEyeLocation().clone().add(
+          caster.getEyeLocation().getDirection().multiply(range));
+    }
+    LogUtil.printDebug(" - Using TARGET BLOCK target location calculation");
+    double dist = sightBlock.getLocation().add(0.5, 0.5, 0.5).distance(caster.getEyeLocation());
+    return caster.getEyeLocation().add(
+        caster.getEyeLocation().getDirection().multiply(Math.max(0, dist - 1)));
   }
 
   public static double rollDouble(boolean lucky) {

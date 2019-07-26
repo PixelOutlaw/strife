@@ -20,26 +20,18 @@ package info.faceland.strife.listeners.combat;
 
 import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.DAMAGE_REFLECT;
-import static info.faceland.strife.stats.StrifeStat.MAGIC_MULT;
-import static info.faceland.strife.stats.StrifeStat.MELEE_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
 import static info.faceland.strife.stats.StrifeStat.RAGE_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.RAGE_WHEN_HIT;
-import static info.faceland.strife.stats.StrifeStat.RANGED_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.TRUE_DAMAGE;
+import static info.faceland.strife.util.DamageUtil.applyElementalEffects;
 import static info.faceland.strife.util.DamageUtil.applyHealthOnHit;
 import static info.faceland.strife.util.DamageUtil.applyLifeSteal;
 import static info.faceland.strife.util.DamageUtil.attemptBleed;
-import static info.faceland.strife.util.DamageUtil.attemptCorrupt;
-import static info.faceland.strife.util.DamageUtil.attemptFreeze;
-import static info.faceland.strife.util.DamageUtil.attemptIgnite;
-import static info.faceland.strife.util.DamageUtil.attemptShock;
 import static info.faceland.strife.util.DamageUtil.callCritEvent;
 import static info.faceland.strife.util.DamageUtil.callSneakAttackEvent;
-import static info.faceland.strife.util.DamageUtil.consumeEarthRunes;
 import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
-import static info.faceland.strife.util.DamageUtil.getLightBonus;
 import static info.faceland.strife.util.DamageUtil.getPotionMult;
 import static info.faceland.strife.util.DamageUtil.hasLuck;
 import static info.faceland.strife.util.DamageUtil.rollDouble;
@@ -58,6 +50,8 @@ import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.StatUtil;
+import java.util.Map;
+import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -140,58 +134,20 @@ public class StrifeDamageEventListener implements Listener {
       return;
     }
 
-    double pvpMult = 1D;
-    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
-      pvpMult = PVP_MULT;
+    Map<DamageType, Double> damageMap = DamageUtil.buildDamageMap(attacker);
+    for (DamageType type : damageMap.keySet()) {
+      damageMap.put(type, damageMap.get(type) * event.getDamageMod(type));
     }
-
-    double potionMult = getPotionMult(attacker.getEntity(), defender.getEntity());
-
-    double physicalBaseDamage = StatUtil.getBasePhysicalDamage(attacker, defender) *
-        event.getDamageMod(DamageType.PHYSICAL);
-    double magicBaseDamage = StatUtil.getBaseMagicalDamage(attacker, defender) *
-        event.getDamageMod(DamageType.MAGICAL);
-    double fireBaseDamage = StatUtil.getBaseFireDamage(attacker, defender) *
-        event.getDamageMod(DamageType.FIRE);
-    double iceBaseDamage = StatUtil.getBaseIceDamage(attacker, defender) *
-        event.getDamageMod(DamageType.ICE);
-    double lightningBaseDamage = StatUtil.getBaseLightningDamage(attacker, defender) *
-        event.getDamageMod(DamageType.LIGHTNING);
-    double earthBaseDamage = StatUtil.getBaseEarthDamage(attacker, defender) *
-        event.getDamageMod(DamageType.EARTH);
-    double lightBaseDamage = StatUtil.getBaseLightDamage(attacker, defender) *
-        event.getDamageMod(DamageType.LIGHT);
-    double shadowBaseDamage = StatUtil.getBaseShadowDamage(attacker, defender) *
-        event.getDamageMod(DamageType.DARK);
-
-    switch (event.getAttackType()) {
-      case MELEE:
-        physicalBaseDamage *= 1 + attacker.getStat(MELEE_PHYSICAL_MULT) / 100;
-        break;
-      case RANGED:
-        physicalBaseDamage *= 1 + attacker.getStat(RANGED_PHYSICAL_MULT) / 100;
-        break;
+    DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
+    for (DamageType type : event.getFlatDamageBonuses().keySet()) {
+      damageMap.put(type, damageMap.getOrDefault(type, 0D) + event.getFlatDamageBonus(type));
     }
-    magicBaseDamage *= 1 + attacker.getStat(MAGIC_MULT) / 100;
+    DamageUtil.applyApplicableDamageReductions(attacker, defender, damageMap);
 
-    double bonusFireDamage = attemptIgnite(fireBaseDamage, attacker, defender.getEntity());
-    double bonusIceDamage = attemptFreeze(iceBaseDamage, attacker, defender.getEntity());
-    double bonusLightningDamage = attemptShock(lightningBaseDamage, attacker, defender.getEntity());
-    double bonusEarthDamage = consumeEarthRunes(earthBaseDamage, attacker, defender.getEntity());
-    double bonusLightDamage = getLightBonus(lightBaseDamage, attacker, defender.getEntity());
-    boolean corruptEffect = attemptCorrupt(shadowBaseDamage, attacker, defender.getEntity());
-
-    fireBaseDamage += bonusFireDamage;
-    iceBaseDamage += bonusIceDamage;
-    lightningBaseDamage += bonusLightningDamage;
-    earthBaseDamage += bonusEarthDamage;
-    lightBaseDamage += bonusLightDamage;
-    shadowBaseDamage += shadowBaseDamage *
-        (plugin.getDarknessManager().getCorruptionStacks(defender.getEntity()) * 0.02);
+    Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap);
 
     double bonusCriticalMultiplier = 0;
     double bonusOverchargeMultiplier = 0;
-
     if (doCriticalHit(attacker, defender)) {
       bonusCriticalMultiplier = attacker.getStat(CRITICAL_DAMAGE) / 100;
     }
@@ -199,9 +155,20 @@ public class StrifeDamageEventListener implements Listener {
       bonusOverchargeMultiplier = attacker.getStat(OVERCHARGE) / 100;
     }
 
-    double standardDamage = physicalBaseDamage + magicBaseDamage;
-    double elementalDamage = fireBaseDamage + iceBaseDamage + lightningBaseDamage +
-        earthBaseDamage + lightBaseDamage + shadowBaseDamage;
+    double standardDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0D) +
+        damageMap.getOrDefault(DamageType.MAGICAL, 0D);
+    double elementalDamage = damageMap.getOrDefault(DamageType.FIRE, 0D) +
+        damageMap.getOrDefault(DamageType.ICE, 0D) +
+        damageMap.getOrDefault(DamageType.LIGHTNING, 0D) +
+        damageMap.getOrDefault(DamageType.DARK, 0D) +
+        damageMap.getOrDefault(DamageType.EARTH, 0D) +
+        damageMap.getOrDefault(DamageType.LIGHT, 0D);
+
+    double pvpMult = 1D;
+    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
+      pvpMult = PVP_MULT;
+    }
+    double potionMult = getPotionMult(attacker.getEntity(), defender.getEntity());
 
     standardDamage +=
         standardDamage * bonusCriticalMultiplier + standardDamage * bonusOverchargeMultiplier;
@@ -240,8 +207,9 @@ public class StrifeDamageEventListener implements Listener {
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
     boolean isBleedApplied = false;
-    if (physicalBaseDamage > 0) {
-      isBleedApplied = attemptBleed(attacker, defender, physicalBaseDamage * pvpMult,
+    if (damageMap.containsKey(DamageType.PHYSICAL)) {
+      isBleedApplied = attemptBleed(attacker, defender,
+          damageMap.get(DamageType.PHYSICAL) * pvpMult,
           bonusCriticalMultiplier, event.getAttackMultiplier());
     }
 
@@ -283,8 +251,7 @@ public class StrifeDamageEventListener implements Listener {
     }
 
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
-        bonusCriticalMultiplier, bonusFireDamage, bonusIceDamage, bonusLightningDamage,
-        bonusEarthDamage, bonusLightDamage, corruptEffect, isBleedApplied, isSneakAttack);
+        bonusCriticalMultiplier, triggeredElements, isBleedApplied, isSneakAttack);
 
     if (attacker.getEntity() instanceof Player) {
       plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender);

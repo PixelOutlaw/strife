@@ -13,6 +13,7 @@ public class StandardDamage extends Effect {
 
   private double attackMultiplier;
   private final Map<DamageType, Double> damageModifiers = new HashMap<>();
+  private final Map<DamageType, Double> damageBonuses = new HashMap<>();
   private AttackType attackType;
   private boolean isBlocking;
 
@@ -20,6 +21,7 @@ public class StandardDamage extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     StrifeDamageEvent event = new StrifeDamageEvent(caster, target, attackType, attackMultiplier);
     event.getDamageModifiers().putAll(damageModifiers);
+    event.getDamageModifiers().putAll(damageBonuses);
     Bukkit.getPluginManager().callEvent(event);
     DamageUtil.forceCustomDamage(caster.getEntity(), target.getEntity(), event.getFinalDamage());
   }
@@ -42,6 +44,10 @@ public class StandardDamage extends Effect {
 
   public Map<DamageType, Double> getDamageModifiers() {
     return damageModifiers;
+  }
+
+  public Map<DamageType, Double> getDamageBonuses() {
+    return damageBonuses;
   }
 
   public boolean isBlocking() {
