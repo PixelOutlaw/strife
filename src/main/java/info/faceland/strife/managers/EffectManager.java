@@ -99,6 +99,14 @@ public class EffectManager {
   }
 
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
+    if (targets == null) {
+      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        effect.apply(caster, null);
+        return;
+      }
+      LogUtil.printDebug(" - Condition not met! Aborting...");
+      return;
+    }
     Set<LivingEntity> finalTargets = new HashSet<>(targets);
     for (LivingEntity le : targets) {
       finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
@@ -174,7 +182,7 @@ public class EffectManager {
       targets.add(target);
       return targets;
     }
-    for (Entity e : target.getNearbyEntities(range, range / 2, range)) {
+    for (Entity e : target.getNearbyEntities(range, range, range)) {
       if (e instanceof ArmorStand) {
         continue;
       }
@@ -215,6 +223,7 @@ public class EffectManager {
       case DAMAGE:
         effect = new DealDamage();
         ((DealDamage) effect).setAmount(cs.getDouble("amount", 1));
+        ((DealDamage) effect).setFlatBonus(cs.getDouble("flat-bonus", 0));
         try {
           ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
           ((DealDamage) effect)
@@ -234,7 +243,14 @@ public class EffectManager {
           DamageType mod = DamageType.valueOf(k);
           modMap.put(mod, modCs.getDouble(k));
         }
+        ConfigurationSection flatCs = cs.getConfigurationSection("flat-damage-bonuses");
+        Map<DamageType, Double> flatMap = new HashMap<>();
+        for (String k : flatCs.getKeys(false)) {
+          DamageType mod = DamageType.valueOf(k);
+          flatMap.put(mod, flatCs.getDouble(k));
+        }
         ((StandardDamage) effect).getDamageModifiers().putAll(modMap);
+        ((StandardDamage) effect).getDamageBonuses().putAll(flatMap);
         break;
       case WORLD_SPACE_ENTITY:
         effect = new CreateWorldSpaceEntity();

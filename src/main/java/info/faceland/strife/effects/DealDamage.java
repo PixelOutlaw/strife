@@ -13,14 +13,12 @@ import org.bukkit.entity.Player;
 public class DealDamage extends Effect {
 
   private double amount;
+  private double flatBonus;
   private DamageScale damageScale;
   private DamageType damageType;
-  private final double pvpMult;
 
-  public DealDamage() {
-    pvpMult = StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.pvp-damage", 0.50);
-  }
+  private static double pvpMult = StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.pvp-damage", 0.50);
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -54,6 +52,9 @@ public class DealDamage extends Effect {
         damage *= caster.getEntity().getMaxHealth();
         break;
     }
+    damage += flatBonus;
+    LogUtil.printDebug(" [Pre-Mitigation] Dealing " + damage + " of type " + damageType);
+    damage *= DamageUtil.getDamageReduction(damageType, caster, target);
     if (damageType != DamageType.TRUE_DAMAGE) {
       damage *= DamageUtil.getPotionMult(caster.getEntity(), target.getEntity());
       damage *= 1 + (caster.getStat(DAMAGE_MULT) / 100);
@@ -62,13 +63,18 @@ public class DealDamage extends Effect {
         .getEntity() instanceof Player) {
       damage *= pvpMult;
     }
-    LogUtil.printDebug("[Pre-Damage] Target Health: " + target.getEntity().getHealth());
-    DamageUtil.dealDirectDamage(caster, target, damage, damageType);
-    LogUtil.printDebug("[Post-Damage] Target Health: " + target.getEntity().getHealth());
+    LogUtil.printDebug(" [Post-Mitigation] Dealing " + damage + " of type " + damageType);
+    LogUtil.printDebug(" [Pre-Damage] Target Health: " + target.getEntity().getHealth());
+    DamageUtil.dealDirectDamage(caster, target, damage);
+    LogUtil.printDebug(" [Post-Damage] Target Health: " + target.getEntity().getHealth());
   }
 
   public void setAmount(double amount) {
     this.amount = amount;
+  }
+
+  public void setFlatBonus(double flatBonus) {
+    this.flatBonus = flatBonus;
   }
 
   public void setDamageScale(DamageScale damageScale) {
