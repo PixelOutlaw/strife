@@ -45,6 +45,7 @@ public class StrifeDamageEvent extends Event implements Cancellable {
   private double attackMultiplier = 1;
   private double healMultiplier = 1;
   private final Map<DamageType, Double> damageModifiers = new HashMap<>();
+  private final Map<DamageType, Double> flatDamageBonuses = new HashMap<>();
   private boolean isBlocking = false;
   private Projectile projectile;
   private String[] extraEffects;
@@ -124,8 +125,16 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     return damageModifiers;
   }
 
+  public Map<DamageType, Double> getFlatDamageBonuses() {
+    return flatDamageBonuses;
+  }
+
   public double getDamageMod(DamageType damageType) {
     return damageModifiers.getOrDefault(damageType, 1D);
+  }
+
+  public double getFlatDamageBonus(DamageType damageType) {
+    return flatDamageBonuses.getOrDefault(damageType, 0D);
   }
 
   public double getFinalDamage() {
