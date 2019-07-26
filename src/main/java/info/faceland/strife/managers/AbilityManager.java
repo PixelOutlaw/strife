@@ -125,6 +125,10 @@ public class AbilityManager {
       LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
       return;
     }
+    if (!PlayerDataUtil.areConditionsMet(caster, null, ability.getConditions())) {
+      doRequirementNotMetPrompt(caster, ability);
+      return;
+    }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
     }
@@ -334,6 +338,19 @@ public class AbilityManager {
         Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
         1f,
         1f);
+  }
+
+  private void doRequirementNotMetPrompt(StrifeMob caster, Ability ability) {
+    if (!(ability.isShowMessages() && caster instanceof Player)) {
+      return;
+    }
+    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_REQUIRE);
+    LogUtil.printDebug("Failed. Requirement not met for ability " + ability.getId());
+    ((Player) caster.getEntity()).playSound(
+        caster.getEntity().getLocation(),
+        Sound.BLOCK_LAVA_POP,
+        1f,
+        0.5f);
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {

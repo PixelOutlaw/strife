@@ -57,9 +57,6 @@ public class PlayerDataUtil {
 
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
       Set<Condition> conditions) {
-    if (target == null && conditions.size() > 0) {
-      return false;
-    }
     for (Condition condition : conditions) {
       if (!condition.isMet(caster, target)) {
         return false;
