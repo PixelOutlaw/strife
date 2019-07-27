@@ -11,19 +11,23 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class HeldItemChangeListener implements Listener {
+public class ItemMovementAndDropListener implements Listener {
 
   private StrifePlugin plugin;
   private final String NO_MOVE_ABILITY;
+  private final String NO_HOTBAR_DROP;
 
-  public HeldItemChangeListener(StrifePlugin plugin) {
+  public ItemMovementAndDropListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    NO_MOVE_ABILITY = TextUtils
-        .color(plugin.getSettings().getString("language.abilities.cant-move-ability", ""));
+    NO_MOVE_ABILITY = TextUtils.color(
+        plugin.getSettings().getString("language.abilities.cant-move-ability", ""));
+    NO_HOTBAR_DROP = TextUtils.color(
+        plugin.getSettings().getString("language.generic.no-dropping-from-hotbar", ""));
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -66,9 +70,21 @@ public class HeldItemChangeListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerSwapHandItemsEvent event) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      plugin.getChampionManager().updateEquipmentStats(event.getPlayer());
+      plugin.getChampionManager().updateEquipmentStats(plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
     }, 1L);
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerDropItem(PlayerDropItemEvent event) {
+    for (int i = 0; i < 10; i++) {
+      if (event.getItemDrop().getItemStack()
+          .isSimilar(event.getPlayer().getInventory().getItem(i))) {
+        event.setCancelled(true);
+        MessageUtils.sendMessage(event.getPlayer(), NO_HOTBAR_DROP);
+        return;
+      }
+    }
   }
 
   private boolean isIcon(ItemStack stack) {
