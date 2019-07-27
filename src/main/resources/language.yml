@@ -10,6 +10,7 @@ abilities:
   cant-move-ability: "NO CAN DEW, BUCKAROO"
   ability-on-cooldown: "&f&lAbility On Cooldown!"
 skills:
+  xp-msg: "{c}Gained &f{n} {c}XP! &f(+{a}XP)"
   lvl-up-self: "{c}&lSkill Up! {c}Your skill level in &f{n} {c}has increased to &f{l}{c}!"
   lvl-up-broadcast: "{c}&lSkill Up! &f{p} {c}has reached &f{n} {c}skill level &f{l}{c}!"
 wand:

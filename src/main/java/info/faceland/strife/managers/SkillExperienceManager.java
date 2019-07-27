@@ -42,7 +42,7 @@ public class SkillExperienceManager {
   public SkillExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
     XP_MSG = plugin.getSettings()
-        .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP))");
+        .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
   }
 
   public void addExperience(Player player, LifeSkillType type, double amount, boolean exact) {

@@ -63,7 +63,7 @@ public class StrifeCommand {
     XP_MSG = plugin.getSettings()
         .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
     SET_LEVEL_MSG = plugin.getSettings()
-        .getString("language.command.xp-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
+        .getString("language.command.set-level-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
@@ -91,7 +91,8 @@ public class StrifeCommand {
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "<gold>----------------------------------");
     for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
-      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
+      sendMessage(sender,
+          ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
   }
