@@ -1,7 +1,6 @@
 package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.HotbarIconData;
@@ -128,27 +127,23 @@ public class AbilityIconManager {
     return new HotbarIconData(ability, stack);
   }
 
-  public boolean triggerAbility(Player player, int slot) {
+  public void triggerAbility(Player player, int slot) {
     AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
     if (abilitySlot == AbilitySlot.INVALID) {
-      return false;
+      return;
     }
     HotbarIconData data = abilitySlotMap.get(player.getUniqueId()).get(abilitySlot);
     if (data == null) {
-      return false;
+      return;
     }
-    if (!plugin.getAbilityManager().isCooledDown(player, data.getAbility())) {
-      if (data.getAbility().isShowMessages()) {
-        MessageUtils.sendActionBar(player, ON_COOLDOWN);
-      }
-      player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1, 1.5f);
-      return true;
-    }
-    plugin.getAbilityManager()
+    boolean abilitySucceeded = plugin.getAbilityManager()
         .execute(data.getAbility(), plugin.getStrifeMobManager().getStatMob(player));
+    if (!abilitySucceeded) {
+      LogUtil.printDebug("Ability " + data.getAbility().getId() + " failed execution");
+      return;
+    }
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
     updateAbilityIconDamageMeters(player);
-    return true;
   }
 
   public void updateAbilityIconDamageMeters(Player player) {

@@ -52,6 +52,7 @@ public class AbilityManager {
   private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private final Map<UUID, Map<Ability, Integer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
 
+  private static final String ON_COOLDOWN = TextUtils.color("&e&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
   private static final String NO_REQUIRE = TextUtils.color("&c&lAbility Requirements Not Met!");
 
@@ -120,14 +121,14 @@ public class AbilityManager {
     return !coolingDownAbilities.get(livingEntity).containsKey(ability);
   }
 
-  public void execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
     if (ability.getCooldown() != 0 && !isCooledDown(caster.getEntity(), ability)) {
-      LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
-      return;
+      doOnCooldownPrompt(caster, ability);
+      return false;
     }
-    if (!PlayerDataUtil.areConditionsMet(caster, null, ability.getConditions())) {
+    if (!PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
       doRequirementNotMetPrompt(caster, ability);
-      return;
+      return false;
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
@@ -135,7 +136,7 @@ public class AbilityManager {
     Set<LivingEntity> targets = getTargets(caster, target, ability);
     if (targets != null && targets.isEmpty() && ability.getTargetType() == SINGLE_OTHER) {
       doTargetNotFoundPrompt(caster, ability);
-      return;
+      return false;
     }
     if (ability.getCooldown() != 0) {
       startAbilityCooldown(caster.getEntity(), ability);
@@ -154,10 +155,11 @@ public class AbilityManager {
       LogUtil.printDebug("Added effect " + effect.getName() + " to task list");
     }
     runEffects(caster, targets, taskEffects, waitTicks);
+    return true;
   }
 
-  public void execute(Ability ability, final StrifeMob caster) {
-    execute(ability, caster, null);
+  public boolean execute(Ability ability, final StrifeMob caster) {
+    return execute(ability, caster, null);
   }
 
   public void uniqueAbilityCast(StrifeMob caster, AbilityType type) {
@@ -313,7 +315,7 @@ public class AbilityManager {
     }
     SpawnParticle particle = ability.getAbilityParticle();
     if (particle != null) {
-      particle.playAtLocation(SpawnParticle.getLoc(particle.getOrigin(), le));
+      particle.playAtLocation(DamageUtil.getOriginLocation(le, particle.getOrigin()));
     }
     targets.add(le);
     return targets;
@@ -328,11 +330,11 @@ public class AbilityManager {
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {
-    if (!(ability.isShowMessages() && caster instanceof Player)) {
+    LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
+    if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
     MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
-    LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
     ((Player) caster.getEntity()).playSound(
         caster.getEntity().getLocation(),
         Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
@@ -341,16 +343,29 @@ public class AbilityManager {
   }
 
   private void doRequirementNotMetPrompt(StrifeMob caster, Ability ability) {
-    if (!(ability.isShowMessages() && caster instanceof Player)) {
+    LogUtil.printDebug("Failed. Requirement not met for ability " + ability.getId());
+    if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
     MessageUtils.sendActionBar((Player) caster.getEntity(), NO_REQUIRE);
-    LogUtil.printDebug("Failed. Requirement not met for ability " + ability.getId());
     ((Player) caster.getEntity()).playSound(
         caster.getEntity().getLocation(),
         Sound.BLOCK_LAVA_POP,
         1f,
         0.5f);
+  }
+
+  private void doOnCooldownPrompt(StrifeMob caster, Ability ability) {
+    LogUtil.printDebug("Failed. Ability " + ability.getId() + " is on cooldown");
+    if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
+      return;
+    }
+    MessageUtils.sendActionBar((Player) caster.getEntity(), ON_COOLDOWN);
+    ((Player) caster.getEntity()).playSound(
+        caster.getEntity().getLocation(),
+        Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
+        1f,
+        1.5f);
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {
