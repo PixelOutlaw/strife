@@ -20,20 +20,22 @@ public class EquipmentCondition implements Condition {
       return false;
     }
     EntityEquipment equipment = target.getEntity().getEquipment();
-    if (strict) {
-      if (equipment.getItemInMainHand() == null || equipment.getItemInOffHand() == null) {
-        return false;
-      }
-      return validMaterials.contains(equipment.getItemInMainHand().getType()) && validMaterials
-          .contains(equipment.getItemInOffHand().getType());
-    } else {
-      if (equipment.getItemInMainHand() == null) {
-        return equipment.getItemInOffHand() != null && validMaterials.contains(equipment.getItemInOffHand().getType());
-      }
-      if (equipment.getItemInOffHand() == null) {
-        return equipment.getItemInMainHand() != null && validMaterials.contains(equipment.getItemInMainHand().getType());
-      }
-      return false;
-    }
+    return strict ? hasAllWeaponsInSet(equipment) : hasAtLeastOneWeaponInSet(equipment);
+  }
+
+  private boolean hasAtLeastOneWeaponInSet(EntityEquipment equipment) {
+    Material typeOne = equipment.getItemInMainHand() == null ? Material.AIR
+        : equipment.getItemInMainHand().getType();
+    Material typeTwo = equipment.getItemInOffHand() == null ? Material.AIR
+        : equipment.getItemInOffHand().getType();
+    return validMaterials.contains(typeOne) || validMaterials.contains(typeTwo);
+  }
+
+  private boolean hasAllWeaponsInSet(EntityEquipment equipment) {
+    Material typeOne = equipment.getItemInMainHand() == null ? Material.AIR
+        : equipment.getItemInMainHand().getType();
+    Material typeTwo = equipment.getItemInOffHand() == null ? Material.AIR
+        : equipment.getItemInOffHand().getType();
+    return validMaterials.contains(typeOne) && validMaterials.contains(typeTwo);
   }
 }

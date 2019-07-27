@@ -59,6 +59,7 @@ public class PlayerDataUtil {
       Set<Condition> conditions) {
     for (Condition condition : conditions) {
       if (!condition.isMet(caster, target)) {
+        LogUtil.printDebug(" Condition " + condition + " not met!");
         return false;
       }
     }
