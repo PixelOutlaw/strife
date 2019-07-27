@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 
 public class LoreAbilityManager {
@@ -96,10 +97,10 @@ public class LoreAbilityManager {
     LogUtil.printInfo("Loaded lore ability " + key + " successfully.");
   }
 
-  public void applyLoreAbility(LoreAbility la, StrifeMob caster, StrifeMob target) {
+  public void applyLoreAbility(LoreAbility la, StrifeMob caster, LivingEntity target) {
     LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + la.getId());
     if (la.getAbility() != null) {
-      abilityManager.execute(la.getAbility(), caster, target.getEntity());
+      abilityManager.execute(la.getAbility(), caster, target);
     }
     for (Effect effect : la.getEffects()) {
       effectManager.execute(effect, caster, target);

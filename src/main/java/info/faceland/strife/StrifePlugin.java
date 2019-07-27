@@ -42,7 +42,7 @@ import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.FallListener;
 import info.faceland.strife.listeners.HeadDropListener;
 import info.faceland.strife.listeners.HealthListener;
-import info.faceland.strife.listeners.HeldItemChangeListener;
+import info.faceland.strife.listeners.ItemMovementAndDropListener;
 import info.faceland.strife.listeners.LoreAbilityListener;
 import info.faceland.strife.listeners.MinionListener;
 import info.faceland.strife.listeners.SkillLevelUpListener;
@@ -491,7 +491,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(
         new LoreAbilityListener(strifeMobManager, championManager, loreAbilityManager), this);
-    Bukkit.getPluginManager().registerEvents(new HeldItemChangeListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new ItemMovementAndDropListener(this), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }

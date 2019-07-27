@@ -94,8 +94,10 @@ public class EffectManager {
     applyEffectToTargets(effect, caster, targets);
   }
 
-  public void execute(Effect effect, StrifeMob caster, StrifeMob strifeMob) {
-    applyEffectToTarget(effect, caster, strifeMob);
+  public void execute(Effect effect, StrifeMob caster, LivingEntity target) {
+    Set<LivingEntity> targets = new HashSet<>();
+    targets.add(target);
+    applyEffectToTargets(effect, caster, targets);
   }
 
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
@@ -111,46 +113,36 @@ public class EffectManager {
     for (LivingEntity le : targets) {
       finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
     }
-    if (!effect.isFriendly()) {
-      finalTargets.remove(caster.getEntity());
-      for (StrifeMob mob : caster.getMinions()) {
-        finalTargets.remove(mob.getEntity());
-      }
-      //TODO: Remove party members
-    }
+
+    removeInvalidTargets(effect, caster, targets);
+
     for (LivingEntity le : finalTargets) {
-      if (!effect.isFriendly() && caster.getEntity() instanceof Player && le instanceof Player) {
-        if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
-          continue;
-        }
-      }
       StrifeMob targetMob = aeManager.getStatMob(le);
       LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(le));
       if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
         LogUtil.printDebug(" - Condition not met! Continuing...");
         continue;
       }
-      effect.apply(caster, aeManager.getStatMob(le));
+      effect.apply(caster, targetMob);
     }
   }
 
-  private void applyEffectToTarget(Effect effect, StrifeMob caster, StrifeMob target) {
+  private void removeInvalidTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
     if (!effect.isFriendly()) {
-      if (caster.getMinions().contains(target)) {
-        return;
+      targets.remove(caster.getEntity());
+      for (StrifeMob mob : caster.getMinions()) {
+        targets.remove(mob.getEntity());
       }
-      if (caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
-        if (!DamageUtil.canAttack((Player) caster.getEntity(), (Player) target.getEntity())) {
-          return;
+      for (LivingEntity le : targets) {
+        if (caster.getEntity() instanceof Player && le instanceof Player) {
+          if (DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
+            continue;
+          }
+          targets.remove(le);
         }
       }
+      //TODO: Remove party members
     }
-    LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(target.getEntity()));
-    if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
-      LogUtil.printDebug(" - Condition not met! Skipping...");
-      return;
-    }
-    effect.apply(caster, target);
   }
 
   public void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {

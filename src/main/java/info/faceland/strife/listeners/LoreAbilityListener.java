@@ -51,8 +51,8 @@ public class LoreAbilityListener implements Listener {
     }
     Champion champion = championManager.getChampion((Player) event.getAttacker());
     for (LoreAbility la : champion.getLoreAbilities().get(ON_CRIT)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
-          getAttrEntity(event.getVictim()));
+      loreAbilityManager
+          .applyLoreAbility(la, getAttrEntity(event.getAttacker()), event.getVictim());
     }
   }
 
@@ -63,8 +63,8 @@ public class LoreAbilityListener implements Listener {
     }
     Champion champion = championManager.getChampion((Player) event.getEvader());
     for (LoreAbility la : champion.getLoreAbilities().get(ON_EVADE)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getEvader()),
-          getAttrEntity(event.getAttacker()));
+      loreAbilityManager
+          .applyLoreAbility(la, getAttrEntity(event.getEvader()), event.getAttacker());
     }
   }
 
@@ -75,8 +75,8 @@ public class LoreAbilityListener implements Listener {
     }
     Champion champion = championManager.getChampion((Player) event.getBlocker());
     for (LoreAbility la : champion.getLoreAbilities().get(ON_BLOCK)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getBlocker()),
-          getAttrEntity(event.getAttacker()));
+      loreAbilityManager
+          .applyLoreAbility(la, getAttrEntity(event.getBlocker()), event.getAttacker());
     }
   }
 
@@ -84,8 +84,8 @@ public class LoreAbilityListener implements Listener {
   public void onSneakAttack(SneakAttackEvent event) {
     Champion champion = championManager.getChampion(event.getAttacker());
     for (LoreAbility la : champion.getLoreAbilities().get(ON_SNEAK_ATTACK)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getAttacker()),
-          getAttrEntity(event.getVictim()));
+      loreAbilityManager
+          .applyLoreAbility(la, getAttrEntity(event.getAttacker()), event.getVictim());
     }
   }
 
@@ -100,7 +100,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     for (LoreAbility la : champion.getLoreAbilities().get(ON_KILL)) {
-      loreAbilityManager.applyLoreAbility(la, strifeMob, getAttrEntity(event.getEntity()));
+      loreAbilityManager.applyLoreAbility(la, strifeMob, event.getEntity());
     }
   }
 
@@ -111,8 +111,7 @@ public class LoreAbilityListener implements Listener {
     }
     Champion champion = championManager.getChampion(event.getPlayer());
     for (LoreAbility la : champion.getLoreAbilities().get(ON_SNEAK)) {
-      loreAbilityManager
-          .applyLoreAbility(la, getAttrEntity(event.getPlayer()), getAttrEntity(event.getPlayer()));
+      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getPlayer()), event.getPlayer());
     }
   }
 
@@ -134,7 +133,7 @@ public class LoreAbilityListener implements Listener {
         return;
       }
       for (LoreAbility la : attackEntity.getChampion().getLoreAbilities().get(ON_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, attackEntity, defendEntity);
+        loreAbilityManager.applyLoreAbility(la, attackEntity, defender);
       }
     }
     if (attacker != null && defender instanceof Player) {
@@ -142,7 +141,7 @@ public class LoreAbilityListener implements Listener {
         return;
       }
       for (LoreAbility la : defendEntity.getChampion().getLoreAbilities().get(WHEN_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, defendEntity, attackEntity);
+        loreAbilityManager.applyLoreAbility(la, defendEntity, attacker);
       }
     }
   }

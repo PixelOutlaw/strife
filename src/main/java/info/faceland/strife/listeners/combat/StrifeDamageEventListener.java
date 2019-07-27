@@ -127,7 +127,7 @@ public class StrifeDamageEventListener implements Listener {
           continue;
         }
         plugin.getEffectManager()
-            .execute(plugin.getEffectManager().getEffect(s), attacker, defender);
+            .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
       }
       defender.getEntity().damage(0, attacker.getEntity());
       event.setCancelled(true);
