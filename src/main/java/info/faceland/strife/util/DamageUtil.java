@@ -623,14 +623,18 @@ public class DamageUtil {
     return DamageUtil.getFirstEntityInLOS(caster, (int) range);
   }
 
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range) {
+  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range, OriginLocation originLocation) {
     if (target == null) {
       target = selectFirstEntityInSight(caster, range);
     }
     if (target != null) {
-      return target.getLocation();
+      return getOriginLocation(target, originLocation);
     }
     return getTargetLocation(caster, range);
+  }
+
+  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range) {
+    return getTargetArea(caster, target, range, OriginLocation.CENTER);
   }
 
   private static Location getTargetLocation(LivingEntity caster, double range) {
@@ -652,6 +656,19 @@ public class DamageUtil {
     double dist = sightBlock.getLocation().add(0.5, 0.5, 0.5).distance(caster.getEyeLocation());
     return caster.getEyeLocation().add(
         caster.getEyeLocation().getDirection().multiply(Math.max(0, dist - 1)));
+  }
+
+  public static Location getOriginLocation(LivingEntity le, OriginLocation origin) {
+    switch (origin) {
+      case HEAD:
+        return le.getEyeLocation();
+      case CENTER:
+        return le.getEyeLocation().clone()
+            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
+      case GROUND:
+      default:
+        return le.getLocation();
+    }
   }
 
   public static double rollDouble(boolean lucky) {
@@ -676,6 +693,12 @@ public class DamageUtil {
 
   private static DarknessManager getDarknessManager() {
     return StrifePlugin.getInstance().getDarknessManager();
+  }
+
+  public enum OriginLocation {
+    HEAD,
+    CENTER,
+    GROUND
   }
 
   public enum DamageType {

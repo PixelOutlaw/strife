@@ -44,7 +44,6 @@ import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.RestoreBarrier;
 import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.SpawnParticle;
-import info.faceland.strife.effects.SpawnParticle.ParticleOriginLocation;
 import info.faceland.strife.effects.SpawnParticle.ParticleStyle;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.StandardDamage;
@@ -54,6 +53,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
+import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.StatUtil;
@@ -399,7 +399,7 @@ public class EffectManager {
         ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
         ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
         ((SpawnParticle) effect).setParticleOriginLocation(
-            ParticleOriginLocation.valueOf(cs.getString("origin", "HEAD")));
+            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((SpawnParticle) effect).setStyle(ParticleStyle.valueOf(cs.getString("style", "NORMAL")));
         ((SpawnParticle) effect).setSize(cs.getDouble("size", 1));
         break;

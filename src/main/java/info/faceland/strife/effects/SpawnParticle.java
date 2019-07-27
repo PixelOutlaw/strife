@@ -2,6 +2,8 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.tasks.ParticleTask;
+import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
@@ -16,7 +18,7 @@ public class SpawnParticle extends Effect {
   private double size;
   private int tickDuration;
   private ParticleStyle style;
-  private ParticleOriginLocation particleOriginLocation = ParticleOriginLocation.CENTER;
+  private OriginLocation particleOriginLocation = OriginLocation.CENTER;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -75,11 +77,11 @@ public class SpawnParticle extends Effect {
     this.spread = spread;
   }
 
-  public void setParticleOriginLocation(ParticleOriginLocation particleOriginLocation) {
+  public void setParticleOriginLocation(OriginLocation particleOriginLocation) {
     this.particleOriginLocation = particleOriginLocation;
   }
 
-  public ParticleOriginLocation getOrigin() {
+  public OriginLocation getOrigin() {
     return particleOriginLocation;
   }
 
@@ -115,25 +117,12 @@ public class SpawnParticle extends Effect {
     return style;
   }
 
-  public ParticleOriginLocation getParticleOriginLocation() {
+  public OriginLocation getParticleOriginLocation() {
     return particleOriginLocation;
   }
 
   public Location getLoc(LivingEntity le) {
-    return getLoc(particleOriginLocation, le);
-  }
-
-  public static Location getLoc(ParticleOriginLocation origin, LivingEntity le) {
-    switch (origin) {
-      case HEAD:
-        return le.getEyeLocation();
-      case CENTER:
-        return le.getEyeLocation().clone()
-            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
-      case GROUND:
-      default:
-        return le.getLocation();
-    }
+    return DamageUtil.getOriginLocation(le, particleOriginLocation);
   }
 
   private void spawnParticleCircle(Location center, double radius) {
@@ -159,12 +148,6 @@ public class SpawnParticle extends Effect {
       loc.add(direction.multiply(dist));
       loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
     }
-  }
-
-  public enum ParticleOriginLocation {
-    HEAD,
-    CENTER,
-    GROUND
   }
 
   public enum ParticleStyle {
