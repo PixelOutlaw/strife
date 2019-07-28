@@ -58,7 +58,7 @@ public class WorldSpaceEffectEntity {
       }
     }
     lifespan--;
-    if (lifespan < 1) {
+    if (lifespan < 0) {
       LogUtil.printDebug("* World space entity expired due to life runout");
       return false;
     }
