@@ -167,7 +167,8 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Cannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getAbilityIconManager().setAbilityIcon(target, ability);
+    plugin.getChampionManager().getChampion(target).getSaveData()
+        .setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target);
   }
 
@@ -179,7 +180,7 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Invalid slot: " + slot);
       return;
     }
-    target.getInventory().setItem(slot, null);
+    plugin.getChampionManager().getChampion(target).getSaveData().setAbility(abilitySlot, null);
     plugin.getAbilityIconManager().setAllAbilityIcons(target);
   }
 

@@ -510,7 +510,6 @@ public class StrifePlugin extends FacePlugin {
       getChampionManager().updateAll(championManager.getChampion(player));
       statUpdateManager.updateAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
-      abilityIconManager.addPlayerToMap(player);
     }
 
     LogUtil.printInfo("+===================================+");

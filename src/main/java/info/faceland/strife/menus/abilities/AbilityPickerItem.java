@@ -23,6 +23,7 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
+import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.AbilitySlot;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -51,7 +52,7 @@ public class AbilityPickerItem extends MenuItem {
         plugin.getChampionManager().getChampion(player), ability.getAbilityIconData());
     stackLore.addAll(ItemStackExtensionsKt.getLore(stack));
     ItemStackExtensionsKt.setLore(stack, stackLore);
-    if (plugin.getAbilityIconManager().playerHasAbilityIcon(player, ability)) {
+    if (plugin.getAbilityIconManager().playerHasAbility(player, ability)) {
       stack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
     }
     return stack;
@@ -60,15 +61,16 @@ public class AbilityPickerItem extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    if (!ability.getAbilityIconData()
-        .isRequirementMet(plugin.getChampionManager().getChampion(event.getPlayer()))) {
+    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    if (!ability.getAbilityIconData().isRequirementMet(champion)) {
       sendMessage(event.getPlayer(), "&eYou don't meet the requirements for this skill!");
       return;
     }
     AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
-    Ability oldAbility = plugin.getAbilityIconManager().getAbilityFromSlot(event.getPlayer(), slot);
+    Ability oldAbility = champion.getSaveData().getAbility(slot);
     if (oldAbility == null) {
-      plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability);
+      champion.getSaveData().setAbility(slot, ability);
+      plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
       event.setWillUpdate(true);
       return;
     }
@@ -81,7 +83,7 @@ public class AbilityPickerItem extends MenuItem {
       event.setWillUpdate(true);
       return;
     }
-    plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability);
+    plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
     event.setWillUpdate(true);
   }
 }

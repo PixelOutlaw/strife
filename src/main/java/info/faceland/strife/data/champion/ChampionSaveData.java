@@ -1,10 +1,12 @@
 package info.faceland.strife.data.champion;
 
 import info.faceland.strife.data.LoreAbility;
-import java.util.ArrayList;
+import info.faceland.strife.data.ability.Ability;
+import info.faceland.strife.stats.AbilitySlot;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,11 +16,12 @@ public class ChampionSaveData {
   public static final HealthDisplayType[] DISPLAY_OPTIONS = HealthDisplayType.values();
 
   private final UUID uniqueId;
-  private final Map<StrifeAttribute, Integer> levelMap;
-  private final Map<StrifeAttribute, Integer> pendingStats;
-  private final List<LoreAbility> boundAbilities;
+  private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
+  private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
+  private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
+  private final Set<LoreAbility> boundAbilities = new HashSet<>();
 
-  private HealthDisplayType healthDisplayType;
+  private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_HEALTH_HEARTS;
   private boolean displayExp;
 
   private int unusedStatPoints;
@@ -31,13 +34,21 @@ public class ChampionSaveData {
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
-    this.levelMap = new HashMap<>();
-    this.pendingStats = new HashMap<>();
-    this.boundAbilities = new ArrayList<>();
-    this.healthDisplayType = HealthDisplayType.TEN_HEALTH_HEARTS;
   }
 
-  public List<LoreAbility> getBoundAbilities() {
+  public void setAbility(AbilitySlot abilitySlot, Ability ability) {
+    abilities.put(abilitySlot, ability);
+  }
+
+  public Ability getAbility(AbilitySlot abilitySlot) {
+    return abilities.get(abilitySlot);
+  }
+
+  public Map<AbilitySlot, Ability> getAbilities() {
+    return new HashMap<>(abilities);
+  }
+
+  public Set<LoreAbility> getBoundAbilities() {
     return boundAbilities;
   }
 

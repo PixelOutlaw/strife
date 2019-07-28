@@ -1,17 +1,16 @@
 package info.faceland.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.HotbarIconData;
+import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
+import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -20,71 +19,49 @@ import org.bukkit.inventory.ItemStack;
 public class AbilityIconManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, Map<AbilitySlot, HotbarIconData>> abilitySlotMap;
 
-  public static final String ABILITY_PREFIX = "Ability: ";
-
-  private final String ON_COOLDOWN;
+  static final String ABILITY_PREFIX = "Ability: ";
 
   public AbilityIconManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.abilitySlotMap = new HashMap<>();
-    ON_COOLDOWN = TextUtils
-        .color(plugin.getSettings().getString("language.abilities.ability-cooldown"));
-  }
-
-  public void addPlayerToMap(Player player) {
-    if (abilitySlotMap.containsKey(player.getUniqueId())) {
-      return;
-    }
-    abilitySlotMap.put(player.getUniqueId(), setAllAbilityIcons(player));
-  }
-
-  public Map<AbilitySlot, HotbarIconData> setAllAbilityIcons(Player player) {
-    Map<AbilitySlot, HotbarIconData> iconMap = new HashMap<>();
-    iconMap.put(AbilitySlot.SLOT_A, getAbilityIcon(player, AbilitySlot.SLOT_A.getSlotIndex()));
-    iconMap.put(AbilitySlot.SLOT_B, getAbilityIcon(player, AbilitySlot.SLOT_B.getSlotIndex()));
-    iconMap.put(AbilitySlot.SLOT_C, getAbilityIcon(player, AbilitySlot.SLOT_C.getSlotIndex()));
-    return iconMap;
   }
 
   public void clearAbilityIcon(Player player, AbilitySlot slot) {
-    if (abilitySlotMap.get(player.getUniqueId()).get(slot) != null) {
-      abilitySlotMap.get(player.getUniqueId()).put(slot, null);
+    plugin.getChampionManager().getChampion(player).getSaveData().setAbility(slot, null);
+    if (slot.getSlotIndex() != -1 && isAbilityIcon(
+        player.getInventory().getItem(slot.getSlotIndex()))) {
       player.getInventory().setItem(slot.getSlotIndex(), null);
     }
   }
 
-  public void setAbilityIcon(Player player, Ability ability) {
-    addPlayerToMap(player);
-    if (ability.getAbilityIconData() == null
-        || ability.getAbilityIconData().getAbilitySlot() == AbilitySlot.INVALID) {
-      LogUtil.printWarning(player.getName() + " set no-slot ability " + ability.getId());
+  public void setAllAbilityIcons(Player player) {
+    ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
+    for (Ability ability : data.getAbilities().values()) {
+      setAbilityIcon(player, ability.getAbilityIconData());
+    }
+  }
+
+  public void setAbilityIcon(Player player, AbilityIconData abilityIconData) {
+    if (abilityIconData == null || abilityIconData.getAbilitySlot() == AbilitySlot.INVALID) {
       return;
     }
-    AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
+    AbilitySlot slot = abilityIconData.getAbilitySlot();
+    if (slot.getSlotIndex() == -1) {
+      return;
+    }
     ItemStack displacedItem = player.getInventory().getItem(slot.getSlotIndex());
-    player.getInventory().setItem(slot.getSlotIndex(), ability.getAbilityIconData().getStack());
+    player.getInventory().setItem(slot.getSlotIndex(), abilityIconData.getStack());
     if (displacedItem != null && !isAbilityIcon(displacedItem)) {
       HashMap<Integer, ItemStack> excessItems = player.getInventory().addItem(displacedItem);
       for (ItemStack extraStack : excessItems.values()) {
         player.getWorld().dropItem(player.getLocation(), extraStack);
       }
     }
-    abilitySlotMap.get(player.getUniqueId())
-        .put(slot, new HotbarIconData(ability, ability.getAbilityIconData().getStack()));
   }
 
-  public boolean playerHasAbilityIcon(Player player, Ability ability) {
-    for (HotbarIconData data : abilitySlotMap.get(player.getUniqueId()).values()) {
-      if (data == null) {
-        return false;
-      }
-      if (data.getAbility() == ability) {
-        return true;
-      }
-    }
-    return false;
+  public boolean playerHasAbility(Player player, Ability ability) {
+    ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
+    return data.getAbilities().values().contains(ability);
   }
 
   public boolean isAbilityIcon(ItemStack stack) {
@@ -98,48 +75,22 @@ public class AbilityIconManager {
     return true;
   }
 
-  public Ability getAbilityFromSlot(Player player, AbilitySlot slot) {
-    ItemStack stack = player.getInventory().getItem(slot.getSlotIndex());
-    if (stack == null) {
-      return null;
-    }
-    String name = ChatColor.stripColor(ItemStackExtensionsKt.getDisplayName(stack));
-    if (StringUtils.isBlank(name) || !name.startsWith(ABILITY_PREFIX) || name.contains("✫")) {
-      return null;
-    }
-    return plugin.getAbilityManager().getAbility(name.replace(ABILITY_PREFIX, ""));
-  }
-
-  private HotbarIconData getAbilityIcon(Player player, int slot) {
-    ItemStack stack = player.getInventory().getItem(slot);
-    if (stack == null) {
-      return null;
-    }
-    String name = ChatColor.stripColor(ItemStackExtensionsKt.getDisplayName(stack));
-    if (StringUtils.isBlank(name) || !name.startsWith(ABILITY_PREFIX) || name.contains("✫")) {
-      return null;
-    }
-    Ability ability = plugin.getAbilityManager().getAbility(name.replace(ABILITY_PREFIX, ""));
-    if (ability.getAbilityIconData() == null) {
-      player.getInventory().setItem(slot, null);
-      return null;
-    }
-    return new HotbarIconData(ability, stack);
-  }
-
   public void triggerAbility(Player player, int slot) {
     AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
     if (abilitySlot == AbilitySlot.INVALID) {
       return;
     }
-    HotbarIconData data = abilitySlotMap.get(player.getUniqueId()).get(abilitySlot);
-    if (data == null) {
+    Ability ability = plugin.getChampionManager().getChampion(player).getSaveData().getAbility(abilitySlot);
+    if (ability == null) {
+      if (isAbilityIcon(player.getInventory().getItem(slot))) {
+        player.getInventory().setItem(slot, null);
+      }
       return;
     }
     boolean abilitySucceeded = plugin.getAbilityManager()
-        .execute(data.getAbility(), plugin.getStrifeMobManager().getStatMob(player));
+        .execute(ability, plugin.getStrifeMobManager().getStatMob(player));
     if (!abilitySucceeded) {
-      LogUtil.printDebug("Ability " + data.getAbility().getId() + " failed execution");
+      LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       return;
     }
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
@@ -150,22 +101,28 @@ public class AbilityIconManager {
     if (player.isDead()) {
       return;
     }
-    Map<AbilitySlot, HotbarIconData> iconMap = abilitySlotMap.get(player.getUniqueId());
-    for (AbilitySlot slot : iconMap.keySet()) {
-      setIconDamage(player, iconMap.get(slot), slot.ordinal());
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    for (AbilitySlot slot : AbilitySlot.cachedValues) {
+      if (slot.getSlotIndex() == -1) {
+        continue;
+      }
+      setIconDamage(champion, slot);
     }
   }
 
-  private void setIconDamage(Player player, HotbarIconData data, int slot) {
-    if (data == null || data.getAbility() == null || data.getItemStack() == null) {
+  private void setIconDamage(Champion champion, AbilitySlot slot) {
+    Ability ability = champion.getSaveData().getAbility(slot);
+    if (ability == null) {
       return;
     }
-    if (plugin.getAbilityManager().isCooledDown(player, data.getAbility())) {
+    if (plugin.getAbilityManager().isCooledDown(champion.getPlayer(), ability)) {
       return;
     }
-    double remainingTicks = plugin.getAbilityManager().getCooldownTicks(player, data.getAbility());
-    double cooldownTicks = data.getAbility().getCooldown() * 20;
+    double remainingTicks = plugin.getAbilityManager()
+        .getCooldownTicks(champion.getPlayer(), ability);
+    double cooldownTicks = ability.getCooldown() * 20;
     double percent = (remainingTicks - 4) / cooldownTicks;
-    ItemUtil.sendAbilityIconPacket(data, player, slot, percent);
+    ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), champion.getPlayer(),
+        slot.getSlotIndex(), percent);
   }
 }

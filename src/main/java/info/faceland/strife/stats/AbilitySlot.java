@@ -26,9 +26,12 @@ public enum AbilitySlot {
   SLOT_A(0),
   SLOT_B(1),
   SLOT_C(2),
+  PASSIVE_A(-1),
+  PASSIVE_B(-1),
   INVALID(-1);
 
   private static final Map<Integer, AbilitySlot> copyOfValues = createSlotIndexMap();
+  public static final AbilitySlot[] cachedValues = AbilitySlot.values();
 
   private static Map<Integer, AbilitySlot> createSlotIndexMap() {
     Map<Integer, AbilitySlot> values = new HashMap<>();

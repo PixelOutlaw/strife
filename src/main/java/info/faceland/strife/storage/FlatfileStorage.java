@@ -20,6 +20,7 @@ package info.faceland.strife.storage;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
@@ -30,8 +31,10 @@ import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -93,7 +96,13 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + "." + type.getDataName() + "-exp", champion.getSkillExp(type));
     }
 
-    List<String> boundAbilityIds = new ArrayList<>();
+    List<String> abilityIds = new ArrayList<>();
+    for (Ability ability : champion.getAbilities().values()) {
+      abilityIds.add(ability.getId());
+    }
+    config.set(champUuid + ".abilities", abilityIds);
+
+    Set<String> boundAbilityIds = new HashSet<>();
     for (LoreAbility loreAbility : champion.getBoundAbilities()) {
       boundAbilityIds.add(loreAbility.getId());
     }
@@ -131,14 +140,23 @@ public class FlatfileStorage implements DataStorage {
       }
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
 
+      for (String s : section.getStringList("abilities")) {
+        Ability ability = plugin.getAbilityManager().getAbility(s);
+        if (ability == null) {
+          LogUtil.printError("Ability " + s + " not found for player " + uuid);
+          continue;
+        }
+        if (ability.getAbilityIconData() == null) {
+          LogUtil.printError("Ability " + s + " no longer supports being slotted! uuid: " + uuid);
+          continue;
+        }
+        saveData.setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
+      }
+
       for (String s : section.getStringList("bound-lore-abilities")) {
         LoreAbility loreAbility = plugin.getLoreAbilityManager().getLoreAbilityFromId(s);
         if (loreAbility == null) {
           LogUtil.printError("LoreAbility " + s + " not found for player " + uuid);
-          continue;
-        }
-        if (saveData.getBoundAbilities().contains(loreAbility)) {
-          LogUtil.printWarning("LoreAbility " + s + " already exists on player " + uuid);
           continue;
         }
         saveData.getBoundAbilities().add(loreAbility);
