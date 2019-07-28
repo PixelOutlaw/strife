@@ -75,12 +75,15 @@ public class LoreAbilityManager {
     }
     List<String> stringEffects = cs.getStringList("effects");
     List<Effect> effectList = new ArrayList<>();
+    LogUtil.printDebug("Getting effects for LoreAbility " + key);
     for (String s : stringEffects) {
       Effect effect = effectManager.getEffect(s);
       if (effect != null && !effectList.contains(effect)) {
         effectList.add(effect);
+        LogUtil.printDebug("+-Added effect '" + s + "'");
       }
     }
+    LogUtil.printDebug("Done!");
     if (ability == null && effectList.isEmpty()) {
       LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
