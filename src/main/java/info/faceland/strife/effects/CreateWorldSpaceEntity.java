@@ -4,6 +4,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.WorldSpaceEffectEntity;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.LogUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +24,13 @@ public class CreateWorldSpaceEntity extends Effect {
     cacheEffects();
     Location loc;
     if (getRange() == 0) {
-      loc = caster.getEntity().getEyeLocation();
+      loc = target.getEntity().getEyeLocation();
     } else if (target == null) {
       loc = DamageUtil.getTargetArea(caster.getEntity(), null, getRange());
     } else {
       loc = DamageUtil.getTargetArea(caster.getEntity(), target.getEntity(), getRange());
     }
+    LogUtil.printDebug(" Creating world space entity with effects " + cachedEffectSchedule);
     WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, cachedEffectSchedule, loc,
         caster.getEntity().getEyeLocation().getDirection().multiply(velocity), maxTicks, lifespan);
     StrifePlugin.getInstance().getEffectManager().addWorldSpaceEffectEntity(entity);

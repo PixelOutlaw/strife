@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -134,7 +135,10 @@ public class AbilityManager {
       caster.getChampion().getDetailsContainer().addWeights(ability);
     }
     Set<LivingEntity> targets = getTargets(caster, target, ability);
-    if (targets != null && targets.isEmpty() && ability.getTargetType() == SINGLE_OTHER) {
+    if (targets == null) {
+      throw new NullArgumentException("Null target list on ability " + ability.getId());
+    }
+    if (targets.isEmpty() && ability.getTargetType() == SINGLE_OTHER) {
       doTargetNotFoundPrompt(caster, ability);
       return false;
     }
@@ -244,8 +248,6 @@ public class AbilityManager {
       case PARTY:
         targets.add(caster.getEntity());
         return targets;
-      case NONE:
-        return null;
       case MINIONS:
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
@@ -256,7 +258,11 @@ public class AbilityManager {
           targets.add(target);
           return targets;
         }
-        targets.add(DamageUtil.selectFirstEntityInSight(caster.getEntity(), ability.getRange()));
+        LivingEntity newTarget = DamageUtil
+            .selectFirstEntityInSight(caster.getEntity(), ability.getRange());
+        if (newTarget != null) {
+          targets.add(newTarget);
+        }
         return targets;
       case AREA_LINE:
         return getEntitiesInLine(caster.getEntity(), ability, ability.getRange());
@@ -264,6 +270,10 @@ public class AbilityManager {
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
         Location loc = DamageUtil.getTargetArea(caster.getEntity(), target, ability.getRange());
+        if (ability.getRadius() == 0) {
+          targets.add(DamageUtil.buildAndRemoveDetectionStand(loc));
+          return targets;
+        }
         return getEntitiesInRadius(loc, ability, ability.getRadius());
     }
     return null;
@@ -384,10 +394,6 @@ public class AbilityManager {
     int cooldown = cs.getInt("cooldown", 0);
     int range = cs.getInt("range", 0);
     double radius = cs.getDouble("radius", 0);
-    if (targetType == TargetType.TARGET_AREA && radius == 0) {
-      LogUtil.printWarning("Skipping ability " + key + ". TARGET_AREA requires 'radius' > 0.");
-      return;
-    }
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");

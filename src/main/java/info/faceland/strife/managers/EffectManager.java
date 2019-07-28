@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -100,23 +101,18 @@ public class EffectManager {
     applyEffectToTargets(effect, caster, targets);
   }
 
+  public void executeEffectAtLocation(Effect effect, StrifeMob caster, Location location) {
+    Set<LivingEntity> locationTargets = new HashSet<>();
+    locationTargets.add(DamageUtil.buildAndRemoveDetectionStand(location));
+    applyEffectToTargets(effect, caster, locationTargets);
+  }
+
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
-    if (targets == null) {
-      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
-        effect.apply(caster, null);
-        return;
-      }
-      LogUtil.printDebug(" - Condition not met! Aborting...");
-      return;
-    }
-
     Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
-
     for (LivingEntity le : finalTargets) {
       StrifeMob targetMob = aeManager.getStatMob(le);
       LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(le));
       if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-        LogUtil.printDebug(" - Condition not met! Continuing...");
         continue;
       }
       effect.apply(caster, targetMob);
@@ -125,19 +121,17 @@ public class EffectManager {
 
   private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
       Set<LivingEntity> targets) {
-
     Set<LivingEntity> finalTargets = new HashSet<>();
     for (LivingEntity le : targets) {
-      finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
+      finalTargets.addAll(getEffectTargets(le, effect.getRange()));
     }
-    Set<LivingEntity> newTargets = new HashSet<>(finalTargets);
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, finalTargets);
     if (effect.isFriendly()) {
-      newTargets.retainAll(friendlyEntities);
+      finalTargets.retainAll(friendlyEntities);
     } else {
-      newTargets.removeAll(friendlyEntities);
+      finalTargets.removeAll(friendlyEntities);
     }
-    return newTargets;
+    return finalTargets;
   }
 
   private Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
@@ -181,8 +175,7 @@ public class EffectManager {
     }
   }
 
-  private Set<LivingEntity> getEffectTargets(LivingEntity caster, LivingEntity target,
-      double range) {
+  private Set<LivingEntity> getEffectTargets(LivingEntity target, double range) {
     Set<LivingEntity> targets = new HashSet<>();
     if (target == null) {
       return targets;
@@ -199,7 +192,6 @@ public class EffectManager {
         targets.add((LivingEntity) e);
       }
     }
-    targets.remove(caster);
     return targets;
   }
 
