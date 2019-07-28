@@ -5,6 +5,7 @@ import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
+import info.faceland.strife.util.LogUtil;
 import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ import org.bukkit.entity.LivingEntity;
 
 public class StrifeMob {
 
-  private final static int BUFF_CHECK_FREQUENCY_MS = 200;
+  private final static int BUFF_CHECK_FREQUENCY_MS = 100;
 
   private final Map<StrifeStat, Double> baseStats = new HashMap<>();
   private final Map<StrifeStat, Double> statCache = new HashMap<>();
@@ -80,9 +81,11 @@ public class StrifeMob {
     if (runningBuffs.get(buffId) == null || runningBuffs.get(buffId).isExpired()) {
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.put(buffId, buff);
+      LogUtil.printDebug("Adding new buff: " + buffId + " to " + livingEntity.getName());
       return;
     }
     runningBuffs.get(buffId).bumpBuff(duration);
+    LogUtil.printDebug("Bumping buff: " + buffId + " for " + livingEntity.getName());
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {

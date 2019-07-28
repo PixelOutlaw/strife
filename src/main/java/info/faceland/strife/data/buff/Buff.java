@@ -39,10 +39,9 @@ public class Buff {
   }
 
   public void bumpBuff(double duration) {
-    LogUtil.printDebug("bumping buff");
     setExpireTimeFromDuration(duration);
     stacks = Math.min(stacks+1, maxStacks);
-    LogUtil.printDebug("Stacks: " + stacks + "/" + maxStacks);
+    LogUtil.printDebug(" Stacks: " + stacks + "/" + maxStacks);
   }
 
   public boolean isExpired() {
