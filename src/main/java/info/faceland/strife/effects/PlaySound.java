@@ -16,6 +16,10 @@ public class PlaySound extends Effect {
     loc.getWorld().playSound(loc, sound, volume, pitch);
   }
 
+  public void playAtLocation(Location location) {
+    location.getWorld().playSound(location, sound, volume, pitch);
+  }
+
   public Sound getSound() {
     return sound;
   }
