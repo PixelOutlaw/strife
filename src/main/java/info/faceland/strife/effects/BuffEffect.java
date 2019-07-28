@@ -4,6 +4,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.buff.LoadedBuff;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.LogUtil;
 
 public class BuffEffect extends Effect {
 
@@ -13,8 +14,9 @@ public class BuffEffect extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     double durationMult = 1;
+    LogUtil.printDebug("Applying BuffEffect to " + target.getEntity().getName());
     if (!strictDuration) {
-      durationMult *= caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+      durationMult *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
     if (isForceTargetCaster()) {
       StrifePlugin.getInstance().getBuffManager().applyBuff(loadedBuff, caster, durationMult);
