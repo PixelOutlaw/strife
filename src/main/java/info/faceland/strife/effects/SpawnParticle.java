@@ -5,6 +5,7 @@ import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
@@ -30,11 +31,11 @@ public class SpawnParticle extends Effect {
   }
 
   public void playAtLocation(LivingEntity livingEntity) {
-    playAtLocation(getLoc(livingEntity), livingEntity.getLocation().getDirection());
+    playAtLocation(getLoc(livingEntity), livingEntity.getEyeLocation().getDirection());
   }
 
   public void playAtLocation(Location location) {
-    playAtLocation(location, null);
+    playAtLocation(location, location.getDirection());
   }
 
   public void playAtLocation(Location location, Vector direction) {
@@ -145,7 +146,12 @@ public class SpawnParticle extends Effect {
   private void spawnParticleLine(Location center, Vector direction, double length) {
     for (double dist = 0; dist < length; dist += 0.25) {
       Location loc = center.clone();
-      loc.add(direction.multiply(dist));
+      loc.add(direction.clone().multiply(dist));
+      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+        if (!loc.getBlock().getType().isTransparent()) {
+          return;
+        }
+      }
       loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
     }
   }

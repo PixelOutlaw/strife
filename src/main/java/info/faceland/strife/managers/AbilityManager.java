@@ -274,14 +274,19 @@ public class AbilityManager {
     Location eyeLoc = caster.getEyeLocation();
     Vector direction = caster.getEyeLocation().getDirection();
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    for (double incRange = 0; incRange >= range; incRange += 1) {
-      Location loc = eyeLoc.clone().add(direction.multiply(incRange));
+    for (double incRange = 0; incRange <= range; incRange += 1) {
+      Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
+      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+        if (!loc.getBlock().getType().isTransparent()) {
+          break;
+        }
+      }
       for (Entity entity : entities) {
         if (!(entity instanceof LivingEntity)) {
           continue;
         }
         if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1) {
-          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 1) {
+          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 2.5) {
             if (Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
               targets.add((LivingEntity) entity);
             }
@@ -291,8 +296,7 @@ public class AbilityManager {
     }
     SpawnParticle particle = ability.getAbilityParticle();
     if (particle != null) {
-      ability.getAbilityParticle()
-          .playAtLocation(caster.getEyeLocation(), caster.getEyeLocation().getDirection());
+      ability.getAbilityParticle().playAtLocation(caster);
     }
     return targets;
   }
