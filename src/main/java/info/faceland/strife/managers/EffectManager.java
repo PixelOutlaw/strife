@@ -109,12 +109,8 @@ public class EffectManager {
       LogUtil.printDebug(" - Condition not met! Aborting...");
       return;
     }
-    Set<LivingEntity> finalTargets = new HashSet<>(targets);
-    for (LivingEntity le : targets) {
-      finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
-    }
 
-    removeInvalidTargets(effect, caster, targets);
+    Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
 
     for (LivingEntity le : finalTargets) {
       StrifeMob targetMob = aeManager.getStatMob(le);
@@ -127,22 +123,43 @@ public class EffectManager {
     }
   }
 
-  private void removeInvalidTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
-    if (!effect.isFriendly()) {
-      targets.remove(caster.getEntity());
-      for (StrifeMob mob : caster.getMinions()) {
-        targets.remove(mob.getEntity());
-      }
-      for (LivingEntity le : targets) {
-        if (caster.getEntity() instanceof Player && le instanceof Player) {
-          if (DamageUtil.canAttack((Player) caster.getEntity(), (Player) le)) {
-            continue;
-          }
-          targets.remove(le);
-        }
-      }
-      //TODO: Remove party members
+  private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
+      Set<LivingEntity> targets) {
+
+    Set<LivingEntity> finalTargets = new HashSet<>();
+    for (LivingEntity le : targets) {
+      finalTargets.addAll(getEffectTargets(caster.getEntity(), le, effect.getRange()));
     }
+    Set<LivingEntity> newTargets = new HashSet<>(finalTargets);
+    Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, finalTargets);
+    if (effect.isFriendly()) {
+      newTargets.retainAll(friendlyEntities);
+    } else {
+      newTargets.removeAll(friendlyEntities);
+    }
+    return newTargets;
+  }
+
+  private Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
+    Set<LivingEntity> friendlyEntities = new HashSet<>();
+    friendlyEntities.add(caster.getEntity());
+    for (StrifeMob mob : caster.getMinions()) {
+      friendlyEntities.add(mob.getEntity());
+    }
+    // for (StrifeMob mob : getPartyMembers {
+    // }
+    for (LivingEntity target : targets) {
+      if (caster.getEntity() == target) {
+        continue;
+      }
+      if (caster.getEntity() instanceof Player && target instanceof Player) {
+        if (DamageUtil.canAttack((Player) caster.getEntity(), (Player) target)) {
+          continue;
+        }
+        friendlyEntities.add(target);
+      }
+    }
+    return friendlyEntities;
   }
 
   public void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
