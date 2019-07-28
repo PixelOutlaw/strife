@@ -151,7 +151,7 @@ public class StrifeDamageEventListener implements Listener {
     if (doCriticalHit(attacker, defender)) {
       bonusCriticalMultiplier = attacker.getStat(CRITICAL_DAMAGE) / 100;
     }
-    if (doOvercharge(event.getAttackMultiplier())) {
+    if (event.getAttackMultiplier() > 0.99) {
       bonusOverchargeMultiplier = attacker.getStat(OVERCHARGE) / 100;
     }
 
@@ -253,10 +253,6 @@ public class StrifeDamageEventListener implements Listener {
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         bonusCriticalMultiplier, triggeredElements, isBleedApplied, isSneakAttack);
 
-    if (attacker.getEntity() instanceof Player) {
-      plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender);
-    }
-
     event.setFinalDamage(finalDamage);
   }
 
@@ -273,10 +269,6 @@ public class StrifeDamageEventListener implements Listener {
       return true;
     }
     return false;
-  }
-
-  private boolean doOvercharge(double attackSpeedMult) {
-    return attackSpeedMult >= 0.99;
   }
 
   private void removeIfExisting(Projectile projectile) {

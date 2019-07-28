@@ -54,13 +54,15 @@ public class DataListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerJoin(final EntityDamageByEntityEvent event) {
-    if (event.isCancelled()) {
+  public void onEntityAttack(final EntityDamageByEntityEvent event) {
+    if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
       return;
     }
     LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
     if (attacker instanceof Player) {
       plugin.getCombatStatusManager().addPlayer((Player) attacker);
+      plugin.getBossBarManager().pushBar((Player) attacker,
+          plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()));
       return;
     }
     if (event.getEntity() instanceof Player) {
@@ -72,12 +74,12 @@ public class DataListener implements Listener {
   public void onPlayerJoin(final PlayerJoinEvent event) {
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
-    plugin.getAbilityIconManager().addPlayerToMap(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
     plugin.getBossBarManager().getSkillBar(champion);
+    plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -117,7 +119,7 @@ public class DataListener implements Listener {
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(
-            plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -156,7 +158,7 @@ public class DataListener implements Listener {
       return;
     }
     Bukkit.getScheduler().runTaskLater(plugin, () ->
-      plugin.getConfirmationMenu().open((Player) event.getPlayer()), 1L);
+        plugin.getConfirmationMenu().open((Player) event.getPlayer()), 1L);
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {
