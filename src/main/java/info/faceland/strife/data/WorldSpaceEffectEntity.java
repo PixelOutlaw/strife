@@ -2,9 +2,11 @@ package info.faceland.strife.data;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.managers.EffectManager;
+import info.faceland.strife.util.LogUtil;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
@@ -19,7 +21,6 @@ public class WorldSpaceEffectEntity {
   private final int maxTicks;
   private final Vector velocity;
   private final StrifeMob caster;
-
   private Location location;
   private int currentTick;
   private int lifespan;
@@ -37,6 +38,14 @@ public class WorldSpaceEffectEntity {
     this.currentTick = 0;
   }
 
+  public Vector getVelocity() {
+    return velocity;
+  }
+
+  public Location getLocation() {
+    return location;
+  }
+
   public boolean tick() {
     location.add(velocity);
     Block block = location.getBlock();
@@ -46,11 +55,18 @@ public class WorldSpaceEffectEntity {
     if (effectSchedule.containsKey(currentTick)) {
       List<Effect> effects = effectSchedule.get(currentTick);
       for (Effect effect : effects) {
+        if (effect == null) {
+          LogUtil.printError("Null WSE effect! Tick:" + currentTick);
+          continue;
+        }
         if (effect instanceof SpawnParticle && effect.getRange() == 0) {
           ((SpawnParticle) effect).playAtLocation(location);
         } else if (effect instanceof PlaySound && effect.getRange() == 0) {
           ((PlaySound) effect).playAtLocation(location);
         } else {
+          if (effect instanceof Knockback) {
+            ((Knockback) effect).setTempVectorFromWSE(this);
+          }
           EFFECT_MANAGER.executeEffectAtLocation(effect, caster, location);
         }
       }
