@@ -98,12 +98,18 @@ public class FlatfileStorage implements DataStorage {
 
     List<String> abilityIds = new ArrayList<>();
     for (Ability ability : champion.getAbilities().values()) {
+      if (ability == null) {
+        continue;
+      }
       abilityIds.add(ability.getId());
     }
     config.set(champUuid + ".abilities", abilityIds);
 
     Set<String> boundAbilityIds = new HashSet<>();
     for (LoreAbility loreAbility : champion.getBoundAbilities()) {
+      if (loreAbility == null) {
+        continue;
+      }
       boundAbilityIds.add(loreAbility.getId());
     }
     config.set(champUuid + ".bound-lore-abilities", boundAbilityIds);
