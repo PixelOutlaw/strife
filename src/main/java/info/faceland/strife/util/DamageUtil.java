@@ -32,6 +32,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.buff.LoadedBuff;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
@@ -462,6 +463,18 @@ public class DamageUtil {
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
     defender.getWorld()
         .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
+  }
+
+  public static void applyBuff(LoadedBuff buff, StrifeMob target) {
+    applyBuff(buff, target, 1);
+  }
+
+  public static void applyBuff(LoadedBuff buff, StrifeMob target, double durMult) {
+    StrifePlugin.getInstance().getBuffManager().applyBuff(buff, target, durMult);
+  }
+
+  public static LoadedBuff getBuff(String id) {
+    return StrifePlugin.getInstance().getBuffManager().getBuffFromId(id);
   }
 
   public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {

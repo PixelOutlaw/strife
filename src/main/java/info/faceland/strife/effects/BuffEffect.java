@@ -1,9 +1,9 @@
 package info.faceland.strife.effects;
 
-import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.buff.LoadedBuff;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.LogUtil;
 
 public class BuffEffect extends Effect {
@@ -19,14 +19,14 @@ public class BuffEffect extends Effect {
       durationMult *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
     if (isForceTargetCaster()) {
-      StrifePlugin.getInstance().getBuffManager().applyBuff(loadedBuff, caster, durationMult);
+      DamageUtil.applyBuff(loadedBuff, caster, durationMult);
       return;
     }
-    StrifePlugin.getInstance().getBuffManager().applyBuff(loadedBuff, target, durationMult);
+    DamageUtil.applyBuff(loadedBuff, target, durationMult);
   }
 
   public void setLoadedBuff(String buffId) {
-    this.loadedBuff = StrifePlugin.getInstance().getBuffManager().getBuffFromId(buffId);
+    this.loadedBuff = DamageUtil.getBuff(buffId);
   }
 
   public void setStrictDuration(boolean strictDuration) {
