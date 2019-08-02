@@ -3,6 +3,7 @@ package info.faceland.strife.effects;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffectType;
 
 public class PotionEffectAction extends Effect {
@@ -10,6 +11,7 @@ public class PotionEffectAction extends Effect {
   private PotionEffectType potionEffectType;
   private double duration;
   private int intensity;
+  private boolean bumpUpToIntensity;
   private boolean strictDuration;
 
   @Override
@@ -18,15 +20,36 @@ public class PotionEffectAction extends Effect {
     if (!strictDuration) {
       duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    if (isForceTargetCaster()) {
-      DamageUtil.applyPotionEffect(caster.getEntity(), potionEffectType, intensity, (int) duration);
-    } else {
-      DamageUtil.applyPotionEffect(target.getEntity(), potionEffectType, intensity, (int) duration);
+    if (bumpUpToIntensity) {
+      bumpPotionEffect(caster.getEntity(), target.getEntity(), duration);
+      return;
     }
+    applyPotionEffect(caster.getEntity(), target.getEntity(), duration);
   }
 
-  public PotionEffectType getPotionEffectType() {
-    return potionEffectType;
+  private void bumpPotionEffect(LivingEntity caster, LivingEntity target, double duration) {
+    int level = 0;
+    if (isForceTargetCaster()) {
+      if (caster.hasPotionEffect(potionEffectType)) {
+        level = caster.getPotionEffect(potionEffectType).getAmplifier();
+        level = Math.min(level + 1, intensity);
+      }
+      DamageUtil.applyPotionEffect(caster, potionEffectType, level, (int) duration);
+      return;
+    }
+    if (target.hasPotionEffect(potionEffectType)) {
+      level = target.getPotionEffect(potionEffectType).getAmplifier();
+      level = Math.min(level + 1, intensity);
+    }
+    DamageUtil.applyPotionEffect(target, potionEffectType, level, (int) duration);
+  }
+
+  private void applyPotionEffect(LivingEntity caster, LivingEntity target, double duration) {
+    if (isForceTargetCaster()) {
+      DamageUtil.applyPotionEffect(caster, potionEffectType, intensity, (int) duration);
+      return;
+    }
+    DamageUtil.applyPotionEffect(target, potionEffectType, intensity, (int) duration);
   }
 
   public void setPotionEffectType(PotionEffectType potionEffectType) {
@@ -43,5 +66,9 @@ public class PotionEffectAction extends Effect {
 
   public void setStrictDuration(boolean strictDuration) {
     this.strictDuration = strictDuration;
+  }
+
+  public void setBumpUpToIntensity(boolean bumpUpToIntensity) {
+    this.bumpUpToIntensity = bumpUpToIntensity;
   }
 }

@@ -37,10 +37,10 @@ import info.faceland.strife.effects.ForceTarget;
 import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.IncreaseRage;
-import info.faceland.strife.effects.Knockback;
-import info.faceland.strife.effects.Leap;
 import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.PotionEffectAction;
+import info.faceland.strife.effects.Push;
+import info.faceland.strife.effects.Push.PushType;
 import info.faceland.strife.effects.RestoreBarrier;
 import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.SpawnParticle;
@@ -109,6 +109,9 @@ public class EffectManager {
 
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
     Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
+    if (effect.isForceTargetCaster()) {
+      finalTargets.add(caster.getEntity());
+    }
     for (LivingEntity le : finalTargets) {
       StrifeMob targetMob = aeManager.getStatMob(le);
       LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(le));
@@ -177,11 +180,8 @@ public class EffectManager {
 
   private Set<LivingEntity> getEffectTargets(LivingEntity target, double range) {
     Set<LivingEntity> targets = new HashSet<>();
-    if (target == null) {
-      return targets;
-    }
+    targets.add(target);
     if (range < 1) {
-      targets.add(target);
       return targets;
     }
     for (Entity e : target.getNearbyEntities(range, range, range)) {
@@ -335,17 +335,13 @@ public class EffectManager {
         ((Speak) effect).setMessages(
             TextUtils.color(cs.getStringList("messages")));
         break;
-      case KNOCKBACK:
-        effect = new Knockback();
-        ((Knockback) effect).setPower(cs.getDouble("power", 10));
-        ((Knockback) effect).setHeight(cs.getDouble("height", 10));
-        ((Knockback) effect).setZeroVelocity(cs.getBoolean("zero-velocity", false));
-        break;
-      case LEAP:
-        effect = new Leap();
-        ((Leap) effect).setForward(cs.getDouble("forward", 10));
-        ((Leap) effect).setHeight(cs.getDouble("height", 10));
-        ((Leap) effect).setZeroVelocity(cs.getBoolean("zero-velocity", false));
+      case PUSH:
+        effect = new Push();
+        ((Push) effect).setPower(cs.getDouble("power", 10));
+        ((Push) effect).setHeight(cs.getDouble("height", 10));
+        ((Push) effect).setZeroVelocity(cs.getBoolean("zero-velocity", false));
+        ((Push) effect).setPushType(
+            PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
         break;
       case SUMMON:
         effect = new Summon();
@@ -371,6 +367,7 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((PotionEffectAction) effect).setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
         break;
       case SOUND:
         effect = new PlaySound();
@@ -395,6 +392,12 @@ public class EffectManager {
           return;
         }
         ((SpawnParticle) effect).setParticle(particle);
+        if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
+            || particle == Particle.SPELL_INSTANT) {
+          ((SpawnParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
+          ((SpawnParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
+          ((SpawnParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
+        }
         ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
         ((SpawnParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));
         ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
@@ -536,7 +539,7 @@ public class EffectManager {
         condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
         break;
       case GROUNDED:
-        condition = new GroundedCondition();
+        condition = new GroundedCondition(compareTarget, cs.getBoolean("inverted", false));
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");
@@ -593,8 +596,7 @@ public class EffectManager {
     SOUND,
     PARTICLE,
     SPEAK,
-    KNOCKBACK,
-    LEAP,
+    PUSH,
     POTION,
     TARGET,
     SUMMON
