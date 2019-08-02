@@ -13,15 +13,22 @@ import org.bukkit.entity.Player;
 public class StrifeMobManager {
 
   private final StrifePlugin plugin;
-  private Map<UUID, StrifeMob> trackedEntities;
+  private final Map<UUID, StrifeMob> trackedEntities = new ConcurrentHashMap<>();
 
   public StrifeMobManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.trackedEntities = new ConcurrentHashMap<>();
   }
 
-  public Map<UUID, StrifeMob> getTrackedEntities() {
-    return trackedEntities;
+  public int removeInvalidEntities() {
+    int initialSize = trackedEntities.size();
+    for (UUID uuid : trackedEntities.keySet()) {
+      LivingEntity le = trackedEntities.get(uuid).getEntity();
+      if (le != null && le.isValid()) {
+        continue;
+      }
+      trackedEntities.remove(uuid);
+    }
+    return initialSize - trackedEntities.size();
   }
 
   public StrifeMob getStatMob(LivingEntity entity) {
@@ -73,17 +80,6 @@ public class StrifeMobManager {
   }
 
   public boolean isTrackedEntity(Entity entity) {
-    return isTrackedEntity(entity.getUniqueId());
-  }
-
-  public boolean isTrackedEntity(UUID uuid) {
-    return trackedEntities.containsKey(uuid);
-  }
-
-  public LivingEntity getLivingEntity(UUID uuid) {
-    if (!isTrackedEntity(uuid)) {
-      return null;
-    }
-    return trackedEntities.get(uuid).getEntity();
+    return trackedEntities.containsKey(entity.getUniqueId());
   }
 }

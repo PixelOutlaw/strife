@@ -20,8 +20,6 @@ package info.faceland.strife.tasks;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.util.LogUtil;
-import java.util.UUID;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class TrackedPruneTask extends BukkitRunnable {
@@ -34,21 +32,7 @@ public class TrackedPruneTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    int startSize = plugin.getStrifeMobManager().getTrackedEntities().size();
-    for (UUID uuid : plugin.getStrifeMobManager().getTrackedEntities().keySet()) {
-      if (!plugin.getStrifeMobManager().isTrackedEntity(uuid)) {
-        continue;
-      }
-      if (isValidEntity(plugin.getStrifeMobManager().getLivingEntity(uuid))) {
-        continue;
-      }
-      plugin.getStrifeMobManager().removeEntity(uuid);
-    }
-    int newSize = plugin.getStrifeMobManager().getTrackedEntities().size();
-    LogUtil.printDebug("Cleared " + (startSize - newSize) + " invalid attributed entities.");
-  }
-
-  private boolean isValidEntity(LivingEntity livingEntity) {
-    return livingEntity != null && livingEntity.isValid();
+    int removed = plugin.getStrifeMobManager().removeInvalidEntities();
+    LogUtil.printDebug("Cleared " + removed + " invalid attributed entities.");
   }
 }

@@ -150,12 +150,11 @@ public class StatUpdateManager {
         return 2 * Math.ceil(maxHealth / 5);
       case TEN_HEALTH_HEARTS:
         return 2 * Math.ceil(maxHealth / 10);
-      case TEN_PERCENT_HEARTS:
-        return 20;
       case FIVE_PERCENT_HEARTS:
         return 40;
       case THREE_PERCENT_HEARTS:
         return 60;
+      case TEN_PERCENT_HEARTS:
       default:
         return 20;
     }
