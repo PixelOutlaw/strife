@@ -525,18 +525,16 @@ public class DamageUtil {
     if (entity == null || !entity.isValid()) {
       return;
     }
-    Collection<PotionEffect> effects = entity.getActivePotionEffects();
-    for (PotionEffect effect : effects) {
-      if (type != effect.getType()) {
-        continue;
-      }
-      if (power < effect.getAmplifier()) {
-        return;
-      }
-      if (power == Math.abs(effect.getAmplifier()) && duration < effect.getDuration()) {
-        return;
-      }
-      break;
+    if (!entity.hasPotionEffect(type)) {
+      entity.addPotionEffect(new PotionEffect(type, duration, power));
+      return;
+    }
+    PotionEffect effect = entity.getPotionEffect(type);
+    if (power < effect.getAmplifier()) {
+      return;
+    }
+    if (power == Math.abs(effect.getAmplifier()) && duration < effect.getDuration()) {
+      return;
     }
     entity.removePotionEffect(type);
     entity.addPotionEffect(new PotionEffect(type, duration, power));
