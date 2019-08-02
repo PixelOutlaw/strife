@@ -113,6 +113,9 @@ public class EffectManager {
       finalTargets.add(caster.getEntity());
     }
     for (LivingEntity le : finalTargets) {
+      if (le instanceof ArmorStand || !le.isValid()) {
+        continue;
+      }
       StrifeMob targetMob = aeManager.getStatMob(le);
       LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(le));
       if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
