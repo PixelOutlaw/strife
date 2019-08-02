@@ -83,6 +83,7 @@ public class AbilityPickerItem extends MenuItem {
       event.setWillUpdate(true);
       return;
     }
+    champion.getSaveData().setAbility(slot, ability);
     plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
     event.setWillUpdate(true);
   }
