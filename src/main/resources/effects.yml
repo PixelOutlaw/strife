@@ -55,6 +55,6 @@ mass-poison:
   duration: 1200
   intensity: 0
 knockbackp-20:
-  type: KNOCKBACK
+  type: PUSH
   name: "Mass Poison"
   power: 20

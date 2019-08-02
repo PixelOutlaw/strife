@@ -5,23 +5,24 @@ import info.faceland.strife.data.WorldSpaceEffectEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
-public class Knockback extends Effect {
+public class Push extends Effect {
 
   private double power;
   private double height;
   private boolean zeroVelocity;
-  private KnockbackType knockbackType;
+  private PushType pushType;
   private Vector tempVector;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     Vector direction;
-    switch (knockbackType) {
+    switch (pushType) {
       case AWAY_FROM_CASTER:
         direction = getEffectVelocity(caster.getEntity(), target.getEntity());
         break;
       case CASTER_DIRECTION:
-        direction = caster.getEntity().getEyeLocation().getDirection().setY(0).normalize();
+        direction = caster.getEntity().getEyeLocation().getDirection().setY(0).normalize()
+            .multiply(power / 10);
         break;
       case BACKWARDS:
         direction = target.getEntity().getEyeLocation().getDirection().setY(0).normalize()
@@ -40,17 +41,18 @@ public class Knockback extends Effect {
     }
     if (zeroVelocity) {
       target.getEntity().setVelocity(new Vector());
+      target.getEntity().setFallDistance(0);
     }
     direction.add(new Vector(0, height / 10, 0));
     target.getEntity().setVelocity(direction);
   }
 
   public void setTempVectorFromWSE(WorldSpaceEffectEntity entity) {
-    if (knockbackType == KnockbackType.WSE_DIRECTION) {
+    if (pushType == PushType.WSE_DIRECTION) {
       tempVector = entity.getVelocity().normalize();
       return;
     }
-    if (knockbackType == KnockbackType.WSE_LOCATION) {
+    if (pushType == PushType.WSE_LOCATION) {
       tempVector = entity.getLocation().toVector();
       return;
     }
@@ -74,11 +76,11 @@ public class Knockback extends Effect {
     this.zeroVelocity = zeroVelocity;
   }
 
-  public void setKnockbackType(KnockbackType knockbackType) {
-    this.knockbackType = knockbackType;
+  public void setPushType(PushType pushType) {
+    this.pushType = pushType;
   }
 
-  public enum KnockbackType {
+  public enum PushType {
     AWAY_FROM_CASTER,
     CASTER_DIRECTION,
     BACKWARDS,

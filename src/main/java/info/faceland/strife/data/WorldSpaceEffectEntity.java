@@ -2,8 +2,8 @@ package info.faceland.strife.data;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.effects.Effect;
-import info.faceland.strife.effects.Knockback;
 import info.faceland.strife.effects.PlaySound;
+import info.faceland.strife.effects.Push;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.managers.EffectManager;
 import info.faceland.strife.util.LogUtil;
@@ -64,8 +64,8 @@ public class WorldSpaceEffectEntity {
         } else if (effect instanceof PlaySound && effect.getRange() == 0) {
           ((PlaySound) effect).playAtLocation(location);
         } else {
-          if (effect instanceof Knockback) {
-            ((Knockback) effect).setTempVectorFromWSE(this);
+          if (effect instanceof Push) {
+            ((Push) effect).setTempVectorFromWSE(this);
           }
           EFFECT_MANAGER.executeEffectAtLocation(effect, caster, location);
         }
