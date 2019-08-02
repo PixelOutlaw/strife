@@ -22,14 +22,17 @@ public class PotionCondition implements Condition {
     this.intensity = intensity;
   }
 
-  public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    if (compareTarget == SELF && !attacker.getEntity().hasPotionEffect(potionEffect) ||
+  public boolean isMet(StrifeMob caster, StrifeMob target) {
+    if (compareTarget == SELF && !caster.getEntity().hasPotionEffect(potionEffect) ||
         compareTarget == OTHER && !target.getEntity().hasPotionEffect(potionEffect)) {
       return false;
     }
-    int value = compareTarget == SELF ?
-        attacker.getEntity().getPotionEffect(potionEffect).getAmplifier()
-        : target.getEntity().getPotionEffect(potionEffect).getAmplifier();
-    return PlayerDataUtil.conditionCompare(comparison, value, intensity);
+    int appliedIntensity;
+    if (compareTarget == SELF) {
+      appliedIntensity = caster.getEntity().getPotionEffect(potionEffect).getAmplifier();
+    } else {
+      appliedIntensity = target.getEntity().getPotionEffect(potionEffect).getAmplifier();
+    }
+    return PlayerDataUtil.conditionCompare(comparison, appliedIntensity, intensity);
   }
 }
