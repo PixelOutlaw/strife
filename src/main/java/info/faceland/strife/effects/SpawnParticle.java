@@ -4,6 +4,7 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
+import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -17,9 +18,14 @@ public class SpawnParticle extends Effect {
   private float spread;
   private float speed;
   private double size;
+  private double red;
+  private double green;
+  private double blue;
   private int tickDuration;
   private ParticleStyle style;
   private OriginLocation particleOriginLocation = OriginLocation.CENTER;
+
+  private static Random random = new Random();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -54,7 +60,7 @@ public class SpawnParticle extends Effect {
         return;
       case NORMAL:
       default:
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
+        spawnParticle(location);
     }
   }
 
@@ -102,24 +108,16 @@ public class SpawnParticle extends Effect {
     return particle;
   }
 
-  public int getQuantity() {
-    return quantity;
+  public void setRed(double red) {
+    this.red = red;
   }
 
-  public float getSpread() {
-    return spread;
+  public void setGreen(double green) {
+    this.green = green;
   }
 
-  public float getSpeed() {
-    return speed;
-  }
-
-  public ParticleStyle getStyle() {
-    return style;
-  }
-
-  public OriginLocation getParticleOriginLocation() {
-    return particleOriginLocation;
+  public void setBlue(double blue) {
+    this.blue = blue;
   }
 
   public Location getLoc(LivingEntity le) {
@@ -127,11 +125,11 @@ public class SpawnParticle extends Effect {
   }
 
   private void spawnParticleCircle(Location center, double radius) {
-    for (double degree = 0; degree < 360; degree += 30/radius) {
+    for (double degree = 0; degree < 360; degree += 30 / radius) {
       double radian1 = Math.toRadians(degree);
       Location loc = center.clone();
       loc.add(Math.cos(radian1) * radius, 0, Math.sin(radian1) * radius);
-      loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
+      spawnParticle(loc);
     }
   }
 
@@ -152,7 +150,24 @@ public class SpawnParticle extends Effect {
           return;
         }
       }
-      loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
+      spawnParticle(loc);
+    }
+  }
+
+  private void spawnParticle(Location location) {
+    if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
+        || particle == Particle.SPELL_INSTANT) {
+      spawnSpellMobParticle(location);
+      return;
+    }
+    location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
+  }
+
+  private void spawnSpellMobParticle(Location location) {
+    for (int i = 0; i < quantity; i++) {
+      Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2,
+          -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
+      location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
     }
   }
 
