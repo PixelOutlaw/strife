@@ -33,7 +33,4 @@ public class LoadedBuff {
     return seconds;
   }
 
-  public static Buff createBuffFromLoadedBuff(LoadedBuff loadedBuff) {
-    return new Buff(loadedBuff.stats, loadedBuff.maxStacks);
-  }
 }

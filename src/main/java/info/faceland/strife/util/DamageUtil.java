@@ -469,8 +469,9 @@ public class DamageUtil {
     applyBuff(buff, target, 1);
   }
 
-  public static void applyBuff(LoadedBuff buff, StrifeMob target, double durMult) {
-    StrifePlugin.getInstance().getBuffManager().applyBuff(buff, target, durMult);
+  public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, double durationMult) {
+    StrifePlugin.getInstance().getStrifeMobManager()
+        .addBuff(target.getEntity().getUniqueId(), loadedBuff, durationMult);
   }
 
   public static LoadedBuff getBuff(String id) {
@@ -634,7 +635,8 @@ public class DamageUtil {
     return DamageUtil.getFirstEntityInLOS(caster, (int) range);
   }
 
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range, OriginLocation originLocation) {
+  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
+      OriginLocation originLocation) {
     if (target == null) {
       target = selectFirstEntityInSight(caster, range);
     }

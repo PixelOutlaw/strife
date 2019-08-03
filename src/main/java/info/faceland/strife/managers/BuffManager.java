@@ -18,11 +18,9 @@
  */
 package info.faceland.strife.managers;
 
-import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.buff.Buff;
 import info.faceland.strife.data.buff.LoadedBuff;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.StatUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,26 +30,16 @@ public class BuffManager {
 
   private final Map<String, LoadedBuff> buffList = new HashMap<>();
 
-  public void applyBuff(String buffId, StrifeMob strifeMob) {
-    LoadedBuff loadedBuff = getBuffFromId(buffId);
-    if (loadedBuff == null) {
-      LogUtil.printWarning("Attempted to apply unknown buff '" + buffId + "'");
-      return;
-    }
-    applyBuff(loadedBuff, strifeMob);
-  }
-
-  public void applyBuff(LoadedBuff loadedBuff, StrifeMob strifeMob) {
-    applyBuff(loadedBuff, strifeMob, 1D);
-  }
-
-  public void applyBuff(LoadedBuff loadedBuff, StrifeMob strifeMob, double durationMult) {
-    Buff buff = LoadedBuff.createBuffFromLoadedBuff(loadedBuff);
-    strifeMob.addBuff(loadedBuff.getName(), buff, loadedBuff.getSeconds() * durationMult);
-  }
-
   public LoadedBuff getBuffFromId(String buffId) {
     return buffList.get(buffId);
+  }
+
+  public Buff buildFromLoadedBuff(String buffId) {
+    return buildFromLoadedBuff(getBuffFromId(buffId));
+  }
+
+  public Buff buildFromLoadedBuff(LoadedBuff loadedBuff) {
+    return new Buff(loadedBuff.getStats(), loadedBuff.getMaxStacks());
   }
 
   public void loadBuff(String key, ConfigurationSection cs) {
