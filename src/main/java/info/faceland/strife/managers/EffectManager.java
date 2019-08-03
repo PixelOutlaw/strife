@@ -115,6 +115,7 @@ public class EffectManager {
     }
     for (LivingEntity le : finalTargets) {
       if (le instanceof ArmorStand || !le.isValid()) {
+        runPlayAtLocationEffects(effect, le);
         continue;
       }
       StrifeMob targetMob = aeManager.getStatMob(le);
@@ -200,6 +201,14 @@ public class EffectManager {
       }
     }
     return areaTargets;
+  }
+
+  private void runPlayAtLocationEffects(Effect effect, LivingEntity le) {
+    if (effect instanceof PlaySound) {
+      ((PlaySound) effect).playAtLocation(le.getLocation());
+    } else if (effect instanceof SpawnParticle) {
+      ((SpawnParticle) effect).playAtLocation(le);
+    }
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
