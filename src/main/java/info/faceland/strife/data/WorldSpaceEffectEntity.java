@@ -1,6 +1,7 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.effects.AreaEffect;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.Push;
@@ -15,7 +16,7 @@ import org.bukkit.util.Vector;
 
 public class WorldSpaceEffectEntity {
 
-  private final static EffectManager EFFECT_MANAGER = StrifePlugin.getInstance().getEffectManager();
+  private static EffectManager EFFECT_MANAGER = StrifePlugin.getInstance().getEffectManager();
 
   private final Map<Integer, List<Effect>> effectSchedule;
   private final int maxTicks;
@@ -59,16 +60,16 @@ public class WorldSpaceEffectEntity {
           LogUtil.printError("Null WSE effect! Tick:" + currentTick);
           continue;
         }
-        if (effect instanceof SpawnParticle && effect.getRange() == 0) {
+        if (effect instanceof SpawnParticle) {
           ((SpawnParticle) effect).playAtLocation(location);
-        } else if (effect instanceof PlaySound && effect.getRange() == 0) {
-          ((PlaySound) effect).playAtLocation(location);
-        } else {
-          if (effect instanceof Push) {
-            ((Push) effect).setTempVectorFromWSE(this);
-          }
-          EFFECT_MANAGER.executeEffectAtLocation(effect, caster, location);
+          continue;
         }
+        if (effect instanceof PlaySound) {
+          ((PlaySound) effect).playAtLocation(location);
+          continue;
+        }
+        applyDirectionToPushEffects(effect);
+        EFFECT_MANAGER.executeEffectAtLocation(effect, caster, location);
       }
     }
     lifespan--;
@@ -80,5 +81,16 @@ public class WorldSpaceEffectEntity {
       currentTick = 1;
     }
     return true;
+  }
+
+  private void applyDirectionToPushEffects(Effect effect) {
+    if (!(effect instanceof AreaEffect)) {
+      return;
+    }
+    for (Effect areaEffect : ((AreaEffect) effect).getEffects()) {
+      if (areaEffect instanceof Push) {
+        ((Push) areaEffect).setTempVectorFromWSE(this);
+      }
+    }
   }
 }

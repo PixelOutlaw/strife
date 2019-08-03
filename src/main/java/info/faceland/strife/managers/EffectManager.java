@@ -24,6 +24,7 @@ import info.faceland.strife.conditions.TimeCondition;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.WorldSpaceEffectEntity;
 import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.effects.AreaEffect;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.BuffEffect;
 import info.faceland.strife.effects.ConsumeBleed;
@@ -127,10 +128,10 @@ public class EffectManager {
 
   private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
       Set<LivingEntity> targets) {
-    Set<LivingEntity> finalTargets = new HashSet<>();
-    for (LivingEntity le : targets) {
-      finalTargets.addAll(getEffectTargets(le, effect.getRange()));
+    if (effect instanceof AreaEffect) {
+      return getAreaTargets(targets, (AreaEffect) effect);
     }
+    Set<LivingEntity> finalTargets = new HashSet<>(targets);
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, finalTargets);
     if (effect.isFriendly()) {
       finalTargets.retainAll(friendlyEntities);
@@ -181,21 +182,24 @@ public class EffectManager {
     }
   }
 
-  private Set<LivingEntity> getEffectTargets(LivingEntity target, double range) {
-    Set<LivingEntity> targets = new HashSet<>();
-    targets.add(target);
+  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, AreaEffect effect) {
+    double range = effect.getRange();
     if (range < 1) {
       return targets;
     }
-    for (Entity e : target.getNearbyEntities(range, range, range)) {
-      if (e instanceof ArmorStand) {
-        continue;
-      }
-      if (e instanceof LivingEntity && target.hasLineOfSight(e)) {
-        targets.add((LivingEntity) e);
+    Set<LivingEntity> areaTargets = new HashSet<>();
+    for (LivingEntity le : targets) {
+      for (Entity e : le.getNearbyEntities(range, range, range)) {
+        if (e instanceof ArmorStand || !(e instanceof LivingEntity)) {
+          continue;
+        }
+        if (effect.isLineOfSight() && !le.hasLineOfSight(e)) {
+          continue;
+        }
+        areaTargets.add((LivingEntity) e);
       }
     }
-    return targets;
+    return areaTargets;
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -268,7 +272,18 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
+        ((CreateWorldSpaceEntity) effect)
+            .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("velocity", 1));
+        break;
+      case AREA_EFFECT:
+        effect = new AreaEffect();
+        List<String> areaEffects = cs.getStringList("effects");
+        ((AreaEffect) effect).setEffects(areaEffects);
+        ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
+        ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
+        ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
+        ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         break;
       case PROJECTILE:
         effect = new ShootProjectile();
@@ -370,7 +385,8 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
-        ((PotionEffectAction) effect).setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
+        ((PotionEffectAction) effect)
+            .setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
         break;
       case SOUND:
         effect = new PlaySound();
@@ -413,7 +429,6 @@ public class EffectManager {
     }
     if (effectType != EffectType.WAIT) {
       effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
-      effect.setRange(cs.getDouble("range", 0));
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
       Map<StrifeStat, Double> statMults = StatUtil
@@ -436,7 +451,6 @@ public class EffectManager {
   }
 
   public void loadCondition(String key, ConfigurationSection cs) {
-
     String type = cs.getString("type", "NULL").toUpperCase();
     ConditionType conditionType;
     try {
@@ -585,6 +599,7 @@ public class EffectManager {
     STANDARD_DAMAGE,
     DAMAGE,
     WORLD_SPACE_ENTITY,
+    AREA_EFFECT,
     HEAL,
     RESTORE_BARRIER,
     INCREASE_RAGE,

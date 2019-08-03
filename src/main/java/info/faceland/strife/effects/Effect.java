@@ -13,7 +13,6 @@ public class Effect {
   private String name;
   private boolean forceTargetCaster;
   private boolean friendly;
-  private double range;
 
   private final Map<StrifeStat, Double> statMults = new HashMap<>();
   private final Set<Condition> conditions = new HashSet<>();
@@ -44,14 +43,6 @@ public class Effect {
 
   public void setFriendly(boolean friendly) {
     this.friendly = friendly;
-  }
-
-  public double getRange() {
-    return range;
-  }
-
-  public void setRange(double range) {
-    this.range = range;
   }
 
   public Map<StrifeStat, Double> getStatMults() {
