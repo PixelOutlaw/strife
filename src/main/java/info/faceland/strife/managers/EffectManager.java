@@ -114,7 +114,7 @@ public class EffectManager {
       finalTargets.add(caster.getEntity());
     }
     for (LivingEntity le : finalTargets) {
-      if (le instanceof ArmorStand || !le.isValid()) {
+      if (le instanceof ArmorStand) {
         runPlayAtLocationEffects(effect, le);
         continue;
       }
@@ -256,15 +256,19 @@ public class EffectManager {
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
         ConfigurationSection modCs = cs.getConfigurationSection("mods");
         Map<DamageType, Double> modMap = new HashMap<>();
-        for (String k : modCs.getKeys(false)) {
-          DamageType mod = DamageType.valueOf(k);
-          modMap.put(mod, modCs.getDouble(k));
+        if (modCs != null) {
+          for (String k : modCs.getKeys(false)) {
+            DamageType mod = DamageType.valueOf(k);
+            modMap.put(mod, modCs.getDouble(k));
+          }
         }
         ConfigurationSection flatCs = cs.getConfigurationSection("flat-damage-bonuses");
         Map<DamageType, Double> flatMap = new HashMap<>();
-        for (String k : flatCs.getKeys(false)) {
-          DamageType mod = DamageType.valueOf(k);
-          flatMap.put(mod, flatCs.getDouble(k));
+        if (flatCs != null) {
+          for (String k : flatCs.getKeys(false)) {
+            DamageType mod = DamageType.valueOf(k);
+            flatMap.put(mod, flatCs.getDouble(k));
+          }
         }
         ((StandardDamage) effect).getDamageModifiers().putAll(modMap);
         ((StandardDamage) effect).getDamageBonuses().putAll(flatMap);
@@ -274,9 +278,8 @@ public class EffectManager {
         Map<Integer, List<String>> effectSchedule = new HashMap<>();
         ConfigurationSection scheduleSection = cs.getConfigurationSection("schedule");
         for (String intKey : scheduleSection.getKeys(false)) {
-          int val = Integer.valueOf(intKey);
           List<String> effects = scheduleSection.getStringList(intKey);
-          effectSchedule.put(val, effects);
+          effectSchedule.put(Integer.valueOf(intKey), effects);
         }
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
