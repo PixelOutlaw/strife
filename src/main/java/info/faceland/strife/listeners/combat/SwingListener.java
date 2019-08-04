@@ -18,6 +18,7 @@
  */
 package info.faceland.strife.listeners.combat;
 
+import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
 import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
@@ -160,16 +161,12 @@ public class SwingListener implements Listener {
 
     ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
 
-    if (multiShot > 0) {
-      int bonusProjectiles = (int) (multiShot - (multiShot % 1));
-      if (multiShot % 1 >= random.nextDouble()) {
-        bonusProjectiles++;
-      }
-      for (int i = bonusProjectiles; i > 0; i--) {
-        ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed,
-            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles), gravity);
-      }
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
+
+    for (int i = projectiles - 1; i > 0; i--) {
+      ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed,
+          randomOffset(projectiles), randomOffset(projectiles),
+          randomOffset(projectiles), gravity);
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
     plugin.getSneakManager().tempDisableSneak(player);

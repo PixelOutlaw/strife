@@ -25,6 +25,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
+import info.faceland.strife.util.ProjectileUtil;
 import java.util.Random;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
@@ -69,20 +70,15 @@ public class BowListener implements Listener {
         plugin.getChampionManager().getChampion(player));
 
     double projectileSpeed = 2.5 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
-    double multiShot = pStats.getStat(MULTISHOT) / 100;
     boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
 
     createArrow(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
 
-    if (multiShot > 0) {
-      int bonusProjectiles = (int) (multiShot - (multiShot % 1));
-      if (multiShot % 1 >= random.nextDouble()) {
-        bonusProjectiles++;
-      }
-      for (int i = bonusProjectiles; i > 0; i--) {
-        createArrow(player, attackMultiplier, projectileSpeed, randomOffset(bonusProjectiles),
-            randomOffset(bonusProjectiles), randomOffset(bonusProjectiles), gravity);
-      }
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
+
+    for (int i = projectiles - 1; i > 0; i--) {
+      createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles),
+          randomOffset(projectiles), randomOffset(projectiles), gravity);
     }
     double bowPitch = 0.9 + random.nextDouble() * 0.2;
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);

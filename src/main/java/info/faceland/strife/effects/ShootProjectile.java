@@ -4,12 +4,14 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.ProjectileUtil;
 import java.util.List;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.WitherSkull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
@@ -29,9 +31,11 @@ public class ShootProjectile extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double projectiles = 1;
+    double projectiles = quantity;
+    double newSpeed = speed * (1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     if (projectileEntity != EntityType.FIREBALL) {
-      projectiles = quantity * (1 + caster.getStat(StrifeStat.MULTISHOT) / 100);
+      projectiles = ProjectileUtil
+          .getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT));
     }
     Vector castDirection;
     if (targeted) {
@@ -58,11 +62,13 @@ public class ShootProjectile extends Effect {
           adjustedSpread - 2 * adjustedSpread * Math.random()));
       direction = direction.normalize();
       LogUtil.printDebug("Post spread and vert bonus direction: " + direction.toString());
-      LogUtil.printDebug("Final projectile velocity: " + direction.clone().multiply(speed));
-      projectile.setVelocity(direction.multiply(speed));
+      LogUtil.printDebug("Final projectile velocity: " + direction.clone().multiply(newSpeed));
+      projectile.setVelocity(direction.multiply(newSpeed));
       if (projectileEntity == EntityType.FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
+      } else if (projectileEntity == EntityType.WITHER_SKULL) {
+        ((WitherSkull) projectile).setYield(yield);
       } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
         ((SmallFireball) projectile).setIsIncendiary(ignite);
         ((SmallFireball) projectile).setDirection(direction);

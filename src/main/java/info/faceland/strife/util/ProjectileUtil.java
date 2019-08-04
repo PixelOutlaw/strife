@@ -1,8 +1,10 @@
 package info.faceland.strife.util;
 
 import info.faceland.strife.StrifePlugin;
+import java.util.Random;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Arrow.PickupStatus;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -12,12 +14,24 @@ import org.bukkit.entity.WitherSkull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
-//import org.bukkit.entity.Arrow.PickupStatus;
-
 public class ProjectileUtil {
 
   public final static String ATTACK_SPEED_META = "AS_MULT";
   public final static String SNEAK_ATTACK_META = "SNEAK_SHOT";
+
+  private static final Random RANDOM = new Random(System.currentTimeMillis());
+
+  public static int getTotalProjectiles(double initialProjectiles, double multiShot) {
+    double projectiles = initialProjectiles;
+    if (multiShot > 0) {
+      projectiles *= 1 + (multiShot / 100);
+      if (projectiles % 1 >= RANDOM.nextDouble()) {
+        projectiles++;
+      }
+      return (int) Math.floor(projectiles);
+    }
+    return (int) initialProjectiles;
+  }
 
   public static void createMagicMissile(Player shooter, double attackMult, double power,
       double xOff, double yOff, double zOff) {
@@ -83,7 +97,7 @@ public class ProjectileUtil {
     Arrow arrow = shooter.getWorld().spawn(
         shooter.getEyeLocation().clone().add(0, -0.35, 0), Arrow.class);
     arrow.setShooter(shooter);
-    //arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     arrow.setGravity(gravity);
 
     Vector vector = shooter.getEyeLocation().getDirection();
