@@ -41,7 +41,7 @@ public class SpawnerManager {
       }
       double distance = spawner.getLocation().distance(spawner.getTrackedEntity().getLocation());
       if (distance > spawner.getLeashRange()) {
-        uniqueManager.removeEntity(spawner.getTrackedEntity(), true, false);
+        spawner.getTrackedEntity().remove();
       }
     }
   }
@@ -63,7 +63,6 @@ public class SpawnerManager {
       if (le == null) {
         return;
       }
-      uniqueManager.getData(le).setSpawner(s);
       s.setTrackedEntity(le);
     }
   }

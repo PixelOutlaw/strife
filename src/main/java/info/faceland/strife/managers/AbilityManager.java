@@ -166,62 +166,43 @@ public class AbilityManager {
     return execute(ability, caster, null);
   }
 
-  public void uniqueAbilityCast(StrifeMob caster, AbilityType type) {
-    EntityAbilitySet abilitySet = plugin.getUniqueEntityManager().getAbilitySet(caster.getEntity());
+  public void abilityCast(StrifeMob caster, AbilityType type) {
+    EntityAbilitySet abilitySet = caster.getAbilitySet();
     if (abilitySet == null) {
       return;
     }
-    int phase = plugin.getUniqueEntityManager().getPhase(caster.getEntity());
-    switch (type) {
-      case ON_HIT:
-        abilityPhaseCast(caster, abilitySet.getOnHitAbilities(), phase);
-        break;
-      case WHEN_HIT:
-        abilityPhaseCast(caster, abilitySet.getWhenHitAbilities(), phase);
-        break;
-      case TIMER:
-        abilityPhaseCast(caster, abilitySet.getTimerAbilities(), phase);
-        break;
-      case PHASE_SHIFT:
-        abilityPhaseCast(caster, abilitySet.getPhaseShiftAbilities(), phase);
-        break;
+    checkPhaseChange(caster);
+    int phase = abilitySet.getPhase();
+    Map<Integer, List<Ability>> abilitySection = abilitySet.getAbilities(type);
+    if (abilitySection == null) {
+      return;
+    }
+    while (phase < 5) {
+      List<Ability> abilities = abilitySection.get(phase);
+      if (abilities == null) {
+        phase++;
+        continue;
+      }
+      for (Ability a : abilities) {
+        execute(a, caster);
+      }
+      return;
     }
   }
 
-  public void checkPhaseChange(LivingEntity entity) {
-    if (!plugin.getUniqueEntityManager().isUniqueEntity(entity)) {
-      LogUtil.printDebug("Trying to check phase on non-unique: " + PlayerDataUtil.getName(entity));
+  private void checkPhaseChange(StrifeMob strifeMob) {
+    if (strifeMob.getAbilitySet() == null) {
       return;
     }
     LogUtil.printDebug(" - Checking phase switch");
-    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(entity);
-    int currentPhase = plugin.getUniqueEntityManager().getPhase(strifeMob.getEntity());
+    int currentPhase = strifeMob.getAbilitySet().getPhase();
     LogUtil.printDebug(" - Current Phase: " + currentPhase);
-    int newPhase = 6 - (int) Math.ceil((entity.getHealth() / entity.getMaxHealth()) / 0.2);
+    int newPhase = 6 - (int) Math
+        .ceil((strifeMob.getEntity().getHealth() / strifeMob.getEntity().getMaxHealth()) / 0.2);
     LogUtil.printDebug(" - New Phase: " + newPhase);
     if (newPhase > currentPhase) {
-      plugin.getUniqueEntityManager().getLiveUniquesMap().get(entity).setPhase(newPhase);
-      uniqueAbilityCast(strifeMob, AbilityType.PHASE_SHIFT);
-    }
-  }
-
-  private void abilityPhaseCast(StrifeMob caster, Map<Integer, List<Ability>> abilitySection,
-      int phase) {
-    if (phase > 5) {
-      throw new IllegalArgumentException("Phase cannot be higher than 5");
-    }
-    if (abilitySection.containsKey(phase)) {
-      executeAbilityList(caster, abilitySection.get(phase));
-      return;
-    }
-    if (phase > 1) {
-      abilityPhaseCast(caster, abilitySection, phase - 1);
-    }
-  }
-
-  private void executeAbilityList(StrifeMob caster, List<Ability> abilities) {
-    for (Ability a : abilities) {
-      execute(a, caster);
+      strifeMob.getAbilitySet().setPhase(newPhase);
+      abilityCast(strifeMob, AbilityType.PHASE_SHIFT);
     }
   }
 

@@ -1,5 +1,6 @@
 package info.faceland.strife.data;
 
+import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.buff.Buff;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.managers.StatUpdateManager;
@@ -23,6 +24,7 @@ public class StrifeMob {
 
   private final Champion champion;
   private LivingEntity livingEntity;
+  private EntityAbilitySet abilitySet;
 
   private boolean despawnOnUnload = false;
 
@@ -63,6 +65,14 @@ public class StrifeMob {
 
   public void setLivingEntity(LivingEntity livingEntity) {
     this.livingEntity = livingEntity;
+  }
+
+  public EntityAbilitySet getAbilitySet() {
+    return abilitySet;
+  }
+
+  public void setAbilitySet(EntityAbilitySet abilitySet) {
+    this.abilitySet = abilitySet;
   }
 
   public Champion getChampion() {

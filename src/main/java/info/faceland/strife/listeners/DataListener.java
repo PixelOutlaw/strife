@@ -91,7 +91,6 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(final EntityDeathEvent event) {
     plugin.getBossBarManager().doBarDeath(event.getEntity());
-    plugin.getUniqueEntityManager().removeEntity(event.getEntity(), false, true);
     plugin.getBarrierManager().removeEntity(event.getEntity());
     if (event.getEntity() instanceof Player) {
       plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
@@ -145,7 +144,6 @@ public class DataListener implements Listener {
         continue;
       }
       plugin.getStrifeMobManager().doChunkDespawn((LivingEntity) ent);
-      plugin.getUniqueEntityManager().removeEntity((LivingEntity) ent, true, false);
     }
   }
 

@@ -2,14 +2,14 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.UniqueEntity;
-import info.faceland.strife.data.UniqueEntityData;
-import info.faceland.strife.data.ability.EntityAbilitySet;
+import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
@@ -28,26 +28,13 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class UniqueEntityManager {
 
   private final StrifePlugin plugin;
-  private final Map<LivingEntity, UniqueEntityData> liveUniquesMap;
   private final Map<String, UniqueEntity> loadedUniquesMap;
   private final Map<UniqueEntity, Disguise> cachedDisguises;
 
   public UniqueEntityManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.liveUniquesMap = new ConcurrentHashMap<>();
     this.loadedUniquesMap = new HashMap<>();
     this.cachedDisguises = new HashMap<>();
-  }
-
-  public UniqueEntity getLivingUnique(LivingEntity livingEntity) {
-    if (!liveUniquesMap.containsKey(livingEntity)) {
-      return null;
-    }
-    return liveUniquesMap.get(livingEntity).getUniqueEntity();
-  }
-
-  public Map<LivingEntity, UniqueEntityData> getLiveUniquesMap() {
-    return liveUniquesMap;
   }
 
   public Map<String, UniqueEntity> getLoadedUniquesMap() {
@@ -58,62 +45,8 @@ public class UniqueEntityManager {
     loadedUniquesMap.put(key, uniqueEntity);
   }
 
-  public void removeEntity(LivingEntity entity, boolean purge, boolean triggerTimer) {
-    UniqueEntityData data = getData(entity);
-    if (data == null) {
-      return;
-    }
-    if (triggerTimer && data.getSpawner() != null) {
-      data.getSpawner()
-          .setRespawnTime(System.currentTimeMillis() + data.getSpawner().getRespawnMillis());
-    }
-    liveUniquesMap.remove(entity);
-    if (purge) {
-      entity.remove();
-    }
-  }
-
-  public int getPhase(LivingEntity livingEntity) {
-    if (!liveUniquesMap.containsKey(livingEntity)) {
-      LogUtil.printWarning("Attempting to get phase of non-unique entity...");
-      return 0;
-    }
-    return liveUniquesMap.get(livingEntity).getPhase();
-  }
-
-  public UniqueEntityData getData(LivingEntity livingEntity) {
-    return liveUniquesMap.getOrDefault(livingEntity, null);
-  }
-
-  public EntityAbilitySet getAbilitySet(LivingEntity livingEntity) {
-    if (!liveUniquesMap.containsKey(livingEntity)) {
-      LogUtil.printWarning("Attempting to get ability set of non-unique entity...");
-      return null;
-    }
-    return liveUniquesMap.get(livingEntity).getUniqueEntity().getAbilitySet();
-  }
-
-  public EntityAbilitySet getAbilitySet(UniqueEntity uniqueEntity) {
-    return uniqueEntity.getAbilitySet();
-  }
-
-  public void killAllSpawnedUniques() {
-    for (LivingEntity le : liveUniquesMap.keySet()) {
-      le.remove();
-    }
-    liveUniquesMap.clear();
-  }
-
-  public boolean isUnique(LivingEntity entity) {
-    return liveUniquesMap.containsKey(entity);
-  }
-
   public boolean isLoadedUnique(String name) {
     return loadedUniquesMap.containsKey(name);
-  }
-
-  public boolean isUniqueEntity(LivingEntity livingEntity) {
-    return liveUniquesMap.containsKey(livingEntity);
   }
 
   public LivingEntity spawnUnique(String unique, Location location) {
@@ -171,11 +104,6 @@ public class UniqueEntityManager {
       spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
-    if (spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
-        .isKnockbackImmune()) {
-      spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
-    }
-
     if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
       double speed =
           uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100D) / 100D;
@@ -195,10 +123,11 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
 
-    plugin.getStrifeMobManager()
-        .setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
-    liveUniquesMap.put(spawnedUnique, new UniqueEntityData(uniqueEntity));
-    plugin.getAbilityManager().checkPhaseChange(spawnedUnique);
+    plugin.getStrifeMobManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
+    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(spawnedUnique);
+    strifeMob.setDespawnOnUnload(true);
+    plugin.getAbilityManager().abilityCast(strifeMob, AbilityType.PHASE_SHIFT);
+    ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());
     return spawnedUnique;
   }
 

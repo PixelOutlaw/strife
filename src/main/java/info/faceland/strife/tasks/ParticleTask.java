@@ -19,25 +19,18 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.data.ContinuousParticle;
-import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.effects.SpawnParticle;
-import info.faceland.strife.managers.UniqueEntityManager;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class ParticleTask extends BukkitRunnable {
 
-  private UniqueEntityManager uniqueEntityManager;
   private static Map<LivingEntity, Queue<ContinuousParticle>> continuousParticles = new ConcurrentHashMap<>();
-
-  public ParticleTask(UniqueEntityManager uniqueEntityManager) {
-    this.uniqueEntityManager = uniqueEntityManager;
-  }
+  private static Map<LivingEntity, SpawnParticle> boundParticles = new ConcurrentHashMap<>();
 
   @Override
   public void run() {
@@ -55,19 +48,12 @@ public class ParticleTask extends BukkitRunnable {
         particle.tickDown();
       }
     }
-    for (LivingEntity livingEntity : uniqueEntityManager.getLiveUniquesMap().keySet()) {
-      UniqueEntity unique = uniqueEntityManager.getLivingUnique(livingEntity);
-      if (!livingEntity.isValid() || unique == null || unique.getParticle() == null) {
+    for (LivingEntity le : boundParticles.keySet()) {
+      if (!le.isValid()) {
+        boundParticles.remove(le);
         continue;
       }
-      Location location = livingEntity.getLocation();
-      location.getWorld().spawnParticle(
-          unique.getParticle(),
-          location,
-          unique.getParticleCount(),
-          unique.getParticleRadius(), unique.getParticleRadius(), unique.getParticleRadius(),
-          0.02f
-      );
+      boundParticles.get(le).playAtLocation(le);
     }
   }
 
@@ -77,5 +63,12 @@ public class ParticleTask extends BukkitRunnable {
       return;
     }
     continuousParticles.get(livingEntity).add(new ContinuousParticle(particle, ticks));
+  }
+
+  public static void addParticle(LivingEntity livingEntity, SpawnParticle particle) {
+    if (particle == null) {
+      return;
+    }
+    boundParticles.put(livingEntity, particle);
   }
 }

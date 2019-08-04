@@ -1,9 +1,9 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.data.ability.EntityAbilitySet;
+import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.Map;
-import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
@@ -28,9 +28,7 @@ public class UniqueEntity {
   private ItemStack legsItem = null;
   private ItemStack bootsItem = null;
 
-  private Particle particle;
-  private int particleCount;
-  private float particleRadius;
+  private SpawnParticle spawnParticle;
 
   public String getId() {
     return id;
@@ -160,27 +158,11 @@ public class UniqueEntity {
     this.bootsItem = bootsItem;
   }
 
-  public Particle getParticle() {
-    return particle;
+  public SpawnParticle getSpawnParticle() {
+    return spawnParticle;
   }
 
-  public void setParticle(Particle particle) {
-    this.particle = particle;
-  }
-
-  public int getParticleCount() {
-    return particleCount;
-  }
-
-  public void setParticleCount(int particleCount) {
-    this.particleCount = particleCount;
-  }
-
-  public float getParticleRadius() {
-    return particleRadius;
-  }
-
-  public void setParticleRadius(float particleRadius) {
-    this.particleRadius = particleRadius;
+  public void setSpawnParticle(SpawnParticle spawnParticle) {
+    this.spawnParticle = spawnParticle;
   }
 }

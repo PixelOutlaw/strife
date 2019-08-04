@@ -229,7 +229,7 @@ public class StrifeDamageEventListener implements Listener {
       SneakAttackEvent sneakEvent = callSneakAttackEvent((Player) attacker.getEntity(),
           defender.getEntity(), sneakSkill, sneakDamage);
 
-      if (sneakEvent == null || sneakEvent.isCancelled()) {
+      if (sneakEvent.isCancelled()) {
         isSneakAttack = false;
       } else {
         finalDamage += sneakEvent.getSneakAttackDamage();
@@ -241,14 +241,8 @@ public class StrifeDamageEventListener implements Listener {
 
     doReflectedDamage(defender, attacker, event.getAttackType());
 
-    if (plugin.getUniqueEntityManager().isUnique(attacker.getEntity())) {
-      plugin.getAbilityManager().uniqueAbilityCast(attacker, AbilityType.ON_HIT);
-      plugin.getAbilityManager().checkPhaseChange(defender.getEntity());
-    }
-    if (plugin.getUniqueEntityManager().isUnique(defender.getEntity())) {
-      plugin.getAbilityManager().uniqueAbilityCast(defender, AbilityType.WHEN_HIT);
-      plugin.getAbilityManager().checkPhaseChange(defender.getEntity());
-    }
+    plugin.getAbilityManager().abilityCast(attacker, AbilityType.ON_HIT);
+    plugin.getAbilityManager().abilityCast(defender, AbilityType.WHEN_HIT);
 
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         bonusCriticalMultiplier, triggeredElements, isBleedApplied, isSneakAttack);

@@ -35,6 +35,8 @@ import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
 import info.faceland.strife.listeners.EntityMagicListener;
@@ -108,9 +110,7 @@ import info.faceland.strife.tasks.SaveTask;
 import info.faceland.strife.tasks.SneakTask;
 import info.faceland.strife.tasks.SpawnerLeashTask;
 import info.faceland.strife.tasks.SpawnerSpawnTask;
-import info.faceland.strife.tasks.TimedAbilityTask;
 import info.faceland.strife.tasks.TrackedPruneTask;
-import info.faceland.strife.tasks.UniquePruneTask;
 import info.faceland.strife.tasks.WorldSpaceEffectTask;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
@@ -129,7 +129,6 @@ import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -311,12 +310,9 @@ public class StrifePlugin extends FacePlugin {
     DarknessReductionTask darkTask = new DarknessReductionTask(darknessManager);
     RageTask rageTask = new RageTask(rageManager, strifeMobManager);
     MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
-    UniquePruneTask uniquePruneTask = new UniquePruneTask(this);
-    ParticleTask particleTask = new ParticleTask(uniqueEntityManager);
+    ParticleTask particleTask = new ParticleTask();
     SpawnerLeashTask spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
-    TimedAbilityTask timedAbilityTask = new TimedAbilityTask(abilityManager, uniqueEntityManager,
-        strifeMobManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager, 4);
     WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(effectManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
@@ -378,8 +374,6 @@ public class StrifePlugin extends FacePlugin {
       combatSkillRate.put(i, i, (int) Math.round(combatExpr.setVariable("LEVEL", i).evaluate()));
     }
 
-
-
     taskList.add(trackedPruneTask.runTaskTimer(this,
         20L * 61, // Start save after 1 minute, 1 second cuz yolo
         20L * 60 // Run every 1 minute after that
@@ -432,10 +426,6 @@ public class StrifePlugin extends FacePlugin {
         20L * 10, // Start timer after 10s
         5L  // Run it every 0.25s after
     ));
-    taskList.add(uniquePruneTask.runTaskTimer(this,
-        30 * 20L,
-        30 * 20L
-    ));
     taskList.add(particleTask.runTaskTimer(this,
         20 * 20L,
         2L
@@ -443,10 +433,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(spawnerSpawnTask.runTaskTimer(this,
         20 * 20L, // Start timer after 20s
         6 * 20L // Run it every 6 seconds
-    ));
-    taskList.add(timedAbilityTask.runTaskTimer(this,
-        20 * 20L, // Start timer after 20s
-        2 * 20L // Run it every 2 seconds
     ));
     taskList.add(spawnerLeashTask.runTaskTimer(this,
         20 * 20L, // Start timer after 20s
@@ -521,7 +507,6 @@ public class StrifePlugin extends FacePlugin {
   public void disable() {
     saveSpawners();
     storage.saveAll();
-    uniqueEntityManager.killAllSpawnedUniques();
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
 
@@ -672,29 +657,20 @@ public class StrifePlugin extends FacePlugin {
 
       ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");
       if (equipmentCS != null) {
-        uniqueEntity
-            .setMainHandItem(equipmentManager.getItem(equipmentCS.getString("main-hand", "")));
-        uniqueEntity
-            .setOffHandItem(equipmentManager.getItem(equipmentCS.getString("off-hand", "")));
+        uniqueEntity.setMainHandItem(equipmentManager.getItem(equipmentCS.getString("main-hand", "")));
+        uniqueEntity.setOffHandItem(equipmentManager.getItem(equipmentCS.getString("off-hand", "")));
         uniqueEntity.setHelmetItem(equipmentManager.getItem(equipmentCS.getString("helmet", "")));
-        uniqueEntity
-            .setChestItem(equipmentManager.getItem(equipmentCS.getString("chestplate", "")));
+        uniqueEntity.setChestItem(equipmentManager.getItem(equipmentCS.getString("chestplate", "")));
         uniqueEntity.setLegsItem(equipmentManager.getItem(equipmentCS.getString("leggings", "")));
         uniqueEntity.setBootsItem(equipmentManager.getItem(equipmentCS.getString("boots", "")));
       }
 
-      ConfigurationSection particleCS = cs.getConfigurationSection("particles");
-      if (particleCS != null) {
-        try {
-          uniqueEntity.setParticle(Particle.valueOf(particleCS.getString("effect")));
-        } catch (Exception e) {
-          getLogger().severe("Particle for " + entityNameKey + " is invalid. Setting to FLAME");
-          uniqueEntity.setParticle(Particle.FLAME);
+      String particle = cs.getString("particle", "");
+      if (StringUtils.isNotBlank(particle)) {
+        Effect effect = effectManager.getEffect(particle);
+        if (effect instanceof SpawnParticle) {
+          uniqueEntity.setSpawnParticle((SpawnParticle) effect);
         }
-        uniqueEntity.setParticleCount(particleCS.getInt("count", 1));
-        uniqueEntity.setParticleRadius((float) particleCS.getDouble("radius", 0));
-      } else {
-        uniqueEntity.setParticle(null);
       }
 
       ConfigurationSection abilityCS = cs.getConfigurationSection("abilities");
