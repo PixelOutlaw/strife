@@ -31,10 +31,8 @@ import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -105,14 +103,14 @@ public class FlatfileStorage implements DataStorage {
     }
     config.set(champUuid + ".abilities", abilityIds);
 
-    Set<String> boundAbilityIds = new HashSet<>();
+    List<String> boundAbilityIds = new ArrayList<>();
     for (LoreAbility loreAbility : champion.getBoundAbilities()) {
       if (loreAbility == null) {
         continue;
       }
       boundAbilityIds.add(loreAbility.getId());
     }
-    config.set(champUuid + ".bound-lore-abilities", boundAbilityIds);
+    config.set(champUuid + ".lore-abilities", boundAbilityIds);
 
     configMap.put(champion.getUniqueId(), config);
     config.save();
@@ -159,7 +157,7 @@ public class FlatfileStorage implements DataStorage {
         saveData.setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
       }
 
-      for (String s : section.getStringList("bound-lore-abilities")) {
+      for (String s : section.getStringList("lore-abilities")) {
         LoreAbility loreAbility = plugin.getLoreAbilityManager().getLoreAbilityFromId(s);
         if (loreAbility == null) {
           LogUtil.printError("LoreAbility " + s + " not found for player " + uuid);
