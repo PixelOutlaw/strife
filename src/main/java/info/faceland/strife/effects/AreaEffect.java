@@ -10,6 +10,7 @@ public class AreaEffect extends Effect {
   private List<Effect> cachedEffects = new ArrayList<>();
   private List<String> effects = new ArrayList<>();
   private double range;
+  private int maxTargets;
   private boolean isLineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
@@ -62,5 +63,13 @@ public class AreaEffect extends Effect {
 
   public void setRange(double range) {
     this.range = range;
+  }
+
+  public int getMaxTargets() {
+    return maxTargets;
+  }
+
+  public void setMaxTargets(int maxTargets) {
+    this.maxTargets = maxTargets;
   }
 }
