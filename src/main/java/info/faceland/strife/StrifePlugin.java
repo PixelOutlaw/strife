@@ -36,6 +36,7 @@ import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.Lightning;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
@@ -497,6 +498,8 @@ public class StrifePlugin extends FacePlugin {
       statUpdateManager.updateAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
     }
+
+    Lightning.setupLightningPacketListener();
 
     LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
