@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.entity.LivingEntity;
 
 public class CreateWorldSpaceEntity extends Effect {
 
@@ -22,12 +23,16 @@ public class CreateWorldSpaceEntity extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    createAtEntity(caster, target.getEntity());
+  }
+
+  public void createAtEntity(StrifeMob caster, LivingEntity target) {
     cacheEffects();
     LogUtil.printDebug(" Creating world space entity with effects " + cachedEffectSchedule);
     WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, cachedEffectSchedule,
-        DamageUtil.getOriginLocation(target.getEntity(), originLocation),
-            caster.getEntity().getEyeLocation().getDirection().multiply(velocity), maxTicks,
-            lifespan);
+        DamageUtil.getOriginLocation(target, originLocation),
+        caster.getEntity().getEyeLocation().getDirection().multiply(velocity), maxTicks,
+        lifespan);
     StrifePlugin.getInstance().getEffectManager().addWorldSpaceEffectEntity(entity);
   }
 

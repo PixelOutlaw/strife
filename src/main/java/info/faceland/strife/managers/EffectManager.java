@@ -38,6 +38,7 @@ import info.faceland.strife.effects.ForceTarget;
 import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.IncreaseRage;
+import info.faceland.strife.effects.Lightning;
 import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.Push;
@@ -63,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -83,6 +85,8 @@ public class EffectManager {
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
   private final Set<WorldSpaceEffectEntity> worldSpaceEffects;
+
+  private static Random random = new Random();
 
   public EffectManager(StrifeAttributeManager strifeAttributeManager, StrifeMobManager aeManager) {
     this.strifeAttributeManager = strifeAttributeManager;
@@ -115,7 +119,7 @@ public class EffectManager {
     }
     for (LivingEntity le : finalTargets) {
       if (le instanceof ArmorStand) {
-        runPlayAtLocationEffects(effect, le);
+        runPlayAtLocationEffects(caster, effect, le);
         continue;
       }
       StrifeMob targetMob = aeManager.getStatMob(le);
@@ -130,16 +134,19 @@ public class EffectManager {
   private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
       Set<LivingEntity> targets) {
     if (effect instanceof AreaEffect) {
-      return getAreaTargets(targets, (AreaEffect) effect);
+      return getAreaTargets(targets, caster, (AreaEffect) effect);
     }
-    Set<LivingEntity> finalTargets = new HashSet<>(targets);
-    Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, finalTargets);
+    filterFriendlyEntities(targets, caster, effect);
+    return targets;
+  }
+
+  private void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster, Effect effect) {
+    Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
     if (effect.isFriendly()) {
-      finalTargets.retainAll(friendlyEntities);
+      targets.retainAll(friendlyEntities);
     } else {
-      finalTargets.removeAll(friendlyEntities);
+      targets.removeAll(friendlyEntities);
     }
-    return finalTargets;
   }
 
   private Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
@@ -183,7 +190,7 @@ public class EffectManager {
     }
   }
 
-  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, AreaEffect effect) {
+  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, StrifeMob caster, AreaEffect effect) {
     double range = effect.getRange();
     if (range < 1) {
       return targets;
@@ -200,11 +207,24 @@ public class EffectManager {
         areaTargets.add((LivingEntity) e);
       }
     }
+    if (effect.getMaxTargets() > 0) {
+      filterFriendlyEntities(areaTargets, caster, effect);
+      List<LivingEntity> oldTargetsAsList = new ArrayList<>(areaTargets);
+      Set<LivingEntity> newTargetsFromMax = new HashSet<>();
+      while (newTargetsFromMax.size() < effect.getMaxTargets() && areaTargets.size() > 0) {
+        int targetIndex = random.nextInt(oldTargetsAsList.size());
+        newTargetsFromMax.add(oldTargetsAsList.get(targetIndex));
+        oldTargetsAsList.remove(targetIndex);
+      }
+      return newTargetsFromMax;
+    }
     return areaTargets;
   }
 
-  private void runPlayAtLocationEffects(Effect effect, LivingEntity le) {
-    if (effect instanceof PlaySound) {
+  private void runPlayAtLocationEffects(StrifeMob caster, Effect effect, LivingEntity le) {
+    if (effect instanceof CreateWorldSpaceEntity) {
+      ((CreateWorldSpaceEntity) effect).createAtEntity(caster, le);
+    } else if (effect instanceof PlaySound) {
       ((PlaySound) effect).playAtLocation(le.getLocation());
     } else if (effect instanceof SpawnParticle) {
       ((SpawnParticle) effect).playAtLocation(le);
@@ -293,6 +313,7 @@ public class EffectManager {
         List<String> areaEffects = cs.getStringList("effects");
         ((AreaEffect) effect).setEffects(areaEffects);
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
+        ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
         ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
         ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
@@ -383,6 +404,9 @@ public class EffectManager {
       case TARGET:
         effect = new ForceTarget();
         ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite"));
+        break;
+      case LIGHTNING:
+        effect = new Lightning();
         break;
       case POTION:
         effect = new PotionEffectAction();
@@ -627,6 +651,7 @@ public class EffectManager {
     PARTICLE,
     SPEAK,
     PUSH,
+    LIGHTNING,
     POTION,
     TARGET,
     SUMMON
