@@ -314,7 +314,8 @@ public class StrifePlugin extends FacePlugin {
     ParticleTask particleTask = new ParticleTask();
     SpawnerLeashTask spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
-    AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager, 4);
+    AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager,
+        AbilityTickTask.ABILITY_TICK_RATE);
     WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(effectManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
 
@@ -660,10 +661,13 @@ public class StrifePlugin extends FacePlugin {
 
       ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");
       if (equipmentCS != null) {
-        uniqueEntity.setMainHandItem(equipmentManager.getItem(equipmentCS.getString("main-hand", "")));
-        uniqueEntity.setOffHandItem(equipmentManager.getItem(equipmentCS.getString("off-hand", "")));
+        uniqueEntity
+            .setMainHandItem(equipmentManager.getItem(equipmentCS.getString("main-hand", "")));
+        uniqueEntity
+            .setOffHandItem(equipmentManager.getItem(equipmentCS.getString("off-hand", "")));
         uniqueEntity.setHelmetItem(equipmentManager.getItem(equipmentCS.getString("helmet", "")));
-        uniqueEntity.setChestItem(equipmentManager.getItem(equipmentCS.getString("chestplate", "")));
+        uniqueEntity
+            .setChestItem(equipmentManager.getItem(equipmentCS.getString("chestplate", "")));
         uniqueEntity.setLegsItem(equipmentManager.getItem(equipmentCS.getString("leggings", "")));
         uniqueEntity.setBootsItem(equipmentManager.getItem(equipmentCS.getString("boots", "")));
       }

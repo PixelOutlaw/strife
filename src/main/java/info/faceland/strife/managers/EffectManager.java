@@ -29,6 +29,7 @@ import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.BuffEffect;
 import info.faceland.strife.effects.ConsumeBleed;
 import info.faceland.strife.effects.ConsumeCorrupt;
+import info.faceland.strife.effects.CooldownReduction;
 import info.faceland.strife.effects.Corrupt;
 import info.faceland.strife.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.effects.DealDamage;
@@ -377,6 +378,10 @@ public class EffectManager {
         ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         break;
+      case COOLDOWN_REDUCTION:
+        effect = new CooldownReduction();
+        ((CooldownReduction) effect).setAbilityString(cs.getString("ability-id"));
+        ((CooldownReduction) effect).setSeconds(cs.getDouble("seconds"));
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));
@@ -637,6 +642,7 @@ public class EffectManager {
     WORLD_SPACE_ENTITY,
     AREA_EFFECT,
     HEAL,
+    COOLDOWN_REDUCTION,
     RESTORE_BARRIER,
     INCREASE_RAGE,
     PROJECTILE,

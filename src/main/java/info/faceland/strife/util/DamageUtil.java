@@ -580,9 +580,6 @@ public class DamageUtil {
     Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity e : targetList) {
-      if (e == stando || e instanceof ArmorStand) {
-        continue;
-      }
       if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
         validTargets.add((LivingEntity) e);
       }

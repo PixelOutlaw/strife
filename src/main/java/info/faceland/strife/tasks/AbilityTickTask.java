@@ -30,6 +30,8 @@ public class AbilityTickTask extends BukkitRunnable {
   private AbilityIconManager abilityIconManager;
   private int abilityTickRate;
 
+  public static int ABILITY_TICK_RATE = 4;
+
   public AbilityTickTask(AbilityManager abilityManager,
       AbilityIconManager abilityIconManager, int abilityTickRate) {
     this.abilityManager = abilityManager;
