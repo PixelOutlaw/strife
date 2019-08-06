@@ -69,6 +69,18 @@ public class AbilityManager {
     return null;
   }
 
+  public void cooldownReduce(LivingEntity livingEntity, Ability ability, int ticks) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      return;
+    }
+    int curTicks = coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
+    if (curTicks - ticks <= 0) {
+      coolingDownAbilities.get(livingEntity).remove(ability);
+      return;
+    }
+    coolingDownAbilities.get(livingEntity).put(ability, curTicks - ticks);
+  }
+
   public void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
@@ -251,13 +263,35 @@ public class AbilityManager {
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
         Location loc = DamageUtil.getTargetArea(caster.getEntity(), target, ability.getRange());
-        if (ability.getRadius() == 0) {
-          targets.add(DamageUtil.buildAndRemoveDetectionStand(loc));
-          return targets;
-        }
-        return getEntitiesInRadius(loc, ability, ability.getRadius());
+        return getAreaTargets(targets, ability, loc);
+      case TARGET_GROUND:
+        Location loc2 = DamageUtil.getTargetArea(caster.getEntity(), target, ability.getRange());
+        return getGroundedAreaTargets(targets, ability, loc2);
     }
     return null;
+  }
+
+  private Set<LivingEntity> getGroundedAreaTargets(Set<LivingEntity> targets, Ability ability, Location location) {
+    for (int i = 0; i < 24; i++) {
+      if (location.getBlock().getType().isSolid()) {
+        location.setY(location.getBlockY() + 1.5);
+        if (ability.getRadius() == 0) {
+          targets.add(DamageUtil.buildAndRemoveDetectionStand(location));
+          return targets;
+        }
+        return getEntitiesInRadius(location, ability, ability.getRadius());
+      }
+      location.add(0, -1, 0);
+    }
+    return targets;
+  }
+
+  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, Ability ability, Location location) {
+    if (ability.getRadius() == 0) {
+      targets.add(DamageUtil.buildAndRemoveDetectionStand(location));
+      return targets;
+    }
+    return getEntitiesInRadius(location, ability, ability.getRadius());
   }
 
   private Set<LivingEntity> getEntitiesInLine(LivingEntity caster, Ability ability, double range) {
