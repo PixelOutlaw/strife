@@ -52,6 +52,7 @@ import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.StandardDamage;
 import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
+import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AttackType;
@@ -67,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -382,6 +384,10 @@ public class EffectManager {
         effect = new CooldownReduction();
         ((CooldownReduction) effect).setAbilityString(cs.getString("ability-id"));
         ((CooldownReduction) effect).setSeconds(cs.getDouble("seconds"));
+        String slot = cs.getString("ability-slot");
+        if (StringUtils.isNotBlank(slot)) {
+          ((CooldownReduction) effect).setSlot(AbilitySlot.valueOf(slot));
+        }
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));

@@ -7,6 +7,7 @@ import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.AbilitySlot;
+import info.faceland.strife.tasks.AbilityTickTask;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -102,16 +103,12 @@ public class AbilityIconManager {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(player);
-    for (AbilitySlot slot : AbilitySlot.cachedValues) {
-      if (slot.getSlotIndex() == -1) {
-        continue;
-      }
-      setIconDamage(champion, slot);
-    }
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_A));
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
   }
 
-  private void setIconDamage(Champion champion, AbilitySlot slot) {
-    Ability ability = champion.getSaveData().getAbility(slot);
+  private void setIconDamage(Champion champion, Ability ability) {
     if (ability == null) {
       return;
     }
@@ -121,8 +118,8 @@ public class AbilityIconManager {
     double remainingTicks = plugin.getAbilityManager()
         .getCooldownTicks(champion.getPlayer(), ability);
     double cooldownTicks = ability.getCooldown() * 20;
-    double percent = (remainingTicks - 4) / cooldownTicks;
+    double percent = (remainingTicks - AbilityTickTask.ABILITY_TICK_RATE) / cooldownTicks;
     ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), champion.getPlayer(),
-        slot.getSlotIndex(), percent);
+        ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent);
   }
 }
