@@ -32,6 +32,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class DOTListener implements Listener {
@@ -40,8 +42,12 @@ public class DOTListener implements Listener {
   private final Map<LivingEntity, DamageOverTimeData> poisonMap = new ConcurrentHashMap<>();
   private final Map<LivingEntity, DamageOverTimeData> witherMap = new ConcurrentHashMap<>();
 
-  private static final long MAX_DOT_MS = 1000;
+  private static final long MAX_DOT_MS = 3000;
   private static final long DOT_PRUNE_TIME_MINIMUM = 10000;
+  private static final int WITHER_FLAT_DAMAGE = 3;
+  private static final int POISON_FLAT_DAMAGE = 1;
+  private static final double POISON_PERCENT_MAX_HEALTH_DAMAGE = 0.01;
+
   private long lastPruneStamp = System.currentTimeMillis();
 
   public DOTListener(StrifePlugin plugin) {
@@ -53,7 +59,6 @@ public class DOTListener implements Listener {
     if (!(event.getEntity() instanceof LivingEntity) || event.isCancelled()) {
       return;
     }
-
     LivingEntity entity = (LivingEntity) event.getEntity();
     double damage;
     switch (event.getCause()) {
@@ -79,30 +84,11 @@ public class DOTListener implements Listener {
         event.setDamage(damage);
         break;
       case WITHER:
-        plugin.getBarrierManager().interruptBarrier(entity);
-        witherMap.putIfAbsent(entity, new DamageOverTimeData());
-        DamageOverTimeData data = witherMap.get(entity);
-        damage = determineDotDamage(data,
-            entity.getPotionEffect(PotionEffectType.WITHER).getAmplifier() + 1);
-        if (damage == 0) {
-          bumpDotData(data, (int) damage);
-        } else {
-          damage = damage + (damage * 0.01 * entity.getMaxHealth());
-          dealDirectDamage(entity, damage);
-        }
-        event.setCancelled(true);
-        break;
       case POISON:
-        plugin.getBarrierManager().interruptBarrier(entity);
-        poisonMap.putIfAbsent(entity, new DamageOverTimeData());
-        DamageOverTimeData data2 = poisonMap.get(entity);
-        damage = determineDotDamage(data2,
-            entity.getPotionEffect(PotionEffectType.POISON).getAmplifier() + 1);
-        if (damage == 0) {
-          bumpDotData(data2, (int) damage);
-        } else {
-          damage = damage + (damage * 0.01 * entity.getMaxHealth());
-          dealDirectDamage(entity, Math.min(damage, entity.getHealth() - 1));
+        int dotDamage = determineEffectDamage(entity, event.getCause());
+        if (dotDamage > 0) {
+          plugin.getBarrierManager().interruptBarrier(entity);
+          dealEffectDamage(entity, dotDamage, event.getCause());
         }
         event.setCancelled(true);
         break;
@@ -110,25 +96,67 @@ public class DOTListener implements Listener {
     pruneInvalidMapEntries();
   }
 
-  private double determineDotDamage(DamageOverTimeData data, int damage) {
-    if (data.getLastAddition() + MAX_DOT_MS < System.currentTimeMillis()) {
-      double dealtDamage = damage + data.getLastAddition();
+  private int determineEffectDamage(LivingEntity target, DamageCause cause) {
+    PotionEffect effect;
+    DamageOverTimeData data;
+    if (cause == DamageCause.POISON) {
+      poisonMap.putIfAbsent(target, new DamageOverTimeData());
+      data = poisonMap.get(target);
+      effect = target.getPotionEffect(PotionEffectType.POISON);
+    } else {
+      witherMap.putIfAbsent(target, new DamageOverTimeData());
+      data = witherMap.get(target);
+      effect = target.getPotionEffect(PotionEffectType.WITHER);
+    }
+    data.setStoredDamage(data.getStoredDamage() + 1);
+    return getDamageFromDot(data, effect);
+  }
+
+  private int getDamageFromDot(DamageOverTimeData data, PotionEffect effect) {
+    if (isDamageOverTimeReady(data)) {
+      int effectDamage = data.getStoredDamage();
+      if (effect.getDuration() < 65) {
+        effectDamage += getRemainingDamageTicks(effect);
+        data.setLastAddition(-1);
+        data.setStoredDamage(0);
+        return effectDamage;
+      }
       data.setLastAddition(System.currentTimeMillis());
       data.setStoredDamage(0);
-      return dealtDamage;
+      return effectDamage;
     }
     return 0;
   }
 
-  private void bumpDotData(DamageOverTimeData data, int damage) {
-    data.setStoredDamage(damage + data.getStoredDamage());
+  private void dealEffectDamage(LivingEntity target, double damage, DamageCause cause) {
+    if (cause == DamageCause.POISON) {
+      damage *= POISON_FLAT_DAMAGE + POISON_PERCENT_MAX_HEALTH_DAMAGE * target.getMaxHealth();
+      dealDirectDamage(target, damage);
+      target.getWorld().playSound(target.getLocation(), Sound.ENTITY_SPIDER_STEP, 1.5f, 1f);
+    } else {
+      damage *= WITHER_FLAT_DAMAGE;
+      dealDirectDamage(target, damage);
+      target.getWorld().playSound(target.getLocation(), Sound.ENTITY_WITHER_SHOOT, 0.8f, 1.2f);
+    }
+  }
+
+  private boolean isDamageOverTimeReady(DamageOverTimeData data) {
+    if (data.getLastAddition() == -1) {
+      data.setLastAddition(System.currentTimeMillis());
+      return false;
+    }
+    return data.getLastAddition() + MAX_DOT_MS < System.currentTimeMillis();
   }
 
   private void dealDirectDamage(LivingEntity entity, double damage) {
-    int noDamageTicks = entity.getNoDamageTicks();
-    entity.setNoDamageTicks(0);
-    entity.damage(damage);
-    entity.setNoDamageTicks(noDamageTicks);
+    entity.setHealth(Math.max(0, entity.getHealth() - damage));
+  }
+
+  private int getRemainingDamageTicks(PotionEffect effect) {
+    if (effect.getAmplifier() < 0) {
+      return 0;
+    }
+    return (int) ((double) effect.getDuration() / (25D / (effect.getAmplifier() + 1)));
   }
 
   private void pruneInvalidMapEntries() {
