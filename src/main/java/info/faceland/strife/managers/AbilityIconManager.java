@@ -62,7 +62,7 @@ public class AbilityIconManager {
 
   public boolean playerHasAbility(Player player, Ability ability) {
     ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
-    return data.getAbilities().values().contains(ability);
+    return data.getAbilities().containsValue(ability);
   }
 
   public boolean isAbilityIcon(ItemStack stack) {
@@ -70,10 +70,7 @@ public class AbilityIconManager {
       return false;
     }
     String name = ChatColor.stripColor(ItemStackExtensionsKt.getDisplayName(stack));
-    if (StringUtils.isBlank(name) || !name.startsWith(ABILITY_PREFIX) || name.contains("✫")) {
-      return false;
-    }
-    return true;
+    return !StringUtils.isBlank(name) && name.startsWith(ABILITY_PREFIX) && !name.contains("✫");
   }
 
   public void triggerAbility(Player player, int slot) {
