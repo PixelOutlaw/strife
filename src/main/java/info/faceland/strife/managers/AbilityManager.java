@@ -76,19 +76,21 @@ public class AbilityManager {
     int curTicks = coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
     if (curTicks - ticks <= 0) {
       coolingDownAbilities.get(livingEntity).remove(ability);
+      updateIcons(livingEntity);
       return;
     }
     coolingDownAbilities.get(livingEntity).put(ability, curTicks - ticks);
+    updateIcons(livingEntity);
   }
 
-  public void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
+  private void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
     }
     coolingDownAbilities.get(livingEntity).put(ability, ability.getCooldown() * 20);
   }
 
-  public double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
+  double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       return 0;
     }
@@ -124,6 +126,7 @@ public class AbilityManager {
     if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
       coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
       savedPlayerCooldowns.remove(player.getUniqueId());
+      updateIcons(player);
     }
   }
 
@@ -189,7 +192,7 @@ public class AbilityManager {
     if (abilitySection == null) {
       return;
     }
-    while (phase < 5) {
+    while (phase <= 5) {
       List<Ability> abilities = abilitySection.get(phase);
       if (abilities == null) {
         phase++;
@@ -356,6 +359,12 @@ public class AbilityManager {
       ability.getAbilityParticle().playAtLocation(location);
     }
     return DamageUtil.getLOSEntitiesAroundLocation(location, range);
+  }
+
+  private void updateIcons(LivingEntity livingEntity) {
+    if (livingEntity instanceof Player) {
+      plugin.getAbilityIconManager().updateAbilityIconDamageMeters((Player) livingEntity);
+    }
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {
