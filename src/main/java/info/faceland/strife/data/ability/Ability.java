@@ -3,6 +3,7 @@ package info.faceland.strife.data.ability;
 import info.faceland.strife.conditions.Condition;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.SpawnParticle;
 import java.util.List;
 import java.util.Set;
@@ -20,10 +21,11 @@ public class Ability {
   private final Set<Condition> conditions;
   private final AbilityIconData abilityIconData;
   private final SpawnParticle abilityParticle;
+  private final PlaySound castSound;
 
   public Ability(String id, String name, List<Effect> effects, TargetType targetType, double range,
       double radius, int cooldown, boolean showMsgs, Set<Condition> conditions,
-      AbilityIconData abilityIconData, SpawnParticle abilityParticle) {
+      AbilityIconData abilityIconData, SpawnParticle abilityParticle, PlaySound castSound) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -35,6 +37,7 @@ public class Ability {
     this.conditions = conditions;
     this.abilityIconData = abilityIconData;
     this.abilityParticle = abilityParticle;
+    this.castSound = castSound;
   }
 
   public String getId() {
@@ -79,6 +82,10 @@ public class Ability {
 
   public double getRadius() {
     return radius;
+  }
+
+  public PlaySound getCastSound() {
+    return castSound;
   }
 
   public enum TargetType {

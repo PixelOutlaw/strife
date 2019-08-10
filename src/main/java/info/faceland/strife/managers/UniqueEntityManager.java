@@ -4,9 +4,11 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.UniqueEntity;
-import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.ability.EntityAbilitySet;
+import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.tasks.ParticleTask;
+import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,6 @@ import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
@@ -69,7 +70,8 @@ public class UniqueEntityManager {
         e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
 
     if (entity == null) {
-      LogUtil.printWarning("Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
+      LogUtil.printWarning(
+          "Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
       return null;
     }
 
@@ -118,7 +120,7 @@ public class UniqueEntityManager {
           spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue() * speed);
     }
 
-    delayedEquip(uniqueEntity, spawnedUnique);
+    ItemUtil.delayedEquip(uniqueEntity.getEquipment(), spawnedUnique);
 
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(true);
@@ -126,7 +128,8 @@ public class UniqueEntityManager {
     plugin.getStrifeMobManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(spawnedUnique);
     strifeMob.setDespawnOnUnload(true);
-    plugin.getAbilityManager().abilityCast(strifeMob, AbilityType.PHASE_SHIFT);
+    strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
+    plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());
     return spawnedUnique;
   }
@@ -143,27 +146,5 @@ public class UniqueEntityManager {
     }
     MobDisguise mobDisguise = new MobDisguise(type);
     cachedDisguises.put(uniqueEntity, mobDisguise);
-  }
-
-  private void delayedEquip(UniqueEntity uniqueEntity, LivingEntity spawnedEntity) {
-    if (spawnedEntity.getEquipment() == null) {
-      return;
-    }
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      spawnedEntity.getEquipment().clear();
-      spawnedEntity.setCanPickupItems(false);
-      spawnedEntity.getEquipment().setHelmetDropChance(0f);
-      spawnedEntity.getEquipment().setChestplateDropChance(0f);
-      spawnedEntity.getEquipment().setLeggingsDropChance(0f);
-      spawnedEntity.getEquipment().setBootsDropChance(0f);
-      spawnedEntity.getEquipment().setItemInMainHandDropChance(0f);
-      spawnedEntity.getEquipment().setItemInOffHandDropChance(0f);
-      spawnedEntity.getEquipment().setHelmet(uniqueEntity.getHelmetItem());
-      spawnedEntity.getEquipment().setChestplate(uniqueEntity.getChestItem());
-      spawnedEntity.getEquipment().setLeggings(uniqueEntity.getLegsItem());
-      spawnedEntity.getEquipment().setBoots(uniqueEntity.getBootsItem());
-      spawnedEntity.getEquipment().setItemInMainHand(uniqueEntity.getMainHandItem());
-      spawnedEntity.getEquipment().setItemInOffHand(uniqueEntity.getOffHandItem());
-    }, 1L);
   }
 }

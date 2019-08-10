@@ -3,8 +3,10 @@ package info.faceland.strife.data;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.stats.StrifeStat;
+import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class UniqueEntity {
@@ -20,14 +22,7 @@ public class UniqueEntity {
   private int size;
   private int followRange = -1;
   private boolean knockbackImmune;
-
-  private ItemStack mainHandItem = null;
-  private ItemStack offHandItem = null;
-  private ItemStack helmetItem = null;
-  private ItemStack chestItem = null;
-  private ItemStack legsItem = null;
-  private ItemStack bootsItem = null;
-
+  private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private SpawnParticle spawnParticle;
 
   public String getId() {
@@ -110,52 +105,16 @@ public class UniqueEntity {
     this.knockbackImmune = knockbackImmune;
   }
 
-  public ItemStack getMainHandItem() {
-    return mainHandItem;
+  public Map<EquipmentSlot, ItemStack> getEquipment() {
+    return equipment;
   }
 
-  public void setMainHandItem(ItemStack mainHandItem) {
-    this.mainHandItem = mainHandItem;
+  public ItemStack getEquipmentItem(EquipmentSlot slot) {
+    return equipment.get(slot);
   }
 
-  public ItemStack getOffHandItem() {
-    return offHandItem;
-  }
-
-  public void setOffHandItem(ItemStack offHandItem) {
-    this.offHandItem = offHandItem;
-  }
-
-  public ItemStack getHelmetItem() {
-    return helmetItem;
-  }
-
-  public void setHelmetItem(ItemStack helmetItem) {
-    this.helmetItem = helmetItem;
-  }
-
-  public ItemStack getChestItem() {
-    return chestItem;
-  }
-
-  public void setChestItem(ItemStack chestItem) {
-    this.chestItem = chestItem;
-  }
-
-  public ItemStack getLegsItem() {
-    return legsItem;
-  }
-
-  public void setLegsItem(ItemStack legsItem) {
-    this.legsItem = legsItem;
-  }
-
-  public ItemStack getBootsItem() {
-    return bootsItem;
-  }
-
-  public void setBootsItem(ItemStack bootsItem) {
-    this.bootsItem = bootsItem;
+  public void setEquipment(Map<EquipmentSlot, ItemStack> equipment) {
+    this.equipment = equipment;
   }
 
   public SpawnParticle getSpawnParticle() {

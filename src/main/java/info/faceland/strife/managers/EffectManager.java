@@ -201,7 +201,7 @@ public class EffectManager {
     Set<LivingEntity> areaTargets = new HashSet<>();
     for (LivingEntity le : targets) {
       for (Entity e : le.getNearbyEntities(range, range, range)) {
-        if (e instanceof ArmorStand || !(e instanceof LivingEntity)) {
+        if (!e.isValid() || e instanceof ArmorStand || !(e instanceof LivingEntity)) {
           continue;
         }
         if (effect.isLineOfSight() && !le.hasLineOfSight(e)) {

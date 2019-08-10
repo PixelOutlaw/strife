@@ -3,15 +3,19 @@ package info.faceland.strife.util;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.stats.StrifeTrait;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -130,6 +134,28 @@ public class ItemUtil {
     return traits;
   }
 
+  public static void delayedEquip(Map<EquipmentSlot, ItemStack> items, LivingEntity entity) {
+    if (entity.getEquipment() == null) {
+      return;
+    }
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      entity.getEquipment().clear();
+      entity.setCanPickupItems(false);
+      entity.getEquipment().setHelmetDropChance(0f);
+      entity.getEquipment().setChestplateDropChance(0f);
+      entity.getEquipment().setLeggingsDropChance(0f);
+      entity.getEquipment().setBootsDropChance(0f);
+      entity.getEquipment().setItemInMainHandDropChance(0f);
+      entity.getEquipment().setItemInOffHandDropChance(0f);
+      entity.getEquipment().setHelmet(items.get(EquipmentSlot.HEAD));
+      entity.getEquipment().setChestplate(items.get(EquipmentSlot.CHEST));
+      entity.getEquipment().setLeggings(items.get(EquipmentSlot.LEGS));
+      entity.getEquipment().setBoots(items.get(EquipmentSlot.FEET));
+      entity.getEquipment().setItemInMainHand(items.get(EquipmentSlot.HAND));
+      entity.getEquipment().setItemInOffHand(items.get(EquipmentSlot.OFF_HAND));
+    }, 1L);
+  }
+
   public static int hashItem(ItemStack itemStack) {
     if (itemStack == null || itemStack.getType() == Material.AIR) {
       return -1;
@@ -151,7 +177,8 @@ public class ItemUtil {
   public static void sendAbilityIconPacket(ItemStack stack, Player player, int slot,
       double percent) {
     try {
-      ProtocolLibrary.getProtocolManager().sendServerPacket(player, buildPacketContainer(36+slot, stack, percent));
+      ProtocolLibrary.getProtocolManager()
+          .sendServerPacket(player, buildPacketContainer(36 + slot, stack, percent));
     } catch (InvocationTargetException e) {
       e.printStackTrace();
     }

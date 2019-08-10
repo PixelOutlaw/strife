@@ -11,10 +11,12 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
 import info.faceland.strife.data.ability.EntityAbilitySet;
-import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityPhase;
+import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
@@ -160,6 +162,9 @@ public class AbilityManager {
     if (ability.getCooldown() != 0) {
       startAbilityCooldown(caster.getEntity(), ability);
     }
+    if (ability.getCastSound() != null) {
+      ability.getCastSound().playAtLocation(caster.getEntity().getLocation());
+    }
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
@@ -181,27 +186,23 @@ public class AbilityManager {
     return execute(ability, caster, null);
   }
 
-  public void abilityCast(StrifeMob caster, AbilityType type) {
+  public void abilityCast(StrifeMob caster, TriggerAbilityType type) {
     EntityAbilitySet abilitySet = caster.getAbilitySet();
     if (abilitySet == null) {
       return;
     }
     checkPhaseChange(caster);
-    int phase = abilitySet.getPhase();
-    Map<Integer, List<Ability>> abilitySection = abilitySet.getAbilities(type);
+    TriggerAbilityPhase phase = abilitySet.getPhase();
+    Map<TriggerAbilityPhase, Set<Ability>> abilitySection = abilitySet.getAbilities(type);
     if (abilitySection == null) {
       return;
     }
-    while (phase <= 5) {
-      List<Ability> abilities = abilitySection.get(phase);
-      if (abilities == null) {
-        phase++;
-        continue;
-      }
-      for (Ability a : abilities) {
-        execute(a, caster);
-      }
+    Set<Ability> abilities = abilitySection.get(phase);
+    if (abilities == null) {
       return;
+    }
+    for (Ability a : abilities) {
+      execute(a, caster);
     }
   }
 
@@ -210,14 +211,13 @@ public class AbilityManager {
       return;
     }
     LogUtil.printDebug(" - Checking phase switch");
-    int currentPhase = strifeMob.getAbilitySet().getPhase();
+    TriggerAbilityPhase currentPhase = strifeMob.getAbilitySet().getPhase();
     LogUtil.printDebug(" - Current Phase: " + currentPhase);
-    int newPhase = 6 - (int) Math
-        .ceil((strifeMob.getEntity().getHealth() / strifeMob.getEntity().getMaxHealth()) / 0.2);
-    LogUtil.printDebug(" - New Phase: " + newPhase);
-    if (newPhase > currentPhase) {
+    TriggerAbilityPhase newPhase = EntityAbilitySet.phaseFromEntityHealth(strifeMob.getEntity());
+    if (newPhase.ordinal() > currentPhase.ordinal()) {
       strifeMob.getAbilitySet().setPhase(newPhase);
-      abilityCast(strifeMob, AbilityType.PHASE_SHIFT);
+      LogUtil.printDebug(" - New Phase: " + newPhase);
+      abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     }
   }
 
@@ -450,8 +450,13 @@ public class AbilityManager {
     if (StringUtils.isNotBlank(particle)) {
       abilityParticle = (SpawnParticle) plugin.getEffectManager().getEffect(particle);
     }
+    String sound = cs.getString("cast-sound");
+    PlaySound playSound = null;
+    if (StringUtils.isNotBlank(sound)) {
+      playSound = (PlaySound) plugin.getEffectManager().getEffect(sound);
+    }
     loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, radius, cooldown,
-        showMessages, conditions, abilityIconData, abilityParticle));
+        showMessages, conditions, abilityIconData, abilityParticle, playSound));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

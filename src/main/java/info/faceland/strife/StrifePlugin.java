@@ -34,7 +34,6 @@ import info.faceland.strife.data.Spawner;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.EntityAbilitySet;
-import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Lightning;
 import info.faceland.strife.effects.SpawnParticle;
@@ -77,6 +76,7 @@ import info.faceland.strife.managers.ExperienceManager;
 import info.faceland.strife.managers.GlobalBoostManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.MinionManager;
+import info.faceland.strife.managers.MobModManager;
 import info.faceland.strife.managers.MonsterManager;
 import info.faceland.strife.managers.RageManager;
 import info.faceland.strife.managers.SkillExperienceManager;
@@ -157,6 +157,7 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration abilityYAML;
   private VersionedSmartYamlConfiguration loreAbilityYAML;
   private VersionedSmartYamlConfiguration buffsYAML;
+  private VersionedSmartYamlConfiguration modsYAML;
   private VersionedSmartYamlConfiguration globalBoostsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
@@ -185,6 +186,7 @@ public class StrifePlugin extends FacePlugin {
   private BuffManager buffManager;
   private CombatStatusManager combatStatusManager;
   private SpawnerManager spawnerManager;
+  private MobModManager mobModManager;
   private GlobalBoostManager globalBoostManager;
 
   private DataStorage storage;
@@ -231,6 +233,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(abilityYAML = defaultSettingsLoad("abilities.yml"));
     configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
     configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
+    configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
 
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
@@ -267,6 +270,7 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(attributeManager, strifeMobManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
+    mobModManager = new MobModManager();
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     buffManager = new BuffManager();
@@ -294,6 +298,7 @@ public class StrifePlugin extends FacePlugin {
     buildLoreAbilities();
 
     buildUniqueEnemies();
+    buildMobMods();
     loadSpawners();
 
     SaveTask saveTask = new SaveTask(this);
@@ -611,6 +616,16 @@ public class StrifePlugin extends FacePlugin {
     }
   }
 
+  private void buildMobMods() {
+    for (String key : modsYAML.getKeys(false)) {
+      if (!modsYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = modsYAML.getConfigurationSection(key);
+      mobModManager.loadMobMod(key, cs);
+    }
+  }
+
   private void loadScheduledBoosts() {
     ConfigurationSection cs = globalBoostsYAML.getConfigurationSection("scheduled-boosts");
     globalBoostManager.loadScheduledBoosts(cs);
@@ -660,17 +675,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setAttributeMap(attributeMap);
 
       ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");
-      if (equipmentCS != null) {
-        uniqueEntity
-            .setMainHandItem(equipmentManager.getItem(equipmentCS.getString("main-hand", "")));
-        uniqueEntity
-            .setOffHandItem(equipmentManager.getItem(equipmentCS.getString("off-hand", "")));
-        uniqueEntity.setHelmetItem(equipmentManager.getItem(equipmentCS.getString("helmet", "")));
-        uniqueEntity
-            .setChestItem(equipmentManager.getItem(equipmentCS.getString("chestplate", "")));
-        uniqueEntity.setLegsItem(equipmentManager.getItem(equipmentCS.getString("leggings", "")));
-        uniqueEntity.setBootsItem(equipmentManager.getItem(equipmentCS.getString("boots", "")));
-      }
+      uniqueEntity.setEquipment(equipmentManager.buildEquipmentFromConfigSection(equipmentCS));
 
       String particle = cs.getString("particle", "");
       if (StringUtils.isNotBlank(particle)) {
@@ -683,38 +688,7 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection abilityCS = cs.getConfigurationSection("abilities");
       uniqueEntity.setAbilitySet(null);
       if (abilityCS != null) {
-        EntityAbilitySet abilitySet = new EntityAbilitySet();
-        for (int i = 1; i <= 5; i++) {
-          List<String> phaseBegin = abilityCS.getStringList("phase" + i + ".phase-begin");
-          List<String> phaseOnHit = abilityCS.getStringList("phase" + i + ".on-hit");
-          List<String> phaseWhenHit = abilityCS.getStringList("phase" + i + ".when-hit");
-          List<String> phaseTimer = abilityCS.getStringList("phase" + i + ".timer");
-          if (!phaseBegin.isEmpty()) {
-            List<Ability> abilities = setupPhase(phaseBegin, i);
-            if (!abilities.isEmpty()) {
-              abilitySet.addAbilityPhase(i, AbilityType.PHASE_SHIFT, abilities);
-            }
-          }
-          if (!phaseOnHit.isEmpty()) {
-            List<Ability> abilities = setupPhase(phaseOnHit, i);
-            if (!abilities.isEmpty()) {
-              abilitySet.addAbilityPhase(i, AbilityType.ON_HIT, abilities);
-            }
-          }
-          if (!phaseWhenHit.isEmpty()) {
-            List<Ability> abilities = setupPhase(phaseWhenHit, i);
-            if (!abilities.isEmpty()) {
-              abilitySet.addAbilityPhase(i, AbilityType.WHEN_HIT, abilities);
-            }
-          }
-          if (!phaseTimer.isEmpty()) {
-            List<Ability> abilities = setupPhase(phaseTimer, i);
-            if (!abilities.isEmpty()) {
-              abilitySet.addAbilityPhase(i, AbilityType.TIMER, abilities);
-            }
-          }
-        }
-        uniqueEntity.setAbilitySet(abilitySet);
+        uniqueEntity.setAbilitySet(new EntityAbilitySet(abilityCS));
       }
       uniqueEntityManager.addUniqueEntity(entityNameKey, uniqueEntity);
     }
@@ -867,6 +841,10 @@ public class StrifePlugin extends FacePlugin {
 
   public BuffManager getBuffManager() {
     return buffManager;
+  }
+
+  public MobModManager getMobModManager() {
+    return mobModManager;
   }
 
   public CombatStatusManager getCombatStatusManager() {

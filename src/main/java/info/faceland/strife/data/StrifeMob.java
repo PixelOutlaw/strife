@@ -83,6 +83,10 @@ public class StrifeMob {
     return StatUpdateManager.combineMaps(baseStats, getBuffStats(), tempBonuses);
   }
 
+  public Map<StrifeStat, Double> getBaseStats() {
+    return baseStats;
+  }
+
   public void setStats(Map<StrifeStat, Double> stats) {
     baseStats.clear();
     baseStats.putAll(stats);

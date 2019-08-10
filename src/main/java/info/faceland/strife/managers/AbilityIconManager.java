@@ -91,7 +91,7 @@ public class AbilityIconManager {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       return;
     }
-    player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+    player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
     updateAbilityIconDamageMeters(player);
   }
 

@@ -50,6 +50,8 @@ custom-spawn-limits:
 
 leveled-monsters:
   name-format: "&7%ENTITY% &f(%LEVEL%)"
+  add-mod-chance: 0.2
+  max-mob-mods: 3
   give-skeletons-sword-chance: 0.1
   give-skeletons-wand-chance: 0.1
   replace-witch-evoker: 0.15

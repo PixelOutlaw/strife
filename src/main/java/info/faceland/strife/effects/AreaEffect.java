@@ -56,7 +56,6 @@ public class AreaEffect extends Effect {
     isLineOfSight = lineOfSight;
   }
 
-
   public double getRange() {
     return range;
   }

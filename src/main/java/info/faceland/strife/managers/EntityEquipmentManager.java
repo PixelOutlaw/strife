@@ -4,16 +4,21 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.*;
-
 public class EntityEquipmentManager {
 
+  public static final EquipmentSlot[] SLOTS = EquipmentSlot.values();
   private final Map<String, ItemStack> itemMap;
 
   public EntityEquipmentManager() {
@@ -26,6 +31,17 @@ public class EntityEquipmentManager {
 
   public ItemStack getItem(String key) {
     return itemMap.getOrDefault(key, null);
+  }
+
+  public Map<EquipmentSlot, ItemStack> buildEquipmentFromConfigSection(ConfigurationSection cs) {
+    Map<EquipmentSlot, ItemStack> equipmentMap = new HashMap<>();
+    if (cs == null) {
+      return equipmentMap;
+    }
+    for (EquipmentSlot slot : EntityEquipmentManager.SLOTS) {
+      equipmentMap.put(slot, getItem(cs.getString(slot.toString(), "")));
+    }
+    return equipmentMap;
   }
 
   public void loadEquipmentItem(String key, ConfigurationSection cs) {

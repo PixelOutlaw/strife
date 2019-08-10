@@ -40,7 +40,7 @@ import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.data.ability.EntityAbilitySet.AbilityType;
+import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.events.StrifeDamageEvent;
@@ -135,13 +135,9 @@ public class StrifeDamageEventListener implements Listener {
     }
 
     Map<DamageType, Double> damageMap = DamageUtil.buildDamageMap(attacker);
-    for (DamageType type : damageMap.keySet()) {
-      damageMap.put(type, damageMap.get(type) * event.getDamageMod(type));
-    }
+    damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t));
     DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
-    for (DamageType type : event.getFlatDamageBonuses().keySet()) {
-      damageMap.put(type, damageMap.getOrDefault(type, 0D) + event.getFlatDamageBonus(type));
-    }
+    damageMap.replaceAll((t, v) -> damageMap.getOrDefault(t, 0D) + event.getFlatDamageBonus(t));
     DamageUtil.applyApplicableDamageReductions(attacker, defender, damageMap);
 
     Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap);
@@ -241,8 +237,8 @@ public class StrifeDamageEventListener implements Listener {
 
     doReflectedDamage(defender, attacker, event.getAttackType());
 
-    plugin.getAbilityManager().abilityCast(attacker, AbilityType.ON_HIT);
-    plugin.getAbilityManager().abilityCast(defender, AbilityType.WHEN_HIT);
+    plugin.getAbilityManager().abilityCast(attacker, TriggerAbilityType.ON_HIT);
+    plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
 
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         bonusCriticalMultiplier, triggeredElements, isBleedApplied, isSneakAttack);
