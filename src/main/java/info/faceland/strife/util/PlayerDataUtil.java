@@ -29,19 +29,19 @@ public class PlayerDataUtil {
       damageString.append("&e&l!");
     }
     if (critBonus > 0) {
-      damageString.append("&c✶");
+      damageString.append("&c✸");
     }
     if (triggeredElements.contains(DamageType.FIRE)) {
-      damageString.append("&6☀");
+      damageString.append("&6✷");
     }
     if (triggeredElements.contains(DamageType.ICE)) {
       damageString.append("&b❊");
     }
     if (triggeredElements.contains(DamageType.LIGHTNING)) {
-      damageString.append("&7⚡");
+      damageString.append("&7&l⚡");
     }
     if (triggeredElements.contains(DamageType.EARTH)) {
-      damageString.append("&2▼");
+      damageString.append("&2⚍");
     }
     if (triggeredElements.contains(DamageType.LIGHT)) {
       damageString.append("&f❂");
@@ -50,8 +50,9 @@ public class PlayerDataUtil {
       damageString.append("&8❂");
     }
     if (isBleedApplied) {
-      damageString.append("&4♦");
+      damageString.append("&4✘");
     }
+    //❖✜
     MessageUtils.sendActionBar((Player) entity, damageString.toString());
   }
 
