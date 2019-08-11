@@ -9,7 +9,10 @@ import org.bukkit.event.player.PlayerMoveEvent;
 public class MoveListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onPlayerMove(PlayerMoveEvent event) {
-    MoveUtil.setHasMoved(event.getPlayer());
+  public void onPlayerMoveHorizontally(PlayerMoveEvent event) {
+    if (event.getFrom().getBlockX() != event.getTo().getBlockX()
+        || event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
+      MoveUtil.setHasMoved(event.getPlayer());
+    }
   }
 }
