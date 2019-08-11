@@ -310,7 +310,9 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
         ((CreateWorldSpaceEntity) effect)
             .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("velocity", 1));
+        ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("velocity", 0));
+        ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+        ((CreateWorldSpaceEntity) effect).setLockedToEntity(cs.getBoolean("entity-lock", false));
         break;
       case AREA_EFFECT:
         effect = new AreaEffect();

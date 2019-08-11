@@ -7,6 +7,8 @@ import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.Push;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.managers.EffectManager;
+import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
 import java.util.List;
 import java.util.Map;
@@ -23,18 +25,19 @@ public class WorldSpaceEffectEntity {
   private final Vector velocity;
   private final StrifeMob caster;
   private Location location;
+  private boolean casterLock;
   private int currentTick;
   private int lifespan;
 
   public WorldSpaceEffectEntity(final StrifeMob caster,
-      final Map<Integer, List<Effect>> effectSchedule, Location location, final Vector velocity,
-      final int maxTicks, int lifespan) {
+      final Map<Integer, List<Effect>> effectSchedule, Location location, final boolean casterLock,
+      final Vector velocity, final int maxTicks, int lifespan) {
     this.caster = caster;
     this.effectSchedule = effectSchedule;
     this.velocity = velocity;
     this.maxTicks = maxTicks;
     this.lifespan = lifespan;
-
+    this.casterLock = casterLock;
     this.location = location;
     this.currentTick = 0;
   }
@@ -48,7 +51,9 @@ public class WorldSpaceEffectEntity {
   }
 
   public boolean tick() {
-    location.add(velocity);
+    if (casterLock) {
+      location = DamageUtil.getOriginLocation(caster.getEntity(), OriginLocation.CENTER);
+    }
     Block block = location.getBlock();
     if (!(block == null || block.getType().isTransparent())) {
       return false;

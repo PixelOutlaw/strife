@@ -3,6 +3,7 @@ package info.faceland.strife.effects;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.WorldSpaceEffectEntity;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 public class CreateWorldSpaceEntity extends Effect {
@@ -20,6 +22,8 @@ public class CreateWorldSpaceEntity extends Effect {
   private int maxTicks;
   private double velocity;
   private int lifespan;
+  private boolean lockedToEntity;
+  private boolean strictDuration;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -29,10 +33,18 @@ public class CreateWorldSpaceEntity extends Effect {
   public void createAtEntity(StrifeMob caster, LivingEntity target) {
     cacheEffects();
     LogUtil.printDebug(" Creating world space entity with effects " + cachedEffectSchedule);
+    double newLifeSpan = lifespan;
+    if (!strictDuration) {
+      newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+    }
+    Location location = null;
+    if (!lockedToEntity) {
+      location = DamageUtil.getOriginLocation(target, originLocation);
+    }
     WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, cachedEffectSchedule,
-        DamageUtil.getOriginLocation(target, originLocation),
+        location, lockedToEntity,
         caster.getEntity().getEyeLocation().getDirection().multiply(velocity), maxTicks,
-        lifespan);
+        (int) newLifeSpan);
     StrifePlugin.getInstance().getEffectManager().addWorldSpaceEffectEntity(entity);
   }
 
@@ -54,6 +66,14 @@ public class CreateWorldSpaceEntity extends Effect {
 
   public void setOriginLocation(OriginLocation originLocation) {
     this.originLocation = originLocation;
+  }
+
+  public void setLockedToEntity(boolean lockedToEntity) {
+    this.lockedToEntity = lockedToEntity;
+  }
+
+  public void setStrictDuration(boolean strictDuration) {
+    this.strictDuration = strictDuration;
   }
 
   private void cacheEffects() {
