@@ -22,3 +22,50 @@ smart-bois-only2:
   type: CHANCE
   comparison: GREATER_THAN
   chance: 0.3
+
+is-caster-bleeding:
+  type: BLEEDING
+  state: true
+  target: SELF
+  comparison: GREATER_THAN
+  value: 0
+is-caster-not-bleeding:
+  type: BLEEDING
+  target: SELF
+  state: false
+is-target-bleeding:
+  type: BLEEDING
+  target: OTHER
+  state: true
+is-target-not-bleeding:
+  type: BLEEDING
+  target: OTHER
+  state: false
+
+is-caster-grounded:
+  type: GROUNDED
+is-caster-airborne:
+  type: GROUNDED
+  inverted: true
+is-target-grounded:
+  type: GROUNDED
+  target: OTHER
+is-target-airborne:
+  type: GROUNDED
+  target: OTHER
+  inverted: true
+
+is-caster-moving:
+  type: MOVING
+  state: true
+is-caster-not-moving:
+  type: MOVING
+  state: false
+is-target-moving:
+  type: MOVING
+  target: OTHER
+  state: true
+is-target-not-moving:
+  type: MOVING
+  target: OTHER
+  state: false
