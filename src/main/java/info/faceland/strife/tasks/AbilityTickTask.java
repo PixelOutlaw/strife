@@ -43,7 +43,7 @@ public class AbilityTickTask extends BukkitRunnable {
   public void run() {
     abilityManager.tickAbilityCooldowns(abilityTickRate);
     for (Player player : Bukkit.getOnlinePlayers()) {
-      abilityIconManager.updateAbilityIconDamageMeters(player);
+      abilityIconManager.updateAbilityIconDamageMeters(player, false);
     }
   }
 }

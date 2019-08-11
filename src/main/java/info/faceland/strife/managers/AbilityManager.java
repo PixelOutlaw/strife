@@ -77,11 +77,15 @@ public class AbilityManager {
     }
     int curTicks = coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
     if (curTicks - ticks <= 0) {
+      LogUtil.printDebug(" Cd Reduce - ability " + ability.getId() + " refreshed");
       coolingDownAbilities.get(livingEntity).remove(ability);
       updateIcons(livingEntity);
       return;
     }
-    coolingDownAbilities.get(livingEntity).put(ability, curTicks - ticks);
+    int newTicks = curTicks - ticks;
+    LogUtil.printDebug(" Cd Reduce - ability " + ability.getId() + " reduced from " +
+        curTicks + " to " + newTicks);
+    coolingDownAbilities.get(livingEntity).put(ability, newTicks);
     updateIcons(livingEntity);
   }
 
@@ -92,7 +96,7 @@ public class AbilityManager {
     coolingDownAbilities.get(livingEntity).put(ability, ability.getCooldown() * 20);
   }
 
-  double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
+  public double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       return 0;
     }
@@ -274,7 +278,8 @@ public class AbilityManager {
     return null;
   }
 
-  private Set<LivingEntity> getGroundedAreaTargets(Set<LivingEntity> targets, Ability ability, Location location) {
+  private Set<LivingEntity> getGroundedAreaTargets(Set<LivingEntity> targets, Ability ability,
+      Location location) {
     for (int i = 0; i < 24; i++) {
       if (location.getBlock().getType().isSolid()) {
         location.setY(location.getBlockY() + 1.5);
@@ -289,7 +294,8 @@ public class AbilityManager {
     return targets;
   }
 
-  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, Ability ability, Location location) {
+  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, Ability ability,
+      Location location) {
     if (ability.getRadius() == 0) {
       targets.add(DamageUtil.buildAndRemoveDetectionStand(location));
       return targets;
@@ -363,7 +369,7 @@ public class AbilityManager {
 
   private void updateIcons(LivingEntity livingEntity) {
     if (livingEntity instanceof Player) {
-      plugin.getAbilityIconManager().updateAbilityIconDamageMeters((Player) livingEntity);
+      plugin.getAbilityIconManager().updateAbilityIconDamageMeters((Player) livingEntity, true);
     }
   }
 

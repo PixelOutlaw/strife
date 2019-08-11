@@ -78,7 +78,8 @@ public class AbilityIconManager {
     if (abilitySlot == AbilitySlot.INVALID) {
       return;
     }
-    Ability ability = plugin.getChampionManager().getChampion(player).getSaveData().getAbility(abilitySlot);
+    Ability ability = plugin.getChampionManager().getChampion(player).getSaveData()
+        .getAbility(abilitySlot);
     if (ability == null) {
       if (isAbilityIcon(player.getInventory().getItem(slot))) {
         player.getInventory().setItem(slot, null);
@@ -92,24 +93,24 @@ public class AbilityIconManager {
       return;
     }
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
-    updateAbilityIconDamageMeters(player);
+    updateAbilityIconDamageMeters(player, true);
   }
 
-  public void updateAbilityIconDamageMeters(Player player) {
+  public void updateAbilityIconDamageMeters(Player player, boolean updateOnCd) {
     if (player.isDead()) {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(player);
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_A));
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_A), updateOnCd);
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_B), updateOnCd);
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_C), updateOnCd);
   }
 
-  private void setIconDamage(Champion champion, Ability ability) {
+  private void setIconDamage(Champion champion, Ability ability, boolean updateOnCd) {
     if (ability == null) {
       return;
     }
-    if (plugin.getAbilityManager().isCooledDown(champion.getPlayer(), ability)) {
+    if (!updateOnCd && plugin.getAbilityManager().isCooledDown(champion.getPlayer(), ability)) {
       return;
     }
     double remainingTicks = plugin.getAbilityManager()

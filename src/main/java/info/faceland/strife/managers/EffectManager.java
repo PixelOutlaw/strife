@@ -388,6 +388,7 @@ public class EffectManager {
         if (StringUtils.isNotBlank(slot)) {
           ((CooldownReduction) effect).setSlot(AbilitySlot.valueOf(slot));
         }
+        break;
       case WAIT:
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));

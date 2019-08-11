@@ -4,7 +4,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.stats.AbilitySlot;
-import info.faceland.strife.tasks.AbilityTickTask;
 
 public class CooldownReduction extends Effect {
 
@@ -15,6 +14,9 @@ public class CooldownReduction extends Effect {
 
   public void apply(StrifeMob caster, StrifeMob target) {
     Ability selectedAbility;
+    if (isForceTargetCaster()) {
+      target = caster;
+    }
     if (slot != null) {
       if (target.getChampion() == null
           || target.getChampion().getSaveData().getAbility(slot) == null) {
@@ -27,7 +29,7 @@ public class CooldownReduction extends Effect {
     } else {
       selectedAbility = ability;
     }
-    int abilityTicks = (int) ((seconds / 20D) * AbilityTickTask.ABILITY_TICK_RATE);
+    int abilityTicks = (int) (seconds * 20);
     StrifePlugin.getInstance().getAbilityManager()
         .cooldownReduce(target.getEntity(), selectedAbility, abilityTicks);
   }
