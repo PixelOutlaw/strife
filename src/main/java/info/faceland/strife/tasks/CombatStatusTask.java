@@ -19,6 +19,7 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.managers.CombatStatusManager;
+import info.faceland.strife.util.MoveUtil;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class CombatStatusTask extends BukkitRunnable {
@@ -31,6 +32,7 @@ public class CombatStatusTask extends BukkitRunnable {
 
   @Override
   public void run() {
+    MoveUtil.clearMoved();
     combatStatusManager.tickCombat();
   }
 }

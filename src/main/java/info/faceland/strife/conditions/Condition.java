@@ -21,6 +21,7 @@ public interface Condition {
   enum ConditionType {
     ATTRIBUTE,
     EQUIPMENT,
+    MOVING,
     CHANCE,
     STAT,
     HEALTH,

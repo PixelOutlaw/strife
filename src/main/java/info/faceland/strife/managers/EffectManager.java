@@ -18,6 +18,7 @@ import info.faceland.strife.conditions.GroundedCondition;
 import info.faceland.strife.conditions.HealthCondition;
 import info.faceland.strife.conditions.HeightCondition;
 import info.faceland.strife.conditions.LevelCondition;
+import info.faceland.strife.conditions.MovingCondition;
 import info.faceland.strife.conditions.PotionCondition;
 import info.faceland.strife.conditions.StatCondition;
 import info.faceland.strife.conditions.TimeCondition;
@@ -579,6 +580,9 @@ public class EffectManager {
         }
         boolean strict = cs.getBoolean("strict", false);
         condition = new EquipmentCondition(materials, strict);
+        break;
+      case MOVING:
+        condition = new MovingCondition(compareTarget, cs.getBoolean("state", true));
         break;
       case TIME:
         long minTime = cs.getLong("min-time", 0);
