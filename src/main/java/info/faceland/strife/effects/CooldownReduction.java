@@ -14,15 +14,12 @@ public class CooldownReduction extends Effect {
 
   public void apply(StrifeMob caster, StrifeMob target) {
     Ability selectedAbility;
-    if (isForceTargetCaster()) {
-      target = caster;
-    }
     if (slot != null) {
-      if (target.getChampion() == null
-          || target.getChampion().getSaveData().getAbility(slot) == null) {
+      if (caster.getChampion() == null
+          || caster.getChampion().getSaveData().getAbility(slot) == null) {
         return;
       }
-      selectedAbility = target.getChampion().getSaveData().getAbility(slot);
+      selectedAbility = caster.getChampion().getSaveData().getAbility(slot);
     } else if (ability == null) {
       ability = StrifePlugin.getInstance().getAbilityManager().getAbility(abilityString);
       selectedAbility = ability;
@@ -31,7 +28,7 @@ public class CooldownReduction extends Effect {
     }
     int abilityTicks = (int) (seconds * 20);
     StrifePlugin.getInstance().getAbilityManager()
-        .cooldownReduce(target.getEntity(), selectedAbility, abilityTicks);
+        .cooldownReduce(caster.getEntity(), selectedAbility, abilityTicks);
   }
 
   public void setSeconds(double seconds) {
