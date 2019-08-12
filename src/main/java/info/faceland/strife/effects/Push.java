@@ -24,17 +24,13 @@ public class Push extends Effect {
         direction = caster.getEntity().getEyeLocation().getDirection().setY(0).normalize()
             .multiply(power / 10);
         break;
-      case BACKWARDS:
-        direction = target.getEntity().getEyeLocation().getDirection().setY(0).normalize()
-            .multiply(-1).multiply(power / 10);
-        break;
       case WSE_LOCATION:
         direction = target.getEntity().getVelocity();
         direction.add(target.getEntity().getLocation().toVector().subtract(tempVector).setY(0)
             .normalize().multiply(power / 10));
         break;
       case WSE_DIRECTION:
-        direction = tempVector.clone().setY(0).normalize().multiply(power);
+        direction = tempVector.clone().setY(0).normalize().multiply(power / 10);
         break;
       default:
         return;
@@ -83,7 +79,6 @@ public class Push extends Effect {
   public enum PushType {
     AWAY_FROM_CASTER,
     CASTER_DIRECTION,
-    BACKWARDS,
     WSE_LOCATION,
     WSE_DIRECTION
   }
