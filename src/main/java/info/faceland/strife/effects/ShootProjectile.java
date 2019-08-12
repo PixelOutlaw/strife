@@ -1,13 +1,18 @@
 package info.faceland.strife.effects;
 
+import static info.faceland.strife.util.ProjectileUtil.getTotalProjectiles;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.ProjectileUtil;
 import java.util.List;
+import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
@@ -18,52 +23,47 @@ import org.bukkit.util.Vector;
 public class ShootProjectile extends Effect {
 
   private EntityType projectileEntity;
+  private OriginLocation originType;
+  private double attackMultiplier;
   private boolean targeted;
   private boolean seeking;
   private int quantity;
   private double speed;
   private double spread;
+  private double radialAngle;
   private double verticalBonus;
   private boolean bounce;
   private boolean ignite;
+  private boolean zeroPitch;
   private float yield;
   private List<String> hitEffects;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double projectiles = quantity;
+    int projectiles = getProjectileCount(caster);
     double newSpeed = speed * (1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
-    if (projectileEntity != EntityType.FIREBALL) {
-      projectiles = ProjectileUtil
-          .getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT));
-    }
-    Vector castDirection;
-    if (targeted) {
-      if (caster == target) {
-        LogUtil.printWarning("Skipping self targeted projectile launched by " + getName());
-        return;
-      }
-      castDirection = target.getEntity().getLocation().toVector()
-          .subtract(caster.getEntity().getEyeLocation().toVector()).normalize();
-      LogUtil.printDebug("Fetched direction to target: " + castDirection.toString());
-    } else {
-      castDirection = caster.getEntity().getEyeLocation().getDirection();
-      LogUtil.printDebug("Fetched direction caster is facing: " + castDirection.toString());
-    }
+    Vector castDirection = getCastDirection(caster.getEntity(), target.getEntity());
+    Location originLocation = DamageUtil.getOriginLocation(caster.getEntity(), originType);
+
     double adjustedSpread = (projectiles - 1) * spread;
+    double startAngle = 0;
+    if (radialAngle != 0) {
+      startAngle = -radialAngle / 2;
+    }
     for (int i = 0; i < projectiles; i++) {
-      Projectile projectile = (Projectile) caster.getEntity().getWorld()
-          .spawnEntity(caster.getEntity().getEyeLocation(), projectileEntity);
+      Projectile projectile = (Projectile) originLocation.getWorld()
+          .spawnEntity(originLocation, projectileEntity);
       projectile.setShooter(caster.getEntity());
+
       Vector direction = castDirection.clone();
-      direction.add(new Vector(
-          adjustedSpread - 2 * adjustedSpread * Math.random(),
-          adjustedSpread - 2 * adjustedSpread * Math.random() + verticalBonus,
-          adjustedSpread - 2 * adjustedSpread * Math.random()));
+      if (radialAngle != 0) {
+        applyRadialAngles(direction, startAngle, projectiles, i);
+      }
+      applySpread(direction, adjustedSpread);
       direction = direction.normalize();
-      LogUtil.printDebug("Post spread and vert bonus direction: " + direction.toString());
-      LogUtil.printDebug("Final projectile velocity: " + direction.clone().multiply(newSpeed));
+
       projectile.setVelocity(direction.multiply(newSpeed));
+
       if (projectileEntity == EntityType.FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
@@ -76,6 +76,7 @@ public class ShootProjectile extends Effect {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
       projectile.setBounce(bounce);
+      ProjectileUtil.setProjctileAttackSpeedMeta(projectile, attackMultiplier);
       StringBuilder hitString = new StringBuilder();
       for (String s : hitEffects) {
         hitString.append(s).append("~");
@@ -99,6 +100,10 @@ public class ShootProjectile extends Effect {
 
   public void setSpread(double spread) {
     this.spread = spread;
+  }
+
+  public void setRadialAngle(double radialAngle) {
+    this.radialAngle = radialAngle;
   }
 
   public void setVerticalBonus(double verticalBonus) {
@@ -127,5 +132,54 @@ public class ShootProjectile extends Effect {
 
   public void setHitEffects(List<String> hitEffects) {
     this.hitEffects = hitEffects;
+  }
+
+  public void setZeroPitch(boolean zeroPitch) {
+    this.zeroPitch = zeroPitch;
+  }
+
+  public void setOriginType(OriginLocation originType) {
+    this.originType = originType;
+  }
+
+  public void setAttackMultiplier(double attackMultiplier) {
+    this.attackMultiplier = attackMultiplier;
+  }
+
+  private Vector getCastDirection(LivingEntity caster, LivingEntity target) {
+    Vector direction;
+    if (targeted) {
+      direction = target.getLocation().toVector().subtract(
+          caster.getLocation().toVector()).normalize();
+    } else {
+      direction = caster.getEyeLocation().getDirection();
+    }
+    if (zeroPitch) {
+      direction.setY(0);
+      direction.normalize();
+    }
+    return direction;
+  }
+
+  private int getProjectileCount(StrifeMob caster) {
+    if (projectileEntity == EntityType.FIREBALL) {
+      return 1;
+    }
+    return getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT));
+  }
+
+  private void applyRadialAngles(Vector direction, double angle, int projectiles, int counter) {
+    angle = Math.toRadians(angle + counter * (radialAngle / projectiles));
+    double x = direction.getX();
+    double z = direction.getZ();
+    direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
+    direction.setX(z * Math.sin(angle) + x * Math.cos(angle));
+  }
+
+  private void applySpread(Vector direction, double spread) {
+    direction.add(new Vector(
+        spread - 2 * spread * Math.random(),
+        spread - 2 * spread * Math.random() + verticalBonus,
+        spread - 2 * spread * Math.random()));
   }
 }

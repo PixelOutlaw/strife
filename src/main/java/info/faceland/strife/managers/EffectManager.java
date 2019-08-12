@@ -194,7 +194,8 @@ public class EffectManager {
     }
   }
 
-  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, StrifeMob caster, AreaEffect effect) {
+  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, StrifeMob caster,
+      AreaEffect effect) {
     double range = effect.getRange();
     if (range < 1) {
       return targets;
@@ -344,13 +345,18 @@ public class EffectManager {
           return;
         }
         ((ShootProjectile) effect).setProjectileEntity(projType);
+        ((ShootProjectile) effect)
+            .setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
+        ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
         ((ShootProjectile) effect).setSpeed(cs.getDouble("speed", 1));
         ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("bounce", false));
+        ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
+        ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
         break;

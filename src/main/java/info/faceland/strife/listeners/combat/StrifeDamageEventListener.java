@@ -126,12 +126,12 @@ public class StrifeDamageEventListener implements Listener {
         if (StringUtils.isBlank(s)) {
           continue;
         }
-        plugin.getEffectManager()
-            .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
+        plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
       }
-      defender.getEntity().damage(0, attacker.getEntity());
-      event.setCancelled(true);
-      return;
+      if (event.getAttackMultiplier() <= 0) {
+        event.setFinalDamage(0);
+        return;
+      }
     }
 
     Map<DamageType, Double> damageMap = DamageUtil.buildDamageMap(attacker);

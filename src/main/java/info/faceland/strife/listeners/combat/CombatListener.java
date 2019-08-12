@@ -82,7 +82,7 @@ public class CombatListener implements Listener {
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
-        return;
+      return;
     }
 
     LivingEntity defendEntity = (LivingEntity) event.getEntity();
@@ -105,6 +105,7 @@ public class CombatListener implements Listener {
       projectile = (Projectile) event.getDamager();
       if (defendEntity.hasMetadata("NPC")) {
         event.getDamager().remove();
+        event.setCancelled(true);
         return;
       }
       if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
@@ -136,7 +137,7 @@ public class CombatListener implements Listener {
       healMultiplier = 0.3D;
     }
 
-    if (attackMultiplier < 0.05) {
+    if (attackMultiplier < 0.05 && extraEffects == null) {
       event.setCancelled(true);
       return;
     }
