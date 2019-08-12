@@ -5,6 +5,7 @@ import java.util.Random;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Arrow.PickupStatus;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -122,5 +123,28 @@ public class ProjectileUtil {
   public static void setProjectileSneakMeta(Projectile projectile) {
     projectile.setMetadata(SNEAK_ATTACK_META,
         new FixedMetadataValue(StrifePlugin.getInstance(), true));
+  }
+
+  public static boolean isProjectile(EntityType entityType) {
+    switch (entityType) {
+      case ARROW:
+      case THROWN_EXP_BOTTLE:
+      case SPLASH_POTION:
+      case WITHER_SKULL:
+      case SHULKER_BULLET:
+      case PRIMED_TNT:
+      case SMALL_FIREBALL:
+      case LLAMA_SPIT:
+      case SPECTRAL_ARROW:
+      case TRIDENT:
+      case FIREBALL:
+      case DRAGON_FIREBALL:
+      case EGG:
+      case SNOWBALL:
+      case TIPPED_ARROW:
+        return true;
+      default:
+        return false;
+    }
   }
 }

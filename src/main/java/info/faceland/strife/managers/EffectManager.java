@@ -61,6 +61,7 @@ import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
+import info.faceland.strife.util.ProjectileUtil;
 import info.faceland.strife.util.StatUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -335,12 +336,7 @@ public class EffectManager {
           LogUtil.printError("Skipping effect " + key + " for invalid projectile type");
           return;
         }
-        if (!(projType == EntityType.ARROW || projType == EntityType.THROWN_EXP_BOTTLE
-            || projType == EntityType.SPLASH_POTION || projType == EntityType.WITHER_SKULL
-            || projType == EntityType.SHULKER_BULLET || projType == EntityType.PRIMED_TNT
-            || projType == EntityType.EGG || projType == EntityType.SNOWBALL
-            || projType == EntityType.FIREBALL || projType == EntityType.DRAGON_FIREBALL
-            || projType == EntityType.SMALL_FIREBALL)) {
+        if (!ProjectileUtil.isProjectile(projType)) {
           LogUtil.printWarning("Skipping effect " + key + " for non projectile entity");
           return;
         }
