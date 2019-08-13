@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class Effect {
 
-  private String name;
+  private String id;
   private boolean forceTargetCaster;
   private boolean friendly;
 
@@ -21,12 +21,12 @@ public class Effect {
 
   }
 
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setId(String id) {
+    this.id = id;
   }
 
   public boolean isForceTargetCaster() {
