@@ -9,7 +9,7 @@ public class Push extends Effect {
 
   private double power;
   private double height;
-  private boolean zeroVelocity;
+  private boolean cancelFall;
   private PushType pushType;
   private Vector tempVector;
 
@@ -35,8 +35,10 @@ public class Push extends Effect {
       default:
         return;
     }
-    if (zeroVelocity) {
-      target.getEntity().setVelocity(new Vector());
+    if (cancelFall) {
+      if (target.getEntity().getVelocity().getY() < 0) {
+        target.getEntity().getVelocity().setY(0);
+      }
       target.getEntity().setFallDistance(0);
     }
     direction.add(new Vector(0, height / 10, 0));
@@ -68,8 +70,8 @@ public class Push extends Effect {
     this.height = height;
   }
 
-  public void setZeroVelocity(boolean zeroVelocity) {
-    this.zeroVelocity = zeroVelocity;
+  public void setCancelFall(boolean cancelFall) {
+    this.cancelFall = cancelFall;
   }
 
   public void setPushType(PushType pushType) {
