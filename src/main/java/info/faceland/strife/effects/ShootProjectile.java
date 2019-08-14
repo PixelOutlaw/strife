@@ -32,6 +32,8 @@ public class ShootProjectile extends Effect {
   private double spread;
   private double radialAngle;
   private double verticalBonus;
+  private boolean ignoreMultishot;
+  private boolean gravity;
   private boolean bounce;
   private boolean ignite;
   private boolean zeroPitch;
@@ -76,13 +78,17 @@ public class ShootProjectile extends Effect {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
       projectile.setBounce(bounce);
+      projectile.setGravity(gravity);
       ProjectileUtil.setProjctileAttackSpeedMeta(projectile, attackMultiplier);
-      StringBuilder hitString = new StringBuilder();
-      for (String s : hitEffects) {
-        hitString.append(s).append("~");
+
+      if (!hitEffects.isEmpty()) {
+        StringBuilder hitString = new StringBuilder();
+        for (String s : hitEffects) {
+          hitString.append(s).append("~");
+        }
+        projectile.setMetadata("EFFECT_PROJECTILE",
+            new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
       }
-      projectile.setMetadata("EFFECT_PROJECTILE",
-          new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
     }
   }
 
@@ -108,6 +114,14 @@ public class ShootProjectile extends Effect {
 
   public void setVerticalBonus(double verticalBonus) {
     this.verticalBonus = verticalBonus;
+  }
+
+  public void setIgnoreMultishot(boolean ignoreMultishot) {
+    this.ignoreMultishot = ignoreMultishot;
+  }
+
+  public void setGravity(boolean gravity) {
+    this.gravity = gravity;
   }
 
   public void setBounce(boolean bounce) {
@@ -162,14 +176,17 @@ public class ShootProjectile extends Effect {
   }
 
   private int getProjectileCount(StrifeMob caster) {
-    if (projectileEntity == EntityType.FIREBALL) {
+    if (ignoreMultishot || projectileEntity == EntityType.FIREBALL) {
       return 1;
     }
     return getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT));
   }
 
   private void applyRadialAngles(Vector direction, double angle, int projectiles, int counter) {
-    angle = Math.toRadians(angle + counter * (radialAngle / projectiles));
+    if (projectiles == 1) {
+      return;
+    }
+    angle = Math.toRadians(angle + counter * (radialAngle / (projectiles-1)));
     double x = direction.getX();
     double z = direction.getZ();
     direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
