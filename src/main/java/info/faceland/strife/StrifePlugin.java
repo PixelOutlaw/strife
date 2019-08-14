@@ -58,7 +58,7 @@ import info.faceland.strife.listeners.combat.BowListener;
 import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.combat.DogeListener;
-import info.faceland.strife.listeners.combat.StrifeDamageEventListener;
+import info.faceland.strife.listeners.combat.StrifeDamageListener;
 import info.faceland.strife.listeners.combat.SwingListener;
 import info.faceland.strife.managers.AbilityIconManager;
 import info.faceland.strife.managers.AbilityManager;
@@ -465,7 +465,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new StrifeDamageEventListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);

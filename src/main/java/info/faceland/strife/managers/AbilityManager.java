@@ -180,7 +180,7 @@ public class AbilityManager {
         continue;
       }
       taskEffects.add(effect);
-      LogUtil.printDebug("Added effect " + effect.getName() + " to task list");
+      LogUtil.printDebug("Added effect " + effect.getId() + " to task list");
     }
     runEffects(caster, targets, taskEffects, waitTicks);
     return true;
@@ -234,7 +234,7 @@ public class AbilityManager {
         return;
       }
       for (Effect effect : effectList) {
-        LogUtil.printDebug(" - Executing effect " + effect.getName());
+        LogUtil.printDebug(" - Executing effect " + effect.getId());
         plugin.getEffectManager().execute(effect, caster, targets);
       }
       LogUtil.printDebug(" - Completed effect task.");

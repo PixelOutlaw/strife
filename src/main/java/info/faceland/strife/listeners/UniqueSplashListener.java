@@ -51,7 +51,8 @@ public class UniqueSplashListener implements Listener {
       LivingEntity defendEntity = (LivingEntity) e;
       StrifeMob defender = strifeMobManager.getStatMob(defendEntity);
 
-      double evasionMultiplier = StatUtil.getMinimumEvasionMult(attacker, defender);
+      double evasionMultiplier = StatUtil
+          .getMinimumEvasionMult(StatUtil.getEvasion(defender), StatUtil.getAccuracy(attacker));
       evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
       if (evasionMultiplier <= 0.5) {
         doEvasion(attackEntity, defendEntity);

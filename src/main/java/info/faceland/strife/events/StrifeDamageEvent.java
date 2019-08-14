@@ -19,6 +19,7 @@
 package info.faceland.strife.events;
 
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import java.util.HashMap;
@@ -46,7 +47,10 @@ public class StrifeDamageEvent extends Event implements Cancellable {
   private double healMultiplier = 1;
   private final Map<DamageType, Double> damageModifiers = new HashMap<>();
   private final Map<DamageType, Double> flatDamageBonuses = new HashMap<>();
+  private final Map<AbilityMod, Double> abilityMods = new HashMap<>();
   private boolean isBlocking = false;
+  private boolean canBeBlocked = true;
+  private boolean canBeEvaded = true;
   private Projectile projectile;
   private String[] extraEffects;
   private boolean cancel;
@@ -105,6 +109,22 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     isBlocking = blocking;
   }
 
+  public boolean isCanBeBlocked() {
+    return canBeBlocked;
+  }
+
+  public void setCanBeBlocked(boolean canBeBlocked) {
+    this.canBeBlocked = canBeBlocked;
+  }
+
+  public boolean isCanBeEvaded() {
+    return canBeEvaded;
+  }
+
+  public void setCanBeEvaded(boolean canBeEvaded) {
+    this.canBeEvaded = canBeEvaded;
+  }
+
   public Projectile getProjectile() {
     return projectile;
   }
@@ -135,6 +155,14 @@ public class StrifeDamageEvent extends Event implements Cancellable {
 
   public double getFlatDamageBonus(DamageType damageType) {
     return flatDamageBonuses.getOrDefault(damageType, 0D);
+  }
+
+  public Map<AbilityMod, Double> getAbilityMods() {
+    return abilityMods;
+  }
+
+  public double getAbilityMods(AbilityMod mod) {
+    return abilityMods.getOrDefault(mod, 0D);
   }
 
   public double getFinalDamage() {

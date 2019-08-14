@@ -2,8 +2,11 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.util.DamageUtil.AbilityMod;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AreaEffect extends Effect {
 
@@ -14,6 +17,7 @@ public class AreaEffect extends Effect {
   private boolean isLineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
+  private final Map<AbilityMod, Double> attackModifiers = new HashMap<>();
 
   public void apply(StrifeMob caster, StrifeMob target) {
     if (canBeBlocked) {
@@ -70,5 +74,9 @@ public class AreaEffect extends Effect {
 
   public void setMaxTargets(int maxTargets) {
     this.maxTargets = maxTargets;
+  }
+
+  public Map<AbilityMod, Double> getAttackModifiers() {
+    return attackModifiers;
   }
 }

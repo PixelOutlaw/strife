@@ -18,16 +18,15 @@
  */
 package info.faceland.strife.listeners.combat;
 
+import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.DAMAGE_REFLECT;
 import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
 import static info.faceland.strife.stats.StrifeStat.RAGE_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.RAGE_WHEN_HIT;
-import static info.faceland.strife.stats.StrifeStat.TRUE_DAMAGE;
 import static info.faceland.strife.util.DamageUtil.applyElementalEffects;
 import static info.faceland.strife.util.DamageUtil.applyHealthOnHit;
 import static info.faceland.strife.util.DamageUtil.applyLifeSteal;
-import static info.faceland.strife.util.DamageUtil.attemptBleed;
 import static info.faceland.strife.util.DamageUtil.callCritEvent;
 import static info.faceland.strife.util.DamageUtil.callSneakAttackEvent;
 import static info.faceland.strife.util.DamageUtil.doBlock;
@@ -47,6 +46,7 @@ import info.faceland.strife.events.StrifeDamageEvent;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.StatUtil;
@@ -59,7 +59,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-public class StrifeDamageEventListener implements Listener {
+public class StrifeDamageListener implements Listener {
 
   private final StrifePlugin plugin;
   private static final double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
@@ -67,7 +67,7 @@ public class StrifeDamageEventListener implements Listener {
   private static final double PVP_MULT = StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-multiplier", 0.5);
 
-  public StrifeDamageEventListener(StrifePlugin plugin) {
+  public StrifeDamageListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
@@ -90,30 +90,43 @@ public class StrifeDamageEventListener implements Listener {
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
 
-    double evasionMultiplier = StatUtil.getMinimumEvasionMult(attacker, defender);
-    evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
+    double totalEvasion = StatUtil.getEvasion(defender);
+    double totalAccuracy = StatUtil.getAccuracy(attacker);
+    totalAccuracy *= 1 + event.getAbilityMods(AbilityMod.ACCURACY_MULT) / 100;
+    totalAccuracy += event.getAbilityMods(AbilityMod.ACCURACY);
 
-    if (evasionMultiplier < EVASION_THRESHOLD) {
-      doEvasion(attacker.getEntity(), defender.getEntity());
-      removeIfExisting(event.getProjectile());
-      event.setCancelled(true);
-      return;
+    double evasionMultiplier = 1;
+
+    if (event.isCanBeEvaded()) {
+      evasionMultiplier = StatUtil.getMinimumEvasionMult(totalEvasion, totalAccuracy);
+      evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
+
+      if (evasionMultiplier < EVASION_THRESHOLD) {
+        doEvasion(attacker.getEntity(), defender.getEntity());
+        removeIfExisting(event.getProjectile());
+        event.setCancelled(true);
+        return;
+      }
     }
 
-    if (plugin.getBlockManager().rollBlock(defender, event.isBlocking())) {
-      plugin.getBlockManager().blockFatigue(defender.getEntity().getUniqueId(),
-          event.getAttackMultiplier(), event.isBlocking());
-      plugin.getBlockManager().bumpRunes(defender);
-      doReflectedDamage(defender, attacker, event.getAttackType());
-      doBlock(attacker.getEntity(), defender.getEntity());
-      removeIfExisting(event.getProjectile());
-      event.setCancelled(true);
-      return;
+    double attackMult = event.getAttackMultiplier();
+
+    if (event.isCanBeBlocked()) {
+      if (plugin.getBlockManager().rollBlock(defender, event.isBlocking())) {
+        plugin.getBlockManager().blockFatigue(defender.getEntity().getUniqueId(), attackMult,
+            event.isBlocking());
+        plugin.getBlockManager().bumpRunes(defender);
+        doReflectedDamage(defender, attacker, event.getAttackType());
+        doBlock(attacker.getEntity(), defender.getEntity());
+        removeIfExisting(event.getProjectile());
+        event.setCancelled(true);
+        return;
+      }
     }
 
     if (attacker.getStat(RAGE_ON_HIT) > 0.1) {
       plugin.getRageManager()
-          .addRage(attacker, attacker.getStat(RAGE_ON_HIT) * event.getAttackMultiplier());
+          .addRage(attacker, attacker.getStat(RAGE_ON_HIT) * attackMult);
     }
     if (defender.getStat(RAGE_WHEN_HIT) > 0.1) {
       plugin.getRageManager().addRage(defender, defender.getStat(RAGE_WHEN_HIT));
@@ -126,9 +139,10 @@ public class StrifeDamageEventListener implements Listener {
         if (StringUtils.isBlank(s)) {
           continue;
         }
-        plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
+        plugin.getEffectManager()
+            .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
       }
-      if (event.getAttackMultiplier() <= 0) {
+      if (attackMult <= 0) {
         event.setFinalDamage(0);
         return;
       }
@@ -142,12 +156,13 @@ public class StrifeDamageEventListener implements Listener {
 
     Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap);
 
-    double bonusCriticalMultiplier = 0;
+    double critMult = 0;
     double bonusOverchargeMultiplier = 0;
-    if (doCriticalHit(attacker, defender)) {
-      bonusCriticalMultiplier = attacker.getStat(CRITICAL_DAMAGE) / 100;
+    if (doCriticalHit(attacker, defender, event.getAbilityMods(AbilityMod.CRITICAL_CHANCE))) {
+      critMult = (attacker.getStat(CRITICAL_DAMAGE) +
+          event.getAbilityMods(AbilityMod.CRITICAL_DAMAGE)) / 100;
     }
-    if (event.getAttackMultiplier() > 0.99) {
+    if (attackMult > 0.99) {
       bonusOverchargeMultiplier = attacker.getStat(OVERCHARGE) / 100;
     }
 
@@ -166,23 +181,23 @@ public class StrifeDamageEventListener implements Listener {
     }
     double potionMult = getPotionMult(attacker.getEntity(), defender.getEntity());
 
-    standardDamage +=
-        standardDamage * bonusCriticalMultiplier + standardDamage * bonusOverchargeMultiplier;
+    standardDamage += standardDamage * critMult + standardDamage * bonusOverchargeMultiplier;
     standardDamage *= evasionMultiplier;
-    standardDamage *= event.getAttackMultiplier();
+    standardDamage *= attackMult;
     standardDamage *= potionMult;
     standardDamage *= StatUtil.getDamageMult(attacker);
     standardDamage *= pvpMult;
 
     applyLifeSteal(attacker, Math.min(standardDamage, defender.getEntity().getHealth()),
-        event.getHealMultiplier());
-    applyHealthOnHit(attacker, event.getAttackMultiplier(), event.getHealMultiplier());
+        event.getHealMultiplier(), event.getAbilityMods(AbilityMod.LIFE_STEAL));
+    applyHealthOnHit(attacker, attackMult, event.getHealMultiplier(),
+        event.getAbilityMods(AbilityMod.HEALTH_ON_HIT));
 
     if (attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
-      elementalDamage += elementalDamage * bonusCriticalMultiplier;
+      elementalDamage += elementalDamage * critMult;
     }
     elementalDamage *= evasionMultiplier;
-    elementalDamage *= event.getAttackMultiplier();
+    elementalDamage *= attackMult;
     elementalDamage *= potionMult;
     elementalDamage *= StatUtil.getDamageMult(attacker);
     elementalDamage *= pvpMult;
@@ -197,16 +212,20 @@ public class StrifeDamageEventListener implements Listener {
     }
     rawDamage *= StatUtil.getTenacityMult(defender);
     rawDamage *= StatUtil.getMinionMult(attacker);
-    rawDamage += attacker.getStat(TRUE_DAMAGE) * event.getAttackMultiplier();
+    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0D) * attackMult;
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
     boolean isBleedApplied = false;
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
-      isBleedApplied = attemptBleed(attacker, defender,
-          damageMap.get(DamageType.PHYSICAL) * pvpMult,
-          bonusCriticalMultiplier, event.getAttackMultiplier());
+      double chance =
+          (attacker.getStat(BLEED_CHANCE) + event.getAbilityMods(AbilityMod.BLEED_CHANCE)) / 100;
+      isBleedApplied = DamageUtil.attemptBleed(defender, chance * attackMult);
+      if (isBleedApplied) {
+        double rawPhysical = damageMap.get(DamageType.PHYSICAL) * pvpMult * critMult * attackMult;
+        DamageUtil.applyBleed(event, rawPhysical);
+      }
     }
 
     boolean isSneakAttack = event.getProjectile() == null ?
@@ -215,16 +234,14 @@ public class StrifeDamageEventListener implements Listener {
 
     if (isSneakAttack) {
       Player player = (Player) attacker.getEntity();
-      float sneakSkill = plugin.getChampionManager().getChampion(player).getEffectiveLifeSkillLevel(
-          LifeSkillType.SNEAK, false);
+      float sneakSkill = plugin.getChampionManager().getChampion(player)
+          .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
       float sneakDamage = sneakSkill;
       sneakDamage += defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill);
-      sneakDamage *= event.getAttackMultiplier();
+      sneakDamage *= attackMult;
       sneakDamage *= pvpMult;
-
       SneakAttackEvent sneakEvent = callSneakAttackEvent((Player) attacker.getEntity(),
           defender.getEntity(), sneakSkill, sneakDamage);
-
       if (sneakEvent.isCancelled()) {
         isSneakAttack = false;
       } else {
@@ -241,14 +258,14 @@ public class StrifeDamageEventListener implements Listener {
     plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
 
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
-        bonusCriticalMultiplier, triggeredElements, isBleedApplied, isSneakAttack);
+        critMult, triggeredElements, isBleedApplied, isSneakAttack);
 
     event.setFinalDamage(finalDamage);
   }
 
-  private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender) {
-    if (attacker.getStat(StrifeStat.CRITICAL_RATE) / 100 >= rollDouble(
-        hasLuck(attacker.getEntity()))) {
+  private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender, double bonusCrit) {
+    double crit = (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit) / 100;
+    if (crit >= rollDouble(hasLuck(attacker.getEntity()))) {
       callCritEvent(attacker.getEntity(), attacker.getEntity());
       defender.getEntity().getWorld().playSound(
           defender.getEntity().getEyeLocation(),

@@ -1,6 +1,5 @@
 package info.faceland.strife.util;
 
-import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
 import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
@@ -9,6 +8,7 @@ import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.FIRE_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.HP_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.ICE_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.LIFE_STEAL;
 import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAGIC_DAMAGE;
@@ -37,6 +37,7 @@ import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
+import info.faceland.strife.events.StrifeDamageEvent;
 import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
@@ -420,34 +421,35 @@ public class DamageUtil {
         1 + (atk.getStat(PROJECTILE_DAMAGE) - def.getStat(PROJECTILE_REDUCTION)) / 100);
   }
 
-  public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier) {
-    double lifeSteal = StatUtil.getLifestealPercentage(attacker);
+  public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier,
+      double bonus) {
+    double lifeSteal = (attacker.getStat(LIFE_STEAL) + bonus) / 100;
     restoreHealthWithPenalties(attacker.getEntity(), damage * lifeSteal * healMultiplier);
   }
 
   public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier,
-      double healMultiplier) {
-    double health = attacker.getStat(HP_ON_HIT) * attackMultiplier * healMultiplier;
+      double healMultiplier, double bonus) {
+    double health = (attacker.getStat(HP_ON_HIT) + bonus) * attackMultiplier * healMultiplier;
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
-  public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender,
-      double damage, double critMult, double attackMult) {
+  public static boolean attemptBleed(StrifeMob defender, double chance) {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
     if (defender.getStat(BLEED_RESIST) > 99) {
       return false;
     }
-    if (attackMult * (attacker.getStat(BLEED_CHANCE) / 100) >= rollDouble()) {
-      double amount = damage + damage * critMult;
-      amount *= 1 + attacker.getStat(BLEED_DAMAGE) / 100;
-      amount *= 1 - defender.getStat(BLEED_RESIST) / 100;
-      amount *= BLEED_PERCENT;
-      applyBleed(defender.getEntity(), amount);
-      return true;
-    }
-    return false;
+    return chance >= rollDouble();
+  }
+
+  public static void applyBleed(StrifeDamageEvent event, double damage) {
+    damage *= 1 +
+        (event.getAbilityMods(AbilityMod.BLEED_DAMAGE) + event.getAttacker().getStat(BLEED_DAMAGE))
+            / 100;
+    damage *= 1 - event.getDefender().getStat(BLEED_RESIST) / 100;
+    damage *= BLEED_PERCENT;
+    applyBleed(event.getDefender().getEntity(), damage);
   }
 
   public static void applyBleed(LivingEntity defender, double amount) {
@@ -721,6 +723,21 @@ public class DamageUtil {
     EARTH,
     LIGHT,
     DARK
+  }
+
+  public enum AbilityMod {
+    ACCURACY,
+    ACCURACY_MULT,
+    ARMOR_PEN,
+    ARMOR_PEN_MULT,
+    WARD_PEN,
+    WARD_PEN_MULT,
+    CRITICAL_CHANCE,
+    CRITICAL_DAMAGE,
+    LIFE_STEAL,
+    HEALTH_ON_HIT,
+    BLEED_CHANCE,
+    BLEED_DAMAGE
   }
 
   public enum AttackType {

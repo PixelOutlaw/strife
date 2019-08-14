@@ -56,6 +56,7 @@ import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
@@ -279,13 +280,15 @@ public class EffectManager {
       case STANDARD_DAMAGE:
         effect = new StandardDamage();
         ((StandardDamage) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 1D));
+        ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
+        ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
-        ConfigurationSection modCs = cs.getConfigurationSection("mods");
-        Map<DamageType, Double> modMap = new HashMap<>();
-        if (modCs != null) {
-          for (String k : modCs.getKeys(false)) {
+        ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
+        Map<DamageType, Double> multMap = new HashMap<>();
+        if (multCs != null) {
+          for (String k : multCs.getKeys(false)) {
             DamageType mod = DamageType.valueOf(k);
-            modMap.put(mod, modCs.getDouble(k));
+            multMap.put(mod, multCs.getDouble(k));
           }
         }
         ConfigurationSection flatCs = cs.getConfigurationSection("flat-damage-bonuses");
@@ -296,8 +299,17 @@ public class EffectManager {
             flatMap.put(mod, flatCs.getDouble(k));
           }
         }
-        ((StandardDamage) effect).getDamageModifiers().putAll(modMap);
+        ConfigurationSection modsCs = cs.getConfigurationSection("attack-mods");
+        Map<AbilityMod, Double> attackModMap = new HashMap<>();
+        if (modsCs != null) {
+          for (String k : modsCs.getKeys(false)) {
+            AbilityMod mod = AbilityMod.valueOf(k);
+            attackModMap.put(mod, modsCs.getDouble(k));
+          }
+        }
+        ((StandardDamage) effect).getDamageModifiers().putAll(multMap);
         ((StandardDamage) effect).getDamageBonuses().putAll(flatMap);
+        ((StandardDamage) effect).getAbilityMods().putAll(attackModMap);
         break;
       case WORLD_SPACE_ENTITY:
         effect = new CreateWorldSpaceEntity();
@@ -349,7 +361,9 @@ public class EffectManager {
         ((ShootProjectile) effect).setSpeed(cs.getDouble("speed", 1));
         ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
-        ((ShootProjectile) effect).setIgnite(cs.getBoolean("bounce", false));
+        ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
+        ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
+        ((ShootProjectile) effect).setGravity(cs.getBoolean("gravity", true));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
@@ -407,7 +421,7 @@ public class EffectManager {
         effect = new Push();
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
-        ((Push) effect).setZeroVelocity(cs.getBoolean("zero-velocity", false));
+        ((Push) effect).setCancelFall(cs.getBoolean("zero-velocity", false));
         ((Push) effect).setPushType(
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
         break;
@@ -481,15 +495,13 @@ public class EffectManager {
         break;
     }
     if (effectType != EffectType.WAIT) {
-      effect.setName(TextUtils.color(cs.getString("name", "&8Unnamed Effect")));
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
       Map<StrifeStat, Double> statMults = StatUtil
           .getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
       effect.setStatMults(statMults);
-    } else {
-      effect.setName("wait");
     }
+    effect.setId(key);
     List<String> conditionStrings = cs.getStringList("conditions");
     for (String s : conditionStrings) {
       Condition condition = conditions.get(s);

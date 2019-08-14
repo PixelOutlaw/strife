@@ -146,7 +146,7 @@ public class StatUtil {
     return ae.getStat(WARDING) * (1 + ae.getStat(WARD_MULT) / 100);
   }
 
-  public static double getTotalEvasion(StrifeMob ae) {
+  public static double getEvasion(StrifeMob ae) {
     return getFlatEvasion(ae) * (1 + ae.getStat(EVASION_MULT) / 100);
   }
 
@@ -176,9 +176,7 @@ public class StatUtil {
     return Math.min(1, 80 / (80 + adjustedWarding));
   }
 
-  public static double getMinimumEvasionMult(StrifeMob attacker, StrifeMob defender) {
-    double evasion = getTotalEvasion(defender);
-    double accuracy = getAccuracy(attacker);
+  public static double getMinimumEvasionMult(double evasion, double accuracy) {
     double bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (1 + accuracy));
     return Math.min(1, BASE_EVASION_MULT - bonusMultiplier);
   }
