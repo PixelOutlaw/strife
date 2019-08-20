@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.Vector;
 
 public class CreateWorldSpaceEntity extends Effect {
 
@@ -37,14 +38,17 @@ public class CreateWorldSpaceEntity extends Effect {
     if (!strictDuration) {
       newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    Location location = null;
-    if (!lockedToEntity) {
+    Location location;
+    Vector direction;
+    if (lockedToEntity) {
       location = DamageUtil.getOriginLocation(target, originLocation);
+      direction = null;
+    } else {
+      location = DamageUtil.getOriginLocation(target, originLocation);
+      direction = caster.getEntity().getEyeLocation().getDirection().multiply(velocity);
     }
     WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, cachedEffectSchedule,
-        location, lockedToEntity,
-        caster.getEntity().getEyeLocation().getDirection().multiply(velocity), maxTicks,
-        (int) newLifeSpan);
+        location, lockedToEntity, direction, maxTicks, (int) newLifeSpan);
     StrifePlugin.getInstance().getEffectManager().addWorldSpaceEffectEntity(entity);
   }
 

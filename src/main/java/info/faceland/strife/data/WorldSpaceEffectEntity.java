@@ -53,6 +53,8 @@ public class WorldSpaceEffectEntity {
   public boolean tick() {
     if (casterLock) {
       location = DamageUtil.getOriginLocation(caster.getEntity(), OriginLocation.CENTER);
+    } else {
+      location.add(velocity);
     }
     Block block = location.getBlock();
     if (!(block == null || block.getType().isTransparent())) {
