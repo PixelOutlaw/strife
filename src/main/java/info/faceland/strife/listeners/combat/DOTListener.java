@@ -92,6 +92,8 @@ public class DOTListener implements Listener {
         }
         event.setCancelled(true);
         break;
+      default:
+        return;
     }
     pruneInvalidMapEntries();
   }

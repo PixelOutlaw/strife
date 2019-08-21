@@ -69,6 +69,10 @@ public class ShootProjectile extends Effect {
       if (projectileEntity == EntityType.FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
+      } else if (projectileEntity == EntityType.ARROW) {
+        if (ignite) {
+          projectile.setFireTicks(20);
+        }
       } else if (projectileEntity == EntityType.WITHER_SKULL) {
         ((WitherSkull) projectile).setYield(yield);
       } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
