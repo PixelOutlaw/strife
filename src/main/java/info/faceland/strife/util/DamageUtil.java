@@ -77,6 +77,7 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
@@ -229,9 +230,13 @@ public class DamageUtil {
   }
 
   public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
+    int noDamageTicks = target.getNoDamageTicks();
+    Vector velocity = target.getVelocity();
     target.setNoDamageTicks(0);
     CombatListener.addAttack(attacker, amount);
     target.damage(amount, attacker);
+    target.setNoDamageTicks(noDamageTicks);
+    target.setVelocity(velocity);
   }
 
   public static LivingEntity getAttacker(Entity entity) {
@@ -403,17 +408,18 @@ public class DamageUtil {
     for (PotionEffect effect : defenderEffects) {
       if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE)) {
         mult -= 0.1 * (effect.getAmplifier() + 1);
-        continue;
+        return mult;
       }
     }
     return mult;
   }
 
   public static boolean canAttack(Player attacker, Player defender) {
-    EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(attacker, defender,
-        DamageCause.ENTITY_ATTACK, 0);
-    Bukkit.getPluginManager().callEvent(event);
-    return !event.isCancelled();
+    CombatListener.addPlayer(attacker);
+    defender.damage(0, attacker);
+    boolean friendly = CombatListener.hasFriendlyPlayer(attacker);
+    CombatListener.removePlayer(attacker);
+    return !friendly;
   }
 
   public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {

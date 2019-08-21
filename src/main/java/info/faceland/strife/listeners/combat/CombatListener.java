@@ -32,10 +32,13 @@ import info.faceland.strife.events.StrifeDamageEvent;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
@@ -49,6 +52,7 @@ public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
   private static final Map<LivingEntity, Double> HANDLED_ATTACKS = new HashMap<>();
+  private static final Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -56,6 +60,18 @@ public class CombatListener implements Listener {
 
   public static void addAttack(LivingEntity entity, double damage) {
     HANDLED_ATTACKS.put(entity, damage);
+  }
+
+  public static void addPlayer(Player player) {
+    FRIENDLY_PLAYER_CHECKER.add(player);
+  }
+
+  public static void removePlayer(Player player) {
+    FRIENDLY_PLAYER_CHECKER.remove(player);
+  }
+
+  public static boolean hasFriendlyPlayer(Player player) {
+    return FRIENDLY_PLAYER_CHECKER.contains(player);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -69,11 +85,6 @@ public class CombatListener implements Listener {
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(multiplier * (10 + ((LivingEntity) event.getEntity()).getMaxHealth() * 0.4));
     }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void handledAttackResolver(EntityDamageByEntityEvent event) {
-    HANDLED_ATTACKS.remove(getAttacker(event.getDamager()));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -92,9 +103,16 @@ public class CombatListener implements Listener {
       return;
     }
 
+    if (attackEntity instanceof Player && FRIENDLY_PLAYER_CHECKER.contains(attackEntity)) {
+      FRIENDLY_PLAYER_CHECKER.remove(attackEntity);
+      event.setCancelled(true);
+      return;
+    }
+
     if (HANDLED_ATTACKS.containsKey(attackEntity)) {
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(HANDLED_ATTACKS.get(attackEntity));
+      HANDLED_ATTACKS.remove(attackEntity);
       return;
     }
 
@@ -113,13 +131,13 @@ public class CombatListener implements Listener {
       }
     }
 
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+    StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
+
     double attackMultiplier = 1D;
     double healMultiplier = 1D;
 
     AttackType damageType = DamageUtil.getAttackType(event);
-
-    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
-    StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
     if (projectile != null && projectile.hasMetadata(ATTACK_SPEED_META)) {
       attackMultiplier = projectile.getMetadata(ATTACK_SPEED_META).get(0).asDouble();
