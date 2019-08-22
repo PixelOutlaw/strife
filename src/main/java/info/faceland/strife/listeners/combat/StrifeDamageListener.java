@@ -152,7 +152,7 @@ public class StrifeDamageListener implements Listener {
     damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t));
     DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
     damageMap.replaceAll((t, v) -> damageMap.getOrDefault(t, 0D) + event.getFlatDamageBonus(t));
-    DamageUtil.applyApplicableDamageReductions(attacker, defender, damageMap);
+    DamageUtil.applyApplicableDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
 
     Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap);
 

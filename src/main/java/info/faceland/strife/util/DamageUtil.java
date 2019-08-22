@@ -20,6 +20,8 @@ import static info.faceland.strife.stats.StrifeStat.PROJECTILE_REDUCTION;
 import static info.faceland.strife.stats.StrifeStat.RANGED_PHYSICAL_MULT;
 import static info.faceland.strife.stats.StrifeStat.TRUE_DAMAGE;
 import static info.faceland.strife.util.StatUtil.getArmorMult;
+import static info.faceland.strife.util.StatUtil.getDefenderArmor;
+import static info.faceland.strife.util.StatUtil.getDefenderWarding;
 import static info.faceland.strife.util.StatUtil.getEarthResist;
 import static info.faceland.strife.util.StatUtil.getFireResist;
 import static info.faceland.strife.util.StatUtil.getIceResist;
@@ -133,10 +135,9 @@ public class DamageUtil {
   }
 
   public static void applyApplicableDamageReductions(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Double> damageMap) {
-    for (DamageType type : damageMap.keySet()) {
-      damageMap.put(type, damageMap.get(type) * getDamageReduction(type, attacker, defender));
-    }
+      Map<DamageType, Double> damageMap, Map<AbilityMod, Double> abilityMods) {
+    damageMap.replaceAll((t, v) ->
+        damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
   }
 
   public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
@@ -205,12 +206,19 @@ public class DamageUtil {
     return triggeredElements;
   }
 
-  public static double getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend) {
+  public static double getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend,
+      Map<AbilityMod, Double> modDoubleMap) {
     switch (type) {
       case PHYSICAL:
-        return getArmorMult(attack, defend);
+        double armor = getDefenderArmor(attack, defend);
+        armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0D);
+        armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0D);
+        return getArmorMult(armor);
       case MAGICAL:
-        return getWardingMult(attack, defend);
+        double warding = getDefenderWarding(attack, defend);
+        warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0D);
+        warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0D);
+        return getWardingMult(warding);
       case FIRE:
         return 1 - getFireResist(defend) / 100;
       case ICE:

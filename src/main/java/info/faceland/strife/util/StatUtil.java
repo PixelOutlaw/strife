@@ -3,7 +3,6 @@ package info.faceland.strife.util;
 import static info.faceland.strife.stats.StrifeStat.ACCURACY;
 import static info.faceland.strife.stats.StrifeStat.ACCURACY_MULT;
 import static info.faceland.strife.stats.StrifeStat.ALL_RESIST;
-import static info.faceland.strife.stats.StrifeStat.APEN_MULT;
 import static info.faceland.strife.stats.StrifeStat.ARMOR;
 import static info.faceland.strife.stats.StrifeStat.ARMOR_MULT;
 import static info.faceland.strife.stats.StrifeStat.ARMOR_PENETRATION;
@@ -42,7 +41,6 @@ import static info.faceland.strife.stats.StrifeStat.TENACITY;
 import static info.faceland.strife.stats.StrifeStat.WARDING;
 import static info.faceland.strife.stats.StrifeStat.WARD_MULT;
 import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
-import static info.faceland.strife.stats.StrifeStat.WPEN_MULT;
 import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -155,11 +153,11 @@ public class StatUtil {
   }
 
   public static double getArmorPen(StrifeMob ae) {
-    return ae.getStat(ARMOR_PENETRATION) * (1 + (ae.getStat(APEN_MULT) / 100));
+    return ae.getStat(ARMOR_PENETRATION);
   }
 
   public static double getWardPen(StrifeMob ae) {
-    return ae.getStat(WARD_PENETRATION) * (1 + (ae.getStat(WPEN_MULT) / 100));
+    return ae.getStat(WARD_PENETRATION);
   }
 
   public static double getAccuracy(StrifeMob ae) {
@@ -167,13 +165,29 @@ public class StatUtil {
   }
 
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {
-    double adjustedArmor = Math.max(getArmor(defender) - getArmorPen(attacker), 1);
-    return Math.min(1, 80 / (80 + adjustedArmor));
+    double armor = getDefenderArmor(attacker, defender);
+    return getArmorMult(armor);
+  }
+
+  public static double getDefenderArmor(StrifeMob attacker, StrifeMob defender) {
+    return getArmor(defender) - getArmorPen(attacker);
+  }
+
+  public static double getArmorMult(double armor) {
+    return armor > 0 ? 80 / (80 + armor) : 1 - (armor / 100);
   }
 
   public static double getWardingMult(StrifeMob attacker, StrifeMob defender) {
-    double adjustedWarding = Math.max(getWarding(defender) - getWardPen(attacker), 1);
-    return Math.min(1, 80 / (80 + adjustedWarding));
+    double warding = getDefenderWarding(attacker, defender);
+    return getWardingMult(warding);
+  }
+
+  public static double getDefenderWarding(StrifeMob attacker, StrifeMob defender) {
+    return getWarding(defender) - getWardPen(attacker);
+  }
+
+  public static double getWardingMult(double warding) {
+    return warding > 0 ? 80 / (80 + warding) : 1 - (warding / 100);
   }
 
   public static double getMinimumEvasionMult(double evasion, double accuracy) {
