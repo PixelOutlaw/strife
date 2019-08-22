@@ -134,7 +134,7 @@ public class DamageUtil {
     return damageMap;
   }
 
-  public static void applyApplicableDamageReductions(StrifeMob attacker, StrifeMob defender,
+  public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Double> damageMap, Map<AbilityMod, Double> abilityMods) {
     damageMap.replaceAll((t, v) ->
         damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));

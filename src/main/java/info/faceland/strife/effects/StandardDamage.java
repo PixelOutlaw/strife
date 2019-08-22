@@ -25,7 +25,7 @@ public class StandardDamage extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     StrifeDamageEvent event = new StrifeDamageEvent(caster, target, attackType, attackMultiplier);
     event.getDamageModifiers().putAll(damageModifiers);
-    event.getDamageModifiers().putAll(damageBonuses);
+    event.getFlatDamageBonuses().putAll(damageBonuses);
     event.getAbilityMods().putAll(abilityMods);
     event.setCanBeBlocked(false);
     event.setCanBeEvaded(false);
