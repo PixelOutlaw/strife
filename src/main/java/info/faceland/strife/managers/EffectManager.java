@@ -276,6 +276,15 @@ public class EffectManager {
           LogUtil.printError("Skipping effect " + key + " for invalid damage scale/type");
           return;
         }
+        ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
+        Map<AbilityMod, Double> damageModMap = new HashMap<>();
+        if (damageMod != null) {
+          for (String k : damageMod.getKeys(false)) {
+            AbilityMod mod = AbilityMod.valueOf(k);
+            damageModMap.put(mod, damageMod.getDouble(k));
+          }
+        }
+        ((DealDamage) effect).getAbilityMods().putAll(damageModMap);
         break;
       case STANDARD_DAMAGE:
         effect = new StandardDamage();

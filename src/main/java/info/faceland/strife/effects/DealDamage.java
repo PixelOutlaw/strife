@@ -6,8 +6,11 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.entity.Player;
 
 public class DealDamage extends Effect {
@@ -16,6 +19,9 @@ public class DealDamage extends Effect {
   private double flatBonus;
   private DamageScale damageScale;
   private DamageType damageType;
+  private final Map<AbilityMod, Double> abilityMods = new HashMap<>();
+  private boolean canBeEvaded;
+  private boolean canBeBlocked;
 
   private static double pvpMult = StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-damage", 0.50);
@@ -54,7 +60,7 @@ public class DealDamage extends Effect {
     }
     damage += flatBonus;
     LogUtil.printDebug(" [Pre-Mitigation] Dealing " + damage + " of type " + damageType);
-    damage *= DamageUtil.getDamageReduction(damageType, caster, target);
+    damage *= DamageUtil.getDamageReduction(damageType, caster, target, abilityMods);
     if (damageType != DamageType.TRUE_DAMAGE) {
       damage *= DamageUtil.getPotionMult(caster.getEntity(), target.getEntity());
       damage *= 1 + (caster.getStat(DAMAGE_MULT) / 100);
@@ -83,6 +89,10 @@ public class DealDamage extends Effect {
 
   public void setDamageType(DamageType damageType) {
     this.damageType = damageType;
+  }
+
+  public Map<AbilityMod, Double> getAbilityMods() {
+    return abilityMods;
   }
 
   public enum DamageScale {
