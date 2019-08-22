@@ -133,8 +133,10 @@ public class DOTListener implements Listener {
   private void dealEffectDamage(LivingEntity target, double damage, DamageCause cause) {
     if (cause == DamageCause.POISON) {
       damage *= POISON_FLAT_DAMAGE + POISON_PERCENT_MAX_HEALTH_DAMAGE * target.getMaxHealth();
-      dealDirectDamage(target, damage);
-      target.getWorld().playSound(target.getLocation(), Sound.ENTITY_SPIDER_STEP, 1.5f, 1f);
+      if (target.getHealth() > 1) {
+        dealDirectDamage(target, Math.min(damage, target.getHealth() - 1));
+        target.getWorld().playSound(target.getLocation(), Sound.ENTITY_SPIDER_STEP, 1.5f, 1f);
+      }
     } else {
       damage *= WITHER_FLAT_DAMAGE;
       dealDirectDamage(target, damage);
