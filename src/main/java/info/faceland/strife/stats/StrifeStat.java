@@ -135,8 +135,6 @@ public enum StrifeStat {
   DAMAGE_MULT(),
   ELEMENTAL_MULT("Elemental Damage"),
   ACCURACY_MULT(),
-  APEN_MULT(),
-  WPEN_MULT(),
   MINION_MULT_INTERNAL(),
 
   SPELL_STRIKE_RANGE("Spell Strike Range"),
