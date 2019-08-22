@@ -53,18 +53,18 @@ public class ShootProjectile extends Effect {
       startAngle = -radialAngle / 2;
     }
     for (int i = 0; i < projectiles; i++) {
-      Projectile projectile = (Projectile) originLocation.getWorld()
-          .spawnEntity(originLocation, projectileEntity);
-      projectile.setShooter(caster.getEntity());
-
       Vector direction = castDirection.clone();
       if (radialAngle != 0) {
         applyRadialAngles(direction, startAngle, projectiles, i);
       }
       applySpread(direction, adjustedSpread);
-      direction = direction.normalize();
+      direction = direction.normalize().multiply(newSpeed);
 
-      projectile.setVelocity(direction.multiply(newSpeed));
+      final Vector finalDirection = direction.clone().multiply(newSpeed);
+
+      Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation,
+          projectileEntity.getEntityClass(), e -> e.setVelocity(finalDirection));
+      projectile.setShooter(caster.getEntity());
 
       if (projectileEntity == EntityType.FIREBALL) {
         ((Fireball) projectile).setYield(yield);
@@ -77,7 +77,7 @@ public class ShootProjectile extends Effect {
         ((WitherSkull) projectile).setYield(yield);
       } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
         ((SmallFireball) projectile).setIsIncendiary(ignite);
-        ((SmallFireball) projectile).setDirection(direction);
+        ((SmallFireball) projectile).setDirection(finalDirection);
       } else if (seeking && projectileEntity == EntityType.SHULKER_BULLET) {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
