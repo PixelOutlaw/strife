@@ -152,7 +152,9 @@ public class StrifeDamageListener implements Listener {
     damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t));
     DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
     for (DamageType type : DamageType.values()) {
-      damageMap.replace(type, damageMap.getOrDefault(type, 0D) + event.getFlatDamageBonus(type));
+      if (event.getFlatDamageBonuses().containsKey(type)) {
+        damageMap.put(type, damageMap.getOrDefault(type, 0D) + event.getFlatDamageBonus(type));
+      }
     }
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
 
