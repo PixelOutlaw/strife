@@ -58,9 +58,8 @@ public class ShootProjectile extends Effect {
         applyRadialAngles(direction, startAngle, projectiles, i);
       }
       applySpread(direction, adjustedSpread);
-      direction = direction.normalize().multiply(newSpeed);
 
-      final Vector finalDirection = direction.clone().multiply(newSpeed);
+      final Vector finalDirection = direction.normalize().multiply(newSpeed);
 
       Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation,
           projectileEntity.getEntityClass(), e -> e.setVelocity(finalDirection));
