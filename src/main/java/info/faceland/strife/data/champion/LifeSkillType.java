@@ -1,29 +1,34 @@
 package info.faceland.strife.data.champion;
 
+import org.bukkit.ChatColor;
+
 public enum LifeSkillType {
 
-  CRAFTING("Crafting", "crafting"),
-  ENCHANTING("Enchanting", "enchant"),
-  FISHING("Fishing", "fishing"),
-  MINING("Mining", "mining"),
-  SNEAK("Sneak", "sneak"),
-  SWORDSMANSHIP("Swordsmanship", "sword"),
-  AXE_MASTERY("Axe Mastery", "axe"),
-  DUAL_WIELDING("Dual Wielding", "dual"),
-  SHIELD_MASTERY("Shield Mastery", "shield"),
-  ARCHERY("Archery", "archery"),
-  ARCANE_MAGICS("Arcane Magics", "magic"),
-  AUGMENTATION("Augmentation", "enhancement"),
-  SUMMONING("Summoning", "summoning");
+  CRAFTING("Crafting", "crafting", ChatColor.YELLOW),
+  ENCHANTING("Enchanting", "enchant", ChatColor.LIGHT_PURPLE),
+  FISHING("Fishing", "fishing", ChatColor.AQUA),
+  MINING("Mining", "mining", ChatColor.DARK_GREEN),
+  SNEAK("Sneak", "sneak", ChatColor.GRAY),
+  SWORDSMANSHIP("Swordsmanship", "sword", ChatColor.RED),
+  AXE_MASTERY("Axe Mastery", "axe", ChatColor.RED),
+  DUAL_WIELDING("Dual Wielding", "dual", ChatColor.GREEN),
+  SHIELD_MASTERY("Shield Mastery", "shield", ChatColor.YELLOW),
+  ARCHERY("Archery", "archery", ChatColor.DARK_GREEN),
+  ARCANE_MAGICS("Arcane Magics", "arcane-magic", ChatColor.BLUE),
+  NATURAL_MAGICS("Natural Magics", "natural-magic", ChatColor.DARK_AQUA),
+  BLACK_MAGICS("Black Magics", "dark-magics", ChatColor.DARK_PURPLE),
+  CELESTIAL_MAGICS("Celestial Magics", "light-magic", ChatColor.WHITE);
 
   public final static LifeSkillType[] types = LifeSkillType.values();
 
   private final String prettyName;
   private final String dataName;
+  private final ChatColor color;
 
-  LifeSkillType(String prettyName, String dataName) {
+  LifeSkillType(String prettyName, String dataName, ChatColor color) {
     this.prettyName = prettyName;
     this.dataName = dataName;
+    this.color = color;
   }
 
   public String getName() {
@@ -32,5 +37,9 @@ public enum LifeSkillType {
 
   public String getDataName() {
     return dataName;
+  }
+
+  public ChatColor getColor() {
+    return color;
   }
 }

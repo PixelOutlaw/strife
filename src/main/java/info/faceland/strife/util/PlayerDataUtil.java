@@ -146,28 +146,4 @@ public class PlayerDataUtil {
     return champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
         .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));
   }
-
-  public static String getSkillColor(LifeSkillType type) {
-    switch (type) {
-      case CRAFTING:
-      case SHIELD_MASTERY:
-        return "&e";
-      case ENCHANTING:
-        return "&d";
-      case FISHING:
-        return "&b";
-      case MINING:
-      case ARCHERY:
-      case DUAL_WIELDING:
-        return "&2";
-      case SNEAK:
-        return "&7";
-      case SWORDSMANSHIP:
-      case AXE_MASTERY:
-        return "&c";
-      case ARCANE_MAGICS:
-        return "&9";
-    }
-    return "";
-  }
 }

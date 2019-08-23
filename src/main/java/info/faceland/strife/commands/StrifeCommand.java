@@ -29,7 +29,6 @@ import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import info.faceland.strife.stats.AbilitySlot;
-import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -239,12 +238,12 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Unknown skill " + skill + "??");
       return;
     }
-    String color = PlayerDataUtil.getSkillColor(type);
+    ChatColor color = type.getColor();
     String name = type.getName();
 
     plugin.getChampionManager().getChampion(target).getSaveData().setSkillLevel(type, newLevel);
     sendMessage(target, SET_LEVEL_MSG
-        .replace("{c}", color)
+        .replace("{c}", "" + color)
         .replace("{n}", name)
         .replace("{a}", Integer.toString(newLevel))
     );
@@ -262,12 +261,12 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Unknown skill " + skill + "???");
       return;
     }
-    String color = PlayerDataUtil.getSkillColor(type);
+    ChatColor color = type.getColor();
     String name = type.getName();
 
     plugin.getSkillExperienceManager().addExperience(target, type, amount, true);
     sendMessage(target, XP_MSG
-        .replace("{c}", color)
+        .replace("{c}", "" + color)
         .replace("{n}", name)
         .replace("{a}", Integer.toString(amount))
     );

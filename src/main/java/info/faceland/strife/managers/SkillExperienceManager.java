@@ -27,9 +27,9 @@ import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.events.SkillExpGainEvent;
 import info.faceland.strife.events.SkillLevelUpEvent;
-import info.faceland.strife.util.PlayerDataUtil;
 import java.text.DecimalFormat;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class SkillExperienceManager {
@@ -62,7 +62,7 @@ public class SkillExperienceManager {
       amount *= 1 + statsMult;
       String xp = FORMAT.format(amount * (1 + statsMult));
       MessageUtils.sendMessage(champion.getPlayer(), XP_MSG
-          .replace("{c}", PlayerDataUtil.getSkillColor(type))
+          .replace("{c}", "" + type.getColor())
           .replace("{n}", type.getName())
           .replace("{a}", xp)
       );
@@ -89,8 +89,8 @@ public class SkillExperienceManager {
     }
 
     saveData.setSkillExp(type, (float) currentExp);
-    String c = PlayerDataUtil.getSkillColor(type);
-    String xpMsg = XP_AB.replace("{0}", c).replace("{1}", FORMAT.format((int) currentExp))
+    ChatColor c = type.getColor();
+    String xpMsg = XP_AB.replace("{0}", "" + c).replace("{1}", FORMAT.format((int) currentExp))
         .replace("{2}", FORMAT.format((int) maxExp));
     MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
     plugin.getBossBarManager().bumpSkillBar(champion, type);
@@ -108,17 +108,9 @@ public class SkillExperienceManager {
         return plugin.getMiningRate().get(level);
       case SNEAK:
         return plugin.getSneakRate().get(level);
-      case SWORDSMANSHIP:
-      case AXE_MASTERY:
-      case SHIELD_MASTERY:
-      case DUAL_WIELDING:
-      case ARCHERY:
-      case SUMMONING:
-      case ARCANE_MAGICS:
-      case AUGMENTATION:
+      default:
         return plugin.getCombatSkillRate().get(level);
     }
-    return 1000000000;
   }
 
 }

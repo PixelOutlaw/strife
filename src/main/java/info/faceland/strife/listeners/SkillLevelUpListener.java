@@ -21,9 +21,9 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import info.faceland.strife.events.SkillLevelUpEvent;
-import info.faceland.strife.util.PlayerDataUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -41,7 +41,7 @@ public class SkillLevelUpListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSkillLevelUp(SkillLevelUpEvent event) {
-    String color = PlayerDataUtil.getSkillColor(event.getSkillType());
+    ChatColor color = event.getSkillType().getColor();
     String name = event.getSkillType().getName();
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
@@ -58,18 +58,18 @@ public class SkillLevelUpListener implements Listener {
     }
   }
 
-  private String buildMessage(String name, String color, int level) {
+  private String buildMessage(String name, ChatColor color, int level) {
     return SELF_MESSAGE
         .replace("{l}", String.valueOf(level))
-        .replace("{c}", color)
+        .replace("{c}", "" + color)
         .replace("{n}", name);
   }
 
-  private String buildMessage(String playerName, String name, String color, int level) {
+  private String buildMessage(String playerName, String name, ChatColor color, int level) {
     return BROADCAST_MESSAGE
         .replace("{p}", playerName)
         .replace("{l}", String.valueOf(level))
-        .replace("{c}", color)
+        .replace("{c}", "" + color)
         .replace("{n}", name);
   }
 }
