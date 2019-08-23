@@ -218,7 +218,7 @@ public class EffectManager {
       filterFriendlyEntities(areaTargets, caster, effect);
       List<LivingEntity> oldTargetsAsList = new ArrayList<>(areaTargets);
       Set<LivingEntity> newTargetsFromMax = new HashSet<>();
-      while (newTargetsFromMax.size() < effect.getMaxTargets() && areaTargets.size() > 0) {
+      while (newTargetsFromMax.size() < effect.getMaxTargets() && oldTargetsAsList.size() > 0) {
         int targetIndex = random.nextInt(oldTargetsAsList.size());
         newTargetsFromMax.add(oldTargetsAsList.get(targetIndex));
         oldTargetsAsList.remove(targetIndex);
