@@ -129,7 +129,7 @@ public class EffectManager {
         continue;
       }
       StrifeMob targetMob = aeManager.getStatMob(le);
-      LogUtil.printDebug(" - Applying effect to " + PlayerDataUtil.getName(le));
+      LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + PlayerDataUtil.getName(le));
       if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
         continue;
       }
