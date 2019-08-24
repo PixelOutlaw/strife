@@ -32,7 +32,6 @@ import info.faceland.strife.commands.StrifeCommand;
 import info.faceland.strife.commands.UniqueEntityCommand;
 import info.faceland.strife.data.Spawner;
 import info.faceland.strife.data.UniqueEntity;
-import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Lightning;
@@ -694,19 +693,6 @@ public class StrifePlugin extends FacePlugin {
       }
       uniqueEntityManager.addUniqueEntity(entityNameKey, uniqueEntity);
     }
-  }
-
-  private List<Ability> setupPhase(List<String> strings, int phase) {
-    List<Ability> abilities = new ArrayList<>();
-    for (String s : strings) {
-      Ability ability = abilityManager.getAbility(s);
-      if (ability == null) {
-        getLogger().warning("Failed to add phase" + phase + " ability " + s + " - Not found");
-        continue;
-      }
-      abilities.add(ability);
-    }
-    return abilities;
   }
 
   public void loadSpawners() {
