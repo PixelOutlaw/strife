@@ -92,6 +92,24 @@ public class StrifeMob {
     baseStats.putAll(stats);
   }
 
+  public boolean hasBuff(String buffId) {
+    if (runningBuffs.containsKey(buffId)) {
+      if (runningBuffs.get(buffId).isExpired()) {
+        runningBuffs.remove(buffId);
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  public int getBuffStacks(String buffId) {
+    if (hasBuff(buffId)) {
+      return runningBuffs.get(buffId).getStacks();
+    }
+    return 0;
+  }
+
   public void addBuff(String buffId, Buff buff, double duration) {
     if (runningBuffs.get(buffId) == null || runningBuffs.get(buffId).isExpired()) {
       buff.setExpireTimeFromDuration(duration);

@@ -5,6 +5,7 @@ import info.faceland.strife.conditions.AttributeCondition;
 import info.faceland.strife.conditions.BarrierCondition;
 import info.faceland.strife.conditions.BleedingCondition;
 import info.faceland.strife.conditions.BonusLevelCondition;
+import info.faceland.strife.conditions.BuffCondition;
 import info.faceland.strife.conditions.BurningCondition;
 import info.faceland.strife.conditions.ChanceCondition;
 import info.faceland.strife.conditions.Condition;
@@ -572,6 +573,11 @@ public class EffectManager {
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);
         condition = new BarrierCondition(compareTarget, comparison, value, percent);
+        break;
+      case BUFF:
+        int stacks = cs.getInt("stacks", 1);
+        String buffId = cs.getString("buff-id", "");
+        condition = new BuffCondition(compareTarget, comparison, buffId, stacks);
         break;
       case CHANCE:
         double chance = cs.getDouble("chance", 0.5);

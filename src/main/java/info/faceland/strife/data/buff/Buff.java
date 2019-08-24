@@ -44,6 +44,10 @@ public class Buff {
     LogUtil.printDebug(" Stacks: " + stacks + "/" + maxStacks);
   }
 
+  public int getStacks() {
+    return stacks;
+  }
+
   public boolean isExpired() {
     return System.currentTimeMillis() > endingTimestamp;
   }
