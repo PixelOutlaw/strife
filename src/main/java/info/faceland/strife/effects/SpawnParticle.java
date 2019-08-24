@@ -21,6 +21,8 @@ public class SpawnParticle extends Effect {
   private double red;
   private double green;
   private double blue;
+  private double arcAngle;
+  private double arcOffset;
   private int tickDuration;
   private ParticleStyle style;
   private OriginLocation particleOriginLocation = OriginLocation.CENTER;
@@ -57,6 +59,9 @@ public class SpawnParticle extends Effect {
         return;
       case PILLAR:
         spawnParticlePillar(location, size);
+        return;
+      case ARC:
+        spawnParticleArc(direction, location, size, arcAngle, arcOffset);
         return;
       case NORMAL:
       default:
@@ -120,8 +125,39 @@ public class SpawnParticle extends Effect {
     this.blue = blue;
   }
 
+  public void setArcAngle(double arcAngle) {
+    this.arcAngle = arcAngle;
+  }
+
+  public void setArcOffset(double arcOffset) {
+    this.arcOffset = arcOffset;
+  }
+
   public Location getLoc(LivingEntity le) {
     return DamageUtil.getOriginLocation(le, particleOriginLocation);
+  }
+
+  private void spawnParticleArc(Vector direction, Location center, double radius, double angle, double offset) {
+    int segments = (int) (radius * angle * 0.1);
+    double startAngle =  -angle * 0.5;
+    double segmentAngle = angle / segments;
+    double verticalDirection = random.nextDouble() < 0.5 ? 1 : -1;
+    double startVerticalOffset = verticalDirection * offset * random.nextDouble() * 0.5;
+    double segmentOffset = (2 * startVerticalOffset) / segments;
+    for (int i = 0; i <= segments; i++) {
+      Vector newDirection = direction.clone().multiply(size);
+      applyRadialAngles(newDirection, startAngle, segmentAngle, i);
+      newDirection.setY(startVerticalOffset - segmentOffset * i);
+      spawnParticle(center.clone().add(newDirection));
+    }
+  }
+
+  private void applyRadialAngles(Vector direction, double angle, double segment, int counter) {
+    angle = Math.toRadians(angle + counter * segment);
+    double x = direction.getX();
+    double z = direction.getZ();
+    direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
+    direction.setX(z * Math.sin(angle) + x * Math.cos(angle));
   }
 
   private void spawnParticleCircle(Location center, double radius) {
@@ -175,6 +211,7 @@ public class SpawnParticle extends Effect {
     NORMAL,
     CIRCLE,
     LINE,
+    ARC,
     PILLAR
   }
 }

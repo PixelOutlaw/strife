@@ -488,11 +488,17 @@ public class EffectManager {
           return;
         }
         ((SpawnParticle) effect).setParticle(particle);
+        ParticleStyle style = ParticleStyle.valueOf(cs.getString("style", "NORMAL"));
+        ((SpawnParticle) effect).setStyle(style);
         if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
             || particle == Particle.SPELL_INSTANT) {
           ((SpawnParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
           ((SpawnParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
           ((SpawnParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
+        }
+        if (style == ParticleStyle.ARC) {
+          ((SpawnParticle) effect).setArcAngle(cs.getDouble("arc-angle", 30));
+          ((SpawnParticle) effect).setArcOffset(cs.getDouble("arc-offset", 0));
         }
         ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
         ((SpawnParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));
@@ -500,7 +506,6 @@ public class EffectManager {
         ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
         ((SpawnParticle) effect).setParticleOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((SpawnParticle) effect).setStyle(ParticleStyle.valueOf(cs.getString("style", "NORMAL")));
         ((SpawnParticle) effect).setSize(cs.getDouble("size", 1));
         break;
     }
