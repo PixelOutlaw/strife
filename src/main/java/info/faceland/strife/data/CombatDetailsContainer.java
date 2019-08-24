@@ -40,7 +40,7 @@ public class CombatDetailsContainer {
     }
     float xpTotal = totalExp * EXP_PERCENTAGE;
     xpTotal += WEIGHT_PERCENTAGE * totalWeight;
-    xpTotal *= (0.9f + Math.random() * 0.2f);
+    xpTotal *= 0.9f + Math.random() * 0.2f;
     Map<LifeSkillType, Float> rewards = new HashMap<>();
     for (LifeSkillType type : skillWeight.keySet()) {
       rewards.put(type, Math.max(1, xpTotal * (skillWeight.get(type) / totalWeight)));

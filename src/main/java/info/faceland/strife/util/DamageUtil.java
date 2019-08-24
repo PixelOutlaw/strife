@@ -649,7 +649,10 @@ public class DamageUtil {
   }
 
   public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
-      OriginLocation originLocation) {
+      OriginLocation originLocation, boolean targetEntities) {
+    if (!targetEntities) {
+      return getTargetLocation(caster, range);
+    }
     if (target == null) {
       target = selectFirstEntityInSight(caster, range);
     }
@@ -659,8 +662,8 @@ public class DamageUtil {
     return getTargetLocation(caster, range);
   }
 
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range) {
-    return getTargetArea(caster, target, range, OriginLocation.CENTER);
+  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range, boolean targetEntities) {
+    return getTargetArea(caster, target, range, OriginLocation.CENTER, targetEntities);
   }
 
   private static Location getTargetLocation(LivingEntity caster, double range) {

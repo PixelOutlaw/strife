@@ -73,6 +73,8 @@ penalty-free-worlds:
 
 leveling:
   max-skill-level: 60
+  exp-converted-to-combat-skill-exp: 0.05
+  combat-skill-exp-weight: 0.1
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
   crafting: 50 + (LEVEL * 25) + (LEVEL^3)
   fishing: 50 + (LEVEL * 25) + (LEVEL^3)

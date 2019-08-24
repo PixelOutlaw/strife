@@ -269,10 +269,12 @@ public class AbilityManager {
       case AREA_RADIUS:
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
-        Location loc = DamageUtil.getTargetArea(caster.getEntity(), target, ability.getRange());
+        Location loc = DamageUtil
+            .getTargetArea(caster.getEntity(), target, ability.getRange(), false);
         return getAreaTargets(targets, ability, loc);
       case TARGET_GROUND:
-        Location loc2 = DamageUtil.getTargetArea(caster.getEntity(), target, ability.getRange());
+        Location loc2 = DamageUtil
+            .getTargetArea(caster.getEntity(), target, ability.getRange(), true);
         return getGroundedAreaTargets(targets, ability, loc2);
     }
     return null;
