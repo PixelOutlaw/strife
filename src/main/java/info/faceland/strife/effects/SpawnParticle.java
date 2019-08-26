@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class SpawnParticle extends Effect {
@@ -26,6 +27,7 @@ public class SpawnParticle extends Effect {
   private int tickDuration;
   private ParticleStyle style;
   private OriginLocation particleOriginLocation = OriginLocation.CENTER;
+  private ItemStack blockData;
 
   private static Random random = new Random();
 
@@ -137,9 +139,14 @@ public class SpawnParticle extends Effect {
     return DamageUtil.getOriginLocation(le, particleOriginLocation);
   }
 
-  private void spawnParticleArc(Vector direction, Location center, double radius, double angle, double offset) {
+  public void setBlockData(ItemStack blockData) {
+    this.blockData = blockData;
+  }
+
+  private void spawnParticleArc(Vector direction, Location center, double radius, double angle,
+      double offset) {
     int segments = (int) (radius * angle * 0.1);
-    double startAngle =  -angle * 0.5;
+    double startAngle = -angle * 0.5;
     double segmentAngle = angle / segments;
     double verticalDirection = random.nextDouble() < 0.5 ? 1 : -1;
     double startVerticalOffset = verticalDirection * offset * random.nextDouble() * 0.5;
@@ -193,18 +200,19 @@ public class SpawnParticle extends Effect {
   private void spawnParticle(Location location) {
     if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
         || particle == Particle.SPELL_INSTANT) {
-      spawnSpellMobParticle(location);
+      for (int i = 0; i < quantity; i++) {
+        Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2,
+            -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
+        location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
+      }
+      return;
+    }
+    if (blockData != null) {
+      location.getWorld()
+          .spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);
       return;
     }
     location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
-  }
-
-  private void spawnSpellMobParticle(Location location) {
-    for (int i = 0; i < quantity; i++) {
-      Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2,
-          -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
-      location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
-    }
   }
 
   public enum ParticleStyle {
