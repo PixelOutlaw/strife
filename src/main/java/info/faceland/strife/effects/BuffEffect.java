@@ -18,10 +18,6 @@ public class BuffEffect extends Effect {
     if (!strictDuration) {
       durationMult *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    if (isForceTargetCaster()) {
-      DamageUtil.applyBuff(loadedBuff, caster, durationMult);
-      return;
-    }
     DamageUtil.applyBuff(loadedBuff, target, durationMult);
   }
 

@@ -83,6 +83,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 public class EffectManager {
@@ -121,9 +122,6 @@ public class EffectManager {
 
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
     Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
-    if (effect.isForceTargetCaster()) {
-      finalTargets.add(caster.getEntity());
-    }
     for (LivingEntity le : finalTargets) {
       if (le instanceof ArmorStand) {
         runPlayAtLocationEffects(caster, effect, le);
@@ -134,7 +132,7 @@ public class EffectManager {
       if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
         continue;
       }
-      effect.apply(caster, targetMob);
+      effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
     }
   }
 
@@ -507,6 +505,10 @@ public class EffectManager {
         ((SpawnParticle) effect).setParticleOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((SpawnParticle) effect).setSize(cs.getDouble("size", 1));
+        String materialType = cs.getString("material", "");
+        if (StringUtils.isNotBlank(materialType)) {
+          ((SpawnParticle) effect).setBlockData(new ItemStack(Material.getMaterial(materialType)));
+        }
         break;
     }
     if (effectType != EffectType.WAIT) {

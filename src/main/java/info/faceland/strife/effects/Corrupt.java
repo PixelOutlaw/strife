@@ -14,10 +14,6 @@ public class Corrupt extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       corruptionStacks += getStatMults().get(attr) * caster.getStat(attr);
     }
-    if (isForceTargetCaster()) {
-      DamageUtil.applyCorrupt(caster.getEntity(), corruptionStacks);
-      return;
-    }
     DamageUtil.applyCorrupt(target.getEntity(), corruptionStacks);
   }
 
