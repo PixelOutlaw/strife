@@ -91,6 +91,7 @@ import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import info.faceland.strife.menus.levelup.ConfirmationMenu;
 import info.faceland.strife.menus.levelup.LevelupMenu;
 import info.faceland.strife.menus.stats.StatsMenu;
+import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.FlatfileStorage;
@@ -504,6 +505,7 @@ public class StrifePlugin extends FacePlugin {
       getChampionManager().updateAll(championManager.getChampion(player));
       statUpdateManager.updateAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
+      abilityIconManager.setAllAbilityIcons(player);
     }
 
     Lightning.setupLightningPacketListener();
@@ -519,6 +521,11 @@ public class StrifePlugin extends FacePlugin {
     storage.saveAll();
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
+      abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
+      abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_C);
+    }
 
     HandlerList.unregisterAll(this);
 

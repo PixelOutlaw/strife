@@ -27,12 +27,16 @@ public class AbilityIconManager {
     this.plugin = plugin;
   }
 
-  public void clearAbilityIcon(Player player, AbilitySlot slot) {
-    plugin.getChampionManager().getChampion(player).getSaveData().setAbility(slot, null);
+  public void removeIconItem(Player player, AbilitySlot slot) {
     if (slot.getSlotIndex() != -1 && isAbilityIcon(
         player.getInventory().getItem(slot.getSlotIndex()))) {
       player.getInventory().setItem(slot.getSlotIndex(), null);
     }
+  }
+
+  public void clearAbilityIcon(Player player, AbilitySlot slot) {
+    plugin.getChampionManager().getChampion(player).getSaveData().setAbility(slot, null);
+    removeIconItem(player, slot);
   }
 
   public void setAllAbilityIcons(Player player) {

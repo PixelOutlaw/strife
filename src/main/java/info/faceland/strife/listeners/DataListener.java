@@ -21,6 +21,7 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
+import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.DamageUtil;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -94,6 +95,9 @@ public class DataListener implements Listener {
     plugin.getBarrierManager().removeEntity(event.getEntity());
     if (event.getEntity() instanceof Player) {
       plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
+      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);
+      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_B);
+      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_C);
     } else {
       UUID uuid = event.getEntity().getUniqueId();
       Bukkit.getScheduler().runTaskLater(plugin,
@@ -103,22 +107,28 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(final PlayerQuitEvent event) {
-    plugin.getAbilityManager().savePlayerCooldowns(event.getPlayer());
-    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+    doPlayerLeave(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerKick(final PlayerKickEvent event) {
-    plugin.getAbilityManager().savePlayerCooldowns(event.getPlayer());
-    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
+    doPlayerLeave(event.getPlayer());
+  }
+
+  private void doPlayerLeave(Player player) {
+    plugin.getAbilityManager().savePlayerCooldowns(player);
+    plugin.getBossBarManager().removeBar(player.getUniqueId());
+    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
+    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
+    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
-    plugin.getBarrierManager().createBarrierEntry(
-        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getBarrierManager().createBarrierEntry(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
