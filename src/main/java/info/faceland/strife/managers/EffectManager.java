@@ -37,6 +37,7 @@ import info.faceland.strife.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.effects.DealDamage;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.Food;
 import info.faceland.strife.effects.ForceTarget;
 import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
@@ -253,6 +254,9 @@ public class EffectManager {
         ((Heal) effect).setAmount(cs.getDouble("amount", 1));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
+      case FOOD:
+        effect = new Food();
+        ((Food) effect).setAmount(cs.getDouble("amount", 1));
       case RESTORE_BARRIER:
         effect = new RestoreBarrier();
         ((RestoreBarrier) effect).setAmount(cs.getDouble("amount", 1));
@@ -429,7 +433,7 @@ public class EffectManager {
         effect = new Push();
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
-        ((Push) effect).setCancelFall(cs.getBoolean("zero-velocity", false));
+        ((Push) effect).setCancelFall(cs.getBoolean("cancel-fall", false));
         ((Push) effect).setPushType(
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
         break;
@@ -691,6 +695,7 @@ public class EffectManager {
     WORLD_SPACE_ENTITY,
     AREA_EFFECT,
     HEAL,
+    FOOD,
     COOLDOWN_REDUCTION,
     RESTORE_BARRIER,
     INCREASE_RAGE,
