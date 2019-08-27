@@ -23,8 +23,12 @@ public class Push extends Effect {
             target.getEntity());
         break;
       case CASTER_DIRECTION:
-        direction = caster.getEntity().getEyeLocation().getDirection().setY(0.001).normalize()
-            .multiply(power / 10);
+        Vector casterDir = caster.getEntity().getLocation().getDirection();
+        if (casterDir.getX() == 0 && casterDir.getZ() == 0) {
+          direction = new Vector(power / 10, 0, 0);
+        } else {
+          direction = casterDir.setY(0).normalize().multiply(power / 10);
+        }
         break;
       case WSE_LOCATION:
         LogUtil.printDebug(tempVector.getX() + " " + tempVector.getY() + " " + tempVector.getZ());
@@ -36,14 +40,16 @@ public class Push extends Effect {
       default:
         return;
     }
+    Vector newVelocity = target.getEntity().getVelocity();
     if (cancelFall) {
-      if (target.getEntity().getVelocity().getY() < 0) {
-        target.getEntity().getVelocity().setY(0);
+      if (newVelocity.getY() < 0) {
+        newVelocity.setY(0);
       }
       target.getEntity().setFallDistance(0);
     }
-    direction.add(new Vector(0, height / 10, 0));
-    target.getEntity().setVelocity(direction);
+    newVelocity.add(direction);
+    newVelocity.add(new Vector(0, height / 10, 0));
+    target.getEntity().setVelocity(newVelocity);
   }
 
   public void setTempVectorFromWSE(WorldSpaceEffectEntity entity) {
