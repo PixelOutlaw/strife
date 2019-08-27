@@ -22,7 +22,7 @@ public class Heal extends Effect {
         DamageUtil.restoreHealth(target.getEntity(), heal);
         return;
       case TARGET_CURRENT_HEALTH:
-        DamageUtil.restoreHealth(target.getEntity(), heal * getCurrentHealth(target.getEntity()));
+        DamageUtil.restoreHealth(target.getEntity(), heal * target.getEntity().getHealth());
         return;
       case TARGET_MISSING_HEALTH:
         DamageUtil.restoreHealth(target.getEntity(), heal * getMissingHealth(target.getEntity()));
@@ -31,7 +31,7 @@ public class Heal extends Effect {
         DamageUtil.restoreHealth(target.getEntity(), heal * target.getEntity().getMaxHealth());
         return;
       case CASTER_CURRENT_HEALTH:
-        DamageUtil.restoreHealth(target.getEntity(), heal * getCurrentHealth(caster.getEntity()));
+        DamageUtil.restoreHealth(target.getEntity(), heal * caster.getEntity().getHealth());
         return;
       case CASTER_MISSING_HEALTH:
         DamageUtil.restoreHealth(target.getEntity(), heal * getMissingHealth(caster.getEntity()));
@@ -49,11 +49,7 @@ public class Heal extends Effect {
     this.damageScale = damageScale;
   }
 
-  private double getCurrentHealth(LivingEntity ent) {
-    return ent.getHealth() / ent.getMaxHealth();
-  }
-
   private double getMissingHealth(LivingEntity ent) {
-    return 1 - ent.getHealth() / ent.getMaxHealth();
+    return ent.getMaxHealth() - ent.getHealth();
   }
 }
