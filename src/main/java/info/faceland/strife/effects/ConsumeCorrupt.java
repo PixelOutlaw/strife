@@ -11,7 +11,7 @@ public class ConsumeCorrupt extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     double value = StrifePlugin.getInstance().getDarknessManager()
-        .getCorruptionStacks(target.getEntity());
+        .getCorruption(target.getEntity());
     if (value <= 0) {
       return;
     }

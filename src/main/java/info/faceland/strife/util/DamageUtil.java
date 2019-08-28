@@ -475,7 +475,7 @@ public class DamageUtil {
   }
 
   public static void applyCorrupt(LivingEntity defender, double amount) {
-    StrifePlugin.getInstance().getDarknessManager().applyCorruptionStacks(defender, amount);
+    StrifePlugin.getInstance().getDarknessManager().applyCorruption(defender, amount);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
     defender.getWorld()
         .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
