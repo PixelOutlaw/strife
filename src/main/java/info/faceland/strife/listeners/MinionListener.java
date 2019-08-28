@@ -21,10 +21,12 @@ package info.faceland.strife.listeners;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.managers.MinionManager;
 import info.faceland.strife.managers.StrifeMobManager;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -87,11 +89,19 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    if (!(entityManager.isTrackedEntity(event.getEntity()) && entityManager.isTrackedEntity(attacker))) {
+    if (!(entityManager.isTrackedEntity(event.getEntity()) && entityManager
+        .isTrackedEntity(attacker))) {
       return;
     }
-    StrifeMob defend = entityManager.getStatMob((LivingEntity) event.getEntity());
-    if (defend.isMasterOf((LivingEntity)attacker)) {
+    StrifeMob attackMob = entityManager.getStatMob((LivingEntity) attacker);
+    if (event.getEntity() instanceof Player && attackMob.getMaster() != null && attackMob
+        .getMaster() instanceof Player) {
+      if (!DamageUtil.canAttack((Player) attackMob.getMaster(), (Player) event.getEntity())) {
+        event.setCancelled(true);
+        return;
+      }
+    }
+    if (event.getEntity() == attackMob.getMaster()) {
       LogUtil.printDebug("Ignoring attacking of master for " + attacker.getCustomName());
       event.setCancelled(true);
     }
@@ -138,8 +148,9 @@ public class MinionListener implements Listener {
       if (!(minion.getEntity() instanceof Mob)) {
         continue;
       }
-      if (((Mob) minion.getEntity()).getTarget() == null) {
-        ((Mob) minion.getEntity()).setTarget((LivingEntity) attacker);
+      Mob mob = (Mob) minion.getEntity();
+      if (mob.getTarget() == null || !mob.getTarget().isValid()) {
+        mob.setTarget((LivingEntity) attacker);
       }
     }
   }

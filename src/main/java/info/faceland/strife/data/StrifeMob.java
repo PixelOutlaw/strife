@@ -28,6 +28,7 @@ public class StrifeMob {
 
   private boolean despawnOnUnload = false;
 
+  private LivingEntity master;
   private final Set<StrifeMob> minions = new ConcurrentSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
@@ -122,11 +123,11 @@ public class StrifeMob {
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
-    return strifeMob.getMinions().contains(this);
+    return master == strifeMob.getEntity();
   }
 
   public boolean isMasterOf(StrifeMob strifeMob) {
-    return getMinions().contains(strifeMob);
+    return strifeMob.getMaster() == livingEntity;
   }
 
   public boolean isMasterOf(LivingEntity entity) {
@@ -152,6 +153,19 @@ public class StrifeMob {
       }
     }
     return minions;
+  }
+
+  public void addMinion(StrifeMob strifeMob) {
+    getMinions().add(strifeMob);
+    strifeMob.setMaster(livingEntity);
+  }
+
+  public LivingEntity getMaster() {
+    return master;
+  }
+
+  public void setMaster(LivingEntity master) {
+    this.master = master;
   }
 
   public boolean isDespawnOnUnload() {
