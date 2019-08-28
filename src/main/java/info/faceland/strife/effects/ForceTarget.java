@@ -16,10 +16,13 @@ public class ForceTarget extends Effect {
     if (!(fromTarget instanceof Mob)) {
       return;
     }
-    if (!overwrite && ((Mob) fromTarget).getTarget() != null) {
+    if (overwrite) {
+      ((Mob) fromTarget).setTarget(toTarget);
       return;
     }
-    ((Mob) fromTarget).setTarget(toTarget);
+    if (((Mob) fromTarget).getTarget() == null || !((Mob) fromTarget).getTarget().isValid()) {
+      ((Mob) fromTarget).setTarget(toTarget);
+    }
   }
 
   public void setOverwrite(boolean overwrite) {
