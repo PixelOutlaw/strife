@@ -235,6 +235,8 @@ public class EffectManager {
       ((PlaySound) effect).playAtLocation(le.getLocation());
     } else if (effect instanceof SpawnParticle) {
       ((SpawnParticle) effect).playAtLocation(le);
+    } else if (effect instanceof Summon) {
+      ((Summon) effect).summonAtLocation(caster, le.getLocation());
     }
   }
 
@@ -446,7 +448,8 @@ public class EffectManager {
         break;
       case TARGET:
         effect = new ForceTarget();
-        ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite"));
+        ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite", true));
+        ((ForceTarget) effect).setCasterTargetsTarget(cs.getBoolean("caster-targets-target", true));
         break;
       case LIGHTNING:
         effect = new Lightning();
