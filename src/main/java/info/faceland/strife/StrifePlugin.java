@@ -55,6 +55,7 @@ import info.faceland.strife.listeners.TargetingListener;
 import info.faceland.strife.listeners.UniqueSplashListener;
 import info.faceland.strife.listeners.combat.BowListener;
 import info.faceland.strife.listeners.combat.CombatListener;
+import info.faceland.strife.listeners.combat.CreeperEffectListener;
 import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.combat.DogeListener;
 import info.faceland.strife.listeners.combat.StrifeDamageListener;
@@ -465,6 +466,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
+    Bukkit.getPluginManager().registerEvents(
+        new CreeperEffectListener(darknessManager, bleedManager), this);
     Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
@@ -478,8 +481,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
-    Bukkit.getPluginManager()
-        .registerEvents(new MinionListener(strifeMobManager, minionManager), this);
+    Bukkit.getPluginManager().registerEvents(
+        new MinionListener(strifeMobManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(), this);
     Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
