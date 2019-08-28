@@ -19,6 +19,7 @@
 package info.faceland.strife.tasks;
 
 import static org.bukkit.potion.PotionEffectType.POISON;
+import static org.bukkit.potion.PotionEffectType.REGENERATION;
 import static org.bukkit.potion.PotionEffectType.WITHER;
 
 import info.faceland.strife.StrifePlugin;
@@ -48,19 +49,25 @@ public class HealthRegenTask extends BukkitRunnable {
       if (plugin.getBarrierManager().hasBarrierEntry(player)) {
         plugin.getBarrierManager().restoreBarrier(pStats, pStats.getStat(StrifeStat.BARRIER_REGEN));
       }
-      if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()) {
+      double playerMaxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+      if (player.getHealth() >= playerMaxHealth) {
         continue;
       }
       if (player.hasPotionEffect(WITHER) || player.hasPotionEffect(POISON)) {
         return;
       }
-      // Restore 40% of your regen per 2s tick (This task runs every 2s)
-      // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
-      double lifeAmount = StatUtil.getRegen(pStats) * 0.4;
+      double lifeAmount = StatUtil.getRegen(pStats);
       // Bonus for players that have just eaten
       if (player.getSaturation() > 0.1) {
         lifeAmount *= 1.6;
       }
+      if (player.hasPotionEffect(REGENERATION)) {
+        int potionIntensity = player.getPotionEffect(REGENERATION).getAmplifier() + 1;
+        lifeAmount += potionIntensity + playerMaxHealth * 0.02 * potionIntensity;
+      }
+      // Restore 40% of your regen per 2s tick (This task runs every 2s)
+      // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
+      lifeAmount *= 0.4;
       if (player.getFoodLevel() <= 6) {
         lifeAmount *= player.getFoodLevel() / 6F;
       }
