@@ -152,9 +152,6 @@ public class AbilityManager {
       doRequirementNotMetPrompt(caster, ability);
       return false;
     }
-    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
-      caster.getChampion().getDetailsContainer().addWeights(ability);
-    }
     Set<LivingEntity> targets = getTargets(caster, target, ability);
     if (targets == null) {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
@@ -168,6 +165,9 @@ public class AbilityManager {
     }
     if (ability.getCooldown() != 0) {
       startAbilityCooldown(caster.getEntity(), ability);
+    }
+    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
+      caster.getChampion().getDetailsContainer().addWeights(ability);
     }
     if (ability.getCastSound() != null) {
       ability.getCastSound().playAtLocation(caster.getEntity().getLocation());
