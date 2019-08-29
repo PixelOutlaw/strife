@@ -20,10 +20,10 @@ import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
+import info.faceland.strife.util.TargetingUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -159,9 +159,12 @@ public class AbilityManager {
     if (targets == null) {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
     }
-    if (targets.isEmpty() && ability.getTargetType() == SINGLE_OTHER) {
-      doTargetNotFoundPrompt(caster, ability);
-      return false;
+    if (ability.getTargetType() == SINGLE_OTHER) {
+      TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
+      if (targets.isEmpty()) {
+        doTargetNotFoundPrompt(caster, ability);
+        return false;
+      }
     }
     if (ability.getCooldown() != 0) {
       startAbilityCooldown(caster.getEntity(), ability);
@@ -258,7 +261,7 @@ public class AbilityManager {
           targets.add(target);
           return targets;
         }
-        LivingEntity newTarget = DamageUtil
+        LivingEntity newTarget = TargetingUtil
             .selectFirstEntityInSight(caster.getEntity(), ability.getRange());
         if (newTarget != null) {
           targets.add(newTarget);
@@ -269,11 +272,11 @@ public class AbilityManager {
       case AREA_RADIUS:
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
-        Location loc = DamageUtil
+        Location loc = TargetingUtil
             .getTargetArea(caster.getEntity(), target, ability.getRange(), false);
         return getAreaTargets(targets, ability, loc);
       case TARGET_GROUND:
-        Location loc2 = DamageUtil
+        Location loc2 = TargetingUtil
             .getTargetArea(caster.getEntity(), target, ability.getRange(), true);
         return getGroundedAreaTargets(targets, ability, loc2);
     }
@@ -286,7 +289,7 @@ public class AbilityManager {
       if (location.getBlock().getType().isSolid()) {
         location.setY(location.getBlockY() + 1.5);
         if (ability.getRadius() == 0) {
-          targets.add(DamageUtil.buildAndRemoveDetectionStand(location));
+          targets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
           return targets;
         }
         return getEntitiesInRadius(location, ability, ability.getRadius());
@@ -299,7 +302,7 @@ public class AbilityManager {
   private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, Ability ability,
       Location location) {
     if (ability.getRadius() == 0) {
-      targets.add(DamageUtil.buildAndRemoveDetectionStand(location));
+      targets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
       return targets;
     }
     return getEntitiesInRadius(location, ability, ability.getRadius());
@@ -355,7 +358,7 @@ public class AbilityManager {
     }
     SpawnParticle particle = ability.getAbilityParticle();
     if (particle != null) {
-      particle.playAtLocation(DamageUtil.getOriginLocation(le, particle.getOrigin()));
+      particle.playAtLocation(TargetingUtil.getOriginLocation(le, particle.getOrigin()));
     }
     targets.add(le);
     return targets;
@@ -366,7 +369,7 @@ public class AbilityManager {
     if (particle != null) {
       ability.getAbilityParticle().playAtLocation(location);
     }
-    return DamageUtil.getLOSEntitiesAroundLocation(location, range);
+    return TargetingUtil.getLOSEntitiesAroundLocation(location, range);
   }
 
   private void updateIcons(LivingEntity livingEntity) {
@@ -454,6 +457,7 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     String particle = cs.getString("particle");
+    boolean friendly = cs.getBoolean("friendly", false);
     SpawnParticle abilityParticle = null;
     if (StringUtils.isNotBlank(particle)) {
       abilityParticle = (SpawnParticle) plugin.getEffectManager().getEffect(particle);
@@ -464,7 +468,7 @@ public class AbilityManager {
       playSound = (PlaySound) plugin.getEffectManager().getEffect(sound);
     }
     loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, radius, cooldown,
-        showMessages, conditions, abilityIconData, abilityParticle, playSound));
+        showMessages, conditions, friendly, abilityIconData, abilityParticle, playSound));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

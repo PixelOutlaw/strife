@@ -57,7 +57,6 @@ import info.faceland.strife.effects.Summon;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
@@ -66,6 +65,7 @@ import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.ProjectileUtil;
 import info.faceland.strife.util.StatUtil;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +83,6 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
@@ -117,7 +116,7 @@ public class EffectManager {
 
   public void executeEffectAtLocation(Effect effect, StrifeMob caster, Location location) {
     Set<LivingEntity> locationTargets = new HashSet<>();
-    locationTargets.add(DamageUtil.buildAndRemoveDetectionStand(location));
+    locationTargets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
     applyEffectToTargets(effect, caster, locationTargets);
   }
 
@@ -142,39 +141,8 @@ public class EffectManager {
     if (effect instanceof AreaEffect) {
       return getAreaTargets(targets, caster, (AreaEffect) effect);
     }
-    filterFriendlyEntities(targets, caster, effect);
+    TargetingUtil.filterFriendlyEntities(targets, caster, effect.isFriendly());
     return targets;
-  }
-
-  private void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster, Effect effect) {
-    Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
-    if (effect.isFriendly()) {
-      targets.retainAll(friendlyEntities);
-    } else {
-      targets.removeAll(friendlyEntities);
-    }
-  }
-
-  private Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
-    Set<LivingEntity> friendlyEntities = new HashSet<>();
-    friendlyEntities.add(caster.getEntity());
-    for (StrifeMob mob : caster.getMinions()) {
-      friendlyEntities.add(mob.getEntity());
-    }
-    // for (StrifeMob mob : getPartyMembers {
-    // }
-    for (LivingEntity target : targets) {
-      if (caster.getEntity() == target) {
-        continue;
-      }
-      if (caster.getEntity() instanceof Player && target instanceof Player) {
-        if (DamageUtil.canAttack((Player) caster.getEntity(), (Player) target)) {
-          continue;
-        }
-        friendlyEntities.add(target);
-      }
-    }
-    return friendlyEntities;
   }
 
   public void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
@@ -215,7 +183,7 @@ public class EffectManager {
       }
     }
     if (effect.getMaxTargets() > 0) {
-      filterFriendlyEntities(areaTargets, caster, effect);
+      TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
       List<LivingEntity> oldTargetsAsList = new ArrayList<>(areaTargets);
       Set<LivingEntity> newTargetsFromMax = new HashSet<>();
       while (newTargetsFromMax.size() < effect.getMaxTargets() && oldTargetsAsList.size() > 0) {

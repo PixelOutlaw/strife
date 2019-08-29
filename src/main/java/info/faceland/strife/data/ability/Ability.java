@@ -22,9 +22,10 @@ public class Ability {
   private final AbilityIconData abilityIconData;
   private final SpawnParticle abilityParticle;
   private final PlaySound castSound;
+  private final boolean friendly;
 
   public Ability(String id, String name, List<Effect> effects, TargetType targetType, double range,
-      double radius, int cooldown, boolean showMsgs, Set<Condition> conditions,
+      double radius, int cooldown, boolean showMsgs, Set<Condition> conditions, boolean friendly,
       AbilityIconData abilityIconData, SpawnParticle abilityParticle, PlaySound castSound) {
     this.id = id;
     this.name = name;
@@ -38,6 +39,7 @@ public class Ability {
     this.abilityIconData = abilityIconData;
     this.abilityParticle = abilityParticle;
     this.castSound = castSound;
+    this.friendly = friendly;
   }
 
   public String getId() {
@@ -86,6 +88,10 @@ public class Ability {
 
   public PlaySound getCastSound() {
     return castSound;
+  }
+
+  public boolean isFriendly() {
+    return friendly;
   }
 
   public enum TargetType {
