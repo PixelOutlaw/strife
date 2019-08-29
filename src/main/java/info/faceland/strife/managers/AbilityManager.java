@@ -46,7 +46,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 public class AbilityManager {
 
@@ -54,6 +53,7 @@ public class AbilityManager {
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
   private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private final Map<UUID, Map<Ability, Integer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
+  private final Map<UUID, Long> abilityGlobalCd = new HashMap<>();
 
   private static final String ON_COOLDOWN = TextUtils.color("&e&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
@@ -146,6 +146,9 @@ public class AbilityManager {
   public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
     if (ability.getCooldown() != 0 && !isCooledDown(caster.getEntity(), ability)) {
       doOnCooldownPrompt(caster, ability);
+      return false;
+    }
+    if (isCasterOnGlobalCooldown(caster.getEntity().getUniqueId())) {
       return false;
     }
     if (!PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
@@ -268,7 +271,11 @@ public class AbilityManager {
         }
         return targets;
       case AREA_LINE:
-        return getEntitiesInLine(caster.getEntity(), ability, ability.getRange());
+        targets = TargetingUtil.getEntitiesInLine(caster.getEntity(), ability.getRange());
+        if (ability.getAbilityParticle() != null) {
+          ability.getAbilityParticle().playAtLocation(caster.getEntity());
+        }
+        return targets;
       case AREA_RADIUS:
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
@@ -306,38 +313,6 @@ public class AbilityManager {
       return targets;
     }
     return getEntitiesInRadius(location, ability, ability.getRadius());
-  }
-
-  private Set<LivingEntity> getEntitiesInLine(LivingEntity caster, Ability ability, double range) {
-    Set<LivingEntity> targets = new HashSet<>();
-    Location eyeLoc = caster.getEyeLocation();
-    Vector direction = caster.getEyeLocation().getDirection();
-    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    for (double incRange = 0; incRange <= range; incRange += 1) {
-      Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
-      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
-        if (!loc.getBlock().getType().isTransparent()) {
-          break;
-        }
-      }
-      for (Entity entity : entities) {
-        if (!(entity instanceof LivingEntity)) {
-          continue;
-        }
-        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1) {
-          if (Math.abs(entity.getLocation().getY() - loc.getY()) < 2.5) {
-            if (Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
-              targets.add((LivingEntity) entity);
-            }
-          }
-        }
-      }
-    }
-    SpawnParticle particle = ability.getAbilityParticle();
-    if (particle != null) {
-      ability.getAbilityParticle().playAtLocation(caster);
-    }
-    return targets;
   }
 
   private Set<LivingEntity> getEntitiesInRadius(LivingEntity le, Ability ability, double range) {
@@ -415,6 +390,15 @@ public class AbilityManager {
         Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
         1f,
         1.5f);
+  }
+
+  private boolean isCasterOnGlobalCooldown(UUID uuid) {
+    if (abilityGlobalCd.containsKey(uuid) && abilityGlobalCd.get(uuid) + 400 >
+        System.currentTimeMillis()) {
+      return true;
+    }
+    abilityGlobalCd.put(uuid, System.currentTimeMillis());
+    return false;
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {

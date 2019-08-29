@@ -3,12 +3,13 @@ package info.faceland.strife.util;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -16,10 +17,12 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.Vector;
 
 public class TargetingUtil {
 
-  public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster, boolean friendly) {
+  public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster,
+      boolean friendly) {
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
     if (friendly) {
       targets.retainAll(friendlyEntities);
@@ -70,30 +73,55 @@ public class TargetingUtil {
     return stando;
   }
 
-  public static LivingEntity getFirstEntityInLOS(LivingEntity le, int range) {
-    List<Entity> targetList = le.getNearbyEntities(range + 1, range + 1, range + 1);
-    BlockIterator bi = new BlockIterator(le.getEyeLocation(), 0, range);
-    while (bi.hasNext()) {
-      Block b = bi.next();
-      double bx = b.getX() + 0.5;
-      double by = b.getY() + 0.5;
-      double bz = b.getZ() + 0.5;
-      if (b.getType().isSolid()) {
-        break;
+  public static Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
+    Set<LivingEntity> targets = new HashSet<>();
+    Location eyeLoc = caster.getEyeLocation();
+    Vector direction = caster.getEyeLocation().getDirection();
+    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
+    for (double incRange = 0; incRange <= range; incRange += 1) {
+      Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
+      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+        if (!loc.getBlock().getType().isTransparent()) {
+          break;
+        }
       }
-      for (Entity e : targetList) {
-        if (!(e instanceof LivingEntity)) {
+      for (Entity entity : entities) {
+        if (!(entity instanceof LivingEntity) || !entity.isValid()) {
           continue;
         }
-        if (!e.isValid()) {
+        double ex = entity.getLocation().getX();
+        double ey = entity.getLocation().getY();
+        double ez = entity.getLocation().getZ();
+        if (Math.abs(loc.getX() - ex) < 0.7 && Math.abs(loc.getZ() - ez) < 0.7
+            && Math.abs(loc.getY() - ey) < 4.5) {
+          targets.add((LivingEntity) entity);
+        }
+      }
+    }
+    return targets;
+  }
+
+  public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
+    Location eyeLoc = caster.getEyeLocation();
+    Vector direction = caster.getEyeLocation().getDirection();
+    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
+    for (double incRange = 0; incRange <= range; incRange += 1) {
+      Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
+      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+        if (!loc.getBlock().getType().isTransparent()) {
+          break;
+        }
+      }
+      for (Entity entity : entities) {
+        if (!(entity instanceof LivingEntity) || !entity.isValid()) {
           continue;
         }
-        Location l = e.getLocation();
-        double ex = l.getX();
-        double ey = l.getY();
-        double ez = l.getZ();
-        if (Math.abs(bx - ex) < 0.5 && Math.abs(bz - ez) < 0.5 && Math.abs(by - ey) < 2.5) {
-          return (LivingEntity) e;
+        double ex = entity.getLocation().getX();
+        double ey = entity.getLocation().getY();
+        double ez = entity.getLocation().getZ();
+        if (Math.abs(loc.getX() - ex) < 0.7 && Math.abs(loc.getZ() - ez) < 0.7
+            && Math.abs(loc.getY() - ey) < 4.5) {
+          return (LivingEntity) entity;
         }
       }
     }
@@ -104,7 +132,7 @@ public class TargetingUtil {
     if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
       return ((Mob) caster).getTarget();
     }
-    return getFirstEntityInLOS(caster, (int) range);
+    return getFirstEntityInLine(caster, range);
   }
 
   public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
@@ -121,7 +149,8 @@ public class TargetingUtil {
     return getTargetLocation(caster, range);
   }
 
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range, boolean targetEntities) {
+  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
+      boolean targetEntities) {
     return getTargetArea(caster, target, range, OriginLocation.CENTER, targetEntities);
   }
 
