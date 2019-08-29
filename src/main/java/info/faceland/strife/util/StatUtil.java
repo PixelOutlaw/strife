@@ -87,6 +87,10 @@ public class StatUtil {
     return ae.getStat(HEALTH) * (1 + ae.getStat(HEALTH_MULT) / 100);
   }
 
+  public static double getBarrier(StrifeMob ae) {
+    return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(ae);
+  }
+
   public static double getMaximumBarrier(StrifeMob ae) {
     return ae.getStat(BARRIER);
   }

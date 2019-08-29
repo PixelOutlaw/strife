@@ -42,7 +42,7 @@ import info.faceland.strife.listeners.EntityMagicListener;
 import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.FallListener;
 import info.faceland.strife.listeners.HeadDropListener;
-import info.faceland.strife.listeners.HealthListener;
+import info.faceland.strife.listeners.HealingListener;
 import info.faceland.strife.listeners.ItemMovementAndDropListener;
 import info.faceland.strife.listeners.LoreAbilityListener;
 import info.faceland.strife.listeners.MinionListener;
@@ -464,7 +464,7 @@ public class StrifePlugin extends FacePlugin {
 
     //Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new HealthListener(), this);
+    Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new CreeperEffectListener(darknessManager, bleedManager), this);

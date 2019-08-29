@@ -7,9 +7,9 @@ import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.Push;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.managers.EffectManager;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
@@ -52,7 +52,7 @@ public class WorldSpaceEffectEntity {
 
   public boolean tick() {
     if (casterLock) {
-      location = DamageUtil.getOriginLocation(caster.getEntity(), OriginLocation.CENTER);
+      location = TargetingUtil.getOriginLocation(caster.getEntity(), OriginLocation.CENTER);
     } else {
       location.add(velocity);
     }

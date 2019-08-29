@@ -35,6 +35,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.buff.LoadedBuff;
+import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
@@ -47,25 +48,20 @@ import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Block;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
@@ -78,7 +74,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 public class DamageUtil {
@@ -121,6 +116,41 @@ public class DamageUtil {
       default:
         return 0;
     }
+  }
+
+  public static double applyDamageScale(StrifeMob caster, StrifeMob target, double amount,
+      DamageScale damageScale, DamageType damageType) {
+    switch (damageScale) {
+      case FLAT:
+        return amount;
+      case CASTER_DAMAGE:
+        return amount * DamageUtil.getRawDamage(caster, damageType);
+      case TARGET_CURRENT_HEALTH:
+        return amount * target.getEntity().getHealth() / target.getEntity().getMaxHealth();
+      case CASTER_CURRENT_HEALTH:
+        return amount * caster.getEntity().getHealth() / caster.getEntity().getMaxHealth();
+      case TARGET_MISSING_HEALTH:
+        return amount * target.getEntity().getMaxHealth() - target.getEntity().getHealth();
+      case CASTER_MISSING_HEALTH:
+        return amount * caster.getEntity().getMaxHealth() - caster.getEntity().getHealth();
+      case TARGET_MAX_HEALTH:
+        return amount * target.getEntity().getMaxHealth();
+      case CASTER_MAX_HEALTH:
+        return amount * caster.getEntity().getMaxHealth();
+      case TARGET_CURRENT_BARRIER:
+        return amount * StatUtil.getBarrier(target) / StatUtil.getMaximumBarrier(target);
+      case CASTER_CURRENT_BARRIER:
+        return amount * StatUtil.getBarrier(caster) / StatUtil.getMaximumBarrier(caster);
+      case TARGET_MISSING_BARRIER:
+        return amount * StatUtil.getMaximumBarrier(target) - StatUtil.getBarrier(target);
+      case CASTER_MISSING_BARRIER:
+        return amount * StatUtil.getMaximumBarrier(caster) - StatUtil.getBarrier(caster);
+      case TARGET_MAX_BARRIER:
+        return amount * StatUtil.getMaximumBarrier(target);
+      case CASTER_MAX_BARRIER:
+        return amount * StatUtil.getMaximumBarrier(caster);
+    }
+    return amount;
   }
 
   public static Map<DamageType, Double> buildDamageMap(StrifeMob attacker) {
@@ -588,115 +618,6 @@ public class DamageUtil {
       if (event.isApplicable(modifier)) {
         event.setDamage(modifier, 0D);
       }
-    }
-  }
-
-  public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
-    ArmorStand stando = buildAndRemoveDetectionStand(loc);
-    Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius, radius);
-    Set<LivingEntity> validTargets = new HashSet<>();
-    for (Entity e : targetList) {
-      if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
-        validTargets.add((LivingEntity) e);
-      }
-    }
-    return validTargets;
-  }
-
-  public static ArmorStand buildAndRemoveDetectionStand(Location location) {
-    ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class,
-        e -> e.setVisible(false));
-    stando.setSmall(true);
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
-    return stando;
-  }
-
-  public static LivingEntity getFirstEntityInLOS(LivingEntity le, int range) {
-    List<Entity> targetList = le.getNearbyEntities(range + 1, range + 1, range + 1);
-    BlockIterator bi = new BlockIterator(le.getEyeLocation(), 0, range);
-    while (bi.hasNext()) {
-      Block b = bi.next();
-      double bx = b.getX() + 0.5;
-      double by = b.getY() + 0.5;
-      double bz = b.getZ() + 0.5;
-      if (b.getType().isSolid()) {
-        break;
-      }
-      for (Entity e : targetList) {
-        if (!(e instanceof LivingEntity)) {
-          continue;
-        }
-        if (!e.isValid()) {
-          continue;
-        }
-        Location l = e.getLocation();
-        double ex = l.getX();
-        double ey = l.getY();
-        double ez = l.getZ();
-        if (Math.abs(bx - ex) < 0.5 && Math.abs(bz - ez) < 0.5 && Math.abs(by - ey) < 2.5) {
-          return (LivingEntity) e;
-        }
-      }
-    }
-    return null;
-  }
-
-  public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
-    if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
-      return ((Mob) caster).getTarget();
-    }
-    return DamageUtil.getFirstEntityInLOS(caster, (int) range);
-  }
-
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
-      OriginLocation originLocation, boolean targetEntities) {
-    if (!targetEntities) {
-      return getTargetLocation(caster, range);
-    }
-    if (target == null) {
-      target = selectFirstEntityInSight(caster, range);
-    }
-    if (target != null) {
-      return getOriginLocation(target, originLocation);
-    }
-    return getTargetLocation(caster, range);
-  }
-
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range, boolean targetEntities) {
-    return getTargetArea(caster, target, range, OriginLocation.CENTER, targetEntities);
-  }
-
-  private static Location getTargetLocation(LivingEntity caster, double range) {
-    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range + 1);
-    Block sightBlock = null;
-    while (bi.hasNext()) {
-      Block b = bi.next();
-      if (b.getType().isSolid()) {
-        sightBlock = b;
-        break;
-      }
-    }
-    if (sightBlock == null) {
-      LogUtil.printDebug(" - Using MAX DISTANCE target location calculation");
-      return caster.getEyeLocation().clone().add(
-          caster.getEyeLocation().getDirection().multiply(range));
-    }
-    LogUtil.printDebug(" - Using TARGET BLOCK target location calculation");
-    double dist = sightBlock.getLocation().add(0.5, 0.5, 0.5).distance(caster.getEyeLocation());
-    return caster.getEyeLocation().add(
-        caster.getEyeLocation().getDirection().multiply(Math.max(0, dist - 1)));
-  }
-
-  public static Location getOriginLocation(LivingEntity le, OriginLocation origin) {
-    switch (origin) {
-      case HEAD:
-        return le.getEyeLocation();
-      case CENTER:
-        return le.getEyeLocation().clone()
-            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
-      case GROUND:
-      default:
-        return le.getLocation();
     }
   }
 

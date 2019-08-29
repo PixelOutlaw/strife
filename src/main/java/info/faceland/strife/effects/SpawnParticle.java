@@ -2,8 +2,8 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.tasks.ParticleTask;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -136,7 +136,7 @@ public class SpawnParticle extends Effect {
   }
 
   public Location getLoc(LivingEntity le) {
-    return DamageUtil.getOriginLocation(le, particleOriginLocation);
+    return TargetingUtil.getOriginLocation(le, particleOriginLocation);
   }
 
   public void setBlockData(ItemStack blockData) {

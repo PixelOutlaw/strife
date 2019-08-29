@@ -4,9 +4,9 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.WorldSpaceEffectEntity;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,10 +41,10 @@ public class CreateWorldSpaceEntity extends Effect {
     Location location;
     Vector direction;
     if (lockedToEntity) {
-      location = DamageUtil.getOriginLocation(target, originLocation);
+      location = TargetingUtil.getOriginLocation(target, originLocation);
       direction = null;
     } else {
-      location = DamageUtil.getOriginLocation(target, originLocation);
+      location = TargetingUtil.getOriginLocation(target, originLocation);
       direction = caster.getEntity().getEyeLocation().getDirection().multiply(velocity);
     }
     WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, cachedEffectSchedule,

@@ -5,9 +5,9 @@ import static info.faceland.strife.util.ProjectileUtil.getTotalProjectiles;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.ProjectileUtil;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
@@ -45,7 +45,7 @@ public class ShootProjectile extends Effect {
     int projectiles = getProjectileCount(caster);
     double newSpeed = speed * (1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     Vector castDirection = getCastDirection(caster.getEntity(), target.getEntity());
-    Location originLocation = DamageUtil.getOriginLocation(caster.getEntity(), originType);
+    Location originLocation = TargetingUtil.getOriginLocation(caster.getEntity(), originType);
 
     double adjustedSpread = (projectiles - 1) * spread;
     double startAngle = 0;

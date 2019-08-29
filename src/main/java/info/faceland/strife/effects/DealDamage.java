@@ -33,31 +33,7 @@ public class DealDamage extends Effect {
       damage *= 1 + (getStatMults().get(attr) * caster.getStat(attr));
     }
     LogUtil.printDebug("Damage Effect! " + damage + " | " + damageScale + " | " + damageType);
-    switch (damageScale) {
-      case FLAT:
-        break;
-      case CASTER_DAMAGE:
-        damage *= DamageUtil.getRawDamage(caster, damageType);
-        break;
-      case TARGET_CURRENT_HEALTH:
-        damage *= target.getEntity().getHealth() / target.getEntity().getMaxHealth();
-        break;
-      case CASTER_CURRENT_HEALTH:
-        damage *= caster.getEntity().getHealth() / target.getEntity().getMaxHealth();
-        break;
-      case TARGET_MISSING_HEALTH:
-        damage *= 1 - target.getEntity().getHealth() / target.getEntity().getMaxHealth();
-        break;
-      case CASTER_MISSING_HEALTH:
-        damage *= 1 - caster.getEntity().getHealth() / caster.getEntity().getMaxHealth();
-        break;
-      case TARGET_MAX_HEALTH:
-        damage *= target.getEntity().getMaxHealth();
-        break;
-      case CASTER_MAX_HEALTH:
-        damage *= caster.getEntity().getMaxHealth();
-        break;
-    }
+    damage = DamageUtil.applyDamageScale(caster, target, damage, damageScale, damageType);
     damage += flatBonus;
     LogUtil.printDebug(" [Pre-Mitigation] Dealing " + damage + " of type " + damageType);
     damage *= DamageUtil.getDamageReduction(damageType, caster, target, abilityMods);
