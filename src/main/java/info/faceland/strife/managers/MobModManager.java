@@ -35,7 +35,7 @@ public class MobModManager {
       ItemUtil.delayedEquip(mobMod.getEquipment(), strifeMob.getEntity());
     }
     int level = StatUtil.getMobLevel(strifeMob.getEntity());
-    Map<StrifeStat, Double> stats = StatUpdateManager
+    Map<StrifeStat, Float> stats = StatUpdateManager
         .combineMaps(strifeMob.getBaseStats(), mobMod.getBaseStats());
     for (StrifeStat stat : mobMod.getPerLevelStats().keySet()) {
       if (stats.containsKey(stat)) {

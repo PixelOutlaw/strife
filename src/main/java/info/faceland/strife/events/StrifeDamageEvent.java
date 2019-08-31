@@ -43,11 +43,11 @@ public class StrifeDamageEvent extends Event implements Cancellable {
   private final StrifeMob defender;
   private final AttackType attackType;
 
-  private double attackMultiplier = 1;
-  private double healMultiplier = 1;
-  private final Map<DamageType, Double> damageModifiers = new HashMap<>();
-  private final Map<DamageType, Double> flatDamageBonuses = new HashMap<>();
-  private final Map<AbilityMod, Double> abilityMods = new HashMap<>();
+  private float attackMultiplier = 1f;
+  private float healMultiplier = 1f;
+  private final Map<DamageType, Float> damageModifiers = new HashMap<>();
+  private final Map<DamageType, Float> flatDamageBonuses = new HashMap<>();
+  private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private boolean isBlocking = false;
   private boolean canBeBlocked = true;
   private boolean canBeEvaded = true;
@@ -61,7 +61,7 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     this.attackType = attackType;
   }
 
-  public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, AttackType attackType, double attackMultiplier) {
+  public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, AttackType attackType, float attackMultiplier) {
     this.attacker = attacker;
     this.defender = defender;
     this.attackType = attackType;
@@ -85,19 +85,19 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     return attackType;
   }
 
-  public double getAttackMultiplier() {
+  public float getAttackMultiplier() {
     return attackMultiplier;
   }
 
-  public void setAttackMultiplier(double attackMultiplier) {
+  public void setAttackMultiplier(float attackMultiplier) {
     this.attackMultiplier = attackMultiplier;
   }
 
-  public double getHealMultiplier() {
+  public float getHealMultiplier() {
     return healMultiplier;
   }
 
-  public void setHealMultiplier(double healMultiplier) {
+  public void setHealMultiplier(float healMultiplier) {
     this.healMultiplier = healMultiplier;
   }
 
@@ -141,28 +141,28 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     this.extraEffects = extraEffects;
   }
 
-  public Map<DamageType, Double> getDamageModifiers() {
+  public Map<DamageType, Float> getDamageModifiers() {
     return damageModifiers;
   }
 
-  public Map<DamageType, Double> getFlatDamageBonuses() {
+  public Map<DamageType, Float> getFlatDamageBonuses() {
     return flatDamageBonuses;
   }
 
-  public double getDamageMod(DamageType damageType) {
-    return damageModifiers.getOrDefault(damageType, 1D);
+  public float getDamageMod(DamageType damageType) {
+    return damageModifiers.getOrDefault(damageType, 1f);
   }
 
-  public double getFlatDamageBonus(DamageType damageType) {
-    return flatDamageBonuses.getOrDefault(damageType, 0D);
+  public float getFlatDamageBonus(DamageType damageType) {
+    return flatDamageBonuses.getOrDefault(damageType, 0f);
   }
 
-  public Map<AbilityMod, Double> getAbilityMods() {
+  public Map<AbilityMod, Float> getAbilityMods() {
     return abilityMods;
   }
 
-  public double getAbilityMods(AbilityMod mod) {
-    return abilityMods.getOrDefault(mod, 0D);
+  public float getAbilityMods(AbilityMod mod) {
+    return abilityMods.getOrDefault(mod, 0f);
   }
 
   public double getFinalDamage() {

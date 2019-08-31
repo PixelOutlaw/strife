@@ -85,7 +85,7 @@ public class StatsOffenseMenuItem extends MenuItem {
       player = this.player;
     }
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
-    Map<StrifeStat, Double> bases = plugin.getMonsterManager()
+    Map<StrifeStat, Float> bases = plugin.getMonsterManager()
         .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic
@@ -115,7 +115,7 @@ public class StatsOffenseMenuItem extends MenuItem {
         itemStack.setType(Material.BLAZE_ROD);
         break;
     }
-    double acc = 100 + pStats.getStat(ACCURACY) - bases.getOrDefault(ACCURACY, 0D);
+    double acc = 100 + pStats.getStat(ACCURACY) - bases.getOrDefault(ACCURACY, 0f);
     lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
     lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
     lore.add(breakLine);
@@ -132,11 +132,11 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
     double aPen =
-        pStats.getStat(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0D);
+        pStats.getStat(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0f);
     if (aPen != 0 && type != AttackType.MAGIC) {
       lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
     }
-    double wPen = pStats.getStat(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0D);
+    double wPen = pStats.getStat(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0f);
     if (wPen != 0 && type == AttackType.MAGIC) {
       lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
     }

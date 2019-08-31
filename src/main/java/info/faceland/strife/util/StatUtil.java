@@ -62,8 +62,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class StatUtil {
 
   private static final double BASE_ATTACK_SECONDS = 2.0D;
-  private static final double BASE_EVASION_MULT = 0.8D;
-  private static final double EVASION_ACCURACY_MULT = 0.6D;
+  private static final float BASE_EVASION_MULT = 0.8f;
+  private static final float EVASION_ACCURACY_MULT = 0.6f;
   private static final double SWORDSMANSHIP_EVASION_REDUCE = 0.25D / 60D;
 
   public static double getTenacityMult(StrifeMob defender) {
@@ -148,11 +148,11 @@ public class StatUtil {
     return ae.getStat(WARDING) * (1 + ae.getStat(WARD_MULT) / 100);
   }
 
-  public static double getEvasion(StrifeMob ae) {
+  public static float getEvasion(StrifeMob ae) {
     return getFlatEvasion(ae) * (1 + ae.getStat(EVASION_MULT) / 100);
   }
 
-  public static double getFlatEvasion(StrifeMob ae) {
+  public static float getFlatEvasion(StrifeMob ae) {
     return ae.getStat(EVASION);
   }
 
@@ -164,8 +164,8 @@ public class StatUtil {
     return ae.getStat(WARD_PENETRATION);
   }
 
-  public static double getAccuracy(StrifeMob ae) {
-    return ae.getStat(ACCURACY) * (1 + (ae.getStat(ACCURACY_MULT) / 100));
+  public static float getAccuracy(StrifeMob ae) {
+    return ae.getStat(ACCURACY) * (1f + (ae.getStat(ACCURACY_MULT) / 100f));
   }
 
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {
@@ -194,8 +194,8 @@ public class StatUtil {
     return warding > 0 ? 80 / (80 + warding) : 1 - (warding / 100);
   }
 
-  public static double getMinimumEvasionMult(double evasion, double accuracy) {
-    double bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (1 + accuracy));
+  public static float getMinimumEvasionMult(float evasion, float accuracy) {
+    float bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (1 + accuracy));
     return Math.min(1, BASE_EVASION_MULT - bonusMultiplier);
   }
 
@@ -330,8 +330,8 @@ public class StatUtil {
     return damage;
   }
 
-  public static Map<StrifeStat, Double> getStatMapFromSection(ConfigurationSection statSection) {
-    Map<StrifeStat, Double> statMap = new HashMap<>();
+  public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {
+    Map<StrifeStat, Float> statMap = new HashMap<>();
     if (statSection == null) {
       return statMap;
     }
@@ -343,7 +343,7 @@ public class StatUtil {
         LogUtil.printWarning("Invalid stat " + statString + ". Skipping...");
         continue;
       }
-      statMap.put(strifeStat, statSection.getDouble(statString));
+      statMap.put(strifeStat, (float) statSection.getDouble(statString));
     }
     return statMap;
   }

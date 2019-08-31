@@ -44,7 +44,7 @@ public class BuffManager {
 
   public void loadBuff(String key, ConfigurationSection cs) {
     ConfigurationSection statsSection = cs.getConfigurationSection("stats");
-    Map<StrifeStat, Double> statsMap = StatUtil.getStatMapFromSection(statsSection);
+    Map<StrifeStat, Float> statsMap = StatUtil.getStatMapFromSection(statsSection);
     int maxStacks = cs.getInt("max-stacks", 1);
     int durationSeconds = cs.getInt("duration-seconds", 10);
     LoadedBuff loadedBuff = new LoadedBuff(key, statsMap, maxStacks, durationSeconds);

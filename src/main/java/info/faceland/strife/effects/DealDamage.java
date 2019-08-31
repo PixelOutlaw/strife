@@ -19,7 +19,7 @@ public class DealDamage extends Effect {
   private double flatBonus;
   private DamageScale damageScale;
   private DamageType damageType;
-  private final Map<AbilityMod, Double> abilityMods = new HashMap<>();
+  private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private boolean canBeEvaded;
   private boolean canBeBlocked;
 
@@ -67,7 +67,7 @@ public class DealDamage extends Effect {
     this.damageType = damageType;
   }
 
-  public Map<AbilityMod, Double> getAbilityMods() {
+  public Map<AbilityMod, Float> getAbilityMods() {
     return abilityMods;
   }
 

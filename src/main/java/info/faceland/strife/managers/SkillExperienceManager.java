@@ -58,7 +58,7 @@ public class SkillExperienceManager {
       return;
     }
     if (!exact) {
-      double statsMult = champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0D) / 100;
+      double statsMult = champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0f) / 100f;
       amount *= 1 + statsMult;
       String xp = FORMAT.format(amount * (1 + statsMult));
       MessageUtils.sendMessage(champion.getPlayer(), XP_MSG

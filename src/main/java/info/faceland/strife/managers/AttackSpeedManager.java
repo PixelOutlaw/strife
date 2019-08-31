@@ -40,13 +40,13 @@ public class AttackSpeedManager {
     lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
   }
 
-  public double getAttackMultiplier(StrifeMob attacker) {
+  public float getAttackMultiplier(StrifeMob attacker) {
     return getAttackMultiplier(attacker, true);
   }
 
-  public double getAttackMultiplier(StrifeMob attacker, boolean resetTime) {
+  public float getAttackMultiplier(StrifeMob attacker, boolean resetTime) {
     if (!(attacker.getEntity() instanceof Player)) {
-      return 1.0;
+      return 1f;
     }
     if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
       lastAttackMap.put(attacker.getEntity().getUniqueId(), new LastAttackTracker(1L, 1L));
@@ -57,9 +57,9 @@ public class AttackSpeedManager {
       setAttackTime(attacker.getEntity().getUniqueId(), (long) (1000 * getAttackTime(attacker)));
     }
     if (millisPassed > fullAttackMillis) {
-      return 1.0;
+      return 1f;
     }
-    return (double) millisPassed / fullAttackMillis;
+    return (float) millisPassed / fullAttackMillis;
   }
 
   private long getFullAttackMillis(UUID uuid) {

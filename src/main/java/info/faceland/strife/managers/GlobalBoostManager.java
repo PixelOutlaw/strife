@@ -47,8 +47,8 @@ public class GlobalBoostManager {
     return amount;
   }
 
-  public Map<StrifeStat, Double> getAttributes() {
-    Map<StrifeStat, Double> attrMap = new HashMap<>();
+  public Map<StrifeStat, Float> getAttributes() {
+    Map<StrifeStat, Float> attrMap = new HashMap<>();
     for (GlobalStatBoost boost : runningBoosts) {
       attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getAttributes()));
     }
@@ -100,7 +100,7 @@ public class GlobalBoostManager {
       List<String> announceEnd = TextUtils.color(boost.getStringList("announcement-end"));
 
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");
-      Map<StrifeStat, Double> attrMap = StatUtil.getStatMapFromSection(attrSection);
+      Map<StrifeStat, Float> attrMap = StatUtil.getStatMapFromSection(attrSection);
 
       LoadedStatBoost loadedStatBoost = new LoadedStatBoost(creator, announceInterval, duration);
       loadedStatBoost.getAnnounceStart().addAll(announceStart);

@@ -7,11 +7,11 @@ public class GlobalStatBoost {
 
   private final String boostId;
   private final String creator;
-  private final Map<StrifeStat, Double> attributes;
+  private final Map<StrifeStat, Float> attributes;
 
   private int minutesRemaining;
 
-  public GlobalStatBoost(String boostId, String creator, Map<StrifeStat, Double> attrs,
+  public GlobalStatBoost(String boostId, String creator, Map<StrifeStat, Float> attrs,
       int minutesRemaining) {
     this.boostId = boostId;
     this.creator = creator;
@@ -27,12 +27,12 @@ public class GlobalStatBoost {
     return creator;
   }
 
-  public Map<StrifeStat, Double> getAttributes() {
+  public Map<StrifeStat, Float> getAttributes() {
     return attributes;
   }
 
   public double getAttribute(StrifeStat attribute) {
-    return attributes.getOrDefault(attribute, 0D);
+    return attributes.getOrDefault(attribute, 0f);
   }
 
   public int getMinutesRemaining() {

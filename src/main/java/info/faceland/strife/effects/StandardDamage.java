@@ -12,10 +12,10 @@ import org.bukkit.Bukkit;
 
 public class StandardDamage extends Effect {
 
-  private double attackMultiplier;
-  private final Map<DamageType, Double> damageModifiers = new HashMap<>();
-  private final Map<DamageType, Double> damageBonuses = new HashMap<>();
-  private final Map<AbilityMod, Double> abilityMods = new HashMap<>();
+  private float attackMultiplier;
+  private final Map<DamageType, Float> damageModifiers = new HashMap<>();
+  private final Map<DamageType, Float> damageBonuses = new HashMap<>();
+  private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private AttackType attackType;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
@@ -39,7 +39,7 @@ public class StandardDamage extends Effect {
     return attackMultiplier;
   }
 
-  public void setAttackMultiplier(double attackMultiplier) {
+  public void setAttackMultiplier(float attackMultiplier) {
     this.attackMultiplier = attackMultiplier;
   }
 
@@ -51,15 +51,15 @@ public class StandardDamage extends Effect {
     this.attackType = attackType;
   }
 
-  public Map<DamageType, Double> getDamageModifiers() {
+  public Map<DamageType, Float> getDamageModifiers() {
     return damageModifiers;
   }
 
-  public Map<DamageType, Double> getDamageBonuses() {
+  public Map<DamageType, Float> getDamageBonuses() {
     return damageBonuses;
   }
 
-  public Map<AbilityMod, Double> getAbilityMods() {
+  public Map<AbilityMod, Float> getAbilityMods() {
     return abilityMods;
   }
 

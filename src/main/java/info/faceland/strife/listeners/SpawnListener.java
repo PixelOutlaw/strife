@@ -228,7 +228,7 @@ public class SpawnListener implements Listener {
           entityEquipment.setHelmet(WITCH_HAT);
           entityEquipment.setHelmetDropChance(0f);
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
-          double damage = mob.getStat(PHYSICAL_DAMAGE);
+          float damage = mob.getStat(PHYSICAL_DAMAGE);
           mob.forceSetStat(PHYSICAL_DAMAGE, 0);
           mob.forceSetStat(MAGIC_DAMAGE, damage);
           break;
@@ -246,7 +246,7 @@ public class SpawnListener implements Listener {
           entityEquipment.setHelmet(WITCH_HAT);
           entityEquipment.setHelmetDropChance(0f);
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
-          double damage = mob.getStat(PHYSICAL_DAMAGE);
+          float damage = mob.getStat(PHYSICAL_DAMAGE);
           mob.forceSetStat(PHYSICAL_DAMAGE, 0);
           mob.forceSetStat(MAGIC_DAMAGE, damage);
           break;
@@ -273,7 +273,7 @@ public class SpawnListener implements Listener {
     entity.setHealth(health);
 
     double speed = entity.getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue() *
-        strifeMob.getFinalStats().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
+        strifeMob.getFinalStats().getOrDefault(MOVEMENT_SPEED, 80f) / 100f;
 
     if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
       entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(speed);

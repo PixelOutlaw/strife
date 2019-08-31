@@ -51,15 +51,15 @@ public class StatUpdateManager {
     this.strifeMobManager = strifeMobManager;
   }
 
-  public Map<StrifeStat, Double> getItemStats(ItemStack stack) {
-    return getItemStats(stack, 1.0);
+  public Map<StrifeStat, Float> getItemStats(ItemStack stack) {
+    return getItemStats(stack, 1.0f);
   }
 
-  public Map<StrifeStat, Double> getItemStats(ItemStack stack, double multiplier) {
+  public Map<StrifeStat, Float> getItemStats(ItemStack stack, float multiplier) {
     if (stack == null || stack.getType() == Material.AIR) {
       return new HashMap<>();
     }
-    Map<StrifeStat, Double> itemStats = new HashMap<>();
+    Map<StrifeStat, Float> itemStats = new HashMap<>();
 
     List<String> lore = ItemStackExtensionsKt.getLore(stack);
     if (lore.isEmpty()) {
@@ -68,14 +68,14 @@ public class StatUpdateManager {
     List<String> strippedLore = stripColor(lore);
 
     for (String s : strippedLore) {
-      double amount = 0;
+      float amount = 0;
       String retained = CharMatcher.forPredicate(Character::isLetter).or(CharMatcher.is(' '))
           .retainFrom(s).trim();
       StrifeStat attribute = StrifeStat.fromName(retained);
       if (attribute == null) {
         continue;
       }
-      amount += NumberUtils.toDouble(CharMatcher.digit().or(CharMatcher.is('-')).retainFrom(s));
+      amount += NumberUtils.toFloat(CharMatcher.digit().or(CharMatcher.is('-')).retainFrom(s));
       if (amount == 0) {
         continue;
       }
@@ -112,7 +112,7 @@ public class StatUpdateManager {
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
-    double speed = strifeMob.getFinalStats().getOrDefault(MOVEMENT_SPEED, 80D) / 100;
+    double speed = strifeMob.getFinalStats().getOrDefault(MOVEMENT_SPEED, 80f) / 100f;
     if (entity instanceof Player) {
       ((Player) entity).setWalkSpeed(0.2f * (float) speed);
       ((Player) entity).setFlySpeed(0.2f * (float) speed);
@@ -161,12 +161,12 @@ public class StatUpdateManager {
   }
 
   @SafeVarargs
-  public static Map<StrifeStat, Double> combineMaps(Map<StrifeStat, Double>... maps) {
-    Map<StrifeStat, Double> combinedMap = new HashMap<>();
-    for (Map<StrifeStat, Double> map : maps) {
-      for (Map.Entry<StrifeStat, Double> statMap : map.entrySet()) {
-        double old = combinedMap.getOrDefault(statMap.getKey(), 0D);
-        double combinedValue = old + statMap.getValue();
+  public static Map<StrifeStat, Float> combineMaps(Map<StrifeStat, Float>... maps) {
+    Map<StrifeStat, Float> combinedMap = new HashMap<>();
+    for (Map<StrifeStat, Float> map : maps) {
+      for (Map.Entry<StrifeStat, Float> statMap : map.entrySet()) {
+        float old = combinedMap.getOrDefault(statMap.getKey(), 0f);
+        float combinedValue = old + statMap.getValue();
         combinedMap.put(statMap.getKey(), combinedValue);
       }
     }

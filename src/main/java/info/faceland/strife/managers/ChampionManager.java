@@ -153,21 +153,21 @@ public class ChampionManager {
   }
 
   private void buildPointAttributes(Champion champion) {
-    Map<StrifeStat, Double> attributeDoubleMap = new HashMap<>();
+    Map<StrifeStat, Float> attributeMap = new HashMap<>();
     for (StrifeAttribute stat : champion.getLevelMap().keySet()) {
       int statLevel = champion.getLevelMap().get(stat);
       if (statLevel == 0) {
         continue;
       }
       for (StrifeStat attr : stat.getAttributeMap().keySet()) {
-        double amount = stat.getAttributeMap().get(attr) * statLevel;
-        if (attributeDoubleMap.containsKey(attr)) {
-          amount += attributeDoubleMap.get(attr);
+        float amount = stat.getAttributeMap().get(attr) * statLevel;
+        if (attributeMap.containsKey(attr)) {
+          amount += attributeMap.get(attr);
         }
-        attributeDoubleMap.put(attr, amount);
+        attributeMap.put(attr, amount);
       }
     }
-    champion.setAttributeLevelPointCache(attributeDoubleMap);
+    champion.setAttributeLevelPointCache(attributeMap);
   }
 
   private void buildEquipmentAttributes(Champion champion) {
@@ -202,10 +202,10 @@ public class ChampionManager {
 
   private void applyDualWieldStatChanges(PlayerEquipmentCache cache, EquipmentSlot slot) {
     for (StrifeStat attribute : cache.getSlotStats(slot).keySet()) {
-      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7D);
+      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7f);
     }
     cache.getSlotStats(slot)
-        .put(ATTACK_SPEED, cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0D) + 25D);
+        .put(ATTACK_SPEED, cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0f) + 25f);
   }
 
   private void clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {
@@ -289,7 +289,7 @@ public class ChampionManager {
     }
   }
 
-  private Map<StrifeStat, Double> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
+  private Map<StrifeStat, Float> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
     switch (slot) {
       case HAND:
         return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
@@ -333,8 +333,8 @@ public class ChampionManager {
     }
   }
 
-  private boolean meetsLevelRequirement(Player player, Map<StrifeStat, Double> statMap) {
-    return statMap.getOrDefault(LEVEL_REQUIREMENT, 0D) <= player.getLevel();
+  private boolean meetsLevelRequirement(Player player, Map<StrifeStat, Float> statMap) {
+    return Math.round(statMap.getOrDefault(LEVEL_REQUIREMENT, 0f)) <= player.getLevel();
   }
 
   private int getTotalChampionStats(Champion champion) {

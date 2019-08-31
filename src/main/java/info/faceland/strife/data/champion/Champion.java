@@ -33,9 +33,9 @@ import org.bukkit.entity.Player;
 
 public class Champion {
 
-  private final Map<StrifeStat, Double> attributeBase;
-  private final Map<StrifeStat, Double> attributeLevelPoint;
-  private final Map<StrifeStat, Double> combinedAttributeCache;
+  private final Map<StrifeStat, Float> attributeBase;
+  private final Map<StrifeStat, Float> attributeLevelPoint;
+  private final Map<StrifeStat, Float> combinedAttributeCache;
   private final ChampionSaveData saveData;
   private final PlayerEquipmentCache equipmentCache;
 
@@ -59,7 +59,7 @@ public class Champion {
     this.saveData = saveData;
   }
 
-  public Map<StrifeStat, Double> getCombinedCache() {
+  public Map<StrifeStat, Float> getCombinedCache() {
     return new HashMap<>(combinedAttributeCache);
   }
 
@@ -81,12 +81,12 @@ public class Champion {
     ));
   }
 
-  public void setAttributeBaseCache(Map<StrifeStat, Double> map) {
+  public void setAttributeBaseCache(Map<StrifeStat, Float> map) {
     attributeBase.clear();
     attributeBase.putAll(map);
   }
 
-  public void setAttributeLevelPointCache(Map<StrifeStat, Double> map) {
+  public void setAttributeLevelPointCache(Map<StrifeStat, Float> map) {
     attributeLevelPoint.clear();
     attributeLevelPoint.putAll(map);
   }
@@ -123,8 +123,8 @@ public class Champion {
     if (updateEquipment) {
       recombineCache();
     }
-    return saveData.getSkillLevel(type) + combinedAttributeCache
-        .getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0D).floatValue();
+    return saveData.getSkillLevel(type) +
+        combinedAttributeCache.getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0f);
   }
 
   public int getUnusedStatPoints() {

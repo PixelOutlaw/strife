@@ -15,7 +15,7 @@ public class UniqueEntity {
   private EntityType type;
   private String name;
   private int experience;
-  private Map<StrifeStat, Double> attributeMap;
+  private Map<StrifeStat, Float> attributeMap;
   private EntityAbilitySet abilitySet;
 
   private boolean baby;
@@ -57,11 +57,11 @@ public class UniqueEntity {
     this.experience = experience;
   }
 
-  public Map<StrifeStat, Double> getAttributeMap() {
+  public Map<StrifeStat, Float> getAttributeMap() {
     return attributeMap;
   }
 
-  public void setAttributeMap(Map<StrifeStat, Double> attributeMap) {
+  public void setAttributeMap(Map<StrifeStat, Float> attributeMap) {
     this.attributeMap = attributeMap;
   }
 

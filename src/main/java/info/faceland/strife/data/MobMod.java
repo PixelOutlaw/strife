@@ -19,8 +19,8 @@ public class MobMod {
   private int weight;
   private EntityAbilitySet abilitySet;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
-  private Map<StrifeStat, Double> baseStats = new HashMap<>();
-  private Map<StrifeStat, Double> perLevelStats = new HashMap<>();
+  private Map<StrifeStat, Float> baseStats = new HashMap<>();
+  private Map<StrifeStat, Float> perLevelStats = new HashMap<>();
 
   private Set<EntityType> validEntities = new HashSet<>();
   private Set<String> validRegionIds = new HashSet<>();
@@ -66,21 +66,19 @@ public class MobMod {
     this.abilitySet = abilitySet;
   }
 
-  public Map<StrifeStat, Double> getBaseStats() {
+  public Map<StrifeStat, Float> getBaseStats() {
     return baseStats;
   }
 
-  public void setBaseStats(
-      Map<StrifeStat, Double> baseStats) {
+  public void setBaseStats(Map<StrifeStat, Float> baseStats) {
     this.baseStats = baseStats;
   }
 
-  public Map<StrifeStat, Double> getPerLevelStats() {
+  public Map<StrifeStat, Float> getPerLevelStats() {
     return perLevelStats;
   }
 
-  public void setPerLevelStats(
-      Map<StrifeStat, Double> perLevelStats) {
+  public void setPerLevelStats(Map<StrifeStat, Float> perLevelStats) {
     this.perLevelStats = perLevelStats;
   }
 

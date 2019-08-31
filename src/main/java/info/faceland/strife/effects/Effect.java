@@ -14,7 +14,7 @@ public class Effect {
   private boolean forceTargetCaster;
   private boolean friendly;
 
-  private final Map<StrifeStat, Double> statMults = new HashMap<>();
+  private final Map<StrifeStat, Float> statMults = new HashMap<>();
   private final Set<Condition> conditions = new HashSet<>();
 
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -45,11 +45,11 @@ public class Effect {
     this.friendly = friendly;
   }
 
-  public Map<StrifeStat, Double> getStatMults() {
+  public Map<StrifeStat, Float> getStatMults() {
     return statMults;
   }
 
-  public void setStatMults(Map<StrifeStat, Double> statMults) {
+  public void setStatMults(Map<StrifeStat, Float> statMults) {
     this.statMults.clear();
     this.statMults.putAll(statMults);
   }

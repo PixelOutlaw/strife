@@ -62,8 +62,6 @@ import org.bukkit.event.Listener;
 public class StrifeDamageListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static final double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.evasion-threshold", 0.5);
   private static final double PVP_MULT = StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-multiplier", 0.5);
 
@@ -90,18 +88,13 @@ public class StrifeDamageListener implements Listener {
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
 
-    double totalEvasion = StatUtil.getEvasion(defender);
-    double totalAccuracy = StatUtil.getAccuracy(attacker);
-    totalAccuracy *= 1 + event.getAbilityMods(AbilityMod.ACCURACY_MULT) / 100;
-    totalAccuracy += event.getAbilityMods(AbilityMod.ACCURACY);
-
     double evasionMultiplier = 1;
-
     if (event.isCanBeEvaded()) {
-      evasionMultiplier = StatUtil.getMinimumEvasionMult(totalEvasion, totalAccuracy);
-      evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
+      evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender,
+          event.getAbilityMods(AbilityMod.ACCURACY_MULT),
+          event.getAbilityMods(AbilityMod.ACCURACY));
 
-      if (evasionMultiplier < EVASION_THRESHOLD) {
+      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
         doEvasion(attacker.getEntity(), defender.getEntity());
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);

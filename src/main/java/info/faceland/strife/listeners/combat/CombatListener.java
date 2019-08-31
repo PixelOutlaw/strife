@@ -134,13 +134,13 @@ public class CombatListener implements Listener {
     StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
     StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
-    double attackMultiplier = 1D;
-    double healMultiplier = 1D;
+    float attackMultiplier = 1f;
+    float healMultiplier = 1f;
 
     AttackType damageType = DamageUtil.getAttackType(event);
 
     if (projectile != null && projectile.hasMetadata(ATTACK_SPEED_META)) {
-      attackMultiplier = projectile.getMetadata(ATTACK_SPEED_META).get(0).asDouble();
+      attackMultiplier = projectile.getMetadata(ATTACK_SPEED_META).get(0).asFloat();
     }
 
     if (damageType == AttackType.MELEE) {
@@ -152,7 +152,7 @@ public class CombatListener implements Listener {
     } else if (damageType == AttackType.EXPLOSION) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
-      healMultiplier = 0.3D;
+      healMultiplier = 0.3f;
     }
 
     if (attackMultiplier < 0.05 && extraEffects == null) {

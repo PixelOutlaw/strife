@@ -7,24 +7,20 @@ import java.util.Map;
 
 public class Buff {
 
-  private final Map<StrifeStat, Double> buffStats;
+  private final Map<StrifeStat, Float> buffStats;
   private final int maxStacks;
 
   private long endingTimestamp = System.currentTimeMillis();
   private int stacks;
 
-  public Buff(Map<StrifeStat, Double> buffStats) {
-    this(buffStats, 1);
-  }
-
-  public Buff(Map<StrifeStat, Double> buffStats, int maxStacks) {
+  public Buff(Map<StrifeStat, Float> buffStats, int maxStacks) {
     this.buffStats = buffStats;
     this.stacks = 1;
     this.maxStacks = maxStacks;
   }
 
-  public Map<StrifeStat, Double> getTotalStats() {
-    Map<StrifeStat, Double> stackedStats = new HashMap<>(buffStats);
+  public Map<StrifeStat, Float> getTotalStats() {
+    Map<StrifeStat, Float> stackedStats = new HashMap<>(buffStats);
     if (stacks == 1) {
       return stackedStats;
     }

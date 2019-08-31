@@ -229,43 +229,43 @@ public class EffectManager {
           return;
         }
         ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
-        Map<AbilityMod, Double> damageModMap = new HashMap<>();
+        Map<AbilityMod, Float> damageModMap = new HashMap<>();
         if (damageMod != null) {
           for (String k : damageMod.getKeys(false)) {
             AbilityMod mod = AbilityMod.valueOf(k);
-            damageModMap.put(mod, damageMod.getDouble(k));
+            damageModMap.put(mod, (float) damageMod.getDouble(k));
           }
         }
         ((DealDamage) effect).getAbilityMods().putAll(damageModMap);
         break;
       case STANDARD_DAMAGE:
         effect = new StandardDamage();
-        ((StandardDamage) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 1D));
+        ((StandardDamage) effect).setAttackMultiplier((float) cs.getDouble("attack-multiplier", 1D));
         ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
-        Map<DamageType, Double> multMap = new HashMap<>();
+        Map<DamageType, Float> multMap = new HashMap<>();
         if (multCs != null) {
           for (String k : multCs.getKeys(false)) {
             DamageType mod = DamageType.valueOf(k);
-            multMap.put(mod, multCs.getDouble(k));
+            multMap.put(mod, (float) multCs.getDouble(k));
           }
         }
         ConfigurationSection flatCs = cs.getConfigurationSection("flat-damage-bonuses");
-        Map<DamageType, Double> flatMap = new HashMap<>();
+        Map<DamageType, Float> flatMap = new HashMap<>();
         if (flatCs != null) {
           for (String k : flatCs.getKeys(false)) {
             DamageType mod = DamageType.valueOf(k);
-            flatMap.put(mod, flatCs.getDouble(k));
+            flatMap.put(mod, (float) flatCs.getDouble(k));
           }
         }
         ConfigurationSection modsCs = cs.getConfigurationSection("attack-mods");
-        Map<AbilityMod, Double> attackModMap = new HashMap<>();
+        Map<AbilityMod, Float> attackModMap = new HashMap<>();
         if (modsCs != null) {
           for (String k : modsCs.getKeys(false)) {
             AbilityMod mod = AbilityMod.valueOf(k);
-            attackModMap.put(mod, modsCs.getDouble(k));
+            attackModMap.put(mod, (float) modsCs.getDouble(k));
           }
         }
         ((StandardDamage) effect).getDamageModifiers().putAll(multMap);
@@ -476,7 +476,7 @@ public class EffectManager {
     if (effectType != EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
-      Map<StrifeStat, Double> statMults = StatUtil
+      Map<StrifeStat, Float> statMults = StatUtil
           .getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
       effect.setStatMults(statMults);
     }
@@ -549,7 +549,7 @@ public class EffectManager {
         condition = new BuffCondition(compareTarget, comparison, buffId, stacks);
         break;
       case CHANCE:
-        double chance = cs.getDouble("chance", 0.5);
+        float chance = (float) cs.getDouble("chance", 0.5);
         condition = new ChanceCondition(chance);
         break;
       case HEALTH:

@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntityStatData {
-  private Map<StrifeStat, Double> baseValueMap;
-  private Map<StrifeStat, Double> perLevelMap;
-  private Map<StrifeStat, Double> perBonusLevelMap;
+  private Map<StrifeStat, Float> baseValueMap;
+  private Map<StrifeStat, Float> perLevelMap;
+  private Map<StrifeStat, Float> perBonusLevelMap;
 
   public EntityStatData() {
     baseValueMap = new HashMap<>();
@@ -21,27 +21,27 @@ public class EntityStatData {
     perBonusLevelMap = new HashMap<>(entityStatData.getPerBonusLevelMap());
   }
 
-  public Map<StrifeStat, Double> getBaseValueMap() {
+  public Map<StrifeStat, Float> getBaseValueMap() {
     return baseValueMap;
   }
 
-  public Map<StrifeStat, Double> getPerLevelMap() {
+  public Map<StrifeStat, Float> getPerLevelMap() {
     return perLevelMap;
   }
 
-  public Map<StrifeStat, Double> getPerBonusLevelMap() {
+  public Map<StrifeStat, Float> getPerBonusLevelMap() {
     return perBonusLevelMap;
   }
 
-  public void putBaseValue(StrifeStat attribute, double value) {
+  public void putBaseValue(StrifeStat attribute, float value) {
     baseValueMap.put(attribute, value);
   }
 
-  public void putPerLevel(StrifeStat attribute, double value) {
+  public void putPerLevel(StrifeStat attribute, float value) {
     perLevelMap.put(attribute, value);
   }
 
-  public void putPerBonusLevel(StrifeStat attribute, double value) {
+  public void putPerBonusLevel(StrifeStat attribute, float value) {
     perBonusLevelMap.put(attribute, value);
   }
 }

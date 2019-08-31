@@ -82,7 +82,7 @@ public class UniqueEntityManager {
       DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));
     }
 
-    double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.HEALTH, 5D);
+    double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.HEALTH, 5f);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
     spawnedUnique.setHealth(health);
 
@@ -108,14 +108,14 @@ public class UniqueEntityManager {
 
     if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
       double speed =
-          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100D) / 100D;
+          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100f) / 100f;
       spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(
           spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue() * speed);
     }
 
     if (spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) {
       double speed =
-          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100D) / 100D;
+          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100f) / 100f;
       spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(
           spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue() * speed);
     }

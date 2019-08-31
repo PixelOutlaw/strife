@@ -41,7 +41,7 @@ public class StrifeAttribute {
   private int levelsToRaiseCap;
   private Map<String, Integer> baseStatRequirements;
   private Map<String, Integer> statIncreaseIncrements;
-  private Map<StrifeStat, Double> attributeMap;
+  private Map<StrifeStat, Float> attributeMap;
 
   public int getLevelsToRaiseCap() {
     return levelsToRaiseCap;
@@ -107,11 +107,11 @@ public class StrifeAttribute {
     this.description = description;
   }
 
-  public Map<StrifeStat, Double> getAttributeMap() {
+  public Map<StrifeStat, Float> getAttributeMap() {
     return new HashMap<>(attributeMap);
   }
 
-  public void setAttributeMap(Map<StrifeStat, Double> attributeMap) {
+  public void setAttributeMap(Map<StrifeStat, Float> attributeMap) {
     this.attributeMap = attributeMap;
   }
 

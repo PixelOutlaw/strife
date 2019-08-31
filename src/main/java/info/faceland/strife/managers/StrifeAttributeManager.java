@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.StatUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -160,13 +161,10 @@ public class StrifeAttributeManager {
         raiseStatCapAttributes.put(k, raiseReqs.getInt(k));
       }
     }
-    Map<StrifeStat, Double> attributeMap = new HashMap<>();
+    Map<StrifeStat, Float> attributeMap = new HashMap<>();
     if (cs.isConfigurationSection("stats")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("stats");
-      for (String k : attrCS.getKeys(false)) {
-        StrifeStat attr = StrifeStat.valueOf(k);
-        attributeMap.put(attr, attrCS.getDouble(k));
-      }
+      attributeMap.putAll(StatUtil.getStatMapFromSection(attrCS));
     }
     stat.setStatIncreaseIncrements(raiseStatCapAttributes);
     stat.setBaseStatRequirements(baseStatRequirements);

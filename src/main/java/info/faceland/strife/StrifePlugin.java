@@ -118,6 +118,7 @@ import info.faceland.strife.tasks.TrackedPruneTask;
 import info.faceland.strife.tasks.WorldSpaceEffectTask;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.LogUtil.LogLevel;
+import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
@@ -680,12 +681,8 @@ public class StrifePlugin extends FacePlugin {
             .cacheDisguise(uniqueEntity, disguise, cs.getString("disguise-player", null));
       }
 
-      ConfigurationSection attrCS = cs.getConfigurationSection("stats");
-      Map<StrifeStat, Double> attributeMap = new HashMap<>();
-      for (String k : attrCS.getKeys(false)) {
-        StrifeStat attr = StrifeStat.valueOf(k);
-        attributeMap.put(attr, attrCS.getDouble(k));
-      }
+      ConfigurationSection statCs = cs.getConfigurationSection("stats");
+      Map<StrifeStat, Float> attributeMap = StatUtil.getStatMapFromSection(statCs);
       uniqueEntity.setAttributeMap(attributeMap);
 
       ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");

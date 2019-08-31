@@ -9,15 +9,15 @@ import org.bukkit.potion.PotionEffectType;
 
 public class ChanceCondition implements Condition {
 
-  private final double chance;
-  private final Map<StrifeStat, Double> statMults = new HashMap<>();
+  private final float chance;
+  private final Map<StrifeStat, Float> statMults = new HashMap<>();
 
-  public ChanceCondition(double chance) {
+  public ChanceCondition(float chance) {
     this.chance = chance;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    double bonusChance = 1;
+    float bonusChance = 1f;
     for (StrifeStat attr : statMults.keySet()) {
       bonusChance += attacker.getStat(attr) * statMults.get(attr);
     }

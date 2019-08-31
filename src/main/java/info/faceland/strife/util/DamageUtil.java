@@ -81,6 +81,8 @@ public class DamageUtil {
   private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
   private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
+  public static final double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.evasion-threshold", 0.5);
   private static final Random RANDOM = new Random(System.currentTimeMillis());
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   private static final DamageType[] DMG_TYPES = DamageType.values();
@@ -165,7 +167,7 @@ public class DamageUtil {
   }
 
   public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Double> damageMap, Map<AbilityMod, Double> abilityMods) {
+      Map<DamageType, Double> damageMap, Map<AbilityMod, Float> abilityMods) {
     damageMap.replaceAll((t, v) ->
         damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
   }
@@ -237,17 +239,17 @@ public class DamageUtil {
   }
 
   public static double getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend,
-      Map<AbilityMod, Double> modDoubleMap) {
+      Map<AbilityMod, Float> modDoubleMap) {
     switch (type) {
       case PHYSICAL:
         double armor = getDefenderArmor(attack, defend);
-        armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0D);
-        armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0D);
+        armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0f);
+        armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0f);
         return getArmorMult(armor);
       case MAGICAL:
         double warding = getDefenderWarding(attack, defend);
-        warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0D);
-        warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0D);
+        warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0f);
+        warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
         return getWardingMult(warding);
       case FIRE:
         return 1 - getFireResist(defend) / 100;
@@ -386,6 +388,20 @@ public class DamageUtil {
     }
     applyCorrupt(defender, baseDamage);
     return true;
+  }
+
+  public static double getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
+      float bonusAccuracy, float accuracyMult) {
+
+    float totalEvasion = StatUtil.getEvasion(defender);
+    float totalAccuracy = StatUtil.getAccuracy(attacker);
+    totalAccuracy *= 1 + accuracyMult / 100;
+    totalAccuracy += bonusAccuracy;
+
+    float evasionMultiplier = StatUtil.getMinimumEvasionMult(totalEvasion, totalAccuracy);
+    evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
+
+    return evasionMultiplier;
   }
 
   public static void doEvasion(LivingEntity attacker, LivingEntity defender) {
@@ -625,16 +641,16 @@ public class DamageUtil {
     return lucky ? Math.max(rollDouble(), rollDouble()) : rollDouble();
   }
 
-  public static double rollDouble() {
-    return RANDOM.nextDouble();
+  public static float rollDouble() {
+    return RANDOM.nextFloat();
   }
 
-  public static boolean rollBool(double chance, boolean lucky) {
+  public static boolean rollBool(float chance, boolean lucky) {
     return lucky ? rollBool(chance) || rollBool(chance) : rollBool(chance);
   }
 
-  public static boolean rollBool(double chance) {
-    return RANDOM.nextDouble() <= chance;
+  public static boolean rollBool(float chance) {
+    return RANDOM.nextFloat() <= chance;
   }
 
   private static BlockManager getBlockManager() {

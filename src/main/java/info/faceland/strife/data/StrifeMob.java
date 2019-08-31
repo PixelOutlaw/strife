@@ -18,9 +18,9 @@ public class StrifeMob {
 
   private final static int BUFF_CHECK_FREQUENCY_MS = 100;
 
-  private final Map<StrifeStat, Double> baseStats = new HashMap<>();
-  private final Map<StrifeStat, Double> statCache = new HashMap<>();
-  private final Map<StrifeStat, Double> tempBonuses = new HashMap<>();
+  private final Map<StrifeStat, Float> baseStats = new HashMap<>();
+  private final Map<StrifeStat, Float> statCache = new HashMap<>();
+  private final Map<StrifeStat, Float> tempBonuses = new HashMap<>();
 
   private final Champion champion;
   private LivingEntity livingEntity;
@@ -44,19 +44,19 @@ public class StrifeMob {
     this.champion = null;
   }
 
-  public double getStat(StrifeStat stat) {
+  public float getStat(StrifeStat stat) {
     if (runningBuffs.isEmpty()) {
-      return baseStats.getOrDefault(stat, 0D);
+      return baseStats.getOrDefault(stat, 0f);
     }
     if (BUFF_CHECK_FREQUENCY_MS < System.currentTimeMillis() - buffCacheStamp) {
       statCache.clear();
       statCache.putAll(getFinalStats());
       buffCacheStamp = System.currentTimeMillis();
     }
-    return statCache.getOrDefault(stat, 0D);
+    return statCache.getOrDefault(stat, 0f);
   }
 
-  public void forceSetStat(StrifeStat stat, double value) {
+  public void forceSetStat(StrifeStat stat, float value) {
     baseStats.put(stat, value);
   }
 
@@ -80,15 +80,15 @@ public class StrifeMob {
     return champion;
   }
 
-  public Map<StrifeStat, Double> getFinalStats() {
+  public Map<StrifeStat, Float> getFinalStats() {
     return StatUpdateManager.combineMaps(baseStats, getBuffStats(), tempBonuses);
   }
 
-  public Map<StrifeStat, Double> getBaseStats() {
+  public Map<StrifeStat, Float> getBaseStats() {
     return baseStats;
   }
 
-  public void setStats(Map<StrifeStat, Double> stats) {
+  public void setStats(Map<StrifeStat, Float> stats) {
     baseStats.clear();
     baseStats.putAll(stats);
   }
@@ -176,8 +176,8 @@ public class StrifeMob {
     this.despawnOnUnload = despawnOnUnload;
   }
 
-  private Map<StrifeStat, Double> getBuffStats() {
-    Map<StrifeStat, Double> stats = new HashMap<>();
+  private Map<StrifeStat, Float> getBuffStats() {
+    Map<StrifeStat, Float> stats = new HashMap<>();
     for (String buffId : runningBuffs.keySet()) {
       if (runningBuffs.get(buffId).isExpired()) {
         runningBuffs.remove(buffId);

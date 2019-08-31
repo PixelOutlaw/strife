@@ -49,12 +49,12 @@ public class MonsterManager {
     entityStatDataMap.put(type, data);
   }
 
-  public Map<StrifeStat, Double> getBaseStats(LivingEntity livingEntity) {
+  public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity) {
     return getBaseStats(livingEntity, -1);
   }
 
-  public Map<StrifeStat, Double> getBaseStats(LivingEntity livingEntity, int level) {
-    Map<StrifeStat, Double> levelStats = new HashMap<>();
+  public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity, int level) {
+    Map<StrifeStat, Float> levelStats = new HashMap<>();
     EntityType type = livingEntity.getType();
     if (!entityStatDataMap.containsKey(type)) {
       return levelStats;
@@ -67,7 +67,7 @@ public class MonsterManager {
     }
     if (type == EntityType.PLAYER && level >= 100) {
       int bLevel = championManager.getChampion((Player) livingEntity).getBonusLevels();
-      Map<StrifeStat, Double> bonusStats = new HashMap<>();
+      Map<StrifeStat, Float> bonusStats = new HashMap<>();
       for (StrifeStat attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
         bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
       }
@@ -98,21 +98,21 @@ public class MonsterManager {
       ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
       for (String k : attrCS.getKeys(false)) {
         StrifeStat attr = StrifeStat.valueOf(k);
-        data.putBaseValue(attr, attrCS.getDouble(k));
+        data.putBaseValue(attr, (float) attrCS.getDouble(k));
       }
     }
     if (cs.isConfigurationSection("per-level")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("per-level");
       for (String k : attrCS.getKeys(false)) {
         StrifeStat attr = StrifeStat.valueOf(k);
-        data.putPerLevel(attr, attrCS.getDouble(k));
+        data.putPerLevel(attr, (float) attrCS.getDouble(k));
       }
     }
     if (cs.isConfigurationSection("per-bonus-level")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
       for (String k : attrCS.getKeys(false)) {
         StrifeStat attr = StrifeStat.valueOf(k);
-        data.putPerBonusLevel(attr, attrCS.getDouble(k));
+        data.putPerBonusLevel(attr, (float) attrCS.getDouble(k));
       }
     }
     if ("default".equalsIgnoreCase(key)) {
