@@ -86,14 +86,7 @@ public class TargetingUtil {
         }
       }
       for (Entity entity : entities) {
-        if (!(entity instanceof LivingEntity) || !entity.isValid()) {
-          continue;
-        }
-        double ex = entity.getLocation().getX();
-        double ey = entity.getLocation().getY();
-        double ez = entity.getLocation().getZ();
-        if (Math.abs(loc.getX() - ex) < 0.7 && Math.abs(loc.getZ() - ez) < 0.7
-            && Math.abs(loc.getY() - ey) < 4.5) {
+        if (entityWithinBounds(entity, loc)) {
           targets.add((LivingEntity) entity);
         }
       }
@@ -113,19 +106,23 @@ public class TargetingUtil {
         }
       }
       for (Entity entity : entities) {
-        if (!(entity instanceof LivingEntity) || !entity.isValid()) {
-          continue;
-        }
-        double ex = entity.getLocation().getX();
-        double ey = entity.getLocation().getY();
-        double ez = entity.getLocation().getZ();
-        if (Math.abs(loc.getX() - ex) < 0.7 && Math.abs(loc.getZ() - ez) < 0.7
-            && Math.abs(loc.getY() - ey) < 4.5) {
+        if (entityWithinBounds(entity, loc)) {
           return (LivingEntity) entity;
         }
       }
     }
     return null;
+  }
+
+  private static boolean entityWithinBounds(Entity entity, Location loc) {
+    if (!(entity instanceof LivingEntity) || !entity.isValid()) {
+      return false;
+    }
+    double ex = entity.getLocation().getX();
+    double ey = entity.getLocation().getY() + ((LivingEntity) entity).getEyeHeight() / 2;
+    double ez = entity.getLocation().getZ();
+    return Math.abs(loc.getX() - ex) < 0.7 && Math.abs(loc.getZ() - ez) < 0.7
+        && Math.abs(loc.getY() - ey) < 3;
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {

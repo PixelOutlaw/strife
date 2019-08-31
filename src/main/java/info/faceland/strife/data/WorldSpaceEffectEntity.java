@@ -1,24 +1,12 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.effects.AreaEffect;
 import info.faceland.strife.effects.Effect;
-import info.faceland.strife.effects.PlaySound;
-import info.faceland.strife.effects.Push;
-import info.faceland.strife.effects.SpawnParticle;
-import info.faceland.strife.managers.EffectManager;
-import info.faceland.strife.util.DamageUtil.OriginLocation;
-import info.faceland.strife.util.LogUtil;
-import info.faceland.strife.util.TargetingUtil;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
 public class WorldSpaceEffectEntity {
-
-  private static EffectManager EFFECT_MANAGER = StrifePlugin.getInstance().getEffectManager();
 
   private final Map<Integer, List<Effect>> effectSchedule;
   private final int maxTicks;
@@ -50,54 +38,43 @@ public class WorldSpaceEffectEntity {
     return location;
   }
 
-  public boolean tick() {
-    if (casterLock) {
-      location = TargetingUtil.getOriginLocation(caster.getEntity(), OriginLocation.CENTER);
-    } else {
-      location.add(velocity);
-    }
-    Block block = location.getBlock();
-    if (!(block == null || block.getType().isTransparent())) {
-      return false;
-    }
-    if (effectSchedule.containsKey(currentTick)) {
-      List<Effect> effects = effectSchedule.get(currentTick);
-      for (Effect effect : effects) {
-        if (effect == null) {
-          LogUtil.printError("Null WSE effect! Tick:" + currentTick);
-          continue;
-        }
-        if (effect instanceof SpawnParticle) {
-          ((SpawnParticle) effect).playAtLocation(location);
-          continue;
-        }
-        if (effect instanceof PlaySound) {
-          ((PlaySound) effect).playAtLocation(location);
-          continue;
-        }
-        applyDirectionToPushEffects(effect);
-        EFFECT_MANAGER.executeEffectAtLocation(effect, caster, location);
-      }
-    }
-    lifespan--;
-    if (lifespan < 0) {
-      return false;
-    }
-    currentTick++;
-    if (currentTick > maxTicks) {
-      currentTick = 1;
-    }
-    return true;
+  public Map<Integer, List<Effect>> getEffectSchedule() {
+    return effectSchedule;
   }
 
-  private void applyDirectionToPushEffects(Effect effect) {
-    if (!(effect instanceof AreaEffect)) {
-      return;
-    }
-    for (Effect areaEffect : ((AreaEffect) effect).getEffects()) {
-      if (areaEffect instanceof Push) {
-        ((Push) areaEffect).setTempVectorFromWSE(this);
-      }
-    }
+  public int getMaxTicks() {
+    return maxTicks;
+  }
+
+  public StrifeMob getCaster() {
+    return caster;
+  }
+
+  public void setLocation(Location location) {
+    this.location = location;
+  }
+
+  public boolean isCasterLock() {
+    return casterLock;
+  }
+
+  public void setCasterLock(boolean casterLock) {
+    this.casterLock = casterLock;
+  }
+
+  public int getCurrentTick() {
+    return currentTick;
+  }
+
+  public void setCurrentTick(int currentTick) {
+    this.currentTick = currentTick;
+  }
+
+  public int getLifespan() {
+    return lifespan;
+  }
+
+  public void setLifespan(int lifespan) {
+    this.lifespan = lifespan;
   }
 }

@@ -2,18 +2,13 @@ package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.data.WorldSpaceEffectEntity;
-import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
-import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.TargetingUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.util.Vector;
 
 public class CreateWorldSpaceEntity extends Effect {
 
@@ -28,28 +23,17 @@ public class CreateWorldSpaceEntity extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    createAtEntity(caster, target.getEntity());
+    cacheEffects();
+    StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
+        TargetingUtil.getOriginLocation(target.getEntity(), originLocation), lifespan, maxTicks,
+            velocity, cachedEffectSchedule, lockedToEntity, strictDuration);
   }
 
-  public void createAtEntity(StrifeMob caster, LivingEntity target) {
+  public void apply(StrifeMob caster, LivingEntity target) {
     cacheEffects();
-    LogUtil.printDebug(" Creating world space entity with effects " + cachedEffectSchedule);
-    double newLifeSpan = lifespan;
-    if (!strictDuration) {
-      newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
-    }
-    Location location;
-    Vector direction;
-    if (lockedToEntity) {
-      location = TargetingUtil.getOriginLocation(target, originLocation);
-      direction = null;
-    } else {
-      location = TargetingUtil.getOriginLocation(target, originLocation);
-      direction = caster.getEntity().getEyeLocation().getDirection().multiply(velocity);
-    }
-    WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, cachedEffectSchedule,
-        location, lockedToEntity, direction, maxTicks, (int) newLifeSpan);
-    StrifePlugin.getInstance().getEffectManager().addWorldSpaceEffectEntity(entity);
+    StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
+        TargetingUtil.getOriginLocation(target, originLocation), lifespan, maxTicks,
+        velocity, cachedEffectSchedule, lockedToEntity, strictDuration);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {

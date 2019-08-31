@@ -18,20 +18,20 @@
  */
 package info.faceland.strife.tasks;
 
-import info.faceland.strife.managers.EffectManager;
+import info.faceland.strife.managers.WSEManager;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class WorldSpaceEffectTask extends BukkitRunnable {
 
-  private final EffectManager effectManager;
+  private final WSEManager wseManager;
 
-  public WorldSpaceEffectTask(EffectManager effectManager) {
-    this.effectManager = effectManager;
+  public WorldSpaceEffectTask(WSEManager wseManager) {
+    this.wseManager = wseManager;
   }
 
   @Override
   public void run() {
-    effectManager.tickAllWorldSpaceEffects();
+    wseManager.tickAllWorldSpaceEffects();
   }
 
 }
