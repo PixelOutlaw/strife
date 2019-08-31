@@ -61,18 +61,18 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 public class StatUtil {
 
-  private static final double BASE_ATTACK_SECONDS = 2.0D;
+  private static final float BASE_ATTACK_SECONDS = 2.0f;
   private static final float BASE_EVASION_MULT = 0.8f;
   private static final float EVASION_ACCURACY_MULT = 0.6f;
   private static final double SWORDSMANSHIP_EVASION_REDUCE = 0.25D / 60D;
 
-  public static double getTenacityMult(StrifeMob defender) {
+  public static float getTenacityMult(StrifeMob defender) {
     if (defender.getStat(TENACITY) < 1) {
-      return 1.0D;
+      return 1;
     }
     double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
-    double maxReduction = 1 - Math.pow(0.5, defender.getStat(TENACITY) / 200);
-    return 1 - (maxReduction * Math.pow(1 - percent, 1.5));
+    float maxReduction = 1 - (float) Math.pow(0.5f, defender.getStat(TENACITY) / 200);
+    return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
   }
 
   public static double getMinionMult(StrifeMob mob) {
@@ -83,20 +83,20 @@ public class StatUtil {
     return ae.getStat(REGENERATION) * (1 + ae.getStat(REGEN_MULT) / 100);
   }
 
-  public static double getHealth(StrifeMob ae) {
+  public static float getHealth(StrifeMob ae) {
     return ae.getStat(HEALTH) * (1 + ae.getStat(HEALTH_MULT) / 100);
   }
 
-  public static double getBarrier(StrifeMob ae) {
+  public static float getBarrier(StrifeMob ae) {
     return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(ae);
   }
 
-  public static double getMaximumBarrier(StrifeMob ae) {
+  public static float getMaximumBarrier(StrifeMob ae) {
     return ae.getStat(BARRIER);
   }
 
-  public static double getBarrierPerSecond(StrifeMob ae) {
-    return (4 + (ae.getStat(BARRIER) * 0.08)) * (1 + (ae.getStat(BARRIER_SPEED) / 100));
+  public static float getBarrierPerSecond(StrifeMob ae) {
+    return (4 + (ae.getStat(BARRIER) * 0.08f)) * (1 + (ae.getStat(BARRIER_SPEED) / 100));
   }
 
   public static double getDamageMult(StrifeMob ae) {
@@ -115,9 +115,9 @@ public class StatUtil {
     return ae.getStat(MAGIC_DAMAGE) * (1 + ae.getStat(MAGIC_MULT) / 100);
   }
 
-  public static double getAttackTime(StrifeMob ae) {
-    double attackTime = BASE_ATTACK_SECONDS;
-    double attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
+  public static float getAttackTime(StrifeMob ae) {
+    float attackTime = BASE_ATTACK_SECONDS;
+    float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
     if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
     }
@@ -132,19 +132,19 @@ public class StatUtil {
     return attackTime;
   }
 
-  public static double getOverchargeMultiplier(StrifeMob ae) {
+  public static float getOverchargeMultiplier(StrifeMob ae) {
     return 1 + (ae.getStat(OVERCHARGE) / 100);
   }
 
-  public static double getCriticalMultiplier(StrifeMob ae) {
+  public static float getCriticalMultiplier(StrifeMob ae) {
     return 1 + (ae.getStat(CRITICAL_DAMAGE) / 100);
   }
 
-  public static double getArmor(StrifeMob ae) {
+  public static float getArmor(StrifeMob ae) {
     return ae.getStat(ARMOR) * (1 + ae.getStat(ARMOR_MULT) / 100);
   }
 
-  public static double getWarding(StrifeMob ae) {
+  public static float getWarding(StrifeMob ae) {
     return ae.getStat(WARDING) * (1 + ae.getStat(WARD_MULT) / 100);
   }
 
@@ -156,11 +156,11 @@ public class StatUtil {
     return ae.getStat(EVASION);
   }
 
-  public static double getArmorPen(StrifeMob ae) {
+  public static float getArmorPen(StrifeMob ae) {
     return ae.getStat(ARMOR_PENETRATION);
   }
 
-  public static double getWardPen(StrifeMob ae) {
+  public static float getWardPen(StrifeMob ae) {
     return ae.getStat(WARD_PENETRATION);
   }
 
@@ -169,28 +169,28 @@ public class StatUtil {
   }
 
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {
-    double armor = getDefenderArmor(attacker, defender);
+    float armor = getDefenderArmor(attacker, defender);
     return getArmorMult(armor);
   }
 
-  public static double getDefenderArmor(StrifeMob attacker, StrifeMob defender) {
+  public static float getDefenderArmor(StrifeMob attacker, StrifeMob defender) {
     return getArmor(defender) - getArmorPen(attacker);
   }
 
-  public static double getArmorMult(double armor) {
+  public static float getArmorMult(float armor) {
     return armor > 0 ? 80 / (80 + armor) : 1 - (armor / 100);
   }
 
-  public static double getWardingMult(StrifeMob attacker, StrifeMob defender) {
-    double warding = getDefenderWarding(attacker, defender);
+  public static float getWardingMult(StrifeMob attacker, StrifeMob defender) {
+    float warding = getDefenderWarding(attacker, defender);
     return getWardingMult(warding);
   }
 
-  public static double getDefenderWarding(StrifeMob attacker, StrifeMob defender) {
+  public static float getDefenderWarding(StrifeMob attacker, StrifeMob defender) {
     return getWarding(defender) - getWardPen(attacker);
   }
 
-  public static double getWardingMult(double warding) {
+  public static float getWardingMult(float warding) {
     return warding > 0 ? 80 / (80 + warding) : 1 - (warding / 100);
   }
 
@@ -199,37 +199,37 @@ public class StatUtil {
     return Math.min(1, BASE_EVASION_MULT - bonusMultiplier);
   }
 
-  public static double getFireResist(StrifeMob ae) {
+  public static float getFireResist(StrifeMob ae) {
     double amount = ae.getStat(FIRE_RESIST) + ae.getStat(ALL_RESIST);
-    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static double getIceResist(StrifeMob ae) {
+  public static float getIceResist(StrifeMob ae) {
     double amount = ae.getStat(ICE_RESIST) + ae.getStat(ALL_RESIST);
-    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static double getLightningResist(StrifeMob ae) {
+  public static float getLightningResist(StrifeMob ae) {
     double amount = ae.getStat(LIGHTNING_RESIST) + ae.getStat(ALL_RESIST);
-    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static double getEarthResist(StrifeMob ae) {
+  public static float getEarthResist(StrifeMob ae) {
     double amount = ae.getStat(EARTH_RESIST) + ae.getStat(ALL_RESIST);
-    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static double getLightResist(StrifeMob ae) {
+  public static float getLightResist(StrifeMob ae) {
     double amount = ae.getStat(LIGHT_RESIST) + ae.getStat(ALL_RESIST);
-    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static double getShadowResist(StrifeMob ae) {
+  public static float getShadowResist(StrifeMob ae) {
     double amount = ae.getStat(DARK_RESIST) + ae.getStat(ALL_RESIST);
-    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static double getLifestealPercentage(StrifeMob attacker) {
+  public static float getLifestealPercentage(StrifeMob attacker) {
     return attacker.getStat(LIFE_STEAL) / 100;
   }
 

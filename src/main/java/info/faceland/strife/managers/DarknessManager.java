@@ -24,7 +24,7 @@ import org.bukkit.entity.LivingEntity;
 
 public class DarknessManager {
 
-  private Map<LivingEntity, Double> darkMap = new HashMap<>();
+  private Map<LivingEntity, Float> darkMap = new HashMap<>();
 
   public boolean isValidEntity(LivingEntity entity) {
     return entity.isValid() && !entity.isDead();
@@ -37,7 +37,7 @@ public class DarknessManager {
     return darkMap.get(entity) >= 0;
   }
 
-  public void applyCorruption(LivingEntity entity, double amount) {
+  public void applyCorruption(LivingEntity entity, float amount) {
     if (darkMap.get(entity) != null) {
       darkMap.put(entity, darkMap.get(entity) + amount);
       return;
@@ -45,16 +45,16 @@ public class DarknessManager {
     darkMap.put(entity, amount);
   }
 
-  public double getCorruption(LivingEntity entity) {
+  public float getCorruption(LivingEntity entity) {
     if (darkMap.get(entity) != null) {
       return darkMap.get(entity);
     }
-    return 0D;
+    return 0f;
   }
 
-  public double getCorruptionMult(LivingEntity entity) {
+  public float getCorruptionMult(LivingEntity entity) {
     if (darkMap.containsKey(entity)) {
-      return 1 + 0.02 * darkMap.get(entity);
+      return 1 + 0.02f * darkMap.get(entity);
     }
     return 1;
   }
@@ -65,7 +65,7 @@ public class DarknessManager {
     }
   }
 
-  public Map<LivingEntity, Double> getDarkMap() {
+  public Map<LivingEntity, Float> getDarkMap() {
     return darkMap;
   }
 }

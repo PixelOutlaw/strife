@@ -45,7 +45,7 @@ public class DarknessReductionTask extends BukkitRunnable {
           0.03
       );
       darknessManager
-          .applyCorruption(le, -0.2f - (darknessManager.getCorruption(le) * 0.05));
+          .applyCorruption(le, -0.2f - (darknessManager.getCorruption(le) * 0.05f));
       if (!darknessManager.isValidEntity(le) || !darknessManager.isCorrupted(le)) {
         toBeRemoved.add(le);
       }

@@ -2,6 +2,7 @@ package info.faceland.strife.util;
 
 import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
+import static info.faceland.strife.stats.StrifeStat.DAMAGE_REFLECT;
 import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.ELEMENTAL_MULT;
@@ -89,13 +90,13 @@ public class DamageUtil {
 
   private static final double BLEED_PERCENT = 0.5;
 
-  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, double damage) {
+  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
     forceCustomDamage(attacker.getEntity(), defender.getEntity(), damage);
     return damage;
   }
 
-  public static double getRawDamage(StrifeMob attacker, DamageType damageType) {
+  public static float getRawDamage(StrifeMob attacker, DamageType damageType) {
     switch (damageType) {
       case PHYSICAL:
         return attacker.getStat(PHYSICAL_DAMAGE);
@@ -120,7 +121,7 @@ public class DamageUtil {
     }
   }
 
-  public static double applyDamageScale(StrifeMob caster, StrifeMob target, double amount,
+  public static float applyDamageScale(StrifeMob caster, StrifeMob target, float amount,
       DamageScale damageScale, DamageType damageType) {
     switch (damageScale) {
       case FLAT:
@@ -128,17 +129,17 @@ public class DamageUtil {
       case CASTER_DAMAGE:
         return amount * DamageUtil.getRawDamage(caster, damageType);
       case TARGET_CURRENT_HEALTH:
-        return amount * target.getEntity().getHealth();
+        return amount * (float) target.getEntity().getHealth();
       case CASTER_CURRENT_HEALTH:
-        return amount * caster.getEntity().getHealth();
+        return amount * (float) caster.getEntity().getHealth();
       case TARGET_MISSING_HEALTH:
-        return amount * (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
+        return amount * (float) (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
       case CASTER_MISSING_HEALTH:
-        return amount * (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
+        return amount * (float) (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
       case TARGET_MAX_HEALTH:
-        return amount * target.getEntity().getMaxHealth();
+        return amount * (float) target.getEntity().getMaxHealth();
       case CASTER_MAX_HEALTH:
-        return amount * caster.getEntity().getMaxHealth();
+        return amount * (float) caster.getEntity().getMaxHealth();
       case TARGET_CURRENT_BARRIER:
         return amount * StatUtil.getBarrier(target);
       case CASTER_CURRENT_BARRIER:
@@ -155,10 +156,10 @@ public class DamageUtil {
     return amount;
   }
 
-  public static Map<DamageType, Double> buildDamageMap(StrifeMob attacker) {
-    Map<DamageType, Double> damageMap = new HashMap<>();
+  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker) {
+    Map<DamageType, Float> damageMap = new HashMap<>();
     for (DamageType damageType : DMG_TYPES) {
-      double amount = getRawDamage(attacker, damageType);
+      float amount = getRawDamage(attacker, damageType);
       if (amount > 0) {
         damageMap.put(damageType, getRawDamage(attacker, damageType));
       }
@@ -167,13 +168,13 @@ public class DamageUtil {
   }
 
   public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Double> damageMap, Map<AbilityMod, Float> abilityMods) {
+      Map<DamageType, Float> damageMap, Map<AbilityMod, Float> abilityMods) {
     damageMap.replaceAll((t, v) ->
         damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
   }
 
   public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
-      Map<DamageType, Double> damageMap) {
+      Map<DamageType, Float> damageMap) {
     if (attackType == AttackType.MELEE && damageMap.containsKey(DamageType.PHYSICAL)) {
       damageMap.put(DamageType.PHYSICAL,
           damageMap.get(DamageType.PHYSICAL) * 1 + attacker.getStat(MELEE_PHYSICAL_MULT) / 100);
@@ -184,10 +185,10 @@ public class DamageUtil {
   }
 
   public static Set<DamageType> applyElementalEffects(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Double> damageMap) {
+      Map<DamageType, Float> damageMap) {
     Set<DamageType> triggeredElements = new HashSet<>();
     for (DamageType type : damageMap.keySet()) {
-      double bonus;
+      float bonus;
       switch (type) {
         case FIRE:
           bonus = attemptIgnite(damageMap.get(type), attacker, defender.getEntity());
@@ -211,8 +212,7 @@ public class DamageUtil {
           }
           break;
         case DARK:
-          bonus =
-              damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
+          bonus = damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
           boolean corrupt = attemptCorrupt(damageMap.get(type), attacker, defender.getEntity());
           if (corrupt) {
             triggeredElements.add(type);
@@ -238,16 +238,16 @@ public class DamageUtil {
     return triggeredElements;
   }
 
-  public static double getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend,
+  public static float getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend,
       Map<AbilityMod, Float> modDoubleMap) {
     switch (type) {
       case PHYSICAL:
-        double armor = getDefenderArmor(attack, defend);
+        float armor = getDefenderArmor(attack, defend);
         armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0f);
         armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0f);
         return getArmorMult(armor);
       case MAGICAL:
-        double warding = getDefenderWarding(attack, defend);
+        float warding = getDefenderWarding(attack, defend);
         warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0f);
         warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
         return getWardingMult(warding);
@@ -292,12 +292,11 @@ public class DamageUtil {
     return null;
   }
 
-  public static double attemptIgnite(double damage, StrifeMob attacker,
-      LivingEntity defender) {
+  public static float attemptIgnite(float damage, StrifeMob attacker, LivingEntity defender) {
     if (rollDouble() >= attacker.getStat(StrifeStat.IGNITE_CHANCE) / 100) {
-      return 0D;
+      return 0;
     }
-    double bonusDamage = defender.getFireTicks() > 0 ? damage : 1D;
+    float bonusDamage = defender.getFireTicks() > 0 ? damage : 1f;
     defender.setFireTicks(Math.max(60 + (int) damage, defender.getFireTicks()));
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
     defender.getWorld()
@@ -306,16 +305,14 @@ public class DamageUtil {
     return bonusDamage;
   }
 
-  public static double attemptShock(double damage, StrifeMob attacker,
-      LivingEntity defender) {
+  public static float attemptShock(float damage, StrifeMob attacker, LivingEntity defender) {
     if (rollDouble() >= attacker.getStat(StrifeStat.SHOCK_CHANCE) / 100) {
-      return 0D;
+      return 0;
     }
-    double multiplier = 0.5;
-    double percentHealth =
-        defender.getHealth() / defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-    if (percentHealth < 0.5) {
-      multiplier = 1 / Math.max(0.16, percentHealth * 2);
+    float multiplier = 0.5f;
+    float percentHealth = (float) defender.getHealth() / (float) defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+    if (percentHealth < 0.5f) {
+      multiplier = 1f / (float) Math.max(0.16, percentHealth * 2);
     }
     double particles = damage * multiplier * 0.5;
     double particleRange = 0.8 + multiplier * 0.2;
@@ -330,12 +327,11 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static double attemptFreeze(double damage, StrifeMob attacker,
-      LivingEntity defender) {
+  public static float attemptFreeze(float damage, StrifeMob attacker, LivingEntity defender) {
     if (rollDouble() >= attacker.getStat(StrifeStat.FREEZE_CHANCE) / 100) {
-      return 0D;
+      return 0;
     }
-    double multiplier = 0.25 + 0.25 * (StatUtil.getHealth(attacker) / 100);
+    float multiplier = 0.25f + 0.25f * (StatUtil.getHealth(attacker) / 100);
     if (!defender.hasPotionEffect(PotionEffectType.SLOW)) {
       defender.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 30, 1));
     }
@@ -346,7 +342,7 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static double consumeEarthRunes(double damage, StrifeMob attacker, LivingEntity defender) {
+  public static float consumeEarthRunes(float damage, StrifeMob attacker, LivingEntity defender) {
     int runes = getBlockManager().getEarthRunes(attacker.getEntity().getUniqueId());
     getBlockManager().setEarthRunes(attacker.getEntity().getUniqueId(), 0);
     if (runes == 0) {
@@ -360,13 +356,12 @@ public class DamageUtil {
         0.0, 0.0, 0.0,
         new MaterialData(Material.DIRT)
     );
-    return damage * 0.5 * runes;
+    return damage * 0.5f * runes;
   }
 
-  public static double getLightBonus(double damage, StrifeMob attacker,
-      LivingEntity defender) {
-    double light = attacker.getEntity().getLocation().getBlock().getLightLevel();
-    double multiplier = (light - 4) / 10;
+  public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {
+    float light = attacker.getEntity().getLocation().getBlock().getLightLevel();
+    float multiplier = (light - 4) / 10;
     if (multiplier >= 0.5) {
       defender.getWorld()
           .playSound(defender.getEyeLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 2f);
@@ -381,8 +376,7 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static boolean attemptCorrupt(double baseDamage, StrifeMob attacker,
-      LivingEntity defender) {
+  public static boolean attemptCorrupt(float baseDamage, StrifeMob attacker, LivingEntity defender) {
     if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
       return false;
     }
@@ -390,13 +384,13 @@ public class DamageUtil {
     return true;
   }
 
-  public static double getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
-      float bonusAccuracy, float accuracyMult) {
+  public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
+      Map<AbilityMod, Float> mods) {
 
     float totalEvasion = StatUtil.getEvasion(defender);
     float totalAccuracy = StatUtil.getAccuracy(attacker);
-    totalAccuracy *= 1 + accuracyMult / 100;
-    totalAccuracy += bonusAccuracy;
+    totalAccuracy *= 1 + mods.getOrDefault(AbilityMod.ACCURACY_MULT, 0f) / 100;
+    totalAccuracy += mods.getOrDefault(AbilityMod.ACCURACY, 0f);
 
     float evasionMultiplier = StatUtil.getMinimumEvasionMult(totalEvasion, totalAccuracy);
     evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
@@ -520,11 +514,23 @@ public class DamageUtil {
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
 
-  public static void applyCorrupt(LivingEntity defender, double amount) {
+  public static void applyCorrupt(LivingEntity defender, float amount) {
     StrifePlugin.getInstance().getDarknessManager().applyCorruption(defender, amount);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
     defender.getWorld()
         .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
+  }
+
+  public static void doReflectedDamage(StrifeMob defender, StrifeMob attacker,
+      AttackType damageType) {
+    if (defender.getStat(DAMAGE_REFLECT) < 0.1) {
+      return;
+    }
+    double reflectDamage = defender.getStat(DAMAGE_REFLECT);
+    reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
+    attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }
 
   public static void applyBuff(LoadedBuff buff, StrifeMob target) {
@@ -592,7 +598,7 @@ public class DamageUtil {
         livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
   }
 
-  public static void restoreBarrier(StrifeMob strifeMob, double amount) {
+  public static void restoreBarrier(StrifeMob strifeMob, float amount) {
     StrifePlugin.getInstance().getBarrierManager().restoreBarrier(strifeMob, amount);
   }
 
@@ -661,40 +667,40 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getDarknessManager();
   }
 
-  public enum OriginLocation {
-    HEAD,
-    CENTER,
-    GROUND
-  }
+public enum OriginLocation {
+  HEAD,
+  CENTER,
+  GROUND
+}
 
-  public enum DamageType {
-    TRUE_DAMAGE,
-    PHYSICAL,
-    MAGICAL,
-    FIRE,
-    ICE,
-    LIGHTNING,
-    EARTH,
-    LIGHT,
-    DARK
-  }
+public enum DamageType {
+  TRUE_DAMAGE,
+  PHYSICAL,
+  MAGICAL,
+  FIRE,
+  ICE,
+  LIGHTNING,
+  EARTH,
+  LIGHT,
+  DARK
+}
 
-  public enum AbilityMod {
-    ACCURACY,
-    ACCURACY_MULT,
-    ARMOR_PEN,
-    ARMOR_PEN_MULT,
-    WARD_PEN,
-    WARD_PEN_MULT,
-    CRITICAL_CHANCE,
-    CRITICAL_DAMAGE,
-    LIFE_STEAL,
-    HEALTH_ON_HIT,
-    BLEED_CHANCE,
-    BLEED_DAMAGE
-  }
+public enum AbilityMod {
+  ACCURACY,
+  ACCURACY_MULT,
+  ARMOR_PEN,
+  ARMOR_PEN_MULT,
+  WARD_PEN,
+  WARD_PEN_MULT,
+  CRITICAL_CHANCE,
+  CRITICAL_DAMAGE,
+  LIFE_STEAL,
+  HEALTH_ON_HIT,
+  BLEED_CHANCE,
+  BLEED_DAMAGE
+}
 
-  public enum AttackType {
-    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
-  }
+public enum AttackType {
+  MELEE, RANGED, MAGIC, EXPLOSION, OTHER
+}
 }

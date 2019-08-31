@@ -39,7 +39,7 @@ public class BarrierTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    for (Entry<UUID, Double> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
+    for (Entry<UUID, Float> entry : plugin.getBarrierManager().getBarrierMap().entrySet()) {
       if (plugin.getBarrierManager().getTickMap().containsKey(entry.getKey())) {
         plugin.getBarrierManager().tickEntity(entry.getKey());
         continue;
@@ -58,7 +58,7 @@ public class BarrierTask extends BukkitRunnable {
         continue;
       }
       // Restore this amount per barrier tick (4 MC ticks, 0.2s)
-      double barrierGain = StatUtil.getBarrierPerSecond(player) / 5;
+      float barrierGain = StatUtil.getBarrierPerSecond(player) / 5;
       plugin.getBarrierManager().restoreBarrier(player, barrierGain);
     }
   }

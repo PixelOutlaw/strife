@@ -15,8 +15,8 @@ import org.bukkit.entity.Player;
 
 public class DealDamage extends Effect {
 
-  private double amount;
-  private double flatBonus;
+  private float amount;
+  private float flatBonus;
   private DamageScale damageScale;
   private DamageType damageType;
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
@@ -28,7 +28,7 @@ public class DealDamage extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double damage = amount;
+    float damage = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       damage += getStatMults().get(attr) * caster.getStat(attr);
     }
@@ -51,11 +51,11 @@ public class DealDamage extends Effect {
     LogUtil.printDebug(" [Post-Damage] Target Health: " + target.getEntity().getHealth());
   }
 
-  public void setAmount(double amount) {
+  public void setAmount(float amount) {
     this.amount = amount;
   }
 
-  public void setFlatBonus(double flatBonus) {
+  public void setFlatBonus(float flatBonus) {
     this.flatBonus = flatBonus;
   }
 

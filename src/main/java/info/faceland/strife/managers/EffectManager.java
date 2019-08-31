@@ -200,7 +200,7 @@ public class EffectManager {
     switch (effectType) {
       case HEAL:
         effect = new Heal();
-        ((Heal) effect).setAmount(cs.getDouble("amount", 1));
+        ((Heal) effect).setAmount((float) cs.getDouble("amount", 1));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case FOOD:
@@ -208,7 +208,7 @@ public class EffectManager {
         ((Food) effect).setAmount(cs.getDouble("amount", 1));
       case RESTORE_BARRIER:
         effect = new RestoreBarrier();
-        ((RestoreBarrier) effect).setAmount(cs.getDouble("amount", 1));
+        ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
         ((RestoreBarrier) effect)
             .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
@@ -218,8 +218,8 @@ public class EffectManager {
         break;
       case DAMAGE:
         effect = new DealDamage();
-        ((DealDamage) effect).setAmount(cs.getDouble("amount", 1));
-        ((DealDamage) effect).setFlatBonus(cs.getDouble("flat-bonus", 0));
+        ((DealDamage) effect).setAmount((float) cs.getDouble("amount", 1));
+        ((DealDamage) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         try {
           ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
           ((DealDamage) effect)
@@ -344,7 +344,7 @@ public class EffectManager {
         break;
       case CORRUPT:
         effect = new Corrupt();
-        ((Corrupt) effect).setAmount(cs.getInt("amount", 10));
+        ((Corrupt) effect).setAmount((float) cs.getDouble("amount", 10));
         break;
       case CONSUME_BLEED:
         effect = new ConsumeBleed();

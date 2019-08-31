@@ -69,7 +69,7 @@ public class DOTListener implements Listener {
         damage = 1 + entity.getHealth() * 0.04;
         damage *= getResistPotionMult(entity);
         damage *= 1 - StatUtil.getFireResist(statEntity) / 100;
-        damage = plugin.getBarrierManager().damageBarrier(statEntity, damage);
+        damage = plugin.getBarrierManager().damageBarrier(statEntity, (float) damage);
         entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_FIRECHARGE_USE, 0.8f, 0.5f);
         dealDirectDamage(entity, damage);
         event.setCancelled(true);
@@ -80,7 +80,7 @@ public class DOTListener implements Listener {
         damage = 2 + entity.getHealth() * 0.1;
         damage *= getResistPotionMult(entity);
         damage *= 1 - StatUtil.getFireResist(statEntity2) / 100;
-        damage = plugin.getBarrierManager().damageBarrier(statEntity2, damage);
+        damage = plugin.getBarrierManager().damageBarrier(statEntity2, (float) damage);
         event.setDamage(damage);
         break;
       case WITHER:

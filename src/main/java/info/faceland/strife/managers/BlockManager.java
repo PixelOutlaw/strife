@@ -22,10 +22,13 @@ import static info.faceland.strife.stats.StrifeStat.BLOCK;
 import static info.faceland.strife.stats.StrifeStat.BLOCK_RECOVERY;
 import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAX_EARTH_RUNES;
+import static info.faceland.strife.util.DamageUtil.doBlock;
 
 import info.faceland.strife.data.BlockData;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +44,18 @@ public class BlockManager {
   private static final double PERCENT_BLOCK_S = 0.05;
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
   private static final double MAX_BLOCK_CHANCE = 0.6;
+
+  public boolean isAttackBlocked(StrifeMob attacker, StrifeMob defender, float attackMult,
+      AttackType attackType, boolean isBlocking) {
+    if (rollBlock(defender, isBlocking)) {
+      blockFatigue(defender.getEntity().getUniqueId(), attackMult, isBlocking);
+      bumpRunes(defender);
+      DamageUtil.doReflectedDamage(defender, attacker, attackType);
+      doBlock(attacker.getEntity(), defender.getEntity());
+      return true;
+    }
+    return false;
+  }
 
   public boolean rollBlock(StrifeMob strifeMob, boolean isBlocking) {
     if (strifeMob.getStat(StrifeStat.BLOCK) < 1) {

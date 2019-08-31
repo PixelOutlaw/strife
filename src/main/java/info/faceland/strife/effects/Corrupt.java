@@ -6,18 +6,18 @@ import info.faceland.strife.util.DamageUtil;
 
 public class Corrupt extends Effect {
 
-  private double amount;
+  private float amount;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double corruptionStacks = amount;
+    float corruptionStacks = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       corruptionStacks += getStatMults().get(attr) * caster.getStat(attr);
     }
     DamageUtil.applyCorrupt(target.getEntity(), corruptionStacks);
   }
 
-  public void setAmount(double amount) {
+  public void setAmount(float amount) {
     this.amount = amount;
   }
 }

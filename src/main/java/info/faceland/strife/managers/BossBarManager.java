@@ -259,7 +259,7 @@ public class BossBarManager {
       return;
     }
     double barrier = plugin.getBarrierManager().getBarrierMap()
-        .getOrDefault(bar.getOwner().getEntity().getUniqueId(), 0D);
+        .getOrDefault(bar.getOwner().getEntity().getUniqueId(), 0f);
     double maxBarrier = StatUtil.getMaximumBarrier(bar.getOwner());
     bar.getBarrierBar().setProgress(Math.min(barrier / maxBarrier, 1D));
   }

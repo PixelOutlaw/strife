@@ -21,8 +21,6 @@ package info.faceland.strife.managers;
 import static info.faceland.strife.stats.StrifeStat.BARRIER;
 
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.util.LogUtil;
-import info.faceland.strife.util.PlayerDataUtil;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +31,7 @@ import org.bukkit.entity.Player;
 public class BarrierManager {
 
   private static final int BASE_BARRIER_TICKS = 15;
-  private final Map<UUID, Double> barrierMap = new ConcurrentHashMap<>();
+  private final Map<UUID, Float> barrierMap = new ConcurrentHashMap<>();
   private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
 
   public void createBarrierEntry(StrifeMob strifeMob) {
@@ -59,16 +57,16 @@ public class BarrierManager {
     return barrierMap.containsKey(uuid) && barrierMap.get(uuid) > 0;
   }
 
-  public double getCurrentBarrier(StrifeMob strifeMob) {
+  public float getCurrentBarrier(StrifeMob strifeMob) {
     createBarrierEntry(strifeMob);
-    return barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0D);
+    return barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0f);
   }
 
   public boolean hasBarrierEntry(LivingEntity livingEntity) {
     return barrierMap.containsKey(livingEntity.getUniqueId());
   }
 
-  public void setEntityBarrier(UUID uuid, double amount) {
+  public void setEntityBarrier(UUID uuid, float amount) {
     barrierMap.put(uuid, amount);
   }
 
@@ -80,7 +78,7 @@ public class BarrierManager {
       setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
-    if (strifeMob.getStat(BARRIER) <= 0.1) {
+    if (strifeMob.getStat(BARRIER) < 0.1) {
       setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
@@ -119,13 +117,13 @@ public class BarrierManager {
     tickMap.put(uuid, tickMap.get(uuid) - 1);
   }
 
-  public double damageBarrier(StrifeMob strifeMob, double amount) {
+  public float damageBarrier(StrifeMob strifeMob, float amount) {
     interruptBarrier(strifeMob.getEntity());
     if (!isBarrierUp(strifeMob)) {
       return amount;
     }
     LivingEntity entity = strifeMob.getEntity();
-    double remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
+    float remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
     if (remainingBarrier > 0) {
       setEntityBarrier(entity.getUniqueId(), remainingBarrier);
       updateShieldDisplay(strifeMob);
@@ -136,12 +134,12 @@ public class BarrierManager {
     return Math.abs(remainingBarrier);
   }
 
-  public void restoreBarrier(StrifeMob strifeMob, double amount) {
-    if (strifeMob.getStat(BARRIER) == 0) {
+  public void restoreBarrier(StrifeMob strifeMob, float amount) {
+    if (strifeMob.getStat(BARRIER) < 0.1) {
       return;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();
-    double newBarrierValue = Math.min(barrierMap.get(uuid) + amount, strifeMob.getStat(BARRIER));
+    float newBarrierValue = Math.min(barrierMap.get(uuid) + amount, strifeMob.getStat(BARRIER));
     setEntityBarrier(uuid, newBarrierValue);
     updateShieldDisplay(strifeMob);
   }
@@ -150,7 +148,7 @@ public class BarrierManager {
     return tickMap;
   }
 
-  public Map<UUID, Double> getBarrierMap() {
+  public Map<UUID, Float> getBarrierMap() {
     return barrierMap;
   }
 

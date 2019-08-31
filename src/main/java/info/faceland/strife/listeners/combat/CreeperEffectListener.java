@@ -50,7 +50,7 @@ public class CreeperEffectListener implements Listener {
       bleedManager.applyBleed((LivingEntity) event.getEntity(), amount + 5);
     }
     if (darknessManager.isCorrupted((LivingEntity) event.getDamager())) {
-      double amount = darknessManager.getCorruption((LivingEntity) event.getDamager());
+      float amount = darknessManager.getCorruption((LivingEntity) event.getDamager());
       darknessManager.applyCorruption((LivingEntity) event.getEntity(), amount + 10);
     }
     if (event.getDamager().getFireTicks() > 0) {

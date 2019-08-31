@@ -7,12 +7,12 @@ import info.faceland.strife.util.DamageUtil;
 
 public class Heal extends Effect {
 
-  private double amount;
+  private float amount;
   private DamageScale damageScale;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double heal = amount;
+    float heal = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getStat(attr);
     }
@@ -20,7 +20,7 @@ public class Heal extends Effect {
         DamageUtil.applyDamageScale(caster, target, heal, damageScale, null));
   }
 
-  public void setAmount(double amount) {
+  public void setAmount(float amount) {
     this.amount = amount;
   }
 

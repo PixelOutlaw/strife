@@ -8,7 +8,7 @@ import info.faceland.strife.util.DamageUtil;
 
 public class RestoreBarrier extends Effect {
 
-  private double amount;
+  private float amount;
   private DamageScale damageScale;
 
   @Override
@@ -16,7 +16,7 @@ public class RestoreBarrier extends Effect {
     if (target.getStat(StrifeStat.BARRIER) == 0) {
       return;
     }
-    double restoreAmount = amount;
+    float restoreAmount = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       restoreAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
@@ -44,7 +44,7 @@ public class RestoreBarrier extends Effect {
     }
   }
 
-  public void setAmount(double amount) {
+  public void setAmount(float amount) {
     this.amount = amount;
   }
 
@@ -52,11 +52,11 @@ public class RestoreBarrier extends Effect {
     this.damageScale = damageScale;
   }
 
-  private double getCurrentBarrier(StrifeMob mob) {
+  private float getCurrentBarrier(StrifeMob mob) {
     return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(mob);
   }
 
-  private double getMissingBarrier(StrifeMob mob) {
+  private float getMissingBarrier(StrifeMob mob) {
     return 1 - getCurrentBarrier(mob) / mob.getStat(StrifeStat.BARRIER);
   }
 }

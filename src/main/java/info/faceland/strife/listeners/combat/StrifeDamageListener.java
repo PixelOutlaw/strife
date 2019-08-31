@@ -20,7 +20,6 @@ package info.faceland.strife.listeners.combat;
 
 import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
-import static info.faceland.strife.stats.StrifeStat.DAMAGE_REFLECT;
 import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
 import static info.faceland.strife.stats.StrifeStat.RAGE_ON_HIT;
 import static info.faceland.strife.stats.StrifeStat.RAGE_WHEN_HIT;
@@ -29,7 +28,6 @@ import static info.faceland.strife.util.DamageUtil.applyHealthOnHit;
 import static info.faceland.strife.util.DamageUtil.applyLifeSteal;
 import static info.faceland.strife.util.DamageUtil.callCritEvent;
 import static info.faceland.strife.util.DamageUtil.callSneakAttackEvent;
-import static info.faceland.strife.util.DamageUtil.doBlock;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
 import static info.faceland.strife.util.DamageUtil.getPotionMult;
 import static info.faceland.strife.util.DamageUtil.hasLuck;
@@ -47,7 +45,6 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
-import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.StatUtil;
 import java.util.Map;
@@ -62,7 +59,7 @@ import org.bukkit.event.Listener;
 public class StrifeDamageListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static final double PVP_MULT = StrifePlugin.getInstance().getSettings()
+  private static final float PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-multiplier", 0.5);
 
   public StrifeDamageListener(StrifePlugin plugin) {
@@ -88,12 +85,9 @@ public class StrifeDamageListener implements Listener {
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
 
-    double evasionMultiplier = 1;
+    float evasionMultiplier = 1;
     if (event.isCanBeEvaded()) {
-      evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender,
-          event.getAbilityMods(AbilityMod.ACCURACY_MULT),
-          event.getAbilityMods(AbilityMod.ACCURACY));
-
+      evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, event.getAbilityMods());
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
         doEvasion(attacker.getEntity(), defender.getEntity());
         removeIfExisting(event.getProjectile());
@@ -102,15 +96,11 @@ public class StrifeDamageListener implements Listener {
       }
     }
 
-    double attackMult = event.getAttackMultiplier();
+    float attackMult = event.getAttackMultiplier();
 
     if (event.isCanBeBlocked()) {
-      if (plugin.getBlockManager().rollBlock(defender, event.isBlocking())) {
-        plugin.getBlockManager().blockFatigue(defender.getEntity().getUniqueId(), attackMult,
-            event.isBlocking());
-        plugin.getBlockManager().bumpRunes(defender);
-        doReflectedDamage(defender, attacker, event.getAttackType());
-        doBlock(attacker.getEntity(), defender.getEntity());
+      if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
+          event.getAttackType(), event.isBlocking())) {
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
         return;
@@ -141,12 +131,12 @@ public class StrifeDamageListener implements Listener {
       }
     }
 
-    Map<DamageType, Double> damageMap = DamageUtil.buildDamageMap(attacker);
+    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker);
     damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t));
     DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
     for (DamageType type : DamageType.values()) {
       if (event.getFlatDamageBonuses().containsKey(type)) {
-        damageMap.put(type, damageMap.getOrDefault(type, 0D) + event.getFlatDamageBonus(type));
+        damageMap.put(type, damageMap.getOrDefault(type, 0f) + event.getFlatDamageBonus(type));
       }
     }
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
@@ -163,16 +153,16 @@ public class StrifeDamageListener implements Listener {
       bonusOverchargeMultiplier = attacker.getStat(OVERCHARGE) / 100;
     }
 
-    double standardDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0D) +
-        damageMap.getOrDefault(DamageType.MAGICAL, 0D);
-    double elementalDamage = damageMap.getOrDefault(DamageType.FIRE, 0D) +
-        damageMap.getOrDefault(DamageType.ICE, 0D) +
-        damageMap.getOrDefault(DamageType.LIGHTNING, 0D) +
-        damageMap.getOrDefault(DamageType.DARK, 0D) +
-        damageMap.getOrDefault(DamageType.EARTH, 0D) +
-        damageMap.getOrDefault(DamageType.LIGHT, 0D);
+    double standardDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f) +
+        damageMap.getOrDefault(DamageType.MAGICAL, 0f);
+    double elementalDamage = damageMap.getOrDefault(DamageType.FIRE, 0f) +
+        damageMap.getOrDefault(DamageType.ICE, 0f) +
+        damageMap.getOrDefault(DamageType.LIGHTNING, 0f) +
+        damageMap.getOrDefault(DamageType.DARK, 0f) +
+        damageMap.getOrDefault(DamageType.EARTH, 0f) +
+        damageMap.getOrDefault(DamageType.LIGHT, 0f);
 
-    double pvpMult = 1D;
+    float pvpMult = 1f;
     if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
       pvpMult = PVP_MULT;
     }
@@ -199,8 +189,8 @@ public class StrifeDamageListener implements Listener {
     elementalDamage *= StatUtil.getDamageMult(attacker);
     elementalDamage *= pvpMult;
 
-    double damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
-    double rawDamage = Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
+    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
+    float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
 
     rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defender.getEntity()));
 
@@ -209,7 +199,7 @@ public class StrifeDamageListener implements Listener {
     }
     rawDamage *= StatUtil.getTenacityMult(defender);
     rawDamage *= StatUtil.getMinionMult(attacker);
-    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0D) * attackMult;
+    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) * attackMult;
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
@@ -249,7 +239,7 @@ public class StrifeDamageListener implements Listener {
       plugin.getSneakManager().tempDisableSneak((Player) attacker.getEntity());
     }
 
-    doReflectedDamage(defender, attacker, event.getAttackType());
+    DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
 
     plugin.getAbilityManager().abilityCast(attacker, TriggerAbilityType.ON_HIT);
     plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
@@ -280,16 +270,5 @@ public class StrifeDamageListener implements Listener {
       return;
     }
     projectile.remove();
-  }
-
-  private void doReflectedDamage(StrifeMob defender, StrifeMob attacker, AttackType damageType) {
-    if (defender.getStat(DAMAGE_REFLECT) < 0.1) {
-      return;
-    }
-    double reflectDamage = defender.getStat(DAMAGE_REFLECT);
-    reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
-    attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }
 }
