@@ -1,9 +1,13 @@
 package info.faceland.strife.effects;
 
+import static info.faceland.strife.util.DamageUtil.doEvasion;
+
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.HitData;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
+import info.faceland.strife.util.DamageUtil.AttackType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +26,7 @@ public class AreaEffect extends Effect {
   private boolean isLineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
-  private final Map<AbilityMod, Double> attackModifiers = new HashMap<>();
+  private final Map<AbilityMod, Float> attackModifiers = new HashMap<>();
   private long targetingCooldown;
 
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -35,11 +39,18 @@ public class AreaEffect extends Effect {
         return;
       }
     }
-    if (canBeBlocked) {
-
-    }
     if (canBeEvaded) {
-
+      float evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, attackModifiers);
+      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        doEvasion(caster.getEntity(), target.getEntity());
+        return;
+      }
+    }
+    if (canBeBlocked) {
+      if (StrifePlugin.getInstance().getBlockManager()
+          .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false)) {
+        return;
+      }
     }
     for (Effect effect : getEffects()) {
       StrifePlugin.getInstance().getEffectManager().execute(effect, caster, target.getEntity());
@@ -91,7 +102,7 @@ public class AreaEffect extends Effect {
     this.maxTargets = maxTargets;
   }
 
-  public Map<AbilityMod, Double> getAttackModifiers() {
+  public Map<AbilityMod, Float> getAttackModifiers() {
     return attackModifiers;
   }
 
