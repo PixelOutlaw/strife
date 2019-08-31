@@ -109,10 +109,7 @@ public class MinionListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onMasterAttack(final EntityDamageByEntityEvent event) {
-    if (event.isCancelled()) {
-      return;
-    }
-    if (!(event.getEntity() instanceof LivingEntity)) {
+    if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
       return;
     }
     Entity attacker = getDamagingEntity(event.getDamager());
@@ -133,10 +130,7 @@ public class MinionListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onMasterHit(final EntityDamageByEntityEvent event) {
-    if (event.isCancelled()) {
-      return;
-    }
-    if (!(event.getEntity() instanceof LivingEntity)) {
+    if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
       return;
     }
     Entity attacker = getDamagingEntity(event.getDamager());

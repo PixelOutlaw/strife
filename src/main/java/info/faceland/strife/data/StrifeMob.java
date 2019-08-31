@@ -156,7 +156,7 @@ public class StrifeMob {
   }
 
   public void addMinion(StrifeMob strifeMob) {
-    getMinions().add(strifeMob);
+    minions.add(strifeMob);
     strifeMob.setMaster(livingEntity);
   }
 

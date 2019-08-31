@@ -8,7 +8,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 
 public class Summon extends Effect {
 
@@ -20,17 +19,15 @@ public class Summon extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     for (int i = 0; i < amount; i++) {
-      if (caster.getEntity() instanceof Player) {
-        if (caster.getMinions().size() >= caster.getStat(MAX_MINIONS)) {
-          break;
-        }
-      }
       Location loc = target.getEntity().getLocation();
       summonAtLocation(caster, loc);
     }
   }
 
   public void summonAtLocation(StrifeMob caster, Location location) {
+    if (caster.getMinions().size() >= caster.getStat(MAX_MINIONS)) {
+      return;
+    }
     LivingEntity summon = StrifePlugin.getInstance().getUniqueEntityManager()
         .spawnUnique(uniqueEntity, location);
     if (summon == null) {
