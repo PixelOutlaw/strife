@@ -126,25 +126,25 @@ public class DamageUtil {
       case CASTER_DAMAGE:
         return amount * DamageUtil.getRawDamage(caster, damageType);
       case TARGET_CURRENT_HEALTH:
-        return amount * target.getEntity().getHealth() / target.getEntity().getMaxHealth();
+        return amount * target.getEntity().getHealth();
       case CASTER_CURRENT_HEALTH:
-        return amount * caster.getEntity().getHealth() / caster.getEntity().getMaxHealth();
+        return amount * caster.getEntity().getHealth();
       case TARGET_MISSING_HEALTH:
-        return amount * target.getEntity().getMaxHealth() - target.getEntity().getHealth();
+        return amount * (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
       case CASTER_MISSING_HEALTH:
-        return amount * caster.getEntity().getMaxHealth() - caster.getEntity().getHealth();
+        return amount * (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
       case TARGET_MAX_HEALTH:
         return amount * target.getEntity().getMaxHealth();
       case CASTER_MAX_HEALTH:
         return amount * caster.getEntity().getMaxHealth();
       case TARGET_CURRENT_BARRIER:
-        return amount * StatUtil.getBarrier(target) / StatUtil.getMaximumBarrier(target);
+        return amount * StatUtil.getBarrier(target);
       case CASTER_CURRENT_BARRIER:
-        return amount * StatUtil.getBarrier(caster) / StatUtil.getMaximumBarrier(caster);
+        return amount * StatUtil.getBarrier(caster);
       case TARGET_MISSING_BARRIER:
-        return amount * StatUtil.getMaximumBarrier(target) - StatUtil.getBarrier(target);
+        return amount * (StatUtil.getMaximumBarrier(target) - StatUtil.getBarrier(target));
       case CASTER_MISSING_BARRIER:
-        return amount * StatUtil.getMaximumBarrier(caster) - StatUtil.getBarrier(caster);
+        return amount * (StatUtil.getMaximumBarrier(caster) - StatUtil.getBarrier(caster));
       case TARGET_MAX_BARRIER:
         return amount * StatUtil.getMaximumBarrier(target);
       case CASTER_MAX_BARRIER:
