@@ -24,7 +24,6 @@ import info.faceland.strife.conditions.PotionCondition;
 import info.faceland.strife.conditions.StatCondition;
 import info.faceland.strife.conditions.TimeCondition;
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.data.WorldSpaceEffectEntity;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.AreaEffect;
 import info.faceland.strife.effects.Bleed;
@@ -43,6 +42,7 @@ import info.faceland.strife.effects.Heal;
 import info.faceland.strife.effects.Ignite;
 import info.faceland.strife.effects.IncreaseRage;
 import info.faceland.strife.effects.Lightning;
+import info.faceland.strife.effects.ModifyProjectile;
 import info.faceland.strife.effects.PlaySound;
 import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.Push;
@@ -92,7 +92,6 @@ public class EffectManager {
   private final StrifeMobManager aeManager;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
-  private final Set<WorldSpaceEffectEntity> worldSpaceEffects;
 
   private static Random random = new Random();
 
@@ -101,7 +100,6 @@ public class EffectManager {
     this.aeManager = aeManager;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
-    this.worldSpaceEffects = new HashSet<>();
   }
 
   public void execute(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
@@ -145,25 +143,6 @@ public class EffectManager {
     return targets;
   }
 
-  public void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
-    LogUtil.printDebug(" - Added worldspace entity to effect manager");
-    worldSpaceEffects.add(worldSpaceEffectEntity);
-  }
-
-  public void tickAllWorldSpaceEffects() {
-    List<WorldSpaceEffectEntity> expiredEffects = new ArrayList<>();
-    for (WorldSpaceEffectEntity effect : worldSpaceEffects) {
-      boolean isAlive = effect.tick();
-      if (!isAlive) {
-        expiredEffects.add(effect);
-      }
-    }
-    for (WorldSpaceEffectEntity effect : expiredEffects) {
-      LogUtil.printDebug(" - Remove expired worldspace entity from effect manager");
-      worldSpaceEffects.remove(effect);
-    }
-  }
-
   private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, StrifeMob caster,
       AreaEffect effect) {
     double range = effect.getRange();
@@ -198,7 +177,7 @@ public class EffectManager {
 
   private void runPlayAtLocationEffects(StrifeMob caster, Effect effect, LivingEntity le) {
     if (effect instanceof CreateWorldSpaceEntity) {
-      ((CreateWorldSpaceEntity) effect).createAtEntity(caster, le);
+      ((CreateWorldSpaceEntity) effect).apply(caster, le);
     } else if (effect instanceof PlaySound) {
       ((PlaySound) effect).playAtLocation(le.getLocation());
     } else if (effect instanceof SpawnParticle) {
@@ -306,7 +285,7 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
         ((CreateWorldSpaceEntity) effect)
             .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("velocity", 0));
+        ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         ((CreateWorldSpaceEntity) effect).setLockedToEntity(cs.getBoolean("entity-lock", false));
         break;
@@ -319,6 +298,7 @@ public class EffectManager {
         ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
         ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
+        ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
         break;
       case PROJECTILE:
         effect = new ShootProjectile();
@@ -421,6 +401,13 @@ public class EffectManager {
         break;
       case LIGHTNING:
         effect = new Lightning();
+        break;
+      case MODIFY_PROJECTILE:
+        effect = new ModifyProjectile();
+        ((ModifyProjectile) effect).setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
+        ((ModifyProjectile) effect).setRange(cs.getDouble("range", 1));
+        ((ModifyProjectile) effect).setRemove(cs.getBoolean("remove", true));
+        ((ModifyProjectile) effect).setSpeedMult(cs.getDouble("speed-mult", 0.5));
         break;
       case POTION:
         effect = new PotionEffectAction();
@@ -683,6 +670,7 @@ public class EffectManager {
     SPEAK,
     PUSH,
     LIGHTNING,
+    MODIFY_PROJECTILE,
     POTION,
     TARGET,
     SUMMON

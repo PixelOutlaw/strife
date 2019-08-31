@@ -87,6 +87,7 @@ import info.faceland.strife.managers.StatUpdateManager;
 import info.faceland.strife.managers.StrifeAttributeManager;
 import info.faceland.strife.managers.StrifeMobManager;
 import info.faceland.strife.managers.UniqueEntityManager;
+import info.faceland.strife.managers.WSEManager;
 import info.faceland.strife.menus.abilities.AbilityPickerMenu;
 import info.faceland.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import info.faceland.strife.menus.levelup.ConfirmationMenu;
@@ -190,6 +191,7 @@ public class StrifePlugin extends FacePlugin {
   private SpawnerManager spawnerManager;
   private MobModManager mobModManager;
   private GlobalBoostManager globalBoostManager;
+  private WSEManager wseManager;
 
   private DataStorage storage;
 
@@ -271,6 +273,7 @@ public class StrifePlugin extends FacePlugin {
     rageManager = new RageManager(statUpdateManager);
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(attributeManager, strifeMobManager);
+    wseManager = new WSEManager(effectManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     mobModManager = new MobModManager();
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
@@ -323,7 +326,7 @@ public class StrifePlugin extends FacePlugin {
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager,
         AbilityTickTask.ABILITY_TICK_RATE);
-    WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(effectManager);
+    WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(wseManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
 
     commandHandler.registerCommands(new AttributesCommand(this));
@@ -863,6 +866,10 @@ public class StrifePlugin extends FacePlugin {
 
   public StrifeMobManager getStrifeMobManager() {
     return strifeMobManager;
+  }
+
+  public WSEManager getWseManager() {
+    return wseManager;
   }
 
   public MasterConfiguration getSettings() {
