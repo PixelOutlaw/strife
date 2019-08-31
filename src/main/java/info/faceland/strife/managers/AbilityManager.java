@@ -393,7 +393,7 @@ public class AbilityManager {
   }
 
   private boolean isCasterOnGlobalCooldown(UUID uuid) {
-    if (abilityGlobalCd.containsKey(uuid) && abilityGlobalCd.get(uuid) + 400 >
+    if (abilityGlobalCd.containsKey(uuid) && abilityGlobalCd.get(uuid) + 50 >
         System.currentTimeMillis()) {
       return true;
     }

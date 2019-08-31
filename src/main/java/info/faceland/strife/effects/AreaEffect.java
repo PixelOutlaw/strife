@@ -1,14 +1,19 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.HitData;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class AreaEffect extends Effect {
+
+  private Map<UUID, List<HitData>> targetDelay = new HashMap<>();
+  private long lastApplication = System.currentTimeMillis();
 
   private List<Effect> cachedEffects = new ArrayList<>();
   private List<String> effects = new ArrayList<>();
@@ -18,8 +23,18 @@ public class AreaEffect extends Effect {
   private boolean canBeEvaded;
   private boolean canBeBlocked;
   private final Map<AbilityMod, Double> attackModifiers = new HashMap<>();
+  private long targetingCooldown;
 
   public void apply(StrifeMob caster, StrifeMob target) {
+    if (targetingCooldown > 0) {
+      if (lastApplication < System.currentTimeMillis()) {
+        targetDelay.clear();
+      }
+      lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
+      if (!canTargetBeHit(caster.getEntity().getUniqueId(), target.getEntity().getUniqueId())) {
+        return;
+      }
+    }
     if (canBeBlocked) {
 
     }
@@ -78,5 +93,32 @@ public class AreaEffect extends Effect {
 
   public Map<AbilityMod, Double> getAttackModifiers() {
     return attackModifiers;
+  }
+
+  public void setTargetingCooldown(long targetingCooldown) {
+    this.targetingCooldown = targetingCooldown;
+  }
+
+  private boolean canTargetBeHit(UUID caster, UUID target) {
+    if (!targetDelay.containsKey(caster)) {
+      targetDelay.put(caster, new ArrayList<>());
+      targetDelay.get(caster).add(new HitData(target, targetingCooldown));
+      return true;
+    }
+    return bumpTargetData(caster, target);
+  }
+
+  private boolean bumpTargetData(UUID caster, UUID target) {
+    for (HitData data : targetDelay.get(caster)) {
+      if (data.getTarget() == target) {
+        if (data.getTimeStamp() > System.currentTimeMillis()) {
+          return false;
+        }
+        data.setTimeStamp(System.currentTimeMillis() + targetingCooldown);
+        return true;
+      }
+    }
+    targetDelay.get(caster).add(new HitData(target, targetingCooldown));
+    return true;
   }
 }
