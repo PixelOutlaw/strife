@@ -55,6 +55,7 @@ public enum StrifeStat {
   DAMAGE_REDUCTION("Damage Reduction"),
   DAMAGE_REFLECT("Reflected Damage"),
 
+  MULTISHOT("Multishot"),
   PROJECTILE_SPEED("Projectile Speed"),
   PROJECTILE_DAMAGE("Projectile Damage"),
   PROJECTILE_REDUCTION("Projectile Damage Reduction"),
@@ -96,9 +97,8 @@ public enum StrifeStat {
   HP_ON_HIT("Life On Hit"),
   HP_ON_KILL("Life On Kill"),
 
-  MULTISHOT("Multishot"),
-
   MINION_DAMAGE("Minion Damage"),
+  MINION_LIFE("Minion Max Life"),
   MAX_MINIONS("Maximum Minions"),
 
   MOVEMENT_SPEED("Movement Speed"),

@@ -1,9 +1,9 @@
 package info.faceland.strife.managers;
 
 import info.faceland.strife.data.Spawner;
+import info.faceland.strife.data.StrifeMob;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.entity.LivingEntity;
 
 public class SpawnerManager {
 
@@ -59,11 +59,11 @@ public class SpawnerManager {
         s.setRespawnTime(System.currentTimeMillis() + RESPAWN_RETRY_DELAY);
         continue;
       }
-      LivingEntity le = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
-      if (le == null) {
+      StrifeMob mob = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
+      if (mob == null || mob.getEntity() == null) {
         return;
       }
-      s.setTrackedEntity(le);
+      s.setTrackedEntity(mob.getEntity());
     }
   }
 

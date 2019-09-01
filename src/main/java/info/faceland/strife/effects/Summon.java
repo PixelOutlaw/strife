@@ -2,12 +2,14 @@ package info.faceland.strife.effects;
 
 import static info.faceland.strife.stats.StrifeStat.MAX_MINIONS;
 import static info.faceland.strife.stats.StrifeStat.MINION_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.MINION_LIFE;
 import static info.faceland.strife.stats.StrifeStat.MINION_MULT_INTERNAL;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 
 public class Summon extends Effect {
 
@@ -28,19 +30,24 @@ public class Summon extends Effect {
     if (caster.getMinions().size() >= caster.getStat(MAX_MINIONS)) {
       return;
     }
-    LivingEntity summon = StrifePlugin.getInstance().getUniqueEntityManager()
+    StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager()
         .spawnUnique(uniqueEntity, location);
-    if (summon == null) {
+    if (summonedEntity == null || summonedEntity.getEntity() == null) {
       return;
     }
-    StrifeMob summonedEntity = StrifePlugin.getInstance()
-        .getStrifeMobManager().getStatMob(summon);
+    LivingEntity summon = summonedEntity.getEntity();
+    summon.setMaxHealth(summon.getMaxHealth() * (1 + (caster.getStat(MINION_LIFE) / 100)));
+    summon.setHealth(summon.getMaxHealth());
     summonedEntity.forceSetStat(MINION_MULT_INTERNAL, caster.getStat(MINION_DAMAGE));
     summonedEntity.setDespawnOnUnload(true);
     caster.addMinion(summonedEntity);
 
     StrifePlugin.getInstance().getMinionManager()
         .addMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
+
+    if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
+      ((Mob)summon).setTarget(((Mob) caster.getEntity()).getTarget());
+    }
 
     if (soundEffect != null) {
       PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager().getEffect(soundEffect);

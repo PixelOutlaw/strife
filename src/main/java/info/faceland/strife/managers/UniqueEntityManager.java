@@ -50,7 +50,7 @@ public class UniqueEntityManager {
     return loadedUniquesMap.containsKey(name);
   }
 
-  public LivingEntity spawnUnique(String unique, Location location) {
+  public StrifeMob spawnUnique(String unique, Location location) {
     UniqueEntity uniqueEntity = loadedUniquesMap.get(unique);
     if (uniqueEntity == null) {
       plugin.getLogger().warning("Attempted to spawn non-existing unique: " + unique);
@@ -59,7 +59,7 @@ public class UniqueEntityManager {
     return spawnUnique(uniqueEntity, location);
   }
 
-  public LivingEntity spawnUnique(UniqueEntity uniqueEntity, Location location) {
+  public StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
       LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
@@ -131,7 +131,7 @@ public class UniqueEntityManager {
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());
-    return spawnedUnique;
+    return strifeMob;
   }
 
   public void cacheDisguise(UniqueEntity uniqueEntity, String disguiseType, String playerName) {
@@ -145,6 +145,7 @@ public class UniqueEntityManager {
       return;
     }
     MobDisguise mobDisguise = new MobDisguise(type);
+    mobDisguise.setShowName(true);
     cachedDisguises.put(uniqueEntity, mobDisguise);
   }
 }
