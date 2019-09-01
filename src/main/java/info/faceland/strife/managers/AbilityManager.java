@@ -254,6 +254,11 @@ public class AbilityManager {
       case PARTY:
         targets.add(caster.getEntity());
         return targets;
+      case MASTER:
+        if (caster.getMaster() != null) {
+          targets.add(caster.getMaster());
+        }
+        return targets;
       case MINIONS:
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
