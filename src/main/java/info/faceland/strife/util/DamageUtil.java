@@ -273,8 +273,12 @@ public class DamageUtil {
     int noDamageTicks = target.getNoDamageTicks();
     Vector velocity = target.getVelocity();
     target.setNoDamageTicks(0);
-    CombatListener.addAttack(attacker, amount);
-    target.damage(amount, attacker);
+    if (attacker != target) {
+      CombatListener.addAttack(attacker, amount);
+      target.damage(amount, attacker);
+    } else {
+      target.damage(amount);
+    }
     target.setNoDamageTicks(noDamageTicks);
     target.setVelocity(velocity);
   }
