@@ -22,6 +22,7 @@ public interface Condition {
     ATTRIBUTE,
     EQUIPMENT,
     BUFF,
+    BLOCKING,
     MOVING,
     CHANCE,
     STAT,
