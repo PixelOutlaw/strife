@@ -4,6 +4,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.conditions.AttributeCondition;
 import info.faceland.strife.conditions.BarrierCondition;
 import info.faceland.strife.conditions.BleedingCondition;
+import info.faceland.strife.conditions.BlockingCondition;
 import info.faceland.strife.conditions.BonusLevelCondition;
 import info.faceland.strife.conditions.BuffCondition;
 import info.faceland.strife.conditions.BurningCondition;
@@ -36,6 +37,7 @@ import info.faceland.strife.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.effects.DealDamage;
 import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
+import info.faceland.strife.effects.EndlessEffect;
 import info.faceland.strife.effects.Food;
 import info.faceland.strife.effects.ForceTarget;
 import info.faceland.strife.effects.Heal;
@@ -300,6 +302,16 @@ public class EffectManager {
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
         break;
+      case ENDLESS_EFFECT:
+        effect = new EndlessEffect();
+        List<String> failConditions = cs.getStringList("fail-conditions");
+        ((EndlessEffect) effect).setMaxDuration(5 * cs.getInt("max-duration-seconds", 30));
+        ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+        ((EndlessEffect) effect).getEffects().addAll(cs.getStringList("effects"));
+        for (String s : failConditions) {
+          ((EndlessEffect) effect).getFailConditions().add(getConditions().get(s));
+        }
+        break;
       case PROJECTILE:
         effect = new ShootProjectile();
         ((ShootProjectile) effect).setQuantity(cs.getInt("quantity", 1));
@@ -442,7 +454,7 @@ public class EffectManager {
         effect = new SpawnParticle();
         Particle particle;
         try {
-          particle = Particle.valueOf((cs.getString("particle-type")));
+          particle = Particle.valueOf((cs.getString("particle-type", "FLAME")));
         } catch (Exception e) {
           LogUtil.printWarning("Invalid particle effect type in effect " + key + ". Skipping.");
           return;
@@ -607,6 +619,9 @@ public class EffectManager {
       case BURNING:
         condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
         break;
+      case BLOCKING:
+        condition = new BlockingCondition(compareTarget, cs.getBoolean("state", true));
+        break;
       case GROUNDED:
         condition = new GroundedCondition(compareTarget, cs.getBoolean("inverted", false));
         break;
@@ -652,6 +667,7 @@ public class EffectManager {
     DAMAGE,
     WORLD_SPACE_ENTITY,
     AREA_EFFECT,
+    ENDLESS_EFFECT,
     HEAL,
     FOOD,
     COOLDOWN_REDUCTION,
