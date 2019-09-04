@@ -73,6 +73,21 @@ public class TargetingUtil {
     return stando;
   }
 
+  public static Set<LivingEntity> getTempStandTargetList(Location loc, boolean grounded) {
+    if (grounded) {
+      for (int i = 0; i < 24; i++) {
+        if (loc.getBlock().getType().isSolid()) {
+          loc.setY(loc.getBlockY() + 1.5);
+          break;
+        }
+        loc.add(0, -1, 0);
+      }
+    }
+    Set<LivingEntity> targets = new HashSet<>();
+    targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
+    return targets;
+  }
+
   public static Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
     Set<LivingEntity> targets = new HashSet<>();
     Location eyeLoc = caster.getEyeLocation();
@@ -132,26 +147,26 @@ public class TargetingUtil {
     return getFirstEntityInLine(caster, range);
   }
 
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
+  public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
+      boolean targetEntities) {
+    return getTargetLocation(caster, target, range, OriginLocation.CENTER, targetEntities);
+  }
+
+  public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
       OriginLocation originLocation, boolean targetEntities) {
-    if (!targetEntities) {
-      return getTargetLocation(caster, range);
+    if (target != null) {
+      return getOriginLocation(target, originLocation);
     }
-    if (target == null) {
+    if (targetEntities) {
       target = selectFirstEntityInSight(caster, range);
     }
     if (target != null) {
       return getOriginLocation(target, originLocation);
     }
-    return getTargetLocation(caster, range);
+    return getLocationFromRaycast(caster, range);
   }
 
-  public static Location getTargetArea(LivingEntity caster, LivingEntity target, double range,
-      boolean targetEntities) {
-    return getTargetArea(caster, target, range, OriginLocation.CENTER, targetEntities);
-  }
-
-  private static Location getTargetLocation(LivingEntity caster, double range) {
+  private static Location getLocationFromRaycast(LivingEntity caster, double range) {
     BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range + 1);
     Block sightBlock = null;
     while (bi.hasNext()) {

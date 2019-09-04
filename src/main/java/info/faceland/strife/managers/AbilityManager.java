@@ -16,8 +16,6 @@ import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
-import info.faceland.strife.effects.PlaySound;
-import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.util.ItemUtil;
@@ -34,7 +32,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.NullArgumentException;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -172,9 +169,6 @@ public class AbilityManager {
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
     }
-    if (ability.getCastSound() != null) {
-      ability.getCastSound().playAtLocation(caster.getEntity().getLocation());
-    }
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : ability.getEffects()) {
@@ -277,47 +271,19 @@ public class AbilityManager {
         return targets;
       case AREA_LINE:
         targets = TargetingUtil.getEntitiesInLine(caster.getEntity(), ability.getRange());
-        if (ability.getAbilityParticle() != null) {
-          ability.getAbilityParticle().playAtLocation(caster.getEntity());
-        }
         return targets;
       case AREA_RADIUS:
         return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
         Location loc = TargetingUtil
-            .getTargetArea(caster.getEntity(), target, ability.getRange(), false);
-        return getAreaTargets(targets, ability, loc);
+            .getTargetLocation(caster.getEntity(), target, ability.getRange(), false);
+        return TargetingUtil.getTempStandTargetList(loc, false);
       case TARGET_GROUND:
         Location loc2 = TargetingUtil
-            .getTargetArea(caster.getEntity(), target, ability.getRange(), true);
-        return getGroundedAreaTargets(targets, ability, loc2);
+            .getTargetLocation(caster.getEntity(), target, ability.getRange(), true);
+        return TargetingUtil.getTempStandTargetList(loc2, true);
     }
     return null;
-  }
-
-  private Set<LivingEntity> getGroundedAreaTargets(Set<LivingEntity> targets, Ability ability,
-      Location location) {
-    for (int i = 0; i < 24; i++) {
-      if (location.getBlock().getType().isSolid()) {
-        location.setY(location.getBlockY() + 1.5);
-        if (ability.getRadius() == 0) {
-          targets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
-          return targets;
-        }
-        return getEntitiesInRadius(location, ability, ability.getRadius());
-      }
-      location.add(0, -1, 0);
-    }
-    return targets;
-  }
-
-  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, Ability ability,
-      Location location) {
-    if (ability.getRadius() == 0) {
-      targets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
-      return targets;
-    }
-    return getEntitiesInRadius(location, ability, ability.getRadius());
   }
 
   private Set<LivingEntity> getEntitiesInRadius(LivingEntity le, Ability ability, double range) {
@@ -336,20 +302,8 @@ public class AbilityManager {
         targets.add((LivingEntity) entity);
       }
     }
-    SpawnParticle particle = ability.getAbilityParticle();
-    if (particle != null) {
-      particle.playAtLocation(TargetingUtil.getOriginLocation(le, particle.getOrigin()));
-    }
     targets.add(le);
     return targets;
-  }
-
-  private Set<LivingEntity> getEntitiesInRadius(Location location, Ability ability, double range) {
-    SpawnParticle particle = ability.getAbilityParticle();
-    if (particle != null) {
-      ability.getAbilityParticle().playAtLocation(location);
-    }
-    return TargetingUtil.getLOSEntitiesAroundLocation(location, range);
   }
 
   private void updateIcons(LivingEntity livingEntity) {
@@ -417,7 +371,6 @@ public class AbilityManager {
     }
     int cooldown = cs.getInt("cooldown", 0);
     int range = cs.getInt("range", 0);
-    double radius = cs.getDouble("radius", 0);
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");
@@ -445,19 +398,9 @@ public class AbilityManager {
       conditions.add(plugin.getEffectManager().getConditions().get(s));
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
-    String particle = cs.getString("particle");
     boolean friendly = cs.getBoolean("friendly", false);
-    SpawnParticle abilityParticle = null;
-    if (StringUtils.isNotBlank(particle)) {
-      abilityParticle = (SpawnParticle) plugin.getEffectManager().getEffect(particle);
-    }
-    String sound = cs.getString("cast-sound");
-    PlaySound playSound = null;
-    if (StringUtils.isNotBlank(sound)) {
-      playSound = (PlaySound) plugin.getEffectManager().getEffect(sound);
-    }
-    loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, radius, cooldown,
-        showMessages, conditions, friendly, abilityIconData, abilityParticle, playSound));
+    loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, cooldown,
+        showMessages, conditions, friendly, abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 
