@@ -91,6 +91,12 @@ public class StrifeMobManager {
     trackedEntities.remove(uuid);
   }
 
+  public void doSpawnerDeath(UUID uuid) {
+    if (trackedEntities.containsKey(uuid)) {
+      trackedEntities.get(uuid).doSpawnerDeath();
+    }
+  }
+
   public boolean isTrackedEntity(Entity entity) {
     return trackedEntities.containsKey(entity.getUniqueId());
   }

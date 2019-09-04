@@ -2,19 +2,22 @@ package info.faceland.strife.managers;
 
 import info.faceland.strife.data.Spawner;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.timers.SpawnerTimer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class SpawnerManager {
 
   private final UniqueEntityManager uniqueManager;
-  private final Map<String, Spawner> spawnerMap;
+  private final Map<String, Spawner> spawnerMap = new HashMap<>();
+  private final Set<SpawnerTimer> spawnerTimers = new HashSet<>();
 
-  private static final long RESPAWN_RETRY_DELAY = 15;
+  private static final long RESPAWN_RETRY_DELAY = 5000;
 
   public SpawnerManager(UniqueEntityManager uniqueManager) {
     this.uniqueManager = uniqueManager;
-    this.spawnerMap = new HashMap<>();
   }
 
   public Map<String, Spawner> getSpawnerMap() {
@@ -34,18 +37,6 @@ public class SpawnerManager {
     this.spawnerMap.remove(id);
   }
 
-  public void leashSpawners() {
-    for (Spawner spawner : spawnerMap.values()) {
-      if (spawner.getTrackedEntity() == null || !spawner.getTrackedEntity().isValid()) {
-        continue;
-      }
-      double distance = spawner.getLocation().distance(spawner.getTrackedEntity().getLocation());
-      if (distance > spawner.getLeashRange()) {
-        spawner.getTrackedEntity().remove();
-      }
-    }
-  }
-
   public void spawnSpawners() {
     for (Spawner s : spawnerMap.values()) {
       if (System.currentTimeMillis() < s.getRespawnTime()) {
@@ -60,10 +51,19 @@ public class SpawnerManager {
         continue;
       }
       StrifeMob mob = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
-      if (mob == null || mob.getEntity() == null) {
+      if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
         return;
       }
+      mob.setSpawner(s);
+      mob.setDespawnOnUnload(true);
       s.setTrackedEntity(mob.getEntity());
+      spawnerTimers.add(new SpawnerTimer(s));
+    }
+  }
+
+  public void cancelAll() {
+    for (SpawnerTimer timer : spawnerTimers) {
+      timer.cancel();
     }
   }
 

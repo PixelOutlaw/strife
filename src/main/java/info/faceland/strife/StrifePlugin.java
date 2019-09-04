@@ -112,7 +112,6 @@ import info.faceland.strife.tasks.PruneBossBarsTask;
 import info.faceland.strife.tasks.RageTask;
 import info.faceland.strife.tasks.SaveTask;
 import info.faceland.strife.tasks.SneakTask;
-import info.faceland.strife.tasks.SpawnerLeashTask;
 import info.faceland.strife.tasks.SpawnerSpawnTask;
 import info.faceland.strife.tasks.TrackedPruneTask;
 import info.faceland.strife.tasks.WorldSpaceEffectTask;
@@ -323,7 +322,6 @@ public class StrifePlugin extends FacePlugin {
     RageTask rageTask = new RageTask(rageManager, strifeMobManager);
     MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
     ParticleTask particleTask = new ParticleTask();
-    SpawnerLeashTask spawnerLeashTask = new SpawnerLeashTask(spawnerManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager,
         AbilityTickTask.ABILITY_TICK_RATE);
@@ -444,12 +442,8 @@ public class StrifePlugin extends FacePlugin {
         2L
     ));
     taskList.add(spawnerSpawnTask.runTaskTimer(this,
-        20 * 20L, // Start timer after 20s
+        9 * 20L, // Start timer after 9s
         6 * 20L // Run it every 6 seconds
-    ));
-    taskList.add(spawnerLeashTask.runTaskTimer(this,
-        20 * 20L, // Start timer after 20s
-        5 * 20L // Run it every 5s
     ));
     taskList.add(iconDuraTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s
@@ -528,6 +522,7 @@ public class StrifePlugin extends FacePlugin {
     storage.saveAll();
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
+    spawnerManager.cancelAll();
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);

@@ -100,6 +100,7 @@ public class DataListener implements Listener {
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_C);
     } else {
       UUID uuid = event.getEntity().getUniqueId();
+      plugin.getStrifeMobManager().doSpawnerDeath(uuid);
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getStrifeMobManager().removeEntity(uuid), 20L * 30);
     }

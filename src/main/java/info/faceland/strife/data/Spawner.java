@@ -13,7 +13,6 @@ public class Spawner {
   private double leashRange;
   private long respawnSeconds;
   private long respawnTime;
-  private int resetCount = 0;
   private int chunkX;
   private int chunkZ;
 
@@ -77,19 +76,18 @@ public class Spawner {
     this.respawnTime = respawnTime;
   }
 
-  public int getResetCount() {
-    return resetCount;
-  }
-
-  public void setResetCount(int resetCount) {
-    this.resetCount = resetCount;
-  }
-
   public int getChunkX() {
     return chunkX;
   }
 
   public int getChunkZ() {
     return chunkZ;
+  }
+
+  public void doDeath() {
+    if (trackedEntity != null && trackedEntity.isValid()) {
+      trackedEntity.remove();
+    }
+    respawnTime = System.currentTimeMillis() + respawnSeconds * 1000;
   }
 }

@@ -29,6 +29,7 @@ public class StrifeMob {
   private boolean despawnOnUnload = false;
 
   private LivingEntity master;
+  private Spawner spawner;
   private final Set<StrifeMob> minions = new ConcurrentSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
@@ -174,6 +175,17 @@ public class StrifeMob {
 
   public void setDespawnOnUnload(boolean despawnOnUnload) {
     this.despawnOnUnload = despawnOnUnload;
+  }
+
+  public void setSpawner(Spawner spawner) {
+    this.spawner = spawner;
+  }
+
+  public void doSpawnerDeath() {
+    if (spawner == null) {
+      return;
+    }
+    spawner.doDeath();
   }
 
   private Map<StrifeStat, Float> getBuffStats() {
