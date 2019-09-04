@@ -123,8 +123,7 @@ public class EffectManager {
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
     Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
     for (LivingEntity le : finalTargets) {
-      if (le instanceof ArmorStand) {
-        runPlayAtLocationEffects(caster, effect, le);
+      if (le instanceof ArmorStand && runPlayAtLocationEffects(caster, effect, le)) {
         continue;
       }
       StrifeMob targetMob = aeManager.getStatMob(le);
@@ -139,13 +138,13 @@ public class EffectManager {
   private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
       Set<LivingEntity> targets) {
     if (effect instanceof AreaEffect) {
-      return getAreaTargets(targets, caster, (AreaEffect) effect);
+      return getAreaEffectTargets(targets, caster, (AreaEffect) effect);
     }
     TargetingUtil.filterFriendlyEntities(targets, caster, effect.isFriendly());
     return targets;
   }
 
-  private Set<LivingEntity> getAreaTargets(Set<LivingEntity> targets, StrifeMob caster,
+  private Set<LivingEntity> getAreaEffectTargets(Set<LivingEntity> targets, StrifeMob caster,
       AreaEffect effect) {
     double range = effect.getRange();
     if (range < 1) {
@@ -163,8 +162,8 @@ public class EffectManager {
         areaTargets.add((LivingEntity) e);
       }
     }
+    TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
     if (effect.getMaxTargets() > 0) {
-      TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
       List<LivingEntity> oldTargetsAsList = new ArrayList<>(areaTargets);
       Set<LivingEntity> newTargetsFromMax = new HashSet<>();
       while (newTargetsFromMax.size() < effect.getMaxTargets() && oldTargetsAsList.size() > 0) {
@@ -177,16 +176,38 @@ public class EffectManager {
     return areaTargets;
   }
 
-  private void runPlayAtLocationEffects(StrifeMob caster, Effect effect, LivingEntity le) {
-    if (effect instanceof CreateWorldSpaceEntity) {
-      ((CreateWorldSpaceEntity) effect).apply(caster, le);
-    } else if (effect instanceof PlaySound) {
-      ((PlaySound) effect).playAtLocation(le.getLocation());
-    } else if (effect instanceof SpawnParticle) {
-      ((SpawnParticle) effect).playAtLocation(le);
-    } else if (effect instanceof Summon) {
-      ((Summon) effect).summonAtLocation(caster, le.getLocation());
+  /**
+   * @param caster the strifemob casting the effect
+   * @param effect the effect being cast
+   * @param le the entity target of the effect
+   * @return returns true if a effect is a play at location type
+   */
+  private boolean runPlayAtLocationEffects(StrifeMob caster, Effect effect, LivingEntity le) {
+    if (effect.isForceTargetCaster()) {
+      le = caster.getEntity();
     }
+    if (effect instanceof CreateWorldSpaceEntity) {
+      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        ((CreateWorldSpaceEntity) effect).apply(caster, le);
+      }
+      return true;
+    } else if (effect instanceof PlaySound) {
+      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        ((PlaySound) effect).playAtLocation(le.getLocation());
+      }
+      return true;
+    } else if (effect instanceof SpawnParticle) {
+      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        ((SpawnParticle) effect).playAtLocation(le);
+      }
+      return true;
+    } else if (effect instanceof Summon) {
+      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        ((Summon) effect).summonAtLocation(caster, le.getLocation());
+      }
+      return true;
+    }
+    return false;
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -305,7 +326,8 @@ public class EffectManager {
       case ENDLESS_EFFECT:
         effect = new EndlessEffect();
         List<String> failConditions = cs.getStringList("fail-conditions");
-        ((EndlessEffect) effect).setMaxDuration(5 * cs.getInt("max-duration-seconds", 30));
+        ((EndlessEffect) effect).setMaxDuration(cs.getInt("max-duration-seconds", 30));
+        ((EndlessEffect) effect).setTickRate(cs.getInt("tick-rate", 5));
         ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         ((EndlessEffect) effect).getEffects().addAll(cs.getStringList("effects"));
         for (String s : failConditions) {

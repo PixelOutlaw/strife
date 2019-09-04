@@ -17,17 +17,19 @@ public class EndlessEffect extends Effect {
   private final List<String> effects = new ArrayList<>();
   private final List<Effect> cachedEffects = new ArrayList<>();
   private final Set<Condition> failConditions = new HashSet<>();
+  private int tickRate;
   private int maxDuration;
   private boolean strictDuration;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     cacheEffects();
-    int newDuration = maxDuration;
+    float newDuration = maxDuration;
+    newDuration = (newDuration * 20) / tickRate;
     if (!strictDuration) {
-      newDuration = (int) ((float) maxDuration * (1 + caster.getStat(EFFECT_DURATION) / 100));
+      newDuration = maxDuration * (1 + caster.getStat(EFFECT_DURATION) / 100);
     }
-    new EndlessEffectTimer(this, caster, newDuration);
+    new EndlessEffectTimer(this, caster, tickRate, (int) newDuration);
   }
 
   private void cacheEffects() {
@@ -62,6 +64,10 @@ public class EndlessEffect extends Effect {
 
   public void setMaxDuration(int maxDuration) {
     this.maxDuration = maxDuration;
+  }
+
+  public void setTickRate(int tickRate) {
+    this.tickRate = tickRate;
   }
 
   public void setStrictDuration(boolean strictDuration) {
