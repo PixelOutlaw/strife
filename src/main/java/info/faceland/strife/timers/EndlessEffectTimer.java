@@ -30,7 +30,8 @@ public class EndlessEffectTimer extends BukkitRunnable {
       LogUtil.printDebug("Cancelled endless effect due to null entity");
       return;
     }
-    if (PlayerDataUtil.areConditionsMet(caster, null, endlessEffect.getFailConditions())) {
+    if (!endlessEffect.getFailConditions().isEmpty() &&
+        PlayerDataUtil.areConditionsMet(caster, null, endlessEffect.getFailConditions())) {
       cancel();
       LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
       return;
