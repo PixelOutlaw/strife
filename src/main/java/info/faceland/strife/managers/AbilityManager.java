@@ -208,6 +208,10 @@ public class AbilityManager {
     }
   }
 
+  public void setGlobalCooldown(UUID uuid, int amount) {
+    abilityGlobalCd.put(uuid, System.currentTimeMillis() + amount);
+  }
+
   private void checkPhaseChange(StrifeMob strifeMob) {
     if (strifeMob.getAbilitySet() == null) {
       return;

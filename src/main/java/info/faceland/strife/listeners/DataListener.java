@@ -80,6 +80,7 @@ public class DataListener implements Listener {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
     plugin.getBossBarManager().getSkillBar(champion);
+    ensureAbilitiesDontInstantCast(event.getPlayer());
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
   }
 
@@ -126,6 +127,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
+    ensureAbilitiesDontInstantCast(event.getPlayer());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
@@ -168,6 +170,13 @@ public class DataListener implements Listener {
     }
     Bukkit.getScheduler().runTaskLater(plugin, () ->
         plugin.getConfirmationMenu().open((Player) event.getPlayer()), 1L);
+  }
+
+  private void ensureAbilitiesDontInstantCast(Player player) {
+    plugin.getAbilityManager().setGlobalCooldown(player.getUniqueId(), 200);
+    if (player.getInventory().getHeldItemSlot() < 3) {
+      player.getInventory().setHeldItemSlot(3);
+    }
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {

@@ -3,12 +3,14 @@ package info.faceland.strife.listeners;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
+import java.util.stream.Collectors;
 import ninja.amp.ampmenus.menus.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -16,12 +18,12 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class ItemMovementAndDropListener implements Listener {
+public class InventoryListener implements Listener {
 
   private StrifePlugin plugin;
   private final String NO_MOVE_ABILITY;
 
-  public ItemMovementAndDropListener(StrifePlugin plugin) {
+  public InventoryListener(StrifePlugin plugin) {
     this.plugin = plugin;
     NO_MOVE_ABILITY = TextUtils.color(
         plugin.getSettings().getString("language.abilities.cant-move-ability", ""));
@@ -70,9 +72,16 @@ public class ItemMovementAndDropListener implements Listener {
       return;
     }
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      plugin.getChampionManager().updateEquipmentStats(plugin.getChampionManager().getChampion(event.getPlayer()));
+      plugin.getChampionManager()
+          .updateEquipmentStats(plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
     }, 1L);
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerDropItem(PlayerDeathEvent event) {
+    event.getDrops().removeAll(
+        event.getDrops().stream().filter(this::isIcon).collect(Collectors.toList()));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
