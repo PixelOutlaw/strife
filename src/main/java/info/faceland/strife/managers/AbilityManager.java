@@ -37,8 +37,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -272,8 +270,6 @@ public class AbilityManager {
       case AREA_LINE:
         targets = TargetingUtil.getEntitiesInLine(caster.getEntity(), ability.getRange());
         return targets;
-      case AREA_RADIUS:
-        return getEntitiesInRadius(caster.getEntity(), ability, ability.getRange());
       case TARGET_AREA:
         Location loc = TargetingUtil
             .getTargetLocation(caster.getEntity(), target, ability.getRange(), false);
@@ -284,26 +280,6 @@ public class AbilityManager {
         return TargetingUtil.getTempStandTargetList(loc2, true);
     }
     return null;
-  }
-
-  private Set<LivingEntity> getEntitiesInRadius(LivingEntity le, Ability ability, double range) {
-    Set<LivingEntity> targets = new HashSet<>();
-    if (le == null) {
-      LogUtil.printWarning("Null center for getEntitiesInRadius... some ability is borked...");
-      return targets;
-    }
-    LogUtil.printDebug(" - Using TARGET ENTITY target location calculation");
-    ArrayList<Entity> entities = (ArrayList<Entity>) le.getNearbyEntities(range, range, range);
-    for (Entity entity : entities) {
-      if (!(entity instanceof LivingEntity) || entity instanceof ArmorStand) {
-        continue;
-      }
-      if (le.hasLineOfSight(entity)) {
-        targets.add((LivingEntity) entity);
-      }
-    }
-    targets.add(le);
-    return targets;
   }
 
   private void updateIcons(LivingEntity livingEntity) {
