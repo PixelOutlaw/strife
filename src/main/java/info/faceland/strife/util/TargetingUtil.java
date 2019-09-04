@@ -16,6 +16,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
@@ -65,10 +66,15 @@ public class TargetingUtil {
     return validTargets;
   }
 
+  public static boolean isDetectionStand(LivingEntity le) {
+    return le instanceof ArmorStand && le.hasMetadata("STANDO");
+  }
+
   public static ArmorStand buildAndRemoveDetectionStand(Location location) {
     ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class,
         e -> e.setVisible(false));
     stando.setSmall(true);
+    stando.setMetadata("STANDO", new FixedMetadataValue(StrifePlugin.getInstance(), ""));
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
     return stando;
   }

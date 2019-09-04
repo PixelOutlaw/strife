@@ -1,5 +1,7 @@
 package info.faceland.strife.managers;
 
+import static info.faceland.strife.util.PlayerDataUtil.getName;
+
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.conditions.AttributeCondition;
 import info.faceland.strife.conditions.BarrierCondition;
@@ -123,22 +125,42 @@ public class EffectManager {
   private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
     Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
     for (LivingEntity le : finalTargets) {
-      if (le instanceof ArmorStand && runPlayAtLocationEffects(caster, effect, le)) {
-        continue;
+      if (TargetingUtil.isDetectionStand(le)) {
+        if (runPlayAtLocationEffects(caster, effect, le)) {
+          continue;
+        } else if (effect.isForceTargetCaster()) {
+          applyEffectIfConditionsMet(effect, caster);
+          continue;
+        }
       }
-      StrifeMob targetMob = aeManager.getStatMob(le);
-      LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + PlayerDataUtil.getName(le));
-      if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-        continue;
-      }
-      effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
+      applyEffectIfConditionsMet(effect, caster, aeManager.getStatMob(le));
     }
+  }
+
+
+  private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {
+    LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
+    if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+      return;
+    }
+    effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
+  }
+
+  private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster) {
+    LogUtil.printDebug(" - Applying '" + effect.getId() + "' to caster");
+    if (!PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+      return;
+    }
+    effect.apply(caster, caster);
   }
 
   private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
       Set<LivingEntity> targets) {
     if (effect instanceof AreaEffect) {
       return getAreaEffectTargets(targets, caster, (AreaEffect) effect);
+    }
+    if (targets.size() == 1 && targets.iterator().next() instanceof ArmorStand) {
+      return targets;
     }
     TargetingUtil.filterFriendlyEntities(targets, caster, effect.isFriendly());
     return targets;
@@ -263,7 +285,8 @@ public class EffectManager {
         break;
       case STANDARD_DAMAGE:
         effect = new StandardDamage();
-        ((StandardDamage) effect).setAttackMultiplier((float) cs.getDouble("attack-multiplier", 1D));
+        ((StandardDamage) effect)
+            .setAttackMultiplier((float) cs.getDouble("attack-multiplier", 1D));
         ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
@@ -438,7 +461,8 @@ public class EffectManager {
         break;
       case MODIFY_PROJECTILE:
         effect = new ModifyProjectile();
-        ((ModifyProjectile) effect).setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
+        ((ModifyProjectile) effect)
+            .setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
         ((ModifyProjectile) effect).setRange(cs.getDouble("range", 1));
         ((ModifyProjectile) effect).setRemove(cs.getBoolean("remove", true));
         ((ModifyProjectile) effect).setSpeedMult(cs.getDouble("speed-mult", 0.5));
