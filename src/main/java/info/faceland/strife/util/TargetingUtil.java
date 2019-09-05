@@ -80,6 +80,7 @@ public class TargetingUtil {
   }
 
   public static Set<LivingEntity> getTempStandTargetList(Location loc, boolean grounded) {
+    Set<LivingEntity> targets = new HashSet<>();
     if (grounded) {
       for (int i = 0; i < 24; i++) {
         if (loc.getBlock().getType().isSolid()) {
@@ -88,8 +89,8 @@ public class TargetingUtil {
         }
         loc.add(0, -1, 0);
       }
+      return targets;
     }
-    Set<LivingEntity> targets = new HashSet<>();
     targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
     return targets;
   }
