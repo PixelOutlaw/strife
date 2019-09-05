@@ -18,32 +18,21 @@
  */
 package info.faceland.strife.tasks;
 
-import info.faceland.strife.managers.AbilityIconManager;
 import info.faceland.strife.managers.AbilityManager;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class AbilityTickTask extends BukkitRunnable {
 
   private AbilityManager abilityManager;
-  private AbilityIconManager abilityIconManager;
-  private int abilityTickRate;
 
   public static int ABILITY_TICK_RATE = 4;
 
-  public AbilityTickTask(AbilityManager abilityManager,
-      AbilityIconManager abilityIconManager, int abilityTickRate) {
+  public AbilityTickTask(AbilityManager abilityManager) {
     this.abilityManager = abilityManager;
-    this.abilityIconManager = abilityIconManager;
-    this.abilityTickRate = abilityTickRate;
   }
 
   @Override
   public void run() {
-    abilityManager.tickAbilityCooldowns(abilityTickRate);
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      abilityIconManager.updateAbilityIconDamageMeters(player, false);
-    }
+    abilityManager.tickAbilityCooldowns();
   }
 }

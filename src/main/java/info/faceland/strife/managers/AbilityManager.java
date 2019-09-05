@@ -1,11 +1,13 @@
 package info.faceland.strife.managers;
 
 import static info.faceland.strife.data.ability.Ability.TargetType.SINGLE_OTHER;
+import static info.faceland.strife.data.ability.Ability.TargetType.TARGET_GROUND;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.data.AbilityCooldownContainer;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
@@ -22,6 +24,7 @@ import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.TargetingUtil;
+import io.netty.util.internal.ConcurrentSet;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,9 +49,8 @@ public class AbilityManager {
 
   private final StrifePlugin plugin;
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
-  private final Map<LivingEntity, Map<Ability, Integer>> coolingDownAbilities = new ConcurrentHashMap<>();
-  private final Map<UUID, Map<Ability, Integer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
-  private final Map<UUID, Long> abilityGlobalCd = new HashMap<>();
+  private final Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
+  private final Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
 
   private static final String ON_COOLDOWN = TextUtils.color("&e&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
@@ -66,51 +68,63 @@ public class AbilityManager {
     return null;
   }
 
-  public void cooldownReduce(LivingEntity livingEntity, Ability ability, int ticks) {
+  public void cooldownReduce(LivingEntity livingEntity, String abilityId, int milliseconds) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       return;
     }
-    int curTicks = coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
-    if (curTicks - ticks <= 0) {
-      LogUtil.printDebug(" Cd Reduce - ability " + ability.getId() + " refreshed");
-      coolingDownAbilities.get(livingEntity).remove(ability);
-      updateIcons(livingEntity);
+    AbilityCooldownContainer container = getCooldownContainer(livingEntity, abilityId);
+    if (container == null) {
       return;
     }
-    int newTicks = curTicks - ticks;
-    LogUtil.printDebug(" Cd Reduce - ability " + ability.getId() + " reduced from " +
-        curTicks + " to " + newTicks);
-    coolingDownAbilities.get(livingEntity).put(ability, newTicks);
+    container.setEndTime(container.getEndTime() - milliseconds);
     updateIcons(livingEntity);
   }
 
-  private void startAbilityCooldown(LivingEntity livingEntity, Ability ability) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
-      coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
+  public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
+    for (AbilityCooldownContainer cont : coolingDownAbilities.get(le)) {
+      if (abilityId.equals(cont.getAbilityId())) {
+        return cont;
+      }
     }
-    coolingDownAbilities.get(livingEntity).put(ability, ability.getCooldown() * 20);
+    return null;
   }
 
-  public double getCooldownTicks(LivingEntity livingEntity, Ability ability) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
-      return 0;
+  public double getCooldownPercent(AbilityCooldownContainer container) {
+    if (container == null) {
+      return 1.0D;
     }
-    return coolingDownAbilities.get(livingEntity).getOrDefault(ability, 0);
+    double progress = container.getEndTime() - System.currentTimeMillis();
+    double maxTime = container.getEndTime() - container.getStartTime();
+    return progress / maxTime;
   }
 
-  public void tickAbilityCooldowns(int tickRate) {
+  public void tickAbilityCooldowns() {
     for (LivingEntity le : coolingDownAbilities.keySet()) {
       if (le == null || !le.isValid()) {
         coolingDownAbilities.remove(le);
         continue;
       }
-      for (Ability ability : coolingDownAbilities.get(le).keySet()) {
-        int ticks = coolingDownAbilities.get(le).get(ability);
-        if (ticks <= tickRate) {
-          coolingDownAbilities.get(le).remove(ability);
-          continue;
+      for (AbilityCooldownContainer container : coolingDownAbilities.get(le)) {
+        Ability ability = getAbility(container.getAbilityId());
+        if (System.currentTimeMillis() >= container.getEndTime()) {
+          if (container.getSpentCharges() <= 1) {
+            coolingDownAbilities.get(le).remove(container);
+            LogUtil.printDebug("Final cooldown for " + container.getAbilityId() + ", removing");
+            if (le instanceof Player) {
+              plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
+            }
+            continue;
+          }
+          container.setSpentCharges(container.getSpentCharges() - 1);
+          container.setStartTime(System.currentTimeMillis());
+          container.setEndTime(System.currentTimeMillis() + ability.getCooldown() * 1000);
+          LogUtil.printDebug("Cooled one charge for " + container.getAbilityId());
+          if (le instanceof Player) {
+            plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
+          }
+        } else if (le instanceof Player && container.getSpentCharges() == ability.getMaxCharges()) {
+          plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
         }
-        coolingDownAbilities.get(le).put(ability, ticks - tickRate);
       }
     }
   }
@@ -123,7 +137,7 @@ public class AbilityManager {
   }
 
   public void loadPlayerCooldowns(Player player) {
-    coolingDownAbilities.put(player, new ConcurrentHashMap<>());
+    coolingDownAbilities.put(player, new ConcurrentSet<>());
     if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
       coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
       savedPlayerCooldowns.remove(player.getUniqueId());
@@ -131,19 +145,17 @@ public class AbilityManager {
     }
   }
 
-  public boolean isCooledDown(LivingEntity livingEntity, Ability ability) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
-      coolingDownAbilities.put(livingEntity, new ConcurrentHashMap<>());
+  public boolean canBeCast(LivingEntity entity, Ability ability) {
+    AbilityCooldownContainer container = getCooldownContainer(entity, ability.getId());
+    if (container == null || container.getSpentCharges() < ability.getMaxCharges() ) {
+      return true;
     }
-    return !coolingDownAbilities.get(livingEntity).containsKey(ability);
+    return System.currentTimeMillis() > container.getEndTime();
   }
 
   public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
-    if (ability.getCooldown() != 0 && !isCooledDown(caster.getEntity(), ability)) {
+    if (ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
       doOnCooldownPrompt(caster, ability);
-      return false;
-    }
-    if (isCasterOnGlobalCooldown(caster.getEntity().getUniqueId())) {
       return false;
     }
     if (!PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
@@ -154,6 +166,12 @@ public class AbilityManager {
     if (targets == null) {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
     }
+    if (ability.getTargetType() == TARGET_GROUND) {
+      if (targets.isEmpty()) {
+        doTargetNotFoundPrompt(caster, ability);
+        return false;
+      }
+    }
     if (ability.getTargetType() == SINGLE_OTHER) {
       TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
       if (targets.isEmpty()) {
@@ -162,7 +180,7 @@ public class AbilityManager {
       }
     }
     if (ability.getCooldown() != 0) {
-      startAbilityCooldown(caster.getEntity(), ability);
+      coolDownAbility(caster.getEntity(), ability);
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
@@ -208,8 +226,25 @@ public class AbilityManager {
     }
   }
 
-  public void setGlobalCooldown(UUID uuid, int amount) {
-    abilityGlobalCd.put(uuid, System.currentTimeMillis() + amount);
+  public void setGlobalCooldown(Player player, Ability ability) {
+    player.setCooldown(Material.DIAMOND_CHESTPLATE, ability.getGlobalCooldownTicks());
+  }
+
+  public void setGlobalCooldown(Player player, int ticks) {
+    player.setCooldown(Material.DIAMOND_CHESTPLATE, ticks);
+  }
+
+  private void coolDownAbility(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      coolingDownAbilities.put(livingEntity, new ConcurrentSet<>());
+    }
+    AbilityCooldownContainer container = getCooldownContainer(livingEntity, ability.getId());
+    if (container == null) {
+      container = new AbilityCooldownContainer(ability.getId(),
+          System.currentTimeMillis() + ability.getCooldown() * 1000);
+      coolingDownAbilities.get(livingEntity).add(container);
+    }
+    container.setSpentCharges(container.getSpentCharges() + 1);
   }
 
   private void checkPhaseChange(StrifeMob strifeMob) {
@@ -288,7 +323,7 @@ public class AbilityManager {
 
   private void updateIcons(LivingEntity livingEntity) {
     if (livingEntity instanceof Player) {
-      plugin.getAbilityIconManager().updateAbilityIconDamageMeters((Player) livingEntity, true);
+      plugin.getAbilityIconManager().updateIconProgress((Player) livingEntity);
     }
   }
 
@@ -331,15 +366,6 @@ public class AbilityManager {
         1.5f);
   }
 
-  private boolean isCasterOnGlobalCooldown(UUID uuid) {
-    if (abilityGlobalCd.containsKey(uuid) && abilityGlobalCd.get(uuid) + 50 >
-        System.currentTimeMillis()) {
-      return true;
-    }
-    abilityGlobalCd.put(uuid, System.currentTimeMillis());
-    return false;
-  }
-
   public void loadAbility(String key, ConfigurationSection cs) {
     String name = TextUtils.color(cs.getString("name", "ABILITY NOT NAMED"));
     TargetType targetType;
@@ -349,8 +375,6 @@ public class AbilityManager {
       LogUtil.printWarning("Skipping load of ability " + key + " - Invalid target type.");
       return;
     }
-    int cooldown = cs.getInt("cooldown", 0);
-    int range = cs.getInt("range", 0);
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");
@@ -366,6 +390,10 @@ public class AbilityManager {
       effects.add(effect);
       LogUtil.printDebug(" Added effect '" + s + "' to ability '" + key + "'");
     }
+    int cooldown = cs.getInt("cooldown", 0);
+    int maxCharges = cs.getInt("max-charges", 1);
+    int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
+    int range = cs.getInt("range", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
     List<String> conditionStrings = cs.getStringList("conditions");
     Set<Condition> conditions = new HashSet<>();
@@ -380,7 +408,7 @@ public class AbilityManager {
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
     loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, cooldown,
-        showMessages, conditions, friendly, abilityIconData));
+        maxCharges, globalCooldownTicks, showMessages, conditions, friendly, abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

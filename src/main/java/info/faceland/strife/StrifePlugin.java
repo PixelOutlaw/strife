@@ -323,8 +323,7 @@ public class StrifePlugin extends FacePlugin {
     MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
     ParticleTask particleTask = new ParticleTask();
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
-    AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager, abilityIconManager,
-        AbilityTickTask.ABILITY_TICK_RATE);
+    AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(wseManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
 
@@ -447,7 +446,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(iconDuraTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s
-        4L // Run it every 4 ticks
+        AbilityTickTask.ABILITY_TICK_RATE
     ));
     taskList.add(worldSpaceEffectTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s

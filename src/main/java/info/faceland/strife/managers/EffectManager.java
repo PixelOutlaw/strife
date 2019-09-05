@@ -137,7 +137,6 @@ public class EffectManager {
     }
   }
 
-
   private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {
     LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
     if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {

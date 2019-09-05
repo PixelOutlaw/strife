@@ -2,17 +2,18 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.AbilityCooldownContainer;
 import info.faceland.strife.data.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.AbilitySlot;
-import info.faceland.strife.tasks.AbilityTickTask;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -44,6 +45,7 @@ public class AbilityIconManager {
     for (Ability ability : data.getAbilities().values()) {
       setAbilityIcon(player, ability.getAbilityIconData());
     }
+    updateIconProgress(player);
   }
 
   public void setAbilityIcon(Player player, AbilityIconData abilityIconData) {
@@ -78,6 +80,9 @@ public class AbilityIconManager {
   }
 
   public void triggerAbility(Player player, int slot) {
+    if (player.getCooldown(Material.DIAMOND_CHESTPLATE) > 0) {
+      return;
+    }
     AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
     if (abilitySlot == AbilitySlot.INVALID) {
       return;
@@ -90,38 +95,51 @@ public class AbilityIconManager {
       }
       return;
     }
-    boolean abilitySucceeded = plugin.getAbilityManager()
-        .execute(ability, plugin.getStrifeMobManager().getStatMob(player));
+    boolean abilitySucceeded = plugin.getAbilityManager().execute(
+        ability, plugin.getStrifeMobManager().getStatMob(player));
+    plugin.getAbilityManager().setGlobalCooldown(player, ability);
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       return;
     }
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
-    updateAbilityIconDamageMeters(player, true);
+    updateIconProgress(player, ability);
   }
 
-  public void updateAbilityIconDamageMeters(Player player, boolean updateOnCd) {
+  public void updateIconProgress(Player player) {
     if (player.isDead()) {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(player);
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_A), updateOnCd);
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_B), updateOnCd);
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_C), updateOnCd);
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_A));
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
+    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
   }
 
-  private void setIconDamage(Champion champion, Ability ability, boolean updateOnCd) {
-    if (ability == null) {
+  public void updateIconProgress(Player player, Ability ability) {
+    if (player.isDead()) {
       return;
     }
-    if (!updateOnCd && plugin.getAbilityManager().isCooledDown(champion.getPlayer(), ability)) {
+    setIconDamage(plugin.getChampionManager().getChampion(player), ability);
+  }
+
+  private void setIconDamage(Champion champion, Ability ability) {
+    if (ability == null || !champion.getSaveData().getAbilities().containsValue(ability)) {
       return;
     }
-    double remainingTicks = plugin.getAbilityManager()
-        .getCooldownTicks(champion.getPlayer(), ability);
-    double cooldownTicks = ability.getCooldown() * 20;
-    double percent = (remainingTicks - AbilityTickTask.ABILITY_TICK_RATE) / cooldownTicks;
+    AbilityCooldownContainer container = plugin.getAbilityManager()
+        .getCooldownContainer(champion.getPlayer(), ability.getId());
+    int charges = ability.getMaxCharges();
+    double percent = 1D;
+    if (container != null) {
+      if (container.getSpentCharges() == charges) {
+        charges = 1;
+        percent = plugin.getAbilityManager().getCooldownPercent(container);
+      } else {
+        charges -= container.getSpentCharges();
+      }
+    }
     ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), champion.getPlayer(),
-        ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent);
+        ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent, charges);
   }
 }

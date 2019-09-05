@@ -70,11 +70,13 @@ public class AbilityPickerItem extends MenuItem {
     Ability oldAbility = champion.getSaveData().getAbility(slot);
     if (oldAbility == null) {
       champion.getSaveData().setAbility(slot, ability);
-      plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
+      plugin.getAbilityIconManager()
+          .setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
       event.setWillUpdate(true);
       return;
     }
-    if (!plugin.getAbilityManager().isCooledDown(event.getPlayer(), oldAbility)) {
+    if (plugin.getAbilityManager().getCooldownContainer(event.getPlayer(), oldAbility.getId())
+        != null) {
       sendMessage(event.getPlayer(), "&eCannot swap out an ability that isn't cooled down!");
       return;
     }

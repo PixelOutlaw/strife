@@ -171,23 +171,26 @@ public class ItemUtil {
   }
 
   public static short getPercentageDamage(ItemStack stack, double percent) {
-    return (short) ((double) stack.getType().getMaxDurability() * percent);
+    double maxDura = stack.getType().getMaxDurability();
+    return (short) Math.min(maxDura, maxDura * percent);
   }
 
   public static void sendAbilityIconPacket(ItemStack stack, Player player, int slot,
-      double percent) {
+      double percent, int charges) {
     try {
       ProtocolLibrary.getProtocolManager()
-          .sendServerPacket(player, buildPacketContainer(36 + slot, stack, percent));
+          .sendServerPacket(player, buildPacketContainer(36 + slot, stack, percent, charges));
     } catch (InvocationTargetException e) {
       e.printStackTrace();
     }
   }
 
-  private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent) {
+  private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent,
+      int charges) {
     ItemStack sentStack = stack.clone();
+    sentStack.setAmount(charges);
     ItemMeta sentStackMeta = sentStack.getItemMeta();
-    if (sentStackMeta instanceof Damageable) {
+    if (sentStackMeta instanceof Damageable && percent < 1) {
       ((Damageable) sentStackMeta).setDamage(getPercentageDamage(sentStack, percent));
       sentStack.setItemMeta(sentStackMeta);
     }

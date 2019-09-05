@@ -81,7 +81,8 @@ public class DataListener implements Listener {
     }
     plugin.getBossBarManager().getSkillBar(champion);
     ensureAbilitiesDontInstantCast(event.getPlayer());
-    plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 20L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -131,7 +132,8 @@ public class DataListener implements Listener {
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-    plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 20L);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -173,7 +175,7 @@ public class DataListener implements Listener {
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {
-    plugin.getAbilityManager().setGlobalCooldown(player.getUniqueId(), 200);
+    plugin.getAbilityManager().setGlobalCooldown(player, 20);
     if (player.getInventory().getHeldItemSlot() < 3) {
       player.getInventory().setHeldItemSlot(3);
     }
