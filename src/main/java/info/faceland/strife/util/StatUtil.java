@@ -9,6 +9,7 @@ import static info.faceland.strife.stats.StrifeStat.ARMOR_PENETRATION;
 import static info.faceland.strife.stats.StrifeStat.BARRIER;
 import static info.faceland.strife.stats.StrifeStat.BARRIER_SPEED;
 import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
+import static info.faceland.strife.stats.StrifeStat.CRITICAL_RATE;
 import static info.faceland.strife.stats.StrifeStat.DAMAGE_MULT;
 import static info.faceland.strife.stats.StrifeStat.DARK_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.DARK_RESIST;
@@ -113,6 +114,11 @@ public class StatUtil {
 
   public static double getMagicDamage(StrifeMob ae) {
     return ae.getStat(MAGIC_DAMAGE) * (1 + ae.getStat(MAGIC_MULT) / 100);
+  }
+
+  public static float getCriticalChance(StrifeMob attacker, float attackMult, float bonusCrit) {
+    float totalCrit = attackMult * 1.2f * (attacker.getStat(CRITICAL_RATE) + bonusCrit);
+    return totalCrit / 100;
   }
 
   public static float getAttackTime(StrifeMob ae) {

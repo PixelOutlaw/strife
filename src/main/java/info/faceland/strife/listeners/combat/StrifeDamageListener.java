@@ -30,8 +30,6 @@ import static info.faceland.strife.util.DamageUtil.callCritEvent;
 import static info.faceland.strife.util.DamageUtil.callSneakAttackEvent;
 import static info.faceland.strife.util.DamageUtil.doEvasion;
 import static info.faceland.strife.util.DamageUtil.getPotionMult;
-import static info.faceland.strife.util.DamageUtil.hasLuck;
-import static info.faceland.strife.util.DamageUtil.rollDouble;
 import static info.faceland.strife.util.PlayerDataUtil.sendActionbarDamage;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -132,7 +130,7 @@ public class StrifeDamageListener implements Listener {
     }
 
     Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker);
-    damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t));
+    damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t) * attackMult);
     DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
     for (DamageType type : DamageType.values()) {
       if (event.getFlatDamageBonuses().containsKey(type)) {
@@ -145,7 +143,8 @@ public class StrifeDamageListener implements Listener {
 
     double critMult = 0;
     double bonusOverchargeMultiplier = 0;
-    if (doCriticalHit(attacker, defender, event.getAbilityMods(AbilityMod.CRITICAL_CHANCE))) {
+    if (isCriticalHit(attacker, defender, attackMult,
+        event.getAbilityMods(AbilityMod.CRITICAL_CHANCE))) {
       critMult = (attacker.getStat(CRITICAL_DAMAGE) +
           event.getAbilityMods(AbilityMod.CRITICAL_DAMAGE)) / 100;
     }
@@ -170,7 +169,6 @@ public class StrifeDamageListener implements Listener {
 
     standardDamage += standardDamage * critMult + standardDamage * bonusOverchargeMultiplier;
     standardDamage *= evasionMultiplier;
-    standardDamage *= attackMult;
     standardDamage *= potionMult;
     standardDamage *= StatUtil.getDamageMult(attacker);
     standardDamage *= pvpMult;
@@ -184,7 +182,6 @@ public class StrifeDamageListener implements Listener {
       elementalDamage += elementalDamage * critMult;
     }
     elementalDamage *= evasionMultiplier;
-    elementalDamage *= attackMult;
     elementalDamage *= potionMult;
     elementalDamage *= StatUtil.getDamageMult(attacker);
     elementalDamage *= pvpMult;
@@ -199,7 +196,7 @@ public class StrifeDamageListener implements Listener {
     }
     rawDamage *= StatUtil.getTenacityMult(defender);
     rawDamage *= StatUtil.getMinionMult(attacker);
-    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) * attackMult;
+    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
@@ -208,7 +205,7 @@ public class StrifeDamageListener implements Listener {
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
       double chance =
           (attacker.getStat(BLEED_CHANCE) + event.getAbilityMods(AbilityMod.BLEED_CHANCE)) / 100;
-      isBleedApplied = DamageUtil.attemptBleed(defender, chance * attackMult);
+      isBleedApplied = DamageUtil.attemptBleed(defender, chance * attackMult * 1.2);
       if (isBleedApplied) {
         double rawPhysical = damageMap.get(DamageType.PHYSICAL) * pvpMult * critMult * attackMult;
         DamageUtil.applyBleed(event, rawPhysical);
@@ -250,16 +247,12 @@ public class StrifeDamageListener implements Listener {
     event.setFinalDamage(finalDamage);
   }
 
-  private boolean doCriticalHit(StrifeMob attacker, StrifeMob defender, double bonusCrit) {
-    double crit = (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit) / 100;
-    if (crit >= rollDouble(hasLuck(attacker.getEntity()))) {
+  private boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, float attackMult,
+      float bonusCrit) {
+    if (DamageUtil.isCrit(attacker, attackMult, bonusCrit)) {
       callCritEvent(attacker.getEntity(), attacker.getEntity());
-      defender.getEntity().getWorld().playSound(
-          defender.getEntity().getEyeLocation(),
-          Sound.ENTITY_GENERIC_BIG_FALL,
-          2f,
-          0.8f
-      );
+      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
+          Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
       return true;
     }
     return false;

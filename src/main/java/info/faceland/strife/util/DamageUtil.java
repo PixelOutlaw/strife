@@ -388,6 +388,11 @@ public class DamageUtil {
     return true;
   }
 
+  public static boolean isCrit(StrifeMob attacker, float aMult, float bonusCrit) {
+    float critChance = StatUtil.getCriticalChance(attacker, aMult, bonusCrit);
+    return critChance >= rollDouble(hasLuck(attacker.getEntity()));
+  }
+
   public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
       Map<AbilityMod, Float> mods) {
 
