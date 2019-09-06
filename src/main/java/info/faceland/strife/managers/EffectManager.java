@@ -110,7 +110,7 @@ public class EffectManager {
   }
 
   public void execute(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
-    applyEffectToTargets(effect, caster, targets);
+    applyEffectToTargets(effect, caster, new HashSet<>(targets));
   }
 
   public void execute(Effect effect, StrifeMob caster, LivingEntity target) {

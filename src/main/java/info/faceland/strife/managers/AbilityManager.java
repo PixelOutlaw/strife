@@ -275,7 +275,7 @@ public class AbilityManager {
   private void runEffects(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList,
       int delay) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      LogUtil.printDebug("Effect task (Location) started - " + effectList.toString());
+      LogUtil.printDebug("Effect task started - " + effectList.toString());
       if (!caster.getEntity().isValid()) {
         LogUtil.printDebug(" - Task cancelled, caster is dead");
         return;
