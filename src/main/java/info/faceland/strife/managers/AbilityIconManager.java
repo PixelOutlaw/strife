@@ -99,11 +99,12 @@ public class AbilityIconManager {
     }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(
         ability, plugin.getStrifeMobManager().getStatMob(player));
-    plugin.getAbilityManager().setGlobalCooldown(player, ability);
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
+      plugin.getAbilityManager().setGlobalCooldown(player, 5);
       return;
     }
+    plugin.getAbilityManager().setGlobalCooldown(player, ability);
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
     updateIconProgress(player, ability);
   }
