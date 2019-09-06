@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 public class StandardDamage extends Effect {
 
   private float attackMultiplier;
+  private float healMultiplier;
   private final Map<DamageType, Float> damageModifiers = new HashMap<>();
   private final Map<DamageType, Float> damageBonuses = new HashMap<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
@@ -24,6 +25,7 @@ public class StandardDamage extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     StrifeDamageEvent event = new StrifeDamageEvent(caster, target, attackType, attackMultiplier);
+    event.setHealMultiplier(healMultiplier);
     event.getDamageModifiers().putAll(damageModifiers);
     event.getFlatDamageBonuses().putAll(damageBonuses);
     event.getAbilityMods().putAll(abilityMods);
@@ -33,6 +35,14 @@ public class StandardDamage extends Effect {
     if (!event.isCancelled()) {
       DamageUtil.forceCustomDamage(caster.getEntity(), target.getEntity(), event.getFinalDamage());
     }
+  }
+
+  public float getHealMultiplier() {
+    return healMultiplier;
+  }
+
+  public void setHealMultiplier(float healMultiplier) {
+    this.healMultiplier = healMultiplier;
   }
 
   public double getAttackMultiplier() {

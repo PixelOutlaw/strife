@@ -55,6 +55,7 @@ import info.faceland.strife.effects.Push;
 import info.faceland.strife.effects.Push.PushType;
 import info.faceland.strife.effects.RestoreBarrier;
 import info.faceland.strife.effects.ShootProjectile;
+import info.faceland.strife.effects.Silence;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.effects.SpawnParticle.ParticleStyle;
 import info.faceland.strife.effects.Speak;
@@ -289,6 +290,8 @@ public class EffectManager {
         effect = new StandardDamage();
         ((StandardDamage) effect)
             .setAttackMultiplier((float) cs.getDouble("attack-multiplier", 1D));
+        ((StandardDamage) effect)
+            .setHealMultiplier((float) cs.getDouble("heal-multiplier", 0.3D));
         ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
@@ -414,6 +417,10 @@ public class EffectManager {
       case IGNITE:
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
+        break;
+      case SILENCE:
+        effect = new Silence();
+        ((Silence) effect).setDuration(cs.getInt("duration", 20));
         break;
       case BLEED:
         effect = new Bleed();
@@ -743,6 +750,7 @@ public class EffectManager {
     INCREASE_RAGE,
     PROJECTILE,
     IGNITE,
+    SILENCE,
     BLEED,
     CORRUPT,
     CONSUME_BLEED,
