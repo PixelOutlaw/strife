@@ -77,7 +77,10 @@ public class AbilityManager {
       return;
     }
     container.setEndTime(container.getEndTime() - milliseconds);
-    updateIcons(livingEntity);
+    if (livingEntity instanceof Player) {
+      plugin.getAbilityIconManager()
+          .updateIconProgress((Player) livingEntity, getAbility(abilityId));
+    }
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
@@ -140,14 +143,17 @@ public class AbilityManager {
     coolingDownAbilities.put(player, new ConcurrentSet<>());
     if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
       coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
+      for (AbilityCooldownContainer container : coolingDownAbilities.get(player)) {
+        plugin.getAbilityIconManager()
+            .updateIconProgress(player, getAbility(container.getAbilityId()));
+      }
       savedPlayerCooldowns.remove(player.getUniqueId());
-      updateIcons(player);
     }
   }
 
-  public boolean canBeCast(LivingEntity entity, Ability ability) {
+  private boolean canBeCast(LivingEntity entity, Ability ability) {
     AbilityCooldownContainer container = getCooldownContainer(entity, ability.getId());
-    if (container == null || container.getSpentCharges() < ability.getMaxCharges() ) {
+    if (container == null || container.getSpentCharges() < ability.getMaxCharges()) {
       return true;
     }
     return System.currentTimeMillis() > container.getEndTime();
@@ -166,11 +172,8 @@ public class AbilityManager {
     if (targets == null) {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
     }
-    if (ability.getTargetType() == TARGET_GROUND) {
-      if (targets.isEmpty()) {
-        doTargetNotFoundPrompt(caster, ability);
-        return false;
-      }
+    if (ability.getTargetType() == TARGET_GROUND && targets.isEmpty()) {
+      return false;
     }
     if (ability.getTargetType() == SINGLE_OTHER) {
       TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
@@ -319,12 +322,6 @@ public class AbilityManager {
         return TargetingUtil.getTempStandTargetList(loc2, true);
     }
     return null;
-  }
-
-  private void updateIcons(LivingEntity livingEntity) {
-    if (livingEntity instanceof Player) {
-      plugin.getAbilityIconManager().updateIconProgress((Player) livingEntity);
-    }
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {

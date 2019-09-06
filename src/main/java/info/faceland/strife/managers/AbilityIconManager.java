@@ -12,6 +12,7 @@ import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -45,7 +46,6 @@ public class AbilityIconManager {
     for (Ability ability : data.getAbilities().values()) {
       setAbilityIcon(player, ability.getAbilityIconData());
     }
-    updateIconProgress(player);
   }
 
   public void setAbilityIcon(Player player, AbilityIconData abilityIconData) {
@@ -64,6 +64,8 @@ public class AbilityIconManager {
         player.getWorld().dropItem(player.getLocation(), extraStack);
       }
     }
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> plugin.getAbilityIconManager().updateIconProgress(player, slot), 2L);
   }
 
   public boolean playerHasAbility(Player player, Ability ability) {
@@ -106,20 +108,12 @@ public class AbilityIconManager {
     updateIconProgress(player, ability);
   }
 
-  public void updateIconProgress(Player player) {
-    if (player.isDead()) {
-      return;
-    }
+  private void updateIconProgress(Player player, AbilitySlot slot) {
     Champion champion = plugin.getChampionManager().getChampion(player);
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_A));
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
-    setIconDamage(champion, champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
+    setIconDamage(champion, champion.getSaveData().getAbility(slot));
   }
 
   public void updateIconProgress(Player player, Ability ability) {
-    if (player.isDead()) {
-      return;
-    }
     setIconDamage(plugin.getChampionManager().getChampion(player), ability);
   }
 
