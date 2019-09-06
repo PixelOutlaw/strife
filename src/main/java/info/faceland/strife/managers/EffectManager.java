@@ -340,7 +340,12 @@ public class EffectManager {
       case AREA_EFFECT:
         effect = new AreaEffect();
         List<String> areaEffects = cs.getStringList("effects");
-        ((AreaEffect) effect).setEffects(areaEffects);
+        AreaEffect areaEffect = (AreaEffect) effect;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (String s : areaEffects) {
+            areaEffect.getEffects().add(getEffect(s));
+          }
+        }, 5L);
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
         ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));

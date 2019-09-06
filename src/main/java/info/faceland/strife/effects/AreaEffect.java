@@ -19,8 +19,7 @@ public class AreaEffect extends Effect {
   private Map<UUID, List<HitData>> targetDelay = new HashMap<>();
   private long lastApplication = System.currentTimeMillis();
 
-  private List<Effect> cachedEffects = new ArrayList<>();
-  private List<String> effects = new ArrayList<>();
+  private List<Effect> effects = new ArrayList<>();
   private AreaType areaType;
   private double range;
   private int maxTargets;
@@ -53,18 +52,13 @@ public class AreaEffect extends Effect {
         return;
       }
     }
-    for (Effect effect : getEffects()) {
+    for (Effect effect : effects) {
       StrifePlugin.getInstance().getEffectManager().execute(effect, caster, target.getEntity());
     }
   }
 
   public List<Effect> getEffects() {
-    if (cachedEffects.isEmpty()) {
-      for (String effect : effects) {
-        cachedEffects.add(StrifePlugin.getInstance().getEffectManager().getEffect(effect));
-      }
-    }
-    return cachedEffects;
+    return effects;
   }
 
   public AreaType getAreaType() {
@@ -81,10 +75,6 @@ public class AreaEffect extends Effect {
 
   public void setCanBeBlocked(boolean canBeBlocked) {
     this.canBeBlocked = canBeBlocked;
-  }
-
-  public void setEffects(List<String> effects) {
-    this.effects = effects;
   }
 
   public boolean isLineOfSight() {
