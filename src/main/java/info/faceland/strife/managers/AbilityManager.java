@@ -309,9 +309,6 @@ public class AbilityManager {
           targets.add(newTarget);
         }
         return targets;
-      case AREA_LINE:
-        targets = TargetingUtil.getEntitiesInLine(caster.getEntity(), ability.getRange());
-        return targets;
       case TARGET_AREA:
         Location loc = TargetingUtil
             .getTargetLocation(caster.getEntity(), target, ability.getRange(), false);

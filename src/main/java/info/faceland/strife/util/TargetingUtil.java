@@ -54,12 +54,20 @@ public class TargetingUtil {
     return friendlyEntities;
   }
 
-  public static Set<LivingEntity> getLOSEntitiesAroundLocation(Location loc, double radius) {
+  public static Set<LivingEntity> getEntitiesAroundLocation(Location loc, double radius) {
     ArmorStand stando = buildAndRemoveDetectionStand(loc);
-    Collection<Entity> targetList = loc.getWorld().getNearbyEntities(loc, radius, radius, radius);
+    return getEntitiesInArea(stando, radius);
+  }
+
+  public static Set<LivingEntity> getEntitiesInArea(LivingEntity caster, double radius) {
+    Collection<Entity> targetList = caster.getWorld()
+        .getNearbyEntities(caster.getLocation(), radius, radius, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity e : targetList) {
-      if (e instanceof LivingEntity && stando.hasLineOfSight(e)) {
+      if (!e.isValid() || e instanceof ArmorStand || !(e instanceof LivingEntity)) {
+        continue;
+      }
+      if (caster.hasLineOfSight(e)) {
         validTargets.add((LivingEntity) e);
       }
     }

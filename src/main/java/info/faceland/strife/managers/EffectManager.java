@@ -29,6 +29,7 @@ import info.faceland.strife.conditions.TimeCondition;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.AreaEffect;
+import info.faceland.strife.effects.AreaEffect.AreaType;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.BuffEffect;
 import info.faceland.strife.effects.ConsumeBleed;
@@ -84,7 +85,6 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -173,14 +173,15 @@ public class EffectManager {
     }
     Set<LivingEntity> areaTargets = new HashSet<>();
     for (LivingEntity le : targets) {
-      for (Entity e : le.getNearbyEntities(range, range, range)) {
-        if (!e.isValid() || e instanceof ArmorStand || !(e instanceof LivingEntity)) {
-          continue;
-        }
-        if (effect.isLineOfSight() && !le.hasLineOfSight(e)) {
-          continue;
-        }
-        areaTargets.add((LivingEntity) e);
+      switch (effect.getAreaType()) {
+        case RADIUS:
+          areaTargets.addAll(TargetingUtil.getEntitiesInArea(le, range));
+          break;
+        case LINE:
+          areaTargets.addAll(TargetingUtil.getEntitiesInLine(le, range));
+          break;
+        default:
+          return null;
       }
     }
     TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
@@ -341,6 +342,7 @@ public class EffectManager {
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
         ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
+        ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));

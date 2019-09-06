@@ -21,6 +21,7 @@ public class AreaEffect extends Effect {
 
   private List<Effect> cachedEffects = new ArrayList<>();
   private List<String> effects = new ArrayList<>();
+  private AreaType areaType;
   private double range;
   private int maxTargets;
   private boolean isLineOfSight;
@@ -64,6 +65,14 @@ public class AreaEffect extends Effect {
       }
     }
     return cachedEffects;
+  }
+
+  public AreaType getAreaType() {
+    return areaType;
+  }
+
+  public void setAreaType(AreaType areaType) {
+    this.areaType = areaType;
   }
 
   public void setCanBeEvaded(boolean canBeEvaded) {
@@ -131,5 +140,10 @@ public class AreaEffect extends Effect {
     }
     targetDelay.get(caster).add(new HitData(target, targetingCooldown));
     return true;
+  }
+
+  public enum AreaType {
+    RADIUS,
+    LINE
   }
 }
