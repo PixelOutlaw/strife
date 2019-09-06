@@ -6,6 +6,7 @@ public class AbilityCooldownContainer {
   private long startTime;
   private long endTime;
   private int spentCharges;
+  private long logoutTime;
 
   public AbilityCooldownContainer(String abilityId, long endTime) {
     this.abilityId = abilityId;
@@ -40,5 +41,13 @@ public class AbilityCooldownContainer {
 
   public void setSpentCharges(int spentCharges) {
     this.spentCharges = spentCharges;
+  }
+
+  public long getLogoutTime() {
+    return logoutTime;
+  }
+
+  public void setLogoutTime(long logoutTime) {
+    this.logoutTime = logoutTime;
   }
 }

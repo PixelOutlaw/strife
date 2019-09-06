@@ -134,7 +134,11 @@ public class AbilityManager {
 
   public void savePlayerCooldowns(Player player) {
     if (coolingDownAbilities.containsKey(player)) {
-      savedPlayerCooldowns.put(player.getUniqueId(), coolingDownAbilities.get(player));
+      savedPlayerCooldowns.put(player.getUniqueId(), new HashSet<>());
+      for (AbilityCooldownContainer container : coolingDownAbilities.get(player)) {
+        container.setLogoutTime(System.currentTimeMillis());
+        savedPlayerCooldowns.get(player.getUniqueId()).add(container);
+      }
       coolingDownAbilities.remove(player);
     }
   }
@@ -142,8 +146,11 @@ public class AbilityManager {
   public void loadPlayerCooldowns(Player player) {
     coolingDownAbilities.put(player, new ConcurrentSet<>());
     if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
-      coolingDownAbilities.put(player, savedPlayerCooldowns.get(player.getUniqueId()));
-      for (AbilityCooldownContainer container : coolingDownAbilities.get(player)) {
+      for (AbilityCooldownContainer container : savedPlayerCooldowns.get(player.getUniqueId())) {
+        long timeDifference = System.currentTimeMillis() - container.getLogoutTime();
+        container.setStartTime(container.getStartTime() + timeDifference);
+        container.setEndTime(container.getEndTime() + timeDifference);
+        coolingDownAbilities.get(player).add(container);
         plugin.getAbilityIconManager()
             .updateIconProgress(player, getAbility(container.getAbilityId()));
       }
