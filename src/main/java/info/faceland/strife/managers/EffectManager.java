@@ -3,6 +3,7 @@ package info.faceland.strife.managers;
 import static info.faceland.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.AttributeCondition;
 import info.faceland.strife.conditions.BarrierCondition;
 import info.faceland.strife.conditions.BleedingCondition;
@@ -79,6 +80,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -353,10 +355,24 @@ public class EffectManager {
         ((EndlessEffect) effect).setMaxDuration(cs.getInt("max-duration-seconds", 30));
         ((EndlessEffect) effect).setTickRate(cs.getInt("tick-rate", 5));
         ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
-        ((EndlessEffect) effect).getEffects().addAll(cs.getStringList("effects"));
+        List<String> runEffects = cs.getStringList("effects");
+        List<String> cancelEffects = cs.getStringList("cancel-effects");
+        List<String> expiryEffects = cs.getStringList("expiry-effects");
         for (String s : failConditions) {
-          ((EndlessEffect) effect).getFailConditions().add(getConditions().get(s));
+          ((EndlessEffect) effect).getCancelConditions().add(getConditions().get(s));
         }
+        EndlessEffect endlessEffect = (EndlessEffect) effect;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (String s : runEffects) {
+            endlessEffect.getRunEffects().add(getEffect(s));
+          }
+          for (String s : cancelEffects) {
+            endlessEffect.getCancelEffects().add(getEffect(s));
+          }
+          for (String s : expiryEffects) {
+            endlessEffect.getExpiryEffects().add(getEffect(s));
+          }
+        }, 5L);
         break;
       case PROJECTILE:
         effect = new ShootProjectile();
