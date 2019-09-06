@@ -81,18 +81,20 @@ public class TargetingUtil {
 
   public static Set<LivingEntity> getTempStandTargetList(Location loc, boolean grounded) {
     Set<LivingEntity> targets = new HashSet<>();
-    if (grounded) {
+    if (!grounded) {
+      targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
+      return targets;
+    } else {
       for (int i = 0; i < 24; i++) {
         if (loc.getBlock().getType().isSolid()) {
-          loc.setY(loc.getBlockY() + 1.5);
-          break;
+          loc.setY(loc.getBlockY() + 1.1);
+          targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
+          return targets;
         }
         loc.add(0, -1, 0);
       }
       return targets;
     }
-    targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
-    return targets;
   }
 
   public static Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
