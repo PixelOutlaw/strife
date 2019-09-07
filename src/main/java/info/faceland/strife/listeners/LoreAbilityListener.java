@@ -44,7 +44,7 @@ public class LoreAbilityListener implements Listener {
     this.loreAbilityManager = loreAbilityManager;
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onCriticalHit(CriticalEvent event) {
     if (!(event.getAttacker() instanceof Player)) {
       return;
@@ -56,7 +56,7 @@ public class LoreAbilityListener implements Listener {
     }
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onEvade(EvadeEvent event) {
     if (!(event.getEvader() instanceof Player)) {
       return;
@@ -68,7 +68,7 @@ public class LoreAbilityListener implements Listener {
     }
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onBlock(BlockEvent event) {
     if (!(event.getBlocker() instanceof Player)) {
       return;
@@ -104,7 +104,7 @@ public class LoreAbilityListener implements Listener {
     }
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerSneak(PlayerToggleSneakEvent event) {
     if (!event.isSneaking()) {
       return;
@@ -124,6 +124,9 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
+    if (attacker == null) {
+      return;
+    }
     LivingEntity defender = (LivingEntity) event.getEntity();
 
     StrifeMob attackEntity = getAttrEntity(attacker);
@@ -136,7 +139,7 @@ public class LoreAbilityListener implements Listener {
         loreAbilityManager.applyLoreAbility(la, attackEntity, defender);
       }
     }
-    if (attacker != null && defender instanceof Player) {
+    if (defender instanceof Player) {
       if (attackEntity.isMasterOf(defendEntity)) {
         return;
       }

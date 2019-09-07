@@ -27,11 +27,13 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -158,6 +160,16 @@ public class DataListener implements Listener {
         continue;
       }
       plugin.getStrifeMobManager().doChunkDespawn((LivingEntity) ent);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+    if (!(event.getEntity() instanceof FallingBlock)) {
+      return;
+    }
+    if (event.getEntity().hasMetadata("EFFECT_PROJECTILE")) {
+      event.setCancelled(true);
     }
   }
 

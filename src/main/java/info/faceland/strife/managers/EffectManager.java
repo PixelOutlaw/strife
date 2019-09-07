@@ -54,6 +54,7 @@ import info.faceland.strife.effects.PotionEffectAction;
 import info.faceland.strife.effects.Push;
 import info.faceland.strife.effects.Push.PushType;
 import info.faceland.strife.effects.RestoreBarrier;
+import info.faceland.strife.effects.ShootBlock;
 import info.faceland.strife.effects.ShootProjectile;
 import info.faceland.strife.effects.Silence;
 import info.faceland.strife.effects.SpawnParticle;
@@ -187,8 +188,8 @@ public class EffectManager {
           return null;
       }
     }
-    TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
     if (effect.getMaxTargets() > 0) {
+      TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
       List<LivingEntity> oldTargetsAsList = new ArrayList<>(areaTargets);
       Set<LivingEntity> newTargetsFromMax = new HashSet<>();
       while (newTargetsFromMax.size() < effect.getMaxTargets() && oldTargetsAsList.size() > 0) {
@@ -413,6 +414,24 @@ public class EffectManager {
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
+        break;
+      case FALLING_BLOCK:
+        effect = new ShootBlock();
+        ((ShootBlock) effect).setQuantity(cs.getInt("quantity", 1));
+        Material material;
+        try {
+          material = Material.valueOf(cs.getString("material", "DIRT"));
+        } catch (Exception e) {
+          LogUtil.printError("Skipping effect " + key + " for invalid projectile type");
+          return;
+        }
+        ((ShootBlock) effect).setBlockData(Bukkit.getServer().createBlockData(material));
+        ((ShootBlock) effect).setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((ShootBlock) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
+        ((ShootBlock) effect).setSpread(cs.getDouble("spread", 0));
+        ((ShootBlock) effect).setSpeed(cs.getDouble("speed", 1));
+        ((ShootBlock) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
+        ((ShootBlock) effect).setHitEffects(cs.getStringList("hit-effects"));
         break;
       case IGNITE:
         effect = new Ignite();
@@ -749,6 +768,7 @@ public class EffectManager {
     RESTORE_BARRIER,
     INCREASE_RAGE,
     PROJECTILE,
+    FALLING_BLOCK,
     IGNITE,
     SILENCE,
     BLEED,

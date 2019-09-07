@@ -124,7 +124,7 @@ public class StrifeDamageListener implements Listener {
             .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
       }
       if (attackMult <= 0) {
-        event.setFinalDamage(0);
+        event.setFinalDamage(0.1);
         return;
       }
     }
