@@ -31,6 +31,13 @@ public class RageManager {
 
   private final Map<UUID, RageTimer> rageMap = new HashMap<>();
 
+  public void endRageTasks() {
+    for (RageTimer timer : rageMap.values()) {
+      timer.cancel();
+    }
+    rageMap.clear();
+  }
+
   public void clearRage(UUID uuid) {
     if (rageMap.containsKey(uuid)) {
       LogUtil.printDebug("Cancelled RageTimer - Cleared");
