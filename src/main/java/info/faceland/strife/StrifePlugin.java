@@ -109,7 +109,6 @@ import info.faceland.strife.tasks.MinionDecayTask;
 import info.faceland.strife.tasks.MonsterLimitTask;
 import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.tasks.PruneBossBarsTask;
-import info.faceland.strife.tasks.RageTask;
 import info.faceland.strife.tasks.SaveTask;
 import info.faceland.strife.tasks.SneakTask;
 import info.faceland.strife.tasks.SpawnerSpawnTask;
@@ -270,7 +269,7 @@ public class StrifePlugin extends FacePlugin {
     globalBoostManager = new GlobalBoostManager();
     barrierManager = new BarrierManager();
     statUpdateManager = new StatUpdateManager(strifeMobManager);
-    rageManager = new RageManager(statUpdateManager);
+    rageManager = new RageManager();
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(attributeManager, strifeMobManager);
     wseManager = new WSEManager(effectManager);
@@ -319,7 +318,6 @@ public class StrifePlugin extends FacePlugin {
     GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
     PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     DarknessReductionTask darkTask = new DarknessReductionTask(darknessManager);
-    RageTask rageTask = new RageTask(rageManager, strifeMobManager);
     MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
     ParticleTask particleTask = new ParticleTask();
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
@@ -431,10 +429,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(monsterLimitTask.runTaskTimer(this,
         20L * 15, // Start timer after 15s
         20L * 60  // Run it every minute after
-    ));
-    taskList.add(rageTask.runTaskTimer(this,
-        20L * 10, // Start timer after 10s
-        5L  // Run it every 0.25s after
     ));
     taskList.add(particleTask.runTaskTimer(this,
         20 * 20L,

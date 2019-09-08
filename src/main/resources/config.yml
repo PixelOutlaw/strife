@@ -34,6 +34,7 @@ mechanics:
     per-lvl-detection-when-seen: 80
     maximum-head-angle-for-seen: 0.3
     maximum-sneak-exp-range-squared: 144
+  rage-tint-intensity: 0.5
   base-bleed-damage: 1
   percent-bleed-damage: 0.1
   ticks-per-bleed: 12
