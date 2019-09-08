@@ -66,13 +66,12 @@ public class BorderEffectUtil {
     return Class.forName(prefix + "." + subString + "." + name);
   }
 
-  protected void sendWorldBorderPacket(Player p, int dist, double oldradius, double newradius,
+  private static void sendWorldBorderPacket(Player p, int dist, double oldradius, double newradius,
       long delay) {
     try {
       Object wb = border_constructor.newInstance();
 
-      Method worldServer = getClass("org.bukkit.craftbukkit", "CraftWorld")
-          .getMethod("getHandle", (Class<?>[]) new Class[0]);
+      Method worldServer = getClass("org.bukkit.craftbukkit", "CraftWorld").getMethod("getHandle");
       Field world = getClass("net.minecraft.server", "WorldBorder").getField("world");
       world.set(wb, worldServer.invoke(p.getWorld()));
 
@@ -86,5 +85,25 @@ public class BorderEffectUtil {
     } catch (Exception x) {
       x.printStackTrace();
     }
+  }
+
+  public static void sendBorder(Player p, double percentage, int fadeTime) {
+    setBorder(p, percentage);
+    fadeBorder(p, percentage, fadeTime);
+  }
+
+  private static void fadeBorder(Player p, double percentage, long time) {
+    int dist = (int) (2000000 * percentage);
+    //Add 4000 to make sure the "security" zone does not count in the fade time
+    sendWorldBorderPacket(p, 0, 200000D, dist, time + 4000);
+  }
+
+  public static void removeBorder(Player p) {
+    sendWorldBorderPacket(p, 0, 200000D, 200000D, 0);
+  }
+
+  private static void setBorder(Player p, double percentage) {
+    int dist = (int) (2000000 * percentage);
+    sendWorldBorderPacket(p, dist, 200000D, 200000D, 0);
   }
 }
