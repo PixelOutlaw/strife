@@ -1,9 +1,9 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.DamageScale;
 
 public class Heal extends Effect {
 

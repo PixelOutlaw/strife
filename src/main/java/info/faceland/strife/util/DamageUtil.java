@@ -36,7 +36,6 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.buff.LoadedBuff;
-import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
@@ -133,9 +132,11 @@ public class DamageUtil {
       case CASTER_CURRENT_HEALTH:
         return amount * (float) caster.getEntity().getHealth();
       case TARGET_MISSING_HEALTH:
-        return amount * (float) (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
+        return amount * (float) (target.getEntity().getMaxHealth() - target.getEntity()
+            .getHealth());
       case CASTER_MISSING_HEALTH:
-        return amount * (float) (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
+        return amount * (float) (caster.getEntity().getMaxHealth() - caster.getEntity()
+            .getHealth());
       case TARGET_MAX_HEALTH:
         return amount * (float) target.getEntity().getMaxHealth();
       case CASTER_MAX_HEALTH:
@@ -212,7 +213,8 @@ public class DamageUtil {
           }
           break;
         case DARK:
-          bonus = damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
+          bonus =
+              damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
           boolean corrupt = attemptCorrupt(damageMap.get(type), attacker, defender.getEntity());
           if (corrupt) {
             triggeredElements.add(type);
@@ -277,7 +279,11 @@ public class DamageUtil {
       CombatListener.addAttack(attacker, amount);
       target.damage(amount, attacker);
     } else {
-      target.damage(amount);
+      if (amount >= target.getHealth()) {
+        target.damage(amount);
+      } else {
+        target.setHealth(target.getHealth() - amount);
+      }
     }
     target.setNoDamageTicks(noDamageTicks);
     target.setVelocity(velocity);
@@ -314,7 +320,9 @@ public class DamageUtil {
       return 0;
     }
     float multiplier = 0.5f;
-    float percentHealth = (float) defender.getHealth() / (float) defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+    float percentHealth =
+        (float) defender.getHealth() / (float) defender.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+            .getValue();
     if (percentHealth < 0.5f) {
       multiplier = 1f / (float) Math.max(0.16, percentHealth * 2);
     }
@@ -380,7 +388,8 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static boolean attemptCorrupt(float baseDamage, StrifeMob attacker, LivingEntity defender) {
+  public static boolean attemptCorrupt(float baseDamage, StrifeMob attacker,
+      LivingEntity defender) {
     if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
       return false;
     }
@@ -676,40 +685,57 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getDarknessManager();
   }
 
-public enum OriginLocation {
-  HEAD,
-  CENTER,
-  GROUND
-}
+  public enum DamageScale {
+    FLAT,
+    CASTER_DAMAGE,
+    TARGET_CURRENT_HEALTH,
+    CASTER_CURRENT_HEALTH,
+    TARGET_MISSING_HEALTH,
+    CASTER_MISSING_HEALTH,
+    TARGET_MAX_HEALTH,
+    CASTER_MAX_HEALTH,
+    TARGET_CURRENT_BARRIER,
+    CASTER_CURRENT_BARRIER,
+    TARGET_MISSING_BARRIER,
+    CASTER_MISSING_BARRIER,
+    TARGET_MAX_BARRIER,
+    CASTER_MAX_BARRIER,
+  }
 
-public enum DamageType {
-  TRUE_DAMAGE,
-  PHYSICAL,
-  MAGICAL,
-  FIRE,
-  ICE,
-  LIGHTNING,
-  EARTH,
-  LIGHT,
-  DARK
-}
+  public enum OriginLocation {
+    HEAD,
+    CENTER,
+    GROUND
+  }
 
-public enum AbilityMod {
-  ACCURACY,
-  ACCURACY_MULT,
-  ARMOR_PEN,
-  ARMOR_PEN_MULT,
-  WARD_PEN,
-  WARD_PEN_MULT,
-  CRITICAL_CHANCE,
-  CRITICAL_DAMAGE,
-  LIFE_STEAL,
-  HEALTH_ON_HIT,
-  BLEED_CHANCE,
-  BLEED_DAMAGE
-}
+  public enum DamageType {
+    TRUE_DAMAGE,
+    PHYSICAL,
+    MAGICAL,
+    FIRE,
+    ICE,
+    LIGHTNING,
+    EARTH,
+    LIGHT,
+    DARK
+  }
 
-public enum AttackType {
-  MELEE, RANGED, MAGIC, EXPLOSION, OTHER
-}
+  public enum AbilityMod {
+    ACCURACY,
+    ACCURACY_MULT,
+    ARMOR_PEN,
+    ARMOR_PEN_MULT,
+    WARD_PEN,
+    WARD_PEN_MULT,
+    CRITICAL_CHANCE,
+    CRITICAL_DAMAGE,
+    LIFE_STEAL,
+    HEALTH_ON_HIT,
+    BLEED_CHANCE,
+    BLEED_DAMAGE
+  }
+
+  public enum AttackType {
+    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
+  }
 }

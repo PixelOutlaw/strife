@@ -7,6 +7,7 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
+import info.faceland.strife.util.DamageUtil.DamageScale;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
@@ -20,8 +21,6 @@ public class DealDamage extends Effect {
   private DamageScale damageScale;
   private DamageType damageType;
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
-  private boolean canBeEvaded;
-  private boolean canBeBlocked;
 
   private static double pvpMult = StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-damage", 0.50);
@@ -71,20 +70,4 @@ public class DealDamage extends Effect {
     return abilityMods;
   }
 
-  public enum DamageScale {
-    FLAT,
-    CASTER_DAMAGE,
-    TARGET_CURRENT_HEALTH,
-    CASTER_CURRENT_HEALTH,
-    TARGET_MISSING_HEALTH,
-    CASTER_MISSING_HEALTH,
-    TARGET_MAX_HEALTH,
-    CASTER_MAX_HEALTH,
-    TARGET_CURRENT_BARRIER,
-    CASTER_CURRENT_BARRIER,
-    TARGET_MISSING_BARRIER,
-    CASTER_MISSING_BARRIER,
-    TARGET_MAX_BARRIER,
-    CASTER_MAX_BARRIER,
-  }
 }

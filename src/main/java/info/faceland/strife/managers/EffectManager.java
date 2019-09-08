@@ -39,7 +39,6 @@ import info.faceland.strife.effects.CooldownReduction;
 import info.faceland.strife.effects.Corrupt;
 import info.faceland.strife.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.effects.DealDamage;
-import info.faceland.strife.effects.DealDamage.DamageScale;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.EndlessEffect;
 import info.faceland.strife.effects.Food;
@@ -67,6 +66,7 @@ import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.AttackType;
+import info.faceland.strife.util.DamageUtil.DamageScale;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
@@ -263,7 +263,7 @@ public class EffectManager {
         break;
       case INCREASE_RAGE:
         effect = new IncreaseRage();
-        ((IncreaseRage) effect).setAmount(cs.getDouble("amount", 1));
+        ((IncreaseRage) effect).setAmount((float) cs.getDouble("amount", 1));
         break;
       case DAMAGE:
         effect = new DealDamage();
@@ -443,7 +443,8 @@ public class EffectManager {
         break;
       case BLEED:
         effect = new Bleed();
-        ((Bleed) effect).setAmount(cs.getInt("amount", 10));
+        ((Bleed) effect).setAmount((float) cs.getDouble("amount", 10));
+        ((Bleed) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
         break;
