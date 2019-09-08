@@ -15,7 +15,7 @@ public class ConsumeBleed extends Effect {
     if (value <= 0) {
       return;
     }
-    StrifePlugin.getInstance().getBleedManager().removeEntity(target.getEntity());
+    StrifePlugin.getInstance().getBleedManager().clearBleed(target.getEntity());
     target.getEntity().damage(value * damageRatio, caster.getEntity());
 
     caster.getEntity().setHealth(caster.getEntity().getHealth() + value * healRatio);

@@ -99,7 +99,6 @@ import info.faceland.strife.storage.DataStorage;
 import info.faceland.strife.storage.FlatfileStorage;
 import info.faceland.strife.tasks.AbilityTickTask;
 import info.faceland.strife.tasks.BarrierTask;
-import info.faceland.strife.tasks.BleedTask;
 import info.faceland.strife.tasks.BossBarsTask;
 import info.faceland.strife.tasks.CombatStatusTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
@@ -262,7 +261,7 @@ public class StrifePlugin extends FacePlugin {
     commandHandler = new CommandHandler(this);
     attributeManager = new StrifeAttributeManager();
     blockManager = new BlockManager();
-    bleedManager = new BleedManager();
+    bleedManager = new BleedManager(this);
     darknessManager = new DarknessManager();
     attackSpeedManager = new AttackSpeedManager();
     equipmentManager = new EntityEquipmentManager();
@@ -308,9 +307,6 @@ public class StrifePlugin extends FacePlugin {
     SaveTask saveTask = new SaveTask(this);
     TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
     HealthRegenTask regenTask = new HealthRegenTask(this);
-    BleedTask bleedTask = new BleedTask(bleedManager, barrierManager,
-        settings.getDouble("config.mechanics.base-bleed-damage", 1D),
-        settings.getDouble("config.mechanics.percent-bleed-damage", 0.1D));
     SneakTask sneakTask = new SneakTask(sneakManager);
     BarrierTask barrierTask = new BarrierTask(this);
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
@@ -394,10 +390,6 @@ public class StrifePlugin extends FacePlugin {
         20L * 9, // Start timer after 9s
         20L * 2 // Run it every 2s after
     ));
-    taskList.add(bleedTask.runTaskTimer(this,
-        20L * 10, // Start timer after 10s
-        settings.getLong("config.mechanics.ticks-per-bleed", 10L)
-    ));
     taskList.add(sneakTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
         10L // Run every 1/2 second
@@ -457,8 +449,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-    Bukkit.getPluginManager().registerEvents(
-        new CreeperEffectListener(darknessManager, bleedManager), this);
+    Bukkit.getPluginManager().registerEvents(new CreeperEffectListener(this), this);
     Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);

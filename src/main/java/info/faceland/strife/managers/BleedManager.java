@@ -18,7 +18,12 @@
  */
 package info.faceland.strife.managers;
 
+import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.timers.BleedTimer;
+import info.faceland.strife.util.LogUtil;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -27,55 +32,69 @@ import org.bukkit.inventory.ItemStack;
 
 public class BleedManager {
 
-  private Map<LivingEntity, Double> bleedMap = new ConcurrentHashMap<>();
+  private StrifePlugin plugin;
+
+  private Map<UUID, BleedTimer> bleedMap = new ConcurrentHashMap<>();
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.REDSTONE);
 
-  public Map<LivingEntity, Double> getBleedMap() {
-    return bleedMap;
+  public BleedManager(StrifePlugin plugin) {
+    this.plugin = plugin;
   }
 
   public boolean isBleeding(LivingEntity livingEntity) {
-    return getBleedOnEntity(livingEntity) != -1;
+    return getBleedOnEntity(livingEntity) != 0;
   }
 
-  public double getBleedOnEntity(LivingEntity entity) {
-    return bleedMap.getOrDefault(entity, -1D);
+  public float getBleedOnEntity(LivingEntity entity) {
+    if (bleedMap.containsKey(entity.getUniqueId())) {
+      return bleedMap.get(entity.getUniqueId()).getBleed();
+    }
+    return 0;
   }
 
-  public void removeEntity(LivingEntity entity) {
-    bleedMap.remove(entity);
+  public void clearBleed(LivingEntity entity) {
+    clearBleed(entity.getUniqueId());
   }
 
-  public void applyBleed(LivingEntity livingEntity, double amount) {
-    if (!livingEntity.isValid()) {
+  public void clearBleed(UUID uuid) {
+    if (bleedMap.containsKey(uuid)) {
+      LogUtil.printDebug("Cancelled BleedTimer - Cleared");
+      bleedMap.get(uuid).cancel();
+      bleedMap.remove(uuid);
+    }
+  }
+
+  public void addBleed(StrifeMob mob, float amount) {
+    if (!mob.getEntity().isValid()) {
       return;
     }
-    if (!bleedMap.containsKey(livingEntity)) {
-      bleedMap.put(livingEntity, amount);
+    if (plugin.getBarrierManager().isBarrierUp(mob)) {
       return;
     }
-    bleedMap.put(livingEntity, bleedMap.get(livingEntity) + amount);
+    if (bleedMap.containsKey(mob.getEntity().getUniqueId())) {
+      bleedMap.get(mob.getEntity().getUniqueId()).bumpBleed(amount);
+      return;
+    }
+    bleedMap.put(mob.getEntity().getUniqueId(), new BleedTimer(plugin, mob.getEntity(), amount));
   }
 
-  public void spawnBleedParticles(LivingEntity livingEntity, double damage) {
-    int particleAmount = 10 + (int) (damage * 20);
-    livingEntity.getWorld().spawnParticle(
+  public void spawnBleedParticles(LivingEntity entity, double damage) {
+    int particleAmount = 2 + (int) (damage * 2);
+    entity.getWorld().spawnParticle(
         Particle.ITEM_CRACK,
-        livingEntity.getEyeLocation().clone().add(0, -0.7, 0),
+        entity.getEyeLocation().clone().add(0, entity.getEyeHeight() / 2, 0),
         particleAmount,
         0.0, 0.0, 0.0,
-        0.1,
+        0.05,
         BLOCK_DATA
     );
   }
 
-  public void applyDamage(LivingEntity livingEntity, double damage) {
-    if (livingEntity.getHealth() > damage) {
-      livingEntity.setHealth(livingEntity.getHealth() - damage);
-      bleedMap.replace(livingEntity, bleedMap.get(livingEntity) - damage);
+  public void dealDamage(LivingEntity livingEntity, double amount) {
+    if (livingEntity.getHealth() > amount) {
+      livingEntity.setHealth(livingEntity.getHealth() - amount);
       return;
     }
-    bleedMap.replace(livingEntity, 0D);
-    livingEntity.damage(damage);
+    livingEntity.damage(amount);
   }
 }

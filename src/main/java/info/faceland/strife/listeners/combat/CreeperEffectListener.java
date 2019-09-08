@@ -18,8 +18,7 @@
  */
 package info.faceland.strife.listeners.combat;
 
-import info.faceland.strife.managers.BleedManager;
-import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.StrifePlugin;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -29,12 +28,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 public class CreeperEffectListener implements Listener {
 
-  private final DarknessManager darknessManager;
-  private final BleedManager bleedManager;
+  private StrifePlugin plugin;
 
-  public CreeperEffectListener(DarknessManager darknessManager, BleedManager bleedManager) {
-    this.darknessManager = darknessManager;
-    this.bleedManager = bleedManager;
+  public CreeperEffectListener(StrifePlugin plugin) {
+    this.plugin = plugin;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -45,13 +42,18 @@ public class CreeperEffectListener implements Listener {
     if (!(event.getEntity() instanceof LivingEntity)) {
       return;
     }
-    if (bleedManager.isBleeding((LivingEntity) event.getDamager())) {
-      double amount = bleedManager.getBleedOnEntity((LivingEntity) event.getDamager());
-      bleedManager.applyBleed((LivingEntity) event.getEntity(), amount + 5);
+
+    Creeper creeper = (Creeper) event.getDamager();
+    LivingEntity target = (LivingEntity) event.getEntity();
+
+    if (plugin.getBleedManager().isBleeding(creeper)) {
+      float amount = plugin.getBleedManager().getBleedOnEntity(creeper);
+      plugin.getBleedManager()
+          .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5);
     }
-    if (darknessManager.isCorrupted((LivingEntity) event.getDamager())) {
-      float amount = darknessManager.getCorruption((LivingEntity) event.getDamager());
-      darknessManager.applyCorruption((LivingEntity) event.getEntity(), amount + 10);
+    if (plugin.getDarknessManager().isCorrupted((LivingEntity) event.getDamager())) {
+      float amount = plugin.getDarknessManager().getCorruption((LivingEntity) event.getDamager());
+      plugin.getDarknessManager().applyCorruption((LivingEntity) event.getEntity(), amount + 10);
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();

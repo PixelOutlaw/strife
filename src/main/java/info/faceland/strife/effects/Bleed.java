@@ -27,7 +27,7 @@ public class Bleed extends Effect {
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
     }
-    DamageUtil.applyBleed(target.getEntity(), bleedAmount);
+    DamageUtil.applyBleed(target, bleedAmount);
   }
 
   public void setDamageScale(DamageScale damageScale) {

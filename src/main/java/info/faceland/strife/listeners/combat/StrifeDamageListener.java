@@ -141,7 +141,7 @@ public class StrifeDamageListener implements Listener {
 
     Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap);
 
-    double critMult = 0;
+    float critMult = 0;
     double bonusOverchargeMultiplier = 0;
     if (isCriticalHit(attacker, defender, attackMult,
         event.getAbilityMods(AbilityMod.CRITICAL_CHANCE))) {
@@ -165,7 +165,7 @@ public class StrifeDamageListener implements Listener {
     if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
       pvpMult = PVP_MULT;
     }
-    double potionMult = getPotionMult(attacker.getEntity(), defender.getEntity());
+    float potionMult = getPotionMult(attacker.getEntity(), defender.getEntity());
 
     standardDamage += standardDamage * critMult + standardDamage * bonusOverchargeMultiplier;
     standardDamage *= evasionMultiplier;
@@ -207,7 +207,7 @@ public class StrifeDamageListener implements Listener {
           (attacker.getStat(BLEED_CHANCE) + event.getAbilityMods(AbilityMod.BLEED_CHANCE)) / 100;
       isBleedApplied = DamageUtil.attemptBleed(defender, chance * attackMult * 1.2);
       if (isBleedApplied) {
-        double rawPhysical = damageMap.get(DamageType.PHYSICAL) * pvpMult * critMult * attackMult;
+        float rawPhysical = damageMap.get(DamageType.PHYSICAL) * pvpMult * critMult * attackMult;
         DamageUtil.applyBleed(event, rawPhysical);
       }
     }

@@ -446,8 +446,8 @@ public class DamageUtil {
     }
   }
 
-  public static double getPotionMult(LivingEntity attacker, LivingEntity defender) {
-    double potionMult = 1.0;
+  public static float getPotionMult(LivingEntity attacker, LivingEntity defender) {
+    float potionMult = 1.0f;
     Collection<PotionEffect> attackerEffects = attacker.getActivePotionEffects();
     Collection<PotionEffect> defenderEffects = defender.getActivePotionEffects();
     for (PotionEffect effect : attackerEffects) {
@@ -515,21 +515,20 @@ public class DamageUtil {
     return chance >= rollDouble();
   }
 
-  public static void applyBleed(StrifeDamageEvent event, double damage) {
-    damage *= 1 +
-        (event.getAbilityMods(AbilityMod.BLEED_DAMAGE) + event.getAttacker().getStat(BLEED_DAMAGE))
-            / 100;
+  public static void applyBleed(StrifeDamageEvent event, float damage) {
+    damage *= 1 + (event.getAbilityMods(AbilityMod.BLEED_DAMAGE) + event.getAttacker().getStat(BLEED_DAMAGE)) / 100;
     damage *= 1 - event.getDefender().getStat(BLEED_RESIST) / 100;
     damage *= BLEED_PERCENT;
-    applyBleed(event.getDefender().getEntity(), damage);
+    applyBleed(event.getDefender(), damage);
   }
 
-  public static void applyBleed(LivingEntity defender, double amount) {
-    if (amount < 0.5) {
+  public static void applyBleed(StrifeMob defender, float amount) {
+    if (amount < 0.1) {
       return;
     }
-    StrifePlugin.getInstance().getBleedManager().applyBleed(defender, amount);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
+    StrifePlugin.getInstance().getBleedManager().addBleed(defender, amount);
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
 
   public static void applyCorrupt(LivingEntity defender, float amount) {
