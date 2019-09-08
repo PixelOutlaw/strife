@@ -3,23 +3,26 @@ package info.faceland.strife.effects;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil;
+import info.faceland.strife.util.DamageUtil.DamageScale;
 import info.faceland.strife.util.StatUtil;
 
 public class Bleed extends Effect {
 
-  private double amount;
+  private float amount;
   private boolean applyBleedMods;
+  private DamageScale damageScale;
   private boolean ignoreArmor;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double bleedAmount = amount;
+    float bleedAmount = amount;
+    for (StrifeStat attr : getStatMults().keySet()) {
+      amount += getStatMults().get(attr) * caster.getStat(attr);
+    }
+    amount = DamageUtil.applyDamageScale(caster, target, amount, damageScale, null);
     if (applyBleedMods) {
       bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;
       bleedAmount *= 1 - target.getStat(StrifeStat.BLEED_RESIST) / 100;
-    }
-    for (StrifeStat attr : getStatMults().keySet()) {
-      bleedAmount *= 1 + (getStatMults().get(attr) * caster.getStat(attr));
     }
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
@@ -27,7 +30,11 @@ public class Bleed extends Effect {
     DamageUtil.applyBleed(target.getEntity(), bleedAmount);
   }
 
-  public void setAmount(double amount) {
+  public void setDamageScale(DamageScale damageScale) {
+    this.damageScale = damageScale;
+  }
+
+  public void setAmount(float amount) {
     this.amount = amount;
   }
 
