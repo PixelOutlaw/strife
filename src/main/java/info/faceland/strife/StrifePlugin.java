@@ -508,6 +508,7 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager.removeAllBars();
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
+    bleedManager.endBleedTasks();
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);

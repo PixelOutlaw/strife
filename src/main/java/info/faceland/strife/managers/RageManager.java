@@ -31,21 +31,6 @@ public class RageManager {
 
   private final Map<UUID, RageTimer> rageMap = new HashMap<>();
 
-  public void endRageTasks() {
-    for (RageTimer timer : rageMap.values()) {
-      timer.cancel();
-    }
-    rageMap.clear();
-  }
-
-  public void clearRage(UUID uuid) {
-    if (rageMap.containsKey(uuid)) {
-      LogUtil.printDebug("Cancelled RageTimer - Cleared");
-      rageMap.get(uuid).cancel();
-      rageMap.remove(uuid);
-    }
-  }
-
   public float getRage(LivingEntity entity) {
     if (rageMap.containsKey(entity.getUniqueId())) {
       return rageMap.get(entity.getUniqueId()).getRage();
@@ -60,5 +45,20 @@ public class RageManager {
     }
     amount =  Math.min(amount, mob.getStat(StrifeStat.MAXIMUM_RAGE));
     rageMap.put(mob.getEntity().getUniqueId(), new RageTimer(mob, amount));
+  }
+
+  public void endRageTasks() {
+    for (RageTimer timer : rageMap.values()) {
+      timer.cancel();
+    }
+    rageMap.clear();
+  }
+
+  public void clearRage(UUID uuid) {
+    if (rageMap.containsKey(uuid)) {
+      LogUtil.printDebug("Cancelled RageTimer - Cleared");
+      rageMap.get(uuid).cancel();
+      rageMap.remove(uuid);
+    }
   }
 }

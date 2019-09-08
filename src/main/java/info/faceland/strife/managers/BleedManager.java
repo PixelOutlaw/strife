@@ -52,18 +52,6 @@ public class BleedManager {
     return 0;
   }
 
-  public void clearBleed(LivingEntity entity) {
-    clearBleed(entity.getUniqueId());
-  }
-
-  public void clearBleed(UUID uuid) {
-    if (bleedMap.containsKey(uuid)) {
-      LogUtil.printDebug("Cancelled BleedTimer - Cleared");
-      bleedMap.get(uuid).cancel();
-      bleedMap.remove(uuid);
-    }
-  }
-
   public void addBleed(StrifeMob mob, float amount) {
     if (!mob.getEntity().isValid()) {
       return;
@@ -79,13 +67,13 @@ public class BleedManager {
   }
 
   public void spawnBleedParticles(LivingEntity entity, double damage) {
-    int particleAmount = 2 + (int) (damage * 2);
+    int particleAmount = 1 + (int) (damage * 5);
     entity.getWorld().spawnParticle(
         Particle.ITEM_CRACK,
-        entity.getEyeLocation().clone().add(0, entity.getEyeHeight() / 2, 0),
+        entity.getEyeLocation().clone().add(0, -entity.getEyeHeight() / 2, 0),
         particleAmount,
         0.0, 0.0, 0.0,
-        0.05,
+        0.1,
         BLOCK_DATA
     );
   }
@@ -95,6 +83,25 @@ public class BleedManager {
       livingEntity.setHealth(livingEntity.getHealth() - amount);
       return;
     }
-    livingEntity.damage(amount);
+    livingEntity.damage(100000);
+  }
+
+  public void endBleedTasks() {
+    for (BleedTimer timer : bleedMap.values()) {
+      timer.cancel();
+    }
+    bleedMap.clear();
+  }
+
+  public void clearBleed(LivingEntity entity) {
+    clearBleed(entity.getUniqueId());
+  }
+
+  public void clearBleed(UUID uuid) {
+    if (bleedMap.containsKey(uuid)) {
+      LogUtil.printDebug("Cancelled BleedTimer - Cleared");
+      bleedMap.get(uuid).cancel();
+      bleedMap.remove(uuid);
+    }
   }
 }

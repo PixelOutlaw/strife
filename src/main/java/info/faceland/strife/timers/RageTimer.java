@@ -52,6 +52,7 @@ public class RageTimer extends BukkitRunnable {
         .getDouble("config.mechanics.rage-tint-intensity", 1);
     LogUtil.printDebug("New RageTimer created for " + mobUuid);
     runTaskTimer(StrifePlugin.getInstance(), 0L, 4L);
+    sendBorder(ticksRemaining / mob.getStat(StrifeStat.MAXIMUM_RAGE));
   }
 
   @Override

@@ -97,6 +97,8 @@ public class DataListener implements Listener {
   public void onEntityDeath(final EntityDeathEvent event) {
     plugin.getBossBarManager().doBarDeath(event.getEntity());
     plugin.getBarrierManager().removeEntity(event.getEntity());
+    plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
+    plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     if (event.getEntity() instanceof Player) {
       plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);
@@ -131,6 +133,8 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     ensureAbilitiesDontInstantCast(event.getPlayer());
+    plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
+    plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
