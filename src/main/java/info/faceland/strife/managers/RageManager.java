@@ -19,6 +19,7 @@
 package info.faceland.strife.managers;
 
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.timers.RageTimer;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class RageManager {
       rageMap.get(mob.getEntity().getUniqueId()).bumpRage(amount);
       return;
     }
+    amount =  Math.min(amount, mob.getStat(StrifeStat.MAXIMUM_RAGE));
     rageMap.put(mob.getEntity().getUniqueId(), new RageTimer(mob, amount));
   }
 }
