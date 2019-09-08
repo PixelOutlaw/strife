@@ -145,22 +145,26 @@ public class SpawnParticle extends Effect {
 
   private void spawnParticleArc(Vector direction, Location center, double radius, double angle,
       double offset) {
-    int segments = (int) (radius * angle * 0.1);
+    int segments = (int) (6 * (angle / 90) * (1 + radius / 3));
     double startAngle = -angle * 0.5;
     double segmentAngle = angle / segments;
     double verticalDirection = random.nextDouble() < 0.5 ? 1 : -1;
     double startVerticalOffset = verticalDirection * offset * random.nextDouble() * 0.5;
     double segmentOffset = (2 * startVerticalOffset) / segments;
     for (int i = 0; i <= segments; i++) {
-      Vector newDirection = direction.clone().multiply(size);
-      applyRadialAngles(newDirection, startAngle, segmentAngle, i);
+      Vector newDirection = direction.clone();
+      newDirection.setX(newDirection.getX() + 0.001);
+      newDirection.setY(0.001);
+      newDirection.setZ(newDirection.getZ() + 0.001);
+      newDirection.normalize().multiply(size);
+      double radialAngle = Math.toRadians(startAngle + i * segmentAngle);
+      applyRadialAngles(newDirection, radialAngle);
       newDirection.setY(startVerticalOffset - segmentOffset * i);
       spawnParticle(center.clone().add(newDirection));
     }
   }
 
-  private void applyRadialAngles(Vector direction, double angle, double segment, int counter) {
-    angle = Math.toRadians(angle + counter * segment);
+  private void applyRadialAngles(Vector direction, double angle) {
     double x = direction.getX();
     double z = direction.getZ();
     direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
