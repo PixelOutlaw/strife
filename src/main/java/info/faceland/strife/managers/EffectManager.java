@@ -83,6 +83,7 @@ import java.util.Random;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -414,6 +415,10 @@ public class EffectManager {
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
+        int color = cs.getInt("arrow-rgb-color", -1);
+        if (color != -1) {
+          ((ShootProjectile) effect).setArrowColor(Color.fromRGB(color));
+        }
         break;
       case FALLING_BLOCK:
         effect = new ShootBlock();

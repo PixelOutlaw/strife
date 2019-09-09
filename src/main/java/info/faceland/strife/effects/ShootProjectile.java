@@ -9,7 +9,10 @@ import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.ProjectileUtil;
 import info.faceland.strife.util.TargetingUtil;
 import java.util.List;
+import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
@@ -24,6 +27,7 @@ public class ShootProjectile extends Effect {
 
   private EntityType projectileEntity;
   private OriginLocation originType;
+  private Color arrowColor;
   private double attackMultiplier;
   private boolean targeted;
   private boolean seeking;
@@ -47,7 +51,6 @@ public class ShootProjectile extends Effect {
     Vector castDirection = getCastDirection(caster.getEntity(), target.getEntity());
     Location originLocation = TargetingUtil.getOriginLocation(caster.getEntity(), originType);
 
-    double adjustedSpread = (projectiles - 1) * spread;
     double startAngle = 0;
     if (radialAngle != 0) {
       startAngle = -radialAngle / 2;
@@ -57,7 +60,7 @@ public class ShootProjectile extends Effect {
       if (radialAngle != 0) {
         applyRadialAngles(direction, startAngle, projectiles, i);
       }
-      applySpread(direction, adjustedSpread);
+      applySpread(direction, i);
 
       final Vector finalDirection = direction.normalize().multiply(newSpeed);
 
@@ -65,13 +68,18 @@ public class ShootProjectile extends Effect {
           projectileEntity.getEntityClass(), e -> e.setVelocity(finalDirection));
       projectile.setShooter(caster.getEntity());
 
-      if (projectileEntity == EntityType.FIREBALL) {
-        ((Fireball) projectile).setYield(yield);
-        ((Fireball) projectile).setIsIncendiary(ignite);
-      } else if (projectileEntity == EntityType.ARROW) {
+      if (projectileEntity == EntityType.ARROW) {
+        if (arrowColor != null) {
+          ((Arrow) projectile).setColor(arrowColor);
+        }
         if (ignite) {
           projectile.setFireTicks(20);
         }
+        ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
+        ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
+      } else if (projectileEntity == EntityType.FIREBALL) {
+        ((Fireball) projectile).setYield(yield);
+        ((Fireball) projectile).setIsIncendiary(ignite);
       } else if (projectileEntity == EntityType.WITHER_SKULL) {
         ((WitherSkull) projectile).setYield(yield);
       } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
@@ -159,6 +167,10 @@ public class ShootProjectile extends Effect {
     this.originType = originType;
   }
 
+  public void setArrowColor(Color arrowColor) {
+    this.arrowColor = arrowColor;
+  }
+
   public void setAttackMultiplier(double attackMultiplier) {
     this.attackMultiplier = attackMultiplier;
   }
@@ -189,17 +201,21 @@ public class ShootProjectile extends Effect {
     if (projectiles == 1) {
       return;
     }
-    angle = Math.toRadians(angle + counter * (radialAngle / (projectiles-1)));
+    angle = Math.toRadians(angle + counter * (radialAngle / (projectiles - 1)));
     double x = direction.getX();
     double z = direction.getZ();
     direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
     direction.setX(z * Math.sin(angle) + x * Math.cos(angle));
   }
 
-  private void applySpread(Vector direction, double spread) {
+  private void applySpread(Vector direction, int count) {
+    if (count == 0) {
+      return;
+    }
+    double adjustedSpread = spread * count;
     direction.add(new Vector(
-        spread - 2 * spread * Math.random(),
-        spread - 2 * spread * Math.random() + verticalBonus,
-        spread - 2 * spread * Math.random()));
+        adjustedSpread - 2 * adjustedSpread * Math.random(),
+        adjustedSpread - 2 * adjustedSpread * Math.random() + verticalBonus,
+        adjustedSpread - 2 * adjustedSpread * Math.random()));
   }
 }
