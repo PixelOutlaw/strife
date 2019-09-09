@@ -69,7 +69,7 @@ public class BowListener implements Listener {
     plugin.getChampionManager().updateEquipmentStats(
         plugin.getChampionManager().getChampion(player));
 
-    double projectileSpeed = 2.5 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    double projectileSpeed = 2.5 * (1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
 
     createArrow(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);

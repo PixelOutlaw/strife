@@ -3,8 +3,8 @@ package info.faceland.strife.util;
 import info.faceland.strife.StrifePlugin;
 import java.util.Random;
 import org.bukkit.Sound;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Arrow.PickupStatus;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
@@ -95,12 +95,6 @@ public class ProjectileUtil {
 
   public static void createArrow(Player shooter, double attackMult, double power,
       double xOff, double yOff, double zOff, boolean gravity) {
-    Arrow arrow = shooter.getWorld().spawn(
-        shooter.getEyeLocation().clone().add(0, -0.35, 0), Arrow.class);
-    arrow.setShooter(shooter);
-    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    arrow.setGravity(gravity);
-
     Vector vector = shooter.getEyeLocation().getDirection();
     xOff = vector.getX() * power + xOff;
     yOff = vector.getY() * power + yOff;
@@ -108,7 +102,17 @@ public class ProjectileUtil {
     if (gravity) {
       yOff += 0.17;
     }
-    arrow.setVelocity(new Vector(xOff, yOff, zOff));
+
+    Vector finalVelocity = new Vector(xOff, yOff, zOff);
+    Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
+        Arrow.class, e -> e.setVelocity(finalVelocity));
+    arrow.setShooter(shooter);
+    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    arrow.setGravity(gravity);
+
+    if (attackMult > 0.95) {
+      arrow.setCritical(true);
+    }
     ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
     if (shooter.isSneaking()) {
       ProjectileUtil.setProjectileSneakMeta(arrow);
@@ -141,7 +145,6 @@ public class ProjectileUtil {
       case DRAGON_FIREBALL:
       case EGG:
       case SNOWBALL:
-      case TIPPED_ARROW:
         return true;
       default:
         return false;
