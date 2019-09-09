@@ -1,5 +1,6 @@
 package info.faceland.strife.util;
 
+import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.BLEED_RESIST;
 import static info.faceland.strife.stats.StrifeStat.DAMAGE_REFLECT;
@@ -40,7 +41,6 @@ import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
-import info.faceland.strife.events.StrifeDamageEvent;
 import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.managers.BlockManager;
 import info.faceland.strife.managers.DarknessManager;
@@ -87,7 +87,7 @@ public class DamageUtil {
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   private static final DamageType[] DMG_TYPES = DamageType.values();
 
-  private static final double BLEED_PERCENT = 0.5;
+  private static final float BLEED_PERCENT = 0.5f;
 
   public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
@@ -505,21 +505,25 @@ public class DamageUtil {
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
-  public static boolean attemptBleed(StrifeMob defender, double chance) {
+  public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
+      float attackMult, Map<AbilityMod, Float> abilityMods) {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
     if (defender.getStat(BLEED_RESIST) > 99) {
       return false;
     }
-    return chance >= rollDouble();
-  }
-
-  public static void applyBleed(StrifeDamageEvent event, float damage) {
-    damage *= 1 + (event.getAbilityMods(AbilityMod.BLEED_DAMAGE) + event.getAttacker().getStat(BLEED_DAMAGE)) / 100;
-    damage *= 1 - event.getDefender().getStat(BLEED_RESIST) / 100;
-    damage *= BLEED_PERCENT;
-    applyBleed(event.getDefender(), damage);
+    float chance = (attacker.getStat(BLEED_CHANCE) +
+        abilityMods.getOrDefault(AbilityMod.BLEED_CHANCE, 0f)) / 100;
+    if (chance >= rollDouble()) {
+      float damage = rawPhysical * attackMult * BLEED_PERCENT;
+      float damageMult = 1 + (attacker.getStat(BLEED_DAMAGE) +
+          abilityMods.getOrDefault(AbilityMod.BLEED_DAMAGE, 0f)) / 100;
+      damage *= damageMult;
+      damage *= 1 - defender.getStat(BLEED_RESIST) / 100;
+      applyBleed(defender, damage);
+    }
+    return false;
   }
 
   public static void applyBleed(StrifeMob defender, float amount) {

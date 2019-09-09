@@ -18,7 +18,6 @@
  */
 package info.faceland.strife.listeners.combat;
 
-import static info.faceland.strife.stats.StrifeStat.BLEED_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.CRITICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.OVERCHARGE;
 import static info.faceland.strife.stats.StrifeStat.RAGE_ON_HIT;
@@ -203,13 +202,8 @@ public class StrifeDamageListener implements Listener {
 
     boolean isBleedApplied = false;
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
-      double chance =
-          (attacker.getStat(BLEED_CHANCE) + event.getAbilityMods(AbilityMod.BLEED_CHANCE)) / 100;
-      isBleedApplied = DamageUtil.attemptBleed(defender, chance * attackMult * 1.2);
-      if (isBleedApplied) {
-        float rawPhysical = damageMap.get(DamageType.PHYSICAL) * pvpMult * critMult * attackMult;
-        DamageUtil.applyBleed(event, rawPhysical);
-      }
+      isBleedApplied = DamageUtil.attemptBleed(attacker, defender,
+          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods());
     }
 
     boolean isSneakAttack = event.getProjectile() == null ?

@@ -67,7 +67,7 @@ public class BleedManager {
   }
 
   public void spawnBleedParticles(LivingEntity entity, double damage) {
-    int particleAmount = 1 + (int) (damage * 5);
+    int particleAmount = 1 + (int) (damage * 20);
     entity.getWorld().spawnParticle(
         Particle.ITEM_CRACK,
         entity.getEyeLocation().clone().add(0, -entity.getEyeHeight() / 2, 0),
