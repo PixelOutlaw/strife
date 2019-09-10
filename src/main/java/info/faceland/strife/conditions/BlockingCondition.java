@@ -1,7 +1,6 @@
 package info.faceland.strife.conditions;
 
 import info.faceland.strife.data.StrifeMob;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BlockingCondition implements Condition {
@@ -28,7 +27,7 @@ public class BlockingCondition implements Condition {
     }
   }
 
-  private boolean isBurning(LivingEntity livingEntity) {
-    return livingEntity.getFireTicks() > 0;
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
   }
 }

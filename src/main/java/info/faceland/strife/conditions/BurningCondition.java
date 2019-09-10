@@ -21,6 +21,10 @@ public class BurningCondition implements Condition {
     }
   }
 
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
+
   private boolean isBurning(LivingEntity livingEntity) {
     return livingEntity.getFireTicks() > 0;
   }

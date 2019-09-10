@@ -6,6 +6,8 @@ public interface Condition {
 
   boolean isMet(StrifeMob attacker, StrifeMob target);
 
+  CompareTarget getCompareTarget();
+
   enum Comparison {
     GREATER_THAN,
     LESS_THAN,

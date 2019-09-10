@@ -25,4 +25,8 @@ public class StatCondition implements Condition {
         Math.round(target.getStat(strifeStat));
     return PlayerDataUtil.conditionCompare(comparison, (int) attributeValue, value);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

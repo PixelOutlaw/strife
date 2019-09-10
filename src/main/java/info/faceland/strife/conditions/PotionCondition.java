@@ -35,4 +35,8 @@ public class PotionCondition implements Condition {
     }
     return PlayerDataUtil.conditionCompare(comparison, appliedIntensity, intensity);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

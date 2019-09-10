@@ -25,4 +25,8 @@ public class CorruptionCondition implements Condition {
     }
     return PlayerDataUtil.conditionCompare(comparison, stacks, value);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

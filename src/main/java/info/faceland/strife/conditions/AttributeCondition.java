@@ -30,4 +30,8 @@ public class AttributeCondition implements Condition {
             : target.getChampion().getLevelMap().get(strifeAttribute);
     return PlayerDataUtil.conditionCompare(comparison, statValue, value);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

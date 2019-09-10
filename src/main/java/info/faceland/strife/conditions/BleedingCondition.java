@@ -23,4 +23,8 @@ public class BleedingCondition implements Condition {
       return BLEED_MANAGER.isBleeding(target.getEntity()) == isBleeding;
     }
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

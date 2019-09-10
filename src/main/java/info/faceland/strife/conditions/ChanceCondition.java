@@ -24,4 +24,8 @@ public class ChanceCondition implements Condition {
     return DamageUtil.rollBool(chance * bonusChance,
         attacker.getEntity().hasPotionEffect(PotionEffectType.LUCK));
   }
+
+  public CompareTarget getCompareTarget() {
+    return CompareTarget.SELF;
+  }
 }

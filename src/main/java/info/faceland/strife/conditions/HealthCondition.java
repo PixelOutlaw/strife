@@ -30,4 +30,8 @@ public class HealthCondition implements Condition {
     }
     return PlayerDataUtil.conditionCompare(comparison, healthValue, value);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

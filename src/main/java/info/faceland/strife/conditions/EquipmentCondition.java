@@ -38,4 +38,8 @@ public class EquipmentCondition implements Condition {
         : equipment.getItemInOffHand().getType();
     return validMaterials.contains(typeOne) && validMaterials.contains(typeTwo);
   }
+
+  public CompareTarget getCompareTarget() {
+    return CompareTarget.SELF;
+  }
 }

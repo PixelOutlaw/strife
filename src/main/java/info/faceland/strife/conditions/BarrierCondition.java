@@ -45,4 +45,8 @@ public class BarrierCondition implements Condition {
     }
     return PlayerDataUtil.conditionCompare(comparison, barrierValue, value);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

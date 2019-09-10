@@ -21,4 +21,8 @@ public class LevelCondition implements Condition {
     }
     return false;
   }
+
+  public CompareTarget getCompareTarget() {
+    return CompareTarget.SELF;
+  }
 }

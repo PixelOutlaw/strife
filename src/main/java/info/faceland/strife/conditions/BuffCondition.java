@@ -22,4 +22,8 @@ public class BuffCondition implements Condition {
     int buffStacks = actualTarget.getBuffStacks(buffId);
     return PlayerDataUtil.conditionCompare(comparison, buffStacks, stacks);
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

@@ -20,4 +20,8 @@ public class TimeCondition implements Condition {
       return worldTime >= minTime || worldTime <= maxTime;
     }
   }
+
+  public CompareTarget getCompareTarget() {
+    return CompareTarget.SELF;
+  }
 }

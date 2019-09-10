@@ -29,4 +29,8 @@ public class MovingCondition implements Condition {
       return MoveUtil.hasMoved((Player) target.getEntity()) == state;
     }
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

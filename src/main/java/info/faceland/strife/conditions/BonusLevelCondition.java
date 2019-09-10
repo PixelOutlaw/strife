@@ -20,4 +20,8 @@ public class BonusLevelCondition implements Condition {
     }
     return false;
   }
+
+  public CompareTarget getCompareTarget() {
+    return CompareTarget.SELF;
+  }
 }

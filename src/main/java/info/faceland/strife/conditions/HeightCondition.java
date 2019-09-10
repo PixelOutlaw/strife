@@ -17,4 +17,8 @@ public class HeightCondition implements Condition {
       return attacker.getEntity().getLocation().getY() < target.getEntity().getLocation().getY();
     }
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }

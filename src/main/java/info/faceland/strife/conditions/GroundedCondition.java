@@ -19,4 +19,8 @@ public class GroundedCondition implements Condition {
       return target.getEntity().isOnGround() == !inverted;
     }
   }
+
+  public CompareTarget getCompareTarget() {
+    return compareTarget;
+  }
 }
