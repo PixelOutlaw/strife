@@ -3,6 +3,7 @@ package info.faceland.strife.util;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.conditions.Condition;
+import info.faceland.strife.conditions.Condition.CompareTarget;
 import info.faceland.strife.conditions.Condition.Comparison;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
@@ -59,6 +60,10 @@ public class PlayerDataUtil {
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
       Set<Condition> conditions) {
     for (Condition condition : conditions) {
+      if (target == null && condition.getCompareTarget() == CompareTarget.OTHER) {
+        LogUtil.printDebug(" Skipping " + condition + " - null target, OTHER compareTarget");
+        continue;
+      }
       if (!condition.isMet(caster, target)) {
         LogUtil.printDebug(" Condition " + condition + " not met!");
         return false;
