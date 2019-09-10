@@ -171,7 +171,7 @@ public class AbilityManager {
       doOnCooldownPrompt(caster, ability);
       return false;
     }
-    if (!PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
+    if (!PlayerDataUtil.areConditionsMet(caster, null, ability.getConditions())) {
       doRequirementNotMetPrompt(caster, ability);
       return false;
     }
@@ -180,14 +180,11 @@ public class AbilityManager {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
     }
     if (ability.getTargetType() == TARGET_GROUND && targets.isEmpty()) {
+      doTargetNotFoundPrompt(caster, ability);
       return false;
     }
-    if (ability.getTargetType() == SINGLE_OTHER) {
-      TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
-      if (targets.isEmpty()) {
-        doTargetNotFoundPrompt(caster, ability);
-        return false;
-      }
+    if (shouldSingleTargetFail(ability, caster, targets)) {
+      return false;
     }
     if (ability.getCooldown() != 0) {
       coolDownAbility(caster.getEntity(), ability);
@@ -255,6 +252,24 @@ public class AbilityManager {
       coolingDownAbilities.get(livingEntity).add(container);
     }
     container.setSpentCharges(container.getSpentCharges() + 1);
+  }
+
+  private boolean shouldSingleTargetFail(Ability ability, StrifeMob caster,
+      Set<LivingEntity> targets) {
+    if (ability.getTargetType() != SINGLE_OTHER) {
+      return false;
+    }
+    TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
+    if (targets.isEmpty()) {
+      doTargetNotFoundPrompt(caster, ability);
+      return true;
+    }
+    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.iterator().next());
+    if (!PlayerDataUtil.areConditionsMet(caster, targetMob, ability.getConditions())) {
+      doRequirementNotMetPrompt(caster, ability);
+      return true;
+    }
+    return false;
   }
 
   private void checkPhaseChange(StrifeMob strifeMob) {
