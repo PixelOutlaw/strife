@@ -12,6 +12,7 @@ import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
@@ -59,17 +60,19 @@ public class UniqueEntityManager {
     return spawnUnique(uniqueEntity, location);
   }
 
-  public StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
+  StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
       LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
     }
     LogUtil.printDebug("Spawning unique entity " + uniqueEntity.getId());
 
-    Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
-        e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
+    assert uniqueEntity.getType().getEntityClass() != null;
+    Entity entity = Objects.requireNonNull(location.getWorld())
+        .spawn(location, uniqueEntity.getType().getEntityClass(),
+            e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
 
-    if (entity == null) {
+    if (!entity.isValid()) {
       LogUtil.printWarning(
           "Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
       return null;
@@ -128,6 +131,7 @@ public class UniqueEntityManager {
     plugin.getStrifeMobManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(spawnedUnique);
     strifeMob.setDespawnOnUnload(true);
+    strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());

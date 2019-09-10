@@ -33,6 +33,7 @@ import info.faceland.strife.effects.AreaEffect;
 import info.faceland.strife.effects.AreaEffect.AreaType;
 import info.faceland.strife.effects.Bleed;
 import info.faceland.strife.effects.BuffEffect;
+import info.faceland.strife.effects.Charm;
 import info.faceland.strife.effects.ConsumeBleed;
 import info.faceland.strife.effects.ConsumeCorrupt;
 import info.faceland.strife.effects.CooldownReduction;
@@ -505,6 +506,14 @@ public class EffectManager {
         ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
         ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
         break;
+      case CHARM:
+        effect = new Charm();
+        ((Charm) effect).setChance((float) cs.getDouble("success-chance", 1));
+        ((Charm) effect).setChancePerLevel((float) cs.getDouble("chance-per-level", 0));
+        ((Charm) effect)
+            .setLifespanSeconds((float) cs.getDouble("lifespan-seconds", 30));
+        ((Charm) effect).setOverrideMaster(cs.getBoolean("override", false));
+        break;
       case TARGET:
         effect = new ForceTarget();
         ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite", true));
@@ -791,6 +800,7 @@ public class EffectManager {
     MODIFY_PROJECTILE,
     POTION,
     TARGET,
-    SUMMON
+    SUMMON,
+    CHARM
   }
 }

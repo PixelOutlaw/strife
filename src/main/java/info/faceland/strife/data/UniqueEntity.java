@@ -22,6 +22,7 @@ public class UniqueEntity {
   private int size;
   private int followRange = -1;
   private boolean knockbackImmune;
+  private boolean charmImmune;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private SpawnParticle spawnParticle;
 
@@ -103,6 +104,14 @@ public class UniqueEntity {
 
   public void setKnockbackImmune(boolean knockbackImmune) {
     this.knockbackImmune = knockbackImmune;
+  }
+
+  public boolean isCharmImmune() {
+    return charmImmune;
+  }
+
+  public void setCharmImmune(boolean charmImmune) {
+    this.charmImmune = charmImmune;
   }
 
   public Map<EquipmentSlot, ItemStack> getEquipment() {

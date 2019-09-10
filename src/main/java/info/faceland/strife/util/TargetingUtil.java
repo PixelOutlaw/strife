@@ -112,7 +112,7 @@ public class TargetingUtil {
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
     for (double incRange = 0; incRange <= range; incRange += 1) {
       Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
-      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+      if (loc.getBlock().getType() != Material.AIR) {
         if (!loc.getBlock().getType().isTransparent()) {
           break;
         }
@@ -132,7 +132,7 @@ public class TargetingUtil {
     ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
     for (double incRange = 0; incRange <= range; incRange += 1) {
       Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
-      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+      if (loc.getBlock().getType() != Material.AIR) {
         if (!loc.getBlock().getType().isTransparent()) {
           break;
         }
@@ -153,7 +153,7 @@ public class TargetingUtil {
     double ex = entity.getLocation().getX();
     double ey = entity.getLocation().getY() + ((LivingEntity) entity).getEyeHeight() / 2;
     double ez = entity.getLocation().getZ();
-    return Math.abs(loc.getX() - ex) < 0.7 && Math.abs(loc.getZ() - ez) < 0.7
+    return Math.abs(loc.getX() - ex) < 0.85 && Math.abs(loc.getZ() - ez) < 0.85
         && Math.abs(loc.getY() - ey) < 3;
   }
 

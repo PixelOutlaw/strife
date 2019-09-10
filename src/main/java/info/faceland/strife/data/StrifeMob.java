@@ -27,6 +27,7 @@ public class StrifeMob {
   private EntityAbilitySet abilitySet;
 
   private boolean despawnOnUnload = false;
+  private boolean charmImmune = false;
 
   private LivingEntity master;
   private Spawner spawner;
@@ -175,6 +176,14 @@ public class StrifeMob {
 
   public void setDespawnOnUnload(boolean despawnOnUnload) {
     this.despawnOnUnload = despawnOnUnload;
+  }
+
+  public boolean isCharmImmune() {
+    return charmImmune;
+  }
+
+  public void setCharmImmune(boolean charmImmune) {
+    this.charmImmune = charmImmune;
   }
 
   public void setSpawner(Spawner spawner) {

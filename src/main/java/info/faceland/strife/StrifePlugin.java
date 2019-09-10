@@ -653,6 +653,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
       uniqueEntity.setExperience(cs.getInt("experience", 0));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
+      uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
 
