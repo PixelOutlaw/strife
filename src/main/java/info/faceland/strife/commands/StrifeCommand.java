@@ -99,8 +99,8 @@ public class StrifeCommand {
   @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
   public void resetCommand(CommandSender sender, @Arg(name = "target") Player target) {
     Champion champion = plugin.getChampionManager().getChampion(target);
-    for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
-      champion.setLevel(stat, 0);
+    for (StrifeAttribute attribute : plugin.getAttributeManager().getAttributes()) {
+      champion.setLevel(attribute, 0);
     }
     champion.setHighestReachedLevel(target.getLevel());
     champion.setUnusedStatPoints(target.getLevel());
