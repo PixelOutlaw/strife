@@ -11,6 +11,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.entity.Trident;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
@@ -116,6 +117,19 @@ public class ProjectileUtil {
     ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
     if (shooter.isSneaking()) {
       ProjectileUtil.setProjectileSneakMeta(arrow);
+    }
+  }
+
+  public static void createTrident(Player shooter, Trident trident, float attackMult,
+      double power) {
+    Vector vector = trident.getVelocity().multiply(power);
+    Trident newTrident = shooter.getWorld()
+        .spawn(trident.getLocation(), Trident.class, e -> e.setVelocity(vector));
+    newTrident.setShooter(shooter);
+    newTrident.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    ProjectileUtil.setProjctileAttackSpeedMeta(trident, attackMult);
+    if (shooter.isSneaking()) {
+      ProjectileUtil.setProjectileSneakMeta(trident);
     }
   }
 

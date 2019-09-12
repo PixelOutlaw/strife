@@ -20,29 +20,53 @@ package info.faceland.strife.listeners.combat;
 
 import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
 import static info.faceland.strife.util.ProjectileUtil.createArrow;
+import static info.faceland.strife.util.ProjectileUtil.createTrident;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.ProjectileUtil;
 import java.util.Random;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 
-public class BowListener implements Listener {
+public class ShootListener implements Listener {
 
   private final StrifePlugin plugin;
   private final Random random;
 
-  public BowListener(StrifePlugin plugin) {
+  public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
     this.random = new Random(System.currentTimeMillis());
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onEntityShootAbility(ProjectileLaunchEvent event) {
+    if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager()
+        .getStatMob((LivingEntity) event.getEntity().getShooter());
+    if (mob.getAbilitySet() == null) {
+      return;
+    }
+    if (mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) == null) {
+      return;
+    }
+    boolean triggered = plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
+    if (triggered) {
+      event.setCancelled(true);
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -80,8 +104,42 @@ public class BowListener implements Listener {
       createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles),
           randomOffset(projectiles), randomOffset(projectiles), gravity);
     }
-    double bowPitch = 0.9 + random.nextDouble() * 0.2;
-    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, (float) bowPitch);
+    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
+    plugin.getSneakManager().tempDisableSneak(player);
+  }
+
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onPlayerTridentThrow(ProjectileLaunchEvent event) {
+    if (!(event.getEntity().getShooter() instanceof Player)) {
+      return;
+    }
+    if (!(event.getEntity() instanceof Trident)) {
+      return;
+    }
+
+    event.setCancelled(true);
+
+    Player player = (Player) event.getEntity().getShooter();
+    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
+    attackMultiplier = (float) Math.pow(attackMultiplier, 1.5D);
+
+    ((Player) event.getEntity().getShooter()).setCooldown(Material.TRIDENT, 50);
+
+    if (attackMultiplier <= 0.05) {
+      event.setCancelled(true);
+      return;
+    }
+
+    plugin.getChampionManager().updateEquipmentStats(
+        plugin.getChampionManager().getChampion(player));
+
+    double speedMult = 1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+
+    createTrident((Player) event.getEntity().getShooter(), (Trident) event.getEntity(),
+        attackMultiplier, speedMult);
+
+    player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 1f, 1f);
     plugin.getSneakManager().tempDisableSneak(player);
   }
 
