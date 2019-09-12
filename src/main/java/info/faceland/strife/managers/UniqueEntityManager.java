@@ -81,10 +81,6 @@ public class UniqueEntityManager {
     LivingEntity spawnedUnique = (LivingEntity) entity;
     spawnedUnique.setRemoveWhenFarAway(false);
 
-    if (cachedDisguises.containsKey(uniqueEntity)) {
-      DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));
-    }
-
     double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.HEALTH, 5f);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
     spawnedUnique.setHealth(health);
@@ -133,8 +129,15 @@ public class UniqueEntityManager {
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
+    plugin.getAbilityManager().createCooldownContainer(spawnedUnique);
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
+    plugin.getAbilityManager().createCooldownContainer(spawnedUnique);
     ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());
+
+    if (cachedDisguises.containsKey(uniqueEntity)) {
+      DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));
+    }
+    plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
     return strifeMob;
   }
 

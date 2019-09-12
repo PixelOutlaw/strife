@@ -13,13 +13,14 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
 import info.faceland.strife.data.ability.EntityAbilitySet;
-import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityPhase;
+import info.faceland.strife.data.ability.EntityAbilitySet.Phase;
 import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
+import info.faceland.strife.timers.EntityAbilityTimer;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
@@ -31,9 +32,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -51,6 +54,9 @@ public class AbilityManager {
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
   private final Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private final Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
+  private final Set<EntityAbilityTimer> abilityTimers = new HashSet<>();
+
+  private final Random random = new Random();
 
   private static final String ON_COOLDOWN = TextUtils.color("&e&lAbility On Cooldown!");
   private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
@@ -81,6 +87,10 @@ public class AbilityManager {
       plugin.getAbilityIconManager()
           .updateIconProgress((Player) livingEntity, getAbility(abilityId));
     }
+  }
+
+  public void createCooldownContainer(LivingEntity le) {
+    coolingDownAbilities.put(le, new ConcurrentSet<>());
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
@@ -213,24 +223,58 @@ public class AbilityManager {
     return execute(ability, caster, null);
   }
 
-  public void abilityCast(StrifeMob caster, TriggerAbilityType type) {
-    EntityAbilitySet abilitySet = caster.getAbilitySet();
+  public void startAbilityTimerTask(StrifeMob mob) {
+    EntityAbilitySet abilitySet = mob.getAbilitySet();
     if (abilitySet == null) {
       return;
     }
-    checkPhaseChange(caster);
-    TriggerAbilityPhase phase = abilitySet.getPhase();
-    Map<TriggerAbilityPhase, Set<Ability>> abilitySection = abilitySet.getAbilities(type);
-    if (abilitySection == null) {
+    if (abilitySet.getAbilities(TriggerAbilityType.TIMER) == null) {
       return;
+    }
+    for (Phase phase : abilitySet.getAbilities(TriggerAbilityType.TIMER).keySet()) {
+      if (!abilitySet.getAbilities(TriggerAbilityType.TIMER).get(phase).isEmpty()) {
+        abilityTimers.add(new EntityAbilityTimer(mob));
+        return;
+      }
+    }
+  }
+
+  public void cancelTimerTimers() {
+    for (EntityAbilityTimer timer : abilityTimers) {
+      timer.cancel();
+    }
+    abilityTimers.clear();
+  }
+
+  public boolean abilityCast(StrifeMob caster, TriggerAbilityType type) {
+    EntityAbilitySet abilitySet = caster.getAbilitySet();
+    if (abilitySet == null) {
+      return false;
+    }
+    checkPhaseChange(caster);
+    Phase phase = abilitySet.getPhase();
+    Map<Phase, Set<Ability>> abilitySection = abilitySet.getAbilities(type);
+    if (abilitySection == null) {
+      return false;
     }
     Set<Ability> abilities = abilitySection.get(phase);
-    if (abilities == null) {
-      return;
+    if (abilities == null || abilities.isEmpty()) {
+      return false;
     }
-    for (Ability a : abilities) {
-      execute(a, caster);
+    if (type == TriggerAbilityType.PHASE_SHIFT) {
+      for (Ability a : abilities) {
+        execute(a, caster);
+      }
+      return true;
     }
+    List<Ability> selectorList = abilities.stream()
+        .filter(ability -> canBeCast(caster.getEntity(), ability)).collect(Collectors.toList());
+    if (selectorList.isEmpty()) {
+      LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " failed to cast " +
+          phase + " type " + type);
+      return false;
+    }
+    return execute(selectorList.get(random.nextInt(selectorList.size())), caster);
   }
 
   public void setGlobalCooldown(Player player, Ability ability) {
@@ -277,9 +321,9 @@ public class AbilityManager {
       return;
     }
     LogUtil.printDebug(" - Checking phase switch");
-    TriggerAbilityPhase currentPhase = strifeMob.getAbilitySet().getPhase();
+    Phase currentPhase = strifeMob.getAbilitySet().getPhase();
     LogUtil.printDebug(" - Current Phase: " + currentPhase);
-    TriggerAbilityPhase newPhase = EntityAbilitySet.phaseFromEntityHealth(strifeMob.getEntity());
+    Phase newPhase = EntityAbilitySet.phaseFromEntityHealth(strifeMob.getEntity());
     if (newPhase.ordinal() > currentPhase.ordinal()) {
       strifeMob.getAbilitySet().setPhase(newPhase);
       LogUtil.printDebug(" - New Phase: " + newPhase);

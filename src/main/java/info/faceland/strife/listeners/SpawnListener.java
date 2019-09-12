@@ -171,6 +171,7 @@ public class SpawnListener implements Listener {
     }
     setEntityAttributes(strifeMob, entity);
     entity.setCustomName(getPrefixColor(mods.size()) + prefix + name + suffix + levelSuffix);
+    plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
   }
 
   private ChatColor getPrefixColor(int modCount) {

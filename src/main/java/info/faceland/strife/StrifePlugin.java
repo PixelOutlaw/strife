@@ -53,11 +53,11 @@ import info.faceland.strife.listeners.SpawnListener;
 import info.faceland.strife.listeners.StatUpdateListener;
 import info.faceland.strife.listeners.TargetingListener;
 import info.faceland.strife.listeners.UniqueSplashListener;
-import info.faceland.strife.listeners.combat.BowListener;
 import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.listeners.combat.CreeperEffectListener;
 import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.combat.DogeListener;
+import info.faceland.strife.listeners.combat.ShootListener;
 import info.faceland.strife.listeners.combat.StrifeDamageListener;
 import info.faceland.strife.listeners.combat.SwingListener;
 import info.faceland.strife.managers.AbilityIconManager;
@@ -455,7 +455,7 @@ public class StrifePlugin extends FacePlugin {
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new BowListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new MoveListener(), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
@@ -508,6 +508,7 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager.removeAllBars();
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
+    abilityManager.cancelTimerTimers();
     bleedManager.endBleedTasks();
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);

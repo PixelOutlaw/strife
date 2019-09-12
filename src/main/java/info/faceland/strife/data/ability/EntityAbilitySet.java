@@ -12,10 +12,10 @@ import org.bukkit.entity.LivingEntity;
 public class EntityAbilitySet {
 
   public static final TriggerAbilityType[] TYPES = TriggerAbilityType.values();
-  public static final TriggerAbilityPhase[] PHASES = TriggerAbilityPhase.values();
+  public static final Phase[] PHASES = Phase.values();
 
-  private final Map<TriggerAbilityType, Map<TriggerAbilityPhase, Set<Ability>>> abilityMegaMap;
-  private TriggerAbilityPhase phase = TriggerAbilityPhase.PHASE_ONE;
+  private final Map<TriggerAbilityType, Map<Phase, Set<Ability>>> abilityMegaMap;
+  private Phase phase = Phase.PHASE_ONE;
 
   public EntityAbilitySet(EntityAbilitySet abilitySet) {
     abilityMegaMap = abilitySet == null ? new HashMap<>() : abilitySet.abilityMegaMap;
@@ -25,15 +25,15 @@ public class EntityAbilitySet {
     abilityMegaMap = buildAbilityMap(configurationSection);
   }
 
-  public TriggerAbilityPhase getPhase() {
+  public Phase getPhase() {
     return phase;
   }
 
-  public void setPhase(TriggerAbilityPhase phase) {
+  public void setPhase(Phase phase) {
     this.phase = phase;
   }
 
-  public Map<TriggerAbilityPhase, Set<Ability>> getAbilities(TriggerAbilityType type) {
+  public Map<Phase, Set<Ability>> getAbilities(TriggerAbilityType type) {
     return abilityMegaMap.get(type);
   }
 
@@ -49,7 +49,7 @@ public class EntityAbilitySet {
         originSet.abilityMegaMap.put(type, appliedSet.abilityMegaMap.get(type));
         continue;
       }
-      for (TriggerAbilityPhase phase : appliedSet.abilityMegaMap.get(type).keySet()) {
+      for (Phase phase : appliedSet.abilityMegaMap.get(type).keySet()) {
         if (originSet.abilityMegaMap.get(type).containsKey(phase)) {
           originSet.abilityMegaMap.get(type)
               .put(phase, appliedSet.abilityMegaMap.get(type).get(phase));
@@ -61,9 +61,9 @@ public class EntityAbilitySet {
     }
   }
 
-  public static Map<TriggerAbilityType, Map<TriggerAbilityPhase, Set<Ability>>> buildAbilityMap(
+  public static Map<TriggerAbilityType, Map<Phase, Set<Ability>>> buildAbilityMap(
       ConfigurationSection cs) {
-    Map<TriggerAbilityType, Map<TriggerAbilityPhase, Set<Ability>>> abilitySet = new HashMap<>();
+    Map<TriggerAbilityType, Map<Phase, Set<Ability>>> abilitySet = new HashMap<>();
     if (cs == null) {
       return abilitySet;
     }
@@ -77,12 +77,12 @@ public class EntityAbilitySet {
     return abilitySet;
   }
 
-  private static Map<TriggerAbilityPhase, Set<Ability>> buildPhaseList(ConfigurationSection cs) {
-    Map<TriggerAbilityPhase, Set<Ability>> abilityPhaseMap = new HashMap<>();
+  private static Map<Phase, Set<Ability>> buildPhaseList(ConfigurationSection cs) {
+    Map<Phase, Set<Ability>> abilityPhaseMap = new HashMap<>();
     if (cs == null) {
       return abilityPhaseMap;
     }
-    for (TriggerAbilityPhase phase : PHASES) {
+    for (Phase phase : PHASES) {
       Set<Ability> abilities = new HashSet<>();
       List<String> abilityStrings = cs.getStringList(phase.toString());
       for (String s : abilityStrings) {
@@ -93,25 +93,26 @@ public class EntityAbilitySet {
     return abilityPhaseMap;
   }
 
-  public static TriggerAbilityPhase phaseFromEntityHealth(LivingEntity le) {
+  public static Phase phaseFromEntityHealth(LivingEntity le) {
     double percent = le.getHealth() / le.getMaxHealth();
     int index = 5 - (int) Math.floor(percent * 5);
-    for (TriggerAbilityPhase phase : PHASES) {
+    for (Phase phase : PHASES) {
       if (index == phase.ordinal()) {
         return phase;
       }
     }
-    return TriggerAbilityPhase.PHASE_FIVE;
+    return Phase.PHASE_FIVE;
   }
 
   public enum TriggerAbilityType {
     ON_HIT,
     WHEN_HIT,
     PHASE_SHIFT,
+    SHOOT,
     TIMER
   }
 
-  public enum TriggerAbilityPhase {
+  public enum Phase {
     PHASE_ONE,
     PHASE_TWO,
     PHASE_THREE,
