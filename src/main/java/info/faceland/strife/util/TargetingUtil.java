@@ -87,13 +87,13 @@ public class TargetingUtil {
     return stando;
   }
 
-  public static Set<LivingEntity> getTempStandTargetList(Location loc, boolean grounded) {
+  public static Set<LivingEntity> getTempStandTargetList(Location loc, float groundCheckRange) {
     Set<LivingEntity> targets = new HashSet<>();
-    if (!grounded) {
+    if (groundCheckRange < 1) {
       targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
       return targets;
     } else {
-      for (int i = 0; i < 24; i++) {
+      for (int i = 0; i < groundCheckRange; i++) {
         if (loc.getBlock().getType().isSolid()) {
           loc.setY(loc.getBlockY() + 1.1);
           targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));

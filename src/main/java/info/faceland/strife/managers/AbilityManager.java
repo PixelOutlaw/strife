@@ -376,13 +376,13 @@ public class AbilityManager {
         }
         return targets;
       case TARGET_AREA:
-        Location loc = TargetingUtil
-            .getTargetLocation(caster.getEntity(), target, ability.getRange(), false);
-        return TargetingUtil.getTempStandTargetList(loc, false);
+        Location loc = TargetingUtil.getTargetLocation(
+            caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
+        return TargetingUtil.getTempStandTargetList(loc, 0);
       case TARGET_GROUND:
-        Location loc2 = TargetingUtil
-            .getTargetLocation(caster.getEntity(), target, ability.getRange(), true);
-        return TargetingUtil.getTempStandTargetList(loc2, true);
+        Location loc2 = TargetingUtil.getTargetLocation(
+            caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
+        return TargetingUtil.getTempStandTargetList(loc2, ability.getRange());
     }
     return null;
   }
@@ -435,6 +435,8 @@ public class AbilityManager {
       LogUtil.printWarning("Skipping load of ability " + key + " - Invalid target type.");
       return;
     }
+    boolean raycastsHitEntities = cs
+        .getBoolean("raycasts-hit-entities", targetType == TARGET_GROUND);
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");
@@ -453,7 +455,7 @@ public class AbilityManager {
     int cooldown = cs.getInt("cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
-    int range = cs.getInt("range", 0);
+    float range = (float) cs.getDouble("range", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
     List<String> conditionStrings = cs.getStringList("conditions");
     Set<Condition> conditions = new HashSet<>();
@@ -468,7 +470,8 @@ public class AbilityManager {
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
     loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, cooldown,
-        maxCharges, globalCooldownTicks, showMessages, conditions, friendly, abilityIconData));
+        maxCharges, globalCooldownTicks, showMessages, raycastsHitEntities, conditions, friendly,
+        abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

@@ -11,7 +11,8 @@ public class Ability {
   private final String id;
   private final String name;
   private final TargetType targetType;
-  private final double range;
+  private final boolean raycastsTargetEntities;
+  private final float range;
   private final List<Effect> effects;
   private final int cooldown;
   private final int maxCharges;
@@ -21,9 +22,10 @@ public class Ability {
   private final AbilityIconData abilityIconData;
   private final boolean friendly;
 
-  public Ability(String id, String name, List<Effect> effects, TargetType targetType, double range,
+  public Ability(String id, String name, List<Effect> effects, TargetType targetType, float range,
       int cooldown, int maxCharges, int globalCooldownTicks, boolean showMsgs,
-      Set<Condition> conditions, boolean friendly, AbilityIconData abilityIconData) {
+      boolean raycastsTargetEntities, Set<Condition> conditions, boolean friendly,
+      AbilityIconData abilityIconData) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -31,6 +33,7 @@ public class Ability {
     this.globalCooldownTicks = globalCooldownTicks;
     this.effects = effects;
     this.targetType = targetType;
+    this.raycastsTargetEntities = raycastsTargetEntities;
     this.range = range;
     this.showMessages = showMsgs;
     this.conditions = conditions;
@@ -50,7 +53,7 @@ public class Ability {
     return targetType;
   }
 
-  public double getRange() {
+  public float getRange() {
     return range;
   }
 
@@ -84,6 +87,10 @@ public class Ability {
 
   public boolean isFriendly() {
     return friendly;
+  }
+
+  public boolean isRaycastsTargetEntities() {
+    return raycastsTargetEntities;
   }
 
   public enum TargetType {
