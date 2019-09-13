@@ -23,6 +23,7 @@ import static info.faceland.strife.util.DamageUtil.getResistPotionMult;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.DamageOverTimeData;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.StatUtil;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +65,12 @@ public class DOTListener implements Listener {
     switch (event.getCause()) {
       case ENTITY_ATTACK:
         return;
+      case STARVATION:
+      case SUFFOCATION:
+      case DROWNING:
+        DamageUtil.removeDamageModifiers(event);
+        event.setDamage(entity.getMaxHealth() / 10);
+        return;
       case FIRE_TICK:
         StrifeMob statEntity = plugin.getStrifeMobManager().getStatMob(entity);
         damage = 1 + entity.getHealth() * 0.04;
@@ -82,7 +89,7 @@ public class DOTListener implements Listener {
         damage *= 1 - StatUtil.getFireResist(statEntity2) / 100;
         damage = plugin.getBarrierManager().damageBarrier(statEntity2, (float) damage);
         event.setDamage(damage);
-        break;
+        return;
       case WITHER:
       case POISON:
         int dotDamage = determineEffectDamage(entity, event.getCause());
@@ -91,11 +98,8 @@ public class DOTListener implements Listener {
           dealEffectDamage(entity, dotDamage, event.getCause());
         }
         event.setCancelled(true);
-        break;
-      default:
-        return;
+        pruneInvalidMapEntries();
     }
-    pruneInvalidMapEntries();
   }
 
   private int determineEffectDamage(LivingEntity target, DamageCause cause) {
