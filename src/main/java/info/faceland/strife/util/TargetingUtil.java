@@ -158,10 +158,8 @@ public class TargetingUtil {
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
-    if (caster instanceof Mob && ((Mob) caster).getTarget() != null) {
-      return ((Mob) caster).getTarget();
-    }
-    return getFirstEntityInLine(caster, range);
+    LivingEntity mobTarget = TargetingUtil.getMobTarget(caster);
+    return mobTarget != null ? mobTarget : getFirstEntityInLine(caster, range);
   }
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
@@ -181,6 +179,20 @@ public class TargetingUtil {
       return getOriginLocation(target, originLocation);
     }
     return getLocationFromRaycast(caster, range);
+  }
+
+  public static LivingEntity getMobTarget(StrifeMob strifeMob) {
+    return getMobTarget(strifeMob.getEntity());
+  }
+
+  public static LivingEntity getMobTarget(LivingEntity livingEntity) {
+    if (!(livingEntity instanceof Mob)) {
+      return null;
+    }
+    if (((Mob) livingEntity).getTarget() == null || !((Mob) livingEntity).getTarget().isValid()) {
+      return null;
+    }
+    return ((Mob) livingEntity).getTarget();
   }
 
   private static Location getLocationFromRaycast(LivingEntity caster, double range) {

@@ -21,12 +21,11 @@ package info.faceland.strife.managers;
 import static info.faceland.strife.util.ProjectileUtil.SNEAK_ATTACK_META;
 
 import info.faceland.strife.util.StatUtil;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.util.Vector;
@@ -63,14 +62,14 @@ public class SneakManager {
     if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
       return false;
     }
-    return target instanceof Monster && ((Mob) target).getTarget() == null;
+    return TargetingUtil.getMobTarget(target) == null;
   }
 
   public boolean isSneakAttack(Projectile projectile, LivingEntity target) {
     if (!projectile.hasMetadata(SNEAK_ATTACK_META)) {
       return false;
     }
-    if (!(target instanceof Monster) || ((Mob) target).getTarget() != null) {
+    if (TargetingUtil.getMobTarget(target) != null) {
       return false;
     }
     Vector entitySightVector = target.getLocation().getDirection();

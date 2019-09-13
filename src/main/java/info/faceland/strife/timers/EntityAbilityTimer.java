@@ -5,8 +5,7 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
-import java.util.Objects;
-import org.bukkit.entity.Mob;
+import info.faceland.strife.util.TargetingUtil;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class EntityAbilityTimer extends BukkitRunnable {
@@ -27,11 +26,8 @@ public class EntityAbilityTimer extends BukkitRunnable {
       cancel();
       return;
     }
-    if (target.getEntity() instanceof Mob) {
-      if (((Mob) target.getEntity()).getTarget() == null || !Objects
-          .requireNonNull(((Mob) target.getEntity()).getTarget()).isValid()) {
-        return;
-      }
+    if (TargetingUtil.getMobTarget(target) == null) {
+      return;
     }
     LogUtil.printDebug("Timer for " + PlayerDataUtil.getName(target.getEntity()) + " running");
     plugin.getAbilityManager().abilityCast(target, TriggerAbilityType.TIMER);

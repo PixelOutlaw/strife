@@ -1,6 +1,7 @@
 package info.faceland.strife.effects;
 
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.util.TargetingUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 
@@ -20,7 +21,8 @@ public class ForceTarget extends Effect {
       ((Mob) fromTarget).setTarget(toTarget);
       return;
     }
-    if (((Mob) fromTarget).getTarget() == null || !((Mob) fromTarget).getTarget().isValid()) {
+    LivingEntity mobTarget = TargetingUtil.getMobTarget(fromTarget);
+    if (mobTarget == null) {
       ((Mob) fromTarget).setTarget(toTarget);
     }
   }
