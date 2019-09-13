@@ -57,7 +57,7 @@ public class CreeperEffectListener implements Listener {
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();
-      event.getEntity().setFireTicks(Math.max(event.getEntity().getFireTicks(), ticks + 3));
+      event.getEntity().setFireTicks(Math.max(event.getEntity().getFireTicks(), ticks + 40));
     }
   }
 }

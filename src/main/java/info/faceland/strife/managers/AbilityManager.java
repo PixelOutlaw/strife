@@ -388,7 +388,7 @@ public class AbilityManager {
       case TARGET_GROUND:
         Location loc2 = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        return TargetingUtil.getTempStandTargetList(loc2, ability.getRange());
+        return TargetingUtil.getTempStandTargetList(loc2, ability.getRange() + 3);
     }
     return null;
   }
