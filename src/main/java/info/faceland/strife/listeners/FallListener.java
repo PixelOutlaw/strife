@@ -38,6 +38,6 @@ public class FallListener implements Listener {
       damage *= 1 - (0.1 * (level+1));
     }
 
-    event.setDamage(damage);
+    event.setDamage(Math.max(damage, 0));
   }
 }

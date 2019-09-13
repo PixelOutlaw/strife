@@ -30,25 +30,6 @@ public class WSEManager {
     this.worldSpaceEffects = new HashSet<>();
   }
 
-  public void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
-    LogUtil.printDebug(" - Added worldspace entity to effect manager");
-    worldSpaceEffects.add(worldSpaceEffectEntity);
-  }
-
-  public void tickAllWorldSpaceEffects() {
-    List<WorldSpaceEffectEntity> expiredEffects = new ArrayList<>();
-    for (WorldSpaceEffectEntity effect : worldSpaceEffects) {
-      boolean isAlive = tick(effect);
-      if (!isAlive) {
-        expiredEffects.add(effect);
-      }
-    }
-    for (WorldSpaceEffectEntity effect : expiredEffects) {
-      LogUtil.printDebug(" - Remove expired worldspace entity from effect manager");
-      worldSpaceEffects.remove(effect);
-    }
-  }
-
   public void createAtTarget(StrifeMob caster, Location location, int lifespan, int maxTicks,
       double speed, Map<Integer, List<Effect>> effects, boolean lockedToEntity,
       boolean strictDuration) {
@@ -68,7 +49,26 @@ public class WSEManager {
     addWorldSpaceEffectEntity(entity);
   }
 
-  public boolean tick(WorldSpaceEffectEntity wse) {
+  public void tickAllWorldSpaceEffects() {
+    List<WorldSpaceEffectEntity> expiredEffects = new ArrayList<>();
+    for (WorldSpaceEffectEntity effect : worldSpaceEffects) {
+      boolean isAlive = tick(effect);
+      if (!isAlive) {
+        expiredEffects.add(effect);
+      }
+    }
+    for (WorldSpaceEffectEntity effect : expiredEffects) {
+      LogUtil.printDebug(" - Remove expired worldspace entity from effect manager");
+      worldSpaceEffects.remove(effect);
+    }
+  }
+
+  private void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
+    LogUtil.printDebug(" - Added worldspace entity to effect manager");
+    worldSpaceEffects.add(worldSpaceEffectEntity);
+  }
+
+  private boolean tick(WorldSpaceEffectEntity wse) {
     Location location = wse.getLocation();
     StrifeMob caster = wse.getCaster();
     if (wse.isCasterLock()) {
@@ -77,7 +77,7 @@ public class WSEManager {
       location.add(wse.getVelocity());
     }
     Block block = location.getBlock();
-    if (!(block == null || block.getType().isTransparent())) {
+    if (block.getType().isTransparent()) {
       return false;
     }
 
