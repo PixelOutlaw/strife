@@ -29,11 +29,10 @@ public class DogeListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onDogeProc(EntityDamageEvent event) {
-    if (!(event.getEntity() instanceof Player) || event.isCancelled()) {
+    if (event.isCancelled() || !(event.getEntity() instanceof Player)) {
       return;
     }
-    StrifeMob attacker = strifeMobManager
-        .getStatMob((LivingEntity) event.getEntity());
+    StrifeMob attacker = strifeMobManager.getStatMob((LivingEntity) event.getEntity());
     if (random.nextDouble() <= attacker.getStat(StrifeStat.DOGE) / 100) {
       MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
     }
