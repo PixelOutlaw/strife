@@ -2,8 +2,8 @@ package info.faceland.strife.timers;
 
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.effects.Effect;
-import info.faceland.strife.effects.EndlessEffect;
+import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.data.effects.EndlessEffect;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import org.bukkit.scheduler.BukkitRunnable;

@@ -1,6 +1,6 @@
 package info.faceland.strife.data;
 
-import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.data.effects.SpawnParticle;
 
 public class ContinuousParticle {
 

@@ -19,7 +19,7 @@
 package info.faceland.strife.tasks;
 
 import info.faceland.strife.data.ContinuousParticle;
-import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.data.effects.SpawnParticle;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;

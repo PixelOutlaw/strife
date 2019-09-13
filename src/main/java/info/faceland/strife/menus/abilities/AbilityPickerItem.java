@@ -21,7 +21,7 @@ package info.faceland.strife.menus.abilities;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AbilityIconData;
+import info.faceland.strife.data.ability.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.stats.AbilitySlot;

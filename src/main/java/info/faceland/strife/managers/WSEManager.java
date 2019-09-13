@@ -2,11 +2,11 @@ package info.faceland.strife.managers;
 
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.WorldSpaceEffectEntity;
-import info.faceland.strife.effects.AreaEffect;
-import info.faceland.strife.effects.Effect;
-import info.faceland.strife.effects.PlaySound;
-import info.faceland.strife.effects.Push;
-import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.data.effects.AreaEffect;
+import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.data.effects.PlaySound;
+import info.faceland.strife.data.effects.Push;
+import info.faceland.strife.data.effects.SpawnParticle;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;

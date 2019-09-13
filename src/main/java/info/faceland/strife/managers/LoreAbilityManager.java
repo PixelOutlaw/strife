@@ -5,7 +5,7 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.data.LoreAbility;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
-import info.faceland.strife.effects.Effect;
+import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;

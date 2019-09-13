@@ -2,9 +2,9 @@ package info.faceland.strife.util;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.conditions.Condition;
-import info.faceland.strife.conditions.Condition.CompareTarget;
-import info.faceland.strife.conditions.Condition.Comparison;
+import info.faceland.strife.data.conditions.Condition;
+import info.faceland.strife.data.conditions.Condition.CompareTarget;
+import info.faceland.strife.data.conditions.Condition.Comparison;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.LifeSkillType;

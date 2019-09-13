@@ -2,8 +2,8 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.AbilityCooldownContainer;
-import info.faceland.strife.data.AbilityIconData;
+import info.faceland.strife.data.ability.AbilityCooldownContainer;
+import info.faceland.strife.data.ability.AbilityIconData;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;

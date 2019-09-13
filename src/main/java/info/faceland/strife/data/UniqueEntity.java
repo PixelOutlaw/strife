@@ -1,7 +1,7 @@
 package info.faceland.strife.data;
 
 import info.faceland.strife.data.ability.EntityAbilitySet;
-import info.faceland.strife.effects.SpawnParticle;
+import info.faceland.strife.data.effects.SpawnParticle;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
 import java.util.Map;

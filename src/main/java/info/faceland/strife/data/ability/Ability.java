@@ -1,8 +1,7 @@
 package info.faceland.strife.data.ability;
 
-import info.faceland.strife.conditions.Condition;
-import info.faceland.strife.data.AbilityIconData;
-import info.faceland.strife.effects.Effect;
+import info.faceland.strife.data.conditions.Condition;
+import info.faceland.strife.data.effects.Effect;
 import java.util.List;
 import java.util.Set;
 
