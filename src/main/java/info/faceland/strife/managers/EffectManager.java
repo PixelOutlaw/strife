@@ -62,6 +62,7 @@ import info.faceland.strife.effects.SpawnParticle.ParticleStyle;
 import info.faceland.strife.effects.Speak;
 import info.faceland.strife.effects.StandardDamage;
 import info.faceland.strife.effects.Summon;
+import info.faceland.strife.effects.Teleport;
 import info.faceland.strife.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.stats.StrifeStat;
@@ -95,6 +96,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 public class EffectManager {
 
@@ -458,6 +460,15 @@ public class EffectManager {
         effect = new Corrupt();
         ((Corrupt) effect).setAmount((float) cs.getDouble("amount", 10));
         break;
+      case TELEPORT:
+        effect = new Teleport();
+        ((Teleport) effect).setTargeted(cs.getBoolean("targeted", true));
+        double x = cs.getDouble("x", 0);
+        double y = cs.getDouble("y", 0);
+        double z = cs.getDouble("z", 0);
+        ((Teleport) effect).setVector(new Vector(x, y, z));
+        ((Teleport) effect).setRelative(cs.getBoolean("relative", false));
+        break;
       case CONSUME_BLEED:
         effect = new ConsumeBleed();
         ((ConsumeBleed) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
@@ -787,6 +798,7 @@ public class EffectManager {
     IGNITE,
     SILENCE,
     BLEED,
+    TELEPORT,
     CORRUPT,
     CONSUME_BLEED,
     CONSUME_CORRUPT,
