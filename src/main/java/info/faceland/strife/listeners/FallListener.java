@@ -3,6 +3,7 @@ package info.faceland.strife.listeners;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 
+import info.faceland.strife.util.DamageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,6 +22,8 @@ public class FallListener implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
+
+    DamageUtil.removeDamageModifiers(event);
 
     double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
     double damage = event.getDamage(DamageModifier.BASE);
