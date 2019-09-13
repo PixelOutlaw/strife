@@ -125,6 +125,8 @@ public class DamageUtil {
     switch (damageScale) {
       case FLAT:
         return amount;
+      case CASTER_LEVEL:
+        return amount * StatUtil.getMobLevel(caster.getEntity());
       case CASTER_DAMAGE:
         return amount * DamageUtil.getRawDamage(caster, damageType);
       case TARGET_CURRENT_HEALTH:
@@ -690,6 +692,7 @@ public class DamageUtil {
 
   public enum DamageScale {
     FLAT,
+    CASTER_LEVEL,
     CASTER_DAMAGE,
     TARGET_CURRENT_HEALTH,
     CASTER_CURRENT_HEALTH,
