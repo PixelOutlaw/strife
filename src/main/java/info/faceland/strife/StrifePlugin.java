@@ -35,6 +35,7 @@ import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.effects.Effect;
 import info.faceland.strife.effects.Lightning;
+import info.faceland.strife.effects.ShootBlock;
 import info.faceland.strife.effects.SpawnParticle;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
@@ -515,6 +516,7 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_C);
     }
+    ShootBlock.clearTimers();
 
     HandlerList.unregisterAll(this);
 

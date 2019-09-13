@@ -5,7 +5,9 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.timers.FallingBlockTimer;
 import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.TargetingUtil;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.FallingBlock;
@@ -22,6 +24,8 @@ public class ShootBlock extends Effect {
   private double verticalBonus;
   private boolean zeroPitch;
   private List<String> hitEffects;
+
+  private final static Set<FallingBlockTimer> FALLING_BLOCKS = new HashSet<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -51,8 +55,15 @@ public class ShootBlock extends Effect {
         block.setMetadata("EFFECT_PROJECTILE",
             new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
       }
-      new FallingBlockTimer(caster, block);
+      FALLING_BLOCKS.add(new FallingBlockTimer(caster, block));
     }
+  }
+
+  public static void clearTimers() {
+    for (FallingBlockTimer timer : FALLING_BLOCKS) {
+      timer.cancel();
+    }
+    FALLING_BLOCKS.clear();
   }
 
   public void setBlockData(BlockData blockData) {
