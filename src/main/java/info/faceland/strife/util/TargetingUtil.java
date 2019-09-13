@@ -8,16 +8,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.BlockIterator;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 public class TargetingUtil {
@@ -52,11 +52,6 @@ public class TargetingUtil {
       }
     }
     return friendlyEntities;
-  }
-
-  public static Set<LivingEntity> getEntitiesAroundLocation(Location loc, double radius) {
-    ArmorStand stando = buildAndRemoveDetectionStand(loc);
-    return getEntitiesInArea(stando, radius);
   }
 
   public static Set<LivingEntity> getEntitiesInArea(LivingEntity caster, double radius) {
@@ -127,23 +122,13 @@ public class TargetingUtil {
   }
 
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
-    Location eyeLoc = caster.getEyeLocation();
-    Vector direction = caster.getEyeLocation().getDirection();
-    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    for (double incRange = 0; incRange <= range; incRange += 1) {
-      Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
-      if (loc.getBlock().getType() != Material.AIR) {
-        if (!loc.getBlock().getType().isTransparent()) {
-          break;
-        }
-      }
-      for (Entity entity : entities) {
-        if (entityWithinBounds(entity, loc)) {
-          return (LivingEntity) entity;
-        }
-      }
+    RayTraceResult result = caster.getWorld()
+        .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
+            entity -> entity instanceof LivingEntity);
+    if (result == null || result.getHitEntity() == null) {
+      return null;
     }
-    return null;
+    return (LivingEntity) result.getHitEntity();
   }
 
   private static boolean entityWithinBounds(Entity entity, Location loc) {
@@ -172,13 +157,34 @@ public class TargetingUtil {
     if (target != null) {
       return getOriginLocation(target, originLocation);
     }
+    RayTraceResult result;
     if (targetEntities) {
-      target = selectFirstEntityInSight(caster, range);
+      result = caster.getWorld()
+          .rayTrace(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
+              FluidCollisionMode.NEVER, true, 0.2,
+              entity -> entity instanceof LivingEntity && entity != caster);
+    } else {
+      result = caster.getWorld()
+          .rayTraceBlocks(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
+              FluidCollisionMode.NEVER, true);
     }
-    if (target != null) {
-      return getOriginLocation(target, originLocation);
+    if (result == null) {
+      LogUtil.printDebug(" - Using MAX RANGE location calculation");
+      return caster.getEyeLocation().add(
+          caster.getEyeLocation().getDirection().multiply(Math.max(0, range - 1)));
     }
-    return getLocationFromRaycast(caster, range);
+    if (result.getHitEntity() != null) {
+      LogUtil.printDebug(" - Using ENTITY location calculation");
+      return getOriginLocation((LivingEntity) result.getHitEntity(), originLocation);
+    }
+    if (result.getHitBlock() != null) {
+      LogUtil.printDebug(" - Using BLOCK location calculation");
+      return result.getHitBlock().getLocation().add(0.5, 0.8, 0.5)
+          .add(result.getHitBlockFace().getDirection());
+    }
+    LogUtil.printDebug(" - Using HIT RANGE location calculation");
+    return new Location(caster.getWorld(), result.getHitPosition().getX(),
+        result.getHitPosition().getBlockY(), result.getHitPosition().getZ());
   }
 
   public static LivingEntity getMobTarget(StrifeMob strifeMob) {
@@ -193,27 +199,6 @@ public class TargetingUtil {
       return null;
     }
     return ((Mob) livingEntity).getTarget();
-  }
-
-  private static Location getLocationFromRaycast(LivingEntity caster, double range) {
-    BlockIterator bi = new BlockIterator(caster.getEyeLocation(), 0, (int) range + 1);
-    Block sightBlock = null;
-    while (bi.hasNext()) {
-      Block b = bi.next();
-      if (b.getType().isSolid()) {
-        sightBlock = b;
-        break;
-      }
-    }
-    if (sightBlock == null) {
-      LogUtil.printDebug(" - Using MAX DISTANCE target location calculation");
-      return caster.getEyeLocation().clone().add(
-          caster.getEyeLocation().getDirection().multiply(range));
-    }
-    LogUtil.printDebug(" - Using TARGET BLOCK target location calculation");
-    double dist = sightBlock.getLocation().add(0.5, 0.5, 0.5).distance(caster.getEyeLocation());
-    return caster.getEyeLocation().add(
-        caster.getEyeLocation().getDirection().multiply(Math.max(0, dist - 1)));
   }
 
   public static Location getOriginLocation(LivingEntity le, OriginLocation origin) {
