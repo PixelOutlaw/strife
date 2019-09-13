@@ -81,24 +81,24 @@ public class AbilityIconManager {
     return !StringUtils.isBlank(name) && name.startsWith(ABILITY_PREFIX) && !name.contains("✫");
   }
 
-  public void triggerAbility(Player player, int slot) {
+  public void triggerAbility(Player player, int slotNumber) {
     if (player.getCooldown(Material.DIAMOND_CHESTPLATE) > 0) {
       return;
     }
-    AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
-    if (abilitySlot == AbilitySlot.INVALID) {
+    AbilitySlot slot = AbilitySlot.fromSlot(slotNumber);
+    if (slot == AbilitySlot.INVALID) {
       return;
     }
     Ability ability = plugin.getChampionManager().getChampion(player).getSaveData()
-        .getAbility(abilitySlot);
+        .getAbility(slot);
     if (ability == null) {
-      if (isAbilityIcon(player.getInventory().getItem(slot))) {
-        player.getInventory().setItem(slot, null);
+      if (isAbilityIcon(player.getInventory().getItem(slotNumber))) {
+        player.getInventory().setItem(slotNumber, null);
       }
       return;
     }
-    boolean abilitySucceeded = plugin.getAbilityManager().execute(
-        ability, plugin.getStrifeMobManager().getStatMob(player));
+    boolean abilitySucceeded = plugin.getAbilityManager()
+        .execute(ability, plugin.getStrifeMobManager().getStatMob(player), null);
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       plugin.getAbilityManager().setGlobalCooldown(player, 5);

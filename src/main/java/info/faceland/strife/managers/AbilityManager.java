@@ -177,11 +177,15 @@ public class AbilityManager {
   }
 
   public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
-    if (ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
+    return execute(ability, caster, target, false);
+  }
+
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target, boolean ignoreReqs) {
+    if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
       doOnCooldownPrompt(caster, ability);
       return false;
     }
-    if (!PlayerDataUtil.areConditionsMet(caster, null, ability.getConditions())) {
+    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, null, ability.getConditions())) {
       doRequirementNotMetPrompt(caster, ability);
       return false;
     }
@@ -217,10 +221,6 @@ public class AbilityManager {
     }
     runEffects(caster, targets, taskEffects, waitTicks);
     return true;
-  }
-
-  public boolean execute(Ability ability, final StrifeMob caster) {
-    return execute(ability, caster, null);
   }
 
   public void startAbilityTimerTask(StrifeMob mob) {
@@ -263,18 +263,24 @@ public class AbilityManager {
     }
     if (type == TriggerAbilityType.PHASE_SHIFT) {
       for (Ability a : abilities) {
-        execute(a, caster);
+        execute(a, caster, null);
       }
       return true;
     }
+    LivingEntity target = TargetingUtil.getMobTarget(caster);
+    StrifeMob targetMob = target == null ? null : plugin.getStrifeMobManager().getStatMob(target);
+
     List<Ability> selectorList = abilities.stream()
-        .filter(ability -> canBeCast(caster.getEntity(), ability)).collect(Collectors.toList());
+        .filter(ability -> isAbilityCastReady(caster, targetMob, ability))
+        .collect(Collectors.toList());
+
     if (selectorList.isEmpty()) {
       LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " failed to cast " +
           phase + " type " + type);
       return false;
     }
-    return execute(selectorList.get(random.nextInt(selectorList.size())), caster);
+    Ability ability = selectorList.get(random.nextInt(selectorList.size()));
+    return execute(ability, caster, target, true);
   }
 
   public void setGlobalCooldown(Player player, Ability ability) {
@@ -385,6 +391,11 @@ public class AbilityManager {
         return TargetingUtil.getTempStandTargetList(loc2, ability.getRange());
     }
     return null;
+  }
+
+  private boolean isAbilityCastReady(StrifeMob caster, StrifeMob target, Ability ability) {
+    return canBeCast(caster.getEntity(), ability) && PlayerDataUtil
+        .areConditionsMet(caster, target, ability.getConditions());
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {
