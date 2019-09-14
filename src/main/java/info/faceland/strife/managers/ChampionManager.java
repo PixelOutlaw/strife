@@ -35,10 +35,12 @@ import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.LoreAbility;
+import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.data.champion.PlayerEquipmentCache;
 import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.managers.LoreAbilityManager.TriggerType;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.ItemUtil;
@@ -100,6 +102,21 @@ public class ChampionManager {
 
   public Collection<Champion> getChampions() {
     return new HashSet<>(championMap.values());
+  }
+
+  public void tickPassiveLoreAbilities() {
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      Champion champion = getChampion(p);
+      Set<LoreAbility> abilities = champion.getEquipmentCache().getCombinedAbilities().get(
+          TriggerType.TIMER);
+      if (abilities == null || abilities.isEmpty()) {
+        continue;
+      }
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
+      for (LoreAbility ability : abilities) {
+        plugin.getLoreAbilityManager().applyLoreAbility(ability, mob, null);
+      }
+    }
   }
 
   public boolean hasPendingChanges(Player player) {

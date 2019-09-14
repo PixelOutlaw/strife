@@ -6,17 +6,17 @@ import static info.faceland.strife.data.ability.Ability.TargetType.TARGET_GROUND
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.conditions.Condition;
-import info.faceland.strife.data.ability.AbilityCooldownContainer;
-import info.faceland.strife.data.ability.AbilityIconData;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.Ability.TargetType;
+import info.faceland.strife.data.ability.AbilityCooldownContainer;
+import info.faceland.strife.data.ability.AbilityIconData;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.ability.EntityAbilitySet.Phase;
 import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
+import info.faceland.strife.data.conditions.Condition;
 import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
@@ -185,7 +185,7 @@ public class AbilityManager {
       doOnCooldownPrompt(caster, ability);
       return false;
     }
-    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, null, ability.getConditions())) {
+    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
       doRequirementNotMetPrompt(caster, ability);
       return false;
     }

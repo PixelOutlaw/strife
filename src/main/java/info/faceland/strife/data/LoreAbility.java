@@ -15,8 +15,7 @@ public class LoreAbility {
   private final Ability ability;
   private final List<Effect> effects;
 
-  public LoreAbility(String id, TriggerType triggerType, String triggerText, Ability ability,
-      boolean singleTarget, List<String> description) {
+  public LoreAbility(String id, TriggerType triggerType, String triggerText, Ability ability, List<String> description) {
     this.id = id;
     this.triggerType = triggerType;
     this.triggerText = triggerText;

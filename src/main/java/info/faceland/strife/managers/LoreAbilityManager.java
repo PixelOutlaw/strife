@@ -89,9 +89,7 @@ public class LoreAbilityManager {
       return;
     }
     List<String> description = TextUtils.color(cs.getStringList("description"));
-    boolean singleTarget = cs.getBoolean("single-target", true);
-    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, singleTarget,
-        description);
+    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);
     }
@@ -125,6 +123,7 @@ public class LoreAbilityManager {
     ON_BLOCK,
     ON_EVADE,
     ON_SNEAK,
-    ON_SNEAK_ATTACK
+    ON_SNEAK_ATTACK,
+    TIMER
   }
 }
