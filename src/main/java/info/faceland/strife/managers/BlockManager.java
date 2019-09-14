@@ -86,11 +86,17 @@ public class BlockManager {
     return blockDataMap.get(uuid).getRunes();
   }
 
-  public void setEarthRunes(UUID uuid, int runes) {
+  public void setEarthRunes(StrifeMob mob, int runes) {
+    int maxRunes = Math.round(mob.getStat(MAX_EARTH_RUNES));
+    UUID uuid = mob.getEntity().getUniqueId();
     if (!blockDataMap.containsKey(uuid)) {
-      return;
+      if (maxRunes < 1) {
+        return;
+      }
+      BlockData data = new BlockData(0, mob.getStat(BLOCK));
+      blockDataMap.put(mob.getEntity().getUniqueId(), data);
     }
-    blockDataMap.get(uuid).setRunes(runes);
+    blockDataMap.get(uuid).setRunes(Math.max(Math.min(runes, maxRunes), 0));
   }
 
   public void bumpRunes(StrifeMob aEntity) {

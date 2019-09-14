@@ -40,6 +40,7 @@ public interface Condition {
     GROUNDED,
     BLEEDING,
     DARKNESS,
-    BURNING
+    BURNING,
+    EARTH_RUNES
   }
 }

@@ -358,7 +358,7 @@ public class DamageUtil {
 
   public static float consumeEarthRunes(float damage, StrifeMob attacker, LivingEntity defender) {
     int runes = getBlockManager().getEarthRunes(attacker.getEntity().getUniqueId());
-    getBlockManager().setEarthRunes(attacker.getEntity().getUniqueId(), 0);
+    getBlockManager().setEarthRunes(attacker, 0);
     if (runes == 0) {
       return 0;
     }

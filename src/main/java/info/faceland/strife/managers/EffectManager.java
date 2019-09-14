@@ -19,6 +19,7 @@ import info.faceland.strife.data.conditions.Condition.CompareTarget;
 import info.faceland.strife.data.conditions.Condition.Comparison;
 import info.faceland.strife.data.conditions.Condition.ConditionType;
 import info.faceland.strife.data.conditions.CorruptionCondition;
+import info.faceland.strife.data.conditions.EarthRunesCondition;
 import info.faceland.strife.data.conditions.EntityTypeCondition;
 import info.faceland.strife.data.conditions.EquipmentCondition;
 import info.faceland.strife.data.conditions.GroundedCondition;
@@ -30,6 +31,7 @@ import info.faceland.strife.data.conditions.MovingCondition;
 import info.faceland.strife.data.conditions.PotionCondition;
 import info.faceland.strife.data.conditions.StatCondition;
 import info.faceland.strife.data.conditions.TimeCondition;
+import info.faceland.strife.data.effects.AddEarthRunes;
 import info.faceland.strife.data.effects.AreaEffect;
 import info.faceland.strife.data.effects.AreaEffect.AreaType;
 import info.faceland.strife.data.effects.Bleed;
@@ -139,7 +141,7 @@ public class EffectManager {
         if (runPlayAtLocationEffects(caster, effect, le)) {
           continue;
         } else if (effect.isForceTargetCaster()) {
-          applyEffectIfConditionsMet(effect, caster);
+          applyEffectIfConditionsMet(effect, caster, null);
           continue;
         }
       }
@@ -148,19 +150,14 @@ public class EffectManager {
   }
 
   private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {
-    LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
+    if (targetMob == null) {
+      targetMob = caster;
+    }
     if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
       return;
     }
+    LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
     effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
-  }
-
-  private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster) {
-    LogUtil.printDebug(" - Applying '" + effect.getId() + "' to caster");
-    if (!PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-      return;
-    }
-    effect.apply(caster, caster);
   }
 
   private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
@@ -473,6 +470,10 @@ public class EffectManager {
         effect = new Corrupt();
         ((Corrupt) effect).setAmount((float) cs.getDouble("amount", 10));
         break;
+      case ADD_EARTH_RUNES:
+        effect = new AddEarthRunes();
+        ((AddEarthRunes) effect).setAmount(cs.getInt("amount", 1));
+        break;
       case TELEPORT:
         effect = new Teleport();
         ((Teleport) effect).setTargeted(cs.getBoolean("targeted", true));
@@ -755,6 +756,9 @@ public class EffectManager {
       case BURNING:
         condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
         break;
+      case EARTH_RUNES:
+        condition = new EarthRunesCondition(compareTarget, comparison, (int) value);
+        break;
       case BLOCKING:
         condition = new BlockingCondition(compareTarget, cs.getBoolean("state", true));
         break;
@@ -817,6 +821,7 @@ public class EffectManager {
     BLEED,
     TELEPORT,
     CORRUPT,
+    ADD_EARTH_RUNES,
     CONSUME_BLEED,
     CONSUME_CORRUPT,
     BUFF_EFFECT,
