@@ -40,6 +40,7 @@ import info.faceland.strife.data.effects.SpawnParticle;
 import info.faceland.strife.listeners.BullionListener;
 import info.faceland.strife.listeners.DataListener;
 import info.faceland.strife.listeners.EntityMagicListener;
+import info.faceland.strife.listeners.EvokerFangEffectListener;
 import info.faceland.strife.listeners.ExperienceListener;
 import info.faceland.strife.listeners.FallListener;
 import info.faceland.strife.listeners.HeadDropListener;
@@ -379,8 +380,13 @@ public class StrifePlugin extends FacePlugin {
       combatSkillRate.put(i, i, (int) Math.round(combatExpr.setVariable("LEVEL", i).evaluate()));
     }
 
+    taskList.add(Bukkit.getScheduler().runTaskTimer(this,
+        () -> championManager.tickPassiveLoreAbilities(),
+        20L * 5, // Start save after 5s
+        9L // Run slightly more often than every 0.5s to catch odd rounding
+    ));
     taskList.add(trackedPruneTask.runTaskTimer(this,
-        20L * 61, // Start save after 1 minute, 1 second cuz yolo
+        20L * 61, // Start save after 1 minute
         20L * 60 // Run every 1 minute after that
     ));
     taskList.add(saveTask.runTaskTimer(this,
@@ -454,6 +460,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
+    Bukkit.getPluginManager().registerEvents(
+        new EvokerFangEffectListener(strifeMobManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);

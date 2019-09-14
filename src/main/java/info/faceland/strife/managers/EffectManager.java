@@ -4,6 +4,8 @@ import static info.faceland.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.data.conditions.AttributeCondition;
 import info.faceland.strife.data.conditions.BarrierCondition;
 import info.faceland.strife.data.conditions.BleedingCondition;
@@ -22,13 +24,12 @@ import info.faceland.strife.data.conditions.EquipmentCondition;
 import info.faceland.strife.data.conditions.GroundedCondition;
 import info.faceland.strife.data.conditions.HealthCondition;
 import info.faceland.strife.data.conditions.HeightCondition;
+import info.faceland.strife.data.conditions.InCombatCondition;
 import info.faceland.strife.data.conditions.LevelCondition;
 import info.faceland.strife.data.conditions.MovingCondition;
 import info.faceland.strife.data.conditions.PotionCondition;
 import info.faceland.strife.data.conditions.StatCondition;
 import info.faceland.strife.data.conditions.TimeCondition;
-import info.faceland.strife.data.StrifeMob;
-import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.data.effects.AreaEffect;
 import info.faceland.strife.data.effects.AreaEffect.AreaType;
 import info.faceland.strife.data.effects.Bleed;
@@ -42,6 +43,7 @@ import info.faceland.strife.data.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.data.effects.DealDamage;
 import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.EndlessEffect;
+import info.faceland.strife.data.effects.EvokerFangEffect;
 import info.faceland.strife.data.effects.Food;
 import info.faceland.strife.data.effects.ForceTarget;
 import info.faceland.strife.data.effects.Heal;
@@ -155,7 +157,7 @@ public class EffectManager {
 
   private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster) {
     LogUtil.printDebug(" - Applying '" + effect.getId() + "' to caster");
-    if (!PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+    if (!PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
       return;
     }
     effect.apply(caster, caster);
@@ -217,23 +219,28 @@ public class EffectManager {
       le = caster.getEntity();
     }
     if (effect instanceof CreateWorldSpaceEntity) {
-      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
         ((CreateWorldSpaceEntity) effect).apply(caster, le);
       }
       return true;
     } else if (effect instanceof PlaySound) {
-      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
         ((PlaySound) effect).playAtLocation(le.getLocation());
       }
       return true;
     } else if (effect instanceof SpawnParticle) {
-      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
         ((SpawnParticle) effect).playAtLocation(le);
       }
       return true;
     } else if (effect instanceof Summon) {
-      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
         ((Summon) effect).summonAtLocation(caster, le.getLocation());
+      }
+      return true;
+    } else if (effect instanceof EvokerFangEffect) {
+      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
+        ((EvokerFangEffect) effect).spawnAtLocation(caster, le.getLocation());
       }
       return true;
     }
@@ -422,6 +429,12 @@ public class EffectManager {
         if (color != -1) {
           ((ShootProjectile) effect).setArrowColor(Color.fromRGB(color));
         }
+        break;
+      case EVOKER_FANGS:
+        effect = new EvokerFangEffect();
+        ((EvokerFangEffect) effect).setQuantity(cs.getInt("quantity", 1));
+        ((EvokerFangEffect) effect).setSpread((float) cs.getDouble("spread", 0));
+        ((EvokerFangEffect) effect).setHitEffects(String.join("~", cs.getStringList("hit-effects")));
         break;
       case FALLING_BLOCK:
         effect = new ShootBlock();
@@ -716,6 +729,9 @@ public class EffectManager {
       case MOVING:
         condition = new MovingCondition(compareTarget, cs.getBoolean("state", true));
         break;
+      case IN_COMBAT:
+        condition = new InCombatCondition(compareTarget, cs.getBoolean("state", true));
+        break;
       case TIME:
         long minTime = cs.getLong("min-time", 0);
         long maxTime = cs.getLong("max-time", 0);
@@ -794,6 +810,7 @@ public class EffectManager {
     RESTORE_BARRIER,
     INCREASE_RAGE,
     PROJECTILE,
+    EVOKER_FANGS,
     FALLING_BLOCK,
     IGNITE,
     SILENCE,

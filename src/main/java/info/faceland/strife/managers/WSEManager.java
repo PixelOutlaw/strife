@@ -4,6 +4,7 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.WorldSpaceEffectEntity;
 import info.faceland.strife.data.effects.AreaEffect;
 import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.data.effects.EvokerFangEffect;
 import info.faceland.strife.data.effects.PlaySound;
 import info.faceland.strife.data.effects.Push;
 import info.faceland.strife.data.effects.SpawnParticle;
@@ -77,7 +78,8 @@ public class WSEManager {
       location.add(wse.getVelocity());
     }
     Block block = location.getBlock();
-    if (block.getType().isTransparent()) {
+    if (!block.getType().isTransparent()) {
+      LogUtil.printDebug(" - WSE at solid block... removing");
       return false;
     }
 
@@ -96,12 +98,17 @@ public class WSEManager {
           ((PlaySound) effect).playAtLocation(location);
           continue;
         }
+        if (effect instanceof EvokerFangEffect) {
+          ((EvokerFangEffect) effect).spawnAtLocation(wse.getCaster(), location);
+          continue;
+        }
         applyDirectionToPushEffects(wse, effect);
         effectManager.executeEffectAtLocation(effect, caster, location);
       }
     }
     wse.setLifespan(wse.getLifespan() - 1);
     if (wse.getLifespan() < 0) {
+      LogUtil.printDebug(" - WSE ran out of time! Removing...");
       return false;
     }
     wse.setCurrentTick(wse.getCurrentTick() + 1);
