@@ -26,6 +26,7 @@ public interface Condition {
     BUFF,
     BLOCKING,
     MOVING,
+    IN_COMBAT,
     CHANCE,
     STAT,
     HEALTH,
