@@ -32,12 +32,11 @@ public class ShootProjectile extends Effect {
   private boolean targeted;
   private boolean seeking;
   private int quantity;
-  private double speed;
+  private float speed;
   private double spread;
   private double radialAngle;
   private double verticalBonus;
   private boolean ignoreMultishot;
-  private boolean gravity;
   private boolean bounce;
   private boolean ignite;
   private boolean zeroPitch;
@@ -47,8 +46,7 @@ public class ShootProjectile extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     int projectiles = getProjectileCount(caster);
-    double newSpeed = speed * (1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
-    Vector castDirection = getCastDirection(caster.getEntity(), target.getEntity());
+    float newSpeed = speed * (1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     Location originLocation = TargetingUtil.getOriginLocation(caster.getEntity(), originType);
 
     double startAngle = 0;
@@ -56,16 +54,14 @@ public class ShootProjectile extends Effect {
       startAngle = -radialAngle / 2;
     }
     for (int i = 0; i < projectiles; i++) {
-      Vector direction = castDirection.clone();
+      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed, spread,
+          spread + verticalBonus, spread);
       if (radialAngle != 0) {
-        applyRadialAngles(direction, startAngle, projectiles, i);
+        applyRadialAngles(velocity, startAngle, projectiles, i);
       }
-      applySpread(direction, i);
-
-      final Vector finalDirection = direction.normalize().multiply(newSpeed);
 
       Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation,
-          projectileEntity.getEntityClass(), e -> e.setVelocity(finalDirection));
+          projectileEntity.getEntityClass(), e -> e.setVelocity(velocity));
       projectile.setShooter(caster.getEntity());
 
       if (projectileEntity == EntityType.ARROW) {
@@ -84,12 +80,11 @@ public class ShootProjectile extends Effect {
         ((WitherSkull) projectile).setYield(yield);
       } else if (projectileEntity == EntityType.SMALL_FIREBALL) {
         ((SmallFireball) projectile).setIsIncendiary(ignite);
-        ((SmallFireball) projectile).setDirection(finalDirection);
+        ((SmallFireball) projectile).setDirection(velocity);
       } else if (seeking && projectileEntity == EntityType.SHULKER_BULLET) {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
       projectile.setBounce(bounce);
-      projectile.setGravity(gravity);
       ProjectileUtil.setProjctileAttackSpeedMeta(projectile, attackMultiplier);
 
       if (!hitEffects.isEmpty()) {
@@ -111,7 +106,7 @@ public class ShootProjectile extends Effect {
     this.quantity = quantity;
   }
 
-  public void setSpeed(double speed) {
+  public void setSpeed(float speed) {
     this.speed = speed;
   }
 
@@ -129,10 +124,6 @@ public class ShootProjectile extends Effect {
 
   public void setIgnoreMultishot(boolean ignoreMultishot) {
     this.ignoreMultishot = ignoreMultishot;
-  }
-
-  public void setGravity(boolean gravity) {
-    this.gravity = gravity;
   }
 
   public void setBounce(boolean bounce) {
@@ -206,16 +197,5 @@ public class ShootProjectile extends Effect {
     double z = direction.getZ();
     direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
     direction.setX(z * Math.sin(angle) + x * Math.cos(angle));
-  }
-
-  private void applySpread(Vector direction, int count) {
-    if (count == 0) {
-      return;
-    }
-    double adjustedSpread = spread * count;
-    direction.add(new Vector(
-        adjustedSpread - 2 * adjustedSpread * Math.random(),
-        adjustedSpread - 2 * adjustedSpread * Math.random() + verticalBonus,
-        adjustedSpread - 2 * adjustedSpread * Math.random()));
   }
 }

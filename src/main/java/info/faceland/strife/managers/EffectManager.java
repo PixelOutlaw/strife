@@ -412,12 +412,11 @@ public class EffectManager {
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
-        ((ShootProjectile) effect).setSpeed(cs.getDouble("speed", 1));
+        ((ShootProjectile) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
         ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
-        ((ShootProjectile) effect).setGravity(cs.getBoolean("gravity", true));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));

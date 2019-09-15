@@ -52,14 +52,14 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
-public class SwingListener implements Listener {
+public class WandListener implements Listener {
 
   private final StrifePlugin plugin;
   private final Random random;
   private final Set<Material> ignoredMaterials;
   private final String notChargedMessage;
 
-  public SwingListener(StrifePlugin plugin) {
+  public WandListener(StrifePlugin plugin) {
     this.plugin = plugin;
     random = new Random(System.currentTimeMillis());
     ignoredMaterials = new HashSet<>();
@@ -151,7 +151,6 @@ public class SwingListener implements Listener {
 
     double projectileSpeed = 1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     double multiShot = pStats.getStat(StrifeStat.MULTISHOT) / 100;
-    boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
     event.setCancelled(true);
 
     if (pStats.hasTrait(StrifeTrait.EXPLOSIVE_PROJECTILES)) {
@@ -159,14 +158,12 @@ public class SwingListener implements Listener {
       return;
     }
 
-    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
-
+    ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed, 0, 0, 0);
     int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
 
     for (int i = projectiles - 1; i > 0; i--) {
       ProjectileUtil.createMagicMissile(player, attackMultiplier, projectileSpeed,
-          randomOffset(projectiles), randomOffset(projectiles),
-          randomOffset(projectiles), gravity);
+          randomOffset(projectiles), randomOffset(projectiles), randomOffset(projectiles));
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
     plugin.getSneakManager().tempDisableSneak(player);

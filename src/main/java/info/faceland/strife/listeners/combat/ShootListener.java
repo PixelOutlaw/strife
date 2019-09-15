@@ -26,7 +26,6 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.ProjectileUtil;
 import java.util.Random;
 import org.bukkit.Material;
@@ -93,16 +92,12 @@ public class ShootListener implements Listener {
     plugin.getChampionManager().updateEquipmentStats(
         plugin.getChampionManager().getChampion(player));
 
-    double projectileSpeed = 2.5 * (1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
-    boolean gravity = !pStats.hasTrait(StrifeTrait.NO_GRAVITY_PROJECTILES);
-
-    createArrow(player, attackMultiplier, projectileSpeed, 0, 0, 0, gravity);
-
+    float projectileSpeed = 2.5f * (1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
 
-    for (int i = projectiles - 1; i > 0; i--) {
+    for (int i = projectiles; i > 0; i--) {
       createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles),
-          randomOffset(projectiles), randomOffset(projectiles), gravity);
+          randomOffset(projectiles), randomOffset(projectiles));
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
     plugin.getSneakManager().tempDisableSneak(player);

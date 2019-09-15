@@ -89,7 +89,7 @@ public class DamageUtil {
 
   public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    forceCustomDamage(attacker.getEntity(), defender.getEntity(), Math.max(0.01, damage));
+    forceCustomDamage(attacker.getEntity(), defender.getEntity(), Math.max(1, damage));
     return damage;
   }
 
@@ -698,6 +698,7 @@ public class DamageUtil {
   }
 
   public enum OriginLocation {
+    BELOW_HEAD,
     HEAD,
     CENTER,
     GROUND

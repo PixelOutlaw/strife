@@ -61,7 +61,7 @@ import info.faceland.strife.listeners.combat.DOTListener;
 import info.faceland.strife.listeners.combat.DogeListener;
 import info.faceland.strife.listeners.combat.ShootListener;
 import info.faceland.strife.listeners.combat.StrifeDamageListener;
-import info.faceland.strife.listeners.combat.SwingListener;
+import info.faceland.strife.listeners.combat.WandListener;
 import info.faceland.strife.managers.AbilityIconManager;
 import info.faceland.strife.managers.AbilityManager;
 import info.faceland.strife.managers.AttackSpeedManager;
@@ -459,7 +459,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(
         new EvokerFangEffectListener(strifeMobManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new MoveListener(), this);

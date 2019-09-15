@@ -89,27 +89,13 @@ public class ProjectileUtil {
     setProjctileAttackSpeedMeta(skull, attackMult);
   }
 
-  public static void createArrow(Player shooter, double attackMult, double power, double xOff,
+  public static void createArrow(Player shooter, double attackMult, float power, double xOff,
       double yOff, double zOff) {
-    createArrow(shooter, attackMult, power, xOff, yOff, zOff, true);
-  }
-
-  public static void createArrow(Player shooter, double attackMult, double power,
-      double xOff, double yOff, double zOff, boolean gravity) {
-    Vector vector = shooter.getEyeLocation().getDirection();
-    xOff = vector.getX() * power + xOff;
-    yOff = vector.getY() * power + yOff;
-    zOff = vector.getZ() * power + zOff;
-    if (gravity) {
-      yOff += 0.17;
-    }
-
-    Vector finalVelocity = new Vector(xOff, yOff, zOff);
+    Vector velocity = getProjectileVelocity(shooter, power, xOff, yOff, zOff);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
-        Arrow.class, e -> e.setVelocity(finalVelocity));
+        Arrow.class, e -> e.setVelocity(velocity));
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    arrow.setGravity(gravity);
 
     if (attackMult > 0.95) {
       arrow.setCritical(true);
@@ -118,6 +104,13 @@ public class ProjectileUtil {
     if (shooter.isSneaking()) {
       ProjectileUtil.setProjectileSneakMeta(arrow);
     }
+  }
+
+  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double xOff, double yOff, double zOff) {
+    Vector vector = shooter.getEyeLocation().getDirection();
+    vector.multiply(speed);
+    vector.add(new Vector(xOff, 0.17 + yOff, zOff));
+    return vector;
   }
 
   public static void createTrident(Player shooter, Trident trident, float attackMult,

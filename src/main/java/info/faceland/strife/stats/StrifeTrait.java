@@ -9,7 +9,6 @@ public enum StrifeTrait {
   SNOWBALL_PROJECTILES("Projectiles Are Snowballs"),
   FIREBALL_PROJECTILES("Projectiles Are Fireballs"),
   WITHER_SKULL_PROJECTILES("Projectiles Are Wither Skulls"),
-  NO_GRAVITY_PROJECTILES("Projectiles Have No Gravity"),
   ELEMENTAL_CRITS("Elemental Damage Can Critically Strike"),
   NO_HEALTH_REGEN("Health Cannot Be Regenerated"),
   NO_BARRIER_ALLOWED("Maximum Barrier Is Always Zero"),
