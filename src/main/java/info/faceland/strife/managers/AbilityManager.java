@@ -342,14 +342,14 @@ public class AbilityManager {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       LogUtil.printDebug("Effect task started - " + effectList.toString());
       if (!caster.getEntity().isValid()) {
-        LogUtil.printDebug(" - Task cancelled, caster is dead");
+        LogUtil.printDebug("- Task cancelled, caster is dead");
         return;
       }
       for (Effect effect : effectList) {
-        LogUtil.printDebug(" - Executing effect " + effect.getId());
+        LogUtil.printDebug("- Executing effect " + effect.getId());
         plugin.getEffectManager().execute(effect, caster, targets);
       }
-      LogUtil.printDebug(" - Completed effect task.");
+      LogUtil.printDebug("- Completed effect task.");
     }, delay);
   }
 
