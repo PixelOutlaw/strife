@@ -8,6 +8,7 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.util.DamageUtil;
 import info.faceland.strife.util.DamageUtil.AbilityMod;
 import info.faceland.strife.util.DamageUtil.AttackType;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,22 +40,50 @@ public class AreaEffect extends Effect {
         return;
       }
     }
-    if (canBeEvaded) {
-      float evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, attackModifiers);
-      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        doEvasion(caster.getEntity(), target.getEntity());
-        return;
-      }
-    }
-    if (canBeBlocked) {
-      if (StrifePlugin.getInstance().getBlockManager()
-          .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false)) {
-        return;
-      }
+    if (!TargetingUtil.isFriendly(caster, target.getEntity()) && isCancelled(caster, target)) {
+      return;
     }
     for (Effect effect : effects) {
       StrifePlugin.getInstance().getEffectManager().execute(effect, caster, target.getEntity());
     }
+  }
+
+  private boolean isCancelled(StrifeMob caster, StrifeMob target) {
+    if (canBeEvaded) {
+      float evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, attackModifiers);
+      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        doEvasion(caster.getEntity(), target.getEntity());
+        return true;
+      }
+    }
+    if (canBeBlocked) {
+      return StrifePlugin.getInstance().getBlockManager()
+          .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false);
+    }
+    return false;
+  }
+
+  private boolean canTargetBeHit(UUID caster, UUID target) {
+    if (!targetDelay.containsKey(caster)) {
+      targetDelay.put(caster, new ArrayList<>());
+      targetDelay.get(caster).add(new HitData(target, targetingCooldown));
+      return true;
+    }
+    return bumpTargetData(caster, target);
+  }
+
+  private boolean bumpTargetData(UUID caster, UUID target) {
+    for (HitData data : targetDelay.get(caster)) {
+      if (data.getTarget() == target) {
+        if (data.getTimeStamp() > System.currentTimeMillis()) {
+          return false;
+        }
+        data.setTimeStamp(System.currentTimeMillis() + targetingCooldown);
+        return true;
+      }
+    }
+    targetDelay.get(caster).add(new HitData(target, targetingCooldown));
+    return true;
   }
 
   public List<Effect> getEffects() {
@@ -107,29 +136,6 @@ public class AreaEffect extends Effect {
 
   public void setTargetingCooldown(long targetingCooldown) {
     this.targetingCooldown = targetingCooldown;
-  }
-
-  private boolean canTargetBeHit(UUID caster, UUID target) {
-    if (!targetDelay.containsKey(caster)) {
-      targetDelay.put(caster, new ArrayList<>());
-      targetDelay.get(caster).add(new HitData(target, targetingCooldown));
-      return true;
-    }
-    return bumpTargetData(caster, target);
-  }
-
-  private boolean bumpTargetData(UUID caster, UUID target) {
-    for (HitData data : targetDelay.get(caster)) {
-      if (data.getTarget() == target) {
-        if (data.getTimeStamp() > System.currentTimeMillis()) {
-          return false;
-        }
-        data.setTimeStamp(System.currentTimeMillis() + targetingCooldown);
-        return true;
-      }
-    }
-    targetDelay.get(caster).add(new HitData(target, targetingCooldown));
-    return true;
   }
 
   public enum AreaType {

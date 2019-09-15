@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
@@ -26,32 +27,32 @@ public class TargetingUtil {
       boolean friendly) {
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
     if (friendly) {
-      targets.retainAll(friendlyEntities);
+      targets.clear();
+      targets.addAll(friendlyEntities);
     } else {
       targets.removeAll(friendlyEntities);
     }
   }
 
   public static Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
-    Set<LivingEntity> friendlyEntities = new HashSet<>();
-    friendlyEntities.add(caster.getEntity());
+    return targets.stream().filter(target -> isFriendly(caster, target)).collect(Collectors.toSet());
+  }
+
+  public static boolean isFriendly(StrifeMob caster, LivingEntity target) {
+    if (caster.getEntity() == target) {
+      return true;
+    }
+    if (caster.getEntity() instanceof Player && target instanceof Player) {
+      return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target);
+    }
     for (StrifeMob mob : caster.getMinions()) {
-      friendlyEntities.add(mob.getEntity());
+      if (target == mob.getEntity()) {
+        return true;
+      }
     }
     // for (StrifeMob mob : getPartyMembers {
     // }
-    for (LivingEntity target : targets) {
-      if (caster.getEntity() == target) {
-        continue;
-      }
-      if (caster.getEntity() instanceof Player && target instanceof Player) {
-        if (DamageUtil.canAttack((Player) caster.getEntity(), (Player) target)) {
-          continue;
-        }
-        friendlyEntities.add(target);
-      }
-    }
-    return friendlyEntities;
+    return false;
   }
 
   public static Set<LivingEntity> getEntitiesInArea(LivingEntity caster, double radius) {
