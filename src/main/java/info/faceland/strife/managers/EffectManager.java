@@ -44,6 +44,7 @@ import info.faceland.strife.data.effects.Corrupt;
 import info.faceland.strife.data.effects.CreateWorldSpaceEntity;
 import info.faceland.strife.data.effects.DealDamage;
 import info.faceland.strife.data.effects.Effect;
+import info.faceland.strife.data.effects.Effect.EffectType;
 import info.faceland.strife.data.effects.EndlessEffect;
 import info.faceland.strife.data.effects.EvokerFangEffect;
 import info.faceland.strife.data.effects.Food;
@@ -156,7 +157,7 @@ public class EffectManager {
     if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
       return;
     }
-    LogUtil.printDebug(" - Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
+    LogUtil.printDebug("-- Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
     effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
   }
 
@@ -248,7 +249,7 @@ public class EffectManager {
     String type = cs.getString("type", "NULL").toUpperCase();
     EffectType effectType;
     try {
-      effectType = EffectType.valueOf(type);
+      effectType = Effect.EffectType.valueOf(type);
     } catch (Exception e) {
       LogUtil.printError("Skipping effect " + key + " for invalid effect type");
       return;
@@ -619,7 +620,7 @@ public class EffectManager {
         }
         break;
     }
-    if (effectType != EffectType.WAIT) {
+    if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
       Map<StrifeStat, Float> statMults = StatUtil
@@ -802,39 +803,4 @@ public class EffectManager {
     return conditions;
   }
 
-  public enum EffectType {
-    STANDARD_DAMAGE,
-    DAMAGE,
-    WORLD_SPACE_ENTITY,
-    AREA_EFFECT,
-    ENDLESS_EFFECT,
-    HEAL,
-    FOOD,
-    COOLDOWN_REDUCTION,
-    RESTORE_BARRIER,
-    INCREASE_RAGE,
-    PROJECTILE,
-    EVOKER_FANGS,
-    FALLING_BLOCK,
-    IGNITE,
-    SILENCE,
-    BLEED,
-    TELEPORT,
-    CORRUPT,
-    ADD_EARTH_RUNES,
-    CONSUME_BLEED,
-    CONSUME_CORRUPT,
-    BUFF_EFFECT,
-    WAIT,
-    SOUND,
-    PARTICLE,
-    SPEAK,
-    PUSH,
-    LIGHTNING,
-    MODIFY_PROJECTILE,
-    POTION,
-    TARGET,
-    SUMMON,
-    CHARM
-  }
 }

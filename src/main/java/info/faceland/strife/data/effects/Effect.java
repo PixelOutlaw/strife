@@ -1,7 +1,7 @@
 package info.faceland.strife.data.effects;
 
-import info.faceland.strife.data.conditions.Condition;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.conditions.Condition;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,5 +60,41 @@ public class Effect {
 
   public Set<Condition> getConditions() {
     return conditions;
+  }
+
+  public enum EffectType {
+    STANDARD_DAMAGE,
+    DAMAGE,
+    WORLD_SPACE_ENTITY,
+    AREA_EFFECT,
+    ENDLESS_EFFECT,
+    HEAL,
+    FOOD,
+    COOLDOWN_REDUCTION,
+    RESTORE_BARRIER,
+    INCREASE_RAGE,
+    PROJECTILE,
+    EVOKER_FANGS,
+    FALLING_BLOCK,
+    IGNITE,
+    SILENCE,
+    BLEED,
+    TELEPORT,
+    CORRUPT,
+    ADD_EARTH_RUNES,
+    CONSUME_BLEED,
+    CONSUME_CORRUPT,
+    BUFF_EFFECT,
+    WAIT,
+    SOUND,
+    PARTICLE,
+    SPEAK,
+    PUSH,
+    LIGHTNING,
+    MODIFY_PROJECTILE,
+    POTION,
+    TARGET,
+    SUMMON,
+    CHARM
   }
 }
