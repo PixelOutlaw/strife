@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -71,7 +70,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
-import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -188,7 +186,7 @@ public class DamageUtil {
   }
 
   public static Set<DamageType> applyElementalEffects(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Float> damageMap) {
+      Map<DamageType, Float> damageMap, boolean consumeEarthRunes) {
     Set<DamageType> triggeredElements = new HashSet<>();
     for (DamageType type : damageMap.keySet()) {
       float bonus;
@@ -224,6 +222,9 @@ public class DamageUtil {
           }
           break;
         case EARTH:
+          if (!consumeEarthRunes) {
+            break;
+          }
           bonus = consumeEarthRunes(damageMap.get(type), attacker, defender.getEntity());
           if (bonus != 0) {
             triggeredElements.add(type);
@@ -357,19 +358,7 @@ public class DamageUtil {
   }
 
   public static float consumeEarthRunes(float damage, StrifeMob attacker, LivingEntity defender) {
-    int runes = getBlockManager().getEarthRunes(attacker.getEntity().getUniqueId());
-    getBlockManager().setEarthRunes(attacker, 0);
-    if (runes == 0) {
-      return 0;
-    }
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
-    defender.getWorld().spawnParticle(
-        Particle.BLOCK_CRACK,
-        defender.getEyeLocation().clone().add(0, -0.7, 0),
-        20,
-        0.0, 0.0, 0.0,
-        new MaterialData(Material.DIRT)
-    );
+    int runes = StrifePlugin.getInstance().getBlockManager().consumeEarthRunes(attacker, defender);
     return damage * 0.5f * runes;
   }
 

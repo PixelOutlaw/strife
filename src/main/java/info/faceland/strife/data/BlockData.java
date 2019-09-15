@@ -35,8 +35,4 @@ public class BlockData {
   public void setRunes(int runes) {
     this.runes = runes;
   }
-
-  public void addRune() {
-    runes++;
-  }
 }

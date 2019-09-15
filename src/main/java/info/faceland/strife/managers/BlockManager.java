@@ -24,6 +24,7 @@ import static info.faceland.strife.stats.StrifeStat.EARTH_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAX_EARTH_RUNES;
 import static info.faceland.strife.util.DamageUtil.doBlock;
 
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.BlockData;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
@@ -34,11 +35,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 
 public class BlockManager {
 
   private final Map<UUID, BlockData> blockDataMap = new HashMap<>();
   private final Random random = new Random();
+
+  private static final ItemStack BLOCK_DATA = new ItemStack(Material.COARSE_DIRT);
 
   private static final double FLAT_BLOCK_S = 10;
   private static final double PERCENT_BLOCK_S = 0.05;
@@ -88,6 +96,10 @@ public class BlockManager {
 
   public void setEarthRunes(StrifeMob mob, int runes) {
     int maxRunes = Math.round(mob.getStat(MAX_EARTH_RUNES));
+    if (maxRunes == 0) {
+      blockDataMap.remove(mob.getEntity().getUniqueId());
+      return;
+    }
     UUID uuid = mob.getEntity().getUniqueId();
     if (!blockDataMap.containsKey(uuid)) {
       if (maxRunes < 1) {
@@ -99,17 +111,29 @@ public class BlockManager {
     blockDataMap.get(uuid).setRunes(Math.max(Math.min(runes, maxRunes), 0));
   }
 
-  public void bumpRunes(StrifeMob aEntity) {
-    if (aEntity.getStat(EARTH_DAMAGE) < 1) {
+  public void bumpRunes(StrifeMob mob) {
+    if (mob.getStat(EARTH_DAMAGE) < 1) {
       return;
     }
-    UUID uuid = aEntity.getEntity().getUniqueId();
-    if (!blockDataMap.containsKey(uuid)) {
-      return;
+    int runes = StrifePlugin.getInstance().getBlockManager()
+        .getEarthRunes(mob.getEntity().getUniqueId());
+    StrifePlugin.getInstance().getBlockManager().setEarthRunes(mob, runes + 1);
+  }
+
+  public int consumeEarthRunes(StrifeMob attacker, LivingEntity defender) {
+    int runes = getEarthRunes(attacker.getEntity().getUniqueId());
+    setEarthRunes(attacker, 0);
+    if (runes == 0) {
+      return 0;
     }
-    if (blockDataMap.get(uuid).getRunes() < Math.round(aEntity.getStat(MAX_EARTH_RUNES))) {
-      blockDataMap.get(uuid).addRune();
-    }
+    defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
+    defender.getWorld().spawnParticle(
+        Particle.ITEM_CRACK,
+        defender.getLocation().clone().add(0, -defender.getEyeHeight() / 2, 0),
+        20,
+        BLOCK_DATA
+    );
+    return runes;
   }
 
   private void updateStoredBlock(StrifeMob strifeMob) {

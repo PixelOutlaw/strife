@@ -51,6 +51,7 @@ public class StrifeDamageEvent extends Event implements Cancellable {
   private boolean isBlocking = false;
   private boolean canBeBlocked = true;
   private boolean canBeEvaded = true;
+  private boolean consumeEarthRunes = false;
   private Projectile projectile;
   private String[] extraEffects;
   private boolean cancel;
@@ -123,6 +124,14 @@ public class StrifeDamageEvent extends Event implements Cancellable {
 
   public void setCanBeEvaded(boolean canBeEvaded) {
     this.canBeEvaded = canBeEvaded;
+  }
+
+  public boolean isConsumeEarthRunes() {
+    return consumeEarthRunes;
+  }
+
+  public void setConsumeEarthRunes(boolean consumeEarthRunes) {
+    this.consumeEarthRunes = consumeEarthRunes;
   }
 
   public Projectile getProjectile() {

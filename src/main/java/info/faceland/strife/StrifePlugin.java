@@ -212,17 +212,13 @@ public class StrifePlugin extends FacePlugin {
 
   private int maxSkillLevel;
 
-  private static void setInstance(StrifePlugin plugin) {
-    instance = plugin;
-  }
-
   public static StrifePlugin getInstance() {
     return instance;
   }
 
   @Override
   public void enable() {
-    setInstance(this);
+    instance = this;
     debugPrinter = new PluginLogger(this);
 
     List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();

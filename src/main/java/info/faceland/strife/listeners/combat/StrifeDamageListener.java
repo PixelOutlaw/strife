@@ -138,7 +138,8 @@ public class StrifeDamageListener implements Listener {
     }
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
 
-    Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap);
+    Set<DamageType> triggeredElements = applyElementalEffects(attacker, defender, damageMap,
+        event.isConsumeEarthRunes());
 
     float critMult = 0;
     double bonusOverchargeMultiplier = 0;

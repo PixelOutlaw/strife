@@ -2,12 +2,12 @@ package info.faceland.strife.util;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import info.faceland.strife.StrifePlugin;
-import info.faceland.strife.data.conditions.Condition;
-import info.faceland.strife.data.conditions.Condition.CompareTarget;
-import info.faceland.strife.data.conditions.Condition.Comparison;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.LifeSkillType;
+import info.faceland.strife.data.conditions.Condition;
+import info.faceland.strife.data.conditions.Condition.CompareTarget;
+import info.faceland.strife.data.conditions.Condition.Comparison;
 import info.faceland.strife.util.DamageUtil.DamageType;
 import java.util.Set;
 import org.bukkit.Sound;
@@ -61,11 +61,11 @@ public class PlayerDataUtil {
       Set<Condition> conditions) {
     for (Condition condition : conditions) {
       if (target == null && condition.getCompareTarget() == CompareTarget.OTHER) {
-        LogUtil.printDebug(" Skipping " + condition + " - null target, OTHER compareTarget");
+        LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
         continue;
       }
       if (!condition.isMet(caster, target)) {
-        LogUtil.printDebug(" Condition " + condition + " not met!");
+        LogUtil.printDebug("-- Skipping, condition " + condition + " not met!");
         return false;
       }
     }
