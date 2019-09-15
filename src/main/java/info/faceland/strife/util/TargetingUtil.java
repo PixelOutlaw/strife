@@ -206,9 +206,12 @@ public class TargetingUtil {
     switch (origin) {
       case HEAD:
         return le.getEyeLocation();
+      case BELOW_HEAD:
+        return le.getEyeLocation().clone().add(0, -0.35, 0);
       case CENTER:
-        return le.getEyeLocation().clone()
-            .subtract(le.getEyeLocation().clone().subtract(le.getLocation()).multiply(0.5));
+        Location location = le.getEyeLocation().clone();
+        location.setY(location.getY() - le.getEyeHeight() / 2);
+        return location;
       case GROUND:
       default:
         return le.getLocation();
