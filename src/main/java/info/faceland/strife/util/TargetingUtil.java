@@ -125,7 +125,7 @@ public class TargetingUtil {
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
     RayTraceResult result = caster.getWorld()
         .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-            entity -> entity instanceof LivingEntity);
+            entity -> entity instanceof LivingEntity && entity != caster);
     if (result == null || result.getHitEntity() == null) {
       return null;
     }
