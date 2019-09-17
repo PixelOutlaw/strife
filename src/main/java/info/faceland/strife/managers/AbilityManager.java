@@ -2,6 +2,7 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.data.ability.Ability.TargetType.SINGLE_OTHER;
 import static info.faceland.strife.data.ability.Ability.TargetType.TARGET_GROUND;
+import static info.faceland.strife.data.ability.Ability.TargetType.TOGGLE;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
@@ -119,6 +120,10 @@ public class AbilityManager {
       }
       for (AbilityCooldownContainer container : coolingDownAbilities.get(le)) {
         Ability ability = getAbility(container.getAbilityId());
+        if (container.isToggledOn()) {
+          plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
+          continue;
+        }
         if (System.currentTimeMillis() >= container.getEndTime()) {
           if (container.getSpentCharges() <= 1) {
             coolingDownAbilities.get(le).remove(container);
@@ -155,17 +160,19 @@ public class AbilityManager {
 
   public void loadPlayerCooldowns(Player player) {
     coolingDownAbilities.put(player, new ConcurrentSet<>());
-    if (savedPlayerCooldowns.containsKey(player.getUniqueId())) {
-      for (AbilityCooldownContainer container : savedPlayerCooldowns.get(player.getUniqueId())) {
-        long timeDifference = System.currentTimeMillis() - container.getLogoutTime();
-        container.setStartTime(container.getStartTime() + timeDifference);
-        container.setEndTime(container.getEndTime() + timeDifference);
-        coolingDownAbilities.get(player).add(container);
-        plugin.getAbilityIconManager()
-            .updateIconProgress(player, getAbility(container.getAbilityId()));
-      }
-      savedPlayerCooldowns.remove(player.getUniqueId());
+    if (!savedPlayerCooldowns.containsKey(player.getUniqueId())) {
+      return;
     }
+    for (AbilityCooldownContainer container : savedPlayerCooldowns.get(player.getUniqueId())) {
+      long timeDifference = System.currentTimeMillis() - container.getLogoutTime();
+      container.setStartTime(container.getStartTime() + timeDifference);
+      container.setEndTime(container.getEndTime() + timeDifference);
+      container.setToggledOn(false);
+      coolingDownAbilities.get(player).add(container);
+      plugin.getAbilityIconManager()
+          .updateIconProgress(player, getAbility(container.getAbilityId()));
+    }
+    savedPlayerCooldowns.remove(player.getUniqueId());
   }
 
   private boolean canBeCast(LivingEntity entity, Ability ability) {
@@ -180,7 +187,8 @@ public class AbilityManager {
     return execute(ability, caster, target, false);
   }
 
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target, boolean ignoreReqs) {
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
+      boolean ignoreReqs) {
     if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
       doOnCooldownPrompt(caster, ability);
       return false;
@@ -200,8 +208,15 @@ public class AbilityManager {
     if (shouldSingleTargetFail(ability, caster, targets)) {
       return false;
     }
-    if (ability.getCooldown() != 0) {
+    if (ability.getTargetType() != TOGGLE) {
       coolDownAbility(caster.getEntity(), ability);
+    } else {
+      boolean isOnAfterToggle = toggleAbility(caster.getEntity(), ability);
+      if (!isOnAfterToggle) {
+        coolDownAbility(caster.getEntity(), ability);
+        runEffects(caster, targets, ability.getToggleOffEffects(), 0);
+        return true;
+      }
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
@@ -300,8 +315,27 @@ public class AbilityManager {
       container = new AbilityCooldownContainer(ability.getId(),
           System.currentTimeMillis() + ability.getCooldown() * 1000);
       coolingDownAbilities.get(livingEntity).add(container);
+    } else  {
+      container.setStartTime(System.currentTimeMillis());
+      container.setEndTime(System.currentTimeMillis() + ability.getCooldown() * 1000);
     }
     container.setSpentCharges(container.getSpentCharges() + 1);
+    container.setToggledOn(false);
+  }
+
+  private boolean toggleAbility(LivingEntity livingEntity, Ability ability) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      coolingDownAbilities.put(livingEntity, new ConcurrentSet<>());
+    }
+    AbilityCooldownContainer container = getCooldownContainer(livingEntity, ability.getId());
+    if (container == null) {
+      container = new AbilityCooldownContainer(ability.getId(), 0);
+      container.setToggledOn(true);
+      coolingDownAbilities.get(livingEntity).add(container);
+    } else {
+      container.setToggledOn(!container.isToggledOn());
+    }
+    return container.isToggledOn();
   }
 
   private boolean shouldSingleTargetFail(Ability ability, StrifeMob caster,
@@ -357,6 +391,7 @@ public class AbilityManager {
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF:
+      case TOGGLE:
       case PARTY:
         targets.add(caster.getEntity());
         return targets;
@@ -446,23 +481,24 @@ public class AbilityManager {
       LogUtil.printWarning("Skipping load of ability " + key + " - Invalid target type.");
       return;
     }
+
     boolean raycastsHitEntities = cs
         .getBoolean("raycasts-hit-entities", targetType == TARGET_GROUND);
+
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");
       return;
     }
-    List<Effect> effects = new ArrayList<>();
-    for (String s : effectStrings) {
-      Effect effect = plugin.getEffectManager().getEffect(s);
-      if (effect == null) {
-        LogUtil.printWarning(" Failed to add unknown effect '" + s + "' to ability '" + key + "'");
-        continue;
-      }
-      effects.add(effect);
-      LogUtil.printDebug(" Added effect '" + s + "' to ability '" + key + "'");
+    List<Effect> effects = plugin.getEffectManager().getEffects(effectStrings);
+
+    List<String> toggleStrings = cs.getStringList("toggle-off-effects");
+    if (targetType == TOGGLE && toggleStrings.isEmpty()) {
+      LogUtil.printError("Skipping. Toggle abilities must have toggle-off-effects! Ability:" + key);
+      return;
     }
+    List<Effect> toggleOffEffects = plugin.getEffectManager().getEffects(toggleStrings);
+
     int cooldown = cs.getInt("cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
@@ -480,9 +516,9 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
-    loadedAbilities.put(key, new Ability(key, name, effects, targetType, range, cooldown,
-        maxCharges, globalCooldownTicks, showMessages, raycastsHitEntities, conditions, friendly,
-        abilityIconData));
+    loadedAbilities.put(key, new Ability(key, name, effects, toggleOffEffects, targetType, range,
+        cooldown, maxCharges, globalCooldownTicks, showMessages, raycastsHitEntities, conditions,
+        friendly, abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

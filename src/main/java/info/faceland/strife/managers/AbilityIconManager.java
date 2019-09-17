@@ -2,9 +2,9 @@ package info.faceland.strife.managers;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.strife.StrifePlugin;
+import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.ability.AbilityCooldownContainer;
 import info.faceland.strife.data.ability.AbilityIconData;
-import info.faceland.strife.data.ability.Ability;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
 import info.faceland.strife.stats.AbilitySlot;
@@ -126,7 +126,9 @@ public class AbilityIconManager {
         .getCooldownContainer(champion.getPlayer(), ability.getId());
     int charges = ability.getMaxCharges();
     double percent = 1D;
+    boolean toggled = false;
     if (container != null) {
+      toggled = container.isToggledOn();
       if (container.getSpentCharges() == charges) {
         charges = 1;
         percent = plugin.getAbilityManager().getCooldownPercent(container);
@@ -135,6 +137,6 @@ public class AbilityIconManager {
       }
     }
     ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), champion.getPlayer(),
-        ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent, charges);
+        ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent, charges, toggled);
   }
 }

@@ -7,12 +7,14 @@ public class AbilityCooldownContainer {
   private long endTime;
   private int spentCharges;
   private long logoutTime;
+  private boolean toggledOn;
 
   public AbilityCooldownContainer(String abilityId, long endTime) {
     this.abilityId = abilityId;
     this.endTime = endTime;
     startTime = System.currentTimeMillis();
     spentCharges = 0;
+    toggledOn = false;
   }
 
   public String getAbilityId() {
@@ -49,5 +51,13 @@ public class AbilityCooldownContainer {
 
   public void setLogoutTime(long logoutTime) {
     this.logoutTime = logoutTime;
+  }
+
+  public boolean isToggledOn() {
+    return toggledOn;
+  }
+
+  public void setToggledOn(boolean toggledOn) {
+    this.toggledOn = toggledOn;
   }
 }

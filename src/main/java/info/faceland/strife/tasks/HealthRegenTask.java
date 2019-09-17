@@ -71,8 +71,7 @@ public class HealthRegenTask extends BukkitRunnable {
       if (player.getFoodLevel() <= 6) {
         lifeAmount *= player.getFoodLevel() / 6F;
       }
-      player.setHealth(Math.min(player.getHealth() + lifeAmount,
-          player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
+      player.setHealth(Math.min(player.getHealth() + lifeAmount, playerMaxHealth));
     }
   }
 }
