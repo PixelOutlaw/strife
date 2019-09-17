@@ -275,19 +275,21 @@ public class DamageUtil {
   }
 
   public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
+    if (target == attacker) {
+      if (target.getHealth() > amount) {
+        target.setHealth(target.getHealth() - amount);
+        return;
+      }
+      target.damage(100000);
+      return;
+    }
     int noDamageTicks = target.getNoDamageTicks();
     Vector velocity = target.getVelocity();
     target.setNoDamageTicks(0);
-    if (attacker != target) {
-      CombatListener.addAttack(attacker, amount);
-      target.damage(amount, attacker);
-    } else {
-      if (amount >= target.getHealth()) {
-        target.damage(amount);
-      } else {
-        target.setHealth(target.getHealth() - amount);
-      }
-    }
+
+    CombatListener.addAttack(attacker, amount);
+    target.damage(amount, attacker);
+
     target.setNoDamageTicks(noDamageTicks);
     target.setVelocity(velocity);
   }
