@@ -15,10 +15,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -176,23 +178,27 @@ public class ItemUtil {
   }
 
   public static void sendAbilityIconPacket(ItemStack stack, Player player, int slot,
-      double percent, int charges) {
+      double percent, int charges, boolean toggled) {
     try {
-      ProtocolLibrary.getProtocolManager()
-          .sendServerPacket(player, buildPacketContainer(36 + slot, stack, percent, charges));
+      ProtocolLibrary.getProtocolManager().sendServerPacket(player,
+          buildPacketContainer(36 + slot, stack, percent, charges, toggled));
     } catch (InvocationTargetException e) {
       e.printStackTrace();
     }
   }
 
   private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent,
-      int charges) {
+      int charges, boolean toggled) {
     ItemStack sentStack = stack.clone();
     sentStack.setAmount(charges);
     ItemMeta sentStackMeta = sentStack.getItemMeta();
     if (sentStackMeta instanceof Damageable && percent < 1) {
       ((Damageable) sentStackMeta).setDamage(getPercentageDamage(sentStack, percent));
       sentStack.setItemMeta(sentStackMeta);
+    }
+    if (toggled) {
+      sentStackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+      sentStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
     }
     PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.SET_SLOT);
     packetContainer.getIntegers().write(0, 0);

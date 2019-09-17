@@ -20,6 +20,7 @@ import info.faceland.strife.data.conditions.Condition.Comparison;
 import info.faceland.strife.data.conditions.Condition.ConditionType;
 import info.faceland.strife.data.conditions.CorruptionCondition;
 import info.faceland.strife.data.conditions.EarthRunesCondition;
+import info.faceland.strife.data.conditions.EndlessEffectCondition;
 import info.faceland.strife.data.conditions.EntityTypeCondition;
 import info.faceland.strife.data.conditions.EquipmentCondition;
 import info.faceland.strife.data.conditions.GroundedCondition;
@@ -36,6 +37,7 @@ import info.faceland.strife.data.effects.AreaEffect;
 import info.faceland.strife.data.effects.AreaEffect.AreaType;
 import info.faceland.strife.data.effects.Bleed;
 import info.faceland.strife.data.effects.BuffEffect;
+import info.faceland.strife.data.effects.CancelEndlessEffect;
 import info.faceland.strife.data.effects.Charm;
 import info.faceland.strife.data.effects.ConsumeBleed;
 import info.faceland.strife.data.effects.ConsumeCorrupt;
@@ -392,6 +394,16 @@ public class EffectManager {
           }
         }, 5L);
         break;
+      case CANCEL_ENDLESS_EFFECT:
+        effect = new CancelEndlessEffect();
+        CancelEndlessEffect cancelEndlessEffect = (CancelEndlessEffect) effect;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          Effect newEffect = getEffect(cs.getString("effect-id", ""));
+          if (newEffect instanceof EndlessEffect) {
+            cancelEndlessEffect.setEndlessEffect((EndlessEffect) newEffect);
+          }
+        }, 5L);
+        break;
       case PROJECTILE:
         effect = new ShootProjectile();
         ((ShootProjectile) effect).setQuantity(cs.getInt("quantity", 1));
@@ -694,6 +706,16 @@ public class EffectManager {
         String buffId = cs.getString("buff-id", "");
         condition = new BuffCondition(compareTarget, comparison, buffId, stacks);
         break;
+      case ENDLESS_EFFECT:
+        boolean state = cs.getBoolean("state", true);
+        condition = new EndlessEffectCondition(compareTarget, state);
+        EndlessEffectCondition finalCondition = (EndlessEffectCondition) condition;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          Effect newEffect = getEffect(cs.getString("effect-id", ""));
+          if (newEffect instanceof EndlessEffect) {
+            finalCondition.setEndlessEffect((EndlessEffect) newEffect);
+          }
+        }, 5L);
       case CHANCE:
         float chance = (float) cs.getDouble("chance", 0.5);
         condition = new ChanceCondition(chance);
@@ -784,6 +806,20 @@ public class EffectManager {
         return;
     }
     conditions.put(key, condition);
+  }
+
+  public List<Effect> getEffects(List<String> effectIds) {
+    List<Effect> effects = new ArrayList<>();
+    for (String s : effectIds) {
+      Effect effect = getEffect(s);
+      if (effect == null) {
+        LogUtil.printWarning(" Failed to add unknown effect '" + s + "'");
+        continue;
+      }
+      effects.add(effect);
+      LogUtil.printDebug(" Added effect '" + s + "");
+    }
+    return effects;
   }
 
   public Effect getEffect(String key) {

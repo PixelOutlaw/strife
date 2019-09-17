@@ -129,8 +129,8 @@ public class BlockManager {
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
     defender.getWorld().spawnParticle(
         Particle.ITEM_CRACK,
-        defender.getLocation().clone().add(0, -defender.getEyeHeight() / 2, 0),
-        20,
+        defender.getLocation().clone().add(0, defender.getEyeHeight() / 2, 0),
+        20 + 20 * runes, 0, 0, 0, 0.2f,
         BLOCK_DATA
     );
     return runes;

@@ -24,6 +24,7 @@ public interface Condition {
     ATTRIBUTE,
     EQUIPMENT,
     BUFF,
+    ENDLESS_EFFECT,
     BLOCKING,
     MOVING,
     IN_COMBAT,

@@ -11,13 +11,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class EndlessEffectTimer extends BukkitRunnable {
 
   private StrifePlugin plugin = StrifePlugin.getInstance();
-  private final StrifeMob caster;
+  private final StrifeMob mob;
   private final EndlessEffect endlessEffect;
   private int ticks;
 
-  public EndlessEffectTimer(EndlessEffect effect, StrifeMob caster, int tickRate, int ticks) {
+  public EndlessEffectTimer(EndlessEffect effect, StrifeMob mob, int tickRate, int ticks) {
     this.endlessEffect = effect;
-    this.caster = caster;
+    this.mob = mob;
     this.ticks = ticks;
     runTaskTimer(StrifePlugin.getInstance(), 0L, tickRate);
     LogUtil.printDebug("Created EndlessEffect with id " + getTaskId());
@@ -25,19 +25,25 @@ public class EndlessEffectTimer extends BukkitRunnable {
 
   @Override
   public void run() {
-    if (caster == null || caster.getEntity() == null || !caster.getEntity().isValid()) {
+    if (mob == null) {
       LogUtil.printDebug("Cancelled endless effect due to null entity");
       cancel();
       return;
     }
-    if (!endlessEffect.getCancelConditions().isEmpty() && PlayerDataUtil.areConditionsMet(caster,
+    if (mob.getEntity() == null || !mob.getEntity().isValid()) {
+      LogUtil.printDebug("Cancelled endless effect due to invalid entity");
+      endlessEffect.removeEffectOnTarget(mob);
+      cancel();
+      return;
+    }
+    if (!endlessEffect.getCancelConditions().isEmpty() && PlayerDataUtil.areConditionsMet(mob,
         null, endlessEffect.getCancelConditions())) {
       doCancelEffects();
       return;
     }
     for (Effect effect : endlessEffect.getRunEffects()) {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
-      plugin.getEffectManager().execute(effect, caster, caster.getEntity());
+      plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }
     ticks--;
     if (ticks < 1) {
@@ -46,20 +52,22 @@ public class EndlessEffectTimer extends BukkitRunnable {
   }
 
   private void doCancelEffects() {
+    LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
     for (Effect effect : endlessEffect.getCancelEffects()) {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
-      plugin.getEffectManager().execute(effect, caster, caster.getEntity());
+      plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }
+    endlessEffect.removeEffectOnTarget(mob);
     cancel();
-    LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
   }
 
-  private void doExpiry() {
+  public void doExpiry() {
     LogUtil.printDebug("Cancelled endless effect due to max tick duration reached");
     for (Effect effect : endlessEffect.getExpiryEffects()) {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
-      plugin.getEffectManager().execute(effect, caster, caster.getEntity());
+      plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }
+    endlessEffect.removeEffectOnTarget(mob);
     cancel();
   }
 }

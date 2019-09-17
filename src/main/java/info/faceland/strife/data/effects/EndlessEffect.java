@@ -2,13 +2,15 @@ package info.faceland.strife.data.effects;
 
 import static info.faceland.strife.stats.StrifeStat.EFFECT_DURATION;
 
-import info.faceland.strife.data.conditions.Condition;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.conditions.Condition;
 import info.faceland.strife.timers.EndlessEffectTimer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EndlessEffect extends Effect {
 
@@ -20,6 +22,8 @@ public class EndlessEffect extends Effect {
   private int maxDuration;
   private boolean strictDuration;
 
+  private final Map<StrifeMob, EndlessEffectTimer> runningEffects = new ConcurrentHashMap<>();
+
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     float newDuration = maxDuration;
@@ -27,7 +31,21 @@ public class EndlessEffect extends Effect {
     if (!strictDuration) {
       newDuration = maxDuration * (1 + caster.getStat(EFFECT_DURATION) / 100);
     }
-    new EndlessEffectTimer(this, caster, tickRate, (int) newDuration);
+    EndlessEffectTimer timer = new EndlessEffectTimer(this, target, tickRate, (int) newDuration);
+    runningEffects.put(target, timer);
+  }
+
+  public EndlessEffectTimer getEndlessTimer(StrifeMob target) {
+    return runningEffects.getOrDefault(target, null);
+  }
+
+  public void removeEffectOnTarget(StrifeMob target) {
+    if (runningEffects.containsKey(target)) {
+      if (!runningEffects.get(target).isCancelled()) {
+        runningEffects.get(target).cancel();
+      }
+      runningEffects.remove(target);
+    }
   }
 
   public Set<Condition> getCancelConditions() {
