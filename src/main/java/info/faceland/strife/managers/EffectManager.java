@@ -261,6 +261,7 @@ public class EffectManager {
       case HEAL:
         effect = new Heal();
         ((Heal) effect).setAmount((float) cs.getDouble("amount", 1));
+        ((Heal) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case FOOD:
