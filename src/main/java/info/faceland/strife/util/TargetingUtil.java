@@ -35,7 +35,8 @@ public class TargetingUtil {
   }
 
   public static Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
-    return targets.stream().filter(target -> isFriendly(caster, target)).collect(Collectors.toSet());
+    return targets.stream().filter(target -> isFriendly(caster, target))
+        .collect(Collectors.toSet());
   }
 
   public static boolean isFriendly(StrifeMob caster, LivingEntity target) {
@@ -61,6 +62,9 @@ public class TargetingUtil {
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity e : targetList) {
       if (!e.isValid() || e instanceof ArmorStand || !(e instanceof LivingEntity)) {
+        continue;
+      }
+      if (e.hasMetadata("NPC")) {
         continue;
       }
       if (caster.hasLineOfSight(e)) {
@@ -114,6 +118,9 @@ public class TargetingUtil {
         }
       }
       for (Entity entity : entities) {
+        if (entity.hasMetadata("NPC")) {
+          continue;
+        }
         if (entityWithinBounds(entity, loc)) {
           targets.add((LivingEntity) entity);
         }
@@ -125,11 +132,15 @@ public class TargetingUtil {
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
     RayTraceResult result = caster.getWorld()
         .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-            entity -> entity instanceof LivingEntity && entity != caster);
+            entity -> isValidRaycastTarget(caster, entity));
     if (result == null || result.getHitEntity() == null) {
       return null;
     }
     return (LivingEntity) result.getHitEntity();
+  }
+
+  private static boolean isValidRaycastTarget(LivingEntity caster, Entity entity) {
+    return entity instanceof LivingEntity && entity != caster && !entity.hasMetadata("NPC");
   }
 
   private static boolean entityWithinBounds(Entity entity, Location loc) {
@@ -160,10 +171,10 @@ public class TargetingUtil {
     }
     RayTraceResult result;
     if (targetEntities) {
-      result = caster.getWorld()
-          .rayTrace(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-              FluidCollisionMode.NEVER, true, 0.2,
-              entity -> entity instanceof LivingEntity && entity != caster);
+      result = caster.getWorld().rayTrace(caster.getEyeLocation(),
+          caster.getEyeLocation().getDirection(), range,
+          FluidCollisionMode.NEVER, true, 0.2,
+          entity -> isValidRaycastTarget(caster, entity));
     } else {
       result = caster.getWorld()
           .rayTraceBlocks(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,

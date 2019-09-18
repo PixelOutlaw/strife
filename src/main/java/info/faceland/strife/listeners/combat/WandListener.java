@@ -29,7 +29,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.stats.StrifeTrait;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.ProjectileUtil;
-import java.util.ArrayList;
+import info.faceland.strife.util.TargetingUtil;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -37,8 +37,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
@@ -126,7 +124,7 @@ public class WandListener implements Listener {
     if (attackMultiplier < 0.95) {
       return;
     }
-    LivingEntity target = selectFirstEntityInSight(player, range);
+    LivingEntity target = TargetingUtil.getFirstEntityInLine(player, range);
     if (target == null) {
       return;
     }
@@ -172,29 +170,6 @@ public class WandListener implements Listener {
   private double randomOffset(double magnitude) {
     magnitude = 0.12 + magnitude * 0.005;
     return (random.nextDouble() * magnitude * 2) - magnitude;
-  }
-
-  private LivingEntity selectFirstEntityInSight(Player player, double range) {
-    ArrayList<Entity> entities = (ArrayList<Entity>) player.getNearbyEntities(range, range, range);
-    ArrayList<Block> sightBlock = (ArrayList<Block>) player
-        .getLineOfSight(ignoredMaterials, (int) range);
-    ArrayList<Location> sight = new ArrayList<>();
-    for (Block b : sightBlock) {
-      sight.add(b.getLocation());
-    }
-    for (Location loc : sight) {
-      for (Entity entity : entities) {
-        if (!(entity instanceof LivingEntity)) {
-          continue;
-        }
-        if (Math.abs(entity.getLocation().getX() - loc.getX()) < 1 &&
-            Math.abs(entity.getLocation().getY() - loc.getY()) < 1 &&
-            Math.abs(entity.getLocation().getZ() - loc.getZ()) < 1) {
-          return (LivingEntity) entity;
-        }
-      }
-    }
-    return null;
   }
 
   private void spawnSparkle(LivingEntity target) {
