@@ -25,6 +25,7 @@ import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import info.faceland.strife.api.StrifeExperienceManager;
+import info.faceland.strife.commands.AbilityMacroCommand;
 import info.faceland.strife.commands.AttributesCommand;
 import info.faceland.strife.commands.LevelUpCommand;
 import info.faceland.strife.commands.SpawnerCommand;
@@ -324,6 +325,7 @@ public class StrifePlugin extends FacePlugin {
     commandHandler.registerCommands(new StrifeCommand(this));
     commandHandler.registerCommands(new UniqueEntityCommand(this));
     commandHandler.registerCommands(new SpawnerCommand(this));
+    commandHandler.registerCommands(new AbilityMacroCommand(this));
 
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);

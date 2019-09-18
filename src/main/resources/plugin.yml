@@ -6,6 +6,8 @@ depend: [Facecore, ProtocolLib]
 softdepend: [Loot, Bullion, LibsDisguises]
 
 commands:
+  cast:
+    aliases: [ability-macro]
   stats:
     aliases: [st]
   inspect:
@@ -19,6 +21,8 @@ commands:
 
 permissions:
   strife.command.stats:
+    default: true
+  strife.command.cast:
     default: true
   strife.command.levelup:
     default: true
