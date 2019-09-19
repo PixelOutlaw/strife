@@ -106,6 +106,9 @@ public class ChampionManager {
 
   public void tickPassiveLoreAbilities() {
     for (Player p : Bukkit.getOnlinePlayers()) {
+      if (!p.isValid()) {
+        continue;
+      }
       Champion champion = getChampion(p);
       Set<LoreAbility> abilities = champion.getEquipmentCache().getCombinedAbilities().get(
           TriggerType.TIMER);
