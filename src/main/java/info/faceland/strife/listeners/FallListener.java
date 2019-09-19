@@ -23,10 +23,8 @@ public class FallListener implements Listener {
       return;
     }
 
-    DamageUtil.removeDamageModifiers(event);
-
-    double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
     double damage = event.getDamage(DamageModifier.BASE);
+    double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
     damage += maxHealth * (damage / 100);
 
     if (damage < 1) {
@@ -38,6 +36,7 @@ public class FallListener implements Listener {
       damage *= 1 - (0.1 * (level+1));
     }
 
+    DamageUtil.removeDamageModifiers(event);
     event.setDamage(Math.max(damage, 0));
   }
 }
