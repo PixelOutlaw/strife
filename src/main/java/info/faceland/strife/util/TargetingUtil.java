@@ -140,7 +140,8 @@ public class TargetingUtil {
   }
 
   private static boolean isValidRaycastTarget(LivingEntity caster, Entity entity) {
-    return entity instanceof LivingEntity && entity != caster && !entity.hasMetadata("NPC");
+    return entity instanceof LivingEntity && entity != caster && entity.isValid() && !entity
+        .hasMetadata("NPC");
   }
 
   private static boolean entityWithinBounds(Entity entity, Location loc) {
