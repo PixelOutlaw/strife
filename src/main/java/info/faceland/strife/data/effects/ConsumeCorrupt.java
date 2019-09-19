@@ -16,9 +16,11 @@ public class ConsumeCorrupt extends Effect {
       return;
     }
     StrifePlugin.getInstance().getDarknessManager().removeEntity(target.getEntity());
-    target.getEntity().damage(value * damageRatio, caster.getEntity());
-
-    caster.getEntity().setHealth(caster.getEntity().getHealth() + value * healRatio);
+    if (damageRatio > 0.01) {
+      target.getEntity().damage(value * damageRatio, caster.getEntity());
+    }
+    caster.getEntity().setHealth(Math.min(caster.getEntity().getHealth() + value * healRatio,
+        caster.getEntity().getMaxHealth()));
   }
 
   public double getDamageRatio() {
