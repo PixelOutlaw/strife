@@ -176,6 +176,9 @@ public class AbilityManager {
   }
 
   private boolean canBeCast(LivingEntity entity, Ability ability) {
+    if (entity == null || !entity.isValid()) {
+      return false;
+    }
     AbilityCooldownContainer container = getCooldownContainer(entity, ability.getId());
     if (container == null || container.getSpentCharges() < ability.getMaxCharges()) {
       return true;
