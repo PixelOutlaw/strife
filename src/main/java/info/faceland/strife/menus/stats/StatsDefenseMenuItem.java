@@ -43,28 +43,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
-  private final StrifePlugin plugin;
-  private Player player;
   private static final String hpPerFive = TextUtils.color("&7 (HP/5s)");
   private static final String brPerFive = TextUtils.color("&7 (BR/5s)");
 
-  StatsDefenseMenuItem(StrifePlugin plugin, Player player) {
+  StatsDefenseMenuItem() {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
-    this.plugin = plugin;
-    this.player = player;
-  }
-
-  StatsDefenseMenuItem(StrifePlugin plugin) {
-    super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
-    this.plugin = plugin;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    if (this.player != null) {
-      player = this.player;
-    }
-    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+    StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

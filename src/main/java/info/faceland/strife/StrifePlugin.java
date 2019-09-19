@@ -491,7 +491,7 @@ public class StrifePlugin extends FacePlugin {
     }
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
-    statsMenu = new StatsMenu(this);
+    statsMenu = new StatsMenu();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       getChampionManager().updateAll(championManager.getChampion(player));

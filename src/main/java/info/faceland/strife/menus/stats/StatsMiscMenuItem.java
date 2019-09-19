@@ -39,26 +39,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsMiscMenuItem extends MenuItem {
 
-  private final StrifePlugin plugin;
-  private Player player;
-
-  StatsMiscMenuItem(StrifePlugin plugin, Player player) {
+  StatsMiscMenuItem() {
     super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
-    this.player = player;
-    this.plugin = plugin;
-  }
-
-  StatsMiscMenuItem(StrifePlugin plugin) {
-    super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
-    this.plugin = plugin;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    if (this.player != null) {
-      player = this.player;
-    }
-    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+    StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());

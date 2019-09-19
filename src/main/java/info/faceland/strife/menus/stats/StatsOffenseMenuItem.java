@@ -65,27 +65,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsOffenseMenuItem extends MenuItem {
 
-  private final StrifePlugin plugin;
-  private Player player;
-
-  StatsOffenseMenuItem(StrifePlugin plugin, Player player) {
+  StatsOffenseMenuItem() {
     super(TextUtils.color("&c&lOffensive Stats"), new ItemStack(Material.IRON_SWORD));
-    this.player = player;
-    this.plugin = plugin;
-  }
-
-  StatsOffenseMenuItem(StrifePlugin plugin) {
-    super(TextUtils.color("&c&lOffensive Stats"), new ItemStack(Material.IRON_SWORD));
-    this.plugin = plugin;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    if (this.player != null) {
-      player = this.player;
-    }
-    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
-    Map<StrifeStat, Float> bases = plugin.getMonsterManager()
+    StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
+    Map<StrifeStat, Float> bases = StrifePlugin.getInstance().getMonsterManager()
         .getBaseStats(player, player.getLevel());
     // CombatStyle determines what stat type to use, as well as the icon
     // 0 = melee, 1 = ranged, 2 = magic

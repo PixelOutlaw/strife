@@ -19,76 +19,33 @@
 package info.faceland.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-
 import info.faceland.strife.StrifePlugin;
 import java.text.DecimalFormat;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 
 public class StatsMenu extends ItemMenu {
 
-  private Player target;
   static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
   static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
   static final DecimalFormat TWO_DECIMAL = new DecimalFormat("#.##");
   static final String breakLine = TextUtils.color("&7&m-----------------------");
 
-  public StatsMenu(StrifePlugin plugin) {
-    super(TextUtils.color("&0&lStats!"), Size.fit(36), plugin);
-    if (target == null) {
-      setItem(0, new StatsHelmetItem(plugin));
-      setItem(9, new StatsChestItem(plugin));
-      setItem(18, new StatsLegsItem(plugin));
-      setItem(27, new StatsBootsItem(plugin));
-      setItem(1, new StatsMainHandItem(plugin));
-      setItem(10, new StatsOffHandItem(plugin));
+  public StatsMenu() {
+    super(TextUtils.color("&0&lStats!"), Size.fit(36), StrifePlugin.getInstance());
+    setItem(0, new StatsEquipmentItem(EquipmentSlot.HEAD, "&eNo Helmet"));
+    setItem(9, new StatsEquipmentItem(EquipmentSlot.CHEST, "&eNo Chest Armor"));
+    setItem(18, new StatsEquipmentItem(EquipmentSlot.LEGS, "&eNo... pants?"));
+    setItem(27, new StatsEquipmentItem(EquipmentSlot.FEET, "&eNo Boots"));
+    setItem(1, new StatsEquipmentItem(EquipmentSlot.HAND, "&eNo Weapon"));
+    setItem(10, new StatsEquipmentItem(EquipmentSlot.OFF_HAND, "&eNo Offhand Item"));
 
-      setItem(12, new StatsOffenseMenuItem(plugin));
-      setItem(14, new StatsDefenseMenuItem(plugin));
-      setItem(16, new StatsMiscMenuItem(plugin));
-      setItem(22, new StatsBonusMenuItem(plugin));
-      setItem(24, new StatsEffectMenuItem(plugin));
-
-      setItem(35, new StatsChangeHealthDisplay(plugin, 35));
-    } else {
-      setItem(0, new StatsHelmetItem(plugin, target));
-      setItem(9, new StatsChestItem(plugin, target));
-      setItem(18, new StatsLegsItem(plugin, target));
-      setItem(27, new StatsBootsItem(plugin, target));
-      setItem(1, new StatsMainHandItem(plugin, target));
-      setItem(10, new StatsOffHandItem(plugin, target));
-
-      setItem(13, new StatsOffenseMenuItem(plugin, target));
-      setItem(15, new StatsDefenseMenuItem(plugin, target));
-      setItem(22, new StatsMiscMenuItem(plugin, target));
-      setItem(24, new StatsBonusMenuItem(plugin, target));
-
-      setItem(35, new StatsBonusMenuItem(plugin, target));
-    }
-    target = null;
+    setItem(12, new StatsOffenseMenuItem());
+    setItem(14, new StatsDefenseMenuItem());
+    setItem(16, new StatsMiscMenuItem());
+    setItem(22, new StatsBonusMenuItem());
+    setItem(24, new StatsEffectMenuItem());
   }
-
-  public StatsMenu(StrifePlugin plugin, Player player) {
-    super(TextUtils.color("&0&lStats!"), Size.fit(36), plugin);
-
-    setItem(0, new StatsHelmetItem(plugin, player));
-    setItem(9, new StatsChestItem(plugin, player));
-    setItem(18, new StatsLegsItem(plugin, player));
-    setItem(27, new StatsBootsItem(plugin, player));
-    setItem(1, new StatsMainHandItem(plugin, player));
-    setItem(10, new StatsOffHandItem(plugin, player));
-
-    setItem(13, new StatsOffenseMenuItem(plugin, player));
-    setItem(15, new StatsDefenseMenuItem(plugin, player));
-    setItem(22, new StatsMiscMenuItem(plugin, player));
-
-    setItem(24, new StatsBonusMenuItem(plugin, player));
-  }
-
-  public void setTarget(Player target) {
-    this.target = target;
-  }
-
 }
 
 /*
