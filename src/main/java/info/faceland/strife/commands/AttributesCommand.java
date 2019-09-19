@@ -47,7 +47,6 @@ public class AttributesCommand {
       MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
       return;
     }
-    plugin.getStatsMenu().setTarget(target);
     plugin.getStatsMenu().open(sender);
   }
 

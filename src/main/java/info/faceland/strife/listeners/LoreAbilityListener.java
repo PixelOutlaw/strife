@@ -16,17 +16,15 @@ import info.faceland.strife.events.BlockEvent;
 import info.faceland.strife.events.CriticalEvent;
 import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
+import info.faceland.strife.events.StrifeDamageEvent;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.LoreAbilityManager;
 import info.faceland.strife.managers.StrifeMobManager;
-import info.faceland.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
@@ -116,35 +114,27 @@ public class LoreAbilityListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
-      return;
-    }
-    if (!(event.getEntity() instanceof LivingEntity)) {
-      return;
-    }
-    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
+  public void onStrifeDamage(StrifeDamageEvent event) {
+    StrifeMob attacker = event.getAttacker();
     if (attacker == null) {
       return;
     }
-    LivingEntity defender = (LivingEntity) event.getEntity();
+    StrifeMob defender = event.getDefender();
 
-    StrifeMob attackEntity = getAttrEntity(attacker);
-    StrifeMob defendEntity = getAttrEntity(defender);
-    if (attacker instanceof Player) {
-      if (attackEntity.isMasterOf(defendEntity)) {
+    if (attacker.getEntity() instanceof Player && event.getAttackMultiplier() > Math.random()) {
+      if (attacker.isMasterOf(defender)) {
         return;
       }
-      for (LoreAbility la : attackEntity.getChampion().getLoreAbilities().get(ON_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, attackEntity, defender);
+      for (LoreAbility la : attacker.getChampion().getLoreAbilities().get(ON_HIT)) {
+        loreAbilityManager.applyLoreAbility(la, attacker, defender.getEntity());
       }
     }
-    if (defender instanceof Player) {
-      if (attackEntity.isMasterOf(defendEntity)) {
+    if (defender.getEntity() instanceof Player) {
+      if (attacker.isMasterOf(defender)) {
         return;
       }
-      for (LoreAbility la : defendEntity.getChampion().getLoreAbilities().get(WHEN_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, defendEntity, attacker);
+      for (LoreAbility la : event.getDefender().getChampion().getLoreAbilities().get(WHEN_HIT)) {
+        loreAbilityManager.applyLoreAbility(la, defender, attacker.getEntity());
       }
     }
   }
