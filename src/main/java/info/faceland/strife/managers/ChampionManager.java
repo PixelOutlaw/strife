@@ -117,7 +117,7 @@ public class ChampionManager {
       }
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
       for (LoreAbility ability : abilities) {
-        plugin.getLoreAbilityManager().applyLoreAbility(ability, mob, null);
+        plugin.getLoreAbilityManager().applyLoreAbility(ability, mob, mob.getEntity());
       }
     }
   }
