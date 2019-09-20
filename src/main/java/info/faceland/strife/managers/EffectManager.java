@@ -28,6 +28,7 @@ import info.faceland.strife.data.conditions.HealthCondition;
 import info.faceland.strife.data.conditions.HeightCondition;
 import info.faceland.strife.data.conditions.InCombatCondition;
 import info.faceland.strife.data.conditions.LevelCondition;
+import info.faceland.strife.data.conditions.LightCondition;
 import info.faceland.strife.data.conditions.MovingCondition;
 import info.faceland.strife.data.conditions.PotionCondition;
 import info.faceland.strife.data.conditions.StatCondition;
@@ -48,6 +49,7 @@ import info.faceland.strife.data.effects.DealDamage;
 import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.Effect.EffectType;
 import info.faceland.strife.data.effects.EndlessEffect;
+import info.faceland.strife.data.effects.EquipmentSwap;
 import info.faceland.strife.data.effects.EvokerFangEffect;
 import info.faceland.strife.data.effects.Food;
 import info.faceland.strife.data.effects.ForceTarget;
@@ -101,6 +103,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -440,6 +443,25 @@ public class EffectManager {
           ((ShootProjectile) effect).setArrowColor(Color.fromRGB(color));
         }
         break;
+      case EQUIPMENT_SWAP:
+        effect = new EquipmentSwap();
+        List<String> items = cs.getStringList("items");
+        for (String s : items) {
+          String[] parts = s.split(":");
+          if (parts.length != 2) {
+            LogUtil.printWarning("Skipping effect " + key + " for invalid equipment entry " + s);
+            return;
+          }
+          EquipmentSlot slot;
+          try {
+            slot = EquipmentSlot.valueOf(parts[0]);
+          } catch (Exception e) {
+            LogUtil.printWarning("Skipping effect " + key + ". Invalid equipment enum " + parts[0]);
+            return;
+          }
+          ((EquipmentSwap) effect).addItem(slot, parts[1]);
+        }
+        break;
       case EVOKER_FANGS:
         effect = new EvokerFangEffect();
         ((EvokerFangEffect) effect).setQuantity(cs.getInt("quantity", 1));
@@ -720,6 +742,9 @@ public class EffectManager {
       case CHANCE:
         float chance = (float) cs.getDouble("chance", 0.5);
         condition = new ChanceCondition(chance);
+        break;
+      case LIGHT_LEVEL:
+        condition = new LightCondition(compareTarget, comparison, (int) value);
         break;
       case HEALTH:
         boolean percent2 = cs.getBoolean("percentage", false);
