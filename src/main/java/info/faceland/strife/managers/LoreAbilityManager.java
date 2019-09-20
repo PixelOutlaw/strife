@@ -122,8 +122,8 @@ public class LoreAbilityManager {
     ON_CRIT,
     ON_BLOCK,
     ON_EVADE,
-    ON_SNEAK,
     ON_SNEAK_ATTACK,
+    ON_FALL,
     TIMER
   }
 }

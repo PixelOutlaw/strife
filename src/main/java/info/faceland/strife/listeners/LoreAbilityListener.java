@@ -3,9 +3,9 @@ package info.faceland.strife.listeners;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_BLOCK;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_CRIT;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_EVADE;
+import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_FALL;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_HIT;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_KILL;
-import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK_ATTACK;
 import static info.faceland.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
 
@@ -25,8 +25,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 public class LoreAbilityListener implements Listener {
 
@@ -51,6 +52,21 @@ public class LoreAbilityListener implements Listener {
     for (LoreAbility la : champion.getLoreAbilities().get(ON_CRIT)) {
       loreAbilityManager
           .applyLoreAbility(la, getAttrEntity(event.getAttacker()), event.getVictim());
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onFall(EntityDamageEvent event) {
+    if (event.getCause() != DamageCause.FALL || event.isCancelled()) {
+      return;
+    }
+    if (!(event.getEntity() instanceof Player)) {
+      return;
+    }
+    Champion champion = championManager.getChampion((Player) event.getEntity());
+    for (LoreAbility la : champion.getLoreAbilities().get(ON_FALL)) {
+      loreAbilityManager.applyLoreAbility(la, getAttrEntity((Player) event.getEntity()),
+          (Player) event.getEntity());
     }
   }
 
@@ -99,17 +115,6 @@ public class LoreAbilityListener implements Listener {
     }
     for (LoreAbility la : champion.getLoreAbilities().get(ON_KILL)) {
       loreAbilityManager.applyLoreAbility(la, strifeMob, event.getEntity());
-    }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerSneak(PlayerToggleSneakEvent event) {
-    if (!event.isSneaking()) {
-      return;
-    }
-    Champion champion = championManager.getChampion(event.getPlayer());
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_SNEAK)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity(event.getPlayer()), event.getPlayer());
     }
   }
 
