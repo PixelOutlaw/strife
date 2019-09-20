@@ -75,6 +75,7 @@ public class Effect {
     RESTORE_BARRIER,
     INCREASE_RAGE,
     PROJECTILE,
+    EQUIPMENT_SWAP,
     EVOKER_FANGS,
     FALLING_BLOCK,
     IGNITE,

@@ -89,7 +89,7 @@ public class DamageUtil {
 
   public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    forceCustomDamage(attacker.getEntity(), defender.getEntity(), Math.max(1, damage));
+    forceCustomDamage(attacker.getEntity(), defender.getEntity(), Math.max(damage, 0.01));
     return damage;
   }
 

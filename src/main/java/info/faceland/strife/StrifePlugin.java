@@ -788,6 +788,10 @@ public class StrifePlugin extends FacePlugin {
     return uniqueEntityManager;
   }
 
+  public EntityEquipmentManager getEquipmentManager() {
+    return equipmentManager;
+  }
+
   public BossBarManager getBossBarManager() {
     return bossBarManager;
   }
