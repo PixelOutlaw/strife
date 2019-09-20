@@ -30,6 +30,7 @@ public interface Condition {
     IN_COMBAT,
     CHANCE,
     STAT,
+    LIGHT_LEVEL,
     HEALTH,
     BARRIER,
     POTION_EFFECT,
