@@ -60,12 +60,14 @@ public class SkillExperienceManager {
     if (!exact) {
       double statsMult = champion.getCombinedCache().getOrDefault(SKILL_XP_GAIN, 0f) / 100f;
       amount *= 1 + statsMult;
-      String xp = FORMAT.format(amount * (1 + statsMult));
-      MessageUtils.sendMessage(champion.getPlayer(), XP_MSG
-          .replace("{c}", "" + type.getColor())
-          .replace("{n}", type.getName())
-          .replace("{a}", xp)
-      );
+      if (champion.getSaveData().isDisplayExp()) {
+        String xp = FORMAT.format(amount * (1 + statsMult));
+        MessageUtils.sendMessage(champion.getPlayer(), XP_MSG
+            .replace("{c}", "" + type.getColor())
+            .replace("{n}", type.getName())
+            .replace("{a}", xp)
+        );
+      }
     }
 
     SkillExpGainEvent xpEvent = new SkillExpGainEvent(champion, type, (float) amount);
