@@ -54,12 +54,14 @@ public class ShootProjectile extends Effect {
       startAngle = -radialAngle / 2;
     }
     for (int i = 0; i < projectiles; i++) {
-      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed, spread,
-          spread + verticalBonus, spread);
+      double newSpread = spread * projectiles;
+      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed,
+          newSpread, newSpread + verticalBonus, newSpread);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
       }
 
+      assert projectileEntity.getEntityClass() != null;
       Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation,
           projectileEntity.getEntityClass(), e -> e.setVelocity(velocity));
       projectile.setShooter(caster.getEntity());
@@ -69,7 +71,7 @@ public class ShootProjectile extends Effect {
           ((Arrow) projectile).setColor(arrowColor);
         }
         if (ignite) {
-          projectile.setFireTicks(20);
+          projectile.setFireTicks(200);
         }
         ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
         ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);

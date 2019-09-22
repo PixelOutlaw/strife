@@ -109,8 +109,10 @@ public class ProjectileUtil {
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double xOff, double yOff, double zOff) {
     Vector vector = shooter.getEyeLocation().getDirection();
     vector.multiply(speed);
-    vector.add(new Vector(xOff, 0.17 + yOff, zOff));
-    return vector;
+    xOff = -xOff + xOff * 2 * Math.random();
+    yOff = -yOff + yOff * 2 * Math.random();
+    zOff = -zOff + zOff * 2 * Math.random();
+    return vector.add(new Vector(xOff, 0.17 + yOff, zOff));
   }
 
   public static void createTrident(Player shooter, Trident trident, float attackMult,

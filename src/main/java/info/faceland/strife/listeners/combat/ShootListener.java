@@ -27,7 +27,6 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.ProjectileUtil;
-import java.util.Random;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
@@ -42,11 +41,9 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 public class ShootListener implements Listener {
 
   private final StrifePlugin plugin;
-  private final Random random;
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.random = new Random(System.currentTimeMillis());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -139,7 +136,6 @@ public class ShootListener implements Listener {
   }
 
   private double randomOffset(double magnitude) {
-    magnitude = 0.11 + magnitude * 0.005;
-    return (random.nextDouble() * magnitude * 2) - magnitude;
+    return 0.11 + magnitude * 0.005;
   }
 }
