@@ -72,7 +72,9 @@ public class BossBarManager {
   }
 
   public SkillBossBar getSkillBar(Champion champion) {
-    if (skillBarMap.containsKey(champion.getUniqueId())) {
+    if (skillBarMap.containsKey(champion.getUniqueId())
+        && skillBarMap.get(champion.getUniqueId()) != null
+        && skillBarMap.get(champion.getUniqueId()).getSkillBar() != null) {
       return skillBarMap.get(champion.getUniqueId());
     }
     SkillBossBar skillBar = new SkillBossBar(champion, makeSkillBar());
