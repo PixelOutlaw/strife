@@ -8,6 +8,7 @@ public enum LifeSkillType {
   ENCHANTING("Enchanting", "enchant", ChatColor.LIGHT_PURPLE),
   FISHING("Fishing", "fishing", ChatColor.AQUA),
   MINING("Mining", "mining", ChatColor.DARK_GREEN),
+  FARMING("Farming", "farming", ChatColor.GOLD),
   SNEAK("Sneak", "sneak", ChatColor.GRAY),
   SWORDSMANSHIP("Swordsmanship", "sword", ChatColor.RED),
   AXE_MASTERY("Axe Mastery", "axe", ChatColor.RED),
