@@ -75,7 +75,7 @@
     <dependency>
       <groupId>LibsDisguises</groupId>
       <artifactId>LibsDisguises</artifactId>
-      <version>9.8.2</version>
+      <version>9.8.2-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
