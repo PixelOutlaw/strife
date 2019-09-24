@@ -7,6 +7,7 @@ command:
 generic:
   no-dropping: "&e&oYou cannot drop items directly from your hand! Use &f&o/trade <player> &e&oor drop from your inventory instead!"
 abilities:
+  picker-requirement-tag: "&c&l<Requires: {REQ}>"
   cant-move-ability: "NO CAN DEW, BUCKAROO"
   ability-on-cooldown: "&f&lAbility On Cooldown!"
 skills:

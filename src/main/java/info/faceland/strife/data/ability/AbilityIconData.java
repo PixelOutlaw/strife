@@ -1,6 +1,7 @@
 package info.faceland.strife.data.ability;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.data.champion.StrifeAttribute;
@@ -15,7 +16,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class AbilityIconData {
 
-  private static final String REQ_STR = "&c&l<Requirement: {REQ}>";
+  private static String REQ_STR = StrifePlugin.getInstance().getSettings()
+      .getString("language.abilities.picker-requirement-tag");
 
   private ItemStack stack;
   private AbilitySlot abilitySlot;
@@ -103,9 +105,9 @@ public class AbilityIconData {
     }
     for (LifeSkillType type : data.lifeSkillRequirements.keySet()) {
       if (champion.getLifeSkillLevel(type) < data.lifeSkillRequirements.get(type)) {
-        strings.add(REQ_STR.replace("{REQ}",
-            ChatColor.stripColor(WordUtils.capitalize(type.name().toLowerCase()) + " " +
-                data.lifeSkillRequirements.get(type))));
+        strings.add(REQ_STR.replace("{REQ}", ChatColor.stripColor(
+            WordUtils.capitalize(type.name().toLowerCase().replaceAll("_", " ")) +
+                " " + data.lifeSkillRequirements.get(type))));
       }
     }
     for (StrifeAttribute attr : data.attributeRequirement.keySet()) {
