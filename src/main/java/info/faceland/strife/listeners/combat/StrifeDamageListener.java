@@ -86,6 +86,9 @@ public class StrifeDamageListener implements Listener {
     if (event.isCanBeEvaded()) {
       evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, event.getAbilityMods());
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        if (defender.getEntity() instanceof Player) {
+          plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
+        }
         doEvasion(attacker.getEntity(), defender.getEntity());
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
@@ -98,6 +101,9 @@ public class StrifeDamageListener implements Listener {
     if (event.isCanBeBlocked()) {
       if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
           event.getAttackType(), event.isBlocking())) {
+        if (defender.getEntity() instanceof Player) {
+          plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
+        }
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
         return;
