@@ -45,8 +45,7 @@ public class AbilityPickerMenu extends ItemMenu {
     BASIC_LEVEL_MENU,
     MELEE_ABILITY,
     ARCHERY_ABILITY,
-    MAGIC_ABILITY,
-    LIFE_SKILL
+    MAGIC_ABILITY
   }
 
 }

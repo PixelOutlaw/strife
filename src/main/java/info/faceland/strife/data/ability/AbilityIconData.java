@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 
 public class AbilityIconData {
+
+  private static final String REQ_STR = "&c&l<Requirement: {REQ}>";
 
   private ItemStack stack;
   private AbilitySlot abilitySlot;
@@ -92,19 +96,22 @@ public class AbilityIconData {
   public static List<String> buildRequirementsLore(Champion champion, AbilityIconData data) {
     List<String> strings = new ArrayList<>();
     if (champion.getPlayer().getLevel() < data.levelRequirement) {
-      strings.add("Requirement: Level " + data.levelRequirement);
+      strings.add(REQ_STR.replace("{REQ}", "Level " + data.levelRequirement));
     }
     if (champion.getBonusLevels() < data.bonusLevelRequirement) {
-      strings.add("Requirement: Bonus Level " + data.bonusLevelRequirement);
+      strings.add(REQ_STR.replace("{REQ}", "Bonus Level " + data.bonusLevelRequirement));
     }
     for (LifeSkillType type : data.lifeSkillRequirements.keySet()) {
       if (champion.getLifeSkillLevel(type) < data.lifeSkillRequirements.get(type)) {
-        strings.add("Requirement: " + type.name() + " " + data.lifeSkillRequirements.get(type));
+        strings.add(REQ_STR.replace("{REQ}",
+            ChatColor.stripColor(WordUtils.capitalize(type.name().toLowerCase()) + " " +
+                data.lifeSkillRequirements.get(type))));
       }
     }
     for (StrifeAttribute attr : data.attributeRequirement.keySet()) {
       if (champion.getAttributeLevel(attr) < data.attributeRequirement.get(attr)) {
-        strings.add("Requirement: " + attr.getName() + " " + data.attributeRequirement.get(attr));
+        strings.add(REQ_STR.replace("{REQ}",
+            ChatColor.stripColor(attr.getName() + " " + data.attributeRequirement.get(attr))));
       }
     }
     return TextUtils.color(strings);
