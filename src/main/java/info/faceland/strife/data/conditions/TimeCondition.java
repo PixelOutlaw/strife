@@ -2,7 +2,7 @@ package info.faceland.strife.data.conditions;
 
 import info.faceland.strife.data.StrifeMob;
 
-public class TimeCondition implements Condition {
+public class TimeCondition extends Condition {
 
   private long minTime;
   private long maxTime;

@@ -4,29 +4,18 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.PlayerDataUtil;
 
-public class StatCondition implements Condition {
+public class StatCondition extends Condition {
 
   private final StrifeStat strifeStat;
-  private final CompareTarget compareTarget;
-  private final Comparison comparison;
-  private final double value;
 
-  public StatCondition(StrifeStat attribute, CompareTarget compareTarget,
-      Comparison comparison, double value) {
-    this.strifeStat = attribute;
-    this.compareTarget = compareTarget;
-    this.comparison = comparison;
-    this.value = value;
+  public StatCondition(StrifeStat stat) {
+    this.strifeStat = stat;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    long attributeValue = compareTarget == CompareTarget.SELF ?
+    long attributeValue = getCompareTarget() == CompareTarget.SELF ?
         Math.round(attacker.getStat(strifeStat)) :
         Math.round(target.getStat(strifeStat));
-    return PlayerDataUtil.conditionCompare(comparison, (int) attributeValue, value);
-  }
-
-  public CompareTarget getCompareTarget() {
-    return compareTarget;
+    return PlayerDataUtil.conditionCompare(getComparison(), (int) attributeValue, getValue());
   }
 }

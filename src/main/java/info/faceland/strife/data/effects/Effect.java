@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Effect {
+public abstract class Effect {
 
   private String id;
   private boolean forceTargetCaster;

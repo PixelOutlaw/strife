@@ -6,47 +6,36 @@ import info.faceland.strife.managers.BarrierManager;
 import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.util.PlayerDataUtil;
 
-public class BarrierCondition implements Condition {
+public class BarrierCondition extends Condition {
 
-  private final CompareTarget compareTarget;
-  private final Comparison comparison;
-  private final double value;
   private final boolean percentage;
 
   private static final BarrierManager barrierManager = StrifePlugin.getInstance()
       .getBarrierManager();
 
-  public BarrierCondition(CompareTarget compareTarget, Comparison comparison, double value,
-      boolean percentage) {
-    this.compareTarget = compareTarget;
-    this.comparison = comparison;
-    this.value = value;
+  public BarrierCondition(boolean percentage) {
     this.percentage = percentage;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double barrierValue;
     if (percentage) {
-      if (compareTarget == CompareTarget.SELF) {
+      if (getCompareTarget() == CompareTarget.SELF) {
         if (attacker.getStat(StrifeStat.BARRIER) == 0D) {
-          return PlayerDataUtil.conditionCompare(comparison, 0D, value);
+          return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
         barrierValue = barrierManager.getCurrentBarrier(attacker) / attacker.getStat(
             StrifeStat.BARRIER);
       } else {
         if (target.getStat(StrifeStat.BARRIER) == 0D) {
-          return PlayerDataUtil.conditionCompare(comparison, 0D, value);
+          return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
         barrierValue = barrierManager.getCurrentBarrier(target) / target.getStat(StrifeStat.BARRIER);
       }
     } else {
-      barrierValue = compareTarget == CompareTarget.SELF ?
+      barrierValue = getCompareTarget() == CompareTarget.SELF ?
           barrierManager.getCurrentBarrier(attacker) : barrierManager.getCurrentBarrier(target);
     }
-    return PlayerDataUtil.conditionCompare(comparison, barrierValue, value);
-  }
-
-  public CompareTarget getCompareTarget() {
-    return compareTarget;
+    return PlayerDataUtil.conditionCompare(getComparison(), barrierValue, getValue());
   }
 }

@@ -3,18 +3,16 @@ package info.faceland.strife.data.conditions;
 import info.faceland.strife.data.StrifeMob;
 import org.bukkit.entity.Player;
 
-public class BlockingCondition implements Condition {
+public class BlockingCondition extends Condition {
 
-  private final CompareTarget compareTarget;
   private final boolean state;
 
-  public BlockingCondition(CompareTarget compareTarget, boolean state) {
-    this.compareTarget = compareTarget;
+  public BlockingCondition(boolean state) {
     this.state = state;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    if (compareTarget == CompareTarget.SELF) {
+    if (getCompareTarget() == CompareTarget.SELF) {
       if (!(attacker.getEntity() instanceof Player)) {
         return false;
       }
@@ -25,9 +23,5 @@ public class BlockingCondition implements Condition {
       }
       return ((Player) target.getEntity()).isBlocking() == state;
     }
-  }
-
-  public CompareTarget getCompareTarget() {
-    return compareTarget;
   }
 }

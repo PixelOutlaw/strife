@@ -466,7 +466,8 @@ public class EffectManager {
         effect = new EvokerFangEffect();
         ((EvokerFangEffect) effect).setQuantity(cs.getInt("quantity", 1));
         ((EvokerFangEffect) effect).setSpread((float) cs.getDouble("spread", 0));
-        ((EvokerFangEffect) effect).setHitEffects(String.join("~", cs.getStringList("hit-effects")));
+        ((EvokerFangEffect) effect)
+            .setHitEffects(String.join("~", cs.getStringList("hit-effects")));
         break;
       case FALLING_BLOCK:
         effect = new ShootBlock();
@@ -685,20 +686,6 @@ public class EffectManager {
       return;
     }
 
-    String compType = cs.getString("comparison", "NONE").toUpperCase();
-    Comparison comparison;
-    try {
-      comparison = Comparison.valueOf(compType);
-    } catch (Exception e) {
-      comparison = Comparison.NONE;
-    }
-
-    String compareTargetString = cs.getString("target", "SELF");
-    CompareTarget compareTarget =
-        compareTargetString.equalsIgnoreCase("SELF") ? CompareTarget.SELF : CompareTarget.OTHER;
-
-    double value = cs.getDouble("value", 0);
-
     Condition condition;
     switch (conditionType) {
       case STAT:
@@ -709,7 +696,7 @@ public class EffectManager {
           LogUtil.printError("Failed to load condition " + key + ". Invalid stat.");
           return;
         }
-        condition = new StatCondition(stat, compareTarget, comparison, value);
+        condition = new StatCondition(stat);
         break;
       case ATTRIBUTE:
         StrifeAttribute attribute = strifeAttributeManager
@@ -718,20 +705,20 @@ public class EffectManager {
           LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
           return;
         }
-        condition = new AttributeCondition(attribute, compareTarget, comparison, value);
+        condition = new AttributeCondition(attribute);
         break;
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);
-        condition = new BarrierCondition(compareTarget, comparison, value, percent);
+        condition = new BarrierCondition(percent);
         break;
       case BUFF:
         int stacks = cs.getInt("stacks", 1);
         String buffId = cs.getString("buff-id", "");
-        condition = new BuffCondition(compareTarget, comparison, buffId, stacks);
+        condition = new BuffCondition(buffId, stacks);
         break;
       case ENDLESS_EFFECT:
         boolean state = cs.getBoolean("state", true);
-        condition = new EndlessEffectCondition(compareTarget, state);
+        condition = new EndlessEffectCondition(state);
         EndlessEffectCondition finalCondition = (EndlessEffectCondition) condition;
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
           Effect newEffect = getEffect(cs.getString("effect-id", ""));
@@ -744,11 +731,11 @@ public class EffectManager {
         condition = new ChanceCondition(chance);
         break;
       case LIGHT_LEVEL:
-        condition = new LightCondition(compareTarget, comparison, (int) value);
+        condition = new LightCondition();
         break;
       case HEALTH:
         boolean percent2 = cs.getBoolean("percentage", false);
-        condition = new HealthCondition(compareTarget, comparison, value, percent2);
+        condition = new HealthCondition(percent2);
         break;
       case POTION_EFFECT:
         PotionEffectType potionEffectType;
@@ -759,8 +746,7 @@ public class EffectManager {
           return;
         }
         int potionIntensity = cs.getInt("intensity", 0);
-        condition = new PotionCondition(potionEffectType, compareTarget, comparison,
-            potionIntensity);
+        condition = new PotionCondition(potionEffectType, potionIntensity);
         break;
       case EQUIPMENT:
         Set<Material> materials = new HashSet<>();
@@ -776,10 +762,10 @@ public class EffectManager {
         condition = new EquipmentCondition(materials, strict);
         break;
       case MOVING:
-        condition = new MovingCondition(compareTarget, cs.getBoolean("state", true));
+        condition = new MovingCondition(cs.getBoolean("state", true));
         break;
       case IN_COMBAT:
-        condition = new InCombatCondition(compareTarget, cs.getBoolean("state", true));
+        condition = new InCombatCondition(cs.getBoolean("state", true));
         break;
       case TIME:
         long minTime = cs.getLong("min-time", 0);
@@ -787,31 +773,31 @@ public class EffectManager {
         condition = new TimeCondition(minTime, maxTime);
         break;
       case LEVEL:
-        condition = new LevelCondition(comparison, (int) value);
+        condition = new LevelCondition();
         break;
       case BONUS_LEVEL:
-        condition = new BonusLevelCondition(comparison, (int) value);
+        condition = new BonusLevelCondition();
         break;
       case ITS_OVER_ANAKIN:
-        condition = new HeightCondition(compareTarget);
+        condition = new HeightCondition();
         break;
       case BLEEDING:
-        condition = new BleedingCondition(compareTarget, cs.getBoolean("state", true));
+        condition = new BleedingCondition(cs.getBoolean("state", true));
         break;
       case DARKNESS:
-        condition = new CorruptionCondition(compareTarget, comparison, value);
+        condition = new CorruptionCondition();
         break;
       case BURNING:
-        condition = new BurningCondition(compareTarget, cs.getBoolean("state", true));
+        condition = new BurningCondition(cs.getBoolean("state", true));
         break;
       case EARTH_RUNES:
-        condition = new EarthRunesCondition(compareTarget, comparison, (int) value);
+        condition = new EarthRunesCondition();
         break;
       case BLOCKING:
-        condition = new BlockingCondition(compareTarget, cs.getBoolean("state", true));
+        condition = new BlockingCondition(cs.getBoolean("state", true));
         break;
       case GROUNDED:
-        condition = new GroundedCondition(compareTarget, cs.getBoolean("inverted", false));
+        condition = new GroundedCondition(cs.getBoolean("inverted", false));
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");
@@ -831,6 +817,24 @@ public class EffectManager {
         LogUtil.printError("No valid conditions found for " + key + "... somehow?");
         return;
     }
+
+    String compType = cs.getString("comparison", "NONE").toUpperCase();
+    Comparison comparison;
+    try {
+      comparison = Comparison.valueOf(compType);
+    } catch (Exception e) {
+      comparison = Comparison.NONE;
+    }
+    String compareTargetString = cs.getString("target", "SELF");
+    CompareTarget compareTarget =
+        "OTHER".equalsIgnoreCase(compareTargetString) ? CompareTarget.OTHER : CompareTarget.SELF;
+    float value = (float) cs.getDouble("value", 0);
+
+    condition.setCompareTarget(compareTarget);
+    condition.setComparison(comparison);
+    condition.setType(conditionType);
+    condition.setValue(value);
+
     conditions.put(key, condition);
   }
 

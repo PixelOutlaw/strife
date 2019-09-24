@@ -4,34 +4,22 @@ import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.StrifeAttribute;
 import info.faceland.strife.util.PlayerDataUtil;
 
-public class AttributeCondition implements Condition {
+public class AttributeCondition extends Condition {
 
   private final StrifeAttribute strifeAttribute;
-  private final CompareTarget compareTarget;
-  private final Comparison comparison;
-  private final double value;
 
-  public AttributeCondition(StrifeAttribute strifeAttribute, CompareTarget compareTarget, Comparison comparison,
-      double value) {
+  public AttributeCondition(StrifeAttribute strifeAttribute) {
     this.strifeAttribute = strifeAttribute;
-    this.compareTarget = compareTarget;
-    this.comparison = comparison;
-    this.value = value;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    if (compareTarget == CompareTarget.SELF && attacker.getChampion() == null ||
-        compareTarget == CompareTarget.OTHER && target.getChampion() == null) {
+    if (getCompareTarget() == CompareTarget.SELF && attacker.getChampion() == null ||
+        getCompareTarget() == CompareTarget.OTHER && target.getChampion() == null) {
       return false;
     }
-    int statValue =
-        compareTarget == CompareTarget.SELF ? attacker.getChampion().getLevelMap().get(
-            strifeAttribute)
+    int statValue = getCompareTarget() == CompareTarget.SELF ?
+        attacker.getChampion().getLevelMap().get(strifeAttribute)
             : target.getChampion().getLevelMap().get(strifeAttribute);
-    return PlayerDataUtil.conditionCompare(comparison, statValue, value);
-  }
-
-  public CompareTarget getCompareTarget() {
-    return compareTarget;
+    return PlayerDataUtil.conditionCompare(getComparison(), statValue, getValue());
   }
 }

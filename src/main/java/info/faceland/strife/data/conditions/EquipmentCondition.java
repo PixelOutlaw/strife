@@ -5,7 +5,7 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.inventory.EntityEquipment;
 
-public class EquipmentCondition implements Condition {
+public class EquipmentCondition extends Condition {
 
   private final Set<Material> validMaterials;
   private final boolean strict;
@@ -24,18 +24,14 @@ public class EquipmentCondition implements Condition {
   }
 
   private boolean hasAtLeastOneWeaponInSet(EntityEquipment equipment) {
-    Material typeOne = equipment.getItemInMainHand() == null ? Material.AIR
-        : equipment.getItemInMainHand().getType();
-    Material typeTwo = equipment.getItemInOffHand() == null ? Material.AIR
-        : equipment.getItemInOffHand().getType();
+    Material typeOne = equipment.getItemInMainHand().getType();
+    Material typeTwo = equipment.getItemInOffHand().getType();
     return validMaterials.contains(typeOne) || validMaterials.contains(typeTwo);
   }
 
   private boolean hasAllWeaponsInSet(EntityEquipment equipment) {
-    Material typeOne = equipment.getItemInMainHand() == null ? Material.AIR
-        : equipment.getItemInMainHand().getType();
-    Material typeTwo = equipment.getItemInOffHand() == null ? Material.AIR
-        : equipment.getItemInOffHand().getType();
+    Material typeOne = equipment.getItemInMainHand().getType();
+    Material typeTwo = equipment.getItemInOffHand().getType();
     return validMaterials.contains(typeOne) && validMaterials.contains(typeTwo);
   }
 
