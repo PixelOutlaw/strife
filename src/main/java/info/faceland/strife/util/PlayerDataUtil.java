@@ -27,7 +27,7 @@ public class PlayerDataUtil {
       damageString.append("&e✦");
     }
     if (isSneakAttack) {
-      damageString.append("&e&l!");
+      damageString.append("&7&l!");
     }
     if (critBonus > 0) {
       damageString.append("&c✸");
@@ -39,7 +39,7 @@ public class PlayerDataUtil {
       damageString.append("&b❊");
     }
     if (triggeredElements.contains(DamageType.LIGHTNING)) {
-      damageString.append("&7&l⚡");
+      damageString.append("&e&l⚡");
     }
     if (triggeredElements.contains(DamageType.EARTH)) {
       damageString.append("&2⚍");
