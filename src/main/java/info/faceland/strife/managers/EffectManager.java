@@ -31,6 +31,7 @@ import info.faceland.strife.data.conditions.LevelCondition;
 import info.faceland.strife.data.conditions.LightCondition;
 import info.faceland.strife.data.conditions.MovingCondition;
 import info.faceland.strife.data.conditions.PotionCondition;
+import info.faceland.strife.data.conditions.RangeCondition;
 import info.faceland.strife.data.conditions.StatCondition;
 import info.faceland.strife.data.conditions.TimeCondition;
 import info.faceland.strife.data.effects.AddEarthRunes;
@@ -786,6 +787,9 @@ public class EffectManager {
         break;
       case DARKNESS:
         condition = new CorruptionCondition();
+        break;
+      case RANGE:
+        condition = new RangeCondition();
         break;
       case BURNING:
         condition = new BurningCondition(cs.getBoolean("state", true));

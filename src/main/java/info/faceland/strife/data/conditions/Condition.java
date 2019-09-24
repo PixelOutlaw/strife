@@ -102,6 +102,7 @@ public abstract class Condition {
     GROUNDED,
     BLEEDING,
     DARKNESS,
+    RANGE,
     BURNING,
     EARTH_RUNES
   }
