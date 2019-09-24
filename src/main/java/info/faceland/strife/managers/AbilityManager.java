@@ -84,6 +84,15 @@ public class AbilityManager {
       return;
     }
     container.setEndTime(container.getEndTime() - milliseconds);
+    int remainder = (int) (System.currentTimeMillis() - container.getEndTime());
+    while (remainder > 0 && container.getSpentCharges() > 1) {
+      container.setSpentCharges(container.getSpentCharges() - 1);
+      container.setStartTime(System.currentTimeMillis());
+      Ability ability = getAbility(container.getAbilityId());
+      container.setEndTime(container.getStartTime() + ability.getCooldown() * 1000);
+      container.setEndTime(container.getEndTime() - remainder);
+      remainder = (int) (System.currentTimeMillis() - container.getEndTime());
+    }
     if (livingEntity instanceof Player) {
       plugin.getAbilityIconManager()
           .updateIconProgress((Player) livingEntity, getAbility(abilityId));
@@ -318,7 +327,8 @@ public class AbilityManager {
       container = new AbilityCooldownContainer(ability.getId(),
           System.currentTimeMillis() + ability.getCooldown() * 1000);
       coolingDownAbilities.get(livingEntity).add(container);
-    } else  {
+    }
+    if (container.getSpentCharges() == 0) {
       container.setStartTime(System.currentTimeMillis());
       container.setEndTime(System.currentTimeMillis() + ability.getCooldown() * 1000);
     }
