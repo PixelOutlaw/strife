@@ -60,6 +60,10 @@ public class PlayerDataUtil {
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
       Set<Condition> conditions) {
     for (Condition condition : conditions) {
+      if (caster.getEntity() instanceof Player && condition.isMobOnly()) {
+        LogUtil.printDebug("-- Skipping " + condition + " - only applies to mobs");
+        continue;
+      }
       if (target == null && condition.getCompareTarget() == CompareTarget.OTHER) {
         LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
         continue;

@@ -818,22 +818,27 @@ public class EffectManager {
         return;
     }
 
-    String compType = cs.getString("comparison", "NONE").toUpperCase();
     Comparison comparison;
     try {
-      comparison = Comparison.valueOf(compType);
+      comparison = Comparison.valueOf(cs.getString("comparison", "NONE").toUpperCase());
     } catch (Exception e) {
+      LogUtil.printWarning("No/invalid comparison found for " + key + " defaulting to NONE");
       comparison = Comparison.NONE;
     }
-    String compareTargetString = cs.getString("target", "SELF");
-    CompareTarget compareTarget =
-        "OTHER".equalsIgnoreCase(compareTargetString) ? CompareTarget.OTHER : CompareTarget.SELF;
-    float value = (float) cs.getDouble("value", 0);
+
+    CompareTarget compareTarget;
+    try {
+      compareTarget = CompareTarget.valueOf(cs.getString("target", "SELF"));
+    } catch (Exception e) {
+      LogUtil.printWarning("No/invalid compare target found for " + key + " defaulting to SELF");
+      compareTarget = CompareTarget.SELF;
+    }
 
     condition.setCompareTarget(compareTarget);
     condition.setComparison(comparison);
     condition.setType(conditionType);
-    condition.setValue(value);
+    condition.setValue((float) cs.getDouble("value", 0));
+    condition.setMobOnly(cs.getBoolean("mob-only", false));
 
     conditions.put(key, condition);
   }

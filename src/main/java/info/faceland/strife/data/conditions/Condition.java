@@ -10,6 +10,7 @@ public abstract class Condition {
   private CompareTarget compareTarget;
   private Comparison comparison;
   private ConditionType type;
+  private boolean isMobOnly;
   private float value;
 
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
@@ -40,6 +41,14 @@ public abstract class Condition {
 
   public void setType(ConditionType type) {
     this.type = type;
+  }
+
+  public boolean isMobOnly() {
+    return isMobOnly;
+  }
+
+  public void setMobOnly(boolean mobOnly) {
+    isMobOnly = mobOnly;
   }
 
   public float getValue() {
