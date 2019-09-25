@@ -13,19 +13,17 @@ public class WorldSpaceEffectEntity {
   private final Vector velocity;
   private final StrifeMob caster;
   private Location location;
-  private boolean casterLock;
   private int currentTick;
   private int lifespan;
 
   public WorldSpaceEffectEntity(final StrifeMob caster,
-      final Map<Integer, List<Effect>> effectSchedule, Location location, final boolean casterLock,
-      final Vector velocity, final int maxTicks, int lifespan) {
+      final Map<Integer, List<Effect>> effectSchedule, Location location, final Vector velocity,
+      final int maxTicks, int lifespan) {
     this.caster = caster;
     this.effectSchedule = effectSchedule;
     this.velocity = velocity;
     this.maxTicks = maxTicks;
     this.lifespan = lifespan;
-    this.casterLock = casterLock;
     this.location = location;
     this.currentTick = 0;
   }
@@ -52,14 +50,6 @@ public class WorldSpaceEffectEntity {
 
   public void setLocation(Location location) {
     this.location = location;
-  }
-
-  public boolean isCasterLock() {
-    return casterLock;
-  }
-
-  public void setCasterLock(boolean casterLock) {
-    this.casterLock = casterLock;
   }
 
   public int getCurrentTick() {

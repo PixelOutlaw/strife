@@ -355,7 +355,6 @@ public class EffectManager {
             .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
-        ((CreateWorldSpaceEntity) effect).setLockedToEntity(cs.getBoolean("entity-lock", false));
         break;
       case AREA_EFFECT:
         effect = new AreaEffect();

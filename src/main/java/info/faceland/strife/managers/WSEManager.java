@@ -9,9 +9,7 @@ import info.faceland.strife.data.effects.PlaySound;
 import info.faceland.strife.data.effects.Push;
 import info.faceland.strife.data.effects.SpawnParticle;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.DamageUtil.OriginLocation;
 import info.faceland.strife.util.LogUtil;
-import info.faceland.strife.util.TargetingUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,21 +30,15 @@ public class WSEManager {
   }
 
   public void createAtTarget(StrifeMob caster, Location location, int lifespan, int maxTicks,
-      double speed, Map<Integer, List<Effect>> effects, boolean lockedToEntity,
-      boolean strictDuration) {
+      double speed, Map<Integer, List<Effect>> effects, boolean strictDuration) {
     LogUtil.printDebug(" Creating world space entity with effects " + effects);
     double newLifeSpan = lifespan;
     if (!strictDuration) {
       newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    Vector direction;
-    if (lockedToEntity) {
-      direction = null;
-    } else {
-      direction = caster.getEntity().getEyeLocation().getDirection().multiply(speed);
-    }
-    WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, effects,
-        location, lockedToEntity, direction, maxTicks, (int) newLifeSpan);
+    Vector direction = caster.getEntity().getEyeLocation().getDirection().multiply(speed);
+    WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, effects, location, direction,
+        maxTicks, (int) newLifeSpan);
     addWorldSpaceEffectEntity(entity);
   }
 
@@ -72,11 +64,7 @@ public class WSEManager {
   private boolean tick(WorldSpaceEffectEntity wse) {
     Location location = wse.getLocation();
     StrifeMob caster = wse.getCaster();
-    if (wse.isCasterLock()) {
-      location = TargetingUtil.getOriginLocation(caster.getEntity(), OriginLocation.CENTER);
-    } else {
-      location.add(wse.getVelocity());
-    }
+    location.add(wse.getVelocity());
     Block block = location.getBlock();
     if (!block.getType().isTransparent()) {
       LogUtil.printDebug(" - WSE at solid block... removing");

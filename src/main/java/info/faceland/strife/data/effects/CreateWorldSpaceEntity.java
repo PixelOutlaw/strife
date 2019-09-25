@@ -18,7 +18,6 @@ public class CreateWorldSpaceEntity extends Effect {
   private int maxTicks;
   private double velocity;
   private int lifespan;
-  private boolean lockedToEntity;
   private boolean strictDuration;
 
   @Override
@@ -26,14 +25,14 @@ public class CreateWorldSpaceEntity extends Effect {
     cacheEffects();
     StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
         TargetingUtil.getOriginLocation(target.getEntity(), originLocation), lifespan, maxTicks,
-            velocity, cachedEffectSchedule, lockedToEntity, strictDuration);
+            velocity, cachedEffectSchedule, strictDuration);
   }
 
   public void apply(StrifeMob caster, LivingEntity target) {
     cacheEffects();
     StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
         TargetingUtil.getOriginLocation(target, originLocation), lifespan, maxTicks,
-        velocity, cachedEffectSchedule, lockedToEntity, strictDuration);
+        velocity, cachedEffectSchedule, strictDuration);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {
@@ -54,10 +53,6 @@ public class CreateWorldSpaceEntity extends Effect {
 
   public void setOriginLocation(OriginLocation originLocation) {
     this.originLocation = originLocation;
-  }
-
-  public void setLockedToEntity(boolean lockedToEntity) {
-    this.lockedToEntity = lockedToEntity;
   }
 
   public void setStrictDuration(boolean strictDuration) {
