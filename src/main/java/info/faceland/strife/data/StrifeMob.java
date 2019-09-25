@@ -25,6 +25,7 @@ public class StrifeMob {
   private final Champion champion;
   private LivingEntity livingEntity;
   private EntityAbilitySet abilitySet;
+  private String uniqueEntityId = null;
 
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
@@ -78,6 +79,14 @@ public class StrifeMob {
     this.abilitySet = abilitySet;
   }
 
+  public String getUniqueEntityId() {
+    return uniqueEntityId;
+  }
+
+  public void setUniqueEntityId(String uniqueEntityId) {
+    this.uniqueEntityId = uniqueEntityId;
+  }
+
   public Champion getChampion() {
     return champion;
   }
@@ -88,6 +97,21 @@ public class StrifeMob {
 
   public Map<StrifeStat, Float> getBaseStats() {
     return baseStats;
+  }
+
+  public void flattenBaseStats() {
+    float flattenedArmor = baseStats.getOrDefault(StrifeStat.ARMOR, 0f) *
+        (1 + (baseStats.get(StrifeStat.ARMOR_MULT) / 100));
+    baseStats.put(StrifeStat.ARMOR, flattenedArmor);
+    baseStats.remove(StrifeStat.ARMOR_MULT);
+    float flattenedWarding = baseStats.getOrDefault(StrifeStat.WARDING, 0f) *
+        (1 + (baseStats.get(StrifeStat.WARD_MULT) / 100));
+    baseStats.put(StrifeStat.WARDING, flattenedWarding);
+    baseStats.remove(StrifeStat.WARD_MULT);
+    float flattenedRegen = baseStats.getOrDefault(StrifeStat.REGENERATION, 0f) *
+        (1 + (baseStats.get(StrifeStat.REGEN_MULT) / 100));
+    baseStats.put(StrifeStat.REGENERATION, flattenedRegen);
+    baseStats.remove(StrifeStat.REGEN_MULT);
   }
 
   public void setStats(Map<StrifeStat, Float> stats) {

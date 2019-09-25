@@ -126,6 +126,7 @@ public class UniqueEntityManager {
 
     plugin.getStrifeMobManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(spawnedUnique);
+    strifeMob.setUniqueEntityId(uniqueEntity.getId());
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
