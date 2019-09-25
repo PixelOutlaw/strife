@@ -22,7 +22,6 @@ import info.faceland.strife.data.effects.Effect;
 import info.faceland.strife.data.effects.Wait;
 import info.faceland.strife.stats.AbilitySlot;
 import info.faceland.strife.timers.EntityAbilityTimer;
-import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.PlayerDataUtil;
 import info.faceland.strife.util.TargetingUtil;
@@ -547,7 +546,6 @@ public class AbilityManager {
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     ItemStackExtensionsKt.setLore(icon, lore);
     ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
-    ItemUtil.removeAttributes(icon);
 
     AbilityIconData data = new AbilityIconData(icon);
 

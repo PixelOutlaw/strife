@@ -105,6 +105,7 @@ import info.faceland.strife.tasks.BarrierTask;
 import info.faceland.strife.tasks.BossBarsTask;
 import info.faceland.strife.tasks.CombatStatusTask;
 import info.faceland.strife.tasks.DarknessReductionTask;
+import info.faceland.strife.tasks.ForceAttackSpeed;
 import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.MinionDecayTask;
@@ -307,6 +308,7 @@ public class StrifePlugin extends FacePlugin {
     TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
     HealthRegenTask regenTask = new HealthRegenTask(this);
     SneakTask sneakTask = new SneakTask(sneakManager);
+    ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BarrierTask barrierTask = new BarrierTask(this);
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
@@ -378,6 +380,10 @@ public class StrifePlugin extends FacePlugin {
       combatSkillRate.put(i, i, (int) Math.round(combatExpr.setVariable("LEVEL", i).evaluate()));
     }
 
+    taskList.add(forceAttackSpeed.runTaskTimer(this,
+        20L,
+        1L
+    ));
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> championManager.tickPassiveLoreAbilities(),
         20L * 5, // Start save after 5s

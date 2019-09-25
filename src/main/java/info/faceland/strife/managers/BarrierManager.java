@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -153,6 +154,9 @@ public class BarrierManager {
   }
 
   private void setPlayerArmor(Player player, double percent) {
+    for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+      player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
+    }
     player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(20 * percent);
   }
 }

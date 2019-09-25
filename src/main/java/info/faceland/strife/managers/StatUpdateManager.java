@@ -20,7 +20,6 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.stats.StrifeStat.LEVEL_REQUIREMENT;
 import static info.faceland.strife.stats.StrifeStat.MOVEMENT_SPEED;
-import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
@@ -30,6 +29,7 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.tasks.ForceAttackSpeed;
 import info.faceland.strife.util.StatUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -126,9 +126,14 @@ public class StatUpdateManager {
     }
   }
 
-  public void updateAttackSpeed(StrifeMob strifeMob) {
+  public void updateAttackAttrs(StrifeMob strifeMob) {
     double attacksPerSecond = 1 / StatUtil.getAttackTime(strifeMob);
-    strifeMob.getEntity().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(attacksPerSecond);
+    ForceAttackSpeed.addAttackTime((Player) strifeMob.getEntity(), attacksPerSecond);
+    strifeMob.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+  }
+
+  public void updateBarrier(StrifeMob mob) {
+    StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(mob);
   }
 
   public void updateAttributes(Player player) {
@@ -137,11 +142,9 @@ public class StatUpdateManager {
 
   public void updateAttributes(StrifeMob strifeMob) {
     updateMovementSpeed(strifeMob);
-    updateAttackSpeed(strifeMob);
+    updateAttackAttrs(strifeMob);
     updateHealth(strifeMob);
-
-    StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(strifeMob);
-    strifeMob.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+    updateBarrier(strifeMob);
   }
 
   private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {

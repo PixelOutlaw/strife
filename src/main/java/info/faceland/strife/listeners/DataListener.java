@@ -137,7 +137,8 @@ public class DataListener implements Listener {
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
-    plugin.getBarrierManager().createBarrierEntry(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getBarrierManager().createBarrierEntry(
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
   }
 

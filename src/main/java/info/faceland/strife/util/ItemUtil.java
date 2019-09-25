@@ -14,7 +14,6 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -205,22 +204,5 @@ public class ItemUtil {
     packetContainer.getIntegers().write(1, slot);
     packetContainer.getItemModifier().write(0, sentStack);
     return packetContainer;
-  }
-
-  public static void removeAttributes(ItemStack item) {
-    if (item == null || item.getType() == Material.AIR) {
-      return;
-    }
-    if (item.getType().getMaxDurability() < 15) {
-      return;
-    }
-    ItemMeta meta = item.getItemMeta();
-    if (meta.getAttributeModifiers() == null) {
-      return;
-    }
-    for (Attribute attr : meta.getAttributeModifiers().asMap().keySet()) {
-      meta.removeAttributeModifier(attr);
-    }
-    item.setItemMeta(meta);
   }
 }

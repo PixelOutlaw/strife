@@ -24,7 +24,6 @@ import static info.faceland.strife.stats.StrifeStat.LEVEL_REQUIREMENT;
 import static info.faceland.strife.util.ItemUtil.doesHashMatch;
 import static info.faceland.strife.util.ItemUtil.getItem;
 import static info.faceland.strife.util.ItemUtil.hashItem;
-import static info.faceland.strife.util.ItemUtil.removeAttributes;
 import static org.bukkit.inventory.EquipmentSlot.CHEST;
 import static org.bukkit.inventory.EquipmentSlot.FEET;
 import static org.bukkit.inventory.EquipmentSlot.HAND;
@@ -195,17 +194,16 @@ public class ChampionManager {
     PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
 
     boolean recombine = false;
-
+    boolean dualWield = ItemUtil.isDualWield(equipment);
     for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
       ItemStack item = getItem(equipment, slot);
       if (!doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
         equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
         equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
         equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
-        if ((slot == HAND || slot == OFF_HAND) && ItemUtil.isDualWield(equipment)) {
+        if (dualWield && (slot == HAND || slot == OFF_HAND)) {
           applyDualWieldStatChanges(equipmentCache, slot);
         }
-        removeAttributes(item);
         equipmentCache.setSlotHash(slot, hashItem(item));
         recombine = true;
       }

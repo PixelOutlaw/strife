@@ -94,7 +94,7 @@ public class WandListener implements Listener {
     } else {
       doMeleeSwing(event.getPlayer(), event, true);
     }
-    plugin.getStatUpdateManager().updateAttackSpeed(
+    plugin.getStatUpdateManager().updateAttackAttrs(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 
