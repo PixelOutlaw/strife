@@ -63,9 +63,14 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.spigotmc</groupId>
+      <artifactId>spigot-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
-      <version>1.14.4.0</version>
+      <version>1.14.4.1</version>
     </dependency>
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
