@@ -545,7 +545,9 @@ public class AbilityManager {
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     ItemStackExtensionsKt.setLore(icon, lore);
-    ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
+    ItemStackExtensionsKt.setUnbreakable(icon, true);
+    ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ENCHANTS,
+        ItemFlag.HIDE_ATTRIBUTES);
 
     AbilityIconData data = new AbilityIconData(icon);
 
