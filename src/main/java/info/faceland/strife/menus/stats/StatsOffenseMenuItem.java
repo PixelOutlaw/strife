@@ -40,6 +40,7 @@ import static info.faceland.strife.stats.StrifeStat.LIGHTNING_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.LIGHT_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.MAX_EARTH_RUNES;
 import static info.faceland.strife.stats.StrifeStat.MULTISHOT;
+import static info.faceland.strife.stats.StrifeStat.PHYSICAL_DAMAGE;
 import static info.faceland.strife.stats.StrifeStat.SHOCK_CHANCE;
 import static info.faceland.strife.stats.StrifeStat.WARD_PENETRATION;
 
@@ -47,7 +48,6 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.stats.StrifeStat;
-import info.faceland.strife.util.DamageUtil.AttackType;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.StatUtil;
 import java.text.DecimalFormat;
@@ -74,33 +74,37 @@ public class StatsOffenseMenuItem extends MenuItem {
     StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     Map<StrifeStat, Float> bases = StrifePlugin.getInstance().getMonsterManager()
         .getBaseStats(player, player.getLevel());
-    // CombatStyle determines what stat type to use, as well as the icon
-    // 0 = melee, 1 = ranged, 2 = magic
-    AttackType type = AttackType.MELEE;
+
+    Material material;
+    double physicalDamage;
+    double magicalDamage = StatUtil.getMagicDamage(pStats);
     if (player.getEquipment().getItemInMainHand().getType() == Material.BOW) {
-      type = AttackType.RANGED;
+      material = Material.BOW;
+      physicalDamage = StatUtil.getRangedDamage(pStats);
     } else if (ItemUtil.isWand(player.getEquipment().getItemInMainHand())) {
-      type = AttackType.MAGIC;
+      material = Material.BLAZE_ROD;
+      physicalDamage = pStats.getStat(PHYSICAL_DAMAGE);
+    } else {
+      material = Material.IRON_SWORD;
+      physicalDamage = StatUtil.getMeleeDamage(pStats);
     }
-    ItemStack itemStack = new ItemStack(Material.IRON_SWORD);
+    ItemStack itemStack = new ItemStack(material);
     ItemMeta itemMeta = itemStack.getItemMeta();
     itemMeta.setDisplayName(getDisplayName());
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
+
     lore.add(breakLine);
-    switch (type) {
-      case MELEE:
-        lore.add(addStat("Melee Damage: ", StatUtil.getMeleeDamage(pStats), INT_FORMAT));
-        itemStack.setType(Material.IRON_SWORD);
-        break;
-      case RANGED:
-        lore.add(addStat("Ranged Damage: ", StatUtil.getRangedDamage(pStats), INT_FORMAT));
-        itemStack.setType(Material.BOW);
-        break;
-      case MAGIC:
-        lore.add(addStat("Magic Damage: ", StatUtil.getMagicDamage(pStats), INT_FORMAT));
-        itemStack.setType(Material.BLAZE_ROD);
-        break;
+    if (material == Material.BLAZE_ROD) {
+      lore.add(addStat("Magical Damage: ", magicalDamage, INT_FORMAT));
+      if (Math.round(magicalDamage) > 3) {
+        lore.add(addStat("Physical Damage: ", physicalDamage, INT_FORMAT));
+      }
+    } else {
+      lore.add(addStat("Physical Damage: ", physicalDamage, INT_FORMAT));
+      if (Math.round(magicalDamage) > 0) {
+        lore.add(addStat("Magical Damage: ", magicalDamage, INT_FORMAT));
+      }
     }
     double acc = 100 + pStats.getStat(ACCURACY) - bases.getOrDefault(ACCURACY, 0f);
     lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
@@ -108,7 +112,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(breakLine);
     lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x",
         TWO_DECIMAL));
-    if (pStats.getStat(MULTISHOT) > 0 && type != AttackType.MELEE) {
+    if (pStats.getStat(MULTISHOT) > 0) {
       if (pStats.getStat(DOGE) > 0) {
         lore.add(addStat("MultiTHOT: ", pStats.getStat(MULTISHOT), "%", INT_FORMAT));
       } else {
@@ -120,20 +124,19 @@ public class StatsOffenseMenuItem extends MenuItem {
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
     double aPen =
         pStats.getStat(ARMOR_PENETRATION) - bases.getOrDefault(ARMOR_PENETRATION, 0f);
-    if (aPen != 0 && type != AttackType.MAGIC) {
+    if (aPen != 0) {
       lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
     }
     double wPen = pStats.getStat(WARD_PENETRATION) - bases.getOrDefault(WARD_PENETRATION, 0f);
-    if (wPen != 0 && type == AttackType.MAGIC) {
+    if (wPen != 0) {
       lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
     }
     if (pStats.getStat(BLEED_CHANCE) > 0) {
       lore.add(addStat("Bleed Chance: ", pStats.getStat(BLEED_CHANCE), "%", INT_FORMAT));
     }
     if (pStats.getStat(BLEED_DAMAGE) > 0) {
-      lore.add(
-          addStat("Bleed Damage: " + ChatColor.WHITE + "+", pStats.getStat(BLEED_DAMAGE), "%",
-              INT_FORMAT));
+      lore.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+",
+          pStats.getStat(BLEED_DAMAGE), "%", INT_FORMAT));
     }
     if (pStats.getStat(StrifeStat.MAXIMUM_RAGE) > 0 &&
         pStats.getStat(StrifeStat.RAGE_ON_HIT) > 0 ||

@@ -96,6 +96,9 @@ public class CombatListener implements Listener {
       return;
     }
 
+    boolean blocked = event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0;
+    DamageUtil.removeDamageModifiers(event);
+
     LivingEntity defendEntity = (LivingEntity) event.getEntity();
     LivingEntity attackEntity = getAttacker(event.getDamager());
 
@@ -110,7 +113,6 @@ public class CombatListener implements Listener {
     }
 
     if (HANDLED_ATTACKS.containsKey(attackEntity)) {
-      DamageUtil.removeDamageModifiers(event);
       event.setDamage(HANDLED_ATTACKS.get(attackEntity));
       HANDLED_ATTACKS.remove(attackEntity);
       return;
@@ -159,9 +161,6 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
-
-    boolean blocked = event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0;
-    DamageUtil.removeDamageModifiers(event);
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageType);
     strifeDamageEvent.setExtraEffects(extraEffects);

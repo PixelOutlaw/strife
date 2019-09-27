@@ -62,10 +62,9 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 public class StatUtil {
 
-  private static final float BASE_ATTACK_SECONDS = 2.0f;
+  private static final float BASE_ATTACK_SECONDS = 1.6f;
   private static final float BASE_EVASION_MULT = 0.8f;
   private static final float EVASION_ACCURACY_MULT = 0.6f;
-  private static final double SWORDSMANSHIP_EVASION_REDUCE = 0.25D / 60D;
 
   public static float getTenacityMult(StrifeMob defender) {
     if (defender.getStat(TENACITY) < 1) {
