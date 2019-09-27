@@ -5,6 +5,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.stats.StrifeTrait;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,8 +34,25 @@ public class ItemUtil {
   }
 
   public static boolean isMeleeWeapon(Material material) {
-    String name = material.name();
-    return name.endsWith("SWORD") || name.endsWith("_AXE") || name.endsWith("HOE");
+    switch (material) {
+      case WOODEN_AXE:
+      case WOODEN_HOE:
+      case STONE_AXE:
+      case STONE_SWORD:
+      case STONE_HOE:
+      case IRON_AXE:
+      case IRON_SWORD:
+      case IRON_HOE:
+      case GOLDEN_AXE:
+      case GOLDEN_SWORD:
+      case GOLDEN_HOE:
+      case DIAMOND_AXE:
+      case DIAMOND_SWORD:
+      case DIAMOND_HOE:
+        return true;
+      default:
+        return false;
+    }
   }
 
   public static boolean isDualWield(EntityEquipment equipment) {
@@ -189,6 +207,7 @@ public class ItemUtil {
   private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent,
       int charges, boolean toggled) {
     ItemStack sentStack = stack.clone();
+    ItemStackExtensionsKt.setUnbreakable(sentStack, false);
     sentStack.setAmount(charges);
     ItemMeta sentStackMeta = sentStack.getItemMeta();
     if (sentStackMeta instanceof Damageable && percent < 1) {
