@@ -193,27 +193,38 @@ public class ChampionManager {
     EntityEquipment equipment = champion.getPlayer().getEquipment();
     PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
 
-    boolean recombine = false;
-    boolean dualWield = ItemUtil.isDualWield(equipment);
+    Set<EquipmentSlot> updatedSlots = new HashSet<>();
     for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
       ItemStack item = getItem(equipment, slot);
-      if (!doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
-        equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
-        equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
-        equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
-        if (dualWield && (slot == HAND || slot == OFF_HAND)) {
-          applyDualWieldStatChanges(equipmentCache, slot);
-        }
-        equipmentCache.setSlotHash(slot, hashItem(item));
-        recombine = true;
+      if (doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
+        continue;
       }
+      equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
+      equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
+      equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
+      equipmentCache.setSlotHash(slot, hashItem(item));
+      updatedSlots.add(slot);
     }
 
-    for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
-      clearStatsIfReqNotMet(champion.getPlayer(), slot, equipmentCache);
-    }
-
-    if (recombine) {
+    if (!updatedSlots.isEmpty()) {
+      if (updatedSlots.contains(HAND) && !updatedSlots.contains(OFF_HAND)) {
+        equipmentCache.setSlotStats(OFF_HAND, getItemStats(OFF_HAND, equipment));
+        equipmentCache.setSlotAbilities(OFF_HAND, getItemAbilities(OFF_HAND, equipment));
+        equipmentCache.setSlotTraits(OFF_HAND, getItemTraits(OFF_HAND, equipment));
+        equipmentCache.setSlotHash(OFF_HAND, hashItem(equipment.getItemInOffHand()));
+      } else if (updatedSlots.contains(OFF_HAND) && !updatedSlots.contains(HAND)) {
+        equipmentCache.setSlotStats(HAND, getItemStats(HAND, equipment));
+        equipmentCache.setSlotAbilities(HAND, getItemAbilities(HAND, equipment));
+        equipmentCache.setSlotTraits(HAND, getItemTraits(HAND, equipment));
+        equipmentCache.setSlotHash(HAND, hashItem(equipment.getItemInMainHand()));
+      }
+      if (ItemUtil.isDualWield(equipment)) {
+        applyDualWieldStatChanges(equipmentCache, HAND);
+        applyDualWieldStatChanges(equipmentCache, OFF_HAND);
+      }
+      for (EquipmentSlot slot : updatedSlots) {
+        clearStatsIfReqNotMet(champion.getPlayer(), slot, equipmentCache);
+      }
       equipmentCache.recombine(champion);
     }
   }
@@ -222,8 +233,8 @@ public class ChampionManager {
     for (StrifeStat attribute : cache.getSlotStats(slot).keySet()) {
       cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7f);
     }
-    cache.getSlotStats(slot)
-        .put(ATTACK_SPEED, cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0f) + 25f);
+    cache.getSlotStats(slot).put(ATTACK_SPEED,
+        cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0f) + 20f);
   }
 
   private void clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {
