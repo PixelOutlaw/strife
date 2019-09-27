@@ -58,23 +58,27 @@ import org.bukkit.inventory.ItemStack;
 
 public class ChampionManager {
 
-  private final StrifePlugin plugin;
+  private StrifePlugin plugin;
+  private String levelReqGeneric;
+  private float dualWieldAttackSpeed;
+
   private final Map<UUID, Champion> championMap = new HashMap<>();
   private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
-  private final String levelReqGeneric;
 
   private final static String RESET_MESSAGE =
       "&a&lYour Levelpoints have been automatically reset due to an update!";
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
-    this.levelReqMap.put(HAND, plugin.getSettings().getString("language.level-req.main", ""));
-    this.levelReqMap.put(OFF_HAND, plugin.getSettings().getString("language.level-req.off", ""));
-    this.levelReqMap.put(HEAD, plugin.getSettings().getString("language.level-req.head", ""));
-    this.levelReqMap.put(CHEST, plugin.getSettings().getString("language.level-req.body", ""));
-    this.levelReqMap.put(LEGS, plugin.getSettings().getString("language.level-req.legs", ""));
-    this.levelReqMap.put(FEET, plugin.getSettings().getString("language.level-req.feet", ""));
+    dualWieldAttackSpeed =
+        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
+    levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
+    levelReqMap.put(HAND, plugin.getSettings().getString("language.level-req.main", ""));
+    levelReqMap.put(OFF_HAND, plugin.getSettings().getString("language.level-req.off", ""));
+    levelReqMap.put(HEAD, plugin.getSettings().getString("language.level-req.head", ""));
+    levelReqMap.put(CHEST, plugin.getSettings().getString("language.level-req.body", ""));
+    levelReqMap.put(LEGS, plugin.getSettings().getString("language.level-req.legs", ""));
+    levelReqMap.put(FEET, plugin.getSettings().getString("language.level-req.feet", ""));
   }
 
   public Champion getChampion(Player player) {
@@ -234,7 +238,7 @@ public class ChampionManager {
       cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7f);
     }
     cache.getSlotStats(slot).put(ATTACK_SPEED,
-        cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0f) + 20f);
+        cache.getSlotStats(slot).getOrDefault(ATTACK_SPEED, 0f) + dualWieldAttackSpeed);
   }
 
   private void clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {

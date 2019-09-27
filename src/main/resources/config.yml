@@ -23,6 +23,7 @@ ability-menus:
     - "instant-ignite"
 
 mechanics:
+  dual-wield-bonus-attack-speed: 35
   pvp-damage: 0.5
   evasion-threshold: 0.5
   sneak:
@@ -76,8 +77,12 @@ leveling:
   exp-converted-to-combat-skill-exp: 0.05
   combat-skill-exp-weight: 0.1
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
-  crafting: 50 + (LEVEL * 25) + (LEVEL^3)
-  fishing: 50 + (LEVEL * 25) + (LEVEL^3)
-  enchanting: 50 + (LEVEL * 25) + (LEVEL^3)
+  CRAFTING: 50 + (LEVEL * 25) + (LEVEL^3)
+  ENCHANTING: 50 + (LEVEL * 25) + (LEVEL^3)
+  FISHING: 50 + (LEVEL * 25) + (LEVEL^3)
+  MINING: 50 + (LEVEL * 25) + (LEVEL^3)
+  FARMING: 50 + (LEVEL * 25) + (LEVEL^3)
+  SNEAK: 50 + (LEVEL * 25) + (LEVEL^3)
+  COMBAT-SKILL: 50 + (LEVEL * 25) + (LEVEL^3)
 
 configuration-load-period: 10

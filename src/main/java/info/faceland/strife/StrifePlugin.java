@@ -200,12 +200,6 @@ public class StrifePlugin extends FacePlugin {
   private List<BukkitTask> taskList = new ArrayList<>();
 
   private LevelingRate levelingRate;
-  private LevelingRate craftingRate;
-  private LevelingRate enchantRate;
-  private LevelingRate fishRate;
-  private LevelingRate miningRate;
-  private LevelingRate sneakRate;
-  private LevelingRate combatSkillRate;
 
   private Map<AbilityMenuType, AbilityPickerMenu> abilityMenus;
   private LevelupMenu levelupMenu;
@@ -336,48 +330,6 @@ public class StrifePlugin extends FacePlugin {
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
     for (int i = 0; i < 200; i++) {
       levelingRate.put(i, i, (int) Math.round(normalExpr.setVariable("LEVEL", i).evaluate()));
-    }
-
-    craftingRate = new LevelingRate();
-    Expression craftExpr = new ExpressionBuilder(settings.getString("config.leveling.crafting",
-        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < maxSkillLevel; i++) {
-      craftingRate.put(i, i, (int) Math.round(craftExpr.setVariable("LEVEL", i).evaluate()));
-    }
-
-    enchantRate = new LevelingRate();
-    Expression enchantExpr = new ExpressionBuilder(settings.getString("config.leveling.enchanting",
-        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < maxSkillLevel; i++) {
-      enchantRate.put(i, i, (int) Math.round(enchantExpr.setVariable("LEVEL", i).evaluate()));
-    }
-
-    fishRate = new LevelingRate();
-    Expression fishExpr = new ExpressionBuilder(settings.getString("config.leveling.fishing",
-        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < maxSkillLevel; i++) {
-      fishRate.put(i, i, (int) Math.round(fishExpr.setVariable("LEVEL", i).evaluate()));
-    }
-
-    miningRate = new LevelingRate();
-    Expression mineExpr = new ExpressionBuilder(settings.getString("config.leveling.mining",
-        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < maxSkillLevel; i++) {
-      miningRate.put(i, i, (int) Math.round(mineExpr.setVariable("LEVEL", i).evaluate()));
-    }
-
-    sneakRate = new LevelingRate();
-    Expression sneakExpr = new ExpressionBuilder(settings.getString("config.leveling.sneak",
-        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < maxSkillLevel; i++) {
-      sneakRate.put(i, i, (int) Math.round(sneakExpr.setVariable("LEVEL", i).evaluate()));
-    }
-
-    combatSkillRate = new LevelingRate();
-    Expression combatExpr = new ExpressionBuilder(settings.getString("config.leveling.combat",
-        "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
-    for (int i = 0; i < maxSkillLevel; i++) {
-      combatSkillRate.put(i, i, (int) Math.round(combatExpr.setVariable("LEVEL", i).evaluate()));
     }
 
     taskList.add(forceAttackSpeed.runTaskTimer(this,
@@ -896,30 +848,6 @@ public class StrifePlugin extends FacePlugin {
 
   public int getMaxSkillLevel() {
     return maxSkillLevel;
-  }
-
-  public LevelingRate getCraftingRate() {
-    return craftingRate;
-  }
-
-  public LevelingRate getEnchantRate() {
-    return enchantRate;
-  }
-
-  public LevelingRate getFishRate() {
-    return fishRate;
-  }
-
-  public LevelingRate getMiningRate() {
-    return miningRate;
-  }
-
-  public LevelingRate getSneakRate() {
-    return sneakRate;
-  }
-
-  public LevelingRate getCombatSkillRate() {
-    return combatSkillRate;
   }
 
   public LogLevel getLogLevel() {

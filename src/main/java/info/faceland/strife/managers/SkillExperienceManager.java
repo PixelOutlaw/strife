@@ -20,7 +20,10 @@ package info.faceland.strife.managers;
 
 import static info.faceland.strife.stats.StrifeStat.SKILL_XP_GAIN;
 
+import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
+import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.champion.Champion;
 import info.faceland.strife.data.champion.ChampionSaveData;
@@ -28,6 +31,8 @@ import info.faceland.strife.data.champion.LifeSkillType;
 import info.faceland.strife.events.SkillExpGainEvent;
 import info.faceland.strife.events.SkillLevelUpEvent;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -38,11 +43,16 @@ public class SkillExperienceManager {
   private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
   private static final String XP_AB = "{0}( &f&l{1} {0}/ &f&l{2} XP {0})";
   private final String XP_MSG;
+  private final int MAX_SKILL_LEVEL;
+
+  private Map<LifeSkillType, LevelingRate> levelingRates = new HashMap<>();
 
   public SkillExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    MAX_SKILL_LEVEL = plugin.getSettings().getInt("config.leveling.max-skill-level", 50);
     XP_MSG = plugin.getSettings()
         .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
+    setupLevelingRates(plugin);
   }
 
   public void addExperience(Player player, LifeSkillType type, double amount, boolean exact) {
@@ -99,19 +109,38 @@ public class SkillExperienceManager {
   }
 
   public Integer getMaxExp(LifeSkillType type, int level) {
-    switch (type) {
-      case CRAFTING:
-        return plugin.getCraftingRate().get(level);
-      case ENCHANTING:
-        return plugin.getEnchantRate().get(level);
-      case FISHING:
-        return plugin.getFishRate().get(level);
-      case MINING:
-        return plugin.getMiningRate().get(level);
-      case SNEAK:
-        return plugin.getSneakRate().get(level);
-      default:
-        return plugin.getCombatSkillRate().get(level);
+    return levelingRates.get(type).get(level);
+  }
+
+  private void setupLevelingRates(StrifePlugin plugin) {
+    LevelingRate combatRate = new LevelingRate();
+    Expression expression = new ExpressionBuilder(plugin.getSettings()
+        .getString("config.leveling.COMBAT-SKILLS", "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL"))
+        .variable("LEVEL").build();
+    for (int i = 0; i < MAX_SKILL_LEVEL; i++) {
+      combatRate.put(i, i, (int) Math.round(expression.setVariable("LEVEL", i).evaluate()));
+    }
+    for (LifeSkillType type : LifeSkillType.values()) {
+      switch (type) {
+        case ARCHERY:
+        case AXE_MASTERY:
+        case BLACK_MAGICS:
+        case DUAL_WIELDING:
+        case ARCANE_MAGICS:
+        case SWORDSMANSHIP:
+        case NATURAL_MAGICS:
+        case SHIELD_MASTERY:
+        case CELESTIAL_MAGICS:
+          levelingRates.put(type, combatRate);
+          continue;
+      }
+      LevelingRate skillRate = new LevelingRate();
+      Expression rateExpr = new ExpressionBuilder(plugin.getSettings()
+          .getString("config.leveling." + type.toString(), "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL"))
+          .variable("LEVEL").build();
+      for (int i = 0; i < MAX_SKILL_LEVEL; i++) {
+        skillRate.put(i, i, (int) Math.round(rateExpr.setVariable("LEVEL", i).evaluate()));
+      }
     }
   }
 
