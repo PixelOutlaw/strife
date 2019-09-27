@@ -141,6 +141,7 @@ public class SkillExperienceManager {
       for (int i = 0; i < MAX_SKILL_LEVEL; i++) {
         skillRate.put(i, i, (int) Math.round(rateExpr.setVariable("LEVEL", i).evaluate()));
       }
+      levelingRates.put(type, skillRate);
     }
   }
 
