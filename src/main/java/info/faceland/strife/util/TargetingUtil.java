@@ -221,8 +221,9 @@ public class TargetingUtil {
       case BELOW_HEAD:
         return le.getEyeLocation().clone().add(0, -0.35, 0);
       case CENTER:
-        return le.getLocation().toVector().add(le.getEyeLocation().toVector().multiply(0.5))
-            .toLocation(le.getWorld());
+        Vector vec = le.getEyeLocation().toVector().subtract(le.getLocation().toVector())
+            .multiply(0.5);
+        return le.getLocation().clone().add(vec);
       case GROUND:
       default:
         return le.getLocation();
