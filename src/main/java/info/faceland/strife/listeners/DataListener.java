@@ -93,12 +93,8 @@ public class DataListener implements Listener {
     plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onEntityDeath(final EntityDeathEvent event) {
-    plugin.getBossBarManager().doBarDeath(event.getEntity());
-    plugin.getBarrierManager().removeEntity(event.getEntity());
-    plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
-    plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onEntityDeathClearIconsAndStrifeMobs(final EntityDeathEvent event) {
     if (event.getEntity() instanceof Player) {
       plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);
@@ -110,6 +106,14 @@ public class DataListener implements Listener {
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getStrifeMobManager().removeEntity(uuid), 20L * 30);
     }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onEntityDeathClearData(final EntityDeathEvent event) {
+    plugin.getBossBarManager().doBarDeath(event.getEntity());
+    plugin.getBarrierManager().removeEntity(event.getEntity());
+    plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
+    plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -130,7 +134,7 @@ public class DataListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.NORMAL)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     ensureAbilitiesDontInstantCast(event.getPlayer());
     plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
