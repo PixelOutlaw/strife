@@ -91,7 +91,7 @@ public class WSEManager {
           continue;
         }
         applyDirectionToPushEffects(wse, effect);
-        effectManager.executeEffectAtLocation(effect, caster, location);
+        effectManager.execute(effect, caster, location);
       }
     }
     wse.setLifespan(wse.getLifespan() - 1);

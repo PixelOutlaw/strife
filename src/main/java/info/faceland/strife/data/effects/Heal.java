@@ -17,7 +17,7 @@ public class Heal extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getStat(attr);
     }
-    heal = DamageUtil.applyDamageScale(caster, target, heal, damageScale, null);
+    heal = DamageUtil.applyDamageScale(caster, target, heal, damageScale, null, null);
     heal += flatBonus;
     DamageUtil.restoreHealth(target.getEntity(), heal);
   }

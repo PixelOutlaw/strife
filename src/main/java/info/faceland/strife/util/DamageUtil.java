@@ -93,10 +93,16 @@ public class DamageUtil {
     return damage;
   }
 
-  public static float getRawDamage(StrifeMob attacker, DamageType damageType) {
+  public static float getRawDamage(StrifeMob attacker, DamageType damageType, AttackType type) {
     switch (damageType) {
       case PHYSICAL:
-        return attacker.getStat(PHYSICAL_DAMAGE);
+        float damage = attacker.getStat(PHYSICAL_DAMAGE);
+        if (type == AttackType.MELEE) {
+          damage *= 1 + attacker.getStat(MELEE_PHYSICAL_MULT) / 100;
+        } else if (type == AttackType.RANGED) {
+          damage *= 1 + attacker.getStat(RANGED_PHYSICAL_MULT) / 100;
+        }
+        return damage;
       case MAGICAL:
         return attacker.getStat(MAGIC_DAMAGE) * (1 + attacker.getStat(MAGIC_MULT) / 100);
       case FIRE:
@@ -119,14 +125,14 @@ public class DamageUtil {
   }
 
   public static float applyDamageScale(StrifeMob caster, StrifeMob target, float amount,
-      DamageScale damageScale, DamageType damageType) {
+      DamageScale damageScale, DamageType damageType, AttackType attackType) {
     switch (damageScale) {
       case FLAT:
         return amount;
       case CASTER_LEVEL:
         return amount * StatUtil.getMobLevel(caster.getEntity());
       case CASTER_DAMAGE:
-        return amount * DamageUtil.getRawDamage(caster, damageType);
+        return amount * DamageUtil.getRawDamage(caster, damageType, attackType);
       case TARGET_CURRENT_HEALTH:
         return amount * (float) target.getEntity().getHealth();
       case CASTER_CURRENT_HEALTH:
@@ -157,12 +163,12 @@ public class DamageUtil {
     return amount;
   }
 
-  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker) {
+  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, AttackType attackType) {
     Map<DamageType, Float> damageMap = new HashMap<>();
     for (DamageType damageType : DMG_TYPES) {
-      float amount = getRawDamage(attacker, damageType);
+      float amount = getRawDamage(attacker, damageType, attackType);
       if (amount > 0) {
-        damageMap.put(damageType, getRawDamage(attacker, damageType));
+        damageMap.put(damageType, amount);
       }
     }
     return damageMap;

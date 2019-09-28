@@ -19,7 +19,7 @@ public class Bleed extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       bleedAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
-    bleedAmount = DamageUtil.applyDamageScale(caster, target, bleedAmount, damageScale, null);
+    bleedAmount = DamageUtil.applyDamageScale(caster, target, bleedAmount, damageScale, null, null);
     if (applyBleedMods) {
       bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;
       bleedAmount *= 1 - target.getStat(StrifeStat.BLEED_RESIST) / 100;

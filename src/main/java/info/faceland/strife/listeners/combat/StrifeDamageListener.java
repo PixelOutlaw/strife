@@ -129,14 +129,13 @@ public class StrifeDamageListener implements Listener {
             .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
       }
       if (attackMult <= 0) {
-        event.setFinalDamage(0.1);
+        event.setFinalDamage(0.001);
         return;
       }
     }
 
-    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker);
+    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, event.getAttackType());
     damageMap.replaceAll((t, v) -> damageMap.get(t) * event.getDamageMod(t) * attackMult);
-    DamageUtil.applyAttackTypeMods(attacker, event.getAttackType(), damageMap);
     for (DamageType type : DamageType.values()) {
       if (event.getFlatDamageBonuses().containsKey(type)) {
         damageMap.put(type, damageMap.getOrDefault(type, 0f) + event.getFlatDamageBonus(type));

@@ -46,8 +46,8 @@ public class FallingBlockTimer extends BukkitRunnable {
     }
     for (String s : effects) {
       StrifePlugin.getInstance().getEffectManager()
-          .executeEffectAtLocation(StrifePlugin.getInstance().getEffectManager().getEffect(s),
-              caster, block.getLocation());
+          .execute(StrifePlugin.getInstance().getEffectManager().getEffect(s), caster,
+              block.getLocation());
     }
     cancel();
   }

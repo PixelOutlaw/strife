@@ -135,7 +135,7 @@ public class EffectManager {
     applyEffectToTargets(effect, caster, targets);
   }
 
-  public void executeEffectAtLocation(Effect effect, StrifeMob caster, Location location) {
+  public void execute(Effect effect, StrifeMob caster, Location location) {
     Set<LivingEntity> locationTargets = new HashSet<>();
     locationTargets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
     applyEffectToTargets(effect, caster, locationTargets);
@@ -289,6 +289,8 @@ public class EffectManager {
           ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
           ((DealDamage) effect)
               .setDamageType(DamageType.valueOf(cs.getString("damage-type", "TRUE")));
+          ((DealDamage) effect)
+              .setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
         } catch (Exception e) {
           LogUtil.printError("Skipping effect " + key + " for invalid damage scale/type");
           return;
@@ -434,6 +436,7 @@ public class EffectManager {
         ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
+        ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
