@@ -89,9 +89,9 @@ public class ProjectileUtil {
     setProjctileAttackSpeedMeta(skull, attackMult);
   }
 
-  public static void createArrow(Player shooter, double attackMult, float power, double xOff,
-      double yOff, double zOff) {
-    Vector velocity = getProjectileVelocity(shooter, power, xOff, yOff, zOff);
+  public static void createArrow(Player shooter, double attackMult, float power, double spread,
+      double vertBonus) {
+    Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
         Arrow.class, e -> e.setVelocity(velocity));
     arrow.setShooter(shooter);
@@ -106,13 +106,13 @@ public class ProjectileUtil {
     }
   }
 
-  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double xOff, double yOff, double zOff) {
+  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
     Vector vector = shooter.getEyeLocation().getDirection();
     vector.multiply(speed);
-    xOff = -xOff + xOff * 2 * Math.random();
-    yOff = -yOff + yOff * 2 * Math.random();
-    zOff = -zOff + zOff * 2 * Math.random();
-    return vector.add(new Vector(xOff, 0.17 + yOff, zOff));
+    double xOff = -spread + spread * 2 * Math.random();
+    double yOff = -spread + spread * 2 * Math.random();
+    double zOff = -spread + spread * 2 * Math.random();
+    return vector.add(new Vector(xOff, verticalBonus + yOff, zOff));
   }
 
   public static void createTrident(Player shooter, Trident trident, float attackMult,

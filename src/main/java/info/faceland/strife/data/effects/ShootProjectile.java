@@ -40,6 +40,8 @@ public class ShootProjectile extends Effect {
   private boolean bounce;
   private boolean ignite;
   private boolean zeroPitch;
+  private boolean blockHitEffects;
+  private boolean silent;
   private float yield;
   private List<String> hitEffects;
 
@@ -53,10 +55,10 @@ public class ShootProjectile extends Effect {
     if (radialAngle != 0) {
       startAngle = -radialAngle / 2;
     }
+    double newSpread = spread * projectiles;
     for (int i = 0; i < projectiles; i++) {
-      double newSpread = spread * projectiles;
-      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed,
-          newSpread, newSpread + verticalBonus, newSpread);
+      Vector velocity = ProjectileUtil
+          .getProjectileVelocity(caster.getEntity(), newSpeed, newSpread, verticalBonus);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
       }
@@ -65,6 +67,10 @@ public class ShootProjectile extends Effect {
       Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation,
           projectileEntity.getEntityClass(), e -> e.setVelocity(velocity));
       projectile.setShooter(caster.getEntity());
+
+      if (silent) {
+        projectile.setSilent(true);
+      }
 
       if (projectileEntity == EntityType.ARROW) {
         if (arrowColor != null) {
@@ -88,6 +94,11 @@ public class ShootProjectile extends Effect {
       }
       projectile.setBounce(bounce);
       ProjectileUtil.setProjctileAttackSpeedMeta(projectile, attackMultiplier);
+
+      if (blockHitEffects) {
+        projectile.setMetadata("GROUND_TRIGGER",
+            new FixedMetadataValue(StrifePlugin.getInstance(), 1));
+      }
 
       if (!hitEffects.isEmpty()) {
         StringBuilder hitString = new StringBuilder();
@@ -154,6 +165,14 @@ public class ShootProjectile extends Effect {
 
   public void setZeroPitch(boolean zeroPitch) {
     this.zeroPitch = zeroPitch;
+  }
+
+  public void setBlockHitEffects(boolean blockHitEffects) {
+    this.blockHitEffects = blockHitEffects;
+  }
+
+  public void setSilent(boolean silent) {
+    this.silent = silent;
   }
 
   public void setOriginType(OriginLocation originType) {

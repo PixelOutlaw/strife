@@ -26,7 +26,10 @@ import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.StrifeMob;
 import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.stats.StrifeStat;
+import info.faceland.strife.util.LogUtil;
 import info.faceland.strife.util.ProjectileUtil;
+import java.util.Objects;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
@@ -36,6 +39,7 @@ import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 
 public class ShootListener implements Listener {
@@ -93,8 +97,7 @@ public class ShootListener implements Listener {
     int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
 
     for (int i = projectiles; i > 0; i--) {
-      createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles),
-          randomOffset(projectiles), randomOffset(projectiles));
+      createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles), 0.17);
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
     plugin.getSneakManager().tempDisableSneak(player);
@@ -133,6 +136,31 @@ public class ShootListener implements Listener {
 
     player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 1f, 1f);
     plugin.getSneakManager().tempDisableSneak(player);
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onGroundEffectProjectileHit(final ProjectileHitEvent event) {
+    if (event.getHitBlock() == null) {
+      return;
+    }
+    if (!event.getEntity().hasMetadata("GROUND_TRIGGER")) {
+      return;
+    }
+    StrifeMob caster = plugin.getStrifeMobManager()
+        .getStatMob((LivingEntity) Objects.requireNonNull(event.getEntity().getShooter()));
+
+    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0).asString()
+        .split("~");
+    if (effects.length == 0) {
+      LogUtil.printWarning("A handled GroundProjectile was missing effect meta... something's wrong");
+      return;
+    }
+    Location loc = event.getEntity().getLocation().clone()
+        .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
+    for (String s : effects) {
+      StrifePlugin.getInstance().getEffectManager()
+          .execute(StrifePlugin.getInstance().getEffectManager().getEffect(s), caster, loc);
+    }
   }
 
   private double randomOffset(double magnitude) {

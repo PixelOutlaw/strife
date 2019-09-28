@@ -168,6 +168,7 @@ public class CombatListener implements Listener {
     strifeDamageEvent.setAttackMultiplier(attackMultiplier);
     strifeDamageEvent.setBlocking(blocked);
     strifeDamageEvent.setConsumeEarthRunes(true);
+    strifeDamageEvent.setProjectile(projectile);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
 
     if (strifeDamageEvent.isCancelled()) {
