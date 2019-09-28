@@ -109,6 +109,9 @@ public class ProjectileUtil {
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
     Vector vector = shooter.getEyeLocation().getDirection();
     vector.multiply(speed);
+    if (spread == 0) {
+      return vector.add(new Vector(0, verticalBonus, 0));
+    }
     double xOff = -spread + spread * 2 * Math.random();
     double yOff = -spread + spread * 2 * Math.random();
     double zOff = -spread + spread * 2 * Math.random();

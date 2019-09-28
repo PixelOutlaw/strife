@@ -96,7 +96,10 @@ public class ShootListener implements Listener {
     float projectileSpeed = 2.5f * (1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
 
-    for (int i = projectiles; i > 0; i--) {
+    createArrow(player, attackMultiplier, projectileSpeed, 0, 0.17);
+    projectiles--;
+
+    for (int i = projectiles - 1; i > 0; i--) {
       createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles), 0.17);
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
