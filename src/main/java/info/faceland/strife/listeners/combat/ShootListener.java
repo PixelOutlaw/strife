@@ -99,7 +99,7 @@ public class ShootListener implements Listener {
     createArrow(player, attackMultiplier, projectileSpeed, 0, 0.17);
     projectiles--;
 
-    for (int i = projectiles - 1; i > 0; i--) {
+    for (int i = projectiles; i > 0; i--) {
       createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles), 0.17);
     }
     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
