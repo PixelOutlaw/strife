@@ -103,6 +103,10 @@ public class AbilityManager {
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
+    if (coolingDownAbilities.get(le) == null) {
+      coolingDownAbilities.put(le, new ConcurrentSet<>());
+      return null;
+    }
     for (AbilityCooldownContainer cont : coolingDownAbilities.get(le)) {
       if (abilityId.equals(cont.getAbilityId())) {
         return cont;
