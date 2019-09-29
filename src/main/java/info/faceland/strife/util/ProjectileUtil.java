@@ -89,7 +89,7 @@ public class ProjectileUtil {
     setProjctileAttackSpeedMeta(skull, attackMult);
   }
 
-  public static void createArrow(Player shooter, double attackMult, float power, double spread,
+  public static void createArrow(LivingEntity shooter, double attackMult, float power, double spread,
       double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
@@ -97,12 +97,14 @@ public class ProjectileUtil {
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
 
-    if (attackMult > 0.95) {
-      arrow.setCritical(true);
-    }
     ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
-    if (shooter.isSneaking()) {
-      ProjectileUtil.setProjectileSneakMeta(arrow);
+    if (shooter instanceof Player) {
+      if (attackMult > 0.95) {
+        arrow.setCritical(true);
+      }
+      if (((Player)shooter).isSneaking()) {
+        ProjectileUtil.setProjectileSneakMeta(arrow);
+      }
     }
   }
 

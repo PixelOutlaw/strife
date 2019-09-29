@@ -32,7 +32,6 @@ import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
@@ -50,39 +49,26 @@ public class ShootListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
-  public void onEntityShootAbility(ProjectileLaunchEvent event) {
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onEntityShoot(ProjectileLaunchEvent event) {
     if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
       return;
     }
+
     StrifeMob mob = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) event.getEntity().getShooter());
-    if (mob.getAbilitySet() == null) {
-      return;
-    }
-    if (mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) == null) {
-      return;
-    }
-    boolean triggered = plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
-    if (triggered) {
-      event.setCancelled(true);
-    }
-  }
-
-  @EventHandler(priority = EventPriority.HIGH)
-  public void onPlayerShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof Player)) {
-      return;
-    }
-    if (!(event.getEntity() instanceof Arrow)) {
-      return;
-    }
 
     event.setCancelled(true);
 
-    Player player = (Player) event.getEntity().getShooter();
-    StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
-    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
+    if (mob.getAbilitySet() != null
+        && mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) != null) {
+      boolean triggered = plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
+      if (triggered) {
+        return;
+      }
+    }
+
+    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
     attackMultiplier = Math.pow(attackMultiplier, 1.5D);
 
     if (attackMultiplier <= 0.05) {
@@ -90,20 +76,17 @@ public class ShootListener implements Listener {
       return;
     }
 
-    plugin.getChampionManager().updateEquipmentStats(
-        plugin.getChampionManager().getChampion(player));
+    float projectileSpeed = 2.5f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(MULTISHOT));
 
-    float projectileSpeed = 2.5f * (1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, pStats.getStat(MULTISHOT));
-
-    createArrow(player, attackMultiplier, projectileSpeed, 0, 0.17);
+    createArrow(mob.getEntity(), 1, projectileSpeed, 0, 0.17);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      createArrow(player, attackMultiplier, projectileSpeed, randomOffset(projectiles), 0.17);
+      createArrow(mob.getEntity(), 1, projectileSpeed, randomOffset(projectiles), 0.17);
     }
-    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
-    plugin.getSneakManager().tempDisableSneak(player);
+    mob.getEntity().getWorld()
+        .playSound(mob.getEntity().getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -155,7 +138,8 @@ public class ShootListener implements Listener {
     String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0).asString()
         .split("~");
     if (effects.length == 0) {
-      LogUtil.printWarning("A handled GroundProjectile was missing effect meta... something's wrong");
+      LogUtil
+          .printWarning("A handled GroundProjectile was missing effect meta... something's wrong");
       return;
     }
     Location loc = event.getEntity().getLocation().clone()
