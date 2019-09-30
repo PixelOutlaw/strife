@@ -73,7 +73,7 @@ import info.faceland.strife.managers.BossBarManager;
 import info.faceland.strife.managers.BuffManager;
 import info.faceland.strife.managers.ChampionManager;
 import info.faceland.strife.managers.CombatStatusManager;
-import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.managers.CorruptionManager;
 import info.faceland.strife.managers.EffectManager;
 import info.faceland.strife.managers.EntityEquipmentManager;
 import info.faceland.strife.managers.ExperienceManager;
@@ -104,7 +104,6 @@ import info.faceland.strife.tasks.AbilityTickTask;
 import info.faceland.strife.tasks.BarrierTask;
 import info.faceland.strife.tasks.BossBarsTask;
 import info.faceland.strife.tasks.CombatStatusTask;
-import info.faceland.strife.tasks.DarknessReductionTask;
 import info.faceland.strife.tasks.ForceAttackSpeed;
 import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
@@ -176,7 +175,7 @@ public class StrifePlugin extends FacePlugin {
   private BlockManager blockManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
-  private DarknessManager darknessManager;
+  private CorruptionManager corruptionManager;
   private RageManager rageManager;
   private MonsterManager monsterManager;
   private UniqueEntityManager uniqueEntityManager;
@@ -256,7 +255,7 @@ public class StrifePlugin extends FacePlugin {
     attributeManager = new StrifeAttributeManager();
     blockManager = new BlockManager();
     bleedManager = new BleedManager(this);
-    darknessManager = new DarknessManager();
+    corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager();
     equipmentManager = new EntityEquipmentManager();
     globalBoostManager = new GlobalBoostManager();
@@ -308,7 +307,6 @@ public class StrifePlugin extends FacePlugin {
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
     GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
     PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
-    DarknessReductionTask darkTask = new DarknessReductionTask(darknessManager);
     MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
     ParticleTask particleTask = new ParticleTask();
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
@@ -376,10 +374,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(pruneBossBarsTask.runTaskTimer(this,
         20L * 13, // Start timer after 13s
         20L * 60 * 7 // Run it every 7 minutes
-    ));
-    taskList.add(darkTask.runTaskTimer(this,
-        20L * 14, // Start timer after 14s
-        10L  // Run it every 0.5s after
     ));
     taskList.add(monsterLimitTask.runTaskTimer(this,
         20L * 15, // Start timer after 15s
@@ -475,6 +469,7 @@ public class StrifePlugin extends FacePlugin {
     rageManager.endRageTasks();
     abilityManager.cancelTimerTimers();
     bleedManager.endBleedTasks();
+    corruptionManager.endCorruptTasks();
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
@@ -730,8 +725,8 @@ public class StrifePlugin extends FacePlugin {
     return bleedManager;
   }
 
-  public DarknessManager getDarknessManager() {
-    return darknessManager;
+  public CorruptionManager getCorruptionManager() {
+    return corruptionManager;
   }
 
   public RageManager getRageManager() {

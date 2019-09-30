@@ -10,12 +10,12 @@ public class ConsumeCorrupt extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double value = StrifePlugin.getInstance().getDarknessManager()
+    double value = StrifePlugin.getInstance().getCorruptionManager()
         .getCorruption(target.getEntity());
     if (value <= 0) {
       return;
     }
-    StrifePlugin.getInstance().getDarknessManager().removeEntity(target.getEntity());
+    StrifePlugin.getInstance().getCorruptionManager().clearCorrupt(target.getEntity());
     if (damageRatio > 0.01) {
       target.getEntity().damage(value * damageRatio, caster.getEntity());
     }

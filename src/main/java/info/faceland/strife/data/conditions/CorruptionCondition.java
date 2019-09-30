@@ -9,9 +9,9 @@ public class CorruptionCondition extends Condition {
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     double stacks;
     if (getCompareTarget() == CompareTarget.SELF) {
-      stacks = StrifePlugin.getInstance().getDarknessManager().getCorruption(attacker.getEntity());
+      stacks = StrifePlugin.getInstance().getCorruptionManager().getCorruption(attacker.getEntity());
     } else {
-      stacks = StrifePlugin.getInstance().getDarknessManager().getCorruption(target.getEntity());
+      stacks = StrifePlugin.getInstance().getCorruptionManager().getCorruption(target.getEntity());
     }
     return PlayerDataUtil.conditionCompare(getComparison(), stacks, getValue());
   }

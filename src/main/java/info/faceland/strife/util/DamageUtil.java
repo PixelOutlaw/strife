@@ -43,7 +43,7 @@ import info.faceland.strife.events.EvadeEvent;
 import info.faceland.strife.events.SneakAttackEvent;
 import info.faceland.strife.listeners.combat.CombatListener;
 import info.faceland.strife.managers.BlockManager;
-import info.faceland.strife.managers.DarknessManager;
+import info.faceland.strife.managers.CorruptionManager;
 import info.faceland.strife.stats.StrifeStat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -535,7 +535,7 @@ public class DamageUtil {
   }
 
   public static void applyCorrupt(LivingEntity defender, float amount) {
-    StrifePlugin.getInstance().getDarknessManager().applyCorruption(defender, amount);
+    StrifePlugin.getInstance().getCorruptionManager().applyCorruption(defender, amount);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
     defender.getWorld()
         .spawnParticle(Particle.SMOKE_NORMAL, defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
@@ -683,8 +683,8 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getBlockManager();
   }
 
-  private static DarknessManager getDarknessManager() {
-    return StrifePlugin.getInstance().getDarknessManager();
+  private static CorruptionManager getDarknessManager() {
+    return StrifePlugin.getInstance().getCorruptionManager();
   }
 
   public enum DamageScale {

@@ -51,9 +51,9 @@ public class CreeperEffectListener implements Listener {
       plugin.getBleedManager()
           .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5);
     }
-    if (plugin.getDarknessManager().isCorrupted((LivingEntity) event.getDamager())) {
-      float amount = plugin.getDarknessManager().getCorruption((LivingEntity) event.getDamager());
-      plugin.getDarknessManager().applyCorruption((LivingEntity) event.getEntity(), amount + 10);
+    if (plugin.getCorruptionManager().isCorrupted((LivingEntity) event.getDamager())) {
+      float amount = plugin.getCorruptionManager().getCorruption((LivingEntity) event.getDamager());
+      plugin.getCorruptionManager().applyCorruption((LivingEntity) event.getEntity(), amount + 10);
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();
