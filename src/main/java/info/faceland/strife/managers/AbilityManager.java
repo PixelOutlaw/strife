@@ -455,11 +455,8 @@ public class AbilityManager {
       return;
     }
     MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
-    ((Player) caster.getEntity()).playSound(
-        caster.getEntity().getLocation(),
-        Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
-        1f,
-        1f);
+    ((Player) caster.getEntity())
+        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
 
   private void doRequirementNotMetPrompt(StrifeMob caster, Ability ability) {
@@ -468,11 +465,8 @@ public class AbilityManager {
       return;
     }
     MessageUtils.sendActionBar((Player) caster.getEntity(), NO_REQUIRE);
-    ((Player) caster.getEntity()).playSound(
-        caster.getEntity().getLocation(),
-        Sound.BLOCK_LAVA_POP,
-        1f,
-        0.5f);
+    ((Player) caster.getEntity())
+        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
 
   private void doOnCooldownPrompt(StrifeMob caster, Ability ability) {
@@ -481,11 +475,8 @@ public class AbilityManager {
       return;
     }
     MessageUtils.sendActionBar((Player) caster.getEntity(), ON_COOLDOWN);
-    ((Player) caster.getEntity()).playSound(
-        caster.getEntity().getLocation(),
-        Sound.ENTITY_GENERIC_EXTINGUISH_FIRE,
-        1f,
-        1.5f);
+    ((Player) caster.getEntity())
+        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {

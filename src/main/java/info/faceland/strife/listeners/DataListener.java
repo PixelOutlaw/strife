@@ -38,6 +38,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -54,6 +55,14 @@ public class DataListener implements Listener {
 
   public DataListener(StrifePlugin plugin) {
     this.plugin = plugin;
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerItemDamage(final PlayerItemDamageEvent event) {
+    if (event.getDamage() == 0 || event.isCancelled()) {
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> plugin.getAbilityIconManager().updateAllIconProgress(event.getPlayer()), 1L);
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -139,6 +148,7 @@ public class DataListener implements Listener {
     ensureAbilitiesDontInstantCast(event.getPlayer());
     plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
+    plugin.getCorruptionManager().clearCorrupt(event.getPlayer().getUniqueId());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(

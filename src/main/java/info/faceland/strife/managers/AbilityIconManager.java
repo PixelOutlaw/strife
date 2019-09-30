@@ -109,6 +109,16 @@ public class AbilityIconManager {
     updateIconProgress(player, ability);
   }
 
+  public void updateAllIconProgress(Player player) {
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    setIconDamage(plugin.getChampionManager().getChampion(player),
+        champion.getSaveData().getAbility(AbilitySlot.SLOT_A));
+    setIconDamage(plugin.getChampionManager().getChampion(player),
+        champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
+    setIconDamage(plugin.getChampionManager().getChampion(player),
+        champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
+  }
+
   private void updateIconProgress(Player player, AbilitySlot slot) {
     Champion champion = plugin.getChampionManager().getChampion(player);
     setIconDamage(champion, champion.getSaveData().getAbility(slot));
