@@ -385,7 +385,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(spawnerSpawnTask.runTaskTimer(this,
         9 * 20L, // Start timer after 9s
-        6 * 20L // Run it every 6 seconds
+        10 * 20L // Run it every 6 seconds
     ));
     taskList.add(iconDuraTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s
@@ -665,6 +665,7 @@ public class StrifePlugin extends FacePlugin {
       UniqueEntity uniqueEntity = uniqueEntityManager.getLoadedUniquesMap().get(uniqueId);
 
       int respawnSeconds = cs.getInt("respawn-seconds", 30);
+      int amount = cs.getInt("amount", 1);
       double leashRange = cs.getDouble("leash-dist", 10);
 
       double xPos = cs.getDouble("location.x");
@@ -674,7 +675,8 @@ public class StrifePlugin extends FacePlugin {
 
       Location location = new Location(world, xPos, yPos, zPos);
 
-      spawners.put(spawnerId, new Spawner(uniqueEntity, location, respawnSeconds, leashRange));
+      Spawner spawner = new Spawner(uniqueEntity, amount, location, respawnSeconds, leashRange);
+      spawners.put(spawnerId, spawner);
       spawnerManager.setSpawnerMap(spawners);
     }
   }
@@ -690,6 +692,7 @@ public class StrifePlugin extends FacePlugin {
     for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
       spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
+      spawnerYAML.set(spawnerId + ".amount", spawner.getAmount());
       spawnerYAML.set(spawnerId + ".respawn-seconds", spawner.getRespawnSeconds());
       spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
       spawnerYAML.set(spawnerId + ".location.world", spawner.getLocation().getWorld().getName());

@@ -218,7 +218,7 @@ public class StrifeMob {
     if (spawner == null) {
       return;
     }
-    spawner.doDeath();
+    spawner.doDeath(livingEntity);
   }
 
   private Map<StrifeStat, Float> getBuffStats() {

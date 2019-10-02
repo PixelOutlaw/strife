@@ -1,28 +1,31 @@
 package info.faceland.strife.data;
 
+import io.netty.util.internal.ConcurrentSet;
+import java.util.Set;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 public class Spawner {
 
-  private final UniqueEntity uniqueEntity;
+  private Set<LivingEntity> entities = new ConcurrentSet<>();
+  private Set<Long> respawnTimes = new ConcurrentSet<>();
 
-  private LivingEntity trackedEntity;
+  private final UniqueEntity uniqueEntity;
+  private int amount;
   private Location location;
   private double leashRange;
   private long respawnSeconds;
-  private long respawnTime;
   private int chunkX;
   private int chunkZ;
 
-  public Spawner(UniqueEntity uniqueEntity, Location location, int respawnSeconds,
+  public Spawner(UniqueEntity uniqueEntity, int amount, Location location, int respawnSeconds,
       double leashRange) {
     this.uniqueEntity = uniqueEntity;
+    this.amount = amount;
     this.location = location;
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
-    this.respawnTime = System.currentTimeMillis();
 
     Chunk chunk = location.getChunk();
     this.chunkX = chunk.getX();
@@ -31,6 +34,14 @@ public class Spawner {
 
   public UniqueEntity getUniqueEntity() {
     return uniqueEntity;
+  }
+
+  public int getAmount() {
+    return amount;
+  }
+
+  public void setAmount(int amount) {
+    this.amount = amount;
   }
 
   public Location getLocation() {
@@ -60,20 +71,16 @@ public class Spawner {
     return respawnSeconds;
   }
 
-  public LivingEntity getTrackedEntity() {
-    return trackedEntity;
+  public Set<LivingEntity> getEntities() {
+    return entities;
   }
 
-  public void setTrackedEntity(LivingEntity trackedEntity) {
-    this.trackedEntity = trackedEntity;
+  public void addEntity(LivingEntity trackedEntity) {
+    entities.add(trackedEntity);
   }
 
-  public long getRespawnTime() {
-    return respawnTime;
-  }
-
-  public void setRespawnTime(long respawnTime) {
-    this.respawnTime = respawnTime;
+  public Set<Long> getRespawnTimes() {
+    return respawnTimes;
   }
 
   public int getChunkX() {
@@ -84,10 +91,11 @@ public class Spawner {
     return chunkZ;
   }
 
-  public void doDeath() {
-    if (trackedEntity != null && trackedEntity.isValid()) {
-      trackedEntity.remove();
+  public void doDeath(LivingEntity livingEntity) {
+    if (livingEntity != null && livingEntity.isValid()) {
+      entities.remove(livingEntity);
+      livingEntity.remove();
     }
-    respawnTime = System.currentTimeMillis() + respawnSeconds * 1000;
+    respawnTimes.add(System.currentTimeMillis() + respawnSeconds * 1000);
   }
 }

@@ -12,9 +12,9 @@ public class SpawnerTimer extends BukkitRunnable {
   private final Spawner spawner;
   private final LivingEntity entity;
 
-  public SpawnerTimer(Spawner spawner) {
+  public SpawnerTimer(Spawner spawner, LivingEntity livingEntity) {
     this.spawner = spawner;
-    this.entity = spawner.getTrackedEntity();
+    this.entity = livingEntity;
     runTaskTimer(StrifePlugin.getInstance(), 0L, 20L);
     LogUtil.printDebug("Created SpawnerTimer with id " + getTaskId());
   }
@@ -35,7 +35,7 @@ public class SpawnerTimer extends BukkitRunnable {
       entity.getWorld().spawnParticle(Particle.CLOUD,
           entity.getLocation().clone().add(0, offset, 0), 20, 0.5, offset, 0.5, 0);
       LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
-      spawner.getTrackedEntity().remove();
+      entity.remove();
       cancel();
     }
   }
