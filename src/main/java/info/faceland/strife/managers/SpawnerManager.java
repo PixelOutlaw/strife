@@ -36,6 +36,17 @@ public class SpawnerManager {
     this.spawnerMap.remove(id);
   }
 
+  public void addRespawnTime(LivingEntity livingEntity) {
+    for (SpawnerTimer s : spawnerTimers) {
+      if (s.getEntity() == livingEntity) {
+        Spawner spawner = s.getSpawner();
+        spawner.getRespawnTimes().add(System.currentTimeMillis() + spawner.getRespawnMillis());
+        spawner.getEntities().remove(livingEntity);
+        s.cancel();
+      }
+    }
+  }
+
   public void spawnSpawners() {
     for (Spawner s : spawnerMap.values()) {
       int maxMobs = s.getAmount();
@@ -49,7 +60,7 @@ public class SpawnerManager {
           s.getEntities().remove(livingEntity);
         }
       }
-      if (s.getRespawnTimes().size() >= maxMobs || s.getEntities().size() >= maxMobs) {
+      if (s.getRespawnTimes().size() + s.getEntities().size() >= maxMobs) {
         continue;
       }
       if (!isChuckLoaded(s)) {
@@ -63,7 +74,6 @@ public class SpawnerManager {
       mob.setDespawnOnUnload(true);
       s.addEntity(mob.getEntity());
       spawnerTimers.add(new SpawnerTimer(s, mob.getEntity()));
-      s.getRespawnTimes().add(System.currentTimeMillis() + s.getRespawnMillis());
     }
   }
 

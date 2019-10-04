@@ -123,6 +123,7 @@ public class DataListener implements Listener {
     plugin.getBarrierManager().removeEntity(event.getEntity());
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
+    plugin.getSpawnerManager().addRespawnTime(event.getEntity());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

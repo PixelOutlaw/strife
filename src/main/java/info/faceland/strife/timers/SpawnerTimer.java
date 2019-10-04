@@ -39,4 +39,12 @@ public class SpawnerTimer extends BukkitRunnable {
       cancel();
     }
   }
+
+  public Spawner getSpawner() {
+    return spawner;
+  }
+
+  public LivingEntity getEntity() {
+    return entity;
+  }
 }
