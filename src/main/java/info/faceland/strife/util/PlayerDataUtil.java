@@ -145,10 +145,10 @@ public class PlayerDataUtil {
         .getLifeSkillExp(type);
   }
 
-  public static float getFishMaxExp(Player player, LifeSkillType type) {
-    int level = getLifeSkillLevel(player, type);
-    return StrifePlugin.getInstance().getSkillExperienceManager()
-        .getMaxExp(type, level);
+  public static float getLifeSkillMaxExp(Player player, LifeSkillType type) {
+    int level = StrifePlugin.getInstance().getChampionManager().getChampion(player)
+        .getLifeSkillLevel(type);
+    return StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level);
   }
 
   public static float getSkillProgress(Champion champion, LifeSkillType type) {
