@@ -32,6 +32,7 @@ import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
@@ -51,7 +52,8 @@ public class ShootListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onEntityShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
+    if (!(event.getEntity().getShooter() instanceof LivingEntity) || !(event
+        .getEntity() instanceof Arrow)) {
       return;
     }
 
