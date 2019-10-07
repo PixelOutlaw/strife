@@ -35,7 +35,6 @@ import info.faceland.strife.data.Spawner;
 import info.faceland.strife.data.UniqueEntity;
 import info.faceland.strife.data.ability.EntityAbilitySet;
 import info.faceland.strife.data.effects.Effect;
-import info.faceland.strife.data.effects.Lightning;
 import info.faceland.strife.data.effects.ShootBlock;
 import info.faceland.strife.data.effects.SpawnParticle;
 import info.faceland.strife.listeners.BullionListener;
@@ -108,7 +107,6 @@ import info.faceland.strife.tasks.ForceAttackSpeed;
 import info.faceland.strife.tasks.GlobalMultiplierTask;
 import info.faceland.strife.tasks.HealthRegenTask;
 import info.faceland.strife.tasks.MinionDecayTask;
-import info.faceland.strife.tasks.MonsterLimitTask;
 import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.tasks.PruneBossBarsTask;
 import info.faceland.strife.tasks.SaveTask;
@@ -307,7 +305,6 @@ public class StrifePlugin extends FacePlugin {
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
     GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
     PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
-    MonsterLimitTask monsterLimitTask = new MonsterLimitTask(settings);
     ParticleTask particleTask = new ParticleTask();
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
@@ -374,10 +371,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(pruneBossBarsTask.runTaskTimer(this,
         20L * 13, // Start timer after 13s
         20L * 60 * 7 // Run it every 7 minutes
-    ));
-    taskList.add(monsterLimitTask.runTaskTimer(this,
-        20L * 15, // Start timer after 15s
-        20L * 60  // Run it every minute after
     ));
     taskList.add(particleTask.runTaskTimer(this,
         20 * 20L,
@@ -451,8 +444,6 @@ public class StrifePlugin extends FacePlugin {
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
     }
-
-    Lightning.setupLightningPacketListener();
 
     LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
@@ -616,6 +607,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setExperience(cs.getInt("experience", 0));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
+      uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
 
