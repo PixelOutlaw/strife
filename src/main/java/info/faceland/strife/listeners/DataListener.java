@@ -34,6 +34,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -62,6 +63,13 @@ public class DataListener implements Listener {
     if (event.getDamage() == 0 || event.isCancelled()) {
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getAbilityIconManager().updateAllIconProgress(event.getPlayer()), 1L);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onEntityCombust(final EntityCombustEvent event) {
+    if (event.getEntity().hasMetadata("NO_BURN")) {
+      event.setCancelled(true);
     }
   }
 

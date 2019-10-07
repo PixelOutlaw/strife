@@ -129,6 +129,9 @@ public class UniqueEntityManager {
     strifeMob.setUniqueEntityId(uniqueEntity.getId());
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
+    if (uniqueEntity.isBurnImmune()) {
+      spawnedUnique.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
+    }
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().createCooldownContainer(spawnedUnique);
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
