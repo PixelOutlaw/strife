@@ -48,6 +48,7 @@ public class StrifeDamageEvent extends Event implements Cancellable {
   private final Map<DamageType, Float> damageModifiers = new HashMap<>();
   private final Map<DamageType, Float> flatDamageBonuses = new HashMap<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
+  private boolean isSneakAttack = false;
   private boolean isBlocking = false;
   private boolean canBeBlocked = true;
   private boolean canBeEvaded = true;
@@ -100,6 +101,14 @@ public class StrifeDamageEvent extends Event implements Cancellable {
 
   public void setHealMultiplier(float healMultiplier) {
     this.healMultiplier = healMultiplier;
+  }
+
+  public boolean isSneakAttack() {
+    return isSneakAttack;
+  }
+
+  public void setSneakAttack(boolean sneakAttack) {
+    isSneakAttack = sneakAttack;
   }
 
   public boolean isBlocking() {

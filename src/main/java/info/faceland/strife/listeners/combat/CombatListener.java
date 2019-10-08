@@ -162,7 +162,12 @@ public class CombatListener implements Listener {
       return;
     }
 
+    boolean isSneakAttack = projectile == null ?
+        plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity()) :
+        plugin.getSneakManager().isSneakAttack(projectile, defender.getEntity());
+
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageType);
+    strifeDamageEvent.setSneakAttack(isSneakAttack);
     strifeDamageEvent.setExtraEffects(extraEffects);
     strifeDamageEvent.setHealMultiplier(healMultiplier);
     strifeDamageEvent.setAttackMultiplier(attackMultiplier);

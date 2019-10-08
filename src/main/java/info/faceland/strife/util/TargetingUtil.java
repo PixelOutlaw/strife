@@ -204,14 +204,15 @@ public class TargetingUtil {
     return getMobTarget(strifeMob.getEntity());
   }
 
-  public static LivingEntity getMobTarget(LivingEntity livingEntity) {
-    if (!(livingEntity instanceof Mob)) {
+  public static LivingEntity getMobTarget(LivingEntity targeter) {
+    if (!(targeter instanceof Mob)) {
       return null;
     }
-    if (((Mob) livingEntity).getTarget() == null || !((Mob) livingEntity).getTarget().isValid()) {
+    LivingEntity target = ((Mob) targeter).getTarget();
+    if (target == null || !target.isValid()) {
       return null;
     }
-    return ((Mob) livingEntity).getTarget();
+    return target;
   }
 
   public static Location getOriginLocation(LivingEntity le, OriginLocation origin) {

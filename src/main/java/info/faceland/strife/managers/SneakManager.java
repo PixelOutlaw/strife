@@ -62,7 +62,8 @@ public class SneakManager {
     if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
       return false;
     }
-    return TargetingUtil.getMobTarget(target) == null;
+    target = TargetingUtil.getMobTarget(target);
+    return target == null || !target.isValid();
   }
 
   public boolean isSneakAttack(Projectile projectile, LivingEntity target) {

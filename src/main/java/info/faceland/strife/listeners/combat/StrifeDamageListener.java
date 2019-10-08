@@ -203,19 +203,7 @@ public class StrifeDamageListener implements Listener {
     rawDamage *= StatUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
-    double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
-    plugin.getBarrierManager().updateShieldDisplay(defender);
-
-    boolean isBleedApplied = false;
-    if (damageMap.containsKey(DamageType.PHYSICAL)) {
-      isBleedApplied = DamageUtil.attemptBleed(attacker, defender,
-          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods());
-    }
-
-    boolean isSneakAttack = event.getProjectile() == null ?
-        plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity()) :
-        plugin.getSneakManager().isSneakAttack(event.getProjectile(), defender.getEntity());
-
+    boolean isSneakAttack = event.isSneakAttack();
     if (isSneakAttack) {
       Player player = (Player) attacker.getEntity();
       float sneakSkill = plugin.getChampionManager().getChampion(player)
@@ -229,17 +217,23 @@ public class StrifeDamageListener implements Listener {
       if (sneakEvent.isCancelled()) {
         isSneakAttack = false;
       } else {
-        finalDamage += sneakEvent.getSneakAttackDamage();
+        rawDamage += sneakEvent.getSneakAttackDamage();
       }
     }
-    if (!isSneakAttack && attacker.getEntity() instanceof Player) {
-      plugin.getSneakManager().tempDisableSneak((Player) attacker.getEntity());
+
+    double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
+    plugin.getBarrierManager().updateShieldDisplay(defender);
+
+    boolean isBleedApplied = false;
+    if (damageMap.containsKey(DamageType.PHYSICAL)) {
+      isBleedApplied = DamageUtil.attemptBleed(attacker, defender,
+          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods());
     }
 
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
-
     plugin.getAbilityManager().abilityCast(attacker, TriggerAbilityType.ON_HIT);
     plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
+    plugin.getSneakManager().tempDisableSneak((Player) attacker.getEntity());
 
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         critMult, triggeredElements, isBleedApplied, isSneakAttack);
