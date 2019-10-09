@@ -79,7 +79,7 @@ public class TargetingListener implements Listener {
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
         .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER || event
-        .getEntity().hasMetadata("BOSS")) {
+        .getEntity().hasMetadata("IGNORE_SNEAK")) {
       return;
     }
     if (plugin.getSneakManager().isUnstealthed(event.getTarget().getUniqueId())) {
@@ -103,7 +103,7 @@ public class TargetingListener implements Listener {
     Vector entitySightVector = entityLoc.getDirection();
 
     float angle = entitySightVector.angle(playerDifferenceVector);
-    float sneakSkill = (float) champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
+    float sneakSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
     double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
     float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
     float lightMult = (float) Math.max(0.15,

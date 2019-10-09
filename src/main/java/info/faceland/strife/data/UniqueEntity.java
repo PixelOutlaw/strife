@@ -17,13 +17,14 @@ public class UniqueEntity {
   private int experience;
   private Map<StrifeStat, Float> attributeMap;
   private EntityAbilitySet abilitySet;
-
+  private boolean showName;
   private boolean baby;
   private int size;
   private int followRange = -1;
   private boolean knockbackImmune;
   private boolean charmImmune;
   private boolean burnImmune;
+  private boolean ignoreSneak;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private SpawnParticle spawnParticle;
 
@@ -75,6 +76,14 @@ public class UniqueEntity {
     this.abilitySet = abilitySet;
   }
 
+  public boolean isShowName() {
+    return showName;
+  }
+
+  public void setShowName(boolean showName) {
+    this.showName = showName;
+  }
+
   public boolean isBaby() {
     return baby;
   }
@@ -105,6 +114,14 @@ public class UniqueEntity {
 
   public void setKnockbackImmune(boolean knockbackImmune) {
     this.knockbackImmune = knockbackImmune;
+  }
+
+  public boolean isIgnoreSneak() {
+    return ignoreSneak;
+  }
+
+  public void setIgnoreSneak(boolean ignoreSneak) {
+    this.ignoreSneak = ignoreSneak;
   }
 
   public boolean isBurnImmune() {

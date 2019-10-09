@@ -122,7 +122,7 @@ public class UniqueEntityManager {
     ItemUtil.delayedEquip(uniqueEntity.getEquipment(), spawnedUnique);
 
     spawnedUnique.setCustomName(uniqueEntity.getName());
-    spawnedUnique.setCustomNameVisible(true);
+    spawnedUnique.setCustomNameVisible(uniqueEntity.isShowName());
 
     plugin.getStrifeMobManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
     StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(spawnedUnique);
@@ -131,6 +131,9 @@ public class UniqueEntityManager {
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     if (uniqueEntity.isBurnImmune()) {
       spawnedUnique.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
+    }
+    if (uniqueEntity.isIgnoreSneak()) {
+      spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().createCooldownContainer(spawnedUnique);
