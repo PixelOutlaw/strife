@@ -75,7 +75,12 @@ public class BossBarManager {
     if (skillBarMap.containsKey(champion.getUniqueId())
         && skillBarMap.get(champion.getUniqueId()) != null
         && skillBarMap.get(champion.getUniqueId()).getSkillBar() != null) {
-      return skillBarMap.get(champion.getUniqueId());
+      SkillBossBar bar = skillBarMap.get(champion.getUniqueId());
+      for (Player p : bar.getSkillBar().getPlayers()) {
+        bar.getSkillBar().removePlayer(p);
+      }
+      bar.getSkillBar().addPlayer(champion.getPlayer());
+      return bar;
     }
     SkillBossBar skillBar = new SkillBossBar(champion, makeSkillBar());
     skillBar.getSkillBar().setVisible(false);
@@ -86,9 +91,9 @@ public class BossBarManager {
 
   public void bumpSkillBar(Champion champion, LifeSkillType lifeSkillType) {
     String name = lifeSkillType.getName();
-    String barName = name + " Lv" + champion.getSaveData().getSkillLevel(lifeSkillType);
     SkillBossBar skillBar = getSkillBar(champion);
     skillBar.getSkillBar().setVisible(true);
+    String barName = name + " Lv" + champion.getSaveData().getSkillLevel(lifeSkillType);
     skillBar.getSkillBar().setTitle(barName);
     skillBar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(champion, lifeSkillType));
     skillBar.setDisplayTicks(skillDuration);
