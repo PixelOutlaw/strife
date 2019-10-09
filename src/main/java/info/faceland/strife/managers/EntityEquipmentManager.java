@@ -14,7 +14,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 
 public class EntityEquipmentManager {
 
@@ -54,26 +53,30 @@ public class EntityEquipmentManager {
       return;
     }
 
-    ItemStack itemStack = new ItemStack(material);
+    ItemStack stack = new ItemStack(material);
+    if (material == Material.PLAYER_HEAD) {
+      String base64 = cs.getString("base64",
+          "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
+      stack = withBase64(stack, base64);
+    } else {
+      stack = new ItemStack(material);
+    }
 
     String name = cs.getString("name", "");
     if (StringUtils.isNotBlank(name)) {
-      ItemStackExtensionsKt.setDisplayName(itemStack, TextUtils.color(name));
+      ItemStackExtensionsKt.setDisplayName(stack, TextUtils.color(name));
     }
     List<String> lore = new ArrayList<>();
     for (String line : cs.getStringList("lore")) {
       lore.add(TextUtils.color(line));
     }
-    ItemStackExtensionsKt.setLore(itemStack, lore);
-    ItemStackExtensionsKt.setUnbreakable(itemStack, true);
+    ItemStackExtensionsKt.setLore(stack, lore);
+    ItemStackExtensionsKt.setUnbreakable(stack, true);
+    getItemMap().put(key, stack);
+  }
 
-    String uuidString = cs.getString("uuid", "b4064ecc-5508-4848-ae4d-f12fbebd0a52");
-    if (material == Material.PLAYER_HEAD && StringUtils.isNotBlank(uuidString)) {
-      UUID uuid = UUID.fromString(uuidString);
-      SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
-      skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
-      itemStack.setItemMeta(skullMeta);
-    }
-    getItemMap().put(key, itemStack);
+  public ItemStack withBase64(ItemStack item, String base64) {
+    UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());
+    return Bukkit.getUnsafe().modifyItemStack(item, "{SkullOwner:{Id:\"" + hashAsId + "\",Properties:{textures:[{Value:\"" + base64 + "\"}]}}}");
   }
 }

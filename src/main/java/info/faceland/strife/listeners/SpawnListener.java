@@ -14,6 +14,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import info.faceland.strife.StrifePlugin;
 import info.faceland.strife.data.MobMod;
 import info.faceland.strife.data.StrifeMob;
+import info.faceland.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import info.faceland.strife.util.LogUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Random;
@@ -171,6 +172,7 @@ public class SpawnListener implements Listener {
     }
     setEntityAttributes(strifeMob, entity);
     entity.setCustomName(getPrefixColor(mods.size()) + prefix + name + suffix + levelSuffix);
+    plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
   }
 

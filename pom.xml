@@ -71,11 +71,13 @@
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
       <version>1.14.4.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>bullion</artifactId>
       <version>2.1.4</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>LibsDisguises</groupId>

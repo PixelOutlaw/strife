@@ -23,9 +23,6 @@ public class LogUtil {
   }
 
   public static void printInfo(String message) {
-    if (StrifePlugin.getInstance().getLogLevel().ordinal() > 0) {
-      return;
-    }
     StrifePlugin.getInstance().getLogger().info(message);
   }
 

@@ -445,9 +445,10 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.setAllAbilityIcons(player);
     }
 
-    LogUtil.printInfo("+===================================+");
+    LogUtil.printInfo("Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
+    LogUtil.printInfo("Loaded " + effectManager.getLoadedEffects().size() + " effects");
+    LogUtil.printInfo("Loaded " + abilityManager.getLoadedAbilities().size() + " abilities");
     LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
-    LogUtil.printInfo("+===================================+");
   }
 
   @Override
@@ -474,9 +475,7 @@ public class StrifePlugin extends FacePlugin {
       task.cancel();
     }
 
-    LogUtil.printInfo("+===================================+");
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
-    LogUtil.printInfo("+===================================+");
   }
 
   private VersionedSmartYamlConfiguration defaultSettingsLoad(String name) {
@@ -608,6 +607,8 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
+      uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
+      uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
 

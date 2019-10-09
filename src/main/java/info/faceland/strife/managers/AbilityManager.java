@@ -66,6 +66,10 @@ public class AbilityManager {
     this.plugin = plugin;
   }
 
+  public Map<String, Ability> getLoadedAbilities() {
+    return loadedAbilities;
+  }
+
   public Ability getAbility(String name) {
     if (loadedAbilities.containsKey(name)) {
       return loadedAbilities.get(name);
