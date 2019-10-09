@@ -493,6 +493,7 @@ public class EffectManager {
       case IGNITE:
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
+        ((Ignite) effect).setForceDuration(cs.getBoolean("force-duration", false));
         break;
       case SILENCE:
         effect = new Silence();

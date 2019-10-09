@@ -10,12 +10,14 @@ public class Ignite extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     if (forceDuration) {
+      target.getEntity().setFireTicks(duration);
+    } else {
       target.getEntity().setFireTicks(Math.max(duration, target.getEntity().getFireTicks()));
-    } 
+    }
   }
 
-  public int getDuration() {
-    return duration;
+  public void setForceDuration(boolean forceDuration) {
+    this.forceDuration = forceDuration;
   }
 
   public void setDuration(int duration) {
