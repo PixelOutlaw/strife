@@ -52,8 +52,8 @@ public class SpawnerCommand {
       return;
     }
 
-    Spawner spawner = new Spawner(uniqueEntity, amount, sender.getLocation(), respawnSecs,
-        leashRange);
+    Spawner spawner = new Spawner(uniqueEntity, uniqueName, amount, sender.getLocation(),
+        respawnSecs, leashRange);
     plugin.getSpawnerManager().addSpawner(spawnerName, spawner);
     sendMessage(sender, "&aSpawner &f" + spawnerName + " &asuccessfully added!");
   }

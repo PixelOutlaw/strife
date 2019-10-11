@@ -49,6 +49,9 @@ public class SpawnerManager {
 
   public void spawnSpawners() {
     for (Spawner s : spawnerMap.values()) {
+      if (s.getUniqueEntity() == null || s.getLocation() == null) {
+        continue;
+      }
       int maxMobs = s.getAmount();
       for (long stamp : s.getRespawnTimes()) {
         if (System.currentTimeMillis() > stamp) {

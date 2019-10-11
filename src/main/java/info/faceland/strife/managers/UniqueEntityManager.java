@@ -82,10 +82,6 @@ public class UniqueEntityManager {
     LivingEntity spawnedUnique = (LivingEntity) entity;
     spawnedUnique.setRemoveWhenFarAway(false);
 
-    double health = uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.HEALTH, 5f);
-    spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
-    spawnedUnique.setHealth(health);
-
     if (spawnedUnique instanceof Zombie) {
       ((Zombie) spawnedUnique).setBaby(uniqueEntity.isBaby());
     } else if (spawnedUnique instanceof Slime) {
@@ -106,20 +102,6 @@ public class UniqueEntityManager {
       spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
-    if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
-      double speed =
-          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100f) / 100f;
-      spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(
-          spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue() * speed);
-    }
-
-    if (spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) {
-      double speed =
-          uniqueEntity.getAttributeMap().getOrDefault(StrifeStat.MOVEMENT_SPEED, 100f) / 100f;
-      spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(
-          spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue() * speed);
-    }
-
     ItemUtil.delayedEquip(uniqueEntity.getEquipment(), spawnedUnique);
 
     spawnedUnique.setCustomName(uniqueEntity.getName());
@@ -130,8 +112,27 @@ public class UniqueEntityManager {
       mobLevel = StatUtil.getMobLevel(spawnedUnique);
     }
 
-    Map<StrifeStat, Float> stats = plugin.getMonsterManager().getBaseStats(spawnedUnique, mobLevel);
+    Map<StrifeStat, Float> stats = new HashMap<>();
+    if (mobLevel != 0) {
+      stats.putAll(plugin.getMonsterManager().getBaseStats(spawnedUnique, mobLevel));
+    }
+
     stats = StatUpdateManager.combineMaps(stats, uniqueEntity.getAttributeMap());
+
+    double health = stats.getOrDefault(StrifeStat.HEALTH, 1f) *
+        (1 + stats.getOrDefault(StrifeStat.HEALTH_MULT, 0f) / 100);
+    spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
+    spawnedUnique.setHealth(health);
+
+    double speed = stats.getOrDefault(StrifeStat.MOVEMENT_SPEED, 100f) / 100f;
+    if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
+      double base = spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
+      spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(base * speed);
+    }
+    if (spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) {
+      double base = spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue();
+      spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(base * speed);
+    }
 
     StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(spawnedUnique, stats);
     strifeMob.setUniqueEntityId(uniqueEntity.getId());

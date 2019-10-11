@@ -132,7 +132,6 @@ import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -650,26 +649,34 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = spawnerYAML.getConfigurationSection(spawnerId);
-
-      String uniqueId = cs.getString("unique");
-      if (!uniqueEntityManager.isLoadedUnique(uniqueId)) {
-        LogUtil.printWarning("Skipping spawner " + spawnerId + " with invalid unique " + uniqueId);
+      if (cs == null) {
         continue;
       }
-      UniqueEntity uniqueEntity = uniqueEntityManager.getLoadedUniquesMap().get(uniqueId);
+      UniqueEntity uniqueEntity = null;
+      String uniqueId = cs.getString("unique");
+      if (uniqueEntityManager.isLoadedUnique(uniqueId)) {
+        uniqueEntity = uniqueEntityManager.getLoadedUniquesMap().get(uniqueId);
+      } else {
+        LogUtil.printWarning("Spawner " + spawnerId + " has invalid unique " + uniqueId);
+      }
 
       int respawnSeconds = cs.getInt("respawn-seconds", 30);
       int amount = cs.getInt("amount", 1);
       double leashRange = cs.getDouble("leash-dist", 10);
 
-      double xPos = cs.getDouble("location.x");
-      double yPos = cs.getDouble("location.y");
-      double zPos = cs.getDouble("location.z");
-      World world = Bukkit.getWorld(cs.getString("location.world"));
+      Location loc = null;
+      String world = cs.getString("location.world", "");
+      if (StringUtils.isNotBlank(world) && Bukkit.getWorld(world) != null) {
+        double xPos = cs.getDouble("location.x");
+        double yPos = cs.getDouble("location.y");
+        double zPos = cs.getDouble("location.z");
+        loc = new Location(Bukkit.getWorld(world), xPos, yPos, zPos);
+      } else {
+        LogUtil.printWarning("Spawner " + spawnerId + " has invalid location");
+      }
 
-      Location location = new Location(world, xPos, yPos, zPos);
-
-      Spawner spawner = new Spawner(uniqueEntity, amount, location, respawnSeconds, leashRange);
+      Spawner spawner = new Spawner(uniqueEntity, uniqueId, amount, loc,
+          respawnSeconds, leashRange);
       spawners.put(spawnerId, spawner);
       spawnerManager.setSpawnerMap(spawners);
     }
@@ -685,7 +692,7 @@ public class StrifePlugin extends FacePlugin {
     }
     for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
-      spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueEntity().getId());
+      spawnerYAML.set(spawnerId + ".unique", spawner.getUniqueId());
       spawnerYAML.set(spawnerId + ".amount", spawner.getAmount());
       spawnerYAML.set(spawnerId + ".respawn-seconds", spawner.getRespawnSeconds());
       spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
