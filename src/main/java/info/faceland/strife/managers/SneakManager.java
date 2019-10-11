@@ -40,7 +40,10 @@ public class SneakManager {
   private final static float BASE_SNEAK_ATTACK_EXP = 1f;
   private final static float SNEAK_ATTACK_EXP_PER_LEVEL = 0.1f;
 
-  public void tempDisableSneak(Player player) {
+  public void tempDisableSneak(LivingEntity player) {
+    if (!(player instanceof Player)) {
+      return;
+    }
     sneakTickMap.put(player.getUniqueId(), SNEAK_DISABLE_DURATION);
   }
 

@@ -77,7 +77,7 @@ public class StrifeDamageListener implements Listener {
           plugin.getChampionManager().getChampion((Player) attacker.getEntity()));
     }
     if (defender.getEntity() instanceof Player) {
-      plugin.getSneakManager().tempDisableSneak((Player) defender.getEntity());
+      plugin.getSneakManager().tempDisableSneak(defender.getEntity());
       plugin.getChampionManager().updateEquipmentStats(
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
@@ -233,7 +233,7 @@ public class StrifeDamageListener implements Listener {
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
     plugin.getAbilityManager().abilityCast(attacker, TriggerAbilityType.ON_HIT);
     plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
-    plugin.getSneakManager().tempDisableSneak((Player) attacker.getEntity());
+    plugin.getSneakManager().tempDisableSneak(attacker.getEntity());
 
     sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         critMult, triggeredElements, isBleedApplied, isSneakAttack);
