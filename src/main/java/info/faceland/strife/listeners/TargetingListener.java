@@ -75,6 +75,23 @@ public class TargetingListener implements Listener {
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
+    if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
+        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
+      return;
+    }
+    if (((Player) event.getTarget()).isSneaking()) {
+      return;
+    }
+    int playerLevel = StatUtil.getMobLevel(event.getTarget());
+    int mobLevel = StatUtil.getMobLevel((Mob) event.getEntity());
+
+    if (playerLevel - mobLevel > 20) {
+      event.setCancelled(true);
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
