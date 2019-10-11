@@ -611,6 +611,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
+      uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
       String disguise = cs.getString("disguise", null);
       if (StringUtils.isNotBlank(disguise)) {

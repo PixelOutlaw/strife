@@ -17,6 +17,7 @@ public class UniqueEntity {
   private int experience;
   private Map<StrifeStat, Float> attributeMap;
   private EntityAbilitySet abilitySet;
+  private int baseLevel;
   private boolean showName;
   private boolean baby;
   private int size;
@@ -66,6 +67,14 @@ public class UniqueEntity {
 
   public void setAttributeMap(Map<StrifeStat, Float> attributeMap) {
     this.attributeMap = attributeMap;
+  }
+
+  public int getBaseLevel() {
+    return baseLevel;
+  }
+
+  public void setBaseLevel(int baseLevel) {
+    this.baseLevel = baseLevel;
   }
 
   public EntityAbilitySet getAbilitySet() {

@@ -60,10 +60,11 @@ public class StrifeMobManager {
     return initialSize - trackedEntities.size();
   }
 
-  public void setEntityStats(LivingEntity entity, Map<StrifeStat, Float> statMap) {
+  public StrifeMob setEntityStats(LivingEntity entity, Map<StrifeStat, Float> statMap) {
     StrifeMob strifeMob = getStatMob(entity);
     strifeMob.setStats(statMap);
     trackedEntities.put(entity.getUniqueId(), strifeMob);
+    return strifeMob;
   }
 
   public void despawnAllTempEntities() {

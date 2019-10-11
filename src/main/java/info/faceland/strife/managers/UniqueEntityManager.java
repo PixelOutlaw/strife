@@ -10,6 +10,7 @@ import info.faceland.strife.stats.StrifeStat;
 import info.faceland.strife.tasks.ParticleTask;
 import info.faceland.strife.util.ItemUtil;
 import info.faceland.strife.util.LogUtil;
+import info.faceland.strife.util.StatUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -124,8 +125,15 @@ public class UniqueEntityManager {
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(uniqueEntity.isShowName());
 
-    plugin.getStrifeMobManager().setEntityStats(spawnedUnique, uniqueEntity.getAttributeMap());
-    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(spawnedUnique);
+    int mobLevel = uniqueEntity.getBaseLevel();
+    if (mobLevel == -1) {
+      mobLevel = StatUtil.getMobLevel(spawnedUnique);
+    }
+
+    Map<StrifeStat, Float> stats = plugin.getMonsterManager().getBaseStats(spawnedUnique, mobLevel);
+    stats = StatUpdateManager.combineMaps(stats, uniqueEntity.getAttributeMap());
+
+    StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(spawnedUnique, stats);
     strifeMob.setUniqueEntityId(uniqueEntity.getId());
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
