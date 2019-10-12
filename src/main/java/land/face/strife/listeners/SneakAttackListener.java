@@ -21,7 +21,9 @@ package land.face.strife.listeners;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.SneakAttackEvent;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -46,7 +48,10 @@ public class SneakAttackListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onSneakAttackExp(final SneakAttackEvent event) {
-    if (event.getVictim() instanceof Player) {
+    if (event.getVictim() instanceof Player || (!(event.getVictim() instanceof Mob))) {
+      return;
+    }
+    if (event.getAttacker().getGameMode() == GameMode.CREATIVE) {
       return;
     }
     boolean finishingBlow = event.getSneakAttackDamage() > event.getVictim().getHealth();
