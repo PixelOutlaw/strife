@@ -27,6 +27,11 @@ mechanics:
   pvp-damage: 0.5
   evasion-threshold: 0.5
   sneak:
+    disable-duration: 6
+    base-sneak-exp: 0.2
+    sneak-exp-per-level: 0.1
+    base-sneak-attack-exp: 5
+    sneak-attack-exp-per-level: 1
     sneak-skill-effectiveness: 80
     detection-threshold: 10000
     base-detection-when-unseen: 500

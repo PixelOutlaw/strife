@@ -21,6 +21,7 @@ package land.face.strife.managers;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import land.face.strife.StrifePlugin;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
@@ -33,11 +34,16 @@ public class SneakManager {
 
   private final Map<UUID, Integer> sneakTickMap = new ConcurrentHashMap<>();
   // Disable duration is in half seconds
-  private final static int SNEAK_DISABLE_DURATION = 6;
-  private final static float BASE_SNEAK_EXP = 0.2f;
-  private final static float SNEAK_EXP_PER_LEVEL = 0.1f;
-  private final static float BASE_SNEAK_ATTACK_EXP = 1f;
-  private final static float SNEAK_ATTACK_EXP_PER_LEVEL = 0.1f;
+  private static int SNEAK_DISABLE_DURATION = StrifePlugin.getInstance().getSettings()
+      .getInt("config.mechanics.sneak.disable-duration");
+  private static float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.base-sneak-exp");
+  private static float SNEAK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.sneak-exp-per-level");
+  private static float BASE_SNEAK_ATTACK_EXP = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.base-sneak-attack-exp");
+  private static float SNEAK_ATTACK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.sneak-attack-exp-per-level");
 
   public void tempDisableSneak(LivingEntity player) {
     if (!(player instanceof Player)) {
