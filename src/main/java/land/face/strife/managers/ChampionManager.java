@@ -19,11 +19,7 @@
 package land.face.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
-import static org.bukkit.inventory.EquipmentSlot.CHEST;
-import static org.bukkit.inventory.EquipmentSlot.FEET;
 import static org.bukkit.inventory.EquipmentSlot.HAND;
-import static org.bukkit.inventory.EquipmentSlot.HEAD;
-import static org.bukkit.inventory.EquipmentSlot.LEGS;
 import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
@@ -54,11 +50,10 @@ import org.bukkit.inventory.ItemStack;
 public class ChampionManager {
 
   private StrifePlugin plugin;
-  private String levelReqGeneric;
-  private float dualWieldAttackSpeed;
-
-  private final Map<UUID, Champion> championMap = new HashMap<>();
-  private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
+  private static String levelReqGeneric;
+  private static float dualWieldAttackSpeed;
+  private static Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
+  private static Map<UUID, Champion> championMap = new HashMap<>();
 
   private final static String RESET_MESSAGE =
       "&a&lYour Levelpoints have been automatically reset due to an update!";
@@ -68,12 +63,9 @@ public class ChampionManager {
     dualWieldAttackSpeed =
         (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
     levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
-    levelReqMap.put(HAND, plugin.getSettings().getString("language.level-req.main", ""));
-    levelReqMap.put(OFF_HAND, plugin.getSettings().getString("language.level-req.off", ""));
-    levelReqMap.put(HEAD, plugin.getSettings().getString("language.level-req.head", ""));
-    levelReqMap.put(CHEST, plugin.getSettings().getString("language.level-req.body", ""));
-    levelReqMap.put(LEGS, plugin.getSettings().getString("language.level-req.legs", ""));
-    levelReqMap.put(FEET, plugin.getSettings().getString("language.level-req.feet", ""));
+    for (EquipmentSlot slot : EquipmentSlot.values()) {
+      levelReqMap.put(slot, plugin.getSettings().getString("language.level-req." + slot, ""));
+    }
   }
 
   public Champion getChampion(Player player) {
@@ -195,37 +187,35 @@ public class ChampionManager {
     Set<EquipmentSlot> updatedSlots = new HashSet<>();
     for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
       ItemStack item = ItemUtil.getItem(equipment, slot);
-      if (ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
-        continue;
+      if (!ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
+        updatedSlots.add(slot);
       }
-      equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
-      equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
-      equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
-      equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
-      updatedSlots.add(slot);
     }
 
-    if (!updatedSlots.isEmpty()) {
-      if (updatedSlots.contains(HAND) && !updatedSlots.contains(OFF_HAND)) {
-        equipmentCache.setSlotStats(OFF_HAND, getItemStats(OFF_HAND, equipment));
-        equipmentCache.setSlotAbilities(OFF_HAND, getItemAbilities(OFF_HAND, equipment));
-        equipmentCache.setSlotTraits(OFF_HAND, getItemTraits(OFF_HAND, equipment));
-        equipmentCache.setSlotHash(OFF_HAND, ItemUtil.hashItem(equipment.getItemInOffHand()));
-      } else if (updatedSlots.contains(OFF_HAND) && !updatedSlots.contains(HAND)) {
-        equipmentCache.setSlotStats(HAND, getItemStats(HAND, equipment));
-        equipmentCache.setSlotAbilities(HAND, getItemAbilities(HAND, equipment));
-        equipmentCache.setSlotTraits(HAND, getItemTraits(HAND, equipment));
-        equipmentCache.setSlotHash(HAND, ItemUtil.hashItem(equipment.getItemInMainHand()));
-      }
-      if (ItemUtil.isDualWield(equipment)) {
-        applyDualWieldStatChanges(equipmentCache, HAND);
-        applyDualWieldStatChanges(equipmentCache, OFF_HAND);
-      }
-      for (EquipmentSlot slot : updatedSlots) {
-        clearStatsIfReqNotMet(champion.getPlayer(), slot, equipmentCache);
-      }
-      equipmentCache.recombine(champion);
+    if (updatedSlots.contains(HAND)) {
+      updatedSlots.add(OFF_HAND);
+    } else if (updatedSlots.contains(OFF_HAND)) {
+      updatedSlots.add(HAND);
     }
+
+    for (EquipmentSlot slot : updatedSlots) {
+      ItemStack item = ItemUtil.getItem(equipment, slot);
+      equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
+
+      equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
+      if (clearStatsIfReqNotMet(champion.getPlayer(), slot, equipmentCache)) {
+        continue;
+      }
+      equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
+      equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
+    }
+
+    if (updatedSlots.contains(HAND) && ItemUtil.isDualWield(equipment)) {
+      applyDualWieldStatChanges(equipmentCache, HAND);
+      applyDualWieldStatChanges(equipmentCache, OFF_HAND);
+    }
+
+    equipmentCache.recombine(champion);
   }
 
   private void applyDualWieldStatChanges(PlayerEquipmentCache cache, EquipmentSlot slot) {
@@ -236,12 +226,14 @@ public class ChampionManager {
         cache.getSlotStats(slot).getOrDefault(StrifeStat.ATTACK_SPEED, 0f) + dualWieldAttackSpeed);
   }
 
-  private void clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {
+  private boolean clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {
     if (!meetsLevelRequirement(p, cache.getSlotStats(slot))) {
       sendMessage(p, levelReqMap.get(slot));
       sendMessage(p, levelReqGeneric);
       cache.clearSlot(slot);
+      return true;
     }
+    return false;
   }
 
   public boolean addBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
