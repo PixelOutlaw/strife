@@ -345,7 +345,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(regenTask.runTaskTimer(this,
         20L * 9, // Start timer after 9s
-        20L * 2 // Run it every 2s after
+        HealthRegenTask.REGEN_TICK_RATE
     ));
     taskList.add(sneakTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
@@ -377,7 +377,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(spawnerSpawnTask.runTaskTimer(this,
         9 * 20L, // Start timer after 9s
-        10 * 20L // Run it every 6 seconds
+        2 * 20L // Run it every 2 seconds
     ));
     taskList.add(iconDuraTask.runTaskTimer(this,
         3 * 20L, // Start timer after 3s

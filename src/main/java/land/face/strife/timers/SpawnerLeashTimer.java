@@ -7,12 +7,12 @@ import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class SpawnerTimer extends BukkitRunnable {
+public class SpawnerLeashTimer extends BukkitRunnable {
 
   private final Spawner spawner;
   private final LivingEntity entity;
 
-  public SpawnerTimer(Spawner spawner, LivingEntity livingEntity) {
+  public SpawnerLeashTimer(Spawner spawner, LivingEntity livingEntity) {
     this.spawner = spawner;
     this.entity = livingEntity;
     runTaskTimer(StrifePlugin.getInstance(), 0L, 20L);

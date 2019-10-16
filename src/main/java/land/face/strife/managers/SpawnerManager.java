@@ -6,14 +6,15 @@ import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.timers.SpawnerTimer;
+import land.face.strife.timers.SpawnerLeashTimer;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.Vector;
 
 public class SpawnerManager {
 
   private final UniqueEntityManager uniqueManager;
   private final Map<String, Spawner> spawnerMap = new HashMap<>();
-  private final Set<SpawnerTimer> spawnerTimers = new HashSet<>();
+  private final Set<SpawnerLeashTimer> spawnerLeashTimers = new HashSet<>();
 
   public SpawnerManager(UniqueEntityManager uniqueManager) {
     this.uniqueManager = uniqueManager;
@@ -37,7 +38,7 @@ public class SpawnerManager {
   }
 
   public void addRespawnTime(LivingEntity livingEntity) {
-    for (SpawnerTimer s : spawnerTimers) {
+    for (SpawnerLeashTimer s : spawnerLeashTimers) {
       if (s.getEntity() == livingEntity) {
         Spawner spawner = s.getSpawner();
         spawner.getRespawnTimes().add(System.currentTimeMillis() + spawner.getRespawnMillis());
@@ -76,12 +77,14 @@ public class SpawnerManager {
       mob.setSpawner(s);
       mob.setDespawnOnUnload(true);
       s.addEntity(mob.getEntity());
-      spawnerTimers.add(new SpawnerTimer(s, mob.getEntity()));
+      // Random displacement to prevent clumping
+      mob.getEntity().setVelocity(new Vector(Math.random() * 0.2, 0.05, Math.random() * 0.2));
+      spawnerLeashTimers.add(new SpawnerLeashTimer(s, mob.getEntity()));
     }
   }
 
   public void cancelAll() {
-    for (SpawnerTimer timer : spawnerTimers) {
+    for (SpawnerLeashTimer timer : spawnerLeashTimers) {
       timer.cancel();
     }
   }
