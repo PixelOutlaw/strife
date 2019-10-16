@@ -53,7 +53,6 @@ public class LoreAbilityManager {
 
   public void loadLoreAbility(String key, ConfigurationSection cs) {
     String type = cs.getString("trigger-type", "NULL").toUpperCase();
-
     TriggerType triggerType;
     try {
       triggerType = TriggerType.valueOf(type);
@@ -84,7 +83,7 @@ public class LoreAbilityManager {
       }
     }
     LogUtil.printDebug("Done!");
-    if (ability == null && effectList.isEmpty()) {
+    if (triggerType != TriggerType.NONE && ability == null && effectList.isEmpty()) {
       LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
     }
@@ -124,6 +123,7 @@ public class LoreAbilityManager {
     ON_EVADE,
     ON_SNEAK_ATTACK,
     ON_FALL,
-    TIMER
+    TIMER,
+    NONE
   }
 }
