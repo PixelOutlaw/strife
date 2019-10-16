@@ -84,6 +84,7 @@ public abstract class Condition {
     ATTRIBUTE,
     EQUIPMENT,
     BUFF,
+    LORE,
     ENDLESS_EFFECT,
     BLOCKING,
     MOVING,

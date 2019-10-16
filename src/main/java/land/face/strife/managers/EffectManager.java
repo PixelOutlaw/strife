@@ -36,6 +36,7 @@ import land.face.strife.data.conditions.HeightCondition;
 import land.face.strife.data.conditions.InCombatCondition;
 import land.face.strife.data.conditions.LevelCondition;
 import land.face.strife.data.conditions.LightCondition;
+import land.face.strife.data.conditions.LoreCondition;
 import land.face.strife.data.conditions.MovingCondition;
 import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RangeCondition;
@@ -719,6 +720,11 @@ public class EffectManager {
         int stacks = cs.getInt("stacks", 1);
         String buffId = cs.getString("buff-id", "");
         condition = new BuffCondition(buffId, stacks);
+        break;
+      case LORE:
+        String loreId = cs.getString("lore-id", "");
+        boolean inverted = cs.getBoolean("inverted", false);
+        condition = new LoreCondition(loreId, inverted);
         break;
       case ENDLESS_EFFECT:
         boolean state = cs.getBoolean("state", true);
