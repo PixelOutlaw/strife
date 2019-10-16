@@ -18,6 +18,7 @@
  */
 package land.face.strife.listeners.combat;
 
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
 import java.util.HashMap;
@@ -33,8 +34,10 @@ import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.TNTPrimed;
@@ -48,8 +51,8 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static final Map<LivingEntity, Double> HANDLED_ATTACKS = new HashMap<>();
-  private static final Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
+  private static Map<LivingEntity, Double> HANDLED_ATTACKS = new HashMap<>();
+  private static Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -71,7 +74,7 @@ public class CombatListener implements Listener {
     return FRIENDLY_PLAYER_CHECKER.contains(player);
   }
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void handleTNT(EntityDamageByEntityEvent event) {
     if (event.isCancelled()) {
       return;
@@ -81,6 +84,18 @@ public class CombatListener implements Listener {
       double multiplier = Math.max(0.3, 4 / (distance + 3));
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(multiplier * (10 + ((LivingEntity) event.getEntity()).getMaxHealth() * 0.4));
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGH)
+  public void modifyAttackRange(EntityDamageByEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getEntity() instanceof Mob) {
+      AttributeInstance attr = ((Mob) event.getEntity()).getAttribute(GENERIC_FOLLOW_RANGE);
+      double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
+      ((Mob) event.getEntity()).getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
     }
   }
 

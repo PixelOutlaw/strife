@@ -106,14 +106,8 @@ public class SpawnListener implements Listener {
     if (startingLevel <= 0) {
       return;
     }
-
+    entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(15);
     switch (entity.getType()) {
-      case ZOMBIE:
-      case HUSK:
-      case ZOMBIE_VILLAGER:
-      case DROWNED:
-        entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(22);
-        break;
       case WITCH:
         if (random.nextDouble() < WITCH_TO_EVOKER_CHANCE) {
           entity.getWorld().spawnEntity(event.getLocation(), EntityType.EVOKER);
