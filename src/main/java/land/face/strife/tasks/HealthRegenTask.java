@@ -34,6 +34,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class HealthRegenTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
+  public static int REGEN_TICK_RATE = 10;
+  private static double REGEN_PERCENT_PER_SECOND = 0.1;
+  private static double POTION_REGEN_FLAT_PER_LEVEL = 0.02;
+  private static double POTION_REGEN_PERCENT_PER_LEVEL = 0.02;
 
   public HealthRegenTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -56,18 +60,14 @@ public class HealthRegenTask extends BukkitRunnable {
       if (player.hasPotionEffect(WITHER) || player.hasPotionEffect(POISON)) {
         return;
       }
-      double lifeAmount = StatUtil.getRegen(pStats);
-      // Bonus for players that have just eaten
-      if (player.getSaturation() > 0.1) {
-        lifeAmount *= 1.6;
-      }
+      double lifeAmount = StatUtil.getRegen(pStats) * REGEN_PERCENT_PER_SECOND;
       if (player.hasPotionEffect(REGENERATION)) {
         int potionIntensity = player.getPotionEffect(REGENERATION).getAmplifier() + 1;
-        lifeAmount += potionIntensity + playerMaxHealth * 0.02 * potionIntensity;
+        lifeAmount += potionIntensity * POTION_REGEN_FLAT_PER_LEVEL;
+        lifeAmount += potionIntensity * playerMaxHealth * POTION_REGEN_PERCENT_PER_LEVEL;
       }
-      // Restore 40% of your regen per 2s tick (This task runs every 2s)
-      // Equals out to be 200% regen healed per 10s, aka 100% per 5s average
-      lifeAmount *= 0.4;
+      lifeAmount *= 1 / (20D / REGEN_TICK_RATE);
+
       if (player.getFoodLevel() <= 6) {
         lifeAmount *= player.getFoodLevel() / 6F;
       }
