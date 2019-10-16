@@ -159,8 +159,10 @@ public class StatUtil {
   }
 
   public static float getMinimumEvasionMult(float evasion, float accuracy) {
-    float bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (1 + accuracy));
-    return Math.min(1, BASE_EVASION_MULT - bonusMultiplier);
+    evasion += 10;
+    accuracy += 10;
+    float bonusMultiplier = EVASION_ACCURACY_MULT * ((evasion - accuracy) / (accuracy));
+    return Math.min(1.1f, BASE_EVASION_MULT - bonusMultiplier);
   }
 
   public static float getFireResist(StrifeMob ae) {

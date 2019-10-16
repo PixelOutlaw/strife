@@ -58,7 +58,7 @@ public class DamageUtil {
   private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
   private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
-  public static final double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
+  public static double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.evasion-threshold", 0.5);
   private static final Random RANDOM = new Random(System.currentTimeMillis());
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
