@@ -140,6 +140,15 @@ public class PlayerDataUtil {
         .getLifeSkillLevel(type);
   }
 
+  public static int getTotalSkillLevel(Player player) {
+    int amount = 0;
+    Champion champion = StrifePlugin.getInstance().getChampionManager().getChampion(player);
+    for (LifeSkillType type : LifeSkillType.types) {
+      amount += champion.getLifeSkillLevel(type);
+    }
+    return amount;
+  }
+
   public static float getLifeSkillExp(Player player, LifeSkillType type) {
     return StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getLifeSkillExp(type);

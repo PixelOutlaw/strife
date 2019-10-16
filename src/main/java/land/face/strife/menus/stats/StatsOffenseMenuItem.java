@@ -75,7 +75,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(breakLine);
     if (material == Material.BLAZE_ROD) {
       lore.add(addStat("Magical Damage: ", magicalDamage, INT_FORMAT));
-      if (Math.round(magicalDamage) > 3) {
+      if (physicalDamage > 3.1) {
         lore.add(addStat("Physical Damage: ", physicalDamage, INT_FORMAT));
       }
     } else {

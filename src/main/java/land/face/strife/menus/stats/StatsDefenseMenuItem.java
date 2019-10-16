@@ -43,8 +43,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
-  private static final String hpPerFive = TextUtils.color("&7 (HP/5s)");
-  private static final String brPerFive = TextUtils.color("&7 (BR/5s)");
+  private static final String PER_TEN = TextUtils.color("&8/10s");
 
   StatsDefenseMenuItem() {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
@@ -61,18 +60,17 @@ public class StatsDefenseMenuItem extends MenuItem {
 
     lore.add(breakLine);
     if (pStats.getStat(StrifeStat.BARRIER) > 0) {
-      lore.add(
-          addStat("Maximum Barrier: ", pStats.getStat(StrifeStat.BARRIER), INT_FORMAT));
-      lore.add(
-          addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s", ONE_DECIMAL));
+      lore.add(addStat("Maximum Barrier: ", pStats.getStat(StrifeStat.BARRIER), INT_FORMAT));
+      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s",
+          ONE_DECIMAL));
       if (pStats.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(
-            addStat("Barrier Regeneration: ", StatUtil.getRegen(pStats), brPerFive, TWO_DECIMAL));
+        lore.add(addStat("Barrier Regeneration: ", StatUtil.getRegen(pStats),
+            PER_TEN, TWO_DECIMAL));
       }
     }
 
     lore.add(addStat("Maximum Life: ", StatUtil.getHealth(pStats), INT_FORMAT));
-    lore.add(addStat("Life Regeneration: ", StatUtil.getRegen(pStats), hpPerFive, TWO_DECIMAL));
+    lore.add(addStat("Life Regeneration: ", StatUtil.getRegen(pStats), PER_TEN, TWO_DECIMAL));
     if (pStats.getStat(StrifeStat.MAXIMUM_RAGE) > 0 && pStats.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
       lore.add(addStat("Maximum Rage: ", pStats.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
