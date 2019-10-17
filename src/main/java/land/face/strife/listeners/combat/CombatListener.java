@@ -19,6 +19,7 @@
 package land.face.strife.listeners.combat;
 
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
 import java.util.HashMap;
@@ -107,7 +108,6 @@ public class CombatListener implements Listener {
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
       return;
     }
-
     boolean blocked = event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0;
     DamageUtil.removeDamageModifiers(event);
 
@@ -192,7 +192,7 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
-    event.setDamage(strifeDamageEvent.getFinalDamage());
+    event.setDamage(BASE, strifeDamageEvent.getFinalDamage());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
