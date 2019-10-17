@@ -145,9 +145,7 @@ public class UniqueEntityManager {
       spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
-    plugin.getAbilityManager().createCooldownContainer(spawnedUnique);
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
-    plugin.getAbilityManager().createCooldownContainer(spawnedUnique);
     ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());
 
     if (cachedDisguises.containsKey(uniqueEntity)) {

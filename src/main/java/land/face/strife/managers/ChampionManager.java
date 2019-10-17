@@ -50,10 +50,10 @@ import org.bukkit.inventory.ItemStack;
 public class ChampionManager {
 
   private StrifePlugin plugin;
-  private static String levelReqGeneric;
-  private static float dualWieldAttackSpeed;
-  private static Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
-  private static Map<UUID, Champion> championMap = new HashMap<>();
+  private String levelReqGeneric;
+  private float dualWieldAttackSpeed;
+  private Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
+  private Map<UUID, Champion> championMap = new HashMap<>();
 
   private final static String RESET_MESSAGE =
       "&a&lYour Levelpoints have been automatically reset due to an update!";

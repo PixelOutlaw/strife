@@ -50,11 +50,11 @@ import org.bukkit.inventory.ItemStack;
 
 public class AbilityManager {
 
-  private final StrifePlugin plugin;
-  private final Map<String, Ability> loadedAbilities = new HashMap<>();
-  private final Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
-  private final Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
-  private final Set<EntityAbilityTimer> abilityTimers = new HashSet<>();
+  private StrifePlugin plugin;
+  private Map<String, Ability> loadedAbilities = new HashMap<>();
+  private Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
+  private Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
+  private Set<EntityAbilityTimer> abilityTimers = new HashSet<>();
 
   private final Random random = new Random();
 
@@ -130,7 +130,7 @@ public class AbilityManager {
 
   public void tickAbilityCooldowns() {
     for (LivingEntity le : coolingDownAbilities.keySet()) {
-      if (le == null || !le.isValid()) {
+      if (le == null || !le.isValid() || coolingDownAbilities.get(le).isEmpty()) {
         coolingDownAbilities.remove(le);
         continue;
       }
