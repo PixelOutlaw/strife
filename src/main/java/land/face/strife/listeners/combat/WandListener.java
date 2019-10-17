@@ -97,7 +97,7 @@ public class WandListener implements Listener {
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onEnemyHit(EntityDamageByEntityEvent event) {
     if (!(event.getDamager() instanceof Player)) {
       return;
