@@ -96,16 +96,19 @@ public class StatUpdateManager {
     return stripped;
   }
 
-  public void updateHealth(StrifeMob aEntity) {
-    double maxHealth = Math.max(StatUtil.getHealth(aEntity), 1);
-    aEntity.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-    HealthDisplayType displayType = aEntity.getChampion().getSaveData().getHealthDisplayType();
+  public void updateHealth(StrifeMob mob) {
+    double health = mob.getEntity().getHealth();
+    double oldMaxHealth = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+    double maxHealth = Math.max(StatUtil.getHealth(mob), 1);
+    mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
+    mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
+    HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
     if (displayType == HealthDisplayType.TWO_HEALTH_HEARTS) {
-      ((Player) aEntity.getEntity()).setHealthScaled(false);
+      ((Player) mob.getEntity()).setHealthScaled(false);
       return;
     }
-    ((Player) aEntity.getEntity()).setHealthScaled(true);
-    ((Player) aEntity.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
+    ((Player) mob.getEntity()).setHealthScaled(true);
+    ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
   }
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
