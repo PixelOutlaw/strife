@@ -14,7 +14,7 @@ public class UniqueEntity {
   private String id;
   private EntityType type;
   private String name;
-  private int experience;
+  private int bonusExperience;
   private Map<StrifeStat, Float> attributeMap;
   private EntityAbilitySet abilitySet;
   private int baseLevel;
@@ -53,12 +53,12 @@ public class UniqueEntity {
     this.name = name;
   }
 
-  public int getExperience() {
-    return experience;
+  public int getBonusExperience() {
+    return bonusExperience;
   }
 
-  public void setExperience(int experience) {
-    this.experience = experience;
+  public void setBonusExperience(int bonusExperience) {
+    this.bonusExperience = bonusExperience;
   }
 
   public Map<StrifeStat, Float> getAttributeMap() {

@@ -602,7 +602,7 @@ public class StrifePlugin extends FacePlugin {
 
       uniqueEntity.setId(entityNameKey);
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
-      uniqueEntity.setExperience(cs.getInt("experience", 0));
+      uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
