@@ -15,7 +15,6 @@ public class MobMod {
 
   private String id;
   private String prefix;
-  private String suffix;
   private int weight;
   private EntityAbilitySet abilitySet;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
@@ -40,14 +39,6 @@ public class MobMod {
 
   public void setPrefix(String prefix) {
     this.prefix = prefix;
-  }
-
-  public String getSuffix() {
-    return suffix;
-  }
-
-  public void setSuffix(String suffix) {
-    this.suffix = suffix;
   }
 
   public int getWeight() {

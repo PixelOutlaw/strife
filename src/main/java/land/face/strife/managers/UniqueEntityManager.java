@@ -118,6 +118,21 @@ public class UniqueEntityManager {
 
     stats = StatUpdateManager.combineMaps(stats, uniqueEntity.getAttributeMap());
 
+    StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(spawnedUnique, stats);
+
+    if (uniqueEntity.isAllowMods()) {
+      plugin.getMobModManager().doModApplication(strifeMob);
+    }
+
+    strifeMob.setUniqueEntityId(uniqueEntity.getId());
+    strifeMob.setDespawnOnUnload(true);
+    strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
+    if (uniqueEntity.isBurnImmune()) {
+      spawnedUnique.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
+    }
+    if (uniqueEntity.isIgnoreSneak()) {
+      spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
+    }
     double health = stats.getOrDefault(StrifeStat.HEALTH, 1f) *
         (1 + stats.getOrDefault(StrifeStat.HEALTH_MULT, 0f) / 100);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
@@ -131,17 +146,6 @@ public class UniqueEntityManager {
     if (spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) {
       double base = spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue();
       spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(base * speed);
-    }
-
-    StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(spawnedUnique, stats);
-    strifeMob.setUniqueEntityId(uniqueEntity.getId());
-    strifeMob.setDespawnOnUnload(true);
-    strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
-    if (uniqueEntity.isBurnImmune()) {
-      spawnedUnique.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
-    }
-    if (uniqueEntity.isIgnoreSneak()) {
-      spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);

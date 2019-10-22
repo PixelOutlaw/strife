@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.MobMod;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet;
@@ -12,6 +13,8 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,7 +24,36 @@ import org.bukkit.entity.LivingEntity;
 public class MobModManager {
 
   private final Map<String, MobMod> loadedMods = new HashMap<>();
+
+  private final double MOB_MOD_UP_CHANCE;
+  private final int MOB_MOD_MAX_MODS;
+  private final int STARTING_WEIGHT = 100000;
+
   private static Random random = new Random();
+
+  public MobModManager(StrifePlugin plugin) {
+    MOB_MOD_UP_CHANCE = plugin.getSettings()
+        .getDouble("config.leveled-monsters.add-mod-chance", 0.1);
+    MOB_MOD_MAX_MODS = plugin.getSettings()
+        .getInt("config.leveled-monsters.max-mob-mods", 4);
+  }
+
+  public void doModApplication(StrifeMob strifeMob) {
+    String prefix = "";
+    int prefixWeight = STARTING_WEIGHT;
+    Set<MobMod> mods = getRandomMods(strifeMob.getEntity(), strifeMob.getEntity().getLocation(),
+        getModCount());
+    for (MobMod mod : mods) {
+      applyMobMod(strifeMob, mod);
+      if (mod.getWeight() < prefixWeight && StringUtils.isNotBlank(mod.getPrefix())) {
+        prefix = mod.getPrefix() + " ";
+        prefixWeight = mod.getWeight();
+      }
+      strifeMob.setDespawnOnUnload(true);
+    }
+    strifeMob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.RESET +
+        strifeMob.getEntity().getCustomName());
+  }
 
   public void applyMobMod(StrifeMob strifeMob, MobMod mobMod) {
     if (mobMod.getAbilitySet() != null) {
@@ -89,11 +121,37 @@ public class MobModManager {
     return returnMods;
   }
 
+  private ChatColor getPrefixColor(int modCount) {
+    switch (modCount) {
+      case 0:
+        return ChatColor.WHITE;
+      case 1:
+        return ChatColor.BLUE;
+      case 2:
+        return ChatColor.DARK_PURPLE;
+      case 3:
+        return ChatColor.RED;
+      default:
+        return ChatColor.WHITE;
+    }
+  }
+
+  private int getModCount() {
+    int mods = 0;
+    for (int i = 0; i < MOB_MOD_MAX_MODS; i++) {
+      if (random.nextDouble() < MOB_MOD_UP_CHANCE) {
+        mods++;
+        continue;
+      }
+      break;
+    }
+    return mods;
+  }
+
   public void loadMobMod(String id, ConfigurationSection cs) {
     MobMod mod = new MobMod();
     mod.setId(id);
     mod.setPrefix(cs.getString("prefix"));
-    mod.setSuffix(cs.getString("suffix"));
     mod.setWeight(cs.getInt("weight", 0));
     mod.setBaseStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("base-stats")));
     mod.setPerLevelStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));

@@ -264,7 +264,7 @@ public class StrifePlugin extends FacePlugin {
     effectManager = new EffectManager(attributeManager, strifeMobManager);
     wseManager = new WSEManager(effectManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
-    mobModManager = new MobModManager();
+    mobModManager = new MobModManager(this);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     buffManager = new BuffManager();
@@ -608,6 +608,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
+      uniqueEntity.setAllowMods(cs.getBoolean("allow-mob-mods", true));
       uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));

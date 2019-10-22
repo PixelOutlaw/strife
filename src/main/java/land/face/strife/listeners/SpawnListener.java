@@ -8,16 +8,12 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Random;
-import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.MobMod;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -36,10 +32,6 @@ public class SpawnListener implements Listener {
   private final StrifePlugin plugin;
   private final Random random;
 
-  private final String MOB_LEVEL_NAME;
-  private final String MOB_LEVEL_SUFFIX;
-  private final double MOB_MOD_UP_CHANCE;
-  private final int MOB_MOD_MAX_MODS;
   private final double WITCH_TO_EVOKER_CHANCE;
   private final double WITCH_TO_ILLUSIONER_CHANCE;
   private final double KILLER_BUNNY_CHANCE;
@@ -48,7 +40,8 @@ public class SpawnListener implements Listener {
   private final double WITHER_SKELETON_SWORD_CHANCE;
   private final double WITHER_SKELETON_WAND_CHANCE;
 
-  private final int STARTING_WEIGHT = 100000;
+  private final String MOB_LEVEL_NAME;
+  private final String MOB_LEVEL_SUFFIX;
 
   private final ItemStack SKELETON_SWORD;
   private final ItemStack WITHER_SKELETON_SWORD;
@@ -68,10 +61,7 @@ public class SpawnListener implements Listener {
         .getString("config.leveled-monsters.name-format", "&f%ENTITY% -"));
     MOB_LEVEL_SUFFIX = TextUtils.color(plugin.getSettings()
         .getString("config.leveled-monsters.suffix-format", " &7%LEVEL%"));
-    MOB_MOD_UP_CHANCE = plugin.getSettings()
-        .getDouble("config.leveled-monsters.add-mod-chance", 0.1);
-    MOB_MOD_MAX_MODS = plugin.getSettings()
-        .getInt("config.leveled-monsters.max-mob-mods", 4);
+
     WITCH_TO_EVOKER_CHANCE = plugin.getSettings()
         .getDouble("config.leveled-monsters.replace-witch-evoker", 0.1);
     WITCH_TO_ILLUSIONER_CHANCE = plugin.getSettings()
@@ -136,61 +126,18 @@ public class SpawnListener implements Listener {
     String levelSuffix = MOB_LEVEL_SUFFIX.replace("%ENTITY%", mobName)
         .replace("%LEVEL%", "" + level);
 
+    entity.setCustomName(name + levelSuffix);
     entity.setMetadata("LVL", new FixedMetadataValue(plugin, level));
     entity.setCanPickupItems(false);
     entity.getEquipment().clear();
     equipEntity(entity);
 
     StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(entity);
-
-    String prefix = "";
-    String suffix = "";
-    int prefixWeight = STARTING_WEIGHT;
-    int suffixWeight = STARTING_WEIGHT;
-    Set<MobMod> mods = plugin.getMobModManager().getRandomMods(entity, event.getLocation(), getModCount());
-    for (MobMod mod : mods) {
-      plugin.getMobModManager().applyMobMod(strifeMob, mod);
-      if (mod.getWeight() < prefixWeight && StringUtils.isNotBlank(mod.getPrefix())) {
-        prefix = mod.getPrefix() + " ";
-        prefixWeight = mod.getWeight();
-      }
-      if (mod.getWeight() < suffixWeight && StringUtils.isNotBlank(mod.getSuffix())) {
-        suffix = " " + mod.getSuffix();
-        suffixWeight = mod.getWeight();
-      }
-      strifeMob.setDespawnOnUnload(true);
-    }
+    plugin.getMobModManager().doModApplication(strifeMob);
     setEntityAttributes(strifeMob, entity);
-    entity.setCustomName(getPrefixColor(mods.size()) + prefix + name + suffix + levelSuffix);
+
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
-  }
-
-  private ChatColor getPrefixColor(int modCount) {
-    switch (modCount) {
-      case 0:
-        return ChatColor.WHITE;
-      case 1:
-        return ChatColor.BLUE;
-      case 2:
-        return ChatColor.DARK_PURPLE;
-      case 3:
-        return ChatColor.RED;
-      default:
-        return ChatColor.WHITE;
-    }
-  }
-
-  private int getModCount() {
-    int mods = 0;
-    for (int i = 0; i < MOB_MOD_MAX_MODS; i++) {
-      if (random.nextDouble() < MOB_MOD_UP_CHANCE) {
-        mods++;
-        continue;
-      }
-      break;
-    }
-    return mods;
   }
 
   private void equipEntity(LivingEntity livingEntity) {

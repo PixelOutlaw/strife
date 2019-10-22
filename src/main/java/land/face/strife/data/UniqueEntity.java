@@ -26,6 +26,7 @@ public class UniqueEntity {
   private boolean charmImmune;
   private boolean burnImmune;
   private boolean ignoreSneak;
+  private boolean allowMods;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private StrifeParticle strifeParticle;
 
@@ -131,6 +132,14 @@ public class UniqueEntity {
 
   public void setIgnoreSneak(boolean ignoreSneak) {
     this.ignoreSneak = ignoreSneak;
+  }
+
+  public boolean isAllowMods() {
+    return allowMods;
+  }
+
+  public void setAllowMods(boolean allowMods) {
+    this.allowMods = allowMods;
   }
 
   public boolean isBurnImmune() {
