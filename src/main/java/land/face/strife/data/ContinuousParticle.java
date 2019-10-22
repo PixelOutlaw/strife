@@ -1,18 +1,18 @@
 package land.face.strife.data;
 
-import land.face.strife.data.effects.SpawnParticle;
+import land.face.strife.data.effects.StrifeParticle;
 
 public class ContinuousParticle {
 
-  private final SpawnParticle particle;
+  private final StrifeParticle particle;
   private int ticksRemaining;
 
-  public ContinuousParticle(SpawnParticle spawnParticle, int ticksRemaining) {
-    this.particle = spawnParticle;
+  public ContinuousParticle(StrifeParticle strifeParticle, int ticksRemaining) {
+    this.particle = strifeParticle;
     this.ticksRemaining = ticksRemaining;
   }
 
-  public SpawnParticle getParticle() {
+  public StrifeParticle getParticle() {
     return particle;
   }
 
@@ -20,7 +20,7 @@ public class ContinuousParticle {
     return ticksRemaining;
   }
 
-  public void tickDown() {
-    ticksRemaining--;
+  public void setTicksRemaining(int ticksRemaining) {
+    this.ticksRemaining = ticksRemaining;
   }
 }

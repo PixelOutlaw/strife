@@ -10,7 +10,6 @@ import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
@@ -146,7 +145,7 @@ public class UniqueEntityManager {
     }
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
-    ParticleTask.addParticle(spawnedUnique, uniqueEntity.getSpawnParticle());
+    plugin.getParticleTask().addParticle(spawnedUnique, uniqueEntity.getStrifeParticle());
 
     if (cachedDisguises.containsKey(uniqueEntity)) {
       DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));

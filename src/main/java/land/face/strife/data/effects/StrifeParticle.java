@@ -1,7 +1,9 @@
 package land.face.strife.data.effects;
 
 import java.util.Random;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
@@ -12,7 +14,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public class SpawnParticle extends Effect {
+public class StrifeParticle extends Effect {
 
   private Particle particle;
   private int quantity;
@@ -24,7 +26,9 @@ public class SpawnParticle extends Effect {
   private double blue;
   private double arcAngle;
   private double arcOffset;
+  private double orbitSpeed;
   private int tickDuration;
+  private boolean strictDuration;
   private ParticleStyle style;
   private OriginLocation particleOriginLocation = OriginLocation.CENTER;
   private ItemStack blockData;
@@ -34,7 +38,11 @@ public class SpawnParticle extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     if (tickDuration > 0) {
-      ParticleTask.addContinuousParticle(caster.getEntity(), this, tickDuration);
+      double duration = tickDuration;
+      if (!strictDuration) {
+        duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+      }
+      StrifePlugin.getInstance().getParticleTask().addContinuousParticle(caster.getEntity(), this, tickDuration);
       return;
     }
     playAtLocation(getLoc(target.getEntity()), caster.getEntity().getEyeLocation().getDirection());
@@ -48,10 +56,13 @@ public class SpawnParticle extends Effect {
     playAtLocation(location, location.getDirection());
   }
 
-  public void playAtLocation(Location location, Vector direction) {
+  private void playAtLocation(Location location, Vector direction) {
     switch (style) {
       case CIRCLE:
         spawnParticleCircle(location, size);
+        return;
+      case ORBIT:
+        spawnParticleOrbit(location, size);
         return;
       case LINE:
         if (direction == null) {
@@ -135,6 +146,14 @@ public class SpawnParticle extends Effect {
     this.arcOffset = arcOffset;
   }
 
+  public void setOrbitSpeed(double orbitSpeed) {
+    this.orbitSpeed = orbitSpeed;
+  }
+
+  public void setStrictDuration(boolean strictDuration) {
+    this.strictDuration = strictDuration;
+  }
+
   public Location getLoc(LivingEntity le) {
     return TargetingUtil.getOriginLocation(le, particleOriginLocation);
   }
@@ -174,6 +193,17 @@ public class SpawnParticle extends Effect {
   private void spawnParticleCircle(Location center, double radius) {
     for (double degree = 0; degree < 360; degree += 30 / radius) {
       double radian1 = Math.toRadians(degree);
+      Location loc = center.clone();
+      loc.add(Math.cos(radian1) * radius, 0, Math.sin(radian1) * radius);
+      spawnParticle(loc);
+    }
+  }
+
+  private void spawnParticleOrbit(Location center, double radius) {
+    double step = 360d / quantity;
+    for (int i = 0; i <= quantity; i++) {
+      double start = orbitSpeed * ParticleTask.getCurrentTick();
+      double radian1 = Math.toRadians(start + step * i);
       Location loc = center.clone();
       loc.add(Math.cos(radian1) * radius, 0, Math.sin(radian1) * radius);
       spawnParticle(loc);
@@ -222,6 +252,7 @@ public class SpawnParticle extends Effect {
   public enum ParticleStyle {
     NORMAL,
     CIRCLE,
+    ORBIT,
     LINE,
     ARC,
     PILLAR

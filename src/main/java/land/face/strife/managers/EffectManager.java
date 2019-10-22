@@ -75,10 +75,10 @@ import land.face.strife.data.effects.RestoreBarrier;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.ShootProjectile;
 import land.face.strife.data.effects.Silence;
-import land.face.strife.data.effects.SpawnParticle;
-import land.face.strife.data.effects.SpawnParticle.ParticleStyle;
 import land.face.strife.data.effects.Speak;
 import land.face.strife.data.effects.StandardDamage;
+import land.face.strife.data.effects.StrifeParticle;
+import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.data.effects.Summon;
 import land.face.strife.data.effects.Teleport;
 import land.face.strife.data.effects.Wait;
@@ -233,9 +233,9 @@ public class EffectManager {
         ((PlaySound) effect).playAtLocation(le.getLocation());
       }
       return true;
-    } else if (effect instanceof SpawnParticle) {
+    } else if (effect instanceof StrifeParticle) {
       if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((SpawnParticle) effect).playAtLocation(le);
+        ((StrifeParticle) effect).playAtLocation(le);
       }
       return true;
     } else if (effect instanceof Summon) {
@@ -626,7 +626,7 @@ public class EffectManager {
         ((PlaySound) effect).setPitch((float) cs.getDouble("pitch", 1));
         break;
       case PARTICLE:
-        effect = new SpawnParticle();
+        effect = new StrifeParticle();
         Particle particle;
         try {
           particle = Particle.valueOf((cs.getString("particle-type", "FLAME")));
@@ -634,29 +634,33 @@ public class EffectManager {
           LogUtil.printWarning("Invalid particle effect type in effect " + key + ". Skipping.");
           return;
         }
-        ((SpawnParticle) effect).setParticle(particle);
+        ((StrifeParticle) effect).setParticle(particle);
         ParticleStyle style = ParticleStyle.valueOf(cs.getString("style", "NORMAL"));
-        ((SpawnParticle) effect).setStyle(style);
+        ((StrifeParticle) effect).setStyle(style);
         if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
             || particle == Particle.SPELL_INSTANT) {
-          ((SpawnParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
-          ((SpawnParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
-          ((SpawnParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
+          ((StrifeParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
+          ((StrifeParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
+          ((StrifeParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
         }
         if (style == ParticleStyle.ARC) {
-          ((SpawnParticle) effect).setArcAngle(cs.getDouble("arc-angle", 30));
-          ((SpawnParticle) effect).setArcOffset(cs.getDouble("arc-offset", 0));
+          ((StrifeParticle) effect).setArcAngle(cs.getDouble("arc-angle", 30));
+          ((StrifeParticle) effect).setArcOffset(cs.getDouble("arc-offset", 0));
         }
-        ((SpawnParticle) effect).setQuantity(cs.getInt("quantity", 10));
-        ((SpawnParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));
-        ((SpawnParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
-        ((SpawnParticle) effect).setSpread((float) cs.getDouble("spread", 1));
-        ((SpawnParticle) effect).setParticleOriginLocation(
+        if (style == ParticleStyle.ORBIT) {
+          ((StrifeParticle) effect).setOrbitSpeed(cs.getDouble("orbit-speed", 1));
+        }
+        ((StrifeParticle) effect).setQuantity(cs.getInt("quantity", 10));
+        ((StrifeParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));
+        ((StrifeParticle) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((StrifeParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
+        ((StrifeParticle) effect).setSpread((float) cs.getDouble("spread", 1));
+        ((StrifeParticle) effect).setParticleOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((SpawnParticle) effect).setSize(cs.getDouble("size", 1));
+        ((StrifeParticle) effect).setSize(cs.getDouble("size", 1));
         String materialType = cs.getString("material", "");
         if (StringUtils.isNotBlank(materialType)) {
-          ((SpawnParticle) effect).setBlockData(new ItemStack(Material.getMaterial(materialType)));
+          ((StrifeParticle) effect).setBlockData(new ItemStack(Material.getMaterial(materialType)));
         }
         break;
     }

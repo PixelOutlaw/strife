@@ -3,7 +3,7 @@ package land.face.strife.data;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.data.ability.EntityAbilitySet;
-import land.face.strife.data.effects.SpawnParticle;
+import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
@@ -27,7 +27,7 @@ public class UniqueEntity {
   private boolean burnImmune;
   private boolean ignoreSneak;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
-  private SpawnParticle spawnParticle;
+  private StrifeParticle strifeParticle;
 
   public String getId() {
     return id;
@@ -161,11 +161,11 @@ public class UniqueEntity {
     this.equipment = equipment;
   }
 
-  public SpawnParticle getSpawnParticle() {
-    return spawnParticle;
+  public StrifeParticle getStrifeParticle() {
+    return strifeParticle;
   }
 
-  public void setSpawnParticle(SpawnParticle spawnParticle) {
-    this.spawnParticle = spawnParticle;
+  public void setStrifeParticle(StrifeParticle strifeParticle) {
+    this.strifeParticle = strifeParticle;
   }
 }

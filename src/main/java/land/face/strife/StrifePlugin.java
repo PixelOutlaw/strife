@@ -47,7 +47,7 @@ import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.ShootBlock;
-import land.face.strife.data.effects.SpawnParticle;
+import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.listeners.BullionListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.EntityMagicListener;
@@ -194,6 +194,7 @@ public class StrifePlugin extends FacePlugin {
   private DataStorage storage;
 
   private List<BukkitTask> taskList = new ArrayList<>();
+  private ParticleTask particleTask;
 
   private LevelingRate levelingRate;
 
@@ -304,11 +305,11 @@ public class StrifePlugin extends FacePlugin {
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
     GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
     PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
-    ParticleTask particleTask = new ParticleTask();
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(wseManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
+    particleTask = new ParticleTask();
 
     commandHandler.registerCommands(new AttributesCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
@@ -373,7 +374,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(particleTask.runTaskTimer(this,
         20 * 20L,
-        2L
+        1L
     ));
     taskList.add(spawnerSpawnTask.runTaskTimer(this,
         9 * 20L, // Start timer after 9s
@@ -384,12 +385,12 @@ public class StrifePlugin extends FacePlugin {
         AbilityTickTask.ABILITY_TICK_RATE
     ));
     taskList.add(worldSpaceEffectTask.runTaskTimer(this,
-        3 * 20L, // Start timer after 3s
-        2L // Run it every 2 ticks
+        20L, // Start timer after 3s
+        1L // Run it every tick
     ));
     taskList.add(combatStatusTask.runTaskTimer(this,
         3 * 20L + 2L, // Start timer after 3s
-        20L // Run it every 4 ticks
+        20L
     ));
 
     globalBoostManager.startScheduledEvents();
@@ -628,8 +629,8 @@ public class StrifePlugin extends FacePlugin {
       String particle = cs.getString("particle", "");
       if (StringUtils.isNotBlank(particle)) {
         Effect effect = effectManager.getEffect(particle);
-        if (effect instanceof SpawnParticle) {
-          uniqueEntity.setSpawnParticle((SpawnParticle) effect);
+        if (effect instanceof StrifeParticle) {
+          uniqueEntity.setStrifeParticle((StrifeParticle) effect);
         }
       }
 
@@ -819,6 +820,10 @@ public class StrifePlugin extends FacePlugin {
 
   public WSEManager getWseManager() {
     return wseManager;
+  }
+
+  public ParticleTask getParticleTask() {
+    return particleTask;
   }
 
   public MasterConfiguration getSettings() {

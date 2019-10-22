@@ -12,7 +12,7 @@ import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.EvokerFangEffect;
 import land.face.strife.data.effects.PlaySound;
 import land.face.strife.data.effects.Push;
-import land.face.strife.data.effects.SpawnParticle;
+import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
@@ -78,8 +78,8 @@ public class WSEManager {
           LogUtil.printError("Null WSE effect! Tick:" + wse.getCurrentTick());
           continue;
         }
-        if (effect instanceof SpawnParticle) {
-          ((SpawnParticle) effect).playAtLocation(location);
+        if (effect instanceof StrifeParticle) {
+          ((StrifeParticle) effect).playAtLocation(location);
           continue;
         }
         if (effect instanceof PlaySound) {

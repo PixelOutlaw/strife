@@ -18,34 +18,39 @@
  */
 package land.face.strife.tasks;
 
+import io.netty.util.internal.ConcurrentSet;
 import java.util.Map;
-import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import land.face.strife.data.ContinuousParticle;
-import land.face.strife.data.effects.SpawnParticle;
+import land.face.strife.data.effects.StrifeParticle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class ParticleTask extends BukkitRunnable {
 
-  private static Map<LivingEntity, Queue<ContinuousParticle>> continuousParticles = new ConcurrentHashMap<>();
-  private static Map<LivingEntity, SpawnParticle> boundParticles = new ConcurrentHashMap<>();
+  private Map<LivingEntity, Set<ContinuousParticle>> continuousParticles = new ConcurrentHashMap<>();
+  private Map<LivingEntity, StrifeParticle> boundParticles = new ConcurrentHashMap<>();
+  private static int tick = 0;
 
   @Override
   public void run() {
+    tick++;
+    if (tick > 360) {
+      tick = 1;
+    }
     for (LivingEntity le : continuousParticles.keySet()) {
-      if (!le.isValid()) {
+      if (!le.isValid() || continuousParticles.get(le).isEmpty()) {
         continuousParticles.remove(le);
         continue;
       }
       for (ContinuousParticle particle : continuousParticles.get(le)) {
         if (particle.getTicksRemaining() < 1) {
-          continuousParticles.get(le).remove();
+          continuousParticles.get(le).remove(particle);
           continue;
         }
         particle.getParticle().playAtLocation(le);
-        particle.tickDown();
+        particle.setTicksRemaining(particle.getTicksRemaining() - 1);
       }
     }
     for (LivingEntity le : boundParticles.keySet()) {
@@ -57,18 +62,21 @@ public class ParticleTask extends BukkitRunnable {
     }
   }
 
-  public static void addContinuousParticle(LivingEntity livingEntity, SpawnParticle particle, int ticks) {
+  public void addContinuousParticle(LivingEntity livingEntity, StrifeParticle particle, int ticks) {
     if (!continuousParticles.containsKey(livingEntity)) {
-      continuousParticles.put(livingEntity, new ConcurrentLinkedQueue<>());
-      return;
+      continuousParticles.put(livingEntity, new ConcurrentSet<>());
     }
     continuousParticles.get(livingEntity).add(new ContinuousParticle(particle, ticks));
   }
 
-  public static void addParticle(LivingEntity livingEntity, SpawnParticle particle) {
+  public void addParticle(LivingEntity livingEntity, StrifeParticle particle) {
     if (particle == null) {
       return;
     }
     boundParticles.put(livingEntity, particle);
+  }
+
+  public static int getCurrentTick() {
+    return tick;
   }
 }
