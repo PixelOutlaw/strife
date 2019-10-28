@@ -90,11 +90,11 @@ public class StatUpdateListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerQuit(PlayerQuitEvent event) {
-    plugin.getStrifeMobManager().removeEntity(event.getPlayer());
+    plugin.getStrifeMobManager().removeMob(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerKick(PlayerKickEvent event) {
-    plugin.getStrifeMobManager().removeEntity(event.getPlayer());
+    plugin.getStrifeMobManager().removeMob(event.getPlayer());
   }
 }

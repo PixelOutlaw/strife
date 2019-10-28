@@ -16,12 +16,14 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.listeners.combat;
+package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.IndicatorData;
+import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
@@ -40,12 +42,23 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.util.Vector;
 
 public class StrifeDamageListener implements Listener {
 
-  private final StrifePlugin plugin;
-  private static final float PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
+  private StrifePlugin plugin;
+  private float PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-multiplier", 0.5);
+  private float IND_FLOAT_SPEED = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.indicators.float-speed", 70);
+  private float IND_MISS_SPEED = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.indicators.miss-speed", 80);
+  private float IND_GRAVITY_HSPEED = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.indicators.gravity-horizontal-speed", 30);
+  private float IND_GRAVITY_VSPEED = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.indicators.gravity-vertical-speed", 80);
+  private Vector IND_FLOAT_VECTOR = new Vector(0, IND_FLOAT_SPEED, 0);
+  private Vector IND_MISS_VECTOR = new Vector(0, IND_MISS_SPEED, 0);
 
   public StrifeDamageListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -80,6 +93,11 @@ public class StrifeDamageListener implements Listener {
         DamageUtil.doEvasion(attacker.getEntity(), defender.getEntity());
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
+        if (attacker.getEntity() instanceof Player) {
+          plugin.getIndicatorManager()
+              .addIndicator(attacker.getEntity(), defender.getEntity(),
+                  buildMissIndicator((Player) attacker.getEntity()), "&fMiss");
+        }
         return;
       }
     }
@@ -94,6 +112,11 @@ public class StrifeDamageListener implements Listener {
         }
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
+        if (attacker.getEntity() instanceof Player) {
+          plugin.getIndicatorManager()
+              .addIndicator(attacker.getEntity(), defender.getEntity(),
+                  buildMissIndicator((Player) attacker.getEntity()), "Blocked");
+        }
         return;
       }
     }
@@ -132,8 +155,7 @@ public class StrifeDamageListener implements Listener {
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
 
     Set<DamageType> triggeredElements = DamageUtil
-        .applyElementalEffects(attacker, defender, damageMap,
-        event.isConsumeEarthRunes());
+        .applyElementalEffects(attacker, defender, damageMap, event.isConsumeEarthRunes());
 
     float critMult = 0;
     double bonusOverchargeMultiplier = 0;
@@ -226,6 +248,11 @@ public class StrifeDamageListener implements Listener {
 
     PlayerDataUtil.sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         critMult, triggeredElements, isBleedApplied, isSneakAttack);
+    if (attacker.getEntity() instanceof Player) {
+      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+          buildHitIndicator((Player) attacker.getEntity()),
+          String.valueOf((int) Math.ceil(rawDamage)));
+    }
 
     event.setFinalDamage(finalDamage);
   }
@@ -246,5 +273,27 @@ public class StrifeDamageListener implements Listener {
       return;
     }
     projectile.remove();
+  }
+
+  private IndicatorData buildHitIndicator(Player player) {
+    IndicatorData data = new IndicatorData(new Vector(
+        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED,
+        IND_GRAVITY_VSPEED * (1 + Math.random()),
+        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED),
+        IndicatorStyle.GRAVITY);
+    data.addOwner(player);
+    return data;
+  }
+
+  private IndicatorData buildMissIndicator(Player player) {
+    IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
+    data.addOwner(player);
+    return data;
+  }
+
+  private IndicatorData buildFloatIndicator(Player player) {
+    IndicatorData data = new IndicatorData(IND_FLOAT_VECTOR.clone(), IndicatorStyle.FLOAT_UP);
+    data.addOwner(player);
+    return data;
   }
 }

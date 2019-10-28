@@ -16,7 +16,7 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.listeners.combat;
+package land.face.strife.listeners;
 
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
@@ -32,7 +32,6 @@ import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
-import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.AttributeInstance;
@@ -125,7 +124,7 @@ public class CombatListener implements Listener {
     }
 
     if (HANDLED_ATTACKS.containsKey(attackEntity)) {
-      event.setDamage(HANDLED_ATTACKS.get(attackEntity));
+      event.setDamage(BASE, HANDLED_ATTACKS.get(attackEntity));
       HANDLED_ATTACKS.remove(attackEntity);
       return;
     }
@@ -158,11 +157,9 @@ public class CombatListener implements Listener {
     }
 
     if (damageType == AttackType.MELEE) {
-      if (ItemUtil.isWand(attackEntity.getEquipment().getItemInMainHand())) {
-        event.setCancelled(true);
-        return;
-      }
-      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+      WandListener
+          .shootWand(attacker, plugin.getAttackSpeedManager().getAttackMultiplier(attacker), event);
+      event.setCancelled(true);
     } else if (damageType == AttackType.EXPLOSION) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));

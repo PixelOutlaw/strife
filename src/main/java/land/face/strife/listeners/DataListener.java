@@ -121,7 +121,7 @@ public class DataListener implements Listener {
       UUID uuid = event.getEntity().getUniqueId();
       plugin.getStrifeMobManager().doSpawnerDeath(uuid);
       Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getStrifeMobManager().removeEntity(uuid), 20L * 30);
+          () -> plugin.getStrifeMobManager().removeMob(uuid), 20L * 30);
     }
   }
 

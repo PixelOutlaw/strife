@@ -1,4 +1,4 @@
-package land.face.strife.listeners.combat;
+package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.Random;
