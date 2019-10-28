@@ -51,7 +51,7 @@ public class MobModManager {
       }
       strifeMob.setDespawnOnUnload(true);
     }
-    strifeMob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.RESET +
+    strifeMob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE +
         strifeMob.getEntity().getCustomName());
   }
 

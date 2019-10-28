@@ -158,7 +158,6 @@ public class ItemUtil {
       return;
     }
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      entity.getEquipment().clear();
       entity.setCanPickupItems(false);
       entity.getEquipment().setHelmetDropChance(0f);
       entity.getEquipment().setChestplateDropChance(0f);
@@ -166,12 +165,24 @@ public class ItemUtil {
       entity.getEquipment().setBootsDropChance(0f);
       entity.getEquipment().setItemInMainHandDropChance(0f);
       entity.getEquipment().setItemInOffHandDropChance(0f);
-      entity.getEquipment().setHelmet(items.get(EquipmentSlot.HEAD));
-      entity.getEquipment().setChestplate(items.get(EquipmentSlot.CHEST));
-      entity.getEquipment().setLeggings(items.get(EquipmentSlot.LEGS));
-      entity.getEquipment().setBoots(items.get(EquipmentSlot.FEET));
-      entity.getEquipment().setItemInMainHand(items.get(EquipmentSlot.HAND));
-      entity.getEquipment().setItemInOffHand(items.get(EquipmentSlot.OFF_HAND));
+      if (items.containsKey(EquipmentSlot.HEAD)) {
+        entity.getEquipment().setHelmet(items.get(EquipmentSlot.HEAD));
+      }
+      if (items.containsKey(EquipmentSlot.CHEST)) {
+        entity.getEquipment().setChestplate(items.get(EquipmentSlot.CHEST));
+      }
+      if (items.containsKey(EquipmentSlot.LEGS)) {
+        entity.getEquipment().setLeggings(items.get(EquipmentSlot.LEGS));
+      }
+      if (items.containsKey(EquipmentSlot.FEET)) {
+        entity.getEquipment().setBoots(items.get(EquipmentSlot.FEET));
+      }
+      if (items.containsKey(EquipmentSlot.HAND)) {
+        entity.getEquipment().setItemInMainHand(items.get(EquipmentSlot.HAND));
+      }
+      if (items.containsKey(EquipmentSlot.OFF_HAND)) {
+        entity.getEquipment().setItemInOffHand(items.get(EquipmentSlot.OFF_HAND));
+      }
     }, 1L);
   }
 

@@ -42,7 +42,8 @@ public class StrifeParticle extends Effect {
       if (!strictDuration) {
         duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
       }
-      StrifePlugin.getInstance().getParticleTask().addContinuousParticle(caster.getEntity(), this, tickDuration);
+      StrifePlugin.getInstance().getParticleTask()
+          .addContinuousParticle(target.getEntity(), this, (int) duration);
       return;
     }
     playAtLocation(getLoc(target.getEntity()), caster.getEntity().getEyeLocation().getDirection());
@@ -222,7 +223,7 @@ public class StrifeParticle extends Effect {
     for (double dist = 0; dist < length; dist += 0.25) {
       Location loc = center.clone();
       loc.add(direction.clone().multiply(dist));
-      if (loc.getBlock() != null && loc.getBlock().getType() != Material.AIR) {
+      if (loc.getBlock().getType() != Material.AIR) {
         if (!loc.getBlock().getType().isTransparent()) {
           return;
         }

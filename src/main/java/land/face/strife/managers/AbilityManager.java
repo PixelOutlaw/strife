@@ -545,6 +545,7 @@ public class AbilityManager {
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     ItemStackExtensionsKt.setLore(icon, lore);
     ItemStackExtensionsKt.setUnbreakable(icon, true);
+    ItemStackExtensionsKt.setCustomModelData(icon, iconSection.getInt("custom-model-data", 7999));
     ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ENCHANTS,
         ItemFlag.HIDE_ATTRIBUTES);
 

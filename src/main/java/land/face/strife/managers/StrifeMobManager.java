@@ -84,11 +84,15 @@ public class StrifeMobManager {
     }
   }
 
-  public void removeEntity(LivingEntity entity) {
+  public StrifeMob getMobUnsafe(UUID uuid) {
+    return trackedEntities.getOrDefault(uuid, null);
+  }
+
+  public void removeMob(LivingEntity entity) {
     trackedEntities.remove(entity.getUniqueId());
   }
 
-  public void removeEntity(UUID uuid) {
+  public void removeMob(UUID uuid) {
     trackedEntities.remove(uuid);
   }
 

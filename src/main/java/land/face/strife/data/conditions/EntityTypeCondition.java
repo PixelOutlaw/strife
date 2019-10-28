@@ -8,9 +8,9 @@ import org.bukkit.entity.EntityType;
 public class EntityTypeCondition extends Condition {
 
   private final Set<EntityType> types;
-  private final Boolean whitelist;
+  private final boolean whitelist;
 
-  public EntityTypeCondition(Set<EntityType> types, Boolean whitelist) {
+  public EntityTypeCondition(Set<EntityType> types, boolean whitelist) {
     this.types = types;
     this.whitelist = whitelist;
   }

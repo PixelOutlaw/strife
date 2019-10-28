@@ -101,7 +101,10 @@ public class UniqueEntityManager {
       spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
-    ItemUtil.delayedEquip(uniqueEntity.getEquipment(), spawnedUnique);
+    if (spawnedUnique.getEquipment() != null) {
+      spawnedUnique.getEquipment().clear();
+      ItemUtil.delayedEquip(uniqueEntity.getEquipment(), spawnedUnique);
+    }
 
     spawnedUnique.setCustomName(uniqueEntity.getName());
     spawnedUnique.setCustomNameVisible(uniqueEntity.isShowName());
@@ -133,12 +136,12 @@ public class UniqueEntityManager {
     if (uniqueEntity.isIgnoreSneak()) {
       spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }
-    double health = stats.getOrDefault(StrifeStat.HEALTH, 1f) *
-        (1 + stats.getOrDefault(StrifeStat.HEALTH_MULT, 0f) / 100);
+    double health = strifeMob.getStat(StrifeStat.HEALTH) * (1 + strifeMob.getStat(StrifeStat.HEALTH_MULT) / 100);
+    health = Math.max(health, 1);
     spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
     spawnedUnique.setHealth(health);
 
-    double speed = stats.getOrDefault(StrifeStat.MOVEMENT_SPEED, 100f) / 100f;
+    double speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
     if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
       double base = spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
       spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(base * speed);

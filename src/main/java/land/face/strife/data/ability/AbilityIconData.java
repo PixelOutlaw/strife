@@ -35,10 +35,6 @@ public class AbilityIconData {
     return stack;
   }
 
-  public void setStack(ItemStack stack) {
-    this.stack = stack;
-  }
-
   public AbilitySlot getAbilitySlot() {
     return abilitySlot;
   }

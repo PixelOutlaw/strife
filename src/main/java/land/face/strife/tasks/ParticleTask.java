@@ -76,6 +76,10 @@ public class ParticleTask extends BukkitRunnable {
     boundParticles.put(livingEntity, particle);
   }
 
+  public void clearParticles() {
+    continuousParticles.clear();
+  }
+
   public static int getCurrentTick() {
     return tick;
   }
