@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.DirectDamageContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AttributeCondition;
@@ -54,7 +55,7 @@ import land.face.strife.data.effects.ConsumeCorrupt;
 import land.face.strife.data.effects.CooldownReduction;
 import land.face.strife.data.effects.Corrupt;
 import land.face.strife.data.effects.CreateWorldSpaceEntity;
-import land.face.strife.data.effects.DealDamage;
+import land.face.strife.data.effects.DirectDamage;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.EndlessEffect;
@@ -183,7 +184,7 @@ public class EffectManager {
   private Set<LivingEntity> getAreaEffectTargets(Set<LivingEntity> targets, StrifeMob caster,
       AreaEffect effect) {
     double range = effect.getRange();
-    if (range < 1) {
+    if (range < 0.1) {
       return targets;
     }
     Set<LivingEntity> areaTargets = new HashSet<>();
@@ -283,28 +284,37 @@ public class EffectManager {
         ((IncreaseRage) effect).setAmount((float) cs.getDouble("amount", 1));
         break;
       case DAMAGE:
-        effect = new DealDamage();
-        ((DealDamage) effect).setAmount((float) cs.getDouble("amount", 1));
-        ((DealDamage) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
+        effect = new DirectDamage();
         try {
-          ((DealDamage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
-          ((DealDamage) effect)
-              .setDamageType(DamageType.valueOf(cs.getString("damage-type", "TRUE")));
-          ((DealDamage) effect)
+          ConfigurationSection damages = cs.getConfigurationSection("damages");
+          if (damages != null) {
+            for (String k : damages.getKeys(false)) {
+              ConfigurationSection damage = damages.getConfigurationSection(k);
+              DamageType damageType = DamageType.valueOf(damage.getString("damage-type"));
+              String scaleString = damage.getString("damage-scale", "FLAT");
+              DamageScale scale = DamageScale.valueOf(scaleString);
+              float amount = (float) damage.getDouble("amount", 1);
+              DirectDamageContainer container = new DirectDamageContainer(scale, damageType,
+                  amount);
+              ((DirectDamage) effect).getDamages().add(container);
+            }
+          }
+          ((DirectDamage) effect)
               .setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
+
+          ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
+          Map<AbilityMod, Float> damageModMap = new HashMap<>();
+          if (damageMod != null) {
+            for (String k : damageMod.getKeys(false)) {
+              AbilityMod mod = AbilityMod.valueOf(k);
+              damageModMap.put(mod, (float) damageMod.getDouble(k));
+            }
+          }
+          ((DirectDamage) effect).getAbilityMods().putAll(damageModMap);
         } catch (Exception e) {
-          LogUtil.printError("Skipping effect " + key + " for invalid damage scale/type");
+          LogUtil.printError("Skipping effect " + key + " for invalid damage config!");
           return;
         }
-        ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
-        Map<AbilityMod, Float> damageModMap = new HashMap<>();
-        if (damageMod != null) {
-          for (String k : damageMod.getKeys(false)) {
-            AbilityMod mod = AbilityMod.valueOf(k);
-            damageModMap.put(mod, (float) damageMod.getDouble(k));
-          }
-        }
-        ((DealDamage) effect).getAbilityMods().putAll(damageModMap);
         break;
       case STANDARD_DAMAGE:
         effect = new StandardDamage();

@@ -80,11 +80,18 @@ public class TargetingUtil {
 
   public static ArmorStand buildAndRemoveDetectionStand(Location location) {
     ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class,
-        e -> e.setVisible(false));
-    stando.setSmall(true);
-    stando.setMetadata("STANDO", new FixedMetadataValue(StrifePlugin.getInstance(), ""));
+        TargetingUtil::applyDetectionStandChanges);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
     return stando;
+  }
+
+  private static void applyDetectionStandChanges(ArmorStand stando) {
+    stando.setVisible(false);
+    stando.setSmall(true);
+    stando.setMarker(true);
+    stando.setGravity(false);
+    stando.setCollidable(false);
+    stando.setMetadata("STANDO", new FixedMetadataValue(StrifePlugin.getInstance(), ""));
   }
 
   public static Set<LivingEntity> getTempStandTargetList(Location loc, float groundCheckRange) {
@@ -95,7 +102,7 @@ public class TargetingUtil {
     } else {
       for (int i = 0; i < groundCheckRange; i++) {
         if (loc.getBlock().getType().isSolid()) {
-          loc.setY(loc.getBlockY() + 1.1);
+          loc.setY(loc.getBlockY() + 1.3);
           targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
           return targets;
         }
@@ -167,7 +174,8 @@ public class TargetingUtil {
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
       OriginLocation originLocation, boolean targetEntities) {
-    if (target != null) {
+    if (target != null && caster.getLocation().distance(target.getLocation()) < range && caster
+        .hasLineOfSight(target)) {
       return getOriginLocation(target, originLocation);
     }
     RayTraceResult result;
@@ -220,7 +228,9 @@ public class TargetingUtil {
       case HEAD:
         return le.getEyeLocation();
       case BELOW_HEAD:
-        return le.getEyeLocation().clone().add(0, -0.35, 0);
+        return le.getEyeLocation().clone().add(0, -0.4, 0);
+      case ABOVE_HEAD:
+        return le.getEyeLocation().clone().add(0, 0.4, 0);
       case CENTER:
         Vector vec = le.getEyeLocation().toVector().subtract(le.getLocation().toVector())
             .multiply(0.5);

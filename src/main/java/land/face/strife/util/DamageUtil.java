@@ -22,13 +22,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.IndicatorData;
+import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
-import land.face.strife.listeners.combat.CombatListener;
+import land.face.strife.listeners.CombatListener;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.CorruptionManager;
 import land.face.strife.stats.StrifeStat;
@@ -67,6 +69,12 @@ public class DamageUtil {
   private static final float BLEED_PERCENT = 0.5f;
 
   public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
+    if (attacker.getEntity() instanceof Player) {
+      StrifePlugin.getInstance().getIndicatorManager()
+          .addIndicator(attacker.getEntity(), defender.getEntity(),
+              buildMissIndicator((Player) attacker.getEntity()),
+              String.valueOf((int) Math.ceil(damage)));
+    }
     damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
     forceCustomDamage(attacker.getEntity(), defender.getEntity(), Math.max(damage, 0.01));
     return damage;
@@ -170,10 +178,12 @@ public class DamageUtil {
       Map<DamageType, Float> damageMap) {
     if (attackType == AttackType.MELEE && damageMap.containsKey(DamageType.PHYSICAL)) {
       damageMap.put(DamageType.PHYSICAL,
-          damageMap.get(DamageType.PHYSICAL) * 1 + attacker.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100);
+          damageMap.get(DamageType.PHYSICAL) * 1
+              + attacker.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100);
     } else if (attackType == AttackType.RANGED && damageMap.containsKey(DamageType.PHYSICAL)) {
       damageMap.put(DamageType.PHYSICAL,
-          damageMap.get(DamageType.PHYSICAL) * 1 + attacker.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100);
+          damageMap.get(DamageType.PHYSICAL) * 1
+              + attacker.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100);
     }
   }
 
@@ -475,7 +485,9 @@ public class DamageUtil {
 
   public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
     return Math.max(0.05D,
-        1 + (atk.getStat(StrifeStat.PROJECTILE_DAMAGE) - def.getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100);
+        1
+            + (atk.getStat(StrifeStat.PROJECTILE_DAMAGE) - def
+            .getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100);
   }
 
   public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier,
@@ -486,7 +498,8 @@ public class DamageUtil {
 
   public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier,
       double healMultiplier, double bonus) {
-    double health = (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * attackMultiplier * healMultiplier;
+    double health =
+        (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * attackMultiplier * healMultiplier;
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
@@ -673,6 +686,12 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getCorruptionManager();
   }
 
+  private static IndicatorData buildMissIndicator(Player player) {
+    IndicatorData data = new IndicatorData(new Vector(0, 40, 0), IndicatorStyle.GRAVITY);
+    data.addOwner(player);
+    return data;
+  }
+
   public enum DamageScale {
     FLAT,
     CASTER_LEVEL,
@@ -692,6 +711,7 @@ public class DamageUtil {
   }
 
   public enum OriginLocation {
+    ABOVE_HEAD,
     BELOW_HEAD,
     HEAD,
     CENTER,
