@@ -49,7 +49,11 @@ import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.listeners.BullionListener;
+import land.face.strife.listeners.CombatListener;
+import land.face.strife.listeners.CreeperEffectListener;
+import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
+import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
 import land.face.strife.listeners.ExperienceListener;
@@ -60,19 +64,15 @@ import land.face.strife.listeners.InventoryListener;
 import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoveListener;
+import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
 import land.face.strife.listeners.SneakAttackListener;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.listeners.StatUpdateListener;
+import land.face.strife.listeners.StrifeDamageListener;
 import land.face.strife.listeners.TargetingListener;
 import land.face.strife.listeners.UniqueSplashListener;
-import land.face.strife.listeners.combat.CombatListener;
-import land.face.strife.listeners.combat.CreeperEffectListener;
-import land.face.strife.listeners.combat.DOTListener;
-import land.face.strife.listeners.combat.DogeListener;
-import land.face.strife.listeners.combat.ShootListener;
-import land.face.strife.listeners.combat.StrifeDamageListener;
-import land.face.strife.listeners.combat.WandListener;
+import land.face.strife.listeners.WandListener;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
 import land.face.strife.managers.AttackSpeedManager;
@@ -88,6 +88,7 @@ import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
 import land.face.strife.managers.GlobalBoostManager;
+import land.face.strife.managers.IndicatorManager;
 import land.face.strife.managers.LoreAbilityManager;
 import land.face.strife.managers.MinionManager;
 import land.face.strife.managers.MobModManager;
@@ -117,6 +118,7 @@ import land.face.strife.tasks.CombatStatusTask;
 import land.face.strife.tasks.ForceAttackSpeed;
 import land.face.strife.tasks.GlobalMultiplierTask;
 import land.face.strife.tasks.HealthRegenTask;
+import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.MinionDecayTask;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.PruneBossBarsTask;
@@ -166,6 +168,7 @@ public class StrifePlugin extends FacePlugin {
   private StatUpdateManager statUpdateManager;
   private StrifeAttributeManager attributeManager;
   private ChampionManager championManager;
+  private IndicatorManager indicatorManager;
   private StrifeExperienceManager experienceManager;
   private SkillExperienceManager skillExperienceManager;
   private AttackSpeedManager attackSpeedManager;
@@ -255,6 +258,7 @@ public class StrifePlugin extends FacePlugin {
     bleedManager = new BleedManager(this);
     corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager();
+    indicatorManager = new IndicatorManager();
     equipmentManager = new EntityEquipmentManager();
     globalBoostManager = new GlobalBoostManager();
     barrierManager = new BarrierManager();
@@ -309,6 +313,7 @@ public class StrifePlugin extends FacePlugin {
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(wseManager);
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
+    IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();
 
     commandHandler.registerCommands(new AttributesCommand(this));
@@ -373,7 +378,7 @@ public class StrifePlugin extends FacePlugin {
         20L * 60 * 7 // Run it every 7 minutes
     ));
     taskList.add(particleTask.runTaskTimer(this,
-        20 * 20L,
+        2L,
         1L
     ));
     taskList.add(spawnerSpawnTask.runTaskTimer(this,
@@ -387,6 +392,10 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(worldSpaceEffectTask.runTaskTimer(this,
         20L, // Start timer after 3s
         1L // Run it every tick
+    ));
+    taskList.add(indicatorTask.runTaskTimer(this,
+        20L,
+        1L
     ));
     taskList.add(combatStatusTask.runTaskTimer(this,
         3 * 20L + 2L, // Start timer after 3s
@@ -462,6 +471,7 @@ public class StrifePlugin extends FacePlugin {
     abilityManager.cancelTimerTimers();
     bleedManager.endBleedTasks();
     corruptionManager.endCorruptTasks();
+    particleTask.clearParticles();
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
@@ -809,6 +819,10 @@ public class StrifePlugin extends FacePlugin {
 
   public ChampionManager getChampionManager() {
     return championManager;
+  }
+
+  public IndicatorManager getIndicatorManager() {
+    return indicatorManager;
   }
 
   public SneakManager getSneakManager() {

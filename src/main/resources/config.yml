@@ -21,7 +21,12 @@ ability-menus:
     - "instant-ignite"
   LIFE_SKILL:
     - "instant-ignite"
-
+indicators:
+  gravity-fall-speed: 20
+  gravity-vertical-speed: 200
+  gravity-horizontal-speed: 200
+  miss-speed: 20
+  float-speed: 20
 mechanics:
   dual-wield-bonus-attack-speed: 35
   pvp-damage: 0.5
