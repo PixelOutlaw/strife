@@ -32,6 +32,7 @@ import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
+import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.AttributeInstance;
@@ -157,9 +158,12 @@ public class CombatListener implements Listener {
     }
 
     if (damageType == AttackType.MELEE) {
-      WandListener
-          .shootWand(attacker, plugin.getAttackSpeedManager().getAttackMultiplier(attacker), event);
-      event.setCancelled(true);
+      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+      if (ItemUtil.isWand(attackEntity.getEquipment().getItemInMainHand())) {
+        WandListener.shootWand(attacker, attackMultiplier, event);
+        event.setCancelled(true);
+        return;
+      }
     } else if (damageType == AttackType.EXPLOSION) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
