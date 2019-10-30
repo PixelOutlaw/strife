@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.DirectDamageContainer;
+import land.face.strife.data.DamageContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AttributeCondition;
@@ -294,8 +294,11 @@ public class EffectManager {
               String scaleString = damage.getString("damage-scale", "FLAT");
               DamageScale scale = DamageScale.valueOf(scaleString);
               float amount = (float) damage.getDouble("amount", 1);
-              DirectDamageContainer container = new DirectDamageContainer(scale, damageType,
-                  amount);
+              String statString = damage.getString("stat", "");
+              StrifeStat damageStat =
+                  StringUtils.isBlank(statString) ? null : StrifeStat.valueOf(statString);
+              DamageContainer container = new DamageContainer(scale, damageType,
+                  damageStat, amount);
               ((DirectDamage) effect).getDamages().add(container);
             }
           }

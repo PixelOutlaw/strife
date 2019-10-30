@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.DirectDamageContainer;
+import land.face.strife.data.DamageContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -18,7 +18,7 @@ import org.bukkit.entity.Player;
 public class DirectDamage extends Effect {
 
   private AttackType attackType;
-  private Set<DirectDamageContainer> damages = new HashSet<>();
+  private Set<DamageContainer> damages = new HashSet<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
 
   private static double pvpMult = StrifePlugin.getInstance().getSettings()
@@ -27,9 +27,8 @@ public class DirectDamage extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     float damage = 0;
-    for (DirectDamageContainer container : damages) {
-      float addDamage = DamageUtil.applyDamageScale(caster, target, container.getAmount(),
-          container.getDamageScale(), container.getDamageType(), attackType);
+    for (DamageContainer container : damages) {
+      float addDamage = DamageUtil.applyDamageScale(caster, target, container, attackType);
       addDamage *= DamageUtil.getDamageReduction(container.getDamageType(), caster, target,
           abilityMods);
       if (container.getDamageType() != DamageType.TRUE_DAMAGE) {
@@ -57,7 +56,7 @@ public class DirectDamage extends Effect {
     return abilityMods;
   }
 
-  public Set<DirectDamageContainer> getDamages() {
+  public Set<DamageContainer> getDamages() {
     return damages;
   }
 

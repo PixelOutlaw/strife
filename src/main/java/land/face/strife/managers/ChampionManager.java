@@ -290,8 +290,14 @@ public class ChampionManager {
   private Set<LoreAbility> getItemAbilities(EquipmentSlot slot, EntityEquipment equipment) {
     switch (slot) {
       case HAND:
+        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+          return new HashSet<>();
+        }
         return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand());
       case OFF_HAND:
+        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+          return new HashSet<>();
+        }
         if (!ItemUtil.isValidOffhand(equipment)) {
           return new HashSet<>();
         }
@@ -312,8 +318,14 @@ public class ChampionManager {
   private Map<StrifeStat, Float> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
     switch (slot) {
       case HAND:
+        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+          return new HashMap<>();
+        }
         return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
       case OFF_HAND:
+        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+          return new HashMap<>();
+        }
         if (!ItemUtil.isValidOffhand(equipment)) {
           return new HashMap<>();
         }

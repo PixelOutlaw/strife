@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.DamageContainer;
 import land.face.strife.data.IndicatorData;
 import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
@@ -118,15 +119,20 @@ public class DamageUtil {
     }
   }
 
-  public static float applyDamageScale(StrifeMob caster, StrifeMob target, float amount,
-      DamageScale damageScale, DamageType damageType, AttackType attackType) {
-    switch (damageScale) {
+  public static float applyDamageScale(StrifeMob caster, StrifeMob target,
+      DamageContainer damageContainer, AttackType attackType) {
+    float amount = damageContainer.getAmount();
+    switch (damageContainer.getDamageScale()) {
       case FLAT:
         return amount;
+      case CASTER_STAT_PERCENT:
+        return damageContainer.getAmount() * caster.getStat(damageContainer.getDamageStat());
+      case TARGET_STAT_PERCENT:
+        return damageContainer.getAmount() * target.getStat(damageContainer.getDamageStat());
       case CASTER_LEVEL:
         return amount * StatUtil.getMobLevel(caster.getEntity());
       case CASTER_DAMAGE:
-        return amount * DamageUtil.getRawDamage(caster, damageType, attackType);
+        return amount * DamageUtil.getRawDamage(caster, damageContainer.getDamageType(), attackType);
       case TARGET_CURRENT_HEALTH:
         return amount * (float) target.getEntity().getHealth();
       case CASTER_CURRENT_HEALTH:
@@ -699,6 +705,8 @@ public class DamageUtil {
 
   public enum DamageScale {
     FLAT,
+    CASTER_STAT_PERCENT,
+    TARGET_STAT_PERCENT,
     CASTER_LEVEL,
     CASTER_DAMAGE,
     TARGET_CURRENT_HEALTH,
