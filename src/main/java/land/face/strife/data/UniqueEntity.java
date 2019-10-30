@@ -1,7 +1,9 @@
 package land.face.strife.data;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
@@ -16,6 +18,7 @@ public class UniqueEntity {
   private String name;
   private int bonusExperience;
   private Map<StrifeStat, Float> attributeMap;
+  private Set<String> uniqueAllies = new HashSet<>();
   private EntityAbilitySet abilitySet;
   private int baseLevel;
   private boolean showName;
@@ -27,6 +30,7 @@ public class UniqueEntity {
   private boolean burnImmune;
   private boolean ignoreSneak;
   private boolean allowMods;
+  private String mount;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private StrifeParticle strifeParticle;
 
@@ -68,6 +72,10 @@ public class UniqueEntity {
 
   public void setAttributeMap(Map<StrifeStat, Float> attributeMap) {
     this.attributeMap = attributeMap;
+  }
+
+  public Set<String> getUniqueAllies() {
+    return uniqueAllies;
   }
 
   public int getBaseLevel() {
@@ -140,6 +148,14 @@ public class UniqueEntity {
 
   public void setAllowMods(boolean allowMods) {
     this.allowMods = allowMods;
+  }
+
+  public String getMount() {
+    return mount;
+  }
+
+  public void setMount(String mount) {
+    this.mount = mount;
   }
 
   public boolean isBurnImmune() {

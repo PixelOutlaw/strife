@@ -72,6 +72,7 @@ public class UniqueEntityManager {
         .spawn(location, uniqueEntity.getType().getEntityClass(),
             e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
 
+    entity.setMetadata("UNIQUE_ID", new FixedMetadataValue(plugin, uniqueEntity.getId()));
     if (!entity.isValid()) {
       LogUtil.printWarning(
           "Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
@@ -79,7 +80,7 @@ public class UniqueEntityManager {
     }
 
     LivingEntity spawnedUnique = (LivingEntity) entity;
-    spawnedUnique.setRemoveWhenFarAway(false);
+    spawnedUnique.setRemoveWhenFarAway(true);
 
     if (spawnedUnique instanceof Zombie) {
       ((Zombie) spawnedUnique).setBaby(uniqueEntity.isBaby());
@@ -136,20 +137,15 @@ public class UniqueEntityManager {
     if (uniqueEntity.isIgnoreSneak()) {
       spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }
-    double health = strifeMob.getStat(StrifeStat.HEALTH) * (1 + strifeMob.getStat(StrifeStat.HEALTH_MULT) / 100);
-    health = Math.max(health, 1);
-    spawnedUnique.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
-    spawnedUnique.setHealth(health);
+    if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
+      StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
+      if (mountMob != null) {
+        mountMob.getEntity().addPassenger(strifeMob.getEntity());
+      }
+    }
 
-    double speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
-    if (spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
-      double base = spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
-      spawnedUnique.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(base * speed);
-    }
-    if (spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED) != null) {
-      double base = spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).getBaseValue();
-      spawnedUnique.getAttribute(Attribute.GENERIC_FLYING_SPEED).setBaseValue(base * speed);
-    }
+    plugin.getStatUpdateManager().updateAttributes(strifeMob);
+
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     plugin.getParticleTask().addParticle(spawnedUnique, uniqueEntity.getStrifeParticle());

@@ -102,13 +102,15 @@ public class StatUpdateManager {
     double maxHealth = Math.max(StatUtil.getHealth(mob), 1);
     mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
-    HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
-    if (displayType == HealthDisplayType.TWO_HEALTH_HEARTS) {
-      ((Player) mob.getEntity()).setHealthScaled(false);
-      return;
+    if (mob.getChampion() != null) {
+      HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
+      if (displayType == HealthDisplayType.TWO_HEALTH_HEARTS) {
+        ((Player) mob.getEntity()).setHealthScaled(false);
+        return;
+      }
+      ((Player) mob.getEntity()).setHealthScaled(true);
+      ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
     }
-    ((Player) mob.getEntity()).setHealthScaled(true);
-    ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
   }
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
@@ -119,18 +121,22 @@ public class StatUpdateManager {
       ((Player) entity).setFlySpeed(0.2f * (float) speed);
     } else {
       if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
-        entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
+        double base = entity.getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue();
+        entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(base * speed);
       }
       if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
-        entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(speed);
+        double base = entity.getAttribute(GENERIC_FLYING_SPEED).getBaseValue();
+        entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(base * speed);
       }
     }
   }
 
   public void updateAttackAttrs(StrifeMob strifeMob) {
-    double attacksPerSecond = 1 / StatUtil.getAttackTime(strifeMob);
-    ForceAttackSpeed.addAttackTime((Player) strifeMob.getEntity(), attacksPerSecond);
-    strifeMob.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+    if (strifeMob.getEntity() instanceof Player) {
+      double attacksPerSecond = 1 / StatUtil.getAttackTime(strifeMob);
+      ForceAttackSpeed.addAttackTime((Player) strifeMob.getEntity(), attacksPerSecond);
+      strifeMob.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+    }
   }
 
   public void updateBarrier(StrifeMob mob) {
@@ -142,6 +148,7 @@ public class StatUpdateManager {
   }
 
   public void updateAttributes(StrifeMob strifeMob) {
+    strifeMob.getEntity().setMaximumNoDamageTicks(5);
     updateMovementSpeed(strifeMob);
     updateAttackAttrs(strifeMob);
     updateHealth(strifeMob);

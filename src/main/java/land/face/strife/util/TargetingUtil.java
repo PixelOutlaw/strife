@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -7,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.UniqueEntity;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
@@ -42,6 +44,14 @@ public class TargetingUtil {
   public static boolean isFriendly(StrifeMob caster, LivingEntity target) {
     if (caster.getEntity() == target) {
       return true;
+    }
+    if (StringUtils.isNotBlank(caster.getUniqueEntityId()) && target.hasMetadata("UNIQUE_ID")) {
+      UniqueEntity uniqueEntity = StrifePlugin.getInstance().getUniqueEntityManager()
+          .getLoadedUniquesMap().get(caster.getUniqueEntityId());
+      String targetId = target.getMetadata("UNIQUE_ID").get(0).asString();
+      if (uniqueEntity.getUniqueAllies().contains(targetId)) {
+        return true;
+      }
     }
     if (caster.getEntity() instanceof Player && target instanceof Player) {
       return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target);

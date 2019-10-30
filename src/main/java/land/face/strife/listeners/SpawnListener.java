@@ -1,9 +1,7 @@
 package land.face.strife.listeners;
 
-import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
-import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -96,7 +94,10 @@ public class SpawnListener implements Listener {
     if (startingLevel <= 0) {
       return;
     }
+
     entity.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(15);
+    entity.setRemoveWhenFarAway(true);
+
     switch (entity.getType()) {
       case WITCH:
         if (random.nextDouble() < WITCH_TO_EVOKER_CHANCE) {
@@ -205,23 +206,13 @@ public class SpawnListener implements Listener {
   }
 
   private void setEntityAttributes(StrifeMob strifeMob, LivingEntity entity) {
-    double health = strifeMob.getStat(StrifeStat.HEALTH) * (1 + strifeMob.getStat(
-        StrifeStat.HEALTH_MULT));
+    plugin.getStatUpdateManager().updateAttributes(strifeMob);
+    double health = entity.getAttribute(GENERIC_MAX_HEALTH).getBaseValue();
     if (entity instanceof Slime) {
       health *= 0.6 + (double) ((Slime) entity).getSize() / 3.0;
     }
     entity.getAttribute(GENERIC_MAX_HEALTH).setBaseValue(health);
     entity.setHealth(health);
-
-    double speed = entity.getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue() *
-        strifeMob.getFinalStats().getOrDefault(StrifeStat.MOVEMENT_SPEED, 80f) / 100f;
-
-    if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
-      entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
-    }
-    if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
-      entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(speed);
-    }
   }
 
   static ItemStack buildSkeletonWand() {
