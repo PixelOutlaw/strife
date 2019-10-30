@@ -297,6 +297,11 @@ public class DamageUtil {
   }
 
   public static LivingEntity getAttacker(Entity entity) {
+    if (!entity.getPassengers().isEmpty()) {
+      if (entity.getPassengers().get(0) instanceof LivingEntity) {
+        return (LivingEntity) entity.getPassengers().get(0);
+      }
+    }
     if (entity instanceof LivingEntity) {
       return (LivingEntity) entity;
     } else if (entity instanceof Projectile) {
