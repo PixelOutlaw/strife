@@ -78,7 +78,7 @@ public class AbilityManager {
     return null;
   }
 
-  public void cooldownReduce(LivingEntity livingEntity, String abilityId, int milliseconds) {
+  public void cooldownReduce(LivingEntity livingEntity, String abilityId, int msReduction) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       return;
     }
@@ -86,16 +86,13 @@ public class AbilityManager {
     if (container == null) {
       return;
     }
-    container.setEndTime(container.getEndTime() - milliseconds);
-    int remainder = (int) (System.currentTimeMillis() - container.getEndTime());
-    while (remainder > 0 && container.getSpentCharges() > 1) {
+    int abilityCooldown = getAbility(container.getAbilityId()).getCooldown() * 1000;
+    while (msReduction >= abilityCooldown && container.getSpentCharges() >= 1) {
       container.setSpentCharges(container.getSpentCharges() - 1);
-      container.setStartTime(System.currentTimeMillis());
-      Ability ability = getAbility(container.getAbilityId());
-      container.setEndTime(container.getStartTime() + ability.getCooldown() * 1000);
-      container.setEndTime(container.getEndTime() - remainder);
-      remainder = (int) (System.currentTimeMillis() - container.getEndTime());
+      msReduction -= abilityCooldown;
     }
+    container.setStartTime(container.getStartTime() - msReduction);
+    container.setEndTime(container.getEndTime() - msReduction);
     if (livingEntity instanceof Player) {
       plugin.getAbilityIconManager()
           .updateIconProgress((Player) livingEntity, getAbility(abilityId));
