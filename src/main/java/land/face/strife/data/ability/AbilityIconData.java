@@ -18,6 +18,8 @@ public class AbilityIconData {
 
   private static String REQ_STR = StrifePlugin.getInstance().getSettings()
       .getString("language.abilities.picker-requirement-tag");
+  private static String PASS_STR = StrifePlugin.getInstance().getSettings()
+      .getString("language.abilities.picker-requirement-met-tag");
 
   private ItemStack stack;
   private AbilitySlot abilitySlot;
@@ -93,24 +95,26 @@ public class AbilityIconData {
 
   public static List<String> buildRequirementsLore(Champion champion, AbilityIconData data) {
     List<String> strings = new ArrayList<>();
-    if (champion.getPlayer().getLevel() < data.levelRequirement) {
-      strings.add(REQ_STR.replace("{REQ}", "Level " + data.levelRequirement));
+    if (data.levelRequirement != 0) {
+      String str = champion.getPlayer().getLevel() < data.levelRequirement ? REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", "Level " + data.levelRequirement));
     }
-    if (champion.getBonusLevels() < data.bonusLevelRequirement) {
-      strings.add(REQ_STR.replace("{REQ}", "Bonus Level " + data.bonusLevelRequirement));
+    if (data.getBonusLevelRequirement() != 0) {
+      String str = champion.getBonusLevels() < data.bonusLevelRequirement ? REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", "Bonus Level " + data.bonusLevelRequirement));
     }
     for (LifeSkillType type : data.lifeSkillRequirements.keySet()) {
-      if (champion.getLifeSkillLevel(type) < data.lifeSkillRequirements.get(type)) {
-        strings.add(REQ_STR.replace("{REQ}", ChatColor.stripColor(
-            WordUtils.capitalize(type.name().toLowerCase().replaceAll("_", " ")) +
-                " " + data.lifeSkillRequirements.get(type))));
-      }
+      String str = champion.getLifeSkillLevel(type) < data.lifeSkillRequirements.get(type) ?
+          REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", ChatColor.stripColor(
+          WordUtils.capitalize(type.name().toLowerCase().replaceAll("_", " ")) + " "
+              + data.lifeSkillRequirements.get(type))));
     }
     for (StrifeAttribute attr : data.attributeRequirement.keySet()) {
-      if (champion.getAttributeLevel(attr) < data.attributeRequirement.get(attr)) {
-        strings.add(REQ_STR.replace("{REQ}",
-            ChatColor.stripColor(attr.getName() + " " + data.attributeRequirement.get(attr))));
-      }
+      String str = champion.getAttributeLevel(attr) < data.attributeRequirement.get(attr) ?
+          REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}",
+          ChatColor.stripColor(attr.getName() + " " + data.attributeRequirement.get(attr))));
     }
     return TextUtils.color(strings);
   }
