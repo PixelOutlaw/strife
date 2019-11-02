@@ -302,8 +302,10 @@ public class EffectManager {
               ((DirectDamage) effect).getDamages().add(container);
             }
           }
-          ((DirectDamage) effect)
-              .setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
+          ((DirectDamage) effect).setAttackType(
+              AttackType.valueOf(cs.getString("attack-type", "OTHER")));
+          ((DirectDamage) effect).setDamageReductionRatio(
+              (float) cs.getDouble("damage-reduction-ratio", 0.35));
 
           ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
           Map<AbilityMod, Float> damageModMap = new HashMap<>();

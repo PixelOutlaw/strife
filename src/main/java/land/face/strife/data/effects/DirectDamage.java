@@ -20,32 +20,40 @@ public class DirectDamage extends Effect {
   private AttackType attackType;
   private Set<DamageContainer> damages = new HashSet<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
+  private float damageReductionRatio;
 
-  private static double pvpMult = StrifePlugin.getInstance().getSettings()
+  private static float pvpMult = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.pvp-damage", 0.50);
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     float damage = 0;
+    float damageMult = DamageUtil.getDamageMult(caster, target);
     for (DamageContainer container : damages) {
       float addDamage = DamageUtil.applyDamageScale(caster, target, container, attackType);
       addDamage *= DamageUtil.getDamageReduction(container.getDamageType(), caster, target,
           abilityMods);
       if (container.getDamageType() != DamageType.TRUE_DAMAGE) {
-        addDamage *= DamageUtil.getPotionMult(caster.getEntity(), target.getEntity());
-        addDamage *= 1 + (caster.getStat(StrifeStat.DAMAGE_MULT) / 100);
+        addDamage *= damageMult;
       }
       damage += addDamage;
     }
     for (StrifeStat attr : getStatMults().keySet()) {
       damage *= 1 + getStatMults().get(attr) * caster.getStat(attr);
     }
-    if (caster != target && caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
+    if (caster != target && caster.getEntity() instanceof Player && target
+        .getEntity() instanceof Player) {
       damage *= pvpMult;
     }
+    damage = Math.max(0,
+        damage - target.getStat(StrifeStat.DAMAGE_REDUCTION) * damageReductionRatio * pvpMult);
     LogUtil.printDebug(" [Pre-Damage] Target Health: " + target.getEntity().getHealth());
     DamageUtil.dealDirectDamage(caster, target, damage);
     LogUtil.printDebug(" [Post-Damage] Target Health: " + target.getEntity().getHealth());
+  }
+
+  public void setDamageReductionRatio(float damageReductionRatio) {
+    this.damageReductionRatio = damageReductionRatio;
   }
 
   public void setAttackType(AttackType attackType) {

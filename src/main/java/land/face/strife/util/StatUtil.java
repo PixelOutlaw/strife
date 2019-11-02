@@ -24,19 +24,6 @@ public class StatUtil {
   private static final float BASE_EVASION_MULT = 0.8f;
   private static final float EVASION_ACCURACY_MULT = 0.6f;
 
-  public static float getTenacityMult(StrifeMob defender) {
-    if (defender.getStat(StrifeStat.TENACITY) < 1) {
-      return 1;
-    }
-    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
-    float maxReduction = 1 - (float) Math.pow(0.5f, defender.getStat(StrifeStat.TENACITY) / 200);
-    return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
-  }
-
-  public static double getMinionMult(StrifeMob mob) {
-    return 1 + mob.getStat(StrifeStat.MINION_MULT_INTERNAL) / 100;
-  }
-
   public static double getRegen(StrifeMob ae) {
     return ae.getStat(StrifeStat.REGENERATION) * (1 + ae.getStat(StrifeStat.REGEN_MULT) / 100);
   }

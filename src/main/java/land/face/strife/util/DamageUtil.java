@@ -282,6 +282,33 @@ public class DamageUtil {
     }
   }
 
+  public static float getDamageMult(StrifeMob attacker, StrifeMob defender) {
+    float mult = 1.0f;
+    mult *= DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
+    mult *= 1 + (attacker.getStat(StrifeStat.DAMAGE_MULT) / 100);
+    mult *= getRageMult(defender);
+    mult *= getTenacityMult(defender);
+    mult *= getMinionMult(attacker);
+    return mult;
+  }
+
+  public static double getMinionMult(StrifeMob mob) {
+    return 1 + mob.getStat(StrifeStat.MINION_MULT_INTERNAL) / 100;
+  }
+
+  public static float getTenacityMult(StrifeMob defender) {
+    if (defender.getStat(StrifeStat.TENACITY) < 1) {
+      return 1;
+    }
+    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
+    float maxReduction = 1 - (float) Math.pow(0.5f, defender.getStat(StrifeStat.TENACITY) / 200);
+    return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
+  }
+
+  public static float getRageMult(StrifeMob defender) {
+    return 200 / (200 + StrifePlugin.getInstance().getRageManager().getRage(defender.getEntity()));
+  }
+
   public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
     if (target == attacker) {
       if (target.getHealth() > amount) {

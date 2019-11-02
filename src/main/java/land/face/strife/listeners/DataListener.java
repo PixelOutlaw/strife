@@ -34,6 +34,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityCombustByBlockEvent;
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -68,6 +70,12 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onEntityCombust(final EntityCombustEvent event) {
+    if (event instanceof EntityCombustByEntityEvent) {
+      return;
+    }
+    if (event instanceof EntityCombustByBlockEvent) {
+      return;
+    }
     if (event.getEntity().hasMetadata("NO_BURN")) {
       event.setCancelled(true);
     }

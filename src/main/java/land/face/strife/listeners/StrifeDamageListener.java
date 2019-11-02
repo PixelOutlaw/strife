@@ -205,13 +205,13 @@ public class StrifeDamageListener implements Listener {
     float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
     float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
 
-    rawDamage *= 200 / (200 + plugin.getRageManager().getRage(defender.getEntity()));
+    rawDamage *= DamageUtil.getRageMult(defender);
 
     if (event.getProjectile() != null) {
       rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
     }
-    rawDamage *= StatUtil.getTenacityMult(defender);
-    rawDamage *= StatUtil.getMinionMult(attacker);
+    rawDamage *= DamageUtil.getTenacityMult(defender);
+    rawDamage *= DamageUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
     boolean isSneakAttack = event.isSneakAttack();
