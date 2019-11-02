@@ -464,6 +464,10 @@ public class StrifePlugin extends FacePlugin {
   public void disable() {
     saveSpawners();
     storage.saveAll();
+
+    HandlerList.unregisterAll(this);
+    Bukkit.getScheduler().cancelTasks(this);
+
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
     spawnerManager.cancelAll();
@@ -472,14 +476,14 @@ public class StrifePlugin extends FacePlugin {
     bleedManager.endBleedTasks();
     corruptionManager.endCorruptTasks();
     particleTask.clearParticles();
+
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_C);
     }
-    ShootBlock.clearTimers();
 
-    HandlerList.unregisterAll(this);
+    ShootBlock.clearTimers();
 
     for (BukkitTask task : taskList) {
       task.cancel();
@@ -619,6 +623,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
       uniqueEntity.setAllowMods(cs.getBoolean("allow-mob-mods", true));
+      uniqueEntity.setAllowMods(cs.getBoolean("remove-range-modifiers", false));
       uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setMount(cs.getString("mount-id", ""));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
