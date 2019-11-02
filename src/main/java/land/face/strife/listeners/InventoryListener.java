@@ -10,10 +10,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
@@ -78,8 +80,23 @@ public class InventoryListener implements Listener {
     }, 1L);
   }
 
+  @EventHandler
+  public void onRightClickWhileHoldingIcon(PlayerInteractEvent event) {
+    if (event.getAction() == Action.PHYSICAL) {
+      return;
+    }
+    if (event.getAction() == Action.RIGHT_CLICK_AIR
+        || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+      final Player player = event.getPlayer();
+      if (isIcon(event.getPlayer().getEquipment().getItemInMainHand())) {
+        MessageUtils.sendMessage(player, NO_MOVE_ABILITY);
+        event.setCancelled(true);
+      }
+    }
+  }
+
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onPlayerDropItem(PlayerDeathEvent event) {
+  public void onPlayerDeathDrops(PlayerDeathEvent event) {
     event.getDrops().removeAll(
         event.getDrops().stream().filter(this::isIcon).collect(Collectors.toList()));
   }
