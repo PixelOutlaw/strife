@@ -1,5 +1,7 @@
 package land.face.strife.managers;
 
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +22,7 @@ import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
@@ -79,50 +82,55 @@ public class UniqueEntityManager {
       return null;
     }
 
-    LivingEntity spawnedUnique = (LivingEntity) entity;
-    spawnedUnique.setRemoveWhenFarAway(true);
+    LivingEntity le = (LivingEntity) entity;
+    le.setRemoveWhenFarAway(true);
 
-    if (spawnedUnique instanceof Zombie) {
-      ((Zombie) spawnedUnique).setBaby(uniqueEntity.isBaby());
-    } else if (spawnedUnique instanceof Slime) {
-      ((Slime) spawnedUnique).setSize(uniqueEntity.getSize());
-    } else if (spawnedUnique instanceof Phantom) {
-      ((Phantom) spawnedUnique).setSize(uniqueEntity.getSize());
+    if (le instanceof Zombie) {
+      ((Zombie) le).setBaby(uniqueEntity.isBaby());
+    } else if (le instanceof Slime) {
+      ((Slime) le).setSize(uniqueEntity.getSize());
+    } else if (le instanceof Phantom) {
+      ((Phantom) le).setSize(uniqueEntity.getSize());
     }
 
     if (uniqueEntity.getFollowRange() != -1) {
-      if (spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE) != null) {
-        spawnedUnique.getAttribute(Attribute.GENERIC_FOLLOW_RANGE)
+      if (le.getAttribute(GENERIC_FOLLOW_RANGE) != null) {
+        le.getAttribute(GENERIC_FOLLOW_RANGE)
             .setBaseValue(uniqueEntity.getFollowRange());
+      }
+      if (le instanceof Zombie && uniqueEntity.isRemoveFollowMods()) {
+        for (AttributeModifier mod : le.getAttribute(GENERIC_FOLLOW_RANGE).getModifiers()) {
+          le.getAttribute(GENERIC_FOLLOW_RANGE).removeModifier(mod);
+        }
       }
     }
 
-    if (spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
+    if (le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
         .isKnockbackImmune()) {
-      spawnedUnique.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
+      le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
-    if (spawnedUnique.getEquipment() != null) {
-      spawnedUnique.getEquipment().clear();
-      ItemUtil.delayedEquip(uniqueEntity.getEquipment(), spawnedUnique);
+    if (le.getEquipment() != null) {
+      le.getEquipment().clear();
+      ItemUtil.delayedEquip(uniqueEntity.getEquipment(), le);
     }
 
-    spawnedUnique.setCustomName(uniqueEntity.getName());
-    spawnedUnique.setCustomNameVisible(uniqueEntity.isShowName());
+    le.setCustomName(uniqueEntity.getName());
+    le.setCustomNameVisible(uniqueEntity.isShowName());
 
     int mobLevel = uniqueEntity.getBaseLevel();
     if (mobLevel == -1) {
-      mobLevel = StatUtil.getMobLevel(spawnedUnique);
+      mobLevel = StatUtil.getMobLevel(le);
     }
 
     Map<StrifeStat, Float> stats = new HashMap<>();
     if (mobLevel != 0) {
-      stats.putAll(plugin.getMonsterManager().getBaseStats(spawnedUnique, mobLevel));
+      stats.putAll(plugin.getMonsterManager().getBaseStats(le, mobLevel));
     }
 
     stats = StatUpdateManager.combineMaps(stats, uniqueEntity.getAttributeMap());
 
-    StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(spawnedUnique, stats);
+    StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(le, stats);
 
     if (uniqueEntity.isAllowMods()) {
       plugin.getMobModManager().doModApplication(strifeMob);
@@ -132,10 +140,10 @@ public class UniqueEntityManager {
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     if (uniqueEntity.isBurnImmune()) {
-      spawnedUnique.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
+      le.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
     }
     if (uniqueEntity.isIgnoreSneak()) {
-      spawnedUnique.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
+      le.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }
     if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
       StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
@@ -148,10 +156,10 @@ public class UniqueEntityManager {
 
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
-    plugin.getParticleTask().addParticle(spawnedUnique, uniqueEntity.getStrifeParticle());
+    plugin.getParticleTask().addParticle(le, uniqueEntity.getStrifeParticle());
 
     if (cachedDisguises.containsKey(uniqueEntity)) {
-      DisguiseAPI.disguiseToAll(spawnedUnique, cachedDisguises.get(uniqueEntity));
+      DisguiseAPI.disguiseToAll(le, cachedDisguises.get(uniqueEntity));
     }
     plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
     return strifeMob;
