@@ -30,6 +30,7 @@ public class UniqueEntity {
   private boolean burnImmune;
   private boolean ignoreSneak;
   private boolean allowMods;
+  private boolean removeFollowMods;
   private String mount;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private StrifeParticle strifeParticle;
@@ -148,6 +149,14 @@ public class UniqueEntity {
 
   public void setAllowMods(boolean allowMods) {
     this.allowMods = allowMods;
+  }
+
+  public boolean isRemoveFollowMods() {
+    return removeFollowMods;
+  }
+
+  public void setRemoveFollowMods(boolean removeFollowMods) {
+    this.removeFollowMods = removeFollowMods;
   }
 
   public String getMount() {
