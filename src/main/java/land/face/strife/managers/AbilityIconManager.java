@@ -1,17 +1,23 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.AbilityCooldownContainer;
 import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -23,10 +29,14 @@ public class AbilityIconManager {
 
   private final StrifePlugin plugin;
 
-  static final String ABILITY_PREFIX = "Ability: ";
+  public final static String ABILITY_PREFIX = "Ability: ";
+  private final String REQ_STR;
+  private final String PASS_STR;
 
   public AbilityIconManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    REQ_STR = plugin.getSettings().getString("language.abilities.picker-requirement-tag");
+    PASS_STR = plugin.getSettings().getString("language.abilities.picker-requirement-met-tag");
   }
 
   public void removeIconItem(Player player, AbilitySlot slot) {
@@ -148,5 +158,32 @@ public class AbilityIconManager {
     }
     ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), champion.getPlayer(),
         ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent, charges, toggled);
+  }
+
+  public List<String> buildRequirementsLore(Champion champion, AbilityIconData data) {
+    List<String> strings = new ArrayList<>();
+    if (data.getLevelRequirement() != 0) {
+      String str =
+          champion.getPlayer().getLevel() < data.getLevelRequirement() ? REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", "Level " + data.getLevelRequirement()));
+    }
+    if (data.getBonusLevelRequirement() != 0) {
+      String str = champion.getBonusLevels() < data.getBonusLevelRequirement() ? REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", "Bonus Level " + data.getBonusLevelRequirement()));
+    }
+    for (LifeSkillType type : data.getLifeSkillRequirements().keySet()) {
+      String str = champion.getLifeSkillLevel(type) < data.getLifeSkillRequirements().get(type) ?
+          REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", ChatColor.stripColor(
+          WordUtils.capitalize(type.name().toLowerCase().replaceAll("_", " ")) + " "
+              + data.getLifeSkillRequirements().get(type))));
+    }
+    for (StrifeAttribute attr : data.getAttributeRequirement().keySet()) {
+      String str = champion.getAttributeLevel(attr) < data.getAttributeRequirement().get(attr) ?
+          REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}",
+          ChatColor.stripColor(attr.getName() + " " + data.getAttributeRequirement().get(attr))));
+    }
+    return TextUtils.color(strings);
   }
 }

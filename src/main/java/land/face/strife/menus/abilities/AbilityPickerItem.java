@@ -24,7 +24,6 @@ import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
-import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -48,7 +47,7 @@ public class AbilityPickerItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack stack = ability.getAbilityIconData().getStack().clone();
-    List<String> stackLore = AbilityIconData.buildRequirementsLore(
+    List<String> stackLore = plugin.getAbilityIconManager().buildRequirementsLore(
         plugin.getChampionManager().getChampion(player), ability.getAbilityIconData());
     stackLore.addAll(ItemStackExtensionsKt.getLore(stack));
     ItemStackExtensionsKt.setLore(stack, stackLore);
