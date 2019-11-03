@@ -18,12 +18,15 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
+import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.data.EntityStatData;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -47,6 +50,17 @@ public class MonsterManager {
 
   private void addEntityData(EntityType type, EntityStatData data) {
     entityStatDataMap.put(type, data);
+  }
+
+  public float getBaseExp(LivingEntity livingEntity, int mobLevel) {
+    EntityStatData data = entityStatDataMap.get(livingEntity.getType());
+    Expression expression;
+    if (data == null) {
+      expression = defaultData.getBaseExpExpr();
+    } else {
+      expression = data.getBaseExpExpr();
+    }
+    return (float) expression.setVariable("LEVEL", mobLevel).evaluate();
   }
 
   public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity) {
@@ -94,6 +108,10 @@ public class MonsterManager {
       return;
     }
     EntityStatData data = new EntityStatData(defaultData);
+    String expStr = cs.getString("exp-expression");
+    if (StringUtils.isNotBlank(expStr)) {
+      data.setBaseExpExpr(new ExpressionBuilder(expStr).variables("LEVEL").build());
+    }
     if (cs.isConfigurationSection("base-values")) {
       ConfigurationSection attrCS = cs.getConfigurationSection("base-values");
       for (String k : attrCS.getKeys(false)) {

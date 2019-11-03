@@ -17,6 +17,7 @@ public class UniqueEntity {
   private EntityType type;
   private String name;
   private int bonusExperience;
+  private float experienceMultiplier;
   private Map<StrifeStat, Float> attributeMap;
   private Set<String> uniqueAllies = new HashSet<>();
   private EntityAbilitySet abilitySet;
@@ -57,6 +58,14 @@ public class UniqueEntity {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public float getExperienceMultiplier() {
+    return experienceMultiplier;
+  }
+
+  public void setExperienceMultiplier(float experienceMultiplier) {
+    this.experienceMultiplier = experienceMultiplier;
   }
 
   public int getBonusExperience() {

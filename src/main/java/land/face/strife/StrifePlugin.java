@@ -53,6 +53,7 @@ import land.face.strife.listeners.CombatListener;
 import land.face.strife.listeners.CreeperEffectListener;
 import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
+import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
@@ -420,6 +421,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new MoveListener(), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
@@ -618,6 +620,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setId(entityNameKey);
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
+      uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));

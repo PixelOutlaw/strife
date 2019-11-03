@@ -19,7 +19,6 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
@@ -38,7 +37,6 @@ import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -116,30 +114,6 @@ public class DataListener implements Listener {
   public void onPlayerJoinUpdateAttributes(final PlayerJoinEvent event) {
     event.getPlayer().setHealthScaled(false);
     plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
-  }
-
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onEntityDeathClearIconsAndStrifeMobs(final EntityDeathEvent event) {
-    if (event.getEntity() instanceof Player) {
-      plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
-      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);
-      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_B);
-      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_C);
-    } else {
-      UUID uuid = event.getEntity().getUniqueId();
-      plugin.getStrifeMobManager().doSpawnerDeath(uuid);
-      Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getStrifeMobManager().removeMob(uuid), 20L * 30);
-    }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onEntityDeathClearData(final EntityDeathEvent event) {
-    plugin.getBossBarManager().doBarDeath(event.getEntity());
-    plugin.getBarrierManager().removeEntity(event.getEntity());
-    plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
-    plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
-    plugin.getSpawnerManager().addRespawnTime(event.getEntity());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

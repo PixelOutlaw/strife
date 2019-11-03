@@ -42,6 +42,10 @@ public class UniqueEntityManager {
     this.cachedDisguises = new HashMap<>();
   }
 
+  public UniqueEntity getUnique(String uniqueId) {
+    return loadedUniquesMap.getOrDefault(uniqueId, null);
+  }
+
   public Map<String, UniqueEntity> getLoadedUniquesMap() {
     return loadedUniquesMap;
   }

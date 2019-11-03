@@ -1,25 +1,14 @@
 package land.face.strife.data.ability;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
-import org.apache.commons.lang.WordUtils;
-import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 
 public class AbilityIconData {
-
-  private static String REQ_STR = StrifePlugin.getInstance().getSettings()
-      .getString("language.abilities.picker-requirement-tag");
-  private static String PASS_STR = StrifePlugin.getInstance().getSettings()
-      .getString("language.abilities.picker-requirement-met-tag");
 
   private ItemStack stack;
   private AbilitySlot abilitySlot;
@@ -91,31 +80,5 @@ public class AbilityIconData {
       }
     }
     return true;
-  }
-
-  public static List<String> buildRequirementsLore(Champion champion, AbilityIconData data) {
-    List<String> strings = new ArrayList<>();
-    if (data.levelRequirement != 0) {
-      String str = champion.getPlayer().getLevel() < data.levelRequirement ? REQ_STR : PASS_STR;
-      strings.add(str.replace("{REQ}", "Level " + data.levelRequirement));
-    }
-    if (data.getBonusLevelRequirement() != 0) {
-      String str = champion.getBonusLevels() < data.bonusLevelRequirement ? REQ_STR : PASS_STR;
-      strings.add(str.replace("{REQ}", "Bonus Level " + data.bonusLevelRequirement));
-    }
-    for (LifeSkillType type : data.lifeSkillRequirements.keySet()) {
-      String str = champion.getLifeSkillLevel(type) < data.lifeSkillRequirements.get(type) ?
-          REQ_STR : PASS_STR;
-      strings.add(str.replace("{REQ}", ChatColor.stripColor(
-          WordUtils.capitalize(type.name().toLowerCase().replaceAll("_", " ")) + " "
-              + data.lifeSkillRequirements.get(type))));
-    }
-    for (StrifeAttribute attr : data.attributeRequirement.keySet()) {
-      String str = champion.getAttributeLevel(attr) < data.attributeRequirement.get(attr) ?
-          REQ_STR : PASS_STR;
-      strings.add(str.replace("{REQ}",
-          ChatColor.stripColor(attr.getName() + " " + data.attributeRequirement.get(attr))));
-    }
-    return TextUtils.color(strings);
   }
 }
