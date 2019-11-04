@@ -25,6 +25,7 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.stats.AbilitySlot;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -62,7 +63,7 @@ public class AbilityPickerItem extends MenuItem {
     super.onItemClick(event);
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     if (!ability.getAbilityIconData().isRequirementMet(champion)) {
-      sendMessage(event.getPlayer(), "&eYou don't meet the requirements for this skill!");
+      sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_REQ_NOT_MET);
       return;
     }
     AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
@@ -76,7 +77,7 @@ public class AbilityPickerItem extends MenuItem {
     }
     if (plugin.getAbilityManager().getCooldownContainer(event.getPlayer(), oldAbility.getId())
         != null) {
-      sendMessage(event.getPlayer(), "&eCannot swap out an ability that isn't cooled down!");
+      sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_ON_COOLDOWN);
       return;
     }
     if (oldAbility == ability) {

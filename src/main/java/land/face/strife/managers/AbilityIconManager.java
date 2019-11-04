@@ -32,11 +32,17 @@ public class AbilityIconManager {
   public final static String ABILITY_PREFIX = "Ability: ";
   private final String REQ_STR;
   private final String PASS_STR;
+  public static String ABILITY_REQ_NOT_MET;
+  public static String ABILITY_ON_COOLDOWN;
 
   public AbilityIconManager(StrifePlugin plugin) {
     this.plugin = plugin;
     REQ_STR = plugin.getSettings().getString("language.abilities.picker-requirement-tag");
     PASS_STR = plugin.getSettings().getString("language.abilities.picker-requirement-met-tag");
+    ABILITY_REQ_NOT_MET = TextUtils
+        .color(plugin.getSettings().getString("language.abilities.picker-requirement-message", ""));
+    ABILITY_ON_COOLDOWN = TextUtils
+        .color(plugin.getSettings().getString("language.abilities.picker-on-cooldown", ""));
   }
 
   public void removeIconItem(Player player, AbilitySlot slot) {
