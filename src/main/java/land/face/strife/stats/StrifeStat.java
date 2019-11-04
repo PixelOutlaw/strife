@@ -47,6 +47,10 @@ public enum StrifeStat {
   DARK_RESIST("Shadow Resistance"),
   ALL_RESIST("Elemental Resist"),
 
+  POISON_RESIST("Poison Resistance"),
+  WITHER_RESIST("Wither Resistance"),
+  BURNING_RESIST("Burning Resistance"),
+
   BLOCK("Block"),
   BLOCK_RECOVERY("Block Recovery"),
 
