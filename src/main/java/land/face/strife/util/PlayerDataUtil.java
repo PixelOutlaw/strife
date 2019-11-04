@@ -64,9 +64,12 @@ public class PlayerDataUtil {
         LogUtil.printDebug("-- Skipping " + condition + " - only applies to mobs");
         continue;
       }
-      if (target == null && condition.getCompareTarget() == CompareTarget.OTHER) {
-        LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
-        continue;
+      if (target == null ) {
+        if (condition.getCompareTarget() == CompareTarget.OTHER) {
+          LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
+          continue;
+        }
+        return false;
       }
       if (!condition.isMet(caster, target)) {
         LogUtil.printDebug("-- Skipping, condition " + condition + " not met!");
