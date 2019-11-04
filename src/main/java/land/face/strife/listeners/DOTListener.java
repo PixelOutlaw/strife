@@ -44,9 +44,11 @@ public class DOTListener implements Listener {
 
   private static final long MAX_DOT_MS = 3000;
   private static final long DOT_PRUNE_TIME_MINIMUM = 10000;
-  private float WITHER_FLAT_DAMAGE = 3;
-  private float POISON_FLAT_DAMAGE = 1;
-  private float POISON_PERCENT_MAX_HEALTH_DAMAGE = 0.01f;
+  private float WITHER_FLAT_DAMAGE;
+  private float POISON_FLAT_DAMAGE;
+  private float POISON_PERCENT_MAX_HEALTH_DAMAGE;
+  private float BURN_FLAT_DAMAGE;
+  private float BURN_PERCENT_MAX_HEALTH_DAMAGE;
 
   private long lastPruneStamp = System.currentTimeMillis();
 
@@ -58,6 +60,10 @@ public class DOTListener implements Listener {
         .getDouble("config.mechanics.poison-flat-damage");
     POISON_PERCENT_MAX_HEALTH_DAMAGE = (float) plugin.getSettings()
         .getDouble("config.mechanics.poison-percent-damage");
+    BURN_FLAT_DAMAGE = (float) plugin.getSettings()
+        .getDouble("config.mechanics.burn-flat-damage");
+    BURN_PERCENT_MAX_HEALTH_DAMAGE = (float) plugin.getSettings()
+        .getDouble("config.mechanics.burn-percent-damage");
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -66,7 +72,7 @@ public class DOTListener implements Listener {
       return;
     }
     LivingEntity entity = (LivingEntity) event.getEntity();
-    double damage;
+    float damage;
     switch (event.getCause()) {
       case ENTITY_ATTACK:
         return;
@@ -78,7 +84,7 @@ public class DOTListener implements Listener {
         return;
       case FIRE_TICK:
         StrifeMob statEntity = plugin.getStrifeMobManager().getStatMob(entity);
-        damage = 1 + entity.getHealth() * 0.04;
+        damage = BURN_FLAT_DAMAGE + (float) entity.getHealth() * BURN_PERCENT_MAX_HEALTH_DAMAGE;
         damage *= DamageUtil.getResistPotionMult(entity);
         damage *= 1 - StatUtil.getFireResist(statEntity) / 100;
         damage *= 1 - statEntity.getStat(StrifeStat.BURNING_RESIST) / 100;
@@ -94,7 +100,8 @@ public class DOTListener implements Listener {
       case FIRE:
       case LAVA:
         StrifeMob statEntity2 = plugin.getStrifeMobManager().getStatMob(entity);
-        damage = 2 + entity.getHealth() * 0.1;
+        damage = BURN_FLAT_DAMAGE + (float) entity.getHealth() * BURN_PERCENT_MAX_HEALTH_DAMAGE;
+        damage *= 2.5;
         damage *= DamageUtil.getResistPotionMult(entity);
         damage *= 1 - StatUtil.getFireResist(statEntity2) / 100;
         damage *= 1 - statEntity2.getStat(StrifeStat.BURNING_RESIST) / 100;
