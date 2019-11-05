@@ -9,8 +9,10 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
+import land.face.strife.data.conditions.Condition.ConditionUser;
 import land.face.strife.util.DamageUtil.DamageType;
 import org.bukkit.Sound;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -60,11 +62,14 @@ public class PlayerDataUtil {
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
       Set<Condition> conditions) {
     for (Condition condition : conditions) {
-      if (caster.getEntity() instanceof Player && condition.isMobOnly()) {
-        LogUtil.printDebug("-- Skipping " + condition + " - only applies to mobs");
+      EntityType casterType = caster.getEntity().getType();
+      if (casterType == EntityType.PLAYER && condition.getConditionUser() == ConditionUser.MOB) {
         continue;
       }
-      if (target == null ) {
+      if (casterType != EntityType.PLAYER && condition.getConditionUser() == ConditionUser.PLAYER) {
+        continue;
+      }
+      if (target == null) {
         if (condition.getCompareTarget() == CompareTarget.OTHER) {
           LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
           continue;

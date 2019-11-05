@@ -26,6 +26,7 @@ import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionType;
+import land.face.strife.data.conditions.Condition.ConditionUser;
 import land.face.strife.data.conditions.CorruptionCondition;
 import land.face.strife.data.conditions.EarthRunesCondition;
 import land.face.strife.data.conditions.EndlessEffectCondition;
@@ -866,11 +867,19 @@ public class EffectManager {
       compareTarget = CompareTarget.SELF;
     }
 
+    ConditionUser conditionUser;
+    try {
+      conditionUser = ConditionUser.valueOf(cs.getString("user", "ANY"));
+    } catch (Exception e) {
+      LogUtil.printWarning("No/invalid condition user found for " + key + " defaulting to ANY");
+      conditionUser = ConditionUser.ANY;
+    }
+
     condition.setCompareTarget(compareTarget);
     condition.setComparison(comparison);
+    condition.setConditionUser(conditionUser);
     condition.setType(conditionType);
     condition.setValue((float) cs.getDouble("value", 0));
-    condition.setMobOnly(cs.getBoolean("mob-only", false));
 
     conditions.put(key, condition);
   }

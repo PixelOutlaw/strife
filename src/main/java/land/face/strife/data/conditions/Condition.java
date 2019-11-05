@@ -10,7 +10,7 @@ public abstract class Condition {
   private CompareTarget compareTarget;
   private Comparison comparison;
   private ConditionType type;
-  private boolean isMobOnly;
+  private ConditionUser conditionUser;
   private float value;
 
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
@@ -43,12 +43,12 @@ public abstract class Condition {
     this.type = type;
   }
 
-  public boolean isMobOnly() {
-    return isMobOnly;
+  public ConditionUser getConditionUser() {
+    return conditionUser;
   }
 
-  public void setMobOnly(boolean mobOnly) {
-    isMobOnly = mobOnly;
+  public void setConditionUser(ConditionUser conditionUser) {
+    this.conditionUser = conditionUser;
   }
 
   public float getValue() {
@@ -78,6 +78,12 @@ public abstract class Condition {
   public enum CompareTarget {
     SELF,
     OTHER
+  }
+
+  public enum ConditionUser {
+    PLAYER,
+    MOB,
+    ANY
   }
 
   public enum ConditionType {
