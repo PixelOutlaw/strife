@@ -40,6 +40,7 @@ import land.face.strife.data.conditions.LevelCondition;
 import land.face.strife.data.conditions.LightCondition;
 import land.face.strife.data.conditions.LoreCondition;
 import land.face.strife.data.conditions.MovingCondition;
+import land.face.strife.data.conditions.NearbyEntitiesCondition;
 import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.StatCondition;
@@ -74,6 +75,7 @@ import land.face.strife.data.effects.PotionEffectAction;
 import land.face.strife.data.effects.Push;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.RestoreBarrier;
+import land.face.strife.data.effects.Revive;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.ShootProjectile;
 import land.face.strife.data.effects.Silence;
@@ -265,6 +267,10 @@ public class EffectManager {
     }
     Effect effect = null;
     switch (effectType) {
+      case REVIVE:
+        effect = new Revive();
+        ((Revive) effect).setPercentLostExpRestored(cs.getDouble("percent-exp-restored", 1));
+        break;
       case HEAL:
         effect = new Heal();
         ((Heal) effect).setAmount((float) cs.getDouble("amount", 1));
@@ -793,6 +799,10 @@ public class EffectManager {
         break;
       case MOVING:
         condition = new MovingCondition(cs.getBoolean("state", true));
+        break;
+      case NEARBY_ENTITIES:
+        int range = cs.getInt("range", 1);
+        condition = new NearbyEntitiesCondition(cs.getBoolean("friendly", true), range);
         break;
       case IN_COMBAT:
         condition = new InCombatCondition(cs.getBoolean("state", true));

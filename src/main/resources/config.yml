@@ -79,6 +79,9 @@ leveled-monsters:
       starting-level: 50
       distance-per-level: 100
 
+death-worlds:
+- Graveyard
+
 ## NOTE: XP penalty exempt world applies to the world the
 ## player RESPAWNS in, as that is when xp is lost!
 penalty-free-worlds:

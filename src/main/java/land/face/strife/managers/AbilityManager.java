@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import static land.face.strife.data.ability.Ability.TargetType.NEAREST_SOUL;
 import static land.face.strife.data.ability.Ability.TargetType.SINGLE_OTHER;
 import static land.face.strife.data.ability.Ability.TargetType.TARGET_GROUND;
 import static land.face.strife.data.ability.Ability.TargetType.TOGGLE;
@@ -34,6 +35,7 @@ import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.Wait;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.timers.EntityAbilityTimer;
+import land.face.strife.timers.SoulTimer;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
@@ -217,9 +219,11 @@ public class AbilityManager {
     if (targets == null) {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
     }
-    if (ability.getTargetType() == TARGET_GROUND && targets.isEmpty()) {
-      doTargetNotFoundPrompt(caster, ability);
-      return false;
+    if (targets.isEmpty()) {
+      if (ability.getTargetType() == TARGET_GROUND || ability.getTargetType() == NEAREST_SOUL) {
+        doTargetNotFoundPrompt(caster, ability);
+        return false;
+      }
     }
     if (shouldSingleTargetFail(ability, caster, targets)) {
       return false;
@@ -441,6 +445,12 @@ public class AbilityManager {
         Location loc2 = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
         return TargetingUtil.getTempStandTargetList(loc2, ability.getRange() + 3);
+      case NEAREST_SOUL:
+        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), ability.getRange());
+        if (soul != null) {
+          targets.add(Bukkit.getPlayer(soul.getOwner()));
+        }
+        return targets;
     }
     return null;
   }

@@ -18,6 +18,8 @@
  */
 package land.face.strife.listeners;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
@@ -49,7 +51,7 @@ public class ExperienceListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeath(PlayerDeathEvent event) {
     event.setKeepLevel(true);
-    event.setDroppedExp(1 + event.getEntity().getLevel() / 2);
+    event.setDroppedExp(3 + event.getEntity().getLevel() / 2);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -63,28 +65,17 @@ public class ExperienceListener implements Listener {
       return;
     }
     PlayerInventory inv = p.getInventory();
-    for (int i = 0; i < inv.getContents().length; i++) {
-      ItemStack is = inv.getItem(i);
-      if (is == null) {
-        continue;
-      }
-      if (isSoulShard(is)) {
-        if (is.getAmount() > 1) {
-          is.setAmount(is.getAmount() - 1);
-          inv.setItem(i, is);
-        } else {
-          inv.setItem(i, null);
-        }
-        MessageUtils
-            .sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
-        return;
-      }
+    double lostXP;
+    if (hadSoulShard(inv)) {
+      lostXP = 0;
+      sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
+    } else {
+      double xpToLevel = plugin.getLevelingRate().get(p.getLevel());
+      lostXP = Math.min(xpToLevel * 0.025, p.getExp() * xpToLevel);
+      sendMessage(p, "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
+      p.setExp(Math.max(p.getExp() - 0.025f, 0.00001f));
     }
-    double lostXP = Math
-        .min(plugin.getLevelingRate().get(p.getLevel()) * 0.025, plugin.getLevelingRate()
-            .get(p.getLevel()) * p.getExp());
-    MessageUtils.sendMessage(p, "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
-    p.setExp(Math.max(p.getExp() - 0.025f, 0.001f));
+    plugin.getSoulManager().setLostExp(p, lostXP);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -128,6 +119,25 @@ public class ExperienceListener implements Listener {
     plugin.getExperienceManager()
         .addExperience(event.getEntity().getKiller(), event.getDroppedExp(), false);
     event.setDroppedExp(0);
+  }
+
+  private boolean hadSoulShard(PlayerInventory inv) {
+    for (int i = 0; i < inv.getContents().length; i++) {
+      ItemStack is = inv.getItem(i);
+      if (is == null) {
+        continue;
+      }
+      if (isSoulShard(is)) {
+        if (is.getAmount() > 1) {
+          is.setAmount(is.getAmount() - 1);
+          inv.setItem(i, is);
+        } else {
+          inv.setItem(i, null);
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean isSoulShard(ItemStack itemStack) {

@@ -97,6 +97,7 @@ import land.face.strife.managers.MonsterManager;
 import land.face.strife.managers.RageManager;
 import land.face.strife.managers.SkillExperienceManager;
 import land.face.strife.managers.SneakManager;
+import land.face.strife.managers.SoulManager;
 import land.face.strife.managers.SpawnerManager;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.StrifeAttributeManager;
@@ -193,6 +194,7 @@ public class StrifePlugin extends FacePlugin {
   private SpawnerManager spawnerManager;
   private MobModManager mobModManager;
   private GlobalBoostManager globalBoostManager;
+  private SoulManager soulManager;
   private WSEManager wseManager;
 
   private DataStorage storage;
@@ -262,6 +264,7 @@ public class StrifePlugin extends FacePlugin {
     indicatorManager = new IndicatorManager();
     equipmentManager = new EntityEquipmentManager();
     globalBoostManager = new GlobalBoostManager();
+    soulManager = new SoulManager(this);
     barrierManager = new BarrierManager();
     statUpdateManager = new StatUpdateManager(strifeMobManager);
     rageManager = new RageManager();
@@ -510,10 +513,12 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void buildEffects() {
+    LogUtil.printDebug("Starting effect load!");
     for (String key : effectYAML.getKeys(false)) {
       if (!effectYAML.isConfigurationSection(key)) {
         continue;
       }
+      LogUtil.printDebug("Loading effect: " + key + "...");
       ConfigurationSection cs = effectYAML.getConfigurationSection(key);
       effectManager.loadEffect(key, cs);
     }
@@ -794,6 +799,10 @@ public class StrifePlugin extends FacePlugin {
 
   public GlobalBoostManager getGlobalBoostManager() {
     return globalBoostManager;
+  }
+
+  public SoulManager getSoulManager() {
+    return soulManager;
   }
 
   public SkillExperienceManager getSkillExperienceManager() {

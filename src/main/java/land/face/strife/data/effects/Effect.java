@@ -69,6 +69,7 @@ public abstract class Effect {
     AREA_EFFECT,
     ENDLESS_EFFECT,
     CANCEL_ENDLESS_EFFECT,
+    REVIVE,
     HEAL,
     FOOD,
     COOLDOWN_REDUCTION,

@@ -44,6 +44,7 @@ public class DeathListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onEntityDeathEvent(EntityDeathEvent event) {
     if (event instanceof PlayerDeathEvent) {
+      plugin.getSoulManager().createSoul((Player) event.getEntity());
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
