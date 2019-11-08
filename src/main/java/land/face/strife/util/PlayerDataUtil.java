@@ -74,7 +74,6 @@ public class PlayerDataUtil {
           LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
           continue;
         }
-        return false;
       }
       if (!condition.isMet(caster, target)) {
         LogUtil.printDebug("-- Skipping, condition " + condition + " not met!");

@@ -3,6 +3,7 @@ package land.face.strife.data.conditions;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.Material;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 
 public class EquipmentCondition extends Condition {
@@ -16,10 +17,16 @@ public class EquipmentCondition extends Condition {
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    if (target.getEntity().getEquipment() == null) {
+    LivingEntity entity;
+    if (getCompareTarget() == CompareTarget.SELF) {
+      entity = attacker.getEntity();
+    } else {
+      entity = target.getEntity();
+    }
+    if (entity.getEquipment() == null) {
       return false;
     }
-    EntityEquipment equipment = target.getEntity().getEquipment();
+    EntityEquipment equipment = entity.getEquipment();
     return strict ? hasAllWeaponsInSet(equipment) : hasAtLeastOneWeaponInSet(equipment);
   }
 
