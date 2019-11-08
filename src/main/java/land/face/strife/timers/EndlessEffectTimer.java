@@ -36,10 +36,12 @@ public class EndlessEffectTimer extends BukkitRunnable {
       cancel();
       return;
     }
-    if (!endlessEffect.getCancelConditions().isEmpty() && PlayerDataUtil.areConditionsMet(mob,
-        null, endlessEffect.getCancelConditions())) {
-      doCancelEffects();
-      return;
+    if (!endlessEffect.getCancelConditions().isEmpty()) {
+      if (PlayerDataUtil.areConditionsMet(mob, null, endlessEffect.getCancelConditions())) {
+        runCancelEffects();
+        cancel();
+        return;
+      }
     }
     for (Effect effect : endlessEffect.getRunEffects()) {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
@@ -51,7 +53,7 @@ public class EndlessEffectTimer extends BukkitRunnable {
     }
   }
 
-  private void doCancelEffects() {
+  private void runCancelEffects() {
     LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
     for (Effect effect : endlessEffect.getCancelEffects()) {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
@@ -68,6 +70,5 @@ public class EndlessEffectTimer extends BukkitRunnable {
       plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }
     endlessEffect.removeEffectOnTarget(mob);
-    cancel();
   }
 }

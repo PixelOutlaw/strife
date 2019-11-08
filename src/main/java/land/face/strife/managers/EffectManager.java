@@ -400,14 +400,14 @@ public class EffectManager {
         break;
       case ENDLESS_EFFECT:
         effect = new EndlessEffect();
-        List<String> failConditions = cs.getStringList("fail-conditions");
+        List<String> cancelConditions = cs.getStringList("cancel-conditions");
         ((EndlessEffect) effect).setMaxDuration(cs.getInt("max-duration-seconds", 30));
         ((EndlessEffect) effect).setTickRate(cs.getInt("tick-rate", 5));
         ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         List<String> runEffects = cs.getStringList("effects");
         List<String> cancelEffects = cs.getStringList("cancel-effects");
         List<String> expiryEffects = cs.getStringList("expiry-effects");
-        for (String s : failConditions) {
+        for (String s : cancelConditions) {
           ((EndlessEffect) effect).getCancelConditions().add(getConditions().get(s));
         }
         EndlessEffect endlessEffect = (EndlessEffect) effect;
