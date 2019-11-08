@@ -30,7 +30,7 @@ public class Push extends Effect {
           direction = casterDir.setY(0).normalize().multiply(power / 10);
         }
         break;
-      case WSE_LOCATION:
+      case TEMP_DIRECTION:
         LogUtil.printDebug(tempVector.getX() + " " + tempVector.getY() + " " + tempVector.getZ());
         direction = getEffectVelocity(tempVector, target.getEntity());
         break;
@@ -57,7 +57,7 @@ public class Push extends Effect {
       tempVector = entity.getVelocity().normalize();
       return;
     }
-    if (pushType == PushType.WSE_LOCATION) {
+    if (pushType == PushType.TEMP_DIRECTION) {
       tempVector = entity.getLocation().toVector();
       return;
     }
@@ -91,7 +91,7 @@ public class Push extends Effect {
   public enum PushType {
     AWAY_FROM_CASTER,
     CASTER_DIRECTION,
-    WSE_LOCATION,
+    TEMP_DIRECTION,
     WSE_DIRECTION
   }
 }
