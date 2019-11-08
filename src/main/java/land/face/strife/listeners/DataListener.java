@@ -24,6 +24,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
@@ -44,6 +45,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 public class DataListener implements Listener {
@@ -182,6 +184,13 @@ public class DataListener implements Listener {
       event.setCancelled(true);
     }
   }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerTeleport(PlayerTeleportEvent event) {
+    event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
+        Math.max(3, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
+  }
+
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onInvyClose(InventoryCloseEvent event) {
