@@ -26,6 +26,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
+import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Zombie;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -77,9 +78,8 @@ public class UniqueEntityManager {
     assert uniqueEntity.getType().getEntityClass() != null;
     Entity entity = Objects.requireNonNull(location.getWorld())
         .spawn(location, uniqueEntity.getType().getEntityClass(),
-            e -> e.setMetadata("BOSS", new FixedMetadataValue(plugin, true)));
+            e -> e.setMetadata("UNIQUE_ID", new FixedMetadataValue(plugin, uniqueEntity.getId())));
 
-    entity.setMetadata("UNIQUE_ID", new FixedMetadataValue(plugin, uniqueEntity.getId()));
     if (!entity.isValid()) {
       LogUtil.printWarning(
           "Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
@@ -95,6 +95,9 @@ public class UniqueEntityManager {
       ((Slime) le).setSize(uniqueEntity.getSize());
     } else if (le instanceof Phantom) {
       ((Phantom) le).setSize(uniqueEntity.getSize());
+    } else if (le instanceof Rabbit) {
+      ((Rabbit) le).setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
+      ((Rabbit) le).setAdult();
     }
 
     if (uniqueEntity.getFollowRange() != -1) {
@@ -181,6 +184,7 @@ public class UniqueEntityManager {
     }
     MobDisguise mobDisguise = new MobDisguise(type);
     mobDisguise.setShowName(true);
+    mobDisguise.setReplaceSounds(true);
     cachedDisguises.put(uniqueEntity, mobDisguise);
   }
 }
