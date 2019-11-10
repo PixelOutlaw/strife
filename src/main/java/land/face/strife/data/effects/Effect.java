@@ -88,6 +88,7 @@ public abstract class Effect {
     CONSUME_BLEED,
     CONSUME_CORRUPT,
     BUFF_EFFECT,
+    SET_FALL,
     WAIT,
     SOUND,
     PARTICLE,
