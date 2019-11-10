@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AttributesCommand;
@@ -44,6 +45,7 @@ import land.face.strife.commands.StrifeCommand;
 import land.face.strife.commands.UniqueEntityCommand;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
+import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.ShootBlock;
@@ -119,11 +121,11 @@ import land.face.strife.tasks.BossBarsTask;
 import land.face.strife.tasks.CombatStatusTask;
 import land.face.strife.tasks.ForceAttackSpeed;
 import land.face.strife.tasks.GlobalMultiplierTask;
-import land.face.strife.tasks.HealthRegenTask;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.MinionDecayTask;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.PruneBossBarsTask;
+import land.face.strife.tasks.RegenTask;
 import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.SneakTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
@@ -305,7 +307,7 @@ public class StrifePlugin extends FacePlugin {
 
     SaveTask saveTask = new SaveTask(this);
     TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
-    HealthRegenTask regenTask = new HealthRegenTask(this);
+    RegenTask regenTask = new RegenTask(this);
     SneakTask sneakTask = new SneakTask(sneakManager);
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BarrierTask barrierTask = new BarrierTask(this);
@@ -355,7 +357,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(regenTask.runTaskTimer(this,
         20L * 9, // Start timer after 9s
-        HealthRegenTask.REGEN_TICK_RATE
+        RegenTask.REGEN_TICK_RATE
     ));
     taskList.add(sneakTask.runTaskTimer(this,
         20L * 10, // Start timer after 10s
@@ -446,7 +448,9 @@ public class StrifePlugin extends FacePlugin {
     abilityMenus = new HashMap<>();
     for (AbilityMenuType menuType : AbilityMenuType.values()) {
       List<String> abilities = settings.getStringList("config.ability-menus." + menuType);
-      abilityMenus.put(menuType, new AbilityPickerMenu(this, menuType.name(), abilities));
+      List<Ability> abilityList = abilities.stream().map(a -> abilityManager.getAbility(a))
+          .collect(Collectors.toList());
+      abilityMenus.put(menuType, new AbilityPickerMenu(this, menuType.name(), abilityList));
     }
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);

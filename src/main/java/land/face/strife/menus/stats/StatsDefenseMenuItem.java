@@ -43,7 +43,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
-  private static final String PER_TEN = TextUtils.color("&8/10s");
+  private static final String PER_TEN = TextUtils.color("&7 / 10s");
 
   StatsDefenseMenuItem() {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
@@ -64,14 +64,14 @@ public class StatsDefenseMenuItem extends MenuItem {
       lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "/s",
           ONE_DECIMAL));
       if (pStats.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(addStat("Barrier Regeneration: ", StatUtil.getRegen(pStats),
-            PER_TEN, TWO_DECIMAL));
+        lore.add(
+            addStat("Barrier Regeneration: ", StatUtil.getRegen(pStats), PER_TEN, TWO_DECIMAL));
       }
     }
 
     lore.add(addStat("Maximum Life: ", StatUtil.getHealth(pStats), INT_FORMAT));
     lore.add(addStat("Life Regeneration: ", StatUtil.getRegen(pStats), PER_TEN, TWO_DECIMAL));
-    if (pStats.getStat(StrifeStat.MAXIMUM_RAGE) > 0 && pStats.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
+    if (pStats.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
       lore.add(addStat("Maximum Rage: ", pStats.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
       lore.add(addStat("Rage When Hit: ", pStats.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
@@ -90,7 +90,8 @@ public class StatsDefenseMenuItem extends MenuItem {
     lore.add(breakLine);
     lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));
-    lore.add(addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
+    lore.add(
+        addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Earth Resistance: ", StatUtil.getEarthResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Light Resistance: ", StatUtil.getLightResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Shadow Resistance: ", StatUtil.getShadowResist(pStats), "%", INT_FORMAT));

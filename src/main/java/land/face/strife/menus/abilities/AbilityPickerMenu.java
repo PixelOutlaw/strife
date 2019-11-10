@@ -19,7 +19,6 @@
 package land.face.strife.menus.abilities;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import ninja.amp.ampmenus.menus.ItemMenu;
@@ -27,15 +26,11 @@ import org.bukkit.ChatColor;
 
 public class AbilityPickerMenu extends ItemMenu {
 
-  public AbilityPickerMenu(StrifePlugin plugin, String name, List<String> abilities) {
-    super(ChatColor.BLACK + name, Size.fit(36), plugin);
-
-    List<Ability> abilityList = abilities.stream()
-        .map(a -> plugin.getAbilityManager().getAbility(a))
-        .collect(Collectors.toList());
+  public AbilityPickerMenu(StrifePlugin plugin, String name, List<Ability> abilities) {
+    super(ChatColor.BLACK + name, Size.fit(abilities.size()), plugin);
 
     int index = 0;
-    for (Ability ability : abilityList) {
+    for (Ability ability : abilities) {
       setItem(index, new AbilityPickerItem(plugin, ability));
       index++;
     }
@@ -47,7 +42,6 @@ public class AbilityPickerMenu extends ItemMenu {
     ARCHERY_ABILITY,
     MAGIC_ABILITY
   }
-
 }
 
 /*

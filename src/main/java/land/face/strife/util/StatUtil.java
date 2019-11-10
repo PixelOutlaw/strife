@@ -24,7 +24,7 @@ public class StatUtil {
   private static final float BASE_EVASION_MULT = 0.8f;
   private static final float EVASION_ACCURACY_MULT = 0.6f;
 
-  public static double getRegen(StrifeMob ae) {
+  public static float getRegen(StrifeMob ae) {
     return ae.getStat(StrifeStat.REGENERATION) * (1 + ae.getStat(StrifeStat.REGEN_MULT) / 100);
   }
 

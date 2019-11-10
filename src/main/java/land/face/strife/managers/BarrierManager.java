@@ -135,7 +135,7 @@ public class BarrierManager {
   }
 
   public void restoreBarrier(StrifeMob strifeMob, float amount) {
-    if (strifeMob.getStat(StrifeStat.BARRIER) < 0.1) {
+    if (strifeMob.getStat(StrifeStat.BARRIER) < 0.1 || amount < 0.01) {
       return;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();

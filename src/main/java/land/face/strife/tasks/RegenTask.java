@@ -31,15 +31,15 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class HealthRegenTask extends BukkitRunnable {
+public class RegenTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
   public static int REGEN_TICK_RATE = 10;
-  private static double REGEN_PERCENT_PER_SECOND = 0.1;
-  private static double POTION_REGEN_FLAT_PER_LEVEL = 0.02;
-  private static double POTION_REGEN_PERCENT_PER_LEVEL = 0.02;
+  private static float REGEN_PERCENT_PER_SECOND = 0.1f;
+  private static float POTION_REGEN_FLAT_PER_LEVEL = 1f;
+  private static float POTION_REGEN_PERCENT_PER_LEVEL = 0.02f;
 
-  public HealthRegenTask(StrifePlugin plugin) {
+  public RegenTask(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
@@ -49,24 +49,26 @@ public class HealthRegenTask extends BukkitRunnable {
       if (player.getHealth() <= 0 || player.isDead()) {
         continue;
       }
-      StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
+      float tickMult = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
       if (plugin.getBarrierManager().hasBarrierEntry(player)) {
-        plugin.getBarrierManager().restoreBarrier(pStats, pStats.getStat(StrifeStat.BARRIER_REGEN));
+        plugin.getBarrierManager()
+            .restoreBarrier(mob, mob.getStat(StrifeStat.BARRIER_REGEN) * tickMult);
       }
       double playerMaxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
       if (player.getHealth() >= playerMaxHealth) {
         continue;
       }
-      if (player.hasPotionEffect(WITHER) || player.hasPotionEffect(POISON)) {
-        return;
-      }
-      double lifeAmount = StatUtil.getRegen(pStats) * REGEN_PERCENT_PER_SECOND;
+      float lifeAmount = StatUtil.getRegen(mob);
       if (player.hasPotionEffect(REGENERATION)) {
         int potionIntensity = player.getPotionEffect(REGENERATION).getAmplifier() + 1;
         lifeAmount += potionIntensity * POTION_REGEN_FLAT_PER_LEVEL;
         lifeAmount += potionIntensity * playerMaxHealth * POTION_REGEN_PERCENT_PER_LEVEL;
       }
-      lifeAmount *= 1 / (20D / REGEN_TICK_RATE);
+      if (player.hasPotionEffect(WITHER) || player.hasPotionEffect(POISON)) {
+        lifeAmount *= 0.1f;
+      }
+      lifeAmount *= tickMult;
 
       if (player.getFoodLevel() <= 6) {
         lifeAmount *= player.getFoodLevel() / 6F;
