@@ -17,6 +17,8 @@ public class EndlessEffect extends Effect {
   private final List<Effect> expiryEffects = new ArrayList<>();
   private final List<Effect> cancelEffects = new ArrayList<>();
   private final Set<Condition> cancelConditions = new HashSet<>();
+  private StrifeStat reducerStat;
+  private float reducerValue;
   private int tickRate;
   private int maxDuration;
   private boolean strictDuration;
@@ -25,12 +27,17 @@ public class EndlessEffect extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    int newTickRate = tickRate;
+    if (reducerStat != null) {
+      float tickDivisor = 1 + (caster.getStat(reducerStat) / reducerValue);
+      newTickRate = Math.max(1, (int) ((float) tickRate / tickDivisor));
+    }
     float newDuration = maxDuration;
-    newDuration = (newDuration * 20) / tickRate;
+    newDuration = (newDuration * 20) / newTickRate;
     if (!strictDuration) {
       newDuration = maxDuration * (1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
     }
-    EndlessEffectTimer timer = new EndlessEffectTimer(this, target, tickRate, (int) newDuration);
+    EndlessEffectTimer timer = new EndlessEffectTimer(this, target, newTickRate, (int) newDuration);
     runningEffects.put(target, timer);
   }
 
@@ -49,6 +56,14 @@ public class EndlessEffect extends Effect {
 
   public Set<Condition> getCancelConditions() {
     return cancelConditions;
+  }
+
+  public void setReducerStat(StrifeStat reducerStat) {
+    this.reducerStat = reducerStat;
+  }
+
+  public void setReducerValue(float reducerValue) {
+    this.reducerValue = reducerValue;
   }
 
   public List<Effect> getRunEffects() {
