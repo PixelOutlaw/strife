@@ -43,7 +43,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
-  private static final String PER_TEN = TextUtils.color("&7 / 10s");
+  private static final String PER_TEN = TextUtils.color("&8/10s");
 
   StatsDefenseMenuItem() {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));

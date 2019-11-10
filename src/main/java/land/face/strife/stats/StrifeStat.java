@@ -26,7 +26,7 @@ public enum StrifeStat {
   LEVEL_REQUIREMENT("Level Requirement"),
 
   HEALTH("Maximum Life"),
-  REGENERATION("Base Life Regeneration"),
+  REGENERATION("Life Regeneration"),
 
   BARRIER("Maximum Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
@@ -127,7 +127,7 @@ public enum StrifeStat {
   DOGE("Doge Chance"),
 
   HEALTH_MULT(),
-  REGEN_MULT("Life Regeneration"),
+  REGEN_MULT(),
   ARMOR_MULT(),
   EVASION_MULT(),
   WARD_MULT(),

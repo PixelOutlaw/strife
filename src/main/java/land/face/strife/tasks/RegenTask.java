@@ -36,8 +36,8 @@ public class RegenTask extends BukkitRunnable {
   private final StrifePlugin plugin;
   public static int REGEN_TICK_RATE = 10;
   private static float REGEN_PERCENT_PER_SECOND = 0.1f;
-  private static float POTION_REGEN_FLAT_PER_LEVEL = 1f;
-  private static float POTION_REGEN_PERCENT_PER_LEVEL = 0.02f;
+  private static float POTION_REGEN_FLAT_PER_LEVEL = 5f;
+  private static float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
 
   public RegenTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -67,6 +67,9 @@ public class RegenTask extends BukkitRunnable {
       }
       if (player.hasPotionEffect(WITHER) || player.hasPotionEffect(POISON)) {
         lifeAmount *= 0.1f;
+      }
+      if (player.getFireTicks() > 0) {
+        lifeAmount *= 0.4f;
       }
       lifeAmount *= tickMult;
 
