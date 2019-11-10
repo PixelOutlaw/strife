@@ -19,6 +19,8 @@ public class DirectDamage extends Effect {
 
   private AttackType attackType;
   private Set<DamageContainer> damages = new HashSet<>();
+  private boolean canBeEvaded;
+  private boolean canBeBlocked;
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private float damageReductionRatio;
 
@@ -27,8 +29,24 @@ public class DirectDamage extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    float evasionMultiplier = 1.0f;
+    if (canBeEvaded) {
+      evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, abilityMods);
+      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        DamageUtil.doEvasion(caster.getEntity(), target.getEntity());
+        LogUtil.printDebug(" [Pre-Damage] Direct damage EVADED!");
+        return;
+      }
+    }
+    if (canBeBlocked) {
+      if (StrifePlugin.getInstance().getBlockManager()
+          .isAttackBlocked(caster, target, damageReductionRatio, attackType, false)) {
+        LogUtil.printDebug(" [Pre-Damage] Direct damage BLOCKED!");
+        return;
+      }
+    }
     float damage = 0;
-    float damageMult = DamageUtil.getDamageMult(caster, target);
+    float damageMult = DamageUtil.getDamageMult(caster, target) * evasionMultiplier;
     for (DamageContainer container : damages) {
       float addDamage = DamageUtil.applyDamageScale(caster, target, container, attackType);
       addDamage *= DamageUtil.getDamageReduction(container.getDamageType(), caster, target,
@@ -68,4 +86,11 @@ public class DirectDamage extends Effect {
     return damages;
   }
 
+  public void setCanBeEvaded(boolean canBeEvaded) {
+    this.canBeEvaded = canBeEvaded;
+  }
+
+  public void setCanBeBlocked(boolean canBeBlocked) {
+    this.canBeBlocked = canBeBlocked;
+  }
 }
