@@ -70,7 +70,7 @@ public class DamageUtil {
   private static final float BLEED_PERCENT = 0.5f;
 
   public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
-    if (attacker.getEntity() instanceof Player) {
+    if (attacker.getEntity() instanceof Player && attacker.getEntity() != defender.getEntity()) {
       StrifePlugin.getInstance().getIndicatorManager()
           .addIndicator(attacker.getEntity(), defender.getEntity(),
               buildMissIndicator((Player) attacker.getEntity()),
