@@ -76,6 +76,7 @@ import land.face.strife.data.effects.Push;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.RestoreBarrier;
 import land.face.strife.data.effects.Revive;
+import land.face.strife.data.effects.SetFall;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.ShootProjectile;
 import land.face.strife.data.effects.Silence;
@@ -280,6 +281,11 @@ public class EffectManager {
       case FOOD:
         effect = new Food();
         ((Food) effect).setAmount(cs.getDouble("amount", 1));
+        break;
+      case SET_FALL:
+        effect = new SetFall();
+        ((SetFall) effect).setAmount((float) cs.getDouble("amount", 0));
+        break;
       case RESTORE_BARRIER:
         effect = new RestoreBarrier();
         ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
@@ -313,6 +319,8 @@ public class EffectManager {
               AttackType.valueOf(cs.getString("attack-type", "OTHER")));
           ((DirectDamage) effect).setDamageReductionRatio(
               (float) cs.getDouble("damage-reduction-ratio", 0.35));
+          ((DirectDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
+          ((DirectDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
 
           ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
           Map<AbilityMod, Float> damageModMap = new HashMap<>();
@@ -404,6 +412,16 @@ public class EffectManager {
         ((EndlessEffect) effect).setMaxDuration(cs.getInt("max-duration-seconds", 30));
         ((EndlessEffect) effect).setTickRate(cs.getInt("tick-rate", 5));
         ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+        String strifeStat = cs.getString("period-reduction-stat", "");
+        if (StringUtils.isNotBlank(strifeStat)) {
+          try {
+            ((EndlessEffect) effect).setReducerStat(StrifeStat.valueOf(strifeStat));
+            ((EndlessEffect) effect).setReducerValue(
+                (float) cs.getDouble("stat-reducer-value", 100f));
+          } catch (Exception e) {
+            LogUtil.printWarning("Skipping invalid stat " + strifeStat + " in endless effect!");
+          }
+        }
         List<String> runEffects = cs.getStringList("effects");
         List<String> cancelEffects = cs.getStringList("cancel-effects");
         List<String> expiryEffects = cs.getStringList("expiry-effects");

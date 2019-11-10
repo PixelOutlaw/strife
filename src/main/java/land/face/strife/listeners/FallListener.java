@@ -22,6 +22,10 @@ public class FallListener implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
+    if ((event.getEntity()).getFallDistance() < 2) {
+      event.setCancelled(true);
+      return;
+    }
 
     double damage = event.getDamage(DamageModifier.BASE);
     double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
