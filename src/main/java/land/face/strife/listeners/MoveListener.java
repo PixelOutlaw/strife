@@ -13,7 +13,9 @@ public class MoveListener implements Listener {
     if (event.getFrom().getBlockX() != event.getTo().getBlockX()
         || event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
       MoveUtil.setHasMoved(event.getPlayer());
-      MoveUtil.setLastGrounded(event.getPlayer());
+      if (event.getPlayer().isOnGround()) {
+        MoveUtil.setLastGrounded(event.getPlayer());
+      }
     }
   }
 }

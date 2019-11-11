@@ -25,6 +25,6 @@ public class GroundedCondition extends Condition {
   // as grounded for players, so small falls and knockbacks
   // don't disable ground based conditions
   private boolean isGroundedOrCloseToGround(LivingEntity le) {
-    return le.isOnGround() || (le instanceof Player && MoveUtil.lastGroundTime((Player) le) < 100);
+    return le.isOnGround() || (le instanceof Player && MoveUtil.timeOffGround((Player) le) < 250);
   }
 }
