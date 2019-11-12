@@ -186,6 +186,15 @@ public class ItemUtil {
     }, 1L);
   }
 
+  public static int getCustomData(ItemStack stack) {
+    if (stack.getItemMeta() == null) {
+      return -1;
+    }
+    if (!stack.getItemMeta().hasCustomModelData()) {
+      return -1;
+    }
+    return stack.getItemMeta().getCustomModelData();
+  }
   public static int hashItem(ItemStack itemStack) {
     if (itemStack == null || itemStack.getType() == Material.AIR) {
       return -1;

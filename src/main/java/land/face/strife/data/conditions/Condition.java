@@ -88,7 +88,7 @@ public abstract class Condition {
 
   public enum ConditionType {
     ATTRIBUTE,
-    EQUIPMENT,
+    WEAPONS,
     BUFF,
     LORE,
     ENDLESS_EFFECT,

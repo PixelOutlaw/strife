@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
+import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AttributeCondition;
@@ -31,7 +32,6 @@ import land.face.strife.data.conditions.CorruptionCondition;
 import land.face.strife.data.conditions.EarthRunesCondition;
 import land.face.strife.data.conditions.EndlessEffectCondition;
 import land.face.strife.data.conditions.EntityTypeCondition;
-import land.face.strife.data.conditions.EquipmentCondition;
 import land.face.strife.data.conditions.GroundedCondition;
 import land.face.strife.data.conditions.HealthCondition;
 import land.face.strife.data.conditions.HeightCondition;
@@ -45,6 +45,7 @@ import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.TimeCondition;
+import land.face.strife.data.conditions.WeaponsCondition;
 import land.face.strife.data.effects.AddEarthRunes;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.AreaType;
@@ -803,18 +804,23 @@ public class EffectManager {
         int potionIntensity = cs.getInt("intensity", 0);
         condition = new PotionCondition(potionEffectType, potionIntensity);
         break;
-      case EQUIPMENT:
-        Set<Material> materials = new HashSet<>();
-        for (String s : cs.getStringList("materials")) {
+      case WEAPONS:
+        Set<EquipmentItemData> equipmentItemData = new HashSet<>();
+        ConfigurationSection ms = cs.getConfigurationSection("item-info");
+        for (String matKey : ms.getKeys(false)) {
+          EquipmentItemData data = new EquipmentItemData();
           try {
-            materials.add(Material.valueOf(s));
+            data.setMaterial(Material.valueOf(matKey));
           } catch (Exception e) {
-            LogUtil.printError("Failed to load " + key + ". Invalid material type (" + s + ")");
+            LogUtil.printError("Failed to load " + key + ". Invalid material type (" + ms + ")");
             return;
           }
+          data.setMinData(ms.getInt(matKey + ".min-data", -1));
+          data.setMaxData(ms.getInt(matKey + ".max-data", -1));
+          equipmentItemData.add(data);
         }
         boolean strict = cs.getBoolean("strict", false);
-        condition = new EquipmentCondition(materials, strict);
+        condition = new WeaponsCondition(equipmentItemData, strict);
         break;
       case MOVING:
         condition = new MovingCondition(cs.getBoolean("state", true));
