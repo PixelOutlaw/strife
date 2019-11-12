@@ -48,6 +48,7 @@ import land.face.strife.data.conditions.TimeCondition;
 import land.face.strife.data.effects.AddEarthRunes;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.AreaType;
+import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Bleed;
 import land.face.strife.data.effects.BuffEffect;
 import land.face.strife.data.effects.CancelEndlessEffect;
@@ -206,14 +207,7 @@ public class EffectManager {
     }
     if (effect.getMaxTargets() > 0) {
       TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
-      List<LivingEntity> oldTargetsAsList = new ArrayList<>(areaTargets);
-      Set<LivingEntity> newTargetsFromMax = new HashSet<>();
-      while (newTargetsFromMax.size() < effect.getMaxTargets() && oldTargetsAsList.size() > 0) {
-        int targetIndex = random.nextInt(oldTargetsAsList.size());
-        newTargetsFromMax.add(oldTargetsAsList.get(targetIndex));
-        oldTargetsAsList.remove(targetIndex);
-      }
-      return newTargetsFromMax;
+      TargetingUtil.filterByTargetPriority(areaTargets, effect, caster.getEntity().getLocation());
     }
     return areaTargets;
   }
@@ -405,6 +399,10 @@ public class EffectManager {
         ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
+        if (((AreaEffect) effect).getMaxTargets() != -1) {
+          ((AreaEffect) effect).setPriority(
+              TargetingPriority.valueOf(cs.getString("priority", "RANDOM")));
+        }
         break;
       case ENDLESS_EFFECT:
         effect = new EndlessEffect();
@@ -689,6 +687,9 @@ public class EffectManager {
         }
         if (style == ParticleStyle.ORBIT) {
           ((StrifeParticle) effect).setOrbitSpeed(cs.getDouble("orbit-speed", 1));
+        }
+        if (style == ParticleStyle.LINE) {
+          ((StrifeParticle) effect).setLineOffset(cs.getDouble("line-offset", 0));
         }
         ((StrifeParticle) effect).setQuantity(cs.getInt("quantity", 10));
         ((StrifeParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));

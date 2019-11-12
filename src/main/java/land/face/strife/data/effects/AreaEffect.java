@@ -20,6 +20,7 @@ public class AreaEffect extends Effect {
 
   private List<Effect> effects = new ArrayList<>();
   private AreaType areaType;
+  private TargetingPriority priority;
   private double range;
   private int maxTargets;
   private boolean isLineOfSight;
@@ -96,6 +97,14 @@ public class AreaEffect extends Effect {
     this.areaType = areaType;
   }
 
+  public TargetingPriority getPriority() {
+    return priority;
+  }
+
+  public void setPriority(TargetingPriority priority) {
+    this.priority = priority;
+  }
+
   public void setCanBeEvaded(boolean canBeEvaded) {
     this.canBeEvaded = canBeEvaded;
   }
@@ -139,5 +148,15 @@ public class AreaEffect extends Effect {
   public enum AreaType {
     RADIUS,
     LINE
+  }
+
+  public enum TargetingPriority {
+    MOST_HEALTH,
+    MOST_PERCENT_HEALTH,
+    LEAST_HEALTH,
+    LEAST_PERCENT_HEALTH,
+    CLOSEST,
+    FARTHEST,
+    RANDOM
   }
 }

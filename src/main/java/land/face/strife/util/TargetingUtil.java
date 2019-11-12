@@ -3,12 +3,18 @@ package land.face.strife.util;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
+import land.face.strife.data.effects.AreaEffect;
+import land.face.strife.data.effects.TargetingComparators.DistanceComparator;
+import land.face.strife.data.effects.TargetingComparators.FlatHealthComparator;
+import land.face.strife.data.effects.TargetingComparators.PercentHealthComparator;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
@@ -25,6 +31,10 @@ import org.bukkit.util.Vector;
 
 public class TargetingUtil {
 
+  private static DistanceComparator DISTANCE_COMPARATOR = new DistanceComparator();
+  private static FlatHealthComparator HEALTH_COMPARATOR = new FlatHealthComparator();
+  private static PercentHealthComparator PERCENT_HEALTH_COMPARATOR = new PercentHealthComparator();
+
   public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster,
       boolean friendly) {
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
@@ -33,6 +43,49 @@ public class TargetingUtil {
       targets.addAll(friendlyEntities);
     } else {
       targets.removeAll(friendlyEntities);
+    }
+  }
+
+  public static void filterByTargetPriority(Set<LivingEntity> areaTargets, AreaEffect effect,
+      Location casterLoc) {
+    if (areaTargets.isEmpty()) {
+      return;
+    }
+    List<LivingEntity> targetList = new ArrayList<>(areaTargets);
+    int newMaxTargets = Math.min(effect.getMaxTargets(), areaTargets.size());
+    switch (effect.getPriority()) {
+      case RANDOM:
+        Collections.shuffle(targetList);
+        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        return;
+      case CLOSEST:
+        DISTANCE_COMPARATOR.setLoc(casterLoc);
+        targetList.sort(DISTANCE_COMPARATOR);
+        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        return;
+      case FARTHEST:
+        DISTANCE_COMPARATOR.setLoc(casterLoc);
+        targetList.sort(DISTANCE_COMPARATOR);
+        areaTargets.retainAll(
+            targetList.subList(targetList.size() - newMaxTargets, targetList.size()));
+        return;
+      case LEAST_HEALTH:
+        targetList.sort(HEALTH_COMPARATOR);
+        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        return;
+      case MOST_HEALTH:
+        targetList.sort(HEALTH_COMPARATOR);
+        areaTargets.retainAll(
+            targetList.subList(targetList.size() - newMaxTargets, targetList.size()));
+        return;
+      case LEAST_PERCENT_HEALTH:
+        targetList.sort(PERCENT_HEALTH_COMPARATOR);
+        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        return;
+      case MOST_PERCENT_HEALTH:
+        targetList.sort(PERCENT_HEALTH_COMPARATOR);
+        areaTargets.retainAll(
+            targetList.subList(targetList.size() - newMaxTargets, targetList.size()));
     }
   }
 
@@ -161,15 +214,15 @@ public class TargetingUtil {
         .hasMetadata("NPC");
   }
 
-  private static boolean entityWithinBounds(Entity entity, Location loc) {
-    if (!(entity instanceof LivingEntity) || !entity.isValid()) {
+  private static boolean entityWithinBounds(Entity e, Location loc) {
+    if (!(e instanceof LivingEntity) || !e.isValid()) {
       return false;
     }
-    double ex = entity.getLocation().getX();
-    double ey = entity.getLocation().getY() + ((LivingEntity) entity).getEyeHeight() / 2;
-    double ez = entity.getLocation().getZ();
-    return Math.abs(loc.getX() - ex) < 0.85 && Math.abs(loc.getZ() - ez) < 0.85
-        && Math.abs(loc.getY() - ey) < 3;
+    double ex = e.getLocation().getX();
+    double ey = e.getLocation().getY();
+    double ez = e.getLocation().getZ();
+    return Math.abs(loc.getX() - ex) < e.getWidth() && Math.abs(loc.getZ() - ez) < e.getWidth()
+        && Math.abs(loc.getY() - ey) < e.getHeight();
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
