@@ -31,6 +31,7 @@ import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.OriginLocation;
+import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
@@ -76,35 +77,35 @@ public class ShootListener implements Listener {
 
     event.setCancelled(true);
 
-    ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
-        .getEquipment()).getItemInMainHand();
-    if (weapon.hasItemMeta() && Objects.requireNonNull(weapon.getItemMeta()).hasCustomModelData()
-        && weapon.getItemMeta().getCustomModelData() != 0) {
-      int itemData = weapon.getItemMeta().getCustomModelData();
-      if (weapon.getType() == Material.BOW && itemData > 10999 && itemData < 12000) {
-        if (shooter instanceof Player) {
-          if (((Player) shooter).getCooldown(Material.BOW) > 0) {
-            return;
-          }
-          ((Player) shooter).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
-        }
-        plugin.getEffectManager().execute(flintlockHitscan, mob, mob.getEntity());
-        flintlockSmoke.apply(null, mob);
-        flintlockFlare.apply(null, mob);
-        System.out.println(flintlockFlare.getSpeed());
-        System.out.println(flintlockSmoke.getSpeed());
-        mob.getEntity().getWorld()
-            .playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.7f);
-        return;
-      }
-    }
-
     if (mob.getAbilitySet() != null
         && mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) != null) {
       boolean triggered = plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
       if (triggered) {
         return;
       }
+    }
+
+    ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
+        .getEquipment()).getItemInMainHand();
+    if (weapon.getType() != Material.BOW && weapon.getType() != Material.CROSSBOW) {
+      weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
+          .getEquipment()).getItemInOffHand();
+    }
+
+    int itemData = ItemUtil.getCustomData(weapon);
+    if (weapon.getType() == Material.BOW && itemData > 10999 && itemData < 12000) {
+      if (shooter instanceof Player) {
+        if (((Player) shooter).getCooldown(Material.BOW) > 0) {
+          return;
+        }
+        ((Player) shooter).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
+      }
+      plugin.getEffectManager().execute(flintlockHitscan, mob, mob.getEntity());
+      flintlockSmoke.apply(null, mob);
+      flintlockFlare.apply(null, mob);
+      mob.getEntity().getWorld()
+          .playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.7f);
+      return;
     }
 
     double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
