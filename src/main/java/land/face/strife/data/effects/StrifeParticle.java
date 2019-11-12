@@ -27,6 +27,7 @@ public class StrifeParticle extends Effect {
   private double arcAngle;
   private double arcOffset;
   private double orbitSpeed;
+  private double lineOffset;
   private int tickDuration;
   private boolean strictDuration;
   private ParticleStyle style;
@@ -46,7 +47,7 @@ public class StrifeParticle extends Effect {
           .addContinuousParticle(target.getEntity(), this, (int) duration);
       return;
     }
-    playAtLocation(getLoc(target.getEntity()), caster.getEntity().getEyeLocation().getDirection());
+    playAtLocation(getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
   }
 
   public void playAtLocation(LivingEntity livingEntity) {
@@ -69,7 +70,7 @@ public class StrifeParticle extends Effect {
         if (direction == null) {
           throw new IllegalArgumentException("Cannot use LINE particle without defined direction");
         }
-        spawnParticleLine(location, direction, size);
+        spawnParticleLine(location, direction, size + lineOffset);
         return;
       case PILLAR:
         spawnParticlePillar(location, size);
@@ -93,6 +94,10 @@ public class StrifeParticle extends Effect {
 
   public void setQuantity(int quantity) {
     this.quantity = quantity;
+  }
+
+  public float getSpeed() {
+    return speed;
   }
 
   public void setSpeed(float speed) {
@@ -149,6 +154,14 @@ public class StrifeParticle extends Effect {
 
   public void setOrbitSpeed(double orbitSpeed) {
     this.orbitSpeed = orbitSpeed;
+  }
+
+  public double getLineOffset() {
+    return lineOffset;
+  }
+
+  public void setLineOffset(double lineOffset) {
+    this.lineOffset = lineOffset;
   }
 
   public void setStrictDuration(boolean strictDuration) {
@@ -220,7 +233,7 @@ public class StrifeParticle extends Effect {
   }
 
   private void spawnParticleLine(Location center, Vector direction, double length) {
-    for (double dist = 0; dist < length; dist += 0.25) {
+    for (double dist = lineOffset; dist < length ; dist += 0.25) {
       Location loc = center.clone();
       loc.add(direction.clone().multiply(dist));
       if (loc.getBlock().getType() != Material.AIR) {
@@ -240,14 +253,12 @@ public class StrifeParticle extends Effect {
             -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
         location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
       }
-      return;
-    }
-    if (blockData != null) {
+    } else if (blockData != null) {
       location.getWorld()
           .spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);
-      return;
+    } else {
+      location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
     }
-    location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
   }
 
   public enum ParticleStyle {
