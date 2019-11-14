@@ -40,10 +40,10 @@ public class EquipmentItemData {
       if (data.getMaterial() != stack.getType()) {
         continue;
       }
-      if (data.getMinData() != -1 && ItemUtil.getCustomData(stack) > data.getMinData()) {
+      if (data.getMinData() != -1 && ItemUtil.getCustomData(stack) < data.getMinData()) {
         continue;
       }
-      if (data.getMaxData() != -1 && ItemUtil.getCustomData(stack) < data.getMaxData()) {
+      if (data.getMaxData() != -1 && ItemUtil.getCustomData(stack) > data.getMaxData()) {
         continue;
       }
       return true;

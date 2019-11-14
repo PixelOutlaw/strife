@@ -70,7 +70,7 @@ public class EntityEquipmentManager {
     for (String line : cs.getStringList("lore")) {
       lore.add(TextUtils.color(line));
     }
-    int data = cs.getInt("data", -1);
+    int data = cs.getInt("custom-model-data", -1);
     if (data != -1) {
       ItemStackExtensionsKt.setCustomModelData(stack, data);
     }
