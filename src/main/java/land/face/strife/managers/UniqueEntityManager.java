@@ -20,10 +20,14 @@ import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
+import me.libraryaddict.disguise.disguisetypes.RabbitType;
+import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Rabbit;
@@ -172,7 +176,8 @@ public class UniqueEntityManager {
     return strifeMob;
   }
 
-  public void cacheDisguise(UniqueEntity uniqueEntity, String disguiseType, String playerName) {
+  public void cacheDisguise(UniqueEntity uniqueEntity, String disguiseType, String playerName,
+      String typeData) {
     DisguiseType type = DisguiseType.valueOf(disguiseType);
     if (type == DisguiseType.PLAYER) {
       if (StringUtils.isBlank(playerName)) {
@@ -183,6 +188,28 @@ public class UniqueEntityManager {
       return;
     }
     MobDisguise mobDisguise = new MobDisguise(type);
+    if (StringUtils.isNotBlank(typeData)) {
+      switch (type) {
+        case FOX:
+          try {
+            Fox.Type foxType = Fox.Type.valueOf(typeData);
+            FoxWatcher fox = new FoxWatcher(mobDisguise);
+            fox.setType(foxType);
+          } catch (Exception e) {
+            LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
+          }
+          break;
+        case RABBIT:
+          try {
+            RabbitType rabbitType = RabbitType.valueOf(typeData);
+            RabbitWatcher rabbit = new RabbitWatcher(mobDisguise);
+            rabbit.setType(rabbitType);
+          } catch (Exception e) {
+            LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
+          }
+          break;
+      }
+    }
     mobDisguise.setShowName(true);
     mobDisguise.setReplaceSounds(true);
     cachedDisguises.put(uniqueEntity, mobDisguise);

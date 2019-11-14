@@ -646,8 +646,9 @@ public class StrifePlugin extends FacePlugin {
 
       String disguise = cs.getString("disguise", null);
       if (StringUtils.isNotBlank(disguise)) {
-        uniqueEntityManager
-            .cacheDisguise(uniqueEntity, disguise, cs.getString("disguise-player", null));
+        String disguiseType = cs.getString("disguise-type-data", "");
+        String disguisePlayer = cs.getString("disguise-player");
+        uniqueEntityManager.cacheDisguise(uniqueEntity, disguise, disguisePlayer, disguiseType);
       }
 
       ConfigurationSection statCs = cs.getConfigurationSection("stats");
