@@ -56,9 +56,11 @@ public class ShootListener implements Listener {
   private StrifeParticle flintlockSmoke;
   private StrifeParticle flintlockFlare;
   private AreaEffect flintlockHitscan;
+  private StandardDamage flintlockDamage;
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
+    flintlockDamage = buildStandardDamage();
     flintlockSmoke = buildFlintlockSmoke();
     flintlockFlare = buildFlintlockFlare();
     flintlockHitscan = buildFlintlockHitscan();
@@ -92,27 +94,37 @@ public class ShootListener implements Listener {
           .getEquipment()).getItemInOffHand();
     }
 
-    int itemData = ItemUtil.getCustomData(weapon);
-    if (weapon.getType() == Material.BOW && itemData > 10999 && itemData < 12000) {
+    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
+    attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
+
+    if (attackMultiplier <= 0.05) {
+      event.setCancelled(true);
+      return;
+    }
+
+    if (ItemUtil.isPistol(weapon)) {
       if (shooter instanceof Player) {
         if (((Player) shooter).getCooldown(Material.BOW) > 0) {
           return;
         }
         ((Player) shooter).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
       }
+      if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
+        double randomMultishot = Math.pow(Math.random(), 1.5);
+        int projectiles = ProjectileUtil
+            .getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
+        flintlockHitscan.setMaxTargets(projectiles);
+        flintlockHitscan.setMaxConeRadius(0.35f * (projectiles - 1));
+      } else {
+        flintlockHitscan.setMaxTargets(1);
+        flintlockHitscan.setMaxConeRadius(0f);
+      }
+      flintlockDamage.setAttackMultiplier(attackMultiplier);
       plugin.getEffectManager().execute(flintlockHitscan, mob, mob.getEntity());
       flintlockSmoke.apply(null, mob);
       flintlockFlare.apply(null, mob);
       mob.getEntity().getWorld()
-          .playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.7f);
-      return;
-    }
-
-    double attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
-    attackMultiplier = Math.pow(attackMultiplier, 1.5D);
-
-    if (attackMultiplier <= 0.05) {
-      event.setCancelled(true);
+          .playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
       return;
     }
 
@@ -209,6 +221,13 @@ public class ShootListener implements Listener {
     return particle;
   }
 
+  private StandardDamage buildStandardDamage() {
+    StandardDamage standardDamage = new StandardDamage();
+    standardDamage.setAttackMultiplier(1.0f);
+    standardDamage.setAttackType(AttackType.RANGED);
+    return standardDamage;
+  }
+
   private StrifeParticle buildFlintlockFlare() {
     StrifeParticle particle = new StrifeParticle();
     particle.setFriendly(true);
@@ -224,17 +243,18 @@ public class ShootListener implements Listener {
   }
 
   private AreaEffect buildFlintlockHitscan() {
-    StandardDamage standardDamage = new StandardDamage();
-    standardDamage.setAttackMultiplier(1.0f);
-    standardDamage.setAttackType(AttackType.RANGED);
-
     AreaEffect hitscan = new AreaEffect();
-    hitscan.setAreaType(AreaType.LINE);
+    hitscan.setAreaType(AreaType.CONE);
     hitscan.setPriority(TargetingPriority.CLOSEST);
+    hitscan.setScaleTargetsWithMultishot(false);
     hitscan.setRange((float) plugin.getSettings().getDouble("config.flintlock.range", 16f));
     hitscan.setLineOfSight(true);
     hitscan.setMaxTargets(1);
-    hitscan.getEffects().add(standardDamage);
+    hitscan.setCanBeBlocked(true);
+    hitscan.setCanBeEvaded(true);
+
+    hitscan.getEffects().add(flintlockDamage);
+
     return hitscan;
   }
 
