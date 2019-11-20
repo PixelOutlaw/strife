@@ -123,6 +123,7 @@ public class SkillExperienceManager {
       switch (type) {
         case ARCHERY:
         case AXE_MASTERY:
+        case BLUNT_WEAPONS:
         case BLACK_MAGICS:
         case DUAL_WIELDING:
         case ARCANE_MAGICS:
