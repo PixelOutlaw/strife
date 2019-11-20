@@ -31,13 +31,20 @@ public class IndicatorManager {
         .getDouble("config.indicators.gravity-fall-speed", 20);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data, String text) {
+  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data,
+      String text) {
     if (!(creator instanceof Player)) {
       return;
     }
     Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);
-    Location midway = creator.getEyeLocation().clone()
-        .add(creator.getEyeLocation().clone().subtract(loc).multiply(-0.65));
+    Location midway;
+    if (creator.getLocation().distanceSquared(target.getLocation()) < 144) {
+      midway = creator.getEyeLocation().clone()
+          .add(creator.getEyeLocation().clone().subtract(loc).multiply(-0.65));
+    } else {
+      midway = creator.getEyeLocation().clone()
+          .add(creator.getEyeLocation().clone().subtract(loc).toVector().normalize().multiply(-8));
+    }
 
     WorldServer w = ((CraftWorld) loc.getWorld()).getHandle();
 
