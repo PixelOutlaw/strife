@@ -7,16 +7,22 @@ import land.face.strife.util.LogUtil;
 
 public class Buff {
 
+  private final String id;
   private final Map<StrifeStat, Float> buffStats;
   private final int maxStacks;
 
   private long endingTimestamp = System.currentTimeMillis();
   private int stacks;
 
-  public Buff(Map<StrifeStat, Float> buffStats, int maxStacks) {
+  public Buff(String id, Map<StrifeStat, Float> buffStats, int maxStacks) {
+    this.id = id;
     this.buffStats = buffStats;
     this.stacks = 1;
     this.maxStacks = maxStacks;
+  }
+
+  public String getId() {
+    return id;
   }
 
   public Map<StrifeStat, Float> getTotalStats() {

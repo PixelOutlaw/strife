@@ -51,7 +51,7 @@ public class StrifeMob {
     if (runningBuffs.isEmpty()) {
       return baseStats.getOrDefault(stat, 0f);
     }
-    if (BUFF_CHECK_FREQUENCY_MS < System.currentTimeMillis() - buffCacheStamp) {
+    if (System.currentTimeMillis() - buffCacheStamp > BUFF_CHECK_FREQUENCY_MS) {
       statCache.clear();
       statCache.putAll(getFinalStats());
       buffCacheStamp = System.currentTimeMillis();
@@ -223,12 +223,18 @@ public class StrifeMob {
 
   private Map<StrifeStat, Float> getBuffStats() {
     Map<StrifeStat, Float> stats = new HashMap<>();
-    for (String buffId : runningBuffs.keySet()) {
-      if (runningBuffs.get(buffId).isExpired()) {
-        runningBuffs.remove(buffId);
+    for (Buff buff : runningBuffs.values()) {
+      if (buff.isExpired()) {
+        runningBuffs.remove(buff.getId());
         continue;
       }
-      stats.putAll(runningBuffs.get(buffId).getTotalStats());
+      for (StrifeStat stat : buff.getTotalStats().keySet()) {
+        if (stats.containsKey(stat)) {
+          stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
+        } else {
+          stats.put(stat, buff.getTotalStats().get(stat));
+        }
+      }
     }
     return stats;
   }
