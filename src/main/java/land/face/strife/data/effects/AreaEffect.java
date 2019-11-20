@@ -22,7 +22,9 @@ public class AreaEffect extends Effect {
   private AreaType areaType;
   private TargetingPriority priority;
   private double range;
+  private float maxConeRadius;
   private int maxTargets;
+  private boolean scaleTargetsWithMultishot;
   private boolean isLineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
@@ -129,12 +131,31 @@ public class AreaEffect extends Effect {
     this.range = range;
   }
 
+  public float getMaxConeRadius() {
+    if (areaType != AreaType.CONE) {
+      throw new IllegalStateException("You cannot get cone radius on non-cone aoes dingus");
+    }
+    return maxConeRadius;
+  }
+
+  public void setMaxConeRadius(float maxConeRadius) {
+    this.maxConeRadius = maxConeRadius;
+  }
+
   public int getMaxTargets() {
     return maxTargets;
   }
 
   public void setMaxTargets(int maxTargets) {
     this.maxTargets = maxTargets;
+  }
+
+  public boolean isScaleTargetsWithMultishot() {
+    return scaleTargetsWithMultishot;
+  }
+
+  public void setScaleTargetsWithMultishot(boolean scaleTargetsWithMultishot) {
+    this.scaleTargetsWithMultishot = scaleTargetsWithMultishot;
   }
 
   public Map<AbilityMod, Float> getAttackModifiers() {
@@ -147,7 +168,8 @@ public class AreaEffect extends Effect {
 
   public enum AreaType {
     RADIUS,
-    LINE
+    LINE,
+    CONE
   }
 
   public enum TargetingPriority {

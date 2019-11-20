@@ -11,6 +11,7 @@ public class Heal extends Effect {
   private float amount;
   private DamageScale damageScale;
   private float flatBonus;
+  private boolean useHealingPower;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -18,9 +19,19 @@ public class Heal extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getStat(attr);
     }
+
     DamageContainer container = new DamageContainer(damageScale, null, null, heal);
     heal = DamageUtil.applyDamageScale(caster, target, container, null);
     heal += flatBonus;
+
+    if (useHealingPower) {
+      heal *= 1 + caster.getStat(StrifeStat.HEALING_POWER) / 100;
+    }
+
+    for (StrifeStat attr : getStatMults().keySet()) {
+      heal *= 1 + getStatMults().get(attr) * caster.getStat(attr);
+    }
+
     DamageUtil.restoreHealth(target.getEntity(), heal);
   }
 
@@ -34,5 +45,9 @@ public class Heal extends Effect {
 
   public void setFlatBonus(float flatBonus) {
     this.flatBonus = flatBonus;
+  }
+
+  public void setUseHealingPower(boolean useHealingPower) {
+    this.useHealingPower = useHealingPower;
   }
 }

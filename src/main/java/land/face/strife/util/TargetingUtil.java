@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
@@ -19,7 +20,6 @@ import land.face.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -47,45 +47,44 @@ public class TargetingUtil {
   }
 
   public static void filterByTargetPriority(Set<LivingEntity> areaTargets, AreaEffect effect,
-      Location casterLoc) {
+      StrifeMob caster, int maxTargets) {
     if (areaTargets.isEmpty()) {
       return;
     }
     List<LivingEntity> targetList = new ArrayList<>(areaTargets);
-    int newMaxTargets = Math.min(effect.getMaxTargets(), areaTargets.size());
     switch (effect.getPriority()) {
       case RANDOM:
         Collections.shuffle(targetList);
-        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        areaTargets.retainAll(targetList.subList(0, maxTargets));
         return;
       case CLOSEST:
-        DISTANCE_COMPARATOR.setLoc(casterLoc);
+        DISTANCE_COMPARATOR.setLoc(caster.getEntity().getLocation());
         targetList.sort(DISTANCE_COMPARATOR);
-        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        areaTargets.retainAll(targetList.subList(0, maxTargets));
         return;
       case FARTHEST:
-        DISTANCE_COMPARATOR.setLoc(casterLoc);
+        DISTANCE_COMPARATOR.setLoc(caster.getEntity().getLocation());
         targetList.sort(DISTANCE_COMPARATOR);
         areaTargets.retainAll(
-            targetList.subList(targetList.size() - newMaxTargets, targetList.size()));
+            targetList.subList(targetList.size() - maxTargets, targetList.size()));
         return;
       case LEAST_HEALTH:
         targetList.sort(HEALTH_COMPARATOR);
-        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        areaTargets.retainAll(targetList.subList(0, maxTargets));
         return;
       case MOST_HEALTH:
         targetList.sort(HEALTH_COMPARATOR);
         areaTargets.retainAll(
-            targetList.subList(targetList.size() - newMaxTargets, targetList.size()));
+            targetList.subList(targetList.size() - maxTargets, targetList.size()));
         return;
       case LEAST_PERCENT_HEALTH:
         targetList.sort(PERCENT_HEALTH_COMPARATOR);
-        areaTargets.retainAll(targetList.subList(0, newMaxTargets));
+        areaTargets.retainAll(targetList.subList(0, maxTargets));
         return;
       case MOST_PERCENT_HEALTH:
         targetList.sort(PERCENT_HEALTH_COMPARATOR);
         areaTargets.retainAll(
-            targetList.subList(targetList.size() - newMaxTargets, targetList.size()));
+            targetList.subList(targetList.size() - maxTargets, targetList.size()));
     }
   }
 
@@ -120,21 +119,72 @@ public class TargetingUtil {
   }
 
   public static Set<LivingEntity> getEntitiesInArea(LivingEntity caster, double radius) {
-    Collection<Entity> targetList = caster.getWorld()
-        .getNearbyEntities(caster.getLocation(), radius, radius, radius);
+    Collection<Entity> targetList = Objects.requireNonNull(caster.getLocation().getWorld())
+        .getNearbyEntities(caster.getEyeLocation(), radius, radius, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
-    for (Entity e : targetList) {
-      if (!e.isValid() || e instanceof ArmorStand || !(e instanceof LivingEntity)) {
-        continue;
-      }
-      if (e.hasMetadata("NPC")) {
-        continue;
-      }
-      if (caster.hasLineOfSight(e)) {
-        validTargets.add((LivingEntity) e);
+    for (Entity entity : targetList) {
+      if (!isInvalidTarget(entity)) {
+        validTargets.add((LivingEntity) entity);
       }
     }
+    validTargets.removeIf(e -> !caster.hasLineOfSight(e));
     return validTargets;
+  }
+
+  public static Set<LivingEntity> getEntitiesInCone(LivingEntity originEntity, Location origin,
+      Vector direction, float length, float maxConeRadius) {
+    Collection<Entity> targetList = Objects.requireNonNull(origin.getWorld())
+        .getNearbyEntities(origin, length, length, length);
+    targetList.removeIf(TargetingUtil::isInvalidTarget);
+    Set<LivingEntity> validTargets = new HashSet<>();
+    for (float incRange = 0; incRange <= length + 0.01; incRange += 0.8) {
+      Location loc = origin.clone().add(direction.clone().multiply(incRange));
+      for (Entity entity : targetList) {
+        if (entityWithinRadius(entity, loc, maxConeRadius * (incRange / length))) {
+          validTargets.add((LivingEntity) entity);
+        }
+      }
+      targetList.removeAll(validTargets);
+    }
+    validTargets.removeIf(e -> !originEntity.hasLineOfSight(e));
+    return validTargets;
+  }
+
+  public static Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
+    Collection<Entity> targetList = Objects.requireNonNull(caster.getLocation().getWorld())
+        .getNearbyEntities(caster.getEyeLocation(), range, range, range);
+    targetList.removeIf(TargetingUtil::isInvalidTarget);
+    Set<LivingEntity> validTargets = new HashSet<>();
+    for (float incRange = 0; incRange <= range + 0.01; incRange += 0.8) {
+      Location loc = caster.getEyeLocation().clone()
+          .add(caster.getEyeLocation().getDirection().clone().multiply(incRange));
+      for (Entity entity : targetList) {
+        if (entityWithinRadius(entity, loc, 0)) {
+          validTargets.add((LivingEntity) entity);
+        }
+        if (loc.getBlock().getType().isSolid()) {
+          break;
+        }
+      }
+      targetList.removeAll(validTargets);
+    }
+    validTargets.removeIf(e -> !caster.hasLineOfSight(e));
+    return validTargets;
+  }
+
+  public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
+    RayTraceResult result = caster.getWorld()
+        .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
+            entity -> isValidRaycastTarget(caster, entity));
+    if (result == null || result.getHitEntity() == null) {
+      return null;
+    }
+    return (LivingEntity) result.getHitEntity();
+  }
+
+  public static boolean isInvalidTarget(Entity e) {
+    return !e.isValid() || !(e instanceof LivingEntity) || e instanceof ArmorStand || e
+        .hasMetadata("NPC");
   }
 
   public static boolean isDetectionStand(LivingEntity le) {
@@ -175,54 +225,19 @@ public class TargetingUtil {
     }
   }
 
-  public static Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
-    Set<LivingEntity> targets = new HashSet<>();
-    Location eyeLoc = caster.getEyeLocation();
-    Vector direction = caster.getEyeLocation().getDirection();
-    ArrayList<Entity> entities = (ArrayList<Entity>) caster.getNearbyEntities(range, range, range);
-    for (double incRange = 0; incRange <= range; incRange += 1) {
-      Location loc = eyeLoc.clone().add(direction.clone().multiply(incRange));
-      if (loc.getBlock().getType() != Material.AIR) {
-        if (!loc.getBlock().getType().isTransparent()) {
-          break;
-        }
-      }
-      for (Entity entity : entities) {
-        if (entity.hasMetadata("NPC")) {
-          continue;
-        }
-        if (entityWithinBounds(entity, loc)) {
-          targets.add((LivingEntity) entity);
-        }
-      }
-    }
-    return targets;
-  }
-
-  public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
-    RayTraceResult result = caster.getWorld()
-        .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-            entity -> isValidRaycastTarget(caster, entity));
-    if (result == null || result.getHitEntity() == null) {
-      return null;
-    }
-    return (LivingEntity) result.getHitEntity();
-  }
-
   private static boolean isValidRaycastTarget(LivingEntity caster, Entity entity) {
     return entity instanceof LivingEntity && entity != caster && entity.isValid() && !entity
         .hasMetadata("NPC");
   }
 
-  private static boolean entityWithinBounds(Entity e, Location loc) {
-    if (!(e instanceof LivingEntity) || !e.isValid()) {
-      return false;
-    }
+  private static boolean entityWithinRadius(Entity e, Location loc, float radius) {
     double ex = e.getLocation().getX();
     double ey = e.getLocation().getY();
     double ez = e.getLocation().getZ();
-    return Math.abs(loc.getX() - ex) < e.getWidth() && Math.abs(loc.getZ() - ez) < e.getWidth()
-        && Math.abs(loc.getY() - ey) < e.getHeight();
+    double width = Math.max(e.getWidth(), 0.6);
+    return Math.abs(loc.getX() - ex) < width + radius
+        && Math.abs(loc.getZ() - ez) < width + radius
+        && Math.abs(loc.getY() - ey) < Math.max(e.getHeight(), 1.2) + radius;
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {

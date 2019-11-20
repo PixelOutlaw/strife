@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
@@ -124,8 +123,6 @@ public class EffectManager {
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  private static Random random = new Random();
-
   public EffectManager(StrifeAttributeManager strifeAttributeManager, StrifeMobManager aeManager) {
     this.strifeAttributeManager = strifeAttributeManager;
     this.aeManager = aeManager;
@@ -202,13 +199,24 @@ public class EffectManager {
         case LINE:
           areaTargets.addAll(TargetingUtil.getEntitiesInLine(le, range));
           break;
+        case CONE:
+          areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity(), le.getLocation(),
+              caster.getEntity().getLocation().getDirection(), (float) range,
+              effect.getMaxConeRadius()));
+          break;
         default:
           return null;
       }
     }
     if (effect.getMaxTargets() > 0) {
       TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
-      TargetingUtil.filterByTargetPriority(areaTargets, effect, caster.getEntity().getLocation());
+      int maxTargets = effect.getMaxTargets();
+      if (effect.isScaleTargetsWithMultishot()) {
+        float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.5);
+        maxTargets = ProjectileUtil.getTotalProjectiles(maxTargets, mult);
+      }
+      TargetingUtil.filterByTargetPriority(areaTargets, effect, caster,
+          Math.min(maxTargets, areaTargets.size()));
     }
     return areaTargets;
   }
@@ -272,6 +280,7 @@ public class EffectManager {
         ((Heal) effect).setAmount((float) cs.getDouble("amount", 1));
         ((Heal) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((Heal) effect).setUseHealingPower(cs.getBoolean("use-healing-power", false));
         break;
       case FOOD:
         effect = new Food();
@@ -395,11 +404,16 @@ public class EffectManager {
         }, 5L);
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
+        ((AreaEffect) effect)
+            .setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
         ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
+        if (((AreaEffect) effect).getAreaType() == AreaType.CONE) {
+          ((AreaEffect) effect).setMaxConeRadius((float) cs.getDouble("max-cone-radius", 3));
+        }
         if (((AreaEffect) effect).getMaxTargets() != -1) {
           ((AreaEffect) effect).setPriority(
               TargetingPriority.valueOf(cs.getString("priority", "RANDOM")));

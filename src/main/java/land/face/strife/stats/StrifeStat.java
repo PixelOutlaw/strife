@@ -100,6 +100,7 @@ public enum StrifeStat {
   LIFE_STEAL("Life Steal"),
   HP_ON_HIT("Life On Hit"),
   HP_ON_KILL("Life On Kill"),
+  HEALING_POWER("Healing Power"),
 
   MINION_DAMAGE("Minion Damage"),
   MINION_LIFE("Minion Max Life"),
