@@ -63,10 +63,7 @@ public class ItemUtil {
   public static boolean isValidOffhand(EntityEquipment entityEquipment) {
     ItemStack mainItem = entityEquipment.getItemInMainHand();
     ItemStack offItem = entityEquipment.getItemInOffHand();
-    if (mainItem.getType() == Material.AIR) {
-      return true;
-    }
-    if (offItem.getType() == Material.AIR) {
+    if (mainItem.getType() == Material.AIR || offItem.getType() == Material.AIR) {
       return true;
     }
     if (isMeleeWeapon(mainItem.getType())) {
@@ -79,12 +76,30 @@ public class ItemUtil {
       return isValidMageOffhand(offItem);
     }
     if (mainItem.getType() == Material.BOW) {
-      return offItem.getType() == Material.ARROW;
+      if (isPistol(mainItem)) {
+        return isAmmo(offItem);
+      }
+      return isQuiver(offItem);
     }
     if (mainItem.getType() == Material.SHIELD) {
       return offItem.getType() == Material.SHIELD;
     }
     return !isArmor(offItem.getType());
+  }
+
+  public static boolean isPistol(ItemStack stack) {
+    int itemData = getCustomData(stack);
+    return stack.getType() == Material.BOW && itemData > 10999 && itemData < 12000;
+  }
+
+  public static boolean isQuiver(ItemStack stack) {
+    int itemData = getCustomData(stack);
+    return stack.getType() == Material.ARROW && itemData > 8999 && itemData < 10000;
+  }
+
+  public static boolean isAmmo(ItemStack stack) {
+    int itemData = getCustomData(stack);
+    return stack.getType() == Material.ARROW && itemData > 9999 && itemData < 11000;
   }
 
   public static boolean isWand(ItemStack is) {
@@ -195,6 +210,7 @@ public class ItemUtil {
     }
     return stack.getItemMeta().getCustomModelData();
   }
+
   public static int hashItem(ItemStack itemStack) {
     if (itemStack == null || itemStack.getType() == Material.AIR) {
       return -1;
