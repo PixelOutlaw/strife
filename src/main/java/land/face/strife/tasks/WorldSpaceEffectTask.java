@@ -18,20 +18,14 @@
  */
 package land.face.strife.tasks;
 
-import land.face.strife.managers.WSEManager;
+import land.face.strife.StrifePlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class WorldSpaceEffectTask extends BukkitRunnable {
 
-  private final WSEManager wseManager;
-
-  public WorldSpaceEffectTask(WSEManager wseManager) {
-    this.wseManager = wseManager;
-  }
-
   @Override
   public void run() {
-    wseManager.tickAllWorldSpaceEffects();
+    StrifePlugin.getInstance().getWseManager().tickAllWorldSpaceEffects();
   }
 
 }

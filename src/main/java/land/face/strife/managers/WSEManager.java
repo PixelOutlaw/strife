@@ -22,7 +22,7 @@ import org.bukkit.util.Vector;
 public class WSEManager {
 
   private EffectManager effectManager;
-  private final Set<WorldSpaceEffectEntity> worldSpaceEffects;
+  private Set<WorldSpaceEffectEntity> worldSpaceEffects;
 
   public WSEManager(EffectManager effectManager) {
     this.effectManager = effectManager;

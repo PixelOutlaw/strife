@@ -1,7 +1,7 @@
 package land.face.strife.managers;
 
+import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.Spawner;
@@ -13,11 +13,13 @@ import org.bukkit.util.Vector;
 public class SpawnerManager {
 
   private final UniqueEntityManager uniqueManager;
-  private final Map<String, Spawner> spawnerMap = new HashMap<>();
-  private final Set<SpawnerLeashTimer> spawnerLeashTimers = new HashSet<>();
+  private final Map<String, Spawner> spawnerMap;
+  private final Set<SpawnerLeashTimer> spawnerLeashTimers;
 
   public SpawnerManager(UniqueEntityManager uniqueManager) {
     this.uniqueManager = uniqueManager;
+    spawnerMap = new HashMap<>();
+    spawnerLeashTimers = new ConcurrentSet<>();
   }
 
   public Map<String, Spawner> getSpawnerMap() {
@@ -37,13 +39,17 @@ public class SpawnerManager {
     this.spawnerMap.remove(id);
   }
 
+  public void removeLeashTimer(SpawnerLeashTimer timer) {
+    spawnerLeashTimers.remove(timer);
+  }
+
   public void addRespawnTime(LivingEntity livingEntity) {
     for (SpawnerLeashTimer s : spawnerLeashTimers) {
       if (s.getEntity() == livingEntity) {
         Spawner spawner = s.getSpawner();
         spawner.getRespawnTimes().add(System.currentTimeMillis() + spawner.getRespawnMillis());
         spawner.getEntities().remove(livingEntity);
-        s.cancel();
+        s.cancelAndClear();
       }
     }
   }

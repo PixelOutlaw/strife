@@ -317,7 +317,7 @@ public class StrifePlugin extends FacePlugin {
     PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
-    WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask(wseManager);
+    WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask();
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();

@@ -23,7 +23,7 @@ public class SpawnerLeashTimer extends BukkitRunnable {
   public void run() {
     if (entity == null || !entity.isValid()) {
       LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to null entity");
-      cancel();
+      cancelAndClear();
       return;
     }
     // Lazy fuzzy distance checking, leash distance has no reason
@@ -35,8 +35,7 @@ public class SpawnerLeashTimer extends BukkitRunnable {
       entity.getWorld().spawnParticle(Particle.CLOUD,
           entity.getLocation().clone().add(0, offset, 0), 20, 0.5, offset, 0.5, 0);
       LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
-      entity.remove();
-      cancel();
+      cancelAndClear();
     }
   }
 
@@ -46,5 +45,13 @@ public class SpawnerLeashTimer extends BukkitRunnable {
 
   public LivingEntity getEntity() {
     return entity;
+  }
+
+  public void cancelAndClear() {
+    if (entity != null && entity.isValid()) {
+      entity.remove();
+    }
+    StrifePlugin.getInstance().getSpawnerManager().removeLeashTimer(this);
+    cancel();
   }
 }

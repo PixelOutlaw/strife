@@ -45,7 +45,7 @@ public class StrifeMobManager {
   public void addBuff(UUID uuid, LoadedBuff loadedBuff, double durationMultiplier) {
     StrifeMob strifeMob = trackedEntities.get(uuid);
     Buff buff = plugin.getBuffManager().buildFromLoadedBuff(loadedBuff);
-    strifeMob.addBuff(loadedBuff.getName(), buff, loadedBuff.getSeconds() * durationMultiplier);
+    strifeMob.addBuff(loadedBuff.getId(), buff, loadedBuff.getSeconds() * durationMultiplier);
   }
 
   public int removeInvalidEntities() {
