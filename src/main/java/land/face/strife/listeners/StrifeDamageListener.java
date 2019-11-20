@@ -42,6 +42,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 public class StrifeDamageListener implements Listener {
@@ -214,7 +215,7 @@ public class StrifeDamageListener implements Listener {
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
     boolean isSneakAttack = event.isSneakAttack();
-    if (isSneakAttack) {
+    if (isSneakAttack && !defender.getEntity().hasMetadata("IGNORE_SNEAK")) {
       Player player = (Player) attacker.getEntity();
       float sneakSkill = plugin.getChampionManager().getChampion(player)
           .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
@@ -227,6 +228,7 @@ public class StrifeDamageListener implements Listener {
       if (sneakEvent.isCancelled()) {
         isSneakAttack = false;
       } else {
+        defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
         rawDamage += sneakEvent.getSneakAttackDamage();
       }
     }

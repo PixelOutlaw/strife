@@ -78,11 +78,15 @@ public class SneakManager {
     if (!projectile.hasMetadata(ProjectileUtil.SNEAK_ATTACK_META)) {
       return false;
     }
+    return isSneakAngle(target, projectile.getLocation().getDirection());
+  }
+
+  public boolean isSneakAngle(LivingEntity target, Vector direction) {
     if (TargetingUtil.getMobTarget(target) != null) {
       return false;
     }
     Vector entitySightVector = target.getLocation().getDirection();
-    float angle = entitySightVector.angle(projectile.getLocation().getDirection());
+    float angle = entitySightVector.angle(direction);
     return angle > 0.6;
   }
 
