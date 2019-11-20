@@ -39,7 +39,7 @@ public class BuffManager {
   }
 
   public Buff buildFromLoadedBuff(LoadedBuff loadedBuff) {
-    return new Buff(loadedBuff.getStats(), loadedBuff.getMaxStacks());
+    return new Buff(loadedBuff.getId(), loadedBuff.getStats(), loadedBuff.getMaxStacks());
   }
 
   public void loadBuff(String key, ConfigurationSection cs) {
