@@ -18,6 +18,7 @@ import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
+import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import me.libraryaddict.disguise.disguisetypes.RabbitType;
@@ -189,25 +190,20 @@ public class UniqueEntityManager {
     }
     MobDisguise mobDisguise = new MobDisguise(type);
     if (StringUtils.isNotBlank(typeData)) {
-      switch (type) {
-        case FOX:
-          try {
+      FlagWatcher watcher = mobDisguise.getWatcher();
+      try {
+        switch (type) {
+          case FOX:
             Fox.Type foxType = Fox.Type.valueOf(typeData);
-            FoxWatcher fox = new FoxWatcher(mobDisguise);
-            fox.setType(foxType);
-          } catch (Exception e) {
-            LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
-          }
-          break;
-        case RABBIT:
-          try {
+            ((FoxWatcher) watcher).setType(foxType);
+            break;
+          case RABBIT:
             RabbitType rabbitType = RabbitType.valueOf(typeData);
-            RabbitWatcher rabbit = new RabbitWatcher(mobDisguise);
-            rabbit.setType(rabbitType);
-          } catch (Exception e) {
-            LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
-          }
-          break;
+            ((RabbitWatcher) watcher).setType(rabbitType);
+            break;
+        }
+      } catch (Exception e) {
+        LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
       }
     }
     mobDisguise.setShowName(true);
