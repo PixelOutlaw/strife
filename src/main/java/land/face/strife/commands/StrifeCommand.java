@@ -108,7 +108,7 @@ public class StrifeCommand {
       return;
     }
     StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(target);
-    sendMessage(sender, "&aUniqueID: " + targetMob.getEntity().getCustomName());
+    sendMessage(sender, "&aUniqueID: " + targetMob.getUniqueEntityId());
     sendMessage(sender, "&aGroups: " + Arrays.toString(targetMob.getFactions().toArray()));
   }
 
