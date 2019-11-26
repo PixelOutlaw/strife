@@ -66,7 +66,7 @@ public class DirectDamage extends Effect {
     damage = Math.max(0,
         damage - target.getStat(StrifeStat.DAMAGE_REDUCTION) * damageReductionRatio * pvpMult);
     LogUtil.printDebug(" [Pre-Damage] Target Health: " + target.getEntity().getHealth());
-    DamageUtil.dealDirectDamage(caster, target, damage);
+    StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target, damage, true);
     LogUtil.printDebug(" [Post-Damage] Target Health: " + target.getEntity().getHealth());
   }
 

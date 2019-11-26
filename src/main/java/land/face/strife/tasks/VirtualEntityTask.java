@@ -21,11 +21,12 @@ package land.face.strife.tasks;
 import land.face.strife.StrifePlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class WorldSpaceEffectTask extends BukkitRunnable {
+public class VirtualEntityTask extends BukkitRunnable {
 
   @Override
   public void run() {
     StrifePlugin.getInstance().getWseManager().tickAllWorldSpaceEffects();
+    StrifePlugin.getInstance().getChaserManager().tickChasers();
   }
 
 }

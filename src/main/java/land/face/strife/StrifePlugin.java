@@ -85,8 +85,10 @@ import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.BuffManager;
 import land.face.strife.managers.ChampionManager;
+import land.face.strife.managers.ChaserManager;
 import land.face.strife.managers.CombatStatusManager;
 import land.face.strife.managers.CorruptionManager;
+import land.face.strife.managers.DamageManager;
 import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
@@ -130,7 +132,7 @@ import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.SneakTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
 import land.face.strife.tasks.TrackedPruneTask;
-import land.face.strife.tasks.WorldSpaceEffectTask;
+import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.StatUtil;
@@ -186,6 +188,8 @@ public class StrifePlugin extends FacePlugin {
   private SneakManager sneakManager;
   private BossBarManager bossBarManager;
   private MinionManager minionManager;
+  private DamageManager damageManager;
+  private ChaserManager chaserManager;
   private EntityEquipmentManager equipmentManager;
   private EffectManager effectManager;
   private AbilityManager abilityManager;
@@ -252,6 +256,8 @@ public class StrifePlugin extends FacePlugin {
     uniqueEntityManager = new UniqueEntityManager(this);
     bossBarManager = new BossBarManager(this);
     minionManager = new MinionManager();
+    damageManager = new DamageManager(this);
+    chaserManager = new ChaserManager(this);
     sneakManager = new SneakManager();
     experienceManager = new ExperienceManager(this);
     skillExperienceManager = new SkillExperienceManager(this);
@@ -271,7 +277,7 @@ public class StrifePlugin extends FacePlugin {
     statUpdateManager = new StatUpdateManager(strifeMobManager);
     rageManager = new RageManager();
     monsterManager = new MonsterManager(championManager);
-    effectManager = new EffectManager(attributeManager, strifeMobManager);
+    effectManager = new EffectManager(this);
     wseManager = new WSEManager(effectManager);
     spawnerManager = new SpawnerManager(uniqueEntityManager);
     mobModManager = new MobModManager(this);
@@ -317,7 +323,7 @@ public class StrifePlugin extends FacePlugin {
     PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
-    WorldSpaceEffectTask worldSpaceEffectTask = new WorldSpaceEffectTask();
+    VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();
@@ -395,7 +401,7 @@ public class StrifePlugin extends FacePlugin {
         3 * 20L, // Start timer after 3s
         AbilityTickTask.ABILITY_TICK_RATE
     ));
-    taskList.add(worldSpaceEffectTask.runTaskTimer(this,
+    taskList.add(virtualEntityTask.runTaskTimer(this,
         20L, // Start timer after 3s
         1L // Run it every tick
     ));
@@ -635,7 +641,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
       uniqueEntity.setAllowMods(cs.getBoolean("allow-mob-mods", true));
-      uniqueEntity.setAllowMods(cs.getBoolean("remove-range-modifiers", false));
+      uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
       uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setMount(cs.getString("mount-id", ""));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
@@ -796,6 +802,14 @@ public class StrifePlugin extends FacePlugin {
 
   public AbilityManager getAbilityManager() {
     return abilityManager;
+  }
+
+  public DamageManager getDamageManager() {
+    return damageManager;
+  }
+
+  public ChaserManager getChaserManager() {
+    return chaserManager;
   }
 
   public SpawnerManager getSpawnerManager() {

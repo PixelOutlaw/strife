@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
-import land.face.strife.data.IndicatorData;
-import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.events.BlockEvent;
@@ -54,7 +52,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
@@ -68,18 +65,6 @@ public class DamageUtil {
   private static final DamageType[] DMG_TYPES = DamageType.values();
 
   private static final float BLEED_PERCENT = 0.5f;
-
-  public static double dealDirectDamage(StrifeMob attacker, StrifeMob defender, float damage) {
-    if (attacker.getEntity() instanceof Player && attacker.getEntity() != defender.getEntity()) {
-      StrifePlugin.getInstance().getIndicatorManager()
-          .addIndicator(attacker.getEntity(), defender.getEntity(),
-              buildMissIndicator((Player) attacker.getEntity()),
-              String.valueOf((int) Math.ceil(damage)));
-    }
-    damage = StrifePlugin.getInstance().getBarrierManager().damageBarrier(defender, damage);
-    forceCustomDamage(attacker.getEntity(), defender.getEntity(), Math.max(damage, 0.01));
-    return damage;
-  }
 
   public static float getRawDamage(StrifeMob attacker, DamageType damageType, AttackType type) {
     switch (damageType) {
@@ -307,26 +292,6 @@ public class DamageUtil {
 
   public static float getRageMult(StrifeMob defender) {
     return 200 / (200 + StrifePlugin.getInstance().getRageManager().getRage(defender.getEntity()));
-  }
-
-  public static void forceCustomDamage(LivingEntity attacker, LivingEntity target, double amount) {
-    if (target == attacker) {
-      if (target.getHealth() > amount) {
-        target.setHealth(target.getHealth() - amount);
-        return;
-      }
-      target.damage(100000);
-      return;
-    }
-    int noDamageTicks = target.getNoDamageTicks();
-    Vector velocity = target.getVelocity();
-    target.setNoDamageTicks(0);
-
-    CombatListener.addAttack(attacker, amount);
-    target.damage(amount, attacker);
-
-    target.setNoDamageTicks(noDamageTicks);
-    target.setVelocity(velocity);
   }
 
   public static LivingEntity getAttacker(Entity entity) {
@@ -722,12 +687,6 @@ public class DamageUtil {
 
   private static CorruptionManager getDarknessManager() {
     return StrifePlugin.getInstance().getCorruptionManager();
-  }
-
-  private static IndicatorData buildMissIndicator(Player player) {
-    IndicatorData data = new IndicatorData(new Vector(0, 40, 0), IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
   }
 
   public enum DamageScale {

@@ -54,10 +54,6 @@ public class StrifeDamageListener implements Listener {
       .getDouble("config.indicators.float-speed", 70);
   private float IND_MISS_SPEED = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.indicators.miss-speed", 80);
-  private float IND_GRAVITY_HSPEED = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.indicators.gravity-horizontal-speed", 30);
-  private float IND_GRAVITY_VSPEED = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.indicators.gravity-vertical-speed", 80);
   private Vector IND_FLOAT_VECTOR = new Vector(0, IND_FLOAT_SPEED, 0);
   private Vector IND_MISS_VECTOR = new Vector(0, IND_MISS_SPEED, 0);
 
@@ -233,6 +229,12 @@ public class StrifeDamageListener implements Listener {
       }
     }
 
+    if (attacker.getEntity() instanceof Player) {
+      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()),
+          String.valueOf((int) Math.ceil(rawDamage)));
+    }
+
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
@@ -249,11 +251,6 @@ public class StrifeDamageListener implements Listener {
 
     PlayerDataUtil.sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         critMult, triggeredElements, isBleedApplied, isSneakAttack);
-    if (attacker.getEntity() instanceof Player) {
-      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          buildHitIndicator((Player) attacker.getEntity()),
-          String.valueOf((int) Math.ceil(rawDamage)));
-    }
 
     event.setFinalDamage(finalDamage);
   }
@@ -276,24 +273,8 @@ public class StrifeDamageListener implements Listener {
     projectile.remove();
   }
 
-  private IndicatorData buildHitIndicator(Player player) {
-    IndicatorData data = new IndicatorData(new Vector(
-        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED,
-        IND_GRAVITY_VSPEED * (1 + Math.random()),
-        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED),
-        IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
-  }
-
   private IndicatorData buildMissIndicator(Player player) {
     IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
-  }
-
-  private IndicatorData buildFloatIndicator(Player player) {
-    IndicatorData data = new IndicatorData(IND_FLOAT_VECTOR.clone(), IndicatorStyle.FLOAT_UP);
     data.addOwner(player);
     return data;
   }

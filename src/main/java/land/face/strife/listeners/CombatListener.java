@@ -22,9 +22,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -47,21 +45,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static Map<LivingEntity, Double> HANDLED_ATTACKS = new HashMap<>();
   private static Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
-  }
-
-  public static void addAttack(LivingEntity entity, double damage) {
-    HANDLED_ATTACKS.put(entity, damage);
   }
 
   public static void addPlayer(Player player) {
@@ -90,8 +84,11 @@ public class CombatListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGH)
-  public void modifyAttackRange(EntityDamageByEntityEvent event) {
+  public void modifyAttackRange(EntityDamageEvent event) {
     if (event.isCancelled()) {
+      return;
+    }
+    if (!(event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.MAGIC)) {
       return;
     }
     if (event.getEntity() instanceof Mob) {
@@ -125,9 +122,8 @@ public class CombatListener implements Listener {
       return;
     }
 
-    if (HANDLED_ATTACKS.containsKey(attackEntity)) {
-      event.setDamage(BASE, HANDLED_ATTACKS.get(attackEntity));
-      HANDLED_ATTACKS.remove(attackEntity);
+    if (event.getCause() == DamageCause.MAGIC) {
+      event.setDamage(BASE, event.getDamage(BASE));
       return;
     }
 
@@ -164,7 +160,7 @@ public class CombatListener implements Listener {
 
     if (damageType == AttackType.MELEE) {
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
-      if (ItemUtil.isWand(attackEntity.getEquipment().getItemInMainHand())) {
+      if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
         WandListener.shootWand(attacker, attackMultiplier, event);
         event.setCancelled(true);
         return;

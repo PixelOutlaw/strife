@@ -12,6 +12,7 @@ import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
 import land.face.strife.data.EquipmentItemData;
+import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AttributeCondition;
@@ -44,6 +45,8 @@ import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.TimeCondition;
+import land.face.strife.data.conditions.VelocityCondition;
+import land.face.strife.data.conditions.VelocityCondition.VelocityType;
 import land.face.strife.data.conditions.WeaponsCondition;
 import land.face.strife.data.effects.AddEarthRunes;
 import land.face.strife.data.effects.AreaEffect;
@@ -53,6 +56,7 @@ import land.face.strife.data.effects.Bleed;
 import land.face.strife.data.effects.BuffEffect;
 import land.face.strife.data.effects.CancelEndlessEffect;
 import land.face.strife.data.effects.Charm;
+import land.face.strife.data.effects.ChaserEffect;
 import land.face.strife.data.effects.ConsumeBleed;
 import land.face.strife.data.effects.ConsumeCorrupt;
 import land.face.strife.data.effects.CooldownReduction;
@@ -118,14 +122,12 @@ import org.bukkit.util.Vector;
 
 public class EffectManager {
 
-  private final StrifeAttributeManager strifeAttributeManager;
-  private final StrifeMobManager aeManager;
+  private final StrifePlugin plugin;
   private final Map<String, Effect> loadedEffects;
   private final Map<String, Condition> conditions;
 
-  public EffectManager(StrifeAttributeManager strifeAttributeManager, StrifeMobManager aeManager) {
-    this.strifeAttributeManager = strifeAttributeManager;
-    this.aeManager = aeManager;
+  public EffectManager(StrifePlugin plugin) {
+    this.plugin = plugin;
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
   }
@@ -157,7 +159,7 @@ public class EffectManager {
           continue;
         }
       }
-      applyEffectIfConditionsMet(effect, caster, aeManager.getStatMob(le));
+      applyEffectIfConditionsMet(effect, caster, plugin.getStrifeMobManager().getStatMob(le));
     }
   }
 
@@ -392,6 +394,13 @@ public class EffectManager {
             .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+        break;
+      case CHASER:
+        effect = new ChaserEffect();
+        LoadedChaser data = plugin.getChaserManager().loadChaser(key, cs);
+        ((ChaserEffect) effect).setOriginLocation(
+            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((ChaserEffect) effect).setLoadedChaser(data);
         break;
       case AREA_EFFECT:
         effect = new AreaEffect();
@@ -764,7 +773,7 @@ public class EffectManager {
         condition = new StatCondition(stat);
         break;
       case ATTRIBUTE:
-        StrifeAttribute attribute = strifeAttributeManager
+        StrifeAttribute attribute = plugin.getAttributeManager()
             .getAttribute(cs.getString("attribute", null));
         if (attribute == null) {
           LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
@@ -894,6 +903,11 @@ public class EffectManager {
           return;
         }
         condition = new EntityTypeCondition(typesSet, whitelist);
+        break;
+      case VELOCITY:
+        VelocityType velocityType = VelocityType.valueOf(cs.getString("type", "TOTAL"));
+        boolean absolute = cs.getBoolean("absolute", true);
+        condition = new VelocityCondition(velocityType, absolute);
         break;
       default:
         LogUtil.printError("No valid conditions found for " + key + "... somehow?");

@@ -559,8 +559,9 @@ public class AbilityManager {
     AbilityIconData data = new AbilityIconData(icon);
 
     data.setAbilitySlot(AbilitySlot.valueOf(iconSection.getString("trigger-slot")));
-    data.setLevelRequirement(iconSection.getInt("level-requirement", 0));
-    data.setBonusLevelRequirement(iconSection.getInt("bonus-level-requirement", 0));
+    data.setLevelRequirement(iconSection.getInt("level-requirement", -1));
+    data.setTotalSkillRequirement(iconSection.getInt("total-skill-requirement", -1));
+    data.setBonusLevelRequirement(iconSection.getInt("bonus-level-requirement", -1));
 
     Map<StrifeAttribute, Integer> attrReqs = new HashMap<>();
     ConfigurationSection attrSection = iconSection
