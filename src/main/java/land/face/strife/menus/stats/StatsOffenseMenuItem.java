@@ -59,7 +59,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (player.getEquipment().getItemInMainHand().getType() == Material.BOW) {
       material = Material.BOW;
       physicalDamage = StatUtil.getRangedDamage(pStats);
-    } else if (ItemUtil.isWand(player.getEquipment().getItemInMainHand())) {
+    } else if (ItemUtil.isWandOrStaff(player.getEquipment().getItemInMainHand())) {
       material = Material.BLAZE_ROD;
       physicalDamage = pStats.getStat(StrifeStat.PHYSICAL_DAMAGE);
     } else {

@@ -22,13 +22,13 @@ import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -40,12 +40,10 @@ import org.bukkit.inventory.EquipmentSlot;
 public class WandListener implements Listener {
 
   private final StrifePlugin plugin;
-  private final Random random;
   private static String notChargedMessage;
 
   public WandListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    random = new Random(System.currentTimeMillis());
     notChargedMessage = plugin.getSettings().getString("language.wand.not-charged", "");
   }
 
@@ -57,7 +55,7 @@ public class WandListener implements Listener {
     if (!(event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK)) {
       return;
     }
-    if (ItemUtil.isWand(event.getPlayer().getEquipment().getItemInMainHand())) {
+    if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
       double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
       shootWand(mob, attackMult, event);
@@ -67,33 +65,33 @@ public class WandListener implements Listener {
   }
 
   public static void shootWand(StrifeMob strifeMob, double attackMult, Cancellable event) {
-    if (!(strifeMob.getEntity() instanceof Player)) {
-      return;
-    }
-    Player player = (Player) strifeMob.getEntity();
-    attackMult = Math.pow(attackMult, 1.5D);
-
-    if (attackMult < 0.1) {
-      MessageUtils.sendActionBar(player, notChargedMessage);
-      player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
-      event.setCancelled(true);
-      return;
+    LivingEntity entity = strifeMob.getEntity();
+    if (strifeMob.getEntity() instanceof Player) {
+      attackMult = Math.pow(attackMult, 1.5D);
+      if (attackMult < 0.1) {
+        MessageUtils.sendActionBar((Player) entity, notChargedMessage);
+        entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+        event.setCancelled(true);
+        return;
+      }
     }
 
-    StrifePlugin.getInstance().getChampionManager().updateEquipmentStats(strifeMob.getChampion());
-
-    double projectileSpeed = 1 + (strifeMob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     event.setCancelled(true);
 
-    ProjectileUtil.createMagicMissile(player, attackMult, projectileSpeed, 0, 0, 0);
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, strifeMob.getStat(StrifeStat.MULTISHOT));
+    if (strifeMob.getEntity() instanceof Player) {
+      StrifePlugin.getInstance().getChampionManager().updateEquipmentStats(strifeMob.getChampion());
+    }
+    double projectileSpeed = 1 + (strifeMob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    ProjectileUtil.createMagicMissile(entity, attackMult, projectileSpeed, 0, 0, 0);
+    int projectiles = ProjectileUtil
+        .getTotalProjectiles(1, strifeMob.getStat(StrifeStat.MULTISHOT));
 
     for (int i = projectiles - 1; i > 0; i--) {
-      ProjectileUtil.createMagicMissile(player, attackMult, projectileSpeed,
+      ProjectileUtil.createMagicMissile(entity, attackMult, projectileSpeed,
           randomOffset(projectiles), randomOffset(projectiles), randomOffset(projectiles));
     }
-    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
-    StrifePlugin.getInstance().getSneakManager().tempDisableSneak(player);
+    entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
+    StrifePlugin.getInstance().getSneakManager().tempDisableSneak(entity);
   }
 
   private static double randomOffset(double magnitude) {

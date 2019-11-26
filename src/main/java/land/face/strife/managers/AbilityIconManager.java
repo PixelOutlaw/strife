@@ -17,6 +17,7 @@ import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.PlayerDataUtil;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -168,12 +169,17 @@ public class AbilityIconManager {
 
   public List<String> buildRequirementsLore(Champion champion, AbilityIconData data) {
     List<String> strings = new ArrayList<>();
-    if (data.getLevelRequirement() != 0) {
+    if (data.getTotalSkillRequirement() != -1) {
+      String str = PlayerDataUtil.getTotalSkillLevel(champion.getPlayer()) <
+          data.getTotalSkillRequirement() ? REQ_STR : PASS_STR;
+      strings.add(str.replace("{REQ}", "Total Skill Level " + data.getTotalSkillRequirement()));
+    }
+    if (data.getLevelRequirement() != -1) {
       String str =
           champion.getPlayer().getLevel() < data.getLevelRequirement() ? REQ_STR : PASS_STR;
       strings.add(str.replace("{REQ}", "Level " + data.getLevelRequirement()));
     }
-    if (data.getBonusLevelRequirement() != 0) {
+    if (data.getBonusLevelRequirement() != -1) {
       String str = champion.getBonusLevels() < data.getBonusLevelRequirement() ? REQ_STR : PASS_STR;
       strings.add(str.replace("{REQ}", "Bonus Level " + data.getBonusLevelRequirement()));
     }

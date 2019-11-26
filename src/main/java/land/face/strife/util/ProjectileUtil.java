@@ -35,12 +35,12 @@ public class ProjectileUtil {
     return (int) initialProjectiles;
   }
 
-  public static void createMagicMissile(Player shooter, double attackMult, double power,
+  public static void createMagicMissile(LivingEntity shooter, double attackMult, double power,
       double xOff, double yOff, double zOff) {
     createMagicMissile(shooter, attackMult, power, xOff, yOff, zOff, true);
   }
 
-  public static void createMagicMissile(Player shooter, double attackMult, double power,
+  public static void createMagicMissile(LivingEntity shooter, double attackMult, double power,
       double xOff, double yOff, double zOff, boolean gravity) {
     ShulkerBullet magicProj = shooter.getWorld().spawn(
         shooter.getEyeLocation().clone().add(0, -0.35, 0), ShulkerBullet.class);
@@ -56,7 +56,7 @@ public class ProjectileUtil {
     }
     magicProj.setVelocity(new Vector(xOff, yOff, zOff));
     setProjctileAttackSpeedMeta(magicProj, attackMult);
-    if (shooter.isSneaking()) {
+    if (shooter instanceof Player && ((Player) shooter).isSneaking()) {
       setProjectileSneakMeta(magicProj);
     }
   }
@@ -89,7 +89,8 @@ public class ProjectileUtil {
     setProjctileAttackSpeedMeta(skull, attackMult);
   }
 
-  public static void createArrow(LivingEntity shooter, double attackMult, float power, double spread,
+  public static void createArrow(LivingEntity shooter, double attackMult, float power,
+      double spread,
       double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
@@ -102,13 +103,14 @@ public class ProjectileUtil {
       if (attackMult > 0.95) {
         arrow.setCritical(true);
       }
-      if (((Player)shooter).isSneaking()) {
+      if (((Player) shooter).isSneaking()) {
         ProjectileUtil.setProjectileSneakMeta(arrow);
       }
     }
   }
 
-  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
+  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
+      double verticalBonus) {
     Vector vector = shooter.getEyeLocation().getDirection();
     vector.multiply(speed);
     if (spread == 0) {

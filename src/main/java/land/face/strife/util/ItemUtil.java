@@ -37,18 +37,23 @@ public class ItemUtil {
     switch (material) {
       case WOODEN_AXE:
       case WOODEN_HOE:
+      case WOODEN_SHOVEL:
       case STONE_AXE:
       case STONE_SWORD:
       case STONE_HOE:
+      case STONE_SHOVEL:
       case IRON_AXE:
       case IRON_SWORD:
       case IRON_HOE:
+      case IRON_SHOVEL:
       case GOLDEN_AXE:
       case GOLDEN_SWORD:
       case GOLDEN_HOE:
+      case GOLDEN_SHOVEL:
       case DIAMOND_AXE:
       case DIAMOND_SWORD:
       case DIAMOND_HOE:
+      case DIAMOND_SHOVEL:
         return true;
       default:
         return false;
@@ -72,14 +77,14 @@ public class ItemUtil {
       }
       return isValidMageOffhand(offItem);
     }
-    if (isWand(mainItem)) {
+    if (isWandOrStaff(mainItem)) {
       return isValidMageOffhand(offItem);
     }
     if (mainItem.getType() == Material.BOW) {
       if (isPistol(mainItem)) {
         return isAmmo(offItem);
       }
-      return isQuiver(offItem);
+      return offItem.getType() == Material.ARROW;
     }
     if (mainItem.getType() == Material.SHIELD) {
       return offItem.getType() == Material.SHIELD;
@@ -94,7 +99,7 @@ public class ItemUtil {
 
   public static boolean isQuiver(ItemStack stack) {
     int itemData = getCustomData(stack);
-    return stack.getType() == Material.ARROW && itemData > 8999 && itemData < 10000;
+    return stack.getType() == Material.ARROW && itemData < 10000;
   }
 
   public static boolean isAmmo(ItemStack stack) {
@@ -102,20 +107,12 @@ public class ItemUtil {
     return stack.getType() == Material.ARROW && itemData > 9999 && itemData < 11000;
   }
 
-  public static boolean isWand(ItemStack is) {
-    if (is.getType() != Material.WOODEN_SWORD) {
+  public static boolean isWandOrStaff(ItemStack stack) {
+    if (stack.getType() != Material.WOODEN_SWORD) {
       return false;
     }
-    if (!is.hasItemMeta()) {
-      return false;
-    }
-    if (!is.getItemMeta().hasLore()) {
-      return false;
-    }
-    if (is.getItemMeta().getLore().get(1) == null) {
-      return false;
-    }
-    return is.getItemMeta().getLore().get(1).endsWith("Wand");
+    int itemData = getCustomData(stack);
+    return itemData > 8999 && itemData < 11000;
   }
 
   public static boolean isValidMageOffhand(ItemStack stack) {

@@ -102,6 +102,12 @@ public class ShootListener implements Listener {
       return;
     }
 
+    if (!(shooter instanceof Player) && weapon.getType() == Material.BOW
+        || ItemUtil.getCustomData(weapon) == 4000) {
+      WandListener.shootWand(mob, 1, event);
+      return;
+    }
+
     if (ItemUtil.isPistol(weapon)) {
       if (shooter instanceof Player) {
         if (((Player) shooter).getCooldown(Material.BOW) > 0) {
@@ -225,6 +231,8 @@ public class ShootListener implements Listener {
     StandardDamage standardDamage = new StandardDamage();
     standardDamage.setAttackMultiplier(1.0f);
     standardDamage.setAttackType(AttackType.RANGED);
+    standardDamage.setCanBeBlocked(true);
+    standardDamage.setCanBeEvaded(true);
     return standardDamage;
   }
 
@@ -250,8 +258,8 @@ public class ShootListener implements Listener {
     hitscan.setRange((float) plugin.getSettings().getDouble("config.flintlock.range", 16f));
     hitscan.setLineOfSight(true);
     hitscan.setMaxTargets(1);
-    hitscan.setCanBeBlocked(true);
-    hitscan.setCanBeEvaded(true);
+    hitscan.setCanBeBlocked(false);
+    hitscan.setCanBeEvaded(false);
 
     hitscan.getEffects().add(flintlockDamage);
 

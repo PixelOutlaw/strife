@@ -217,7 +217,7 @@ public class SpawnListener implements Listener {
 
   static ItemStack buildSkeletonWand() {
     ItemStack wand = new ItemStack(Material.BOW);
-    ItemStackExtensionsKt.setDisplayName(wand, "WAND");
+    ItemStackExtensionsKt.setCustomModelData(wand, 4000);
     return wand;
   }
 

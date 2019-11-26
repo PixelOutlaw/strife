@@ -31,9 +31,8 @@ public class IndicatorManager {
         .getDouble("config.indicators.gravity-fall-speed", 20);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data,
-      String text) {
-    if (!(creator instanceof Player)) {
+  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data, String text) {
+    if (!(creator instanceof Player) || creator == target) {
       return;
     }
     Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);

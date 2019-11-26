@@ -11,11 +11,9 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
 public class StatUtil {
@@ -69,7 +67,7 @@ public class StatUtil {
   public static float getAttackTime(StrifeMob ae) {
     float attackTime = BASE_ATTACK_SECONDS;
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
-    if (itemCanUseRage(ae.getEntity().getEquipment().getItemInMainHand())) {
+    if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
     }
     if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
@@ -247,18 +245,5 @@ public class StatUtil {
 
   private static double getElementalMult(StrifeMob pStats) {
     return 1 + (pStats.getStat(StrifeStat.ELEMENTAL_MULT) / 100);
-  }
-
-  private static boolean itemCanUseRage(ItemStack item) {
-    if (item.getType() == Material.BOW) {
-      return false;
-    }
-    if (!ItemUtil.isMeleeWeapon(item.getType())) {
-      return false;
-    }
-    if (ItemUtil.isWand(item)) {
-      return false;
-    }
-    return true;
   }
 }
