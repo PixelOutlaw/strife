@@ -143,8 +143,9 @@ public class CombatListener implements Listener {
     }
 
     StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+    StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
-    if (TargetingUtil.isFriendly(attacker, defendEntity)) {
+    if (TargetingUtil.isFriendly(attacker, defender)) {
       event.setCancelled(true);
       return;
     }
@@ -175,8 +176,6 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
-
-    StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
     boolean isSneakAttack = projectile == null ?
         plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity()) :

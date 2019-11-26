@@ -149,6 +149,7 @@ public class UniqueEntityManager {
     }
 
     strifeMob.setUniqueEntityId(uniqueEntity.getId());
+    strifeMob.setFactions(uniqueEntity.getFactions());
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     if (uniqueEntity.isBurnImmune()) {

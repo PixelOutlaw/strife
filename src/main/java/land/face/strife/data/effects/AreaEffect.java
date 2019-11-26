@@ -41,7 +41,7 @@ public class AreaEffect extends Effect {
         return;
       }
     }
-    if (!TargetingUtil.isFriendly(caster, target.getEntity()) && isCancelled(caster, target)) {
+    if (!TargetingUtil.isFriendly(caster, target) && isCancelled(caster, target)) {
       return;
     }
     for (Effect effect : effects) {

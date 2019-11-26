@@ -1,6 +1,5 @@
 package land.face.strife.util;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.TargetingComparators.DistanceComparator;
 import land.face.strife.data.effects.TargetingComparators.FlatHealthComparator;
@@ -93,23 +91,26 @@ public class TargetingUtil {
         .collect(Collectors.toSet());
   }
 
-  public static boolean isFriendly(StrifeMob caster, LivingEntity target) {
-    if (caster.getEntity() == target) {
+  public static boolean isFriendly(StrifeMob mob, LivingEntity target) {
+    return isFriendly(mob, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(target));
+  }
+
+  public static boolean isFriendly(StrifeMob caster, StrifeMob target) {
+    if (caster.getEntity() == target.getEntity()) {
       return true;
     }
-    if (StringUtils.isNotBlank(caster.getUniqueEntityId()) && target.hasMetadata("UNIQUE_ID")) {
-      UniqueEntity uniqueEntity = StrifePlugin.getInstance().getUniqueEntityManager()
-          .getLoadedUniquesMap().get(caster.getUniqueEntityId());
-      String targetId = target.getMetadata("UNIQUE_ID").get(0).asString();
-      if (uniqueEntity.getUniqueAllies().contains(targetId)) {
-        return true;
+    for (String casterFaction : caster.getFactions()) {
+      for (String targetFaction: target.getFactions()) {
+        if (casterFaction.equalsIgnoreCase(targetFaction)) {
+          return true;
+        }
       }
     }
     if (caster.getEntity() instanceof Player && target instanceof Player) {
       return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target);
     }
     for (StrifeMob mob : caster.getMinions()) {
-      if (target == mob.getEntity()) {
+      if (target.getEntity() == mob.getEntity()) {
         return true;
       }
     }

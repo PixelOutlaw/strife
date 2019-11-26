@@ -2,6 +2,7 @@ package land.face.strife.data;
 
 import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +30,7 @@ public class StrifeMob {
   private LivingEntity livingEntity;
   private EntityAbilitySet abilitySet;
   private String uniqueEntityId = null;
+  private Set<String> factions = new HashSet<>();
 
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
@@ -111,6 +113,14 @@ public class StrifeMob {
 
   public void setUniqueEntityId(String uniqueEntityId) {
     this.uniqueEntityId = uniqueEntityId;
+  }
+
+  public Set<String> getFactions() {
+    return factions;
+  }
+
+  public void setFactions(Set<String> factions) {
+    this.factions = factions;
   }
 
   public Champion getChampion() {

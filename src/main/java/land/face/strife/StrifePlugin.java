@@ -646,7 +646,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setMount(cs.getString("mount-id", ""));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
       uniqueEntity.setSize(cs.getInt("size", 0));
-      uniqueEntity.getUniqueAllies().addAll(cs.getStringList("friendly-uniques"));
+      uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 

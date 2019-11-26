@@ -19,7 +19,7 @@ public class UniqueEntity {
   private int bonusExperience;
   private float experienceMultiplier;
   private Map<StrifeStat, Float> attributeMap;
-  private Set<String> uniqueAllies = new HashSet<>();
+  private Set<String> factions = new HashSet<>();
   private EntityAbilitySet abilitySet;
   private int baseLevel;
   private boolean showName;
@@ -84,8 +84,8 @@ public class UniqueEntity {
     this.attributeMap = attributeMap;
   }
 
-  public Set<String> getUniqueAllies() {
-    return uniqueAllies;
+  public Set<String> getFactions() {
+    return factions;
   }
 
   public int getBaseLevel() {
