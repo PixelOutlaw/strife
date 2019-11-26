@@ -29,7 +29,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
@@ -100,25 +99,6 @@ public class ExperienceListener implements Listener {
   public void onPlayerExpChange(PlayerExpChangeEvent event) {
     plugin.getExperienceManager().addExperience(event.getPlayer(), event.getAmount(), false);
     event.setAmount(0);
-  }
-
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onKillMinion(EntityDeathEvent event) {
-    if (plugin.getMinionManager().isMinion(event.getEntity())) {
-      event.setDroppedExp(0);
-      event.getDrops().clear();
-    }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onEntityDeathAutoOrb(EntityDeathEvent event) {
-    if (event.getEntity().getKiller() == null) {
-      event.setDroppedExp(0);
-      return;
-    }
-    plugin.getExperienceManager()
-        .addExperience(event.getEntity().getKiller(), event.getDroppedExp(), false);
-    event.setDroppedExp(0);
   }
 
   private boolean hadSoulShard(PlayerInventory inv) {

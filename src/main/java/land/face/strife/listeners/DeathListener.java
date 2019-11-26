@@ -47,25 +47,27 @@ public class DeathListener implements Listener {
       plugin.getSoulManager().createSoul((Player) event.getEntity());
       return;
     }
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
-    if (mob.getMaster() != null) {
+    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
+    if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
+        .isDespawnOnUnload())) {
       event.setDroppedExp(0);
       event.getDrops().clear();
       return;
     }
-    if (mob.isDespawnOnUnload() && mob.getUniqueEntityId() == null) {
-      event.setDroppedExp(0);
-      event.getDrops().clear();
-      return;
+
+    Player killer = mob.getKiller();
+    if (killer == null) {
+      killer = event.getEntity().getKiller();
+      if (killer == null) {
+        return;
+      }
     }
-    if (event.getEntity().getKiller() == null) {
-      return;
-    }
+
     if (event.getEntity().hasMetadata("SPAWNED")) {
       return;
     }
 
-    int killerLevel = event.getEntity().getKiller().getLevel();
+    int killerLevel = killer.getLevel();
     int mobLevel;
     if (killerLevel < 100) {
       int killerRange = Math.max(5, killerLevel / 5);
@@ -73,7 +75,7 @@ public class DeathListener implements Listener {
     } else {
       mobLevel = StatUtil.getMobLevel(event.getEntity());
     }
-    int levelDiff = Math.abs(mobLevel - (event.getEntity().getKiller()).getLevel());
+    int levelDiff = Math.abs(mobLevel - killer.getLevel());
     float levelPenalty = 1;
     if (levelDiff > 6) {
       levelPenalty = Math.max(0.1f, 1 - ((levelDiff - 6) * 0.1f));
@@ -87,8 +89,8 @@ public class DeathListener implements Listener {
       exp += uniqueEntity.getBonusExperience();
     }
     exp *= 1 + mob.getStat(StrifeStat.XP_GAIN) / 100;
-
-    event.setDroppedExp((int) (exp * levelPenalty));
+    plugin.getExperienceManager().addExperience(killer, (exp * levelPenalty), false);
+    event.setDroppedExp(0);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

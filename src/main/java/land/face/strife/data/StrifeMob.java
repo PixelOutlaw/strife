@@ -4,6 +4,7 @@ import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
@@ -12,7 +13,9 @@ import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.LogUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 public class StrifeMob {
 
@@ -35,6 +38,8 @@ public class StrifeMob {
   private final Set<StrifeMob> minions = new ConcurrentSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
+  private final Map<UUID, Float> takenDamage = new HashMap<>();
+
   private long buffCacheStamp = System.currentTimeMillis();
 
   public StrifeMob(Champion champion) {
@@ -45,6 +50,27 @@ public class StrifeMob {
   public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = livingEntity;
     this.champion = null;
+  }
+
+  public void trackDamage(StrifeMob attacker, float amount) {
+    trackDamage(attacker.getEntity().getUniqueId(), amount);
+  }
+
+  public void trackDamage(UUID uuid, float amount) {
+    takenDamage.put(uuid, takenDamage.getOrDefault(uuid, 0f) + amount);
+  }
+
+  public Player getKiller() {
+    Player killer = null;
+    float topDamage = 0;
+    for (UUID uuid : takenDamage.keySet()) {
+      Player p = Bukkit.getPlayer(uuid);
+      if (p != null && takenDamage.get(uuid) > topDamage) {
+        topDamage = takenDamage.get(uuid);
+        killer = p;
+      }
+    }
+    return killer;
   }
 
   public float getStat(StrifeStat stat) {
