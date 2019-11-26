@@ -2,9 +2,9 @@ package land.face.strife.data.effects;
 
 import java.util.HashMap;
 import java.util.Map;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.events.StrifeDamageEvent;
-import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
@@ -29,11 +29,12 @@ public class StandardDamage extends Effect {
     event.getDamageModifiers().putAll(damageModifiers);
     event.getFlatDamageBonuses().putAll(damageBonuses);
     event.getAbilityMods().putAll(abilityMods);
-    event.setCanBeBlocked(false);
-    event.setCanBeEvaded(false);
+    event.setCanBeBlocked(canBeEvaded);
+    event.setCanBeEvaded(canBeBlocked);
     Bukkit.getPluginManager().callEvent(event);
     if (!event.isCancelled()) {
-      DamageUtil.forceCustomDamage(caster.getEntity(), target.getEntity(), event.getFinalDamage());
+      StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
+          (float) event.getFinalDamage(), false);
     }
   }
 
