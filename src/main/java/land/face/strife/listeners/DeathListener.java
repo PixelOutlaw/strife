@@ -22,6 +22,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
+import land.face.strife.events.UniqueKillEvent;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
@@ -47,11 +48,10 @@ public class DeathListener implements Listener {
       plugin.getSoulManager().createSoul((Player) event.getEntity());
       return;
     }
+
     StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
-    if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
-        .isDespawnOnUnload())) {
-      event.setDroppedExp(0);
-      event.getDrops().clear();
+
+    if (mob == null) {
       return;
     }
 
@@ -61,6 +61,15 @@ public class DeathListener implements Listener {
       if (killer == null) {
         return;
       }
+    }
+
+    UniqueKillEvent ev = new UniqueKillEvent(mob, killer);
+    Bukkit.getPluginManager().callEvent(ev);
+
+    if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob.isDespawnOnUnload())) {
+      event.setDroppedExp(0);
+      event.getDrops().clear();
+      return;
     }
 
     if (event.getEntity().hasMetadata("SPAWNED")) {
