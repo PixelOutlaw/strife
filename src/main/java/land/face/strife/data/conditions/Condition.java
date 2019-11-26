@@ -107,6 +107,7 @@ public abstract class Condition {
     BONUS_LEVEL,
     ITS_OVER_ANAKIN,
     ENTITY_TYPE,
+    VELOCITY,
     GROUNDED,
     BLEEDING,
     DARKNESS,
