@@ -59,7 +59,8 @@ public class BarrierManager {
 
   public float getCurrentBarrier(StrifeMob strifeMob) {
     createBarrierEntry(strifeMob);
-    return barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0f);
+    return Math.min(strifeMob.getStat(StrifeStat.BARRIER),
+        barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0f));
   }
 
   public boolean hasBarrierEntry(LivingEntity livingEntity) {
@@ -82,8 +83,9 @@ public class BarrierManager {
       setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
-    double percent = barrierMap.get(strifeMob.getEntity().getUniqueId()) / strifeMob
-        .getStat(StrifeStat.BARRIER);
+    float current = Math.min(strifeMob.getStat(StrifeStat.BARRIER),
+        barrierMap.get(strifeMob.getEntity().getUniqueId()));
+    double percent = current / strifeMob.getStat(StrifeStat.BARRIER);
     setPlayerArmor((Player) strifeMob.getEntity(), percent);
   }
 
@@ -123,7 +125,7 @@ public class BarrierManager {
       return amount;
     }
     LivingEntity entity = strifeMob.getEntity();
-    float remainingBarrier = barrierMap.get(entity.getUniqueId()) - amount;
+    float remainingBarrier = getCurrentBarrier(strifeMob) - amount;
     if (remainingBarrier > 0) {
       setEntityBarrier(entity.getUniqueId(), remainingBarrier);
       updateShieldDisplay(strifeMob);
