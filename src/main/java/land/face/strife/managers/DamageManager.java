@@ -65,12 +65,15 @@ public class DamageManager {
     defender.getEntity().setNoDamageTicks(0);
 
     defender.trackDamage(attacker, (float) damage);
-    EntityLiving craftDefender = ((CraftLivingEntity) defender.getEntity()).getHandle();
-    craftDefender.damageEntity(DamageSource.MAGIC, (float) damage);
 
     EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(attacker.getEntity(),
         defender.getEntity(), DamageCause.MAGIC, 1);
     Bukkit.getPluginManager().callEvent(event);
+    defender.getEntity().setLastDamageCause(event);
+
+    EntityLiving craftDefender = ((CraftLivingEntity) defender.getEntity()).getHandle();
+    craftDefender.setLastDamager(((CraftLivingEntity) attacker.getEntity()).getHandle());
+    craftDefender.damageEntity(DamageSource.MAGIC, (float) damage);
 
     defender.getEntity().setNoDamageTicks(noDamageTicks);
     defender.getEntity().setVelocity(velocity);
