@@ -22,18 +22,22 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.Arrays;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import se.ranzdo.bukkit.methodcommand.Arg;
@@ -94,6 +98,18 @@ public class StrifeCommand {
           ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
     }
     sendMessage(sender, "<gold>----------------------------------");
+  }
+
+  @Command(identifier = "strife mobinfo", permissions = "strife.command.strife.info", onlyPlayers = true)
+  public void resetCommand(CommandSender sender) {
+    LivingEntity target = TargetingUtil.getFirstEntityInLine((Player) sender, 30);
+    if (target == null) {
+      sendMessage(sender, "&eNo target found...");
+      return;
+    }
+    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(target);
+    sendMessage(sender, "&aUniqueID: " + targetMob.getEntity().getCustomName());
+    sendMessage(sender, "&aGroups: " + Arrays.toString(targetMob.getFactions().toArray()));
   }
 
   @Command(identifier = "strife reset", permissions = "strife.command.strife.reset", onlyPlayers = false)
