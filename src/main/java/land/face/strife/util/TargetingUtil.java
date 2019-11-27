@@ -17,6 +17,7 @@ import land.face.strife.data.effects.TargetingComparators.PercentHealthComparato
 import land.face.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -106,8 +107,8 @@ public class TargetingUtil {
         }
       }
     }
-    if (caster.getEntity() instanceof Player && target instanceof Player) {
-      return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target);
+    if (caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
+      return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target.getEntity());
     }
     for (StrifeMob mob : caster.getMinions()) {
       if (target.getEntity() == mob.getEntity()) {
@@ -184,8 +185,16 @@ public class TargetingUtil {
   }
 
   public static boolean isInvalidTarget(Entity e) {
-    return !e.isValid() || !(e instanceof LivingEntity) || e instanceof ArmorStand || e
-        .hasMetadata("NPC");
+    if (!e.isValid() || !(e instanceof LivingEntity) || e instanceof ArmorStand) {
+      return true;
+    }
+    if (e.hasMetadata("NPC")) {
+      return true;
+    }
+    if (e instanceof Player) {
+      return ((Player) e).getGameMode() == GameMode.CREATIVE || ((Player) e).getGameMode() == GameMode.SPECTATOR;
+    }
+    return false;
   }
 
   public static boolean isDetectionStand(LivingEntity le) {
