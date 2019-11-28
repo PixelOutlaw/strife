@@ -22,6 +22,7 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -100,14 +101,16 @@ public class StrifeCommand {
     sendMessage(sender, "<gold>----------------------------------");
   }
 
-  @Command(identifier = "strife mobinfo", permissions = "strife.command.strife.info", onlyPlayers = true)
-  public void resetCommand(CommandSender sender) {
-    LivingEntity target = TargetingUtil.getFirstEntityInLine((Player) sender, 30);
-    if (target == null) {
+  @Command(identifier = "strife mobinfo", permissions = "strife.command.strife.info")
+  public void infoCommand(CommandSender sender) {
+    List<LivingEntity> targets = new ArrayList<>(TargetingUtil.getEntitiesInLine((Player) sender, 30));
+    if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
       return;
     }
-    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(target);
+    TargetingUtil.DISTANCE_COMPARATOR.setLoc(((Player) sender).getLocation());
+    targets.sort(TargetingUtil.DISTANCE_COMPARATOR);
+    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.get(0));
     sendMessage(sender, "&aUniqueID: " + targetMob.getUniqueEntityId());
     sendMessage(sender, "&aGroups: " + Arrays.toString(targetMob.getFactions().toArray()));
   }

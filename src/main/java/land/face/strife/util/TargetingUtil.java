@@ -30,7 +30,7 @@ import org.bukkit.util.Vector;
 
 public class TargetingUtil {
 
-  private static DistanceComparator DISTANCE_COMPARATOR = new DistanceComparator();
+  public static DistanceComparator DISTANCE_COMPARATOR = new DistanceComparator();
   private static FlatHealthComparator HEALTH_COMPARATOR = new FlatHealthComparator();
   private static PercentHealthComparator PERCENT_HEALTH_COMPARATOR = new PercentHealthComparator();
 
