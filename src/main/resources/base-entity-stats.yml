@@ -1,4 +1,30 @@
 version: "0.0.1"
+default:
+  exp-expression: 5 - LEVEL + (LEVEL^1.7)
+  base-values:
+    MAX_MINIONS: 3
+    PHYSICAL_DAMAGE: 2
+    MAGIC_DAMAGE: 1
+    HEALTH: 10
+    MOVEMENT_SPEED: 90
+    ARMOR: 30
+    WARDING: 30
+  per-level:
+    DAMAGE_MULT: 2
+    HEALTH: 2
+    HEALTH_MULT: 0.025
+    ACCURACY: 1
+    ARMOR_PENETRATION: 0.5
+    ACCURACY_MULT: 0.5
+    ARMOR: 2
+    WARDING: 2
+    EVASION: 1.1
+    ARMOR_MULT: 0.7
+    EVASION_MULT: 0.7
+    WARD_MULT: 0.7
+    MOVEMENT_SPEED: 0.85
+    DAMAGE_REDUCTION: 0.1
+    ALL_RESIST: 0.45
 PLAYER:
   base-values:
     HEALTH: 30
@@ -12,6 +38,7 @@ PLAYER:
       HEALTH: 0.01
       BASE-REGEN: 0.04
 ZOMBIE:
+  exp-expression: 6 - LEVEL + (LEVEL^1.7)
   base-values:
     HEALTH: 25
     ARMOR: 0

@@ -30,104 +30,32 @@ zombiechamp:
     count: 20
     effect: FLAME
   abilities:
-    phase1:
-      phase-begin:
+    PHASE_BEGIN:
+      PHASE_ONE:
         - BuffSelfResist
-      on-hit:
+      PHASE_THREE:
+        - BuffSelfResist
+      PHASE_FIVE:
+        - BuffSelfResist
+    ON_HIT:
+      PHASE_THREE:
         - Fireball
-      when-hit:
+      PHASE_FOUR:
+        - Fireball
+      PHASE_FIVE:
+        - Fireball
+    WHEN_HIT:
+      PHASE_ONE:
+        - Fireball
+      PHASE_TWO:
         - IgniteAttacker
         - Invisible5s
-    phase2:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
+      PHASE_THREE:
         - IgniteAttacker
         - Invisible5s
-    phase3:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
+      PHASE_FOUR:
         - IgniteAttacker
         - Invisible5s
-    phase4:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
-        - IgniteAttacker
-        - Invisible5s
-skeletonchamp:
-  type: SKELETON
-  name: "&fskeleton Champion&4 (Lv 230)"
-  stats:
-    MELEE_DAMAGE: 1
-    RANGED_DAMAGE: 1
-    MAGIC_DAMAGE: 1
-    ARMOR: 10
-    WARDING: 5
-    EVASION: 5
-    ACCURACY: 5
-    ARMOR_PENETRATION: 0.5
-    WARD_PENETRATION: 0.5
-    FIRE_RESIST: -20
-    DARK_RESIST: 10
-    ALL_RESIST: 0.35
-    DAMAGE_REDUCTION: 0.1
-  equipment:
-    main-hand: item-name
-    off-hand: item-name
-    helmet: item-name
-    chestplate: item-name
-    leggings: item-name
-    boots: item-name
-  particles:
-    radius: 2
-    count: 20
-    effect: FLAME
-  abilities:
-    phase1:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
-        - IgniteAttacker
-        - Invisible5s
-    phase2:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
-        - IgniteAttacker
-        - Invisible5s
-    phase3:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
-        - IgniteAttacker
-        - Invisible5s
-    phase4:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
-        - IgniteAttacker
-        - Invisible5s
-    phase5:
-      phase-begin:
-        - BuffSelfResist
-      on-hit:
-        - Fireball
-      when-hit:
+      PHASE_FIVE:
         - IgniteAttacker
         - Invisible5s

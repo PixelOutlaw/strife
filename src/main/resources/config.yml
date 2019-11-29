@@ -21,11 +21,22 @@ ability-menus:
     - "instant-ignite"
   LIFE_SKILL:
     - "instant-ignite"
-
+indicators:
+  gravity-fall-speed: 20
+  gravity-vertical-speed: 200
+  gravity-horizontal-speed: 200
+  miss-speed: 20
+  float-speed: 20
 mechanics:
+  dual-wield-bonus-attack-speed: 35
   pvp-damage: 0.5
   evasion-threshold: 0.5
   sneak:
+    disable-duration: 6
+    base-sneak-exp: 0.2
+    sneak-exp-per-level: 0.1
+    base-sneak-attack-exp: 5
+    sneak-attack-exp-per-level: 1
     sneak-skill-effectiveness: 80
     detection-threshold: 10000
     base-detection-when-unseen: 500
@@ -34,9 +45,11 @@ mechanics:
     per-lvl-detection-when-seen: 80
     maximum-head-angle-for-seen: 0.3
     maximum-sneak-exp-range-squared: 144
+  rage-tint-intensity: 0.5
   base-bleed-damage: 1
   percent-bleed-damage: 0.1
-  ticks-per-bleed: 12
+  base-corrupt-loss: 0.15
+  percent-corrupt-loss: 0.05
   health-bar-duration: 200
   skill-bar-duration: 200
 
@@ -50,6 +63,8 @@ custom-spawn-limits:
 
 leveled-monsters:
   name-format: "&7%ENTITY% &f(%LEVEL%)"
+  add-mod-chance: 0.2
+  max-mob-mods: 3
   give-skeletons-sword-chance: 0.1
   give-skeletons-wand-chance: 0.1
   replace-witch-evoker: 0.15
@@ -64,6 +79,9 @@ leveled-monsters:
       starting-level: 50
       distance-per-level: 100
 
+death-worlds:
+- Graveyard
+
 ## NOTE: XP penalty exempt world applies to the world the
 ## player RESPAWNS in, as that is when xp is lost!
 penalty-free-worlds:
@@ -71,9 +89,15 @@ penalty-free-worlds:
 
 leveling:
   max-skill-level: 60
+  exp-converted-to-combat-skill-exp: 0.05
+  combat-skill-exp-weight: 0.1
   formula: (5+(2*LEVEL)+(LEVEL^1.2))*LEVEL
-  crafting: 50 + (LEVEL * 25) + (LEVEL^3)
-  fishing: 50 + (LEVEL * 25) + (LEVEL^3)
-  enchanting: 50 + (LEVEL * 25) + (LEVEL^3)
+  CRAFTING: 50 + (LEVEL * 25) + (LEVEL^3)
+  ENCHANTING: 50 + (LEVEL * 25) + (LEVEL^3)
+  FISHING: 50 + (LEVEL * 25) + (LEVEL^3)
+  MINING: 50 + (LEVEL * 25) + (LEVEL^3)
+  FARMING: 50 + (LEVEL * 25) + (LEVEL^3)
+  SNEAK: 50 + (LEVEL * 25) + (LEVEL^3)
+  COMBAT-SKILL: 50 + (LEVEL * 25) + (LEVEL^3)
 
 configuration-load-period: 10

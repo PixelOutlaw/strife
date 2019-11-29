@@ -1,0 +1,33 @@
+freezing:
+  prefix: "Freezing"
+  suffix: "of Ice"
+  weight: 100
+  equipment:
+    HAND: item-name
+    OFF_HAND: item-name
+    HEAD: item-name
+    CHEST: item-name
+    LEGS: item-name
+    FEET: item-name
+  base-stats:
+    FREEZE_CHANCE: 50
+  per-level-stats:
+    ICE_DAMAGE: 1
+
+burning:
+  prefix: "BURING"
+  suffix: "of falmos"
+  weight: 100
+  base-stats:
+    IGNITE_CHANCE: 50
+  per-level-stats:
+    ICE_DAMAGE: 1
+  abilities:
+    ON_HIT:
+      PHASE_ONE:
+        - speaky-talk-move
+      PHASE_FIVE:
+        - speaky-talk-move
+  required-entity-type:
+    - ZOMBIE
+    - SKELETON

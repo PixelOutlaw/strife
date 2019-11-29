@@ -1,0 +1,45 @@
+package land.face.strife.timers;
+
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.util.LogUtil;
+import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.TargetingUtil;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
+import org.bukkit.scheduler.BukkitRunnable;
+
+public class EntityAbilityTimer extends BukkitRunnable {
+
+  private StrifePlugin plugin = StrifePlugin.getInstance();
+  private final StrifeMob strifeMob;
+
+  public EntityAbilityTimer(StrifeMob strifeMob) {
+    this.strifeMob = strifeMob;
+    runTaskTimer(StrifePlugin.getInstance(), 20L, 9L);
+    LogUtil.printDebug("Created EntityAbilityTimer with id " + getTaskId());
+  }
+
+  @Override
+  public void run() {
+    if (strifeMob == null || strifeMob.getEntity() == null || !strifeMob.getEntity().isValid()) {
+      LogUtil.printDebug("Cancelled EntityAbilityTimer  due to null entity");
+      cancel();
+      return;
+    }
+    LivingEntity target = TargetingUtil.getMobTarget(strifeMob);
+    if (target == null) {
+      return;
+    }
+    double max = Math.pow(strifeMob.getEntity().getAttribute(GENERIC_FOLLOW_RANGE).getValue(), 2);
+    if (strifeMob.getEntity().getLocation().distanceSquared(target.getLocation()) > max) {
+      ((Mob) strifeMob.getEntity()).setTarget(null);
+      return;
+    }
+    LogUtil.printDebug("Timer for " + PlayerDataUtil.getName(strifeMob.getEntity()) + " running");
+    plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.TIMER);
+  }
+}
