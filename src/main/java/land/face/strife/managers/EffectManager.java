@@ -111,10 +111,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
@@ -190,7 +192,11 @@ public class EffectManager {
       AreaEffect effect) {
     double range = effect.getRange();
     if (range < 0.1) {
-      return targets;
+      if (caster.getEntity() instanceof Mob) {
+        range = caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
+      } else {
+        range = 16;
+      }
     }
     Set<LivingEntity> areaTargets = new HashSet<>();
     for (LivingEntity le : targets) {
