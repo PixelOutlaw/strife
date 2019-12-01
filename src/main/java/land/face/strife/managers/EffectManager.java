@@ -354,8 +354,8 @@ public class EffectManager {
             .setAttackMultiplier((float) cs.getDouble("attack-multiplier", 1D));
         ((StandardDamage) effect)
             .setHealMultiplier((float) cs.getDouble("heal-multiplier", 0.3D));
-        ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
-        ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
+        ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
+        ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
