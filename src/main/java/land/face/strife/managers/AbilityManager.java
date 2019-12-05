@@ -1,10 +1,5 @@
 package land.face.strife.managers;
 
-import static land.face.strife.data.ability.Ability.TargetType.NEAREST_SOUL;
-import static land.face.strife.data.ability.Ability.TargetType.SINGLE_OTHER;
-import static land.face.strife.data.ability.Ability.TargetType.TARGET_GROUND;
-import static land.face.strife.data.ability.Ability.TargetType.TOGGLE;
-
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import io.netty.util.internal.ConcurrentSet;
@@ -219,16 +214,11 @@ public class AbilityManager {
     if (targets == null) {
       throw new NullArgumentException("Null target list on ability " + ability.getId());
     }
-    if (targets.isEmpty()) {
-      if (ability.getTargetType() == TARGET_GROUND || ability.getTargetType() == NEAREST_SOUL) {
-        doTargetNotFoundPrompt(caster, ability);
-        return false;
-      }
-    }
-    if (shouldSingleTargetFail(ability, caster, targets)) {
+    if (targets.isEmpty() && ability.isRequireTarget()) {
+      doTargetNotFoundPrompt(caster, ability);
       return false;
     }
-    if (ability.getTargetType() != TOGGLE) {
+    if (ability.getTargetType() != TargetType.TOGGLE) {
       coolDownAbility(caster.getEntity(), ability);
     } else {
       boolean isOnAfterToggle = toggleAbility(caster.getEntity(), ability);
@@ -359,24 +349,6 @@ public class AbilityManager {
     return container.isToggledOn();
   }
 
-  private boolean shouldSingleTargetFail(Ability ability, StrifeMob caster,
-      Set<LivingEntity> targets) {
-    if (ability.getTargetType() != SINGLE_OTHER) {
-      return false;
-    }
-    TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
-    if (targets.isEmpty()) {
-      doTargetNotFoundPrompt(caster, ability);
-      return true;
-    }
-    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.iterator().next());
-    if (!PlayerDataUtil.areConditionsMet(caster, targetMob, ability.getConditions())) {
-      doRequirementNotMetPrompt(caster, ability);
-      return true;
-    }
-    return false;
-  }
-
   private void checkPhaseChange(StrifeMob strifeMob) {
     if (strifeMob.getAbilitySet() == null) {
       return;
@@ -500,8 +472,8 @@ public class AbilityManager {
       return;
     }
 
-    boolean raycastsHitEntities = cs
-        .getBoolean("raycasts-hit-entities", targetType == TARGET_GROUND);
+    boolean raycastsHitEntities = cs.getBoolean("raycasts-hit-entities",
+        targetType == TargetType.TARGET_GROUND);
 
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
@@ -511,7 +483,7 @@ public class AbilityManager {
     List<Effect> effects = plugin.getEffectManager().getEffects(effectStrings);
 
     List<String> toggleStrings = cs.getStringList("toggle-off-effects");
-    if (targetType == TOGGLE && toggleStrings.isEmpty()) {
+    if (targetType == TargetType.TOGGLE && toggleStrings.isEmpty()) {
       LogUtil.printError("Skipping. Toggle abilities must have toggle-off-effects! Ability:" + key);
       return;
     }
@@ -522,6 +494,7 @@ public class AbilityManager {
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
+    boolean requireTarget = cs.getBoolean("require-target", false);
     List<String> conditionStrings = cs.getStringList("conditions");
     Set<Condition> conditions = new HashSet<>();
     for (String s : conditionStrings) {
@@ -535,8 +508,8 @@ public class AbilityManager {
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
     loadedAbilities.put(key, new Ability(key, name, effects, toggleOffEffects, targetType, range,
-        cooldown, maxCharges, globalCooldownTicks, showMessages, raycastsHitEntities, conditions,
-        friendly, abilityIconData));
+        cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget, raycastsHitEntities,
+        conditions, friendly, abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 
