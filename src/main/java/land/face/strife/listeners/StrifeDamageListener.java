@@ -210,8 +210,9 @@ public class StrifeDamageListener implements Listener {
     rawDamage *= DamageUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
-    boolean isSneakAttack = event.isSneakAttack();
-    if (isSneakAttack && !defender.getEntity().hasMetadata("IGNORE_SNEAK")) {
+    boolean isSneakAttack =
+        event.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK");
+    if (isSneakAttack) {
       Player player = (Player) attacker.getEntity();
       float sneakSkill = plugin.getChampionManager().getChampion(player)
           .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);

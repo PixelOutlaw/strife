@@ -30,7 +30,7 @@ import org.bukkit.entity.Player;
 
 public class BarrierManager {
 
-  private static final int BASE_BARRIER_TICKS = 15;
+  private static final int BASE_BARRIER_TICKS = 40;
   private final Map<UUID, Float> barrierMap = new ConcurrentHashMap<>();
   private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
 
@@ -137,7 +137,7 @@ public class BarrierManager {
   }
 
   public void restoreBarrier(StrifeMob strifeMob, float amount) {
-    if (strifeMob.getStat(StrifeStat.BARRIER) < 0.1 || amount < 0.01) {
+    if (strifeMob.getStat(StrifeStat.BARRIER) < 0.1 || amount < 0.001) {
       return;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();

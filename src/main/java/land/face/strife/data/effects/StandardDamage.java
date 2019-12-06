@@ -29,8 +29,8 @@ public class StandardDamage extends Effect {
     event.getDamageModifiers().putAll(damageModifiers);
     event.getFlatDamageBonuses().putAll(damageBonuses);
     event.getAbilityMods().putAll(abilityMods);
-    event.setCanBeBlocked(canBeEvaded);
-    event.setCanBeEvaded(canBeBlocked);
+    event.setCanBeBlocked(canBeBlocked);
+    event.setCanBeEvaded(canBeEvaded);
     Bukkit.getPluginManager().callEvent(event);
     if (!event.isCancelled()) {
       StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
