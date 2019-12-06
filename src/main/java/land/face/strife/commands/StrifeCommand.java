@@ -32,7 +32,6 @@ import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
-import land.face.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
@@ -203,10 +202,8 @@ public class StrifeCommand {
   }
 
   @Command(identifier = "strife ability menu", permissions = "strife.command.strife.binding", onlyPlayers = false)
-  public void menuAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
-      @Arg(name = "menu") String id) {
-    AbilityMenuType menuType = AbilityMenuType.valueOf(id);
-    plugin.getAbilityPicker(menuType).open(target);
+  public void menuAbilityCommand(CommandSender sender, @Arg(name = "target") Player target) {
+    plugin.getAbilityPicker().open(target);
   }
 
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)

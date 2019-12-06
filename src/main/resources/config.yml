@@ -11,16 +11,21 @@ menu:
   close-marker-y: 5
 
 ability-menus:
-  BASIC_LEVEL_MENU:
-    - "instant-ignite"
-  MELEE_ABILITY:
-     - "instant-ignite"
-  MAGIC_ABILITY:
-    - "instant-ignite"
-  ARCHERY_ABILITY:
-    - "instant-ignite"
-  LIFE_SKILL:
-    - "instant-ignite"
+  basic-menu:
+    name: "&eLevel Based Abilities"
+    title: "&0PICK SUM"
+    material: BARRIER
+    slot: 1
+    abilities:
+      - "instant-ignite"
+  swords-menu:
+    name: "&csword Based Abilities"
+    title: "&0PICK SUM sord"
+    material: BARRIER
+    slot: 3
+    abilities:
+      - "instant-ignite"
+
 indicators:
   gravity-fall-speed: 20
   gravity-vertical-speed: 200

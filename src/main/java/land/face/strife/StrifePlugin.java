@@ -109,7 +109,8 @@ import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.managers.WSEManager;
 import land.face.strife.menus.abilities.AbilityPickerMenu;
-import land.face.strife.menus.abilities.AbilityPickerMenu.AbilityMenuType;
+import land.face.strife.menus.abilities.AbilityPickerPickerItem;
+import land.face.strife.menus.abilities.AbilityPickerPickerMenu;
 import land.face.strife.menus.levelup.ConfirmationMenu;
 import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.stats.StatsMenu;
@@ -140,6 +141,7 @@ import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -210,7 +212,7 @@ public class StrifePlugin extends FacePlugin {
 
   private LevelingRate levelingRate;
 
-  private Map<AbilityMenuType, AbilityPickerMenu> abilityMenus;
+  private AbilityPickerPickerMenu abilitySubcategoryMenu;
   private LevelupMenu levelupMenu;
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
@@ -371,7 +373,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(barrierTask.runTaskTimer(this,
         11 * 20L, // Start timer after 11s
-        4L // Run it every 1/5th of a second after
+        2L // Run it every 1/5th of a second after
     ));
     taskList.add(bossBarsTask.runTaskTimer(this,
         240L, // Start timer after 12s
@@ -450,14 +452,25 @@ public class StrifePlugin extends FacePlugin {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
 
-    // TODO: Clean up ability menus
-    abilityMenus = new HashMap<>();
-    for (AbilityMenuType menuType : AbilityMenuType.values()) {
-      List<String> abilities = settings.getStringList("config.ability-menus." + menuType);
+    ConfigurationSection abilityMenus = configYAML.getConfigurationSection("ability-menus");
+    List<AbilityPickerPickerItem> pickerItems = new ArrayList<>();
+    for (String menuId : abilityMenus.getKeys(false)) {
+      List<String> abilities = abilityMenus.getStringList(menuId + ".abilities");
+      String title = abilityMenus.getString(menuId + ".title", "CONFIG ME");
       List<Ability> abilityList = abilities.stream().map(a -> abilityManager.getAbility(a))
           .collect(Collectors.toList());
-      abilityMenus.put(menuType, new AbilityPickerMenu(this, menuType.name(), abilityList));
+      AbilityPickerMenu menu = new AbilityPickerMenu(this, title, abilityList);
+      menu.setId(menuId);
+
+      String name = abilityMenus.getString(menuId + ".name", "CONFIGURE ME");
+      Material material = Material.valueOf(abilityMenus.getString(menuId + ".material", "BARRIER"));
+      int slot = abilityMenus.getInt(menuId + ".slot", 0);
+      AbilityPickerPickerItem subMenuIcon = new AbilityPickerPickerItem(menu, material, name, slot);
+      pickerItems.add(subMenuIcon);
     }
+
+    String pickerName = configYAML.getString("ability-menu-title", "Picker");
+    abilitySubcategoryMenu = new AbilityPickerPickerMenu(this, pickerName, pickerItems);
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu();
@@ -892,8 +905,8 @@ public class StrifePlugin extends FacePlugin {
     return confirmMenu;
   }
 
-  public AbilityPickerMenu getAbilityPicker(AbilityMenuType type) {
-    return abilityMenus.get(type);
+  public AbilityPickerPickerMenu getAbilityPicker() {
+    return abilitySubcategoryMenu;
   }
 
   public StatsMenu getStatsMenu() {
