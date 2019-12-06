@@ -26,6 +26,10 @@ public class StatUtil {
     return ae.getStat(StrifeStat.REGENERATION) * (1 + ae.getStat(StrifeStat.REGEN_MULT) / 100);
   }
 
+  public static float getBarrierRegen(StrifeMob ae) {
+    return ae.getStat(StrifeStat.BARRIER_REGEN);
+  }
+
   public static float getHealth(StrifeMob ae) {
     return ae.getStat(StrifeStat.HEALTH) * (1 + ae.getStat(StrifeStat.HEALTH_MULT) / 100);
   }

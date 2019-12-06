@@ -51,10 +51,8 @@ public class RegenTask extends BukkitRunnable {
       }
       float tickMult = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
-      if (plugin.getBarrierManager().hasBarrierEntry(player)) {
-        plugin.getBarrierManager()
-            .restoreBarrier(mob, mob.getStat(StrifeStat.BARRIER_REGEN) * tickMult);
-      }
+      plugin.getBarrierManager()
+          .restoreBarrier(mob, mob.getStat(StrifeStat.BARRIER_REGEN) * tickMult);
       double playerMaxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
       if (player.getHealth() >= playerMaxHealth) {
         continue;

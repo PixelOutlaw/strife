@@ -27,7 +27,6 @@ public class MobModManager {
 
   private final double MOB_MOD_UP_CHANCE;
   private final int MOB_MOD_MAX_MODS;
-  private final int STARTING_WEIGHT = 100000;
 
   private static Random random = new Random();
 
@@ -40,7 +39,7 @@ public class MobModManager {
 
   public void doModApplication(StrifeMob strifeMob) {
     String prefix = "";
-    int prefixWeight = STARTING_WEIGHT;
+    int prefixWeight = Integer.MAX_VALUE;
     Set<MobMod> mods = getRandomMods(strifeMob.getEntity(), strifeMob.getEntity().getLocation(),
         getModCount());
     for (MobMod mod : mods) {
@@ -50,6 +49,7 @@ public class MobModManager {
         prefixWeight = mod.getWeight();
       }
       strifeMob.setDespawnOnUnload(true);
+      strifeMob.getMods().add(mod.getId());
     }
     strifeMob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE +
         strifeMob.getEntity().getCustomName());

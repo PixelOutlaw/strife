@@ -30,6 +30,7 @@ public class StrifeMob {
   private LivingEntity livingEntity;
   private EntityAbilitySet abilitySet;
   private String uniqueEntityId = null;
+  private Set<String> mods = new HashSet<>();
   private Set<String> factions = new HashSet<>();
 
   private boolean despawnOnUnload = false;
@@ -113,6 +114,10 @@ public class StrifeMob {
 
   public void setUniqueEntityId(String uniqueEntityId) {
     this.uniqueEntityId = uniqueEntityId;
+  }
+
+  public Set<String> getMods() {
+    return mods;
   }
 
   public Set<String> getFactions() {
