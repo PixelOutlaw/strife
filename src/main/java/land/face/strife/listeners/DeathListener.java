@@ -18,12 +18,10 @@
  */
 package land.face.strife.listeners;
 
-import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
-import land.face.strife.events.UniqueKillEvent;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
@@ -50,33 +48,17 @@ public class DeathListener implements Listener {
       return;
     }
 
-    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
-
-    if (mob == null) {
-      return;
-    }
-
-    Player killer = mob.getKiller();
-    if (killer == null) {
-      killer = event.getEntity().getKiller();
-      if (killer == null) {
-        return;
-      }
-    }
-
-    UniqueKillEvent ev = new UniqueKillEvent(mob, killer);
-    Bukkit.getPluginManager().callEvent(ev);
-
-    if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob.isDespawnOnUnload())) {
-      event.setDroppedExp(0);
-      return;
-    }
-
     if (event.getEntity().hasMetadata("SPAWNED")) {
       return;
     }
 
-    event.setDroppedExp(0);
+    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
+
+    if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
+        .isDespawnOnUnload())) {
+      event.setDroppedExp(0);
+      return;
+    }
 
     int mobLevel = StatUtil.getMobLevel(event.getEntity());
     float exp = plugin.getMonsterManager().getBaseExp(event.getEntity(), mobLevel);
@@ -87,29 +69,7 @@ public class DeathListener implements Listener {
       exp += uniqueEntity.getBonusExperience();
     }
     exp *= 1 + mob.getStat(StrifeStat.XP_GAIN) / 100;
-
-    Set<Player> killers = plugin.getSnazzyPartiesHook()
-        .getNearbyPartyMembers(killer, event.getEntity().getLocation(), 30);
-
-    int highestPlayerLevel = mobLevel;
-    int lowestPlayerLevel = mobLevel;
-    for (Player player : killers) {
-      if (player.getLevel() > highestPlayerLevel) {
-        highestPlayerLevel = player.getLevel();
-      }
-      if (player.getLevel() < lowestPlayerLevel) {
-        lowestPlayerLevel = player.getLevel();
-      }
-    }
-
-    int levelDiff = Math.max(Math.abs(mobLevel - highestPlayerLevel), Math.abs(mobLevel - lowestPlayerLevel));
-    for (Player player : killers) {
-      float expMultiplier = (1f / killers.size()) * ((killers.size() - 1) * 0.2f);
-      if (levelDiff > 7) {
-        expMultiplier -= (levelDiff - 7) * 0.125f;
-      }
-      plugin.getExperienceManager().addExperience(player, (exp * expMultiplier), false);
-    }
+    event.setDroppedExp((int) exp);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

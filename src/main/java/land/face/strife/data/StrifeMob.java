@@ -36,7 +36,7 @@ public class StrifeMob {
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
 
-  private LivingEntity master;
+  private LivingEntity master = null;
   private Spawner spawner;
   private final Set<StrifeMob> minions = new ConcurrentSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
