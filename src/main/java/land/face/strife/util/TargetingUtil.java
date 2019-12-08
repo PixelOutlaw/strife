@@ -107,6 +107,9 @@ public class TargetingUtil {
         }
       }
     }
+    if (target.getMaster() != null) {
+      return isFriendly(caster, target.getMaster());
+    }
     if (caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
       return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target.getEntity());
     }
