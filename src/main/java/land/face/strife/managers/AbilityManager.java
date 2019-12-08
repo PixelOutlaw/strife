@@ -385,8 +385,15 @@ public class AbilityManager {
     switch (ability.getTargetType()) {
       case SELF:
       case TOGGLE:
-      case PARTY:
         targets.add(caster.getEntity());
+        return targets;
+      case PARTY:
+        if (caster.getEntity() instanceof Player) {
+          targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers(
+              (Player) caster.getEntity(), caster.getEntity().getLocation(), 30));
+        } else {
+          targets.add(caster.getEntity());
+        }
         return targets;
       case MASTER:
         if (caster.getMaster() != null) {
@@ -418,7 +425,8 @@ public class AbilityManager {
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
         return TargetingUtil.getTempStandTargetList(loc2, ability.getRange() + 3);
       case NEAREST_SOUL:
-        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), ability.getRange());
+        SoulTimer soul = plugin.getSoulManager()
+            .getNearestSoul(caster.getEntity(), ability.getRange());
         if (soul != null) {
           targets.add(Bukkit.getPlayer(soul.getOwner()));
         }

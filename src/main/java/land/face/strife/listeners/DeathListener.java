@@ -18,6 +18,7 @@
  */
 package land.face.strife.listeners;
 
+import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -76,20 +77,9 @@ public class DeathListener implements Listener {
       return;
     }
 
-    int killerLevel = killer.getLevel();
-    int mobLevel;
-    if (killerLevel < 100) {
-      int killerRange = Math.max(5, killerLevel / 5);
-      mobLevel = Math.min(StatUtil.getMobLevel(event.getEntity()), killerLevel + killerRange);
-    } else {
-      mobLevel = StatUtil.getMobLevel(event.getEntity());
-    }
-    int levelDiff = Math.abs(mobLevel - killer.getLevel());
-    float levelPenalty = 1;
-    if (levelDiff > 6) {
-      levelPenalty = Math.max(0.1f, 1 - ((levelDiff - 6) * 0.1f));
-    }
+    event.setDroppedExp(0);
 
+    int mobLevel = StatUtil.getMobLevel(event.getEntity());
     float exp = plugin.getMonsterManager().getBaseExp(event.getEntity(), mobLevel);
 
     UniqueEntity uniqueEntity = plugin.getUniqueEntityManager().getUnique(mob.getUniqueEntityId());
@@ -98,8 +88,29 @@ public class DeathListener implements Listener {
       exp += uniqueEntity.getBonusExperience();
     }
     exp *= 1 + mob.getStat(StrifeStat.XP_GAIN) / 100;
-    plugin.getExperienceManager().addExperience(killer, (exp * levelPenalty), false);
-    event.setDroppedExp(0);
+
+    Set<Player> killers = plugin.getSnazzyPartiesHook()
+        .getNearbyPartyMembers(killer, event.getEntity().getLocation(), 30);
+
+    int highestPlayerLevel = mobLevel;
+    int lowestPlayerLevel = mobLevel;
+    for (Player player : killers) {
+      if (player.getLevel() > highestPlayerLevel) {
+        highestPlayerLevel = player.getLevel();
+      }
+      if (player.getLevel() < lowestPlayerLevel) {
+        lowestPlayerLevel = player.getLevel();
+      }
+    }
+
+    int levelDiff = Math.max(Math.abs(mobLevel - highestPlayerLevel), Math.abs(mobLevel - lowestPlayerLevel));
+    for (Player player : killers) {
+      float expMultiplier = (1f / killers.size()) * ((killers.size() - 1) * 0.2f);
+      if (levelDiff > 7) {
+        expMultiplier -= (levelDiff - 7) * 0.125f;
+      }
+      plugin.getExperienceManager().addExperience(player, (exp * expMultiplier), false);
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

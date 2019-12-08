@@ -84,6 +84,12 @@
       <version>9.8.2-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.github.UltraFaceguy</groupId>
+      <artifactId>SnazzyParties</artifactId>
+      <version>1.0.2</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>

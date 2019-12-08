@@ -50,6 +50,7 @@ import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.StrifeParticle;
+import land.face.strife.hooks.SnazzyPartiesHook;
 import land.face.strife.listeners.BullionListener;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.listeners.CreeperEffectListener;
@@ -219,6 +220,8 @@ public class StrifePlugin extends FacePlugin {
 
   private int maxSkillLevel;
 
+  public SnazzyPartiesHook snazzyPartiesHook;
+
   public static StrifePlugin getInstance() {
     return instance;
   }
@@ -289,6 +292,8 @@ public class StrifePlugin extends FacePlugin {
     combatStatusManager = new CombatStatusManager(this);
 
     MenuListener.getInstance().register(this);
+
+    snazzyPartiesHook = new SnazzyPartiesHook();
 
     try {
       logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
@@ -755,6 +760,10 @@ public class StrifePlugin extends FacePlugin {
       LogUtil.printDebug("Saved spawner " + spawnerId + ".");
     }
     spawnerYAML.save();
+  }
+
+  public SnazzyPartiesHook getSnazzyPartiesHook() {
+    return snazzyPartiesHook;
   }
 
   public StatUpdateManager getStatUpdateManager() {
