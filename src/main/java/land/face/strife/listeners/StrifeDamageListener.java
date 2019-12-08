@@ -235,6 +235,11 @@ public class StrifeDamageListener implements Listener {
           plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()),
           String.valueOf((int) Math.ceil(rawDamage)));
     }
+    if (attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
+      plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getMaster()),
+          String.valueOf((int) Math.ceil(rawDamage)));
+    }
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
