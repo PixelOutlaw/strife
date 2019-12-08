@@ -90,7 +90,7 @@ public class SoulManager {
 
   public SoulTimer getNearestSoul(LivingEntity le, float maxDistSquared) {
     SoulTimer selectedSoul = null;
-    double selectedDist = maxDistSquared;
+    double selectedDist = Math.pow(maxDistSquared, 2);
     for (SoulTimer soulTimer : souls) {
       if (!soulTimer.getLocation().getWorld().equals(le.getWorld())) {
         continue;
