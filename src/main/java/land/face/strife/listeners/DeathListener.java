@@ -69,7 +69,6 @@ public class DeathListener implements Listener {
 
     if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob.isDespawnOnUnload())) {
       event.setDroppedExp(0);
-      event.getDrops().clear();
       return;
     }
 
