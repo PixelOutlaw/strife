@@ -35,7 +35,17 @@ public class IndicatorManager {
     if (!(creator instanceof Player) || creator == target) {
       return;
     }
+
     Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);
+    if (!loc.getWorld().getName().equals(target.getLocation().getWorld().getName())) {
+      return;
+    }
+
+    double distance = creator.getLocation().distanceSquared(target.getLocation());
+    if (distance > 1024) {
+      return;
+    }
+
     Location midway;
     if (creator.getLocation().distanceSquared(target.getLocation()) < 144) {
       midway = creator.getEyeLocation().clone()
