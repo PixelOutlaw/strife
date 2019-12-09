@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -34,8 +35,10 @@ public class Summon extends Effect {
     LivingEntity summon = summonedEntity.getEntity();
     summon.setMaxHealth(summon.getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100)));
     summon.setHealth(summon.getMaxHealth());
-    summonedEntity.forceSetStat(
-        StrifeStat.MINION_MULT_INTERNAL, caster.getStat(StrifeStat.MINION_DAMAGE));
+    summonedEntity.forceSetStat(StrifeStat.MINION_MULT_INTERNAL,
+        caster.getStat(StrifeStat.MINION_DAMAGE));
+    summonedEntity.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
+    summonedEntity.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(caster));
     summonedEntity.setDespawnOnUnload(true);
     caster.addMinion(summonedEntity);
 
