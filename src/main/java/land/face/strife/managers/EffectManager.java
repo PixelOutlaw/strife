@@ -32,6 +32,7 @@ import land.face.strife.data.conditions.CorruptionCondition;
 import land.face.strife.data.conditions.EarthRunesCondition;
 import land.face.strife.data.conditions.EndlessEffectCondition;
 import land.face.strife.data.conditions.EntityTypeCondition;
+import land.face.strife.data.conditions.FactionCondition;
 import land.face.strife.data.conditions.GroundedCondition;
 import land.face.strife.data.conditions.HealthCondition;
 import land.face.strife.data.conditions.HeightCondition;
@@ -45,6 +46,7 @@ import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.TimeCondition;
+import land.face.strife.data.conditions.UniqueCondition;
 import land.face.strife.data.conditions.VelocityCondition;
 import land.face.strife.data.conditions.VelocityCondition.VelocityType;
 import land.face.strife.data.conditions.WeaponsCondition;
@@ -117,6 +119,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
@@ -211,6 +214,14 @@ public class EffectManager {
           areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity(), le.getLocation(),
               caster.getEntity().getLocation().getDirection(), (float) range,
               effect.getMaxConeRadius()));
+          break;
+        case PARTY:
+          if (caster.getEntity() instanceof Player) {
+            areaTargets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers(
+                (Player) caster.getEntity(), le.getLocation(), range));
+          } else {
+            areaTargets.addAll(TargetingUtil.getEntitiesInArea(le, range));
+          }
           break;
         default:
           return null;
@@ -909,6 +920,14 @@ public class EffectManager {
           return;
         }
         condition = new EntityTypeCondition(typesSet, whitelist);
+        break;
+      case UNIQUE_ID:
+        String uniqueId = cs.getString("unique-id");
+        condition = new UniqueCondition(uniqueId);
+        break;
+      case FACTION_MEMBER:
+        String factionId = cs.getString("faction-id");
+        condition = new FactionCondition(factionId);
         break;
       case VELOCITY:
         VelocityType velocityType = VelocityType.valueOf(cs.getString("type", "TOTAL"));

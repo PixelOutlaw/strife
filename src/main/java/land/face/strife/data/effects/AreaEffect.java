@@ -167,6 +167,7 @@ public class AreaEffect extends Effect {
   }
 
   public enum AreaType {
+    PARTY,
     RADIUS,
     LINE,
     CONE

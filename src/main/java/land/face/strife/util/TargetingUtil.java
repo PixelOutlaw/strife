@@ -179,7 +179,7 @@ public class TargetingUtil {
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
     RayTraceResult result = caster.getWorld()
         .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-            entity -> isValidRaycastTarget(caster, entity));
+            0.8, entity -> isValidRaycastTarget(caster, entity));
     if (result == null || result.getHitEntity() == null) {
       return null;
     }

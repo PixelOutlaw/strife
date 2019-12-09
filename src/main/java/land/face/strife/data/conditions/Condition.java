@@ -107,6 +107,8 @@ public abstract class Condition {
     BONUS_LEVEL,
     ITS_OVER_ANAKIN,
     ENTITY_TYPE,
+    UNIQUE_ID,
+    FACTION_MEMBER,
     VELOCITY,
     GROUNDED,
     BLEEDING,
