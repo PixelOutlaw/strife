@@ -92,34 +92,33 @@ public class TargetingUtil {
         .collect(Collectors.toSet());
   }
 
-  public static boolean isFriendly(StrifeMob mob, LivingEntity target) {
-    return isFriendly(mob, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(target));
+  public static boolean isFriendly(StrifeMob attacker, LivingEntity defender) {
+    return isFriendly(attacker,
+        StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
   }
 
-  public static boolean isFriendly(StrifeMob caster, StrifeMob target) {
-    if (caster.getEntity() == target.getEntity()) {
+  public static boolean isFriendly(StrifeMob attacker, StrifeMob defender) {
+    if (attacker.getEntity() == defender.getEntity()) {
       return true;
     }
-    for (String casterFaction : caster.getFactions()) {
-      for (String targetFaction: target.getFactions()) {
+    for (String casterFaction : attacker.getFactions()) {
+      for (String targetFaction : defender.getFactions()) {
         if (casterFaction.equalsIgnoreCase(targetFaction)) {
           return true;
         }
       }
     }
-    if (target.getMaster() != null) {
-      return isFriendly(caster, target.getMaster());
+    if (defender.getMaster() != null) {
+      return isFriendly(attacker, defender.getMaster());
     }
-    if (caster.getEntity() instanceof Player && target.getEntity() instanceof Player) {
-      return !DamageUtil.canAttack((Player) caster.getEntity(), (Player) target.getEntity());
+    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
+      return !DamageUtil.canAttack((Player) attacker.getEntity(), (Player) defender.getEntity());
     }
-    for (StrifeMob mob : caster.getMinions()) {
-      if (target.getEntity() == mob.getEntity()) {
+    for (StrifeMob mob : attacker.getMinions()) {
+      if (defender.getEntity() == mob.getEntity()) {
         return true;
       }
     }
-    // for (StrifeMob mob : getPartyMembers {
-    // }
     return false;
   }
 
@@ -195,7 +194,8 @@ public class TargetingUtil {
       return true;
     }
     if (e instanceof Player) {
-      return ((Player) e).getGameMode() == GameMode.CREATIVE || ((Player) e).getGameMode() == GameMode.SPECTATOR;
+      return ((Player) e).getGameMode() == GameMode.CREATIVE
+          || ((Player) e).getGameMode() == GameMode.SPECTATOR;
     }
     return false;
   }
