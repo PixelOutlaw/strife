@@ -48,17 +48,22 @@ import org.bukkit.util.Vector;
 public class StrifeDamageListener implements Listener {
 
   private StrifePlugin plugin;
-  private float PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.pvp-multiplier", 0.5);
-  private float IND_FLOAT_SPEED = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.indicators.float-speed", 70);
-  private float IND_MISS_SPEED = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.indicators.miss-speed", 80);
-  private Vector IND_FLOAT_VECTOR = new Vector(0, IND_FLOAT_SPEED, 0);
-  private Vector IND_MISS_VECTOR = new Vector(0, IND_MISS_SPEED, 0);
+  private static float PVP_MULT;
+  private static float IND_FLOAT_SPEED;
+  private static float IND_MISS_SPEED;
+  private static Vector IND_FLOAT_VECTOR;
+  private static Vector IND_MISS_VECTOR;
 
   public StrifeDamageListener(StrifePlugin plugin) {
     this.plugin = plugin;
+    PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.mechanics.pvp-multiplier", 0.5);
+    IND_FLOAT_SPEED = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.indicators.float-speed", 70);
+    IND_MISS_SPEED = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.indicators.miss-speed", 80);
+    IND_FLOAT_VECTOR = new Vector(0, IND_FLOAT_SPEED, 0);
+    IND_MISS_VECTOR = new Vector(0, IND_MISS_SPEED, 0);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -251,8 +256,8 @@ public class StrifeDamageListener implements Listener {
     }
 
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
-    plugin.getAbilityManager().abilityCast(attacker, TriggerAbilityType.ON_HIT);
-    plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
+    plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+    plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
     plugin.getSneakManager().tempDisableSneak(attacker.getEntity());
 
     PlayerDataUtil.sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
@@ -279,7 +284,7 @@ public class StrifeDamageListener implements Listener {
     projectile.remove();
   }
 
-  private IndicatorData buildMissIndicator(Player player) {
+  public static IndicatorData buildMissIndicator(Player player) {
     IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
     data.addOwner(player);
     return data;

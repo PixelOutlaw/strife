@@ -272,6 +272,10 @@ public class AbilityManager {
   }
 
   public boolean abilityCast(StrifeMob caster, TriggerAbilityType type) {
+    return abilityCast(caster, null, type);
+  }
+
+  public boolean abilityCast(StrifeMob caster, StrifeMob target, TriggerAbilityType type) {
     EntityAbilitySet abilitySet = caster.getAbilitySet();
     if (abilitySet == null) {
       return false;
@@ -292,11 +296,18 @@ public class AbilityManager {
       }
       return true;
     }
-    LivingEntity target = TargetingUtil.getMobTarget(caster);
-    StrifeMob targetMob = target == null ? null : plugin.getStrifeMobManager().getStatMob(target);
 
+    LivingEntity targetEntity;
+    if (target == null) {
+      targetEntity = TargetingUtil.getMobTarget(caster);
+      target = targetEntity == null ? null : plugin.getStrifeMobManager().getStatMob(targetEntity);
+    } else {
+      targetEntity = target.getEntity();
+    }
+
+    StrifeMob finalTarget = target;
     List<Ability> selectorList = abilities.stream()
-        .filter(ability -> isAbilityCastReady(caster, targetMob, ability))
+        .filter(ability -> isAbilityCastReady(caster, finalTarget, ability))
         .collect(Collectors.toList());
 
     if (selectorList.isEmpty()) {
@@ -305,7 +316,7 @@ public class AbilityManager {
       return false;
     }
     Ability ability = selectorList.get(random.nextInt(selectorList.size()));
-    return execute(ability, caster, target, true);
+    return execute(ability, caster, targetEntity, true);
   }
 
   public void setGlobalCooldown(Player player, Ability ability) {
