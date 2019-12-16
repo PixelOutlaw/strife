@@ -19,6 +19,7 @@ import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
+import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import me.libraryaddict.disguise.disguisetypes.RabbitType;
@@ -189,26 +190,33 @@ public class UniqueEntityManager {
       cachedDisguises.put(uniqueEntity, playerDisguise);
       return;
     }
-    MobDisguise mobDisguise = new MobDisguise(type);
-    if (StringUtils.isNotBlank(typeData)) {
-      FlagWatcher watcher = mobDisguise.getWatcher();
-      try {
-        switch (type) {
-          case FOX:
-            Fox.Type foxType = Fox.Type.valueOf(typeData);
-            ((FoxWatcher) watcher).setType(foxType);
-            break;
-          case RABBIT:
-            RabbitType rabbitType = RabbitType.valueOf(typeData);
-            ((RabbitWatcher) watcher).setType(rabbitType);
-            break;
+    if (type.isMob()) {
+      MobDisguise mobDisguise = new MobDisguise(type);
+      if (StringUtils.isNotBlank(typeData)) {
+        FlagWatcher watcher = mobDisguise.getWatcher();
+        try {
+          switch (type) {
+            case FOX:
+              Fox.Type foxType = Fox.Type.valueOf(typeData);
+              ((FoxWatcher) watcher).setType(foxType);
+              break;
+            case RABBIT:
+              RabbitType rabbitType = RabbitType.valueOf(typeData);
+              ((RabbitWatcher) watcher).setType(rabbitType);
+              break;
+          }
+        } catch (Exception e) {
+          LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
         }
-      } catch (Exception e) {
-        LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
       }
+      mobDisguise.setShowName(true);
+      mobDisguise.setReplaceSounds(true);
+      cachedDisguises.put(uniqueEntity, mobDisguise);
+    } else if (type.isMisc()) {
+      MiscDisguise miscDisguise = new MiscDisguise(type);
+      miscDisguise.setShowName(true);
+      miscDisguise.setReplaceSounds(true);
+      cachedDisguises.put(uniqueEntity, miscDisguise);
     }
-    mobDisguise.setShowName(true);
-    mobDisguise.setReplaceSounds(true);
-    cachedDisguises.put(uniqueEntity, mobDisguise);
   }
 }
