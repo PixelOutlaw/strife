@@ -19,6 +19,7 @@
 package land.face.strife.listeners;
 
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ARMOR;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
@@ -40,6 +41,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Shulker;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -106,8 +108,6 @@ public class CombatListener implements Listener {
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
       return;
     }
-    boolean blocked = event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0;
-    DamageUtil.removeDamageModifiers(event);
 
     LivingEntity defendEntity = (LivingEntity) event.getEntity();
     LivingEntity attackEntity = DamageUtil.getAttacker(event.getDamager());
@@ -115,6 +115,11 @@ public class CombatListener implements Listener {
     if (attackEntity == null) {
       return;
     }
+
+    boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) || (
+        defendEntity instanceof Shulker && event.isApplicable(ARMOR)
+            && event.getDamage(ARMOR) != 0);
+    DamageUtil.removeDamageModifiers(event);
 
     if (attackEntity instanceof Player && FRIENDLY_PLAYER_CHECKER.contains(attackEntity)) {
       FRIENDLY_PLAYER_CHECKER.remove(attackEntity);
