@@ -67,25 +67,16 @@ public class ShootListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGH)
-  public void onEntityShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof LivingEntity) ||
+  public void onPlayerArrowShoot(ProjectileLaunchEvent event) {
+    if (!(event.getEntity().getShooter() instanceof Player) ||
         !(event.getEntity() instanceof Arrow)) {
       return;
     }
 
-    LivingEntity shooter = (LivingEntity) event.getEntity().getShooter();
     StrifeMob mob = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) event.getEntity().getShooter());
 
     event.setCancelled(true);
-
-    if (mob.getAbilitySet() != null
-        && mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) != null) {
-      boolean triggered = plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
-      if (triggered) {
-        return;
-      }
-    }
 
     ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
         .getEquipment()).getItemInMainHand();
@@ -102,35 +93,8 @@ public class ShootListener implements Listener {
       return;
     }
 
-    if (!(shooter instanceof Player) && weapon.getType() == Material.BOW
-        || ItemUtil.getCustomData(weapon) == 4000) {
-      WandListener.shootWand(mob, 1, event);
-      return;
-    }
-
     if (ItemUtil.isPistol(weapon)) {
-      if (shooter instanceof Player) {
-        if (((Player) shooter).getCooldown(Material.BOW) > 0) {
-          return;
-        }
-        ((Player) shooter).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
-      }
-      if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
-        double randomMultishot = Math.pow(Math.random(), 1.5);
-        int projectiles = ProjectileUtil
-            .getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
-        flintlockHitscan.setMaxTargets(projectiles);
-        flintlockHitscan.setMaxConeRadius(0.35f * (projectiles - 1));
-      } else {
-        flintlockHitscan.setMaxTargets(1);
-        flintlockHitscan.setMaxConeRadius(0f);
-      }
-      flintlockDamage.setAttackMultiplier(attackMultiplier);
-      plugin.getEffectManager().execute(flintlockHitscan, mob, mob.getEntity());
-      flintlockSmoke.apply(null, mob);
-      flintlockFlare.apply(null, mob);
-      mob.getEntity().getWorld()
-          .playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
+      doPistolShot(mob, attackMultiplier);
       return;
     }
 
@@ -146,6 +110,36 @@ public class ShootListener implements Listener {
     }
     mob.getEntity().getWorld()
         .playSound(mob.getEntity().getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
+  }
+
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onEntityShoot(ProjectileLaunchEvent event) {
+    if (!(event.getEntity().getShooter() instanceof LivingEntity) ||
+        (event.getEntity().getShooter() instanceof Player)) {
+      return;
+    }
+
+    StrifeMob mob = plugin.getStrifeMobManager()
+        .getStatMob((LivingEntity) event.getEntity().getShooter());
+
+    event.setCancelled(true);
+
+    if (mob.getAbilitySet() != null
+        && mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) != null) {
+      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
+      return;
+    }
+
+    ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
+        .getEquipment()).getItemInMainHand();
+    if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
+      WandListener.shootWand(mob, 1, event);
+      return;
+    }
+
+    if (ItemUtil.isPistol(weapon)) {
+      doPistolShot(mob, 1);
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -209,6 +203,31 @@ public class ShootListener implements Listener {
     }
   }
 
+  private void doPistolShot(StrifeMob mob, float attackMultiplier) {
+    if (mob.getEntity() instanceof Player) {
+      if (((Player) mob.getEntity()).getCooldown(Material.BOW) > 0) {
+        return;
+      }
+      ((Player) mob.getEntity()).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
+    }
+    if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
+      double randomMultishot = Math.pow(Math.random(), 1.5);
+      int projectiles = ProjectileUtil
+          .getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
+      flintlockHitscan.setMaxTargets(projectiles);
+      flintlockHitscan.setMaxConeRadius(0.35f * (projectiles - 1));
+    } else {
+      flintlockHitscan.setMaxTargets(1);
+      flintlockHitscan.setMaxConeRadius(0f);
+    }
+    flintlockDamage.setAttackMultiplier(attackMultiplier);
+    plugin.getEffectManager().execute(flintlockHitscan, mob, mob.getEntity());
+    flintlockSmoke.apply(null, mob);
+    flintlockFlare.apply(null, mob);
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
+        Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
+  }
+
   private double randomOffset(double magnitude) {
     return 0.11 + magnitude * 0.005;
   }
@@ -220,6 +239,8 @@ public class ShootListener implements Listener {
     particle.setParticleOriginLocation(OriginLocation.BELOW_HEAD);
     particle.setStyle(ParticleStyle.LINE);
     particle.setSize(2);
+    particle.setRadius(0);
+    particle.setLineIncrement(0.25);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.smoke-quantity", 1));
     particle.setLineOffset(plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.smoke-speed", 2f));
@@ -243,6 +264,8 @@ public class ShootListener implements Listener {
     particle.setParticleOriginLocation(OriginLocation.BELOW_HEAD);
     particle.setStyle(ParticleStyle.LINE);
     particle.setSize(1);
+    particle.setRadius(0);
+    particle.setLineIncrement(0.25);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.flare-quantity", 1));
     particle.setLineOffset(plugin.getSettings().getDouble("config.flintlock.flare-offset", 1));
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.flare-speed", 1f));
