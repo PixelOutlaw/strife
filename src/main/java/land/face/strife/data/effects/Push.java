@@ -4,6 +4,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.WorldSpaceEffectEntity;
 import land.face.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
 
 public class Push extends Effect {
@@ -16,6 +17,9 @@ public class Push extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    if (target.getEntity().getType() == EntityType.SHULKER) {
+      return;
+    }
     Vector direction;
     switch (pushType) {
       case AWAY_FROM_CASTER:

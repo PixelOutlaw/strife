@@ -16,23 +16,33 @@ import org.bukkit.util.Vector;
 
 public class StrifeParticle extends Effect {
 
-  private Particle particle;
-  private int quantity;
-  private float spread;
-  private float speed;
-  private double size;
+  private ParticleStyle style = ParticleStyle.NORMAL;
+  private Particle particle = Particle.FLAME;
+  private int quantity = 1;
+  private float spread = 0;
+  private float speed = 0;
+  private double size = 1;
+
   private double red;
   private double green;
   private double blue;
+
   private double arcAngle;
   private double arcOffset;
+
   private double orbitSpeed;
+  private double endOrbitSpeed;
+  private double radius;
+  private double endRadius;
+
+  private boolean lineVertical;
   private double lineOffset;
+  private double lineIncrement;
+
   private int tickDuration;
   private boolean strictDuration;
-  private ParticleStyle style;
   private OriginLocation particleOriginLocation = OriginLocation.CENTER;
-  private ItemStack blockData;
+  private ItemStack blockData = null;
 
   private static Random random = new Random();
 
@@ -64,16 +74,13 @@ public class StrifeParticle extends Effect {
         spawnParticleCircle(location, size);
         return;
       case ORBIT:
-        spawnParticleOrbit(location, size);
+        spawnParticleOrbit(location, size, orbitSpeed);
         return;
       case LINE:
         if (direction == null) {
           throw new IllegalArgumentException("Cannot use LINE particle without defined direction");
         }
         spawnParticleLine(location, direction, size + lineOffset);
-        return;
-      case PILLAR:
-        spawnParticlePillar(location, size);
         return;
       case ARC:
         spawnParticleArc(direction, location, size, arcAngle, arcOffset);
@@ -110,10 +117,6 @@ public class StrifeParticle extends Effect {
 
   public void setParticleOriginLocation(OriginLocation particleOriginLocation) {
     this.particleOriginLocation = particleOriginLocation;
-  }
-
-  public OriginLocation getOrigin() {
-    return particleOriginLocation;
   }
 
   public void setStyle(ParticleStyle style) {
@@ -156,12 +159,28 @@ public class StrifeParticle extends Effect {
     this.orbitSpeed = orbitSpeed;
   }
 
-  public double getLineOffset() {
-    return lineOffset;
+  public void setEndOrbitSpeed(double endOrbitSpeed) {
+    this.endOrbitSpeed = endOrbitSpeed;
+  }
+
+  public void setRadius(double radius) {
+    this.radius = radius;
+  }
+
+  public void setEndRadius(double endRadius) {
+    this.endRadius = endRadius;
   }
 
   public void setLineOffset(double lineOffset) {
     this.lineOffset = lineOffset;
+  }
+
+  public void setLineVertical(boolean lineVertical) {
+    this.lineVertical = lineVertical;
+  }
+
+  public void setLineIncrement(double lineIncrement) {
+    this.lineIncrement = lineIncrement;
   }
 
   public void setStrictDuration(boolean strictDuration) {
@@ -213,7 +232,7 @@ public class StrifeParticle extends Effect {
     }
   }
 
-  private void spawnParticleOrbit(Location center, double radius) {
+  private void spawnParticleOrbit(Location center, double radius, double orbitSpeed) {
     double step = 360d / quantity;
     for (int i = 0; i <= quantity; i++) {
       double start = orbitSpeed * ParticleTask.getCurrentTick();
@@ -233,15 +252,28 @@ public class StrifeParticle extends Effect {
   }
 
   private void spawnParticleLine(Location center, Vector direction, double length) {
-    for (double dist = lineOffset; dist < length ; dist += 0.25) {
+    for (double dist = lineOffset; dist < length; dist += lineIncrement) {
       Location loc = center.clone();
-      loc.add(direction.clone().multiply(dist));
+      if (lineVertical) {
+        loc.add(new Vector(0, dist, 0));
+      } else {
+        loc.add(direction.clone().multiply(dist));
+      }
+
       if (loc.getBlock().getType() != Material.AIR) {
         if (!loc.getBlock().getType().isTransparent()) {
           return;
         }
       }
-      spawnParticle(loc);
+
+      if (radius <= 0) {
+        spawnParticle(loc);
+      } else {
+        double percent = (lineOffset + dist) / length;
+        double currentOrbitSpeed = orbitSpeed + ((endOrbitSpeed - orbitSpeed) * percent);
+        double currentRadius = radius + ((endRadius - radius) * percent);
+        spawnParticleOrbit(loc, currentRadius, currentOrbitSpeed);
+      }
     }
   }
 
@@ -254,8 +286,8 @@ public class StrifeParticle extends Effect {
         location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
       }
     } else if (blockData != null) {
-      location.getWorld()
-          .spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);
+      location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed,
+          blockData);
     } else {
       location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
     }
@@ -266,7 +298,6 @@ public class StrifeParticle extends Effect {
     CIRCLE,
     ORBIT,
     LINE,
-    ARC,
-    PILLAR
+    ARC
   }
 }

@@ -730,6 +730,12 @@ public class EffectManager {
           ((StrifeParticle) effect).setOrbitSpeed(cs.getDouble("orbit-speed", 1));
         }
         if (style == ParticleStyle.LINE) {
+          ((StrifeParticle) effect).setOrbitSpeed(cs.getDouble("orbit-speed", 1));
+          ((StrifeParticle) effect).setEndOrbitSpeed(cs.getDouble("end-orbit-speed", 2));
+          ((StrifeParticle) effect).setRadius(cs.getDouble("radius", -1));
+          ((StrifeParticle) effect).setEndRadius(cs.getDouble("end-radius", 1));
+          ((StrifeParticle) effect).setLineVertical(cs.getBoolean("vertical", false));
+          ((StrifeParticle) effect).setLineIncrement(cs.getDouble("line-increment", 0.25));
           ((StrifeParticle) effect).setLineOffset(cs.getDouble("line-offset", 0));
         }
         ((StrifeParticle) effect).setQuantity(cs.getInt("quantity", 10));

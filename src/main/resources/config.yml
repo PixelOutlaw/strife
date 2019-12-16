@@ -58,6 +58,19 @@ mechanics:
   health-bar-duration: 200
   skill-bar-duration: 200
 
+flintlock:
+  min-custom-data: 11000
+  max-custom-data: 11999
+  range: 24
+  smoke-quantity: 2
+  smoke-spread: 0.04
+  smoke-speed: 0.007
+  smoke-offset: 0.8
+  flare-quantity: 2
+  flare-spread: 0
+  flare-speed: 0.01
+  flare-offset: 0.8
+
 custom-spawn-limits:
   world:
     base-spawn-limit: 200
