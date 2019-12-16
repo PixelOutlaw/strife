@@ -1,5 +1,7 @@
 package land.face.strife.data.effects;
 
+import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +14,7 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.TargetingUtil;
+import org.bukkit.entity.Player;
 
 public class AreaEffect extends Effect {
 
@@ -58,8 +61,15 @@ public class AreaEffect extends Effect {
       }
     }
     if (canBeBlocked) {
-      return StrifePlugin.getInstance().getBlockManager()
+      boolean blocked = StrifePlugin.getInstance().getBlockManager()
           .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false);
+      if (blocked) {
+        if (caster.getEntity() instanceof Player) {
+          StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
+              target.getEntity(), buildMissIndicator((Player) caster.getEntity()), "Blocked");
+        }
+      }
+      return blocked;
     }
     return false;
   }
