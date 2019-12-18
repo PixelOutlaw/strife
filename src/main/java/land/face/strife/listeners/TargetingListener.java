@@ -18,6 +18,7 @@
  */
 package land.face.strife.listeners;
 
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
@@ -29,11 +30,14 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Location;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -73,6 +77,22 @@ public class TargetingListener implements Listener {
         .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
     SNEAK_EFFECTIVENESS = plugin.getSettings()
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void modifyAttackRange(EntityDamageEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (!(event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.MAGIC
+        || event.getCause() == DamageCause.PROJECTILE)) {
+      return;
+    }
+    if (event.getEntity() instanceof Mob) {
+      AttributeInstance attr = ((Mob) event.getEntity()).getAttribute(GENERIC_FOLLOW_RANGE);
+      double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
+      ((Mob) event.getEntity()).getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
