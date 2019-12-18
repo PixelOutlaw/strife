@@ -657,6 +657,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
+      uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
       uniqueEntity.setAllowMods(cs.getBoolean("allow-mob-mods", true));
       uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));

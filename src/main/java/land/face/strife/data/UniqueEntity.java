@@ -29,6 +29,7 @@ public class UniqueEntity {
   private boolean knockbackImmune;
   private boolean charmImmune;
   private boolean burnImmune;
+  private boolean fallImmune;
   private boolean ignoreSneak;
   private boolean allowMods;
   private boolean removeFollowMods;
@@ -182,6 +183,14 @@ public class UniqueEntity {
 
   public void setBurnImmune(boolean burnImmune) {
     this.burnImmune = burnImmune;
+  }
+
+  public boolean isFallImmune() {
+    return fallImmune;
+  }
+
+  public void setFallImmune(boolean fallImmune) {
+    this.fallImmune = fallImmune;
   }
 
   public boolean isCharmImmune() {

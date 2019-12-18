@@ -156,6 +156,9 @@ public class UniqueEntityManager {
     if (uniqueEntity.isBurnImmune()) {
       le.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
     }
+    if (uniqueEntity.isFallImmune()) {
+      le.setMetadata("NO_FALL", new FixedMetadataValue(plugin, true));
+    }
     if (uniqueEntity.isIgnoreSneak()) {
       le.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
     }

@@ -19,6 +19,10 @@ public class FallListener implements Listener {
     if (event.getCause() != DamageCause.FALL || event.isCancelled()) {
       return;
     }
+    if (event.getEntity().hasMetadata("NO_FALL")) {
+      event.setCancelled(true);
+      return;
+    }
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
