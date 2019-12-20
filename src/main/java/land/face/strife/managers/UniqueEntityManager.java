@@ -98,9 +98,17 @@ public class UniqueEntityManager {
     if (le instanceof Zombie) {
       ((Zombie) le).setBaby(uniqueEntity.isBaby());
     } else if (le instanceof Slime) {
-      ((Slime) le).setSize(uniqueEntity.getSize());
+      int size = uniqueEntity.getSize();
+      if (size < 1) {
+        size = 2 + (int) (Math.random() * 3);
+      }
+      ((Slime) le).setSize(size);
     } else if (le instanceof Phantom) {
-      ((Phantom) le).setSize(uniqueEntity.getSize());
+      int size = uniqueEntity.getSize();
+      if (size < 1) {
+        size = 1 + (int) (Math.random() * 3);
+      }
+      ((Phantom) le).setSize(size);
     } else if (le instanceof Rabbit) {
       ((Rabbit) le).setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
       ((Rabbit) le).setAdult();
