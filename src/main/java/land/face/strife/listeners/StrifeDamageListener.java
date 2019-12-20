@@ -263,6 +263,7 @@ public class StrifeDamageListener implements Listener {
     PlayerDataUtil.sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
         critMult, triggeredElements, isBleedApplied, isSneakAttack);
 
+    defender.trackDamage(attacker, (float) finalDamage);
     event.setFinalDamage(finalDamage);
   }
 

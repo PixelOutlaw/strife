@@ -105,16 +105,17 @@ public class LoreAbilityListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(EntityDeathEvent event) {
-    if (event.getEntity().getKiller() == null) {
-      return;
+    StrifeMob victim = strifeMobManager.getStatMob(event.getEntity());
+    Player killer = event.getEntity().getKiller();
+    if (killer == null) {
+      killer = victim.getKiller();
+      if (killer == null) {
+        return;
+      }
     }
-    Champion champion = championManager.getChampion(event.getEntity().getKiller());
-    StrifeMob strifeMob = getAttrEntity(event.getEntity().getKiller());
-    if (strifeMob.isMasterOf(event.getEntity())) {
-      return;
-    }
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_KILL)) {
-      loreAbilityManager.applyLoreAbility(la, strifeMob, event.getEntity());
+    StrifeMob killerMob = strifeMobManager.getStatMob(killer);
+    for (LoreAbility la : killerMob.getChampion().getLoreAbilities().get(ON_KILL)) {
+      loreAbilityManager.applyLoreAbility(la, killerMob, event.getEntity());
     }
   }
 

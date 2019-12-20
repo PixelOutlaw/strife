@@ -64,8 +64,6 @@ public class DamageManager {
     Vector velocity = defender.getEntity().getVelocity();
     defender.getEntity().setNoDamageTicks(0);
 
-    defender.trackDamage(attacker, (float) damage);
-
     EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(attacker.getEntity(),
         defender.getEntity(), DamageCause.MAGIC, 1);
     Bukkit.getPluginManager().callEvent(event);
