@@ -37,9 +37,14 @@ public class CounterManager {
 
   private final Map<UUID, ConcurrentSet<CounterData>> counterMap = new HashMap<>();
   private StrifePlugin plugin;
+  private Sound counterSound;
+  private float pitch;
 
   public CounterManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    counterSound = Sound.valueOf(plugin.getSettings()
+        .getString("config.mechanics.counter.sound", "ENCHANT_THORNS_HIT"));
+    pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
   }
 
   public void addCounter(UUID uuid, CounterData counterData) {
@@ -70,13 +75,13 @@ public class CounterManager {
       }
     }
     if (isCountered) {
-      defender.getWorld().playSound(defender.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 1.7f);
+      defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker,
-            defender, buildMissIndicator((Player) attacker), "Counter!");
+            defender, buildMissIndicator((Player) attacker), "&f&lCounter!");
       }
       if (defender instanceof Player) {
-        MessageUtils.sendActionBar((Player) defender, "Countered!");
+        MessageUtils.sendActionBar((Player) defender, "&e&lCountered!");
       }
     }
     return isCountered;

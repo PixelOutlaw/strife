@@ -36,6 +36,9 @@ mechanics:
   dual-wield-bonus-attack-speed: 35
   pvp-damage: 0.5
   evasion-threshold: 0.5
+  counter:
+    sound: ENCHANT_THORNS_HIT
+    pitch: 0.65
   sneak:
     disable-duration: 6
     base-sneak-exp: 0.2
