@@ -4,7 +4,6 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import io.netty.util.internal.ConcurrentSet;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +26,6 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.Wait;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.timers.SoulTimer;
@@ -224,27 +222,14 @@ public class AbilityManager {
       boolean isOnAfterToggle = toggleAbility(caster.getEntity(), ability);
       if (!isOnAfterToggle) {
         coolDownAbility(caster.getEntity(), ability);
-        runEffects(caster, targets, ability.getToggleOffEffects(), 0);
+        plugin.getEffectManager().execute(caster, targets, ability.getToggleOffEffects());
         return true;
       }
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
     }
-    List<Effect> taskEffects = new ArrayList<>();
-    int waitTicks = 0;
-    for (Effect effect : ability.getEffects()) {
-      if (effect instanceof Wait) {
-        LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
-        runEffects(caster, targets, taskEffects, waitTicks);
-        waitTicks += ((Wait) effect).getTickDelay();
-        taskEffects = new ArrayList<>();
-        continue;
-      }
-      taskEffects.add(effect);
-      LogUtil.printDebug("Added effect " + effect.getId() + " to task list");
-    }
-    runEffects(caster, targets, taskEffects, waitTicks);
+    plugin.getEffectManager().execute(caster, targets, ability.getEffects());
     return true;
   }
 
@@ -375,22 +360,6 @@ public class AbilityManager {
     }
   }
 
-  private void runEffects(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList,
-      int delay) {
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      LogUtil.printDebug("Effect task started - " + effectList.toString());
-      if (!caster.getEntity().isValid()) {
-        LogUtil.printDebug("- Task cancelled, caster is dead");
-        return;
-      }
-      for (Effect effect : effectList) {
-        LogUtil.printDebug("- Executing effect " + effect.getId());
-        plugin.getEffectManager().execute(effect, caster, targets);
-      }
-      LogUtil.printDebug("- Completed effect task.");
-    }, delay);
-  }
-
   private Set<LivingEntity> getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
@@ -430,11 +399,19 @@ public class AbilityManager {
       case TARGET_AREA:
         Location loc = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        return TargetingUtil.getTempStandTargetList(loc, 0);
+        LivingEntity stando = TargetingUtil.getTempStand(loc, 0);
+        if (stando != null) {
+          targets.add(stando);
+        }
+        return targets;
       case TARGET_GROUND:
         Location loc2 = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        return TargetingUtil.getTempStandTargetList(loc2, ability.getRange() + 3);
+        LivingEntity stando2 = TargetingUtil.getTempStand(loc2, ability.getRange() + 3);
+        if (stando2 != null) {
+          targets.add(stando2);
+        }
+        return targets;
       case NEAREST_SOUL:
         SoulTimer soul = plugin.getSoulManager()
             .getNearestSoul(caster.getEntity(), ability.getRange());

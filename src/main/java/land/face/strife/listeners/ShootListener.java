@@ -25,6 +25,8 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.AreaType;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
+import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.StandardDamage;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
@@ -198,8 +200,10 @@ public class ShootListener implements Listener {
     Location loc = event.getEntity().getLocation().clone()
         .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
     for (String s : effects) {
-      StrifePlugin.getInstance().getEffectManager()
-          .execute(StrifePlugin.getInstance().getEffectManager().getEffect(s), caster, loc);
+      Effect effect = StrifePlugin.getInstance().getEffectManager().getEffect(s);
+      if (effect instanceof LocationEffect) {
+        ((LocationEffect) effect).applyAtLocation(caster, loc);
+      }
     }
   }
 

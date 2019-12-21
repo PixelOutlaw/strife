@@ -8,7 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 
-public class Summon extends Effect {
+public class Summon extends LocationEffect {
 
   private String uniqueEntity;
   private String soundEffect;
@@ -19,11 +19,12 @@ public class Summon extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     for (int i = 0; i < amount; i++) {
       Location loc = target.getEntity().getLocation();
-      summonAtLocation(caster, loc);
+      applyAtLocation(caster, loc);
     }
   }
 
-  public void summonAtLocation(StrifeMob caster, Location location) {
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
     if (caster.getMinions().size() >= caster.getStat(StrifeStat.MAX_MINIONS)) {
       return;
     }
@@ -51,7 +52,7 @@ public class Summon extends Effect {
 
     if (soundEffect != null) {
       PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager().getEffect(soundEffect);
-      sound.playAtLocation(summon.getLocation());
+      sound.applyAtLocation(caster, summon.getLocation());
     }
   }
 

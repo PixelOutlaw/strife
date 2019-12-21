@@ -9,10 +9,8 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.WorldSpaceEffectEntity;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.EvokerFangEffect;
-import land.face.strife.data.effects.PlaySound;
+import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.Push;
-import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
@@ -63,7 +61,6 @@ public class WSEManager {
 
   private boolean tick(WorldSpaceEffectEntity wse) {
     Location location = wse.getLocation();
-    StrifeMob caster = wse.getCaster();
     location.add(wse.getVelocity());
     Block block = location.getBlock();
     if (!block.getType().isTransparent()) {
@@ -78,20 +75,12 @@ public class WSEManager {
           LogUtil.printError("Null WSE effect! Tick:" + wse.getCurrentTick());
           continue;
         }
-        if (effect instanceof StrifeParticle) {
-          ((StrifeParticle) effect).playAtLocation(location);
-          continue;
-        }
-        if (effect instanceof PlaySound) {
-          ((PlaySound) effect).playAtLocation(location);
-          continue;
-        }
-        if (effect instanceof EvokerFangEffect) {
-          ((EvokerFangEffect) effect).spawnAtLocation(wse.getCaster(), location);
-          continue;
-        }
         applyDirectionToPushEffects(wse, effect);
-        effectManager.execute(effect, caster, location);
+        if (effect instanceof LocationEffect) {
+          ((LocationEffect) effect).applyAtLocation(wse.getCaster(), location);
+        } else {
+          LogUtil.printError("WSEs can only use effects with location! invalid: " + effect.getId());
+        }
       }
     }
     wse.setLifespan(wse.getLifespan() - 1);

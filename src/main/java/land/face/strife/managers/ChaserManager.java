@@ -72,7 +72,7 @@ public class ChaserManager {
     }
     chaser.getLocation().add(velocity);
     for (StrifeParticle particle : data.getParticles()) {
-      particle.playAtLocation(
+      particle.applyAtLocation(null,
           chaser.getLocation().clone().subtract(chaser.getVelocity().clone().multiply(0.5)));
     }
     if (isChaserCloseEnough(chaser, data, targetLocation)) {

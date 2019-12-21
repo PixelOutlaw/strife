@@ -49,7 +49,7 @@ public class ParticleTask extends BukkitRunnable {
           continuousParticles.get(le).remove(particle);
           continue;
         }
-        particle.getParticle().playAtLocation(le);
+        particle.getParticle().applyAtLocation(null, le.getLocation());
         particle.setTicksRemaining(particle.getTicksRemaining() - 1);
       }
     }
@@ -58,7 +58,7 @@ public class ParticleTask extends BukkitRunnable {
         boundParticles.remove(le);
         continue;
       }
-      boundParticles.get(le).playAtLocation(le);
+      boundParticles.get(le).applyAtLocation(null, le.getLocation());
     }
   }
 

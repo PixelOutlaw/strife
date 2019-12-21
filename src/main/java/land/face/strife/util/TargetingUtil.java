@@ -122,16 +122,15 @@ public class TargetingUtil {
     return false;
   }
 
-  public static Set<LivingEntity> getEntitiesInArea(LivingEntity caster, double radius) {
-    Collection<Entity> targetList = Objects.requireNonNull(caster.getLocation().getWorld())
-        .getNearbyEntities(caster.getEyeLocation(), radius, radius, radius);
+  public static Set<LivingEntity> getEntitiesInArea(Location location, double radius) {
+    Collection<Entity> targetList = Objects.requireNonNull(location.getWorld())
+        .getNearbyEntities(location, radius, radius, radius);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity entity : targetList) {
       if (!isInvalidTarget(entity)) {
         validTargets.add((LivingEntity) entity);
       }
     }
-    validTargets.removeIf(e -> !caster.hasLineOfSight(e));
     return validTargets;
   }
 
@@ -220,21 +219,18 @@ public class TargetingUtil {
     stando.setMetadata("STANDO", new FixedMetadataValue(StrifePlugin.getInstance(), ""));
   }
 
-  public static Set<LivingEntity> getTempStandTargetList(Location loc, float groundCheckRange) {
-    Set<LivingEntity> targets = new HashSet<>();
+  public static LivingEntity getTempStand(Location loc, float groundCheckRange) {
     if (groundCheckRange < 1) {
-      targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
-      return targets;
+      return TargetingUtil.buildAndRemoveDetectionStand(loc);
     } else {
       for (int i = 0; i < groundCheckRange; i++) {
         if (loc.getBlock().getType().isSolid()) {
           loc.setY(loc.getBlockY() + 1.3);
-          targets.add(TargetingUtil.buildAndRemoveDetectionStand(loc));
-          return targets;
+          return TargetingUtil.buildAndRemoveDetectionStand(loc);
         }
         loc.add(0, -1, 0);
       }
-      return targets;
+      return null;
     }
   }
 

@@ -7,7 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.metadata.FixedMetadataValue;
 
-public class EvokerFangEffect extends Effect {
+public class EvokerFangEffect extends LocationEffect {
 
   private int quantity;
   private float spread;
@@ -19,10 +19,11 @@ public class EvokerFangEffect extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    spawnAtLocation(caster, target.getEntity().getLocation());
+    applyAtLocation(caster, target.getEntity().getLocation());
   }
 
-  public void spawnAtLocation(StrifeMob caster, Location location) {
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
     for (int i = 0; i < quantity; i++) {
       Location fangLoc = location.clone();
       fangLoc.add(0, 2, 0);

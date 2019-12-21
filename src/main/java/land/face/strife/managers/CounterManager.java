@@ -28,7 +28,6 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CounterData;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.effects.Effect;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -67,9 +66,7 @@ public class CounterManager {
       isCountered = true;
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
-        for (Effect e : data.getEffects()) {
-          plugin.getEffectManager().execute(e, defenderMob, attacker);
-        }
+        plugin.getEffectManager().execute(defenderMob, attacker, data.getEffects());
         data.setTriggered(true);
         break;
       }

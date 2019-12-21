@@ -4,7 +4,7 @@ import land.face.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 
-public class PlaySound extends Effect {
+public class PlaySound extends LocationEffect {
 
   private Sound sound;
   private float volume;
@@ -16,7 +16,8 @@ public class PlaySound extends Effect {
     loc.getWorld().playSound(loc, sound, volume, pitch);
   }
 
-  public void playAtLocation(Location location) {
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
     location.getWorld().playSound(location, sound, volume, pitch);
   }
 

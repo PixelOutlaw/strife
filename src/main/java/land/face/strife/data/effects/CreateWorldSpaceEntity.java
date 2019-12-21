@@ -8,9 +8,10 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
-public class CreateWorldSpaceEntity extends Effect {
+public class CreateWorldSpaceEntity extends LocationEffect {
 
   private final Map<Integer, List<Effect>> cachedEffectSchedule = new HashMap<>();
   private Map<Integer, List<String>> effectSchedule;
@@ -25,7 +26,14 @@ public class CreateWorldSpaceEntity extends Effect {
     cacheEffects();
     StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
         TargetingUtil.getOriginLocation(target.getEntity(), originLocation), lifespan, maxTicks,
-            velocity, cachedEffectSchedule, strictDuration);
+        velocity, cachedEffectSchedule, strictDuration);
+  }
+
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
+    cacheEffects();
+    StrifePlugin.getInstance().getWseManager().createAtTarget(caster, location, lifespan, maxTicks,
+        velocity, cachedEffectSchedule, strictDuration);
   }
 
   public void apply(StrifeMob caster, LivingEntity target) {

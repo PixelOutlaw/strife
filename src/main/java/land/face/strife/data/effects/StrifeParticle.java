@@ -14,7 +14,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public class StrifeParticle extends Effect {
+public class StrifeParticle extends LocationEffect {
 
   private ParticleStyle style = ParticleStyle.NORMAL;
   private Particle particle = Particle.FLAME;
@@ -60,11 +60,8 @@ public class StrifeParticle extends Effect {
     playAtLocation(getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
   }
 
-  public void playAtLocation(LivingEntity livingEntity) {
-    playAtLocation(getLoc(livingEntity), livingEntity.getEyeLocation().getDirection());
-  }
-
-  public void playAtLocation(Location location) {
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
     playAtLocation(location, location.getDirection());
   }
 

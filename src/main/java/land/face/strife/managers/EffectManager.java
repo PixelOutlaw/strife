@@ -77,6 +77,7 @@ import land.face.strife.data.effects.Heal;
 import land.face.strife.data.effects.Ignite;
 import land.face.strife.data.effects.IncreaseRage;
 import land.face.strife.data.effects.Lightning;
+import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.ModifyProjectile;
 import land.face.strife.data.effects.PlaySound;
 import land.face.strife.data.effects.PotionEffectAction;
@@ -106,21 +107,15 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
-import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
@@ -138,35 +133,62 @@ public class EffectManager {
     this.conditions = new HashMap<>();
   }
 
-  public void execute(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
-    applyEffectToTargets(effect, caster, new HashSet<>(targets));
+  public void execute(StrifeMob caster, LivingEntity target, List<Effect> effectList) {
+    Set<LivingEntity> targets = new HashSet<>();
+    targets.add(target);
+    execute(caster, targets, effectList);
+  }
+
+  public void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList) {
+    List<Effect> taskEffects = new ArrayList<>();
+    int waitTicks = 0;
+    for (Effect effect : effectList) {
+      if (effect instanceof Wait) {
+        LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
+        execute(caster, targets, taskEffects, waitTicks);
+        waitTicks += ((Wait) effect).getTickDelay();
+        taskEffects = new ArrayList<>();
+        continue;
+      }
+      taskEffects.add(effect);
+      LogUtil.printDebug("Added effect " + effect.getId() + " to task list");
+    }
+    execute(caster, targets, taskEffects, waitTicks);
+  }
+
+  private void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList,
+      int delay) {
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      LogUtil.printDebug("Effect task started - " + effectList.toString());
+      if (!caster.getEntity().isValid()) {
+        LogUtil.printDebug("- Task cancelled, caster is dead");
+        return;
+      }
+      for (Effect effect : effectList) {
+        LogUtil.printDebug("- Executing effect " + effect.getId());
+        for (LivingEntity target : targets) {
+          plugin.getEffectManager().execute(effect, caster, target);
+        }
+      }
+      LogUtil.printDebug("- Completed effect task.");
+    }, delay);
   }
 
   public void execute(Effect effect, StrifeMob caster, LivingEntity target) {
-    Set<LivingEntity> targets = new HashSet<>();
-    targets.add(target);
-    applyEffectToTargets(effect, caster, targets);
+    applyEffectToTargets(effect, caster, target);
   }
 
-  public void execute(Effect effect, StrifeMob caster, Location location) {
-    Set<LivingEntity> locationTargets = new HashSet<>();
-    locationTargets.add(TargetingUtil.buildAndRemoveDetectionStand(location));
-    applyEffectToTargets(effect, caster, locationTargets);
-  }
-
-  private void applyEffectToTargets(Effect effect, StrifeMob caster, Set<LivingEntity> targets) {
-    Set<LivingEntity> finalTargets = buildValidTargets(effect, caster, targets);
-    for (LivingEntity le : finalTargets) {
-      if (TargetingUtil.isDetectionStand(le)) {
-        if (runPlayAtLocationEffects(caster, effect, le)) {
-          continue;
-        } else if (effect.isForceTargetCaster()) {
-          applyEffectIfConditionsMet(effect, caster, null);
-          continue;
-        }
+  private void applyEffectToTargets(Effect effect, StrifeMob caster, LivingEntity target) {
+    if (effect instanceof LocationEffect) {
+      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
+        ((LocationEffect) effect).applyAtLocation(caster, target.getLocation());
+        return;
       }
-      applyEffectIfConditionsMet(effect, caster, plugin.getStrifeMobManager().getStatMob(le));
+    } else if (effect.isForceTargetCaster()) {
+      applyEffectIfConditionsMet(effect, caster, null);
+      return;
     }
+    applyEffectIfConditionsMet(effect, caster, plugin.getStrifeMobManager().getStatMob(target));
   }
 
   private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {
@@ -178,106 +200,6 @@ public class EffectManager {
     }
     LogUtil.printDebug("-- Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
     effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
-  }
-
-  private Set<LivingEntity> buildValidTargets(Effect effect, StrifeMob caster,
-      Set<LivingEntity> targets) {
-    if (effect instanceof AreaEffect) {
-      return getAreaEffectTargets(targets, caster, (AreaEffect) effect);
-    }
-    if (targets.size() == 1 && targets.iterator().next() instanceof ArmorStand) {
-      return targets;
-    }
-    TargetingUtil.filterFriendlyEntities(targets, caster, effect.isFriendly());
-    return targets;
-  }
-
-  private Set<LivingEntity> getAreaEffectTargets(Set<LivingEntity> targets, StrifeMob caster,
-      AreaEffect effect) {
-    double range = effect.getRange();
-    if (range < 0.1) {
-      if (caster.getEntity() instanceof Mob) {
-        range = caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
-      } else {
-        range = 16;
-      }
-    }
-    Set<LivingEntity> areaTargets = new HashSet<>();
-    for (LivingEntity le : targets) {
-      switch (effect.getAreaType()) {
-        case RADIUS:
-          areaTargets.addAll(TargetingUtil.getEntitiesInArea(le, range));
-          break;
-        case LINE:
-          areaTargets.addAll(TargetingUtil.getEntitiesInLine(le, range));
-          break;
-        case CONE:
-          areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity(), le.getLocation(),
-              caster.getEntity().getLocation().getDirection(), (float) range,
-              effect.getMaxConeRadius()));
-          break;
-        case PARTY:
-          if (caster.getEntity() instanceof Player) {
-            areaTargets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers(
-                (Player) caster.getEntity(), le.getLocation(), range));
-          } else {
-            areaTargets.addAll(TargetingUtil.getEntitiesInArea(le, range));
-          }
-          break;
-        default:
-          return null;
-      }
-    }
-    if (effect.getMaxTargets() > 0) {
-      TargetingUtil.filterFriendlyEntities(areaTargets, caster, effect.isFriendly());
-      int maxTargets = effect.getMaxTargets();
-      if (effect.isScaleTargetsWithMultishot()) {
-        float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.5);
-        maxTargets = ProjectileUtil.getTotalProjectiles(maxTargets, mult);
-      }
-      TargetingUtil.filterByTargetPriority(areaTargets, effect, caster,
-          Math.min(maxTargets, areaTargets.size()));
-    }
-    return areaTargets;
-  }
-
-  /**
-   * @param caster the strifemob casting the effect
-   * @param effect the effect being cast
-   * @param le the entity target of the effect
-   * @return returns true if a effect is a play at location type
-   */
-  private boolean runPlayAtLocationEffects(StrifeMob caster, Effect effect, LivingEntity le) {
-    if (effect.isForceTargetCaster()) {
-      le = caster.getEntity();
-    }
-    if (effect instanceof CreateWorldSpaceEntity) {
-      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((CreateWorldSpaceEntity) effect).apply(caster, le);
-      }
-      return true;
-    } else if (effect instanceof PlaySound) {
-      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((PlaySound) effect).playAtLocation(le.getLocation());
-      }
-      return true;
-    } else if (effect instanceof StrifeParticle) {
-      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((StrifeParticle) effect).playAtLocation(le);
-      }
-      return true;
-    } else if (effect instanceof Summon) {
-      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((Summon) effect).summonAtLocation(caster, le.getLocation());
-      }
-      return true;
-    } else if (effect instanceof EvokerFangEffect) {
-      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((EvokerFangEffect) effect).spawnAtLocation(caster, le.getLocation());
-      }
-      return true;
-    }
-    return false;
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -446,7 +368,9 @@ public class EffectManager {
             .setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
         ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
-        ((AreaEffect) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
+        boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
+        ((AreaEffect) effect).setCanBeBlocked(canBeBlocked);
+        ((AreaEffect) effect).setCanBeCountered(cs.getBoolean("can-be-countered", canBeBlocked));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
         if (((AreaEffect) effect).getAreaType() == AreaType.CONE) {
