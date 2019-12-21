@@ -89,6 +89,7 @@ import land.face.strife.managers.ChampionManager;
 import land.face.strife.managers.ChaserManager;
 import land.face.strife.managers.CombatStatusManager;
 import land.face.strife.managers.CorruptionManager;
+import land.face.strife.managers.CounterManager;
 import land.face.strife.managers.DamageManager;
 import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.EntityEquipmentManager;
@@ -182,6 +183,7 @@ public class StrifePlugin extends FacePlugin {
   private SkillExperienceManager skillExperienceManager;
   private AttackSpeedManager attackSpeedManager;
   private BlockManager blockManager;
+  private CounterManager counterManager;
   private BarrierManager barrierManager;
   private BleedManager bleedManager;
   private CorruptionManager corruptionManager;
@@ -271,6 +273,7 @@ public class StrifePlugin extends FacePlugin {
     commandHandler = new CommandHandler(this);
     attributeManager = new StrifeAttributeManager();
     blockManager = new BlockManager();
+    counterManager = new CounterManager(this);
     bleedManager = new BleedManager(this);
     corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager();
@@ -664,7 +667,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setMount(cs.getString("mount-id", ""));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
-      uniqueEntity.setSize(cs.getInt("size", 0));
+      uniqueEntity.setSize(cs.getInt("size", -1));
       uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
@@ -781,6 +784,10 @@ public class StrifePlugin extends FacePlugin {
 
   public BlockManager getBlockManager() {
     return blockManager;
+  }
+
+  public CounterManager getCounterManager() {
+    return counterManager;
   }
 
   public BarrierManager getBarrierManager() {

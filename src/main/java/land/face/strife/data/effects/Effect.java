@@ -67,6 +67,7 @@ public abstract class Effect {
     DAMAGE,
     WORLD_SPACE_ENTITY,
     CHASER,
+    COUNTER,
     AREA_EFFECT,
     ENDLESS_EFFECT,
     CANCEL_ENDLESS_EFFECT,

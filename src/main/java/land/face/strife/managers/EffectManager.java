@@ -63,6 +63,7 @@ import land.face.strife.data.effects.ConsumeBleed;
 import land.face.strife.data.effects.ConsumeCorrupt;
 import land.face.strife.data.effects.CooldownReduction;
 import land.face.strife.data.effects.Corrupt;
+import land.face.strife.data.effects.Counter;
 import land.face.strife.data.effects.CreateWorldSpaceEntity;
 import land.face.strife.data.effects.DirectDamage;
 import land.face.strife.data.effects.Effect;
@@ -418,6 +419,17 @@ public class EffectManager {
         ((ChaserEffect) effect).setOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ChaserEffect) effect).setLoadedChaser(data);
+        break;
+      case COUNTER:
+        effect = new Counter();
+        ((Counter) effect).setDuration(cs.getInt("duration", 500));
+        List<String> counterEffects = cs.getStringList("effects");
+        Effect finalEffect = effect;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (String s : counterEffects) {
+            ((Counter) finalEffect).getEffects().add(getEffect(s));
+          }
+        }, 5L);
         break;
       case AREA_EFFECT:
         effect = new AreaEffect();

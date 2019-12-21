@@ -39,6 +39,11 @@ public class DirectDamage extends Effect {
       }
     }
     if (canBeBlocked) {
+      if (StrifePlugin.getInstance().getCounterManager()
+          .executeCounters(caster.getEntity(), target.getEntity())) {
+        LogUtil.printDebug(" [Pre-Damage] Direct damage COUNTERED!");
+        return;
+      }
       if (StrifePlugin.getInstance().getBlockManager()
           .isAttackBlocked(caster, target, damageReductionRatio, attackType, false)) {
         LogUtil.printDebug(" [Pre-Damage] Direct damage BLOCKED!");

@@ -85,6 +85,12 @@ public class StrifeDamageListener implements Listener {
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
 
+    if (plugin.getCounterManager().executeCounters(event.getAttacker().getEntity(),
+        event.getDefender().getEntity())) {
+      event.setCancelled(true);
+      return;
+    }
+
     float evasionMultiplier = 1;
     if (event.isCanBeEvaded()) {
       evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, event.getAbilityMods());

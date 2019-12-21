@@ -61,6 +61,10 @@ public class AreaEffect extends Effect {
       }
     }
     if (canBeBlocked) {
+      if (StrifePlugin.getInstance().getCounterManager()
+          .executeCounters(caster.getEntity(), target.getEntity())) {
+        return true;
+      }
       boolean blocked = StrifePlugin.getInstance().getBlockManager()
           .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false);
       if (blocked) {
