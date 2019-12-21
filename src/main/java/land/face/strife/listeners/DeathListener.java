@@ -94,5 +94,6 @@ public class DeathListener implements Listener {
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     plugin.getSpawnerManager().addRespawnTime(event.getEntity());
+    plugin.getCounterManager().clearCounters(event.getEntity().getUniqueId());
   }
 }

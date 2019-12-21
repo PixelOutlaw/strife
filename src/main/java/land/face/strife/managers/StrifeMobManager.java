@@ -56,6 +56,7 @@ public class StrifeMobManager {
         continue;
       }
       trackedEntities.remove(uuid);
+      plugin.getCounterManager().clearCounters(uuid);
     }
     return initialSize - trackedEntities.size();
   }

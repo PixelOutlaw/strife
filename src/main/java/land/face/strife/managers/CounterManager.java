@@ -46,6 +46,10 @@ public class CounterManager {
     pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
   }
 
+  public void clearCounters(UUID uuid) {
+    counterMap.remove(uuid);
+  }
+
   public void addCounter(UUID uuid, CounterData counterData) {
     if (!counterMap.containsKey(uuid)) {
       counterMap.put(uuid, new ConcurrentSet<>());
@@ -64,14 +68,6 @@ public class CounterManager {
         continue;
       }
       isCountered = true;
-      if (!data.isTriggered()) {
-        StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
-        plugin.getEffectManager().execute(defenderMob, attacker, data.getEffects());
-        data.setTriggered(true);
-        break;
-      }
-    }
-    if (isCountered) {
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker,
@@ -79,6 +75,12 @@ public class CounterManager {
       }
       if (defender instanceof Player) {
         MessageUtils.sendActionBar((Player) defender, "&e&lCountered!");
+      }
+      if (!data.isTriggered()) {
+        StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
+        plugin.getEffectManager().execute(defenderMob, attacker, data.getEffects());
+        data.setTriggered(true);
+        break;
       }
     }
     return isCountered;
