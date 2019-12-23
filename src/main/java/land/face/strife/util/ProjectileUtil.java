@@ -2,6 +2,8 @@ package land.face.strife.util;
 
 import java.util.Random;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
@@ -89,8 +91,20 @@ public class ProjectileUtil {
     setProjctileAttackSpeedMeta(skull, attackMult);
   }
 
-  public static void createArrow(LivingEntity shooter, double attackMult, float power,
-      double spread,
+  public static void shootArrow(StrifeMob mob, float attackMult) {
+    float projectileSpeed = 2.5f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
+
+    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.17);
+    projectiles--;
+
+    for (int i = projectiles; i > 0; i--) {
+      ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
+          randomOffset(projectiles), 0.17);
+    }
+  }
+
+  public static void createArrow(LivingEntity shooter, double attackMult, float power, double spread,
       double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
@@ -165,5 +179,9 @@ public class ProjectileUtil {
       default:
         return false;
     }
+  }
+
+  private static double randomOffset(double magnitude) {
+    return 0.11 + magnitude * 0.005;
   }
 }

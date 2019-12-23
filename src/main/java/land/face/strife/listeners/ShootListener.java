@@ -100,16 +100,7 @@ public class ShootListener implements Listener {
       return;
     }
 
-    float projectileSpeed = 2.5f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
-
-    ProjectileUtil.createArrow(mob.getEntity(), attackMultiplier, projectileSpeed, 0, 0.17);
-    projectiles--;
-
-    for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createArrow(mob.getEntity(), attackMultiplier, projectileSpeed,
-          randomOffset(projectiles), 0.17);
-    }
+    ProjectileUtil.shootArrow(mob, attackMultiplier);
     mob.getEntity().getWorld()
         .playSound(mob.getEntity().getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
   }
@@ -142,6 +133,8 @@ public class ShootListener implements Listener {
     if (ItemUtil.isPistol(weapon)) {
       doPistolShot(mob, 1);
     }
+
+    ProjectileUtil.shootArrow(mob, 1.0f);
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -230,10 +223,6 @@ public class ShootListener implements Listener {
     flintlockFlare.apply(null, mob);
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
         Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
-  }
-
-  private double randomOffset(double magnitude) {
-    return 0.11 + magnitude * 0.005;
   }
 
   private StrifeParticle buildFlintlockSmoke() {
