@@ -736,7 +736,7 @@ public class StrifePlugin extends FacePlugin {
         LogUtil.printWarning("Spawner " + spawnerId + " has invalid location");
       }
 
-      Spawner spawner = new Spawner(uniqueEntity, uniqueId, amount, loc,
+      Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueId, amount, loc,
           respawnSeconds, leashRange);
       spawners.put(spawnerId, spawner);
       spawnerManager.setSpawnerMap(spawners);

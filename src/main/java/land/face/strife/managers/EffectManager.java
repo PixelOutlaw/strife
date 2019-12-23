@@ -107,6 +107,7 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -143,6 +144,10 @@ public class EffectManager {
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : effectList) {
+      if (effect == null) {
+        LogUtil.printWarning("Effect is null! Skipping...");
+        continue;
+      }
       if (effect instanceof Wait) {
         LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
         execute(caster, targets, taskEffects, waitTicks);
@@ -179,7 +184,7 @@ public class EffectManager {
   }
 
   private void applyEffectToTargets(Effect effect, StrifeMob caster, LivingEntity target) {
-    if (effect instanceof LocationEffect) {
+    if (effect instanceof LocationEffect && TargetingUtil.isDetectionStand(target)) {
       if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
         ((LocationEffect) effect).applyAtLocation(caster, target.getLocation());
         return;

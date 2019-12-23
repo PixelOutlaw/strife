@@ -118,6 +118,10 @@ public class CombatListener implements Listener {
 
     if (event.getDamager() instanceof Projectile) {
       projectile = (Projectile) event.getDamager();
+      if (defendEntity.getNoDamageTicks() > 0) {
+        event.setCancelled(true);
+        return;
+      }
       if (defendEntity.hasMetadata("NPC")) {
         event.getDamager().remove();
         event.setCancelled(true);

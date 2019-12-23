@@ -10,7 +10,7 @@ public class Spawner {
 
   private Set<LivingEntity> entities = new ConcurrentSet<>();
   private Set<Long> respawnTimes = new ConcurrentSet<>();
-
+  private final String id;
   private final String uniqueId;
   private final UniqueEntity uniqueEntity;
   private int amount;
@@ -20,8 +20,9 @@ public class Spawner {
   private int chunkX;
   private int chunkZ;
 
-  public Spawner(UniqueEntity uniqueEntity, String uniqueId, int amount, Location location,
+  public Spawner(String id, UniqueEntity uniqueEntity, String uniqueId, int amount, Location location,
       int respawnSeconds, double leashRange) {
+    this.id = id;
     this.uniqueId = uniqueId;
     this.uniqueEntity = uniqueEntity;
     this.amount = amount;
@@ -32,6 +33,10 @@ public class Spawner {
     Chunk chunk = location.getChunk();
     this.chunkX = chunk.getX();
     this.chunkZ = chunk.getZ();
+  }
+
+  public String getId() {
+    return id;
   }
 
   public String getUniqueId() {

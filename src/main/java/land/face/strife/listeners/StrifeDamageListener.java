@@ -270,6 +270,7 @@ public class StrifeDamageListener implements Listener {
         critMult, triggeredElements, isBleedApplied, isSneakAttack);
 
     defender.trackDamage(attacker, (float) finalDamage);
+    defender.getEntity().setNoDamageTicks(Math.max(5, defender.getEntity().getNoDamageTicks()));
     event.setFinalDamage(finalDamage);
   }
 
