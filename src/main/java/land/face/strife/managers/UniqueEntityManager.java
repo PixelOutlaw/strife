@@ -25,6 +25,7 @@ import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import me.libraryaddict.disguise.disguisetypes.RabbitType;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -214,6 +215,9 @@ public class UniqueEntityManager {
             case RABBIT:
               RabbitType rabbitType = RabbitType.valueOf(typeData);
               ((RabbitWatcher) watcher).setType(rabbitType);
+              break;
+            case SNOWMAN:
+              ((SnowmanWatcher) watcher).setDerp(Boolean.parseBoolean(typeData));
               break;
           }
         } catch (Exception e) {
