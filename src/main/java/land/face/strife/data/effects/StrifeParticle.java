@@ -41,6 +41,7 @@ public class StrifeParticle extends LocationEffect {
 
   private int tickDuration;
   private boolean strictDuration;
+
   private OriginLocation particleOriginLocation = OriginLocation.CENTER;
   private ItemStack blockData = null;
 
@@ -110,6 +111,10 @@ public class StrifeParticle extends LocationEffect {
 
   public void setSpread(float spread) {
     this.spread = spread;
+  }
+
+  public OriginLocation getParticleOriginLocation() {
+    return particleOriginLocation;
   }
 
   public void setParticleOriginLocation(OriginLocation particleOriginLocation) {

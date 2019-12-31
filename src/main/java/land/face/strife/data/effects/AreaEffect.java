@@ -50,7 +50,6 @@ public class AreaEffect extends LocationEffect {
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
     Set<LivingEntity> targets = getAreaEffectTargets(caster, location);
-    TargetingUtil.filterFriendlyEntities(targets, caster, isFriendly());
     for (LivingEntity le : targets) {
       if (isCancelled(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le))) {
         return;
@@ -99,11 +98,11 @@ public class AreaEffect extends LocationEffect {
         }
         break;
     }
+    TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
     if (isLineOfSight) {
       areaTargets.removeIf(e -> !caster.getEntity().hasLineOfSight(e));
     }
     if (maxTargets > 0) {
-      TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
       int numTargets = maxTargets;
       if (scaleTargetsWithMultishot) {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.5);

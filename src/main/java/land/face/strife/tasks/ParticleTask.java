@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.ContinuousParticle;
 import land.face.strife.data.effects.StrifeParticle;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -49,7 +50,8 @@ public class ParticleTask extends BukkitRunnable {
           continuousParticles.get(le).remove(particle);
           continue;
         }
-        particle.getParticle().applyAtLocation(null, le.getLocation());
+        particle.getParticle().applyAtLocation(null, TargetingUtil
+            .getOriginLocation(le, particle.getParticle().getParticleOriginLocation()));
         particle.setTicksRemaining(particle.getTicksRemaining() - 1);
       }
     }
