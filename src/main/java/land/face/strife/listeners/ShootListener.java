@@ -90,7 +90,7 @@ public class ShootListener implements Listener {
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
 
-    if (attackMultiplier <= 0.05) {
+    if (attackMultiplier < 0.1) {
       event.setCancelled(true);
       return;
     }
@@ -134,7 +134,9 @@ public class ShootListener implements Listener {
       doPistolShot(mob, 1);
     }
 
-    ProjectileUtil.shootArrow(mob, 1.0f);
+    if (event.getEntity() instanceof Arrow) {
+      ProjectileUtil.shootArrow(mob, 1.0f);
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGH)

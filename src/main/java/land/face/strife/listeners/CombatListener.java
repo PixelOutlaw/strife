@@ -39,6 +39,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Shulker;
+import org.bukkit.entity.Slime;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -114,14 +115,12 @@ public class CombatListener implements Listener {
     }
 
     Projectile projectile = null;
+    boolean isProjectile = false;
     String[] extraEffects = null;
 
     if (event.getDamager() instanceof Projectile) {
+      isProjectile = true;
       projectile = (Projectile) event.getDamager();
-      if (defendEntity.getNoDamageTicks() > 0) {
-        event.setCancelled(true);
-        return;
-      }
       if (defendEntity.hasMetadata("NPC")) {
         event.getDamager().remove();
         event.setCancelled(true);
@@ -145,7 +144,7 @@ public class CombatListener implements Listener {
 
     AttackType damageType = DamageUtil.getAttackType(event);
 
-    if (projectile != null && projectile.hasMetadata(ProjectileUtil.ATTACK_SPEED_META)) {
+    if (isProjectile && projectile.hasMetadata(ProjectileUtil.ATTACK_SPEED_META)) {
       attackMultiplier = projectile.getMetadata(ProjectileUtil.ATTACK_SPEED_META).get(0).asFloat();
     }
 
@@ -156,20 +155,21 @@ public class CombatListener implements Listener {
         event.setCancelled(true);
         return;
       }
+      attackMultiplier = (float) Math.pow(attackMultiplier, 1.25);
     } else if (damageType == AttackType.EXPLOSION) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
       healMultiplier = 0.3f;
     }
 
-    if (attackMultiplier < 0.05 && extraEffects == null) {
+    if (attackMultiplier < 0.10 && extraEffects == null) {
       event.setCancelled(true);
       return;
     }
 
-    boolean isSneakAttack = projectile == null ?
-        plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity()) :
-        plugin.getSneakManager().isSneakAttack(projectile, defender.getEntity());
+    boolean isSneakAttack = isProjectile ?
+        plugin.getSneakManager().isSneakAttack(projectile, defender.getEntity())
+        : plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity());
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageType);
     strifeDamageEvent.setSneakAttack(isSneakAttack);
@@ -185,6 +185,11 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
+
+    if (!(attackEntity instanceof Slime)) {
+      Bukkit.getScheduler().runTaskLater(plugin, () -> ((LivingEntity) event.getEntity()).setNoDamageTicks(0), 2L);
+    }
+
     event.setDamage(BASE, strifeDamageEvent.getFinalDamage());
   }
 

@@ -19,19 +19,29 @@
 package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 
-public class CreeperEffectListener implements Listener {
+public class CreeperExplodeListener implements Listener {
 
   private StrifePlugin plugin;
 
-  public CreeperEffectListener(StrifePlugin plugin) {
+  public CreeperExplodeListener(StrifePlugin plugin) {
     this.plugin = plugin;
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void spawnerCreeperExplode(EntityExplodeEvent event) {
+    if (event.getEntity() instanceof Creeper) {
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob((Creeper) event.getEntity());
+      mob.doSpawnerDeath();
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

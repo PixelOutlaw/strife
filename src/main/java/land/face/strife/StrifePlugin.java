@@ -53,7 +53,7 @@ import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.hooks.SnazzyPartiesHook;
 import land.face.strife.listeners.BullionListener;
 import land.face.strife.listeners.CombatListener;
-import land.face.strife.listeners.CreeperEffectListener;
+import land.face.strife.listeners.CreeperExplodeListener;
 import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
@@ -430,7 +430,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new CreeperEffectListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
     Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
@@ -656,6 +656,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setId(entityNameKey);
       uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
+      uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
