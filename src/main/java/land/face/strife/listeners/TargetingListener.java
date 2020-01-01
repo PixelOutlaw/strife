@@ -80,9 +80,13 @@ public class TargetingListener implements Listener {
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void modifyAttackRange(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || !(event.getEntity() instanceof Mob)) {
+    if (!(event.getEntity() instanceof Mob)) {
+      return;
+    }
+    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
+    if (!(attacker instanceof Player)) {
       return;
     }
     Mob victimMob = (Mob) event.getEntity();
@@ -90,9 +94,8 @@ public class TargetingListener implements Listener {
     double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
     victimMob.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
 
-    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
     LivingEntity target = victimMob.getTarget();
-    if (attacker != null && (target == null || !target.isValid())) {
+    if (target == null || !target.isValid()) {
       victimMob.setTarget(attacker);
     }
   }
