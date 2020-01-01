@@ -84,9 +84,12 @@ public class SpawnerManager {
       mob.setDespawnOnUnload(true);
       s.addEntity(mob.getEntity());
       // Random displacement to prevent clumping
-      mob.getEntity().setVelocity(
-          new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize());
-      mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
+      if (s.getUniqueEntity().getDisplaceMultiplier() != 0) {
+        Vector vec = new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize();
+        vec.multiply(s.getUniqueEntity().getDisplaceMultiplier());
+        mob.getEntity().setVelocity(vec);
+        mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
+      }
       spawnerLeashTimers.add(new SpawnerLeashTimer(s, mob.getEntity()));
     }
   }

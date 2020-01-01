@@ -7,6 +7,8 @@ import land.face.strife.util.StatUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
 
 public class Summon extends LocationEffect {
 
@@ -48,6 +50,10 @@ public class Summon extends LocationEffect {
 
     if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
       ((Mob)summon).setTarget(((Mob) caster.getEntity()).getTarget());
+    }
+
+    if (summon instanceof Tameable && caster.getEntity() instanceof Player) {
+      ((Tameable) summon).setOwner((Player) caster.getEntity());
     }
 
     if (soundEffect != null) {

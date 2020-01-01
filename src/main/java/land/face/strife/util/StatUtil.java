@@ -238,12 +238,13 @@ public class StatUtil {
       level = livingEntity.getMetadata("LVL").get(0).asInt();
     } else if (StringUtils.isBlank(livingEntity.getCustomName())) {
       level = 0;
+      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     } else {
       String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
           .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
       level = NumberUtils.toInt(lev.split(" ")[0], 0);
+      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     }
-    livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     return level;
   }
 

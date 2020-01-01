@@ -20,10 +20,12 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -171,7 +173,7 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void onChunkUnload(ChunkUnloadEvent e) {
     for (Entity ent : e.getChunk().getEntities()) {
-      if (!(ent instanceof LivingEntity)) {
+      if (!(ent instanceof LivingEntity) || ent.hasMetadata("NPC")) {
         continue;
       }
       plugin.getStrifeMobManager().doChunkDespawn((LivingEntity) ent);
@@ -194,6 +196,23 @@ public class DataListener implements Listener {
         Math.max(3, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPostTeleportMinions(PlayerTeleportEvent event) {
+    if (event.isCancelled() || event.getPlayer().hasMetadata("NPC")) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (mob.getMinions().isEmpty()) {
+      return;
+    }
+    Chunk chunk = event.getTo().getChunk();
+    if (!chunk.isLoaded()) {
+      chunk.load();
+    }
+    for (StrifeMob minion : mob.getMinions()) {
+      minion.getEntity().teleport(event.getTo());
+    }
+  }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onInvyClose(InventoryCloseEvent event) {

@@ -33,6 +33,7 @@ public class UniqueEntity {
   private boolean ignoreSneak;
   private boolean allowMods;
   private boolean removeFollowMods;
+  private double displaceMultiplier;
   private String mount;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private StrifeParticle strifeParticle;
@@ -167,6 +168,14 @@ public class UniqueEntity {
 
   public void setRemoveFollowMods(boolean removeFollowMods) {
     this.removeFollowMods = removeFollowMods;
+  }
+
+  public double getDisplaceMultiplier() {
+    return displaceMultiplier;
+  }
+
+  public void setDisplaceMultiplier(double displaceMultiplier) {
+    this.displaceMultiplier = displaceMultiplier;
   }
 
   public String getMount() {
