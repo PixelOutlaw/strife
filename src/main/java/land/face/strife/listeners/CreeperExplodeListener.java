@@ -59,7 +59,7 @@ public class CreeperExplodeListener implements Listener {
     if (plugin.getBleedManager().isBleeding(creeper)) {
       float amount = plugin.getBleedManager().getBleedOnEntity(creeper);
       plugin.getBleedManager()
-          .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5);
+          .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5, false);
     }
     if (plugin.getCorruptionManager().isCorrupted((LivingEntity) event.getDamager())) {
       float amount = plugin.getCorruptionManager().getCorruption((LivingEntity) event.getDamager());

@@ -507,7 +507,7 @@ public class DamageUtil {
   }
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
-      float attackMult, Map<AbilityMod, Float> abilityMods) {
+      float attackMult, Map<AbilityMod, Float> abilityMods, boolean bypassBarrier) {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
@@ -522,16 +522,16 @@ public class DamageUtil {
           abilityMods.getOrDefault(AbilityMod.BLEED_DAMAGE, 0f)) / 100;
       damage *= damageMult;
       damage *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
-      applyBleed(defender, damage);
+      applyBleed(defender, damage, bypassBarrier);
     }
     return false;
   }
 
-  public static void applyBleed(StrifeMob defender, float amount) {
+  public static void applyBleed(StrifeMob defender, float amount, boolean bypassBarrier) {
     if (amount < 0.1) {
       return;
     }
-    StrifePlugin.getInstance().getBleedManager().addBleed(defender, amount);
+    StrifePlugin.getInstance().getBleedManager().addBleed(defender, amount, bypassBarrier);
     defender.getEntity().getWorld()
         .playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }

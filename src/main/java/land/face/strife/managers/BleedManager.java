@@ -52,11 +52,11 @@ public class BleedManager {
     return 0;
   }
 
-  public void addBleed(StrifeMob mob, float amount) {
+  public void addBleed(StrifeMob mob, float amount, boolean bypassBarrier) {
     if (!mob.getEntity().isValid()) {
       return;
     }
-    if (plugin.getBarrierManager().isBarrierUp(mob)) {
+    if (!bypassBarrier && plugin.getBarrierManager().isBarrierUp(mob)) {
       return;
     }
     if (bleedMap.containsKey(mob.getEntity().getUniqueId())) {
