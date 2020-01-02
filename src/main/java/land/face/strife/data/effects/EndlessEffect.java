@@ -20,7 +20,7 @@ public class EndlessEffect extends Effect {
   private StrifeStat reducerStat;
   private float reducerValue;
   private int tickRate;
-  private int maxDuration;
+  private float maxDuration;
   private boolean strictDuration;
 
   private final Map<StrifeMob, EndlessEffectTimer> runningEffects = new ConcurrentHashMap<>();
@@ -33,10 +33,10 @@ public class EndlessEffect extends Effect {
       newTickRate = Math.max(1, (int) ((float) tickRate / tickDivisor));
     }
     float newDuration = maxDuration;
-    newDuration = (newDuration * 20) / newTickRate;
     if (!strictDuration) {
-      newDuration = maxDuration * (1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
+      newDuration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
+    newDuration = (newDuration * 20) / newTickRate;
     EndlessEffectTimer timer = new EndlessEffectTimer(this, target, newTickRate, (int) newDuration);
     runningEffects.put(target, timer);
   }
@@ -78,7 +78,7 @@ public class EndlessEffect extends Effect {
     return cancelEffects;
   }
 
-  public void setMaxDuration(int maxDuration) {
+  public void setMaxDuration(float maxDuration) {
     this.maxDuration = maxDuration;
   }
 

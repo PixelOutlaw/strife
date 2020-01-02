@@ -95,6 +95,7 @@ import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.data.effects.Summon;
 import land.face.strife.data.effects.Teleport;
+import land.face.strife.data.effects.UntoggleAbility;
 import land.face.strife.data.effects.Wait;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -389,7 +390,7 @@ public class EffectManager {
       case ENDLESS_EFFECT:
         effect = new EndlessEffect();
         List<String> cancelConditions = cs.getStringList("cancel-conditions");
-        ((EndlessEffect) effect).setMaxDuration(cs.getInt("max-duration-seconds", 30));
+        ((EndlessEffect) effect).setMaxDuration((float) cs.getDouble("max-duration-seconds", 30));
         ((EndlessEffect) effect).setTickRate(cs.getInt("tick-rate", 5));
         ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         String strifeStat = cs.getString("period-reduction-stat", "");
@@ -525,6 +526,7 @@ public class EffectManager {
         ((Bleed) effect).setAmount((float) cs.getDouble("amount", 10));
         ((Bleed) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
+        ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", true));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
         break;
       case CORRUPT:
@@ -567,6 +569,10 @@ public class EffectManager {
         if (StringUtils.isNotBlank(slot)) {
           ((CooldownReduction) effect).setSlot(AbilitySlot.valueOf(slot));
         }
+        break;
+      case UNTOGGLE:
+        effect = new UntoggleAbility();
+        ((UntoggleAbility) effect).setAbilityString(cs.getString("ability-id"));
         break;
       case WAIT:
         effect = new Wait();

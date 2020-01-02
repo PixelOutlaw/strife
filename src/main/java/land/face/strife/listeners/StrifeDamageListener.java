@@ -258,7 +258,7 @@ public class StrifeDamageListener implements Listener {
     boolean isBleedApplied = false;
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
       isBleedApplied = DamageUtil.attemptBleed(attacker, defender,
-          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods());
+          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods(), false);
     }
 
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());

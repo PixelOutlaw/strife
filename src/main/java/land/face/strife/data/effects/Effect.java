@@ -75,6 +75,7 @@ public abstract class Effect {
     HEAL,
     FOOD,
     COOLDOWN_REDUCTION,
+    UNTOGGLE,
     RESTORE_BARRIER,
     INCREASE_RAGE,
     PROJECTILE,

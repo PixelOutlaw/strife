@@ -94,8 +94,18 @@ public class AbilityManager {
     }
   }
 
-  public void createCooldownContainer(LivingEntity le) {
-    coolingDownAbilities.put(le, new ConcurrentSet<>());
+  public void unToggleAbility(StrifeMob mob, String abilityId) {
+    if (!coolingDownAbilities.containsKey(mob.getEntity())) {
+      return;
+    }
+    AbilityCooldownContainer container = getCooldownContainer(mob.getEntity(), abilityId);
+    if (container == null || !container.isToggledOn()) {
+      return;
+    }
+    Ability ability = getAbility(abilityId);
+    Set<LivingEntity> targets = new HashSet<>();
+    targets.add(mob.getEntity());
+    toggleAbility(mob, targets, ability);
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
@@ -219,10 +229,8 @@ public class AbilityManager {
     if (ability.getTargetType() != TargetType.TOGGLE) {
       coolDownAbility(caster.getEntity(), ability);
     } else {
-      boolean isOnAfterToggle = toggleAbility(caster.getEntity(), ability);
+      boolean isOnAfterToggle = toggleAbility(caster, targets, ability);
       if (!isOnAfterToggle) {
-        coolDownAbility(caster.getEntity(), ability);
-        plugin.getEffectManager().execute(caster, targets, ability.getToggleOffEffects());
         return true;
       }
     }
@@ -330,19 +338,31 @@ public class AbilityManager {
     container.setToggledOn(false);
   }
 
-  private boolean toggleAbility(LivingEntity livingEntity, Ability ability) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
-      coolingDownAbilities.put(livingEntity, new ConcurrentSet<>());
+  /*
+  Returns true with the toggle state of the ability afterwards.
+  Illegal state if it isn't a toggle ability at all...
+   */
+  private boolean toggleAbility(StrifeMob caster, Set<LivingEntity> targets, Ability ability) {
+    if (ability.getTargetType() != TargetType.TOGGLE) {
+      throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
-    AbilityCooldownContainer container = getCooldownContainer(livingEntity, ability.getId());
+    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
+      coolingDownAbilities.put(caster.getEntity(), new ConcurrentSet<>());
+    }
+    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
     if (container == null) {
       container = new AbilityCooldownContainer(ability.getId(), 0);
       container.setToggledOn(true);
-      coolingDownAbilities.get(livingEntity).add(container);
-    } else {
-      container.setToggledOn(!container.isToggledOn());
+      coolingDownAbilities.get(caster.getEntity()).add(container);
+      return true;
     }
-    return container.isToggledOn();
+    if (container.isToggledOn()) {
+      coolDownAbility(caster.getEntity(), ability);
+      plugin.getEffectManager().execute(caster, targets, ability.getToggleOffEffects());
+      return false;
+    }
+    container.setToggledOn(true);
+    return true;
   }
 
   private void checkPhaseChange(StrifeMob strifeMob) {
