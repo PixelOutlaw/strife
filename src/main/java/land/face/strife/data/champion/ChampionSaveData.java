@@ -2,6 +2,7 @@ package land.face.strife.data.champion;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class ChampionSaveData {
   private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
   private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
+  private final Map<AbilitySlot, List<String>> castMessages = new HashMap<>();
   private final Set<LoreAbility> boundAbilities = new HashSet<>();
 
   private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_HEALTH_HEARTS;
@@ -34,6 +36,10 @@ public class ChampionSaveData {
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
+  }
+
+  public Map<AbilitySlot, List<String>> getCastMessages() {
+    return castMessages;
   }
 
   public void setAbility(AbilitySlot abilitySlot, Ability ability) {
@@ -142,7 +148,7 @@ public class ChampionSaveData {
   }
 
   public int getSkillLevel(LifeSkillType type) {
-    return skillLevelMap.getOrDefault(type, 0);
+    return skillLevelMap.getOrDefault(type, 1);
   }
 
   public float getSkillExp(LifeSkillType type) {
