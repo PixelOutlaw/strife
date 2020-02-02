@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import java.text.DecimalFormat;
@@ -101,6 +102,9 @@ public class ExperienceManager implements StrifeExperienceManager {
         "&a&lCongratulations! You have reached level &f" + player.getLevel() + "&a!");
     MessageUtils.sendMessage(player,
         "&6You gained a Levelpoint! Use &f/levelup &6to spend levelpoints and raise your stats!");
+    String upperTitle = TextUtils.color("&aLEVEL UP!");
+    String lowerTitle = TextUtils.color("&aYou've reached &fLevel " + player.getLevel());
+    TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
     TitleUtils.sendTitle(player, "&aLEVEL UP!", "&aOh dang, you got stronger!");
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {
@@ -116,7 +120,9 @@ public class ExperienceManager implements StrifeExperienceManager {
         "&a&lCongratulations! You have reached bonus level &f" + bonusLevel + "&e!");
     MessageUtils.sendMessage(player,
         "&eYour stats have slightly increased!");
-    TitleUtils.sendTitle(player, "&eBONUS LEVEL UP!", "&eOh dang, you got stronger!");
+    String upperTitle = TextUtils.color("&eBONUS LEVEL UP!");
+    String lowerTitle = TextUtils.color("&eOh dang, you got stronger!");
+    TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p,

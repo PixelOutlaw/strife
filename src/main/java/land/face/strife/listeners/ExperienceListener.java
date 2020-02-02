@@ -20,9 +20,7 @@ package land.face.strife.listeners;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -155,9 +153,6 @@ public class ExperienceListener implements Listener {
     int points = event.getNewLevel() - event.getOldLevel();
     champion.setHighestReachedLevel(event.getNewLevel());
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
-    String upperTitle = TextUtils.color("&aLEVEL UP!");
-    String lowerTitle = TextUtils.color("&aYou've reached &fLevel " + event.getNewLevel());
-    TitleUtils.sendTitle(event.getPlayer(), upperTitle, lowerTitle, 20, 5, 5);
     plugin.getChampionManager().updateAll(champion);
 
     player.setHealth(player.getMaxHealth());
