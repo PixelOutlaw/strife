@@ -35,14 +35,10 @@ public class FallListener implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
-    if ((event.getEntity()).getFallDistance() < 2) {
-      event.setCancelled(true);
-      return;
-    }
 
     double damage = event.getDamage(DamageModifier.BASE);
     double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
-    damage += maxHealth * (damage / 100);
+    damage += damage * maxHealth * 0.04;
 
     Champion champion = plugin.getChampionManager().getChampion((Player) event.getEntity());
     damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
@@ -57,7 +53,7 @@ public class FallListener implements Listener {
           3 + event.getDamage(DamageModifier.BASE) / 4, false, true);
     }
 
-    if (damage < 1) {
+    if (damage < 2) {
       event.setCancelled(true);
       return;
     }
