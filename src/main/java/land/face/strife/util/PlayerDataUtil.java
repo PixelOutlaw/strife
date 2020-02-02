@@ -1,6 +1,7 @@
 package land.face.strife.util;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -11,12 +12,127 @@ import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionUser;
 import land.face.strife.util.DamageUtil.DamageType;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
+import me.libraryaddict.disguise.disguisetypes.DisguiseType;
+import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
+import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
+import me.libraryaddict.disguise.disguisetypes.MobDisguise;
+import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
+import me.libraryaddict.disguise.disguisetypes.RabbitType;
+import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class PlayerDataUtil {
+
+  public static void restoreHealth(LivingEntity le, double amount) {
+    le.setHealth(Math.min(le.getHealth() + amount,
+        le.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
+  }
+
+  public static void restoreEnergy(LivingEntity le, float amount) {
+    if (le instanceof Player) {
+      StrifePlugin.getInstance().getEnergyManager().changeEnergy((Player) le, amount, false);
+    }
+  }
+
+  public static void restoreHealthOverTime(LivingEntity le, float amount, int ticks) {
+    if (le instanceof Player) {
+      StrifePlugin.getInstance().getRegenTask().addHealing(le.getUniqueId(), amount, ticks);
+    }
+  }
+
+  public static void restoreEnergyOverTime(LivingEntity le, float amount, int ticks) {
+    if (le instanceof Player) {
+      StrifePlugin.getInstance().getRegenTask().addEnergy(le.getUniqueId(), amount, ticks);
+    }
+  }
+
+  public static Disguise parseDisguise(ConfigurationSection section, String name) {
+    if (section == null) {
+      return null;
+    }
+    String disguiseType = section.getString("type", null);
+    if (StringUtils.isBlank(disguiseType)) {
+      return null;
+    }
+    DisguiseType type;
+    try {
+      type = DisguiseType.valueOf(disguiseType);
+    } catch (Exception e) {
+      Bukkit.getLogger().warning("Invalid disguise type " + disguiseType + " for " + name);
+      return null;
+    }
+    if (type == DisguiseType.PLAYER) {
+      String disguisePlayer = section.getString("disguise-player");
+      if (StringUtils.isBlank(disguisePlayer)) {
+        disguisePlayer = "Pur3p0w3r";
+      }
+      PlayerDisguise playerDisguise = new PlayerDisguise(name, disguisePlayer);
+      playerDisguise.setReplaceSounds(true);
+      return playerDisguise;
+    }
+    if (type.isMob()) {
+      String typeData = section.getString("disguise-type-data", "");
+      MobDisguise mobDisguise = new MobDisguise(type);
+      if (StringUtils.isNotBlank(typeData)) {
+        FlagWatcher watcher = mobDisguise.getWatcher();
+        try {
+          switch (type) {
+            case FOX:
+              Fox.Type foxType = Fox.Type.valueOf(typeData);
+              ((FoxWatcher) watcher).setType(foxType);
+              break;
+            case RABBIT:
+              RabbitType rabbitType = RabbitType.valueOf(typeData);
+              ((RabbitWatcher) watcher).setType(rabbitType);
+              break;
+            case SNOWMAN:
+              ((SnowmanWatcher) watcher).setDerp(Boolean.parseBoolean(typeData));
+              break;
+          }
+        } catch (Exception e) {
+          LogUtil.printWarning("Cannot load type " + typeData + " for " + name);
+        }
+      }
+      mobDisguise.setShowName(true);
+      mobDisguise.setReplaceSounds(true);
+      return mobDisguise;
+    }
+    if (type.isMisc()) {
+      MiscDisguise miscDisguise = new MiscDisguise(type);
+      miscDisguise.setShowName(true);
+      miscDisguise.setReplaceSounds(true);
+      FlagWatcher watcher = miscDisguise.getWatcher();
+      try {
+        if (type == DisguiseType.DROPPED_ITEM) {
+          Material material = Material.valueOf(section.getString("material", "STONE"));
+          ItemStack stack = new ItemStack(material);
+          if (material == Material.PLAYER_HEAD) {
+            String base64 = section.getString("base64",
+                "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
+            stack = ItemUtil.withBase64(stack, base64);
+          }
+          ((DroppedItemWatcher) watcher).setItemStack(stack);
+        }
+      } catch (Exception e) {
+        LogUtil.printWarning("Cannot load data for " + name);
+      }
+      return miscDisguise;
+    }
+    return null;
+  }
 
   public static void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
       double critBonus, Set<DamageType> triggeredElements, boolean isBleedApplied,
@@ -138,13 +254,22 @@ public class PlayerDataUtil {
 
   public static double getEffectiveLifeSkill(Player player, LifeSkillType type,
       Boolean updateEquipment) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getEffectiveLifeSkillLevel(type, updateEquipment);
+    return getEffectiveLifeSkill(
+        StrifePlugin.getInstance().getChampionManager().getChampion(player), type, updateEquipment);
+  }
+
+  public static double getEffectiveLifeSkill(Champion champion, LifeSkillType type,
+      Boolean updateEquipment) {
+    return champion.getEffectiveLifeSkillLevel(type, updateEquipment);
   }
 
   public static int getLifeSkillLevel(Player player, LifeSkillType type) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
-        .getLifeSkillLevel(type);
+    return getLifeSkillLevel(StrifePlugin.getInstance().getChampionManager()
+        .getChampion(player), type);
+  }
+
+  public static int getLifeSkillLevel(Champion champion, LifeSkillType type) {
+    return champion.getLifeSkillLevel(type);
   }
 
   public static int getTotalSkillLevel(Player player) {

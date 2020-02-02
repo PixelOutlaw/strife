@@ -39,6 +39,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -80,7 +81,7 @@ public class TargetingListener implements Listener {
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void modifyAttackRange(EntityDamageByEntityEvent event) {
     if (!(event.getEntity() instanceof Mob)) {
       return;
@@ -100,10 +101,17 @@ public class TargetingListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.LOW)
   public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
-        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getReason() == TargetReason.FOLLOW_LEADER && event
+        .getEntity().hasMetadata("WEAK_AGGRO")) {
+      event.setCancelled(true);
+      return;
+    }
+    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
       return;
     }
     if (((Player) event.getTarget()).isSneaking()) {

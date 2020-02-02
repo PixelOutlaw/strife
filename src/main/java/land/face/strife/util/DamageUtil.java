@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
 import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
@@ -421,6 +422,8 @@ public class DamageUtil {
       MessageUtils.sendActionBar((Player) defender, ATTACK_DODGED);
     }
     if (attacker instanceof Player) {
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
+          buildMissIndicator((Player) attacker), "&fMiss");
       MessageUtils.sendActionBar((Player) attacker, ATTACK_MISSED);
     }
   }
@@ -624,6 +627,10 @@ public class DamageUtil {
     StrifePlugin.getInstance().getBarrierManager().restoreBarrier(strifeMob, amount);
   }
 
+  public static void restoreEnergy(StrifeMob strifeMob, float amount, boolean bump) {
+    StrifePlugin.getInstance().getEnergyManager().changeEnergy(strifeMob, amount, bump);
+  }
+
   public static void applyPotionEffect(LivingEntity entity, PotionEffectType type, int power,
       int duration) {
     if (entity == null || !entity.isValid()) {
@@ -707,6 +714,12 @@ public class DamageUtil {
     CASTER_MISSING_BARRIER,
     TARGET_MAX_BARRIER,
     CASTER_MAX_BARRIER,
+    TARGET_CURRENT_ENERGY,
+    CASTER_CURRENT_ENERGY,
+    TARGET_MISSING_ENERGY,
+    CASTER_MISSING_ENERGY,
+    TARGET_MAX_ENERGY,
+    CASTER_MAX_ENERGY,
   }
 
   public enum OriginLocation {

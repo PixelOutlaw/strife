@@ -7,6 +7,9 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
+import me.libraryaddict.disguise.DisguiseAPI;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
@@ -41,6 +44,7 @@ public class ShootProjectile extends Effect {
   private boolean blockHitEffects;
   private boolean silent;
   private float yield;
+  private Disguise disguise = null;
   private List<String> hitEffects;
 
   @Override
@@ -55,8 +59,8 @@ public class ShootProjectile extends Effect {
     }
     double newSpread = spread * projectiles;
     for (int i = 0; i < projectiles; i++) {
-      Vector velocity = ProjectileUtil
-          .getProjectileVelocity(caster.getEntity(), newSpeed, newSpread, verticalBonus);
+      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed,
+          newSpread, verticalBonus, zeroPitch);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
       }
@@ -105,6 +109,10 @@ public class ShootProjectile extends Effect {
         }
         projectile.setMetadata("EFFECT_PROJECTILE",
             new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
+      }
+
+      if (disguise != null) {
+        DisguiseAPI.disguiseToPlayers(projectile, disguise, Bukkit.getOnlinePlayers());
       }
     }
   }
@@ -193,11 +201,11 @@ public class ShootProjectile extends Effect {
     } else {
       direction = caster.getEyeLocation().getDirection();
     }
-    if (zeroPitch) {
-      direction.setY(0);
-      direction.normalize();
-    }
     return direction;
+  }
+
+  public void setDisguise(Disguise disguise) {
+    this.disguise = disguise;
   }
 
   private int getProjectileCount(StrifeMob caster) {

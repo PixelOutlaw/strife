@@ -34,8 +34,8 @@ public class UniqueSplashListener implements Listener {
     if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
       return;
     }
-    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0).asString()
-        .split("~");
+    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0)
+        .asString().split("~");
     if (effects.length == 0) {
       return;
     }

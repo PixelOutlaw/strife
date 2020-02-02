@@ -1,7 +1,7 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.WorldSpaceEffectEntity;
+import land.face.strife.data.WorldSpaceEffect;
 import land.face.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -56,9 +56,9 @@ public class Push extends Effect {
     target.getEntity().setVelocity(newVelocity);
   }
 
-  public void setTempVectorFromWSE(WorldSpaceEffectEntity entity) {
+  public void setTempVectorFromWSE(WorldSpaceEffect entity) {
     if (pushType == PushType.WSE_DIRECTION) {
-      tempVector = entity.getVelocity().normalize();
+      tempVector = entity.getVelocity().clone().normalize();
       return;
     }
     if (pushType == PushType.TEMP_DIRECTION) {

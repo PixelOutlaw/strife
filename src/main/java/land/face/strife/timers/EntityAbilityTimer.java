@@ -14,8 +14,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class EntityAbilityTimer extends BukkitRunnable {
 
-  private StrifePlugin plugin = StrifePlugin.getInstance();
   private final StrifeMob strifeMob;
+  private StrifePlugin plugin = StrifePlugin.getInstance();
 
   public EntityAbilityTimer(StrifeMob strifeMob) {
     this.strifeMob = strifeMob;

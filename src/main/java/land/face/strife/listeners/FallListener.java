@@ -3,6 +3,9 @@ package land.face.strife.listeners;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +16,12 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 
 public class FallListener implements Listener {
+
+  private StrifePlugin plugin;
+
+  public FallListener(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onFallDamage(EntityDamageEvent event) {
@@ -35,16 +44,25 @@ public class FallListener implements Listener {
     double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
     damage += maxHealth * (damage / 100);
 
+    Champion champion = plugin.getChampionManager().getChampion((Player) event.getEntity());
+    damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
+
+    if (((Player) event.getEntity()).hasPotionEffect(DAMAGE_RESISTANCE)) {
+      double level = ((Player) event.getEntity()).getPotionEffect(DAMAGE_RESISTANCE).getAmplifier();
+      damage *= 1 - (0.1 * (level + 1));
+    }
+
+    if (damage < ((Player) event.getEntity()).getHealth()) {
+      plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.AGILITY,
+          3 + event.getDamage(DamageModifier.BASE) / 4, false, true);
+    }
+
     if (damage < 1) {
       event.setCancelled(true);
       return;
     }
-    if (((Player) event.getEntity()).hasPotionEffect(DAMAGE_RESISTANCE)) {
-      double level = ((Player) event.getEntity()).getPotionEffect(DAMAGE_RESISTANCE).getAmplifier();
-      damage *= 1 - (0.1 * (level+1));
-    }
 
     DamageUtil.removeDamageModifiers(event);
-    event.setDamage(Math.max(damage, 0));
+    event.setDamage(DamageModifier.BASE, Math.max(damage, 0));
   }
 }

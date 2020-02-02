@@ -21,17 +21,24 @@ package land.face.strife.managers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.LastAttackTracker;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.StatUtil;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 public class AttackSpeedManager {
 
+  private StrifePlugin plugin;
   private final Map<UUID, LastAttackTracker> lastAttackMap;
 
-  public AttackSpeedManager() {
+  private float attackCost;
+
+  public AttackSpeedManager(StrifePlugin plugin) {
+    this.plugin = plugin;
     this.lastAttackMap = new HashMap<>();
+    attackCost = (float) plugin.getSettings().getDouble("config.mechanics.energy.attack-cost", 5);
   }
 
   public void setAttackTime(UUID uuid, long fullAttackMillis) {
@@ -44,7 +51,8 @@ public class AttackSpeedManager {
   }
 
   public float getAttackMultiplier(StrifeMob attacker, boolean resetTime) {
-    if (!(attacker.getEntity() instanceof Player)) {
+    if (!(attacker.getEntity() instanceof Player)
+        || ((Player) attacker.getEntity()).getGameMode() == GameMode.CREATIVE) {
       return 1f;
     }
     if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
@@ -55,10 +63,14 @@ public class AttackSpeedManager {
     if (resetTime) {
       setAttackTime(attacker.getEntity().getUniqueId(), (long) (1000 * StatUtil.getAttackTime(attacker)));
     }
-    if (millisPassed > fullAttackMillis) {
-      return 1f;
-    }
-    return (float) millisPassed / fullAttackMillis;
+
+    float attackMult = Math.min(1, (float) millisPassed / fullAttackMillis);
+    float energyCost = 0.35f * attackCost + 0.65f * attackMult * attackCost;
+    float energyMult = Math.min(1, plugin.getEnergyManager().getEnergy(attacker) / energyCost);
+
+    plugin.getEnergyManager().changeEnergy((Player) attacker.getEntity(), -energyCost, true);
+
+    return attackMult * energyMult;
   }
 
   private long getFullAttackMillis(UUID uuid) {

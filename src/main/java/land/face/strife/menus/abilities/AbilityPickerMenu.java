@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class AbilityPickerMenu extends ItemMenu {
@@ -36,6 +37,7 @@ public class AbilityPickerMenu extends ItemMenu {
       setItem(index, new AbilityPickerItem(plugin, ability));
       index++;
     }
+    fillEmptySlots(new BlankIcon());
   }
 
   public String getId() {

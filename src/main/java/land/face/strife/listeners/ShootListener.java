@@ -105,7 +105,7 @@ public class ShootListener implements Listener {
         .playSound(mob.getEntity().getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
   }
 
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler
   public void onEntityShoot(ProjectileLaunchEvent event) {
     if (!(event.getEntity().getShooter() instanceof LivingEntity) ||
         (event.getEntity().getShooter() instanceof Player)) {
@@ -115,11 +115,10 @@ public class ShootListener implements Listener {
     StrifeMob mob = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) event.getEntity().getShooter());
 
-    event.setCancelled(true);
-
     if (mob.getAbilitySet() != null
         && mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) != null) {
       plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
+      event.setCancelled(true);
       return;
     }
 
@@ -127,15 +126,19 @@ public class ShootListener implements Listener {
         .getEquipment()).getItemInMainHand();
     if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
       WandListener.shootWand(mob, 1, event);
+      event.setCancelled(true);
       return;
     }
 
     if (ItemUtil.isPistol(weapon)) {
       doPistolShot(mob, 1);
+      event.setCancelled(true);
+      return;
     }
 
     if (event.getEntity() instanceof Arrow) {
       ProjectileUtil.shootArrow(mob, 1.0f);
+      event.setCancelled(true);
     }
   }
 
@@ -246,6 +249,7 @@ public class ShootListener implements Listener {
   private StandardDamage buildStandardDamage() {
     StandardDamage standardDamage = new StandardDamage();
     standardDamage.setAttackMultiplier(1.0f);
+    standardDamage.setHealMultiplier(1.0f);
     standardDamage.setAttackType(AttackType.RANGED);
     standardDamage.setCanBeBlocked(true);
     standardDamage.setCanBeEvaded(true);

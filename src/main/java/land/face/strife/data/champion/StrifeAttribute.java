@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import land.face.strife.stats.StrifeStat;
-import org.bukkit.DyeColor;
 import org.bukkit.Sound;
 
 public class StrifeAttribute {
@@ -30,7 +29,7 @@ public class StrifeAttribute {
   private final String key;
   private String name;
   private List<String> description;
-  private DyeColor dyeColor;
+  private int customData;
   private Sound clickSound;
   private float clickPitch;
   private Sound levelSound;
@@ -107,6 +106,14 @@ public class StrifeAttribute {
     this.description = description;
   }
 
+  public int getCustomData() {
+    return customData;
+  }
+
+  public void setCustomData(int customData) {
+    this.customData = customData;
+  }
+
   public Map<StrifeStat, Float> getAttributeMap() {
     return new HashMap<>(attributeMap);
   }
@@ -139,14 +146,6 @@ public class StrifeAttribute {
     StrifeAttribute that = (StrifeAttribute) o;
 
     return !(key != null ? !key.equals(that.key) : that.key != null);
-  }
-
-  public DyeColor getDyeColor() {
-    return dyeColor;
-  }
-
-  public void setDyeColor(DyeColor dyeColor) {
-    this.dyeColor = dyeColor;
   }
 
   public int getSlot() {

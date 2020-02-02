@@ -20,7 +20,9 @@ package land.face.strife.listeners;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -103,7 +105,7 @@ public class ExperienceListener implements Listener {
     for (Player player : killers) {
       float expMultiplier = (1f / killers.size()) + ((killers.size() - 1) * 0.2f);
       if (levelDiff > 7) {
-        expMultiplier *= Math.pow(0.98, Math.pow(levelDiff - 7 , 2));
+        expMultiplier *= Math.pow(0.98, Math.pow(levelDiff - 7, 2));
       }
       plugin.getExperienceManager().addExperience(player, (droppedXp * expMultiplier), false);
     }
@@ -153,7 +155,13 @@ public class ExperienceListener implements Listener {
     int points = event.getNewLevel() - event.getOldLevel();
     champion.setHighestReachedLevel(event.getNewLevel());
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
+    String upperTitle = TextUtils.color("&aLEVEL UP!");
+    String lowerTitle = TextUtils.color("&aYou've reached &fLevel " + event.getNewLevel());
+    TitleUtils.sendTitle(event.getPlayer(), upperTitle, lowerTitle, 20, 5, 5);
     plugin.getChampionManager().updateAll(champion);
+
+    player.setHealth(player.getMaxHealth());
+    plugin.getEnergyManager().changeEnergy(player, Integer.MAX_VALUE, false);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

@@ -1,7 +1,5 @@
 package land.face.strife.data.effects;
 
-import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -129,15 +127,8 @@ public class AreaEffect extends LocationEffect {
       }
     }
     if (canBeBlocked) {
-      boolean blocked = StrifePlugin.getInstance().getBlockManager()
-          .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false);
-      if (blocked) {
-        if (caster.getEntity() instanceof Player) {
-          StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
-              target.getEntity(), buildMissIndicator((Player) caster.getEntity()), "Blocked");
-        }
-      }
-      return blocked;
+      return StrifePlugin.getInstance().getBlockManager().isAttackBlocked(caster, target,
+          1.0f, AttackType.MAGIC, false);
     }
     return false;
   }

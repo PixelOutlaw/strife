@@ -35,6 +35,7 @@ import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -85,6 +86,11 @@ public class CombatListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
     if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
+      return;
+    }
+    if (plugin.getDamageManager().isHandledDamage(event.getDamager())) {
+      DamageUtil.removeDamageModifiers(event);
+      event.setDamage(BASE, plugin.getDamageManager().getHandledDamage(event.getDamager()));
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
@@ -187,7 +193,14 @@ public class CombatListener implements Listener {
     }
 
     if (!(attackEntity instanceof Slime)) {
-      Bukkit.getScheduler().runTaskLater(plugin, () -> ((LivingEntity) event.getEntity()).setNoDamageTicks(0), 2L);
+      Bukkit.getScheduler()
+          .runTaskLater(plugin, () -> ((LivingEntity) event.getEntity()).setNoDamageTicks(0), 2L);
+    }
+
+    if (attackEntity instanceof Bee) {
+      plugin.getDamageManager().dealDamage(attacker, defender, strifeDamageEvent.getFinalDamage());
+      event.setCancelled(true);
+      return;
     }
 
     event.setDamage(BASE, strifeDamageEvent.getFinalDamage());

@@ -52,12 +52,14 @@ import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.hooks.SnazzyPartiesHook;
 import land.face.strife.listeners.BullionListener;
+import land.face.strife.listeners.ChatListener;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.listeners.CreeperExplodeListener;
 import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DogeListener;
+import land.face.strife.listeners.EndermanListener;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
 import land.face.strife.listeners.ExperienceListener;
@@ -92,6 +94,7 @@ import land.face.strife.managers.CorruptionManager;
 import land.face.strife.managers.CounterManager;
 import land.face.strife.managers.DamageManager;
 import land.face.strife.managers.EffectManager;
+import land.face.strife.managers.EnergyManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
 import land.face.strife.managers.GlobalBoostManager;
@@ -138,7 +141,9 @@ import land.face.strife.tasks.TrackedPruneTask;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -206,12 +211,14 @@ public class StrifePlugin extends FacePlugin {
   private MobModManager mobModManager;
   private GlobalBoostManager globalBoostManager;
   private SoulManager soulManager;
+  private EnergyManager energyManager;
   private WSEManager wseManager;
 
   private DataStorage storage;
 
   private List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
+  private RegenTask regenTask;
 
   private LevelingRate levelingRate;
 
@@ -276,18 +283,19 @@ public class StrifePlugin extends FacePlugin {
     counterManager = new CounterManager(this);
     bleedManager = new BleedManager(this);
     corruptionManager = new CorruptionManager(this);
-    attackSpeedManager = new AttackSpeedManager();
+    attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager();
     equipmentManager = new EntityEquipmentManager();
     globalBoostManager = new GlobalBoostManager();
     soulManager = new SoulManager(this);
+    energyManager = new EnergyManager(this);
     barrierManager = new BarrierManager();
     statUpdateManager = new StatUpdateManager(strifeMobManager);
     rageManager = new RageManager();
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(this);
-    wseManager = new WSEManager(effectManager);
-    spawnerManager = new SpawnerManager(uniqueEntityManager);
+    wseManager = new WSEManager();
+    spawnerManager = new SpawnerManager(this);
     mobModManager = new MobModManager(this);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
@@ -323,7 +331,6 @@ public class StrifePlugin extends FacePlugin {
 
     SaveTask saveTask = new SaveTask(this);
     TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
-    RegenTask regenTask = new RegenTask(this);
     SneakTask sneakTask = new SneakTask(sneakManager);
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BarrierTask barrierTask = new BarrierTask(this);
@@ -337,6 +344,7 @@ public class StrifePlugin extends FacePlugin {
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();
+    regenTask = new RegenTask(this);
 
     commandHandler.registerCommands(new AttributesCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
@@ -437,20 +445,22 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(
         new EvokerFangEffectListener(strifeMobManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new WandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
-    Bukkit.getPluginManager().registerEvents(new MoveListener(), this);
+    Bukkit.getPluginManager().registerEvents(new MoveListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new EntityMagicListener(), this);
+    Bukkit.getPluginManager().registerEvents(new EntityMagicListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new MinionListener(strifeMobManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new FallListener(), this);
+    Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(
@@ -508,10 +518,11 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager.removeAllBars();
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
-    abilityManager.cancelTimerTimers();
     bleedManager.endBleedTasks();
     corruptionManager.endCorruptTasks();
     particleTask.clearParticles();
+
+    Spawner.SPAWNER_OFFSET = 0;
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
@@ -665,6 +676,9 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
       uniqueEntity.setAllowMods(cs.getBoolean("allow-mob-mods", true));
       uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
+      if (uniqueEntity.getType() == EntityType.CREEPER) {
+        uniqueEntity.setPowered(cs.getBoolean("powered", false));
+      }
       uniqueEntity.setShowName(cs.getBoolean("show-name", true));
       uniqueEntity.setMount(cs.getString("mount-id", ""));
       uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
@@ -673,11 +687,10 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
-      String disguise = cs.getString("disguise", null);
-      if (StringUtils.isNotBlank(disguise)) {
-        String disguiseType = cs.getString("disguise-type-data", "");
-        String disguisePlayer = cs.getString("disguise-player");
-        uniqueEntityManager.cacheDisguise(uniqueEntity, disguise, disguisePlayer, disguiseType);
+      Disguise disguise = PlayerDataUtil
+          .parseDisguise(cs.getConfigurationSection("disguise"), uniqueEntity.getName());
+      if (disguise != null) {
+        uniqueEntityManager.cacheDisguise(uniqueEntity, disguise);
       }
 
       ConfigurationSection statCs = cs.getConfigurationSection("stats");
@@ -855,6 +868,10 @@ public class StrifePlugin extends FacePlugin {
     return soulManager;
   }
 
+  public EnergyManager getEnergyManager() {
+    return energyManager;
+  }
+
   public SkillExperienceManager getSkillExperienceManager() {
     return skillExperienceManager;
   }
@@ -929,6 +946,10 @@ public class StrifePlugin extends FacePlugin {
 
   public StatsMenu getStatsMenu() {
     return statsMenu;
+  }
+
+  public RegenTask getRegenTask() {
+    return regenTask;
   }
 
   public LevelingRate getLevelingRate() {

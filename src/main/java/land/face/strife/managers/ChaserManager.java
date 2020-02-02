@@ -45,8 +45,8 @@ public class ChaserManager {
       }
       chaser.setCurrentTick(chaser.getCurrentTick() + 1);
 
-      if (!chaser.getTarget().isValid() || !chaser.getLocation().getWorld()
-          .equals(chaser.getTarget().getWorld())) {
+      if (chaser.getTarget() == null || !chaser.getTarget().isValid() ||
+          !chaser.getLocation().getWorld().equals(chaser.getTarget().getWorld())) {
         chasers.remove(chaser);
         continue;
       }
@@ -112,6 +112,11 @@ public class ChaserManager {
         data.getParticles().add((StrifeParticle) getEffect(s));
       }
     }, 5L);
+    chaserData.put(id, data);
+    return data;
+  }
+
+  public LoadedChaser loadChaser(String id, LoadedChaser data) {
     chaserData.put(id, data);
     return data;
   }

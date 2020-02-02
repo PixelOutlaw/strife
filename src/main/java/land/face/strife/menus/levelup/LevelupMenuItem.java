@@ -19,6 +19,7 @@
 package land.face.strife.menus.levelup;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -26,14 +27,12 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.StrifeAttribute;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Dye;
 
 public class LevelupMenuItem extends MenuItem {
 
@@ -43,7 +42,7 @@ public class LevelupMenuItem extends MenuItem {
   private static final String breakLine = TextUtils.color("&7&m---------------------------");
 
   LevelupMenuItem(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
-    super(TextUtils.color(strifeAttribute.getName()), new Dye().toItemStack());
+    super(TextUtils.color(strifeAttribute.getName()), new ItemStack(Material.MAGMA_CREAM));
     this.plugin = plugin;
     this.attribute = strifeAttribute;
   }
@@ -54,20 +53,26 @@ public class LevelupMenuItem extends MenuItem {
     int currentPoints = champion.getPendingLevel(attribute);
     int statCap = plugin.getAttributeManager().getPendingStatCap(attribute, champion);
 
-    ItemStack itemStack;
+    ItemStack icon = getIcon().clone();
 
-    if (currentPoints != 0) {
-      itemStack = new Dye(attribute.getDyeColor()).toItemStack(Math.min(currentPoints, 64));
-    } else {
-      itemStack = new Dye(DyeColor.GRAY).toItemStack(1);
+    if (attribute.getCustomData() != -1) {
+      if (champion.getAttributeLevel(attribute) == attribute.getMaxCap()) {
+        ItemStackExtensionsKt.setCustomModelData(icon, attribute.getCustomData() + 1);
+        icon.setAmount(attribute.getMaxCap());
+      } else if (currentPoints == 0) {
+        ItemStackExtensionsKt.setCustomModelData(icon, 99);
+      } else {
+        ItemStackExtensionsKt.setCustomModelData(icon, attribute.getCustomData());
+        icon.setAmount(currentPoints);
+      }
     }
-
-    ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
-    itemMeta.setDisplayName(getDisplayName() + " [" + currentPoints + "/" + statCap + "]");
+    ItemMeta itemMeta = icon.getItemMeta();
     if (currentPoints != statCap && champion.getPendingUnusedStatPoints() > 0) {
       itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
       itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
     }
+    icon.setItemMeta(itemMeta);
+
     List<String> lore = new ArrayList<>();
     List<String> reqList = plugin.getAttributeManager()
         .generateRequirementString(attribute, champion, statCap);
@@ -80,16 +85,19 @@ public class LevelupMenuItem extends MenuItem {
       lore.add(TextUtils.color(desc));
     }
     lore.add(breakLine);
-    itemMeta.setLore(lore);
-    itemStack.setItemMeta(itemMeta);
-    return itemStack;
+
+    ItemStackExtensionsKt
+        .setDisplayName(icon, getDisplayName() + " [" + currentPoints + "/" + statCap + "]");
+    ItemStackExtensionsKt.setLore(icon, lore);
+
+    return icon;
   }
 
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    Player player = event.getPlayer();
-    Champion champion = plugin.getChampionManager().getChampion(player);
+    Player p = event.getPlayer();
+    Champion champion = plugin.getChampionManager().getChampion(p);
     if (champion.getPendingUnusedStatPoints() < 1) {
       return;
     }
@@ -97,7 +105,7 @@ public class LevelupMenuItem extends MenuItem {
     if (currentLevel + 1 > plugin.getAttributeManager().getPendingStatCap(attribute, champion)) {
       return;
     }
-    player.playSound(player.getLocation(), attribute.getClickSound(), 1f, attribute.getClickPitch());
+    p.playSound(p.getLocation(), attribute.getClickSound(), 1f, attribute.getClickPitch());
     champion.setPendingLevel(attribute, currentLevel + 1);
     champion.setPendingUnusedStatPoints(champion.getPendingUnusedStatPoints() - 1);
     event.setWillUpdate(true);

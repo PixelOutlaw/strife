@@ -43,7 +43,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
-  private static final String PER_TEN = TextUtils.color("&8/10s");
+  public static final String PER_TEN = ChatColor.GRAY + "/10s";
 
   StatsDefenseMenuItem() {
     super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
@@ -61,11 +61,11 @@ public class StatsDefenseMenuItem extends MenuItem {
     lore.add(breakLine);
     if (pStats.getStat(StrifeStat.BARRIER) > 0) {
       lore.add(addStat("Maximum Barrier: ", pStats.getStat(StrifeStat.BARRIER), INT_FORMAT));
-      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats), "&8/s",
+      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats) * 10, PER_TEN,
           ONE_DECIMAL));
       if (pStats.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(
-            addStat("Barrier Regeneration: ", StatUtil.getBarrierRegen(pStats), PER_TEN, TWO_DECIMAL));
+        lore.add(addStat("Barrier Regeneration: ", StatUtil.getBarrierRegen(pStats), PER_TEN,
+            TWO_DECIMAL));
       }
       lore.add(breakLine);
     }

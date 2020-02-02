@@ -55,9 +55,9 @@ public class WandListener implements Listener {
     if (!(event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK)) {
       return;
     }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
     if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
-      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-      double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
       shootWand(mob, attackMult, event);
     }
     plugin.getStatUpdateManager().updateAttackAttrs(

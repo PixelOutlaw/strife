@@ -8,16 +8,26 @@ import org.bukkit.entity.Player;
 public class GroundedCondition extends Condition {
 
   private boolean inverted;
+  private boolean strict;
 
-  public GroundedCondition(boolean inverted) {
+  public GroundedCondition(boolean inverted, boolean strict) {
     this.inverted = inverted;
+    this.strict = strict;
   }
 
   public boolean isMet(StrifeMob caster, StrifeMob target) {
     if (getCompareTarget() == CompareTarget.SELF) {
-      return isGroundedOrCloseToGround(caster.getEntity()) == !inverted;
+      if (strict) {
+        return caster.getEntity().isOnGround();
+      } else {
+        return isGroundedOrCloseToGround(caster.getEntity()) == !inverted;
+      }
     } else {
-      return isGroundedOrCloseToGround(target.getEntity()) == !inverted;
+      if (strict) {
+        return target.getEntity().isOnGround();
+      } else {
+        return isGroundedOrCloseToGround(target.getEntity()) == !inverted;
+      }
     }
   }
 

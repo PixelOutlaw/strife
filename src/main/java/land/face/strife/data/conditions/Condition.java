@@ -101,6 +101,7 @@ public abstract class Condition {
     LIGHT_LEVEL,
     HEALTH,
     BARRIER,
+    ENERGY,
     POTION_EFFECT,
     TIME,
     LEVEL,

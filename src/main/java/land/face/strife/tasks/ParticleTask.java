@@ -68,7 +68,20 @@ public class ParticleTask extends BukkitRunnable {
     if (!continuousParticles.containsKey(livingEntity)) {
       continuousParticles.put(livingEntity, new ConcurrentSet<>());
     }
+    if (particleUpdate(particle.getId(), ticks, continuousParticles.get(livingEntity))) {
+      return;
+    }
     continuousParticles.get(livingEntity).add(new ContinuousParticle(particle, ticks));
+  }
+
+  private boolean particleUpdate(String id, int ticks, Set<ContinuousParticle> particles) {
+    for (ContinuousParticle particle : particles) {
+      if (particle.getParticle().getId().equals(id)) {
+        particle.setTicksRemaining(Math.max(ticks, particle.getTicksRemaining()));
+        return true;
+      }
+    }
+    return false;
   }
 
   public void addParticle(LivingEntity livingEntity, StrifeParticle particle) {

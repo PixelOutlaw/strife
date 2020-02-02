@@ -81,10 +81,10 @@ public class ExperienceManager implements StrifeExperienceManager {
     }
 
     double newExpPercent = currentExpPercent + amount / maxFaceExp;
-    int currentExp = (int) (newExpPercent * maxFaceExp);
-    String xpMsg = EXP_TEXT.replace("{0}", FORMAT.format(currentExp))
-        .replace("{1}", FORMAT.format(maxFaceExp));
-    MessageUtils.sendActionBar(player, xpMsg);
+    //int currentExp = (int) (newExpPercent * maxFaceExp);
+    //String xpMsg = EXP_TEXT.replace("{0}", FORMAT.format(currentExp))
+    //    .replace("{1}", FORMAT.format(maxFaceExp));
+    //MessageUtils.sendActionBar(player, xpMsg);
 
     player.setExp((float) newExpPercent);
   }

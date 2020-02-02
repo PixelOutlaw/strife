@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
@@ -26,6 +27,11 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
+
+  public static ItemStack withBase64(ItemStack item, String base64) {
+    UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());
+    return Bukkit.getUnsafe().modifyItemStack(item, "{SkullOwner:{Id:\"" + hashAsId + "\",Properties:{textures:[{Value:\"" + base64 + "\"}]}}}");
+  }
 
   public static boolean isArmor(Material material) {
     String name = material.name();

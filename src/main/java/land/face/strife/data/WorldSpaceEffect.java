@@ -6,30 +6,41 @@ import land.face.strife.data.effects.Effect;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-public class WorldSpaceEffectEntity {
+public class WorldSpaceEffect {
 
   private final Map<Integer, List<Effect>> effectSchedule;
   private final int maxTicks;
-  private final Vector velocity;
+  private final float maxDisplacement;
   private final StrifeMob caster;
+  private final float gravity;
+  private final float friction;
+
   private Location location;
-  private int currentTick;
+  private Vector velocity;
   private int lifespan;
 
-  public WorldSpaceEffectEntity(final StrifeMob caster,
-      final Map<Integer, List<Effect>> effectSchedule, Location location, final Vector velocity,
-      final int maxTicks, int lifespan) {
+  private int currentTick = 0;
+
+  public WorldSpaceEffect(final StrifeMob caster, final Map<Integer, List<Effect>> effectSchedule,
+      Location location, final Vector velocity, final float gravity, final float friction,
+      final float maxDisplacement, final int maxTicks, final int lifespan) {
     this.caster = caster;
     this.effectSchedule = effectSchedule;
+    this.maxDisplacement = maxDisplacement;
     this.velocity = velocity;
+    this.gravity = gravity;
+    this.friction = friction;
     this.maxTicks = maxTicks;
     this.lifespan = lifespan;
     this.location = location;
-    this.currentTick = 0;
   }
 
   public Vector getVelocity() {
     return velocity;
+  }
+
+  public void setVelocity(Vector velocity) {
+    this.velocity = velocity;
   }
 
   public Location getLocation() {
@@ -66,5 +77,17 @@ public class WorldSpaceEffectEntity {
 
   public void setLifespan(int lifespan) {
     this.lifespan = lifespan;
+  }
+
+  public float getGravity() {
+    return gravity;
+  }
+
+  public float getFriction() {
+    return friction;
+  }
+
+  public float getMaxDisplacement() {
+    return maxDisplacement;
   }
 }

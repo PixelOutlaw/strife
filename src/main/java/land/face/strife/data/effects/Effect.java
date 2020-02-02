@@ -67,6 +67,7 @@ public abstract class Effect {
     DAMAGE,
     WORLD_SPACE_ENTITY,
     CHASER,
+    CONSOLE_COMMAND,
     COUNTER,
     AREA_EFFECT,
     ENDLESS_EFFECT,
@@ -77,6 +78,7 @@ public abstract class Effect {
     COOLDOWN_REDUCTION,
     UNTOGGLE,
     RESTORE_BARRIER,
+    RESTORE_ENERGY,
     INCREASE_RAGE,
     PROJECTILE,
     EQUIPMENT_SWAP,
@@ -101,6 +103,7 @@ public abstract class Effect {
     MODIFY_PROJECTILE,
     POTION,
     TARGET,
+    FORCE_STAT,
     SUMMON,
     CHARM
   }

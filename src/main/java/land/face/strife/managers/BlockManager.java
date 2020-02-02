@@ -18,6 +18,8 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -33,6 +35,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class BlockManager {
@@ -54,6 +57,10 @@ public class BlockManager {
       bumpRunes(defender);
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
       DamageUtil.doBlock(attacker.getEntity(), defender.getEntity());
+      if (attacker.getEntity() instanceof Player) {
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+            defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "Blocked");
+      }
       return true;
     }
     return false;

@@ -55,7 +55,7 @@ public class StrifeMobManager {
       if (le != null && le.isValid()) {
         continue;
       }
-      trackedEntities.remove(uuid);
+      remove(uuid);
       plugin.getCounterManager().clearCounters(uuid);
     }
     return initialSize - trackedEntities.size();
@@ -71,7 +71,7 @@ public class StrifeMobManager {
   public void despawnAllTempEntities() {
     for (StrifeMob strifeMob : trackedEntities.values()) {
       if (strifeMob.getEntity().isValid() && strifeMob.isDespawnOnUnload()) {
-        strifeMob.getEntity().remove();
+        remove(strifeMob.getEntity().getUniqueId());
       }
     }
   }
@@ -81,7 +81,7 @@ public class StrifeMobManager {
       return;
     }
     if (trackedEntities.get(entity.getUniqueId()).isDespawnOnUnload()) {
-      entity.remove();
+      remove(entity.getUniqueId());
     }
   }
 
@@ -90,16 +90,21 @@ public class StrifeMobManager {
   }
 
   public void removeMob(LivingEntity entity) {
-    trackedEntities.remove(entity.getUniqueId());
+    remove(entity.getUniqueId());
   }
 
   public void removeMob(UUID uuid) {
-    trackedEntities.remove(uuid);
+    remove(uuid);
   }
 
-  public void doSpawnerDeath(UUID uuid) {
-    if (trackedEntities.containsKey(uuid)) {
-      trackedEntities.get(uuid).doSpawnerDeath();
+  public void remove(UUID uuid) {
+    StrifeMob mob = trackedEntities.get(uuid);
+    if (mob != null) {
+      if (mob.getEntity().isValid() && !(mob.getEntity() instanceof Player)) {
+        mob.getEntity().remove();
+      }
+      mob.killAllTasks();
+      trackedEntities.remove(uuid);
     }
   }
 

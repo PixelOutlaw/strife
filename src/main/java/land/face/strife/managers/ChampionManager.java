@@ -75,12 +75,6 @@ public class ChampionManager {
       return championMap.get(uuid);
     }
     ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
-    if (saveData == null) {
-      saveData = new ChampionSaveData(player.getUniqueId());
-      Champion champ = new Champion(player, saveData);
-      championMap.put(uuid, champ);
-      return champ;
-    }
     Champion champion = new Champion(player, saveData);
     championMap.put(uuid, champion);
     return championMap.get(uuid);

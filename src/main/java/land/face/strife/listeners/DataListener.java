@@ -40,6 +40,7 @@ import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -68,6 +69,11 @@ public class DataListener implements Listener {
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getAbilityIconManager().updateAllIconProgress(event.getPlayer()), 1L);
     }
+  }
+
+  @EventHandler
+  public void onFoodChange(final FoodLevelChangeEvent event) {
+    event.setCancelled(true);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

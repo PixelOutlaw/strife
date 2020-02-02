@@ -3,7 +3,6 @@ package land.face.strife.data.effects;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.StatUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -16,6 +15,7 @@ public class Summon extends LocationEffect {
   private String soundEffect;
   private int amount;
   private double lifespanSeconds;
+  private boolean mount;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -38,11 +38,6 @@ public class Summon extends LocationEffect {
     LivingEntity summon = summonedEntity.getEntity();
     summon.setMaxHealth(summon.getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100)));
     summon.setHealth(summon.getMaxHealth());
-    summonedEntity.forceSetStat(StrifeStat.MINION_MULT_INTERNAL,
-        caster.getStat(StrifeStat.MINION_DAMAGE));
-    summonedEntity.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
-    summonedEntity.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(caster));
-    summonedEntity.setDespawnOnUnload(true);
     caster.addMinion(summonedEntity);
 
     StrifePlugin.getInstance().getMinionManager()
@@ -60,6 +55,10 @@ public class Summon extends LocationEffect {
       PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager().getEffect(soundEffect);
       sound.applyAtLocation(caster, summon.getLocation());
     }
+
+    if (mount) {
+      summon.addPassenger(caster.getEntity());
+    }
   }
 
   public void setUniqueEntity(String uniqueEntity) {
@@ -72,6 +71,10 @@ public class Summon extends LocationEffect {
 
   public void setLifespanSeconds(double lifespanSeconds) {
     this.lifespanSeconds = lifespanSeconds;
+  }
+
+  public void setMount(boolean mount) {
+    this.mount = mount;
   }
 
   public void setSoundEffect(String soundEffect) {

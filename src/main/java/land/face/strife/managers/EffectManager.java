@@ -31,6 +31,7 @@ import land.face.strife.data.conditions.Condition.ConditionUser;
 import land.face.strife.data.conditions.CorruptionCondition;
 import land.face.strife.data.conditions.EarthRunesCondition;
 import land.face.strife.data.conditions.EndlessEffectCondition;
+import land.face.strife.data.conditions.EnergyCondition;
 import land.face.strife.data.conditions.EntityTypeCondition;
 import land.face.strife.data.conditions.FactionCondition;
 import land.face.strife.data.conditions.GroundedCondition;
@@ -57,8 +58,10 @@ import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Bleed;
 import land.face.strife.data.effects.BuffEffect;
 import land.face.strife.data.effects.CancelEndlessEffect;
+import land.face.strife.data.effects.ChangeEnergy;
 import land.face.strife.data.effects.Charm;
 import land.face.strife.data.effects.ChaserEffect;
+import land.face.strife.data.effects.ConsoleCommand;
 import land.face.strife.data.effects.ConsumeBleed;
 import land.face.strife.data.effects.ConsumeCorrupt;
 import land.face.strife.data.effects.CooldownReduction;
@@ -72,6 +75,7 @@ import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.data.effects.EquipmentSwap;
 import land.face.strife.data.effects.EvokerFangEffect;
 import land.face.strife.data.effects.Food;
+import land.face.strife.data.effects.ForceStat;
 import land.face.strife.data.effects.ForceTarget;
 import land.face.strife.data.effects.Heal;
 import land.face.strife.data.effects.Ignite;
@@ -244,6 +248,13 @@ public class EffectManager {
         ((RestoreBarrier) effect)
             .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
+      case RESTORE_ENERGY:
+        effect = new ChangeEnergy();
+        ((ChangeEnergy) effect).setAmount((float) cs.getDouble("amount", 1));
+        ((ChangeEnergy) effect).setBump(cs.getBoolean("bump", false));
+        ((ChangeEnergy) effect)
+            .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        break;
       case INCREASE_RAGE:
         effect = new IncreaseRage();
         ((IncreaseRage) effect).setAmount((float) cs.getDouble("amount", 1));
@@ -337,9 +348,14 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
         ((CreateWorldSpaceEntity) effect)
+            .setMaxDisplacement((float) cs.getDouble("max-displacement", 0));
+        ((CreateWorldSpaceEntity) effect)
             .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
+        ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
+        ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+        ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
         break;
       case CHASER:
         effect = new ChaserEffect();
@@ -347,6 +363,14 @@ public class EffectManager {
         ((ChaserEffect) effect).setOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ChaserEffect) effect).setLoadedChaser(data);
+        break;
+      case CONSOLE_COMMAND:
+        effect = new ConsoleCommand();
+        String cmd = cs.getString("command", "/broadcast REEE");
+        if (!cmd.startsWith("/")) {
+          cmd = "/" + cmd;
+        }
+        ((ConsoleCommand) effect).setCommand(cmd);
         break;
       case COUNTER:
         effect = new Counter();
@@ -461,6 +485,8 @@ public class EffectManager {
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
+        ((ShootProjectile) effect)
+            .setDisguise(PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"), key));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
         int color = cs.getInt("arrow-rgb-color", -1);
@@ -597,6 +623,7 @@ public class EffectManager {
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
         ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
         ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
+        ((Summon) effect).setMount(cs.getBoolean("mount", false));
         break;
       case CHARM:
         effect = new Charm();
@@ -610,6 +637,11 @@ public class EffectManager {
         effect = new ForceTarget();
         ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite", true));
         ((ForceTarget) effect).setCasterTargetsTarget(cs.getBoolean("caster-targets-target", true));
+        break;
+      case FORCE_STAT:
+        effect = new ForceStat();
+        ((ForceStat) effect)
+            .setStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("stats")));
         break;
       case LIGHTNING:
         effect = new Lightning();
@@ -751,9 +783,17 @@ public class EffectManager {
         }
         condition = new AttributeCondition(attribute);
         break;
+      case HEALTH:
+        boolean percent3 = cs.getBoolean("percentage", false);
+        condition = new HealthCondition(percent3);
+        break;
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);
         condition = new BarrierCondition(percent);
+        break;
+      case ENERGY:
+        boolean percent2 = cs.getBoolean("percentage", false);
+        condition = new EnergyCondition(percent2);
         break;
       case BUFF:
         int stacks = cs.getInt("stacks", 1);
@@ -781,10 +821,6 @@ public class EffectManager {
         break;
       case LIGHT_LEVEL:
         condition = new LightCondition();
-        break;
-      case HEALTH:
-        boolean percent2 = cs.getBoolean("percentage", false);
-        condition = new HealthCondition(percent2);
         break;
       case POTION_EFFECT:
         PotionEffectType potionEffectType;
@@ -858,7 +894,9 @@ public class EffectManager {
         condition = new BlockingCondition(cs.getBoolean("state", true));
         break;
       case GROUNDED:
-        condition = new GroundedCondition(cs.getBoolean("inverted", false));
+        condition = new GroundedCondition(
+            cs.getBoolean("inverted", false),
+            cs.getBoolean("strict", false));
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");

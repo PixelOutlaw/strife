@@ -33,6 +33,7 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.LogUtil;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -112,6 +113,19 @@ public class FlatfileStorage implements DataStorage {
     }
     config.set(champUuid + ".lore-abilities", boundAbilityIds);
 
+    if (champion.getCastMessages().get(AbilitySlot.SLOT_A) != null) {
+      config.set(champUuid + ".slot-messages.SLOT_A",
+          champion.getCastMessages().get(AbilitySlot.SLOT_A));
+    }
+    if (champion.getCastMessages().get(AbilitySlot.SLOT_B) != null) {
+      config.set(champUuid + ".slot-messages.SLOT_B",
+          champion.getCastMessages().get(AbilitySlot.SLOT_B));
+    }
+    if (champion.getCastMessages().get(AbilitySlot.SLOT_C) != null) {
+      config.set(champUuid + ".slot-messages.SLOT_C",
+          champion.getCastMessages().get(AbilitySlot.SLOT_C));
+    }
+
     configMap.put(champion.getUniqueId(), config);
     config.save();
   }
@@ -164,6 +178,13 @@ public class FlatfileStorage implements DataStorage {
           continue;
         }
         saveData.getBoundAbilities().add(loreAbility);
+      }
+
+      if (section.isConfigurationSection("slot-messages")) {
+        ConfigurationSection msg = section.getConfigurationSection("slot-messages");
+        saveData.getCastMessages().put(AbilitySlot.SLOT_A, msg.getStringList("SLOT_A"));
+        saveData.getCastMessages().put(AbilitySlot.SLOT_B, msg.getStringList("SLOT_B"));
+        saveData.getCastMessages().put(AbilitySlot.SLOT_C, msg.getStringList("SLOT_C"));
       }
 
       if (section.isConfigurationSection("stats")) {

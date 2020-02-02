@@ -123,9 +123,17 @@ public class ProjectileUtil {
     }
   }
 
+  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
+    return getProjectileVelocity(shooter, speed, spread, verticalBonus, false);
+  }
+
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
-      double verticalBonus) {
+      double verticalBonus, boolean zeroPitch) {
     Vector vector = shooter.getEyeLocation().getDirection();
+    if (zeroPitch) {
+      vector.setY(0);
+      vector.normalize();
+    }
     vector.multiply(speed);
     if (spread == 0) {
       return vector.add(new Vector(0, verticalBonus, 0));

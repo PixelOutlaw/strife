@@ -101,10 +101,6 @@ public class StrifeDamageListener implements Listener {
         DamageUtil.doEvasion(attacker.getEntity(), defender.getEntity());
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
-        if (attacker.getEntity() instanceof Player) {
-          plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-              buildMissIndicator((Player) attacker.getEntity()), "&fMiss");
-        }
         return;
       }
     }
@@ -119,10 +115,6 @@ public class StrifeDamageListener implements Listener {
         }
         removeIfExisting(event.getProjectile());
         event.setCancelled(true);
-        if (attacker.getEntity() instanceof Player) {
-          plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-              buildMissIndicator((Player) attacker.getEntity()), "Blocked");
-        }
         DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
         return;
       }

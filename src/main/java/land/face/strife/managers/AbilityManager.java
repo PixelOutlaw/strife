@@ -22,6 +22,7 @@ import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.Phase;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
@@ -34,6 +35,7 @@ import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -49,12 +51,12 @@ public class AbilityManager {
   private Map<String, Ability> loadedAbilities = new HashMap<>();
   private Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
-  private Set<EntityAbilityTimer> abilityTimers = new HashSet<>();
 
   private final Random random = new Random();
 
-  private static final String ON_COOLDOWN = TextUtils.color("&e&lAbility On Cooldown!");
-  private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
+  private static final String ON_COOLDOWN = TextUtils.color("&6&lAbility On Cooldown!");
+  private static final String NO_ENERGY = TextUtils.color("&e&lNot enough energy!");
+  private static final String NO_TARGET = TextUtils.color("&7&lNo Target Found!");
   private static final String NO_REQUIRE = TextUtils.color("&c&lAbility Requirements Not Met!");
 
   public AbilityManager(StrifePlugin plugin) {
@@ -193,6 +195,16 @@ public class AbilityManager {
     savedPlayerCooldowns.remove(player.getUniqueId());
   }
 
+  private boolean hasEnergy(StrifeMob caster, Ability ability) {
+    if (caster.getEntity() instanceof Player) {
+      if (((Player) caster.getEntity()).getGameMode() == GameMode.CREATIVE) {
+        return true;
+      }
+      return plugin.getEnergyManager().getEnergy(caster) >= ability.getCost();
+    }
+    return true;
+  }
+
   private boolean canBeCast(LivingEntity entity, Ability ability) {
     if (entity == null || !entity.isValid()) {
       return false;
@@ -212,6 +224,10 @@ public class AbilityManager {
       boolean ignoreReqs) {
     if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
       doOnCooldownPrompt(caster, ability);
+      return false;
+    }
+    if (!ignoreReqs && !hasEnergy(caster, ability)) {
+      doNoEnergyPrompt(caster, ability);
       return false;
     }
     if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
@@ -237,8 +253,30 @@ public class AbilityManager {
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
     }
+    if (caster.getEntity() instanceof Player
+        && ((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
+      plugin.getEnergyManager().changeEnergy(caster, -ability.getCost(), true);
+    }
     plugin.getEffectManager().execute(caster, targets, ability.getEffects());
+    playChatMessages(caster, ability);
     return true;
+  }
+
+  private void playChatMessages(StrifeMob caster, Ability ability) {
+    if (caster.getChampion() == null || ability.getAbilityIconData() == null) {
+      return;
+    }
+    ChampionSaveData data = caster.getChampion().getSaveData();
+    if (data.getCastMessages() == null || data.getCastMessages().isEmpty()) {
+      return;
+    }
+    AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
+    List<String> messages = data.getCastMessages().get(slot);
+    if (messages.isEmpty()) {
+      return;
+    }
+    ((Player) caster.getEntity())
+        .chat("==ability==" + messages.get(random.nextInt(messages.size())));
   }
 
   public void startAbilityTimerTask(StrifeMob mob) {
@@ -251,17 +289,10 @@ public class AbilityManager {
     }
     for (Phase phase : abilitySet.getAbilities(TriggerAbilityType.TIMER).keySet()) {
       if (!abilitySet.getAbilities(TriggerAbilityType.TIMER).get(phase).isEmpty()) {
-        abilityTimers.add(new EntityAbilityTimer(mob));
+        mob.setAbilityTimer(new EntityAbilityTimer(mob));
         return;
       }
     }
-  }
-
-  public void cancelTimerTimers() {
-    for (EntityAbilityTimer timer : abilityTimers) {
-      timer.cancel();
-    }
-    abilityTimers.clear();
   }
 
   public boolean abilityCast(StrifeMob caster, TriggerAbilityType type) {
@@ -478,6 +509,16 @@ public class AbilityManager {
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
 
+  private void doNoEnergyPrompt(StrifeMob caster, Ability ability) {
+    LogUtil.printDebug("Failed. Not enough energy to cast Ability " + ability.getId());
+    if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
+      return;
+    }
+    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_ENERGY);
+    ((Player) caster.getEntity())
+        .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.2f, 1.3f);
+  }
+
   public void loadAbility(String key, ConfigurationSection cs) {
     String name = TextUtils.color(cs.getString("name", "ABILITY NOT NAMED"));
     TargetType targetType;
@@ -509,6 +550,7 @@ public class AbilityManager {
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);
+    float cost = (float) cs.getDouble("cost", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
     boolean requireTarget = cs.getBoolean("require-target", false);
     List<String> conditionStrings = cs.getStringList("conditions");
@@ -524,8 +566,8 @@ public class AbilityManager {
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
     loadedAbilities.put(key, new Ability(key, name, effects, toggleOffEffects, targetType, range,
-        cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget, raycastsHitEntities,
-        conditions, friendly, abilityIconData));
+        cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
+        raycastsHitEntities, conditions, friendly, abilityIconData));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

@@ -16,39 +16,38 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.menus.levelup;
+package land.face.strife.menus;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import java.util.List;
-import land.face.strife.StrifePlugin;
-import land.face.strife.data.champion.StrifeAttribute;
-import land.face.strife.menus.BlankIcon;
-import ninja.amp.ampmenus.menus.ItemMenu;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
-public class LevelupMenu extends ItemMenu {
+public class BlankIcon extends MenuItem {
 
-  public LevelupMenu(StrifePlugin plugin, List<StrifeAttribute> attributes) {
-    super(TextUtils.color("&0&lLevel Up!"),
-        Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9),
-        plugin);
+  private static ItemStack stack = buildStack();
 
-    for (StrifeAttribute attribute : attributes) {
-      int slot = attribute.getSlot();
-      setItem(slot, new LevelupMenuItem(plugin, attribute));
-    }
-
-    int slot = plugin.getSettings().getInt("config.menu.unused-slot");
-    setItem(slot, new LevelupPointsMenuItem(plugin));
-    fillEmptySlots(new BlankIcon());
+  public BlankIcon() {
+    super(" ", stack);
   }
 
-}
+  @Override
+  public ItemStack getFinalIcon(Player player) {
+    return stack;
+  }
 
-/*
-00 01 02 03 04 05 06 07 08
-09 10 11 12 13 14 15 16 17
-18 19 20 21 22 23 24 25 26
-27 28 29 30 31 32 33 34 35
-36 37 38 39 40 41 42 43 44
-45 46 47 48 49 50 51 52 53
-*/
+  @Override
+  public void onItemClick(ItemClickEvent event) {
+    super.onItemClick(event);
+    event.setWillUpdate(false);
+  }
+
+  private static ItemStack buildStack() {
+    stack = new ItemStack(Material.IRON_BARS);
+    ItemStackExtensionsKt.setCustomModelData(stack, 99);
+    ItemStackExtensionsKt.setDisplayName(stack, " ");
+    return stack;
+  }
+}

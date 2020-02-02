@@ -121,6 +121,9 @@ public class LoreAbilityListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onStrifeDamage(StrifeDamageEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
     StrifeMob attacker = event.getAttacker();
     if (attacker == null) {
       return;

@@ -66,6 +66,9 @@ public class DOTListener implements Listener {
       case MAGIC:
         return;
       case STARVATION:
+        // No longer needed with ENERGY
+        event.setCancelled(true);
+        return;
       case SUFFOCATION:
       case DROWNING:
         DamageUtil.removeDamageModifiers(event);
