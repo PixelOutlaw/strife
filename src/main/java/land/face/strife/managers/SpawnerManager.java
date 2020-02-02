@@ -1,25 +1,23 @@
 package land.face.strife.managers;
 
-import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.timers.SpawnerLeashTimer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
 
 public class SpawnerManager {
 
-  private final UniqueEntityManager uniqueManager;
-  private final Map<String, Spawner> spawnerMap;
-  private final Set<SpawnerLeashTimer> spawnerLeashTimers;
+  private StrifePlugin plugin;
 
-  public SpawnerManager(UniqueEntityManager uniqueManager) {
-    this.uniqueManager = uniqueManager;
+  private final Map<String, Spawner> spawnerMap;
+
+  public SpawnerManager(StrifePlugin plugin) {
+    this.plugin = plugin;
     spawnerMap = new HashMap<>();
-    spawnerLeashTimers = new ConcurrentSet<>();
   }
 
   public Map<String, Spawner> getSpawnerMap() {
@@ -39,18 +37,9 @@ public class SpawnerManager {
     this.spawnerMap.remove(id);
   }
 
-  public void removeLeashTimer(SpawnerLeashTimer timer) {
-    spawnerLeashTimers.remove(timer);
-  }
-
   public void addRespawnTime(LivingEntity livingEntity) {
-    for (SpawnerLeashTimer s : spawnerLeashTimers) {
-      if (s.getEntity() == livingEntity) {
-        Spawner spawner = s.getSpawner();
-        spawner.getRespawnTimes().add(System.currentTimeMillis() + spawner.getRespawnMillis());
-        spawner.getEntities().remove(livingEntity);
-        s.cancelAndClear();
-      }
+    for (Spawner spawner : spawnerMap.values()) {
+      spawner.addRespawnTimeIfApplicable(livingEntity);
     }
   }
 
@@ -76,13 +65,17 @@ public class SpawnerManager {
       if (!isChuckLoaded(s)) {
         continue;
       }
-      StrifeMob mob = uniqueManager.spawnUnique(s.getUniqueEntity(), s.getLocation());
+
+      StrifeMob mob = plugin.getUniqueEntityManager()
+          .spawnUnique(s.getUniqueEntity(), s.getLocation());
       if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+        Bukkit.getLogger().warning("Spawner failed to spawn unique! " + s.getId());
         continue;
       }
-      mob.setSpawner(s);
+
       mob.setDespawnOnUnload(true);
       s.addEntity(mob.getEntity());
+
       // Random displacement to prevent clumping
       if (s.getUniqueEntity().getDisplaceMultiplier() != 0) {
         Vector vec = new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize();
@@ -90,17 +83,16 @@ public class SpawnerManager {
         mob.getEntity().setVelocity(vec);
         mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
       }
-      spawnerLeashTimers.add(new SpawnerLeashTimer(s, mob.getEntity()));
     }
   }
 
   public void cancelAll() {
-    for (SpawnerLeashTimer timer : spawnerLeashTimers) {
-      timer.cancel();
+    for (Spawner spawner : spawnerMap.values()) {
+      spawner.cancel();
     }
   }
 
   private boolean isChuckLoaded(Spawner spawner) {
-    return spawner.getLocation().getWorld().isChunkInUse(spawner.getChunkX(), spawner.getChunkZ());
+    return spawner.getLocation().getWorld().isChunkLoaded(spawner.getChunkX(), spawner.getChunkZ());
   }
 }

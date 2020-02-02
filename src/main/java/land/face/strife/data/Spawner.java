@@ -2,11 +2,16 @@ package land.face.strife.data;
 
 import io.netty.util.internal.ConcurrentSet;
 import java.util.Set;
-import org.bukkit.Chunk;
+import land.face.strife.StrifePlugin;
+import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.scheduler.BukkitRunnable;
 
-public class Spawner {
+public class Spawner extends BukkitRunnable {
+
+  public static int SPAWNER_OFFSET = 0;
 
   private Set<LivingEntity> entities = new ConcurrentSet<>();
   private Set<Long> respawnTimes = new ConcurrentSet<>();
@@ -20,8 +25,8 @@ public class Spawner {
   private int chunkX;
   private int chunkZ;
 
-  public Spawner(String id, UniqueEntity uniqueEntity, String uniqueId, int amount, Location location,
-      int respawnSeconds, double leashRange) {
+  public Spawner(String id, UniqueEntity uniqueEntity, String uniqueId, int amount,
+      Location location, int respawnSeconds, double leashRange) {
     this.id = id;
     this.uniqueId = uniqueId;
     this.uniqueEntity = uniqueEntity;
@@ -29,10 +34,45 @@ public class Spawner {
     this.location = location;
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
+    this.chunkX = location.getChunk().getX();
+    this.chunkZ = location.getChunk().getZ();
 
-    Chunk chunk = location.getChunk();
-    this.chunkX = chunk.getX();
-    this.chunkZ = chunk.getZ();
+    runTaskTimer(StrifePlugin.getInstance(), SPAWNER_OFFSET, 20L);
+    SPAWNER_OFFSET++;
+    LogUtil.printDebug("Created Spawner with taskId " + getTaskId());
+  }
+
+  @Override
+  public void run() {
+    for (LivingEntity le : entities) {
+      if (le == null || !le.isValid()) {
+        entities.remove(le);
+        return;
+      }
+      double xDist = Math.abs(location.getX() - le.getLocation().getX());
+      double zDist = Math.abs(location.getZ() - le.getLocation().getZ());
+      if (Math.abs(xDist) + Math.abs(zDist) > leashRange) {
+        despawnParticles(le);
+        addRespawnTimeIfApplicable(le);
+        le.remove();
+        LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
+      }
+    }
+  }
+
+  public void addRespawnTimeIfApplicable(LivingEntity livingEntity) {
+    if (entities.contains(livingEntity)) {
+      entities.remove(livingEntity);
+      respawnTimes.add(System.currentTimeMillis() + getRespawnMillis());
+    }
+  }
+
+  private static void despawnParticles(LivingEntity livingEntity) {
+    double height = livingEntity.getHeight() / 2;
+    double width = livingEntity.getWidth() / 2;
+    Location loc = livingEntity.getLocation().clone().add(0, height, 0);
+    livingEntity.getWorld().spawnParticle(Particle.CLOUD, loc, (int) (20 * (height + width)), width,
+        height, width, 0);
   }
 
   public String getId() {
@@ -61,9 +101,8 @@ public class Spawner {
 
   public void setLocation(Location location) {
     this.location = location;
-    Chunk chunk = location.getChunk();
-    this.chunkX = chunk.getX();
-    this.chunkZ = chunk.getZ();
+    this.chunkX = location.getChunk().getX();
+    this.chunkZ = location.getChunk().getZ();
   }
 
   public double getLeashRange() {
@@ -100,13 +139,5 @@ public class Spawner {
 
   public int getChunkZ() {
     return chunkZ;
-  }
-
-  public void doDeath(LivingEntity livingEntity) {
-    if (livingEntity != null && livingEntity.isValid()) {
-      entities.remove(livingEntity);
-      livingEntity.remove();
-    }
-    respawnTimes.add(System.currentTimeMillis() + respawnSeconds * 1000);
   }
 }

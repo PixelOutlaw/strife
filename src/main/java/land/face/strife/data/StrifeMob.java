@@ -13,7 +13,9 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -37,11 +39,13 @@ public class StrifeMob {
   private boolean charmImmune = false;
 
   private LivingEntity master = null;
-  private Spawner spawner;
+
   private final Set<StrifeMob> minions = new ConcurrentSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
+
+  private EntityAbilityTimer abilityTimer;
 
   private long buffCacheStamp = System.currentTimeMillis();
 
@@ -53,6 +57,12 @@ public class StrifeMob {
   public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = livingEntity;
     this.champion = null;
+  }
+
+  public void killAllTasks() {
+    if (abilityTimer != null) {
+      abilityTimer.cancel();
+    }
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -224,6 +234,10 @@ public class StrifeMob {
 
   public void addMinion(StrifeMob strifeMob) {
     minions.add(strifeMob);
+    strifeMob.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
+    strifeMob.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
+    strifeMob.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
+    strifeMob.setDespawnOnUnload(true);
     strifeMob.setMaster(livingEntity);
   }
 
@@ -251,15 +265,8 @@ public class StrifeMob {
     this.charmImmune = charmImmune;
   }
 
-  public void setSpawner(Spawner spawner) {
-    this.spawner = spawner;
-  }
-
-  public void doSpawnerDeath() {
-    if (spawner == null) {
-      return;
-    }
-    spawner.doDeath(livingEntity);
+  public void setAbilityTimer(EntityAbilityTimer abilityTimer) {
+    this.abilityTimer = abilityTimer;
   }
 
   private Map<StrifeStat, Float> getBuffStats() {

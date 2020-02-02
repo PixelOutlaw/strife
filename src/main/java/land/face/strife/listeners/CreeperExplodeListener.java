@@ -19,7 +19,6 @@
 package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.StrifeMob;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -38,9 +37,11 @@ public class CreeperExplodeListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void spawnerCreeperExplode(EntityExplodeEvent event) {
-    if (event.getEntity() instanceof Creeper) {
-      StrifeMob mob = plugin.getStrifeMobManager().getStatMob((Creeper) event.getEntity());
-      mob.doSpawnerDeath();
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getEntity() instanceof LivingEntity) {
+      plugin.getSpawnerManager().addRespawnTime((LivingEntity) event.getEntity());
     }
   }
 
