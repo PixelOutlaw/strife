@@ -19,7 +19,6 @@
 package land.face.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -37,12 +36,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsChangeHealthDisplay extends MenuItem {
 
   private final StrifePlugin plugin;
-  private int position;
 
-  StatsChangeHealthDisplay(StrifePlugin plugin, int position) {
+  StatsChangeHealthDisplay(StrifePlugin plugin) {
     super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
     this.plugin = plugin;
-    this.position = position;
   }
 
   @Override
@@ -52,8 +49,12 @@ public class StatsChangeHealthDisplay extends MenuItem {
     itemMeta.setDisplayName(getDisplayName());
     List<String> lore = new ArrayList<>();
 
+    Champion champion = plugin.getChampionManager().getChampion(player);
+
     lore.add(TextUtils.color("&7Click this icon to change how your"));
     lore.add(TextUtils.color("&7hearts are displayed!"));
+    lore.add(TextUtils.color("&fSetting: " + WordUtils.capitalizeFully(
+        champion.getSaveData().getHealthDisplayType().toString().replaceAll("_", " "))));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
@@ -70,12 +71,9 @@ public class StatsChangeHealthDisplay extends MenuItem {
       ordinal = 0;
     }
     champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
-    plugin.getStatUpdateManager()
-        .updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-    plugin.getStatsMenu().setItem(position, this);
-    MessageUtils.sendMessage(champion.getPlayer(),
-        "&c&lHealth Display: &f&c" + WordUtils.capitalize(
-            champion.getSaveData().getHealthDisplayType().toString().replace("_", " ")));
+    plugin.getStatUpdateManager().updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    event.setWillUpdate(true);
+    event.setWillClose(false);
   }
 
 }

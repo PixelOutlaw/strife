@@ -47,6 +47,8 @@ public class StatsMenu extends ItemMenu {
     setItem(22, new StatsBonusMenuItem());
     setItem(24, new StatsEffectMenuItem());
 
+    setItem(35, new StatsChangeHealthDisplay(StrifePlugin.getInstance()));
+
     fillEmptySlots(new BlankIcon());
   }
 }

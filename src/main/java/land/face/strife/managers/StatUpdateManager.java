@@ -104,7 +104,7 @@ public class StatUpdateManager {
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
     if (mob.getChampion() != null) {
       HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
-      if (displayType == HealthDisplayType.TWO_HEALTH_HEARTS) {
+      if (displayType == HealthDisplayType.VANILLA_TWO_LIFE_PER_HEART) {
         ((Player) mob.getEntity()).setHealthScaled(false);
         return;
       }
@@ -157,15 +157,15 @@ public class StatUpdateManager {
 
   private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {
     switch (healthDisplayType) {
-      case FIVE_HEALTH_HEARTS:
+      case FIVE_LIFE_PER_HEART:
         return 2 * Math.ceil(maxHealth / 5);
-      case TEN_HEALTH_HEARTS:
+      case TEN_LIFE_PER_HEART:
         return 2 * Math.ceil(maxHealth / 10);
-      case FIVE_PERCENT_HEARTS:
+      case TWO_ROWS_OF_LIFE:
         return 40;
-      case THREE_PERCENT_HEARTS:
+      case THREE_ROWS_OF_LIFE:
         return 60;
-      case TEN_PERCENT_HEARTS:
+      case ONE_ROW_OF_LIFE:
       default:
         return 20;
     }

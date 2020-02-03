@@ -146,7 +146,7 @@ public class FlatfileStorage implements DataStorage {
         displayType = HealthDisplayType
             .valueOf(section.getString("health-display", "TEN_HEALTH_HEARTS"));
       } catch (Exception e) {
-        displayType = HealthDisplayType.TEN_HEALTH_HEARTS;
+        displayType = HealthDisplayType.TEN_LIFE_PER_HEART;
       }
       saveData.setHealthDisplayType(displayType);
       saveData.setDisplayExp(section.getBoolean("display-exp", false));
