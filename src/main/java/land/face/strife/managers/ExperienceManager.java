@@ -105,7 +105,6 @@ public class ExperienceManager implements StrifeExperienceManager {
     String upperTitle = TextUtils.color("&aLEVEL UP!");
     String lowerTitle = TextUtils.color("&aYou've reached &fLevel " + player.getLevel());
     TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
-    TitleUtils.sendTitle(player, "&aLEVEL UP!", "&aOh dang, you got stronger!");
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p,
