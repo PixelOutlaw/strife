@@ -255,7 +255,7 @@ public class AbilityManager {
     }
     if (caster.getEntity() instanceof Player
         && ((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
-      plugin.getEnergyManager().changeEnergy(caster, -ability.getCost(), true);
+      plugin.getEnergyManager().changeEnergy(caster, -ability.getCost());
     }
     plugin.getEffectManager().execute(caster, targets, ability.getEffects());
     playChatMessages(caster, ability);

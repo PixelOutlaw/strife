@@ -68,7 +68,7 @@ public class AttackSpeedManager {
     float energyCost = 0.35f * attackCost + 0.65f * attackMult * attackCost;
     float energyMult = Math.min(1, plugin.getEnergyManager().getEnergy(attacker) / energyCost);
 
-    plugin.getEnergyManager().changeEnergy((Player) attacker.getEntity(), -energyCost, true);
+    plugin.getEnergyManager().changeEnergy((Player) attacker.getEntity(), -energyCost);
 
     return attackMult * energyMult;
   }

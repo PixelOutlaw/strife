@@ -251,7 +251,6 @@ public class EffectManager {
       case RESTORE_ENERGY:
         effect = new ChangeEnergy();
         ((ChangeEnergy) effect).setAmount((float) cs.getDouble("amount", 1));
-        ((ChangeEnergy) effect).setBump(cs.getBoolean("bump", false));
         ((ChangeEnergy) effect)
             .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;

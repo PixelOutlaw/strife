@@ -127,6 +127,8 @@ import land.face.strife.tasks.AbilityTickTask;
 import land.face.strife.tasks.BarrierTask;
 import land.face.strife.tasks.BossBarsTask;
 import land.face.strife.tasks.CombatStatusTask;
+import land.face.strife.tasks.EnergyRegenTask;
+import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.ForceAttackSpeed;
 import land.face.strife.tasks.GlobalMultiplierTask;
 import land.face.strife.tasks.IndicatorTask;
@@ -139,6 +141,7 @@ import land.face.strife.tasks.SneakTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
 import land.face.strife.tasks.TrackedPruneTask;
 import land.face.strife.tasks.VirtualEntityTask;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
@@ -218,6 +221,7 @@ public class StrifePlugin extends FacePlugin {
 
   private List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
+  private EnergyRegenTask energyRegenTask;
   private RegenTask regenTask;
 
   private LevelingRate levelingRate;
@@ -342,8 +346,10 @@ public class StrifePlugin extends FacePlugin {
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
+    EveryTickTask everyTickTask = new EveryTickTask();
     IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();
+    energyRegenTask = new EnergyRegenTask(this);
     regenTask = new RegenTask(this);
 
     commandHandler.registerCommands(new AttributesCommand(this));
@@ -378,6 +384,10 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(saveTask.runTaskTimer(this,
         20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
         20L * 600 // Run every 10 minutes after that
+    ));
+    taskList.add(energyRegenTask.runTaskTimer(this,
+        20L, // Start timer after 1s
+        1L
     ));
     taskList.add(regenTask.runTaskTimer(this,
         20L * 9, // Start timer after 9s
@@ -427,6 +437,10 @@ public class StrifePlugin extends FacePlugin {
         20L,
         1L
     ));
+    taskList.add(everyTickTask.runTaskTimer(this,
+        20L,
+        1L
+    ));
     taskList.add(combatStatusTask.runTaskTimer(this,
         3 * 20L + 2L, // Start timer after 3s
         20L
@@ -450,7 +464,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
     Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
-    Bukkit.getPluginManager().registerEvents(new MoveListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new MoveListener(), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
@@ -499,6 +513,8 @@ public class StrifePlugin extends FacePlugin {
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
     }
+
+    DamageUtil.reloadConfig();
 
     LogUtil.printInfo("Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
     LogUtil.printInfo("Loaded " + effectManager.getLoadedEffects().size() + " effects");
@@ -946,6 +962,10 @@ public class StrifePlugin extends FacePlugin {
 
   public StatsMenu getStatsMenu() {
     return statsMenu;
+  }
+
+  public EnergyRegenTask getEnergyRegenTask() {
+    return energyRegenTask;
   }
 
   public RegenTask getRegenTask() {

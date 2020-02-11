@@ -24,38 +24,23 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 
 public class EnergyManager {
 
   private StrifePlugin plugin;
 
   private final Map<UUID, Float> energyMap = new HashMap<>();
-  private final Map<UUID, Long> tickTime = new HashMap<>();
-
-  private int bumpMillis;
 
   public EnergyManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    bumpMillis = plugin.getSettings().getInt("config.mechanics.energy.regen-delay-ms", 500);
   }
 
-  public void regenerateEnergy(StrifeMob mob, float multiplier) {
-    UUID uuid = mob.getEntity().getUniqueId();
-    if (tickTime.getOrDefault(uuid, 0L) > System.currentTimeMillis()) {
-      return;
-    }
-    float amount = mob.getStat(StrifeStat.ENERGY_REGEN) * getHungerPotionMult(mob.getEntity());
-    changeEnergy(mob, amount * multiplier, false);
+  public void changeEnergy(Player player, float amount) {
+    changeEnergy(plugin.getStrifeMobManager().getStatMob(player), amount);
   }
 
-  public void changeEnergy(Player player, float amount, boolean bump) {
-    changeEnergy(plugin.getStrifeMobManager().getStatMob(player), amount, bump);
-  }
-
-  public void changeEnergy(StrifeMob mob, float amount, boolean bump) {
+  public void changeEnergy(StrifeMob mob, float amount) {
     if (!(mob.getEntity() instanceof Player)) {
       return;
     }
@@ -63,13 +48,6 @@ public class EnergyManager {
     energy += amount;
     setEnergy(mob, energy);
     updateFoodBar((Player) mob.getEntity(), mob.getStat(StrifeStat.ENERGY));
-    if (bump) {
-      bumpEnergyDelay(mob.getEntity().getUniqueId());
-    }
-  }
-
-  private void bumpEnergyDelay(UUID uuid) {
-    tickTime.put(uuid, System.currentTimeMillis() + bumpMillis);
   }
 
   public float getEnergy(StrifeMob mob) {
@@ -85,16 +63,5 @@ public class EnergyManager {
 
   private void updateFoodBar(Player player, float maxEnergy) {
     player.setFoodLevel((int) Math.min(20D, 20D * energyMap.get(player.getUniqueId()) / maxEnergy));
-  }
-
-  private float getHungerPotionMult(LivingEntity livingEntity) {
-    float ratio = 1;
-    if (livingEntity.hasPotionEffect(PotionEffectType.SATURATION)) {
-      ratio += 0.1 * (livingEntity.getPotionEffect(PotionEffectType.SATURATION).getAmplifier() + 1);
-    }
-    if (livingEntity.hasPotionEffect(PotionEffectType.HUNGER)) {
-      ratio -= 0.1 * (livingEntity.getPotionEffect(PotionEffectType.HUNGER).getAmplifier() + 1);
-    }
-    return ratio;
   }
 }

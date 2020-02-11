@@ -1,6 +1,5 @@
 package land.face.strife.util;
 
-import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
 import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
@@ -24,6 +23,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
+import land.face.strife.data.IndicatorData;
+import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.events.BlockEvent;
@@ -53,6 +54,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
@@ -65,7 +67,18 @@ public class DamageUtil {
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   private static final DamageType[] DMG_TYPES = DamageType.values();
 
+  private static Vector IND_FLOAT_VECTOR;
+  private static Vector IND_MISS_VECTOR;
   private static final float BLEED_PERCENT = 0.5f;
+
+  public static void reloadConfig() {
+    float floatSpeed = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.indicators.float-speed", 70);
+    float missSpeed = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.indicators.miss-speed", 80);
+    IND_FLOAT_VECTOR = new Vector(0, floatSpeed, 0);
+    IND_MISS_VECTOR = new Vector(0, missSpeed, 0);
+  }
 
   public static float getRawDamage(StrifeMob attacker, DamageType damageType, AttackType type) {
     switch (damageType) {
@@ -145,6 +158,18 @@ public class DamageUtil {
         return amount * StatUtil.getMaximumBarrier(target);
       case CASTER_MAX_BARRIER:
         return amount * StatUtil.getMaximumBarrier(caster);
+      case TARGET_CURRENT_ENERGY:
+        return amount * StatUtil.getEnergy(target);
+      case CASTER_CURRENT_ENERGY:
+        return amount * StatUtil.getEnergy(caster);
+      case TARGET_MISSING_ENERGY:
+        return amount * (StatUtil.getMaximumEnergy(target) - StatUtil.getEnergy(target));
+      case CASTER_MISSING_ENERGY:
+        return amount * (StatUtil.getMaximumEnergy(caster) - StatUtil.getEnergy(caster));
+      case TARGET_MAX_ENERGY:
+        return amount * StatUtil.getMaximumEnergy(target);
+      case CASTER_MAX_ENERGY:
+        return amount * StatUtil.getMaximumEnergy(caster);
     }
     return amount;
   }
@@ -423,7 +448,7 @@ public class DamageUtil {
     }
     if (attacker instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-          buildMissIndicator((Player) attacker), "&fMiss");
+          buildMissIndicator((Player) attacker), "&7&oMiss");
       MessageUtils.sendActionBar((Player) attacker, ATTACK_MISSED);
     }
   }
@@ -627,8 +652,8 @@ public class DamageUtil {
     StrifePlugin.getInstance().getBarrierManager().restoreBarrier(strifeMob, amount);
   }
 
-  public static void restoreEnergy(StrifeMob strifeMob, float amount, boolean bump) {
-    StrifePlugin.getInstance().getEnergyManager().changeEnergy(strifeMob, amount, bump);
+  public static void restoreEnergy(StrifeMob strifeMob, float amount) {
+    StrifePlugin.getInstance().getEnergyManager().changeEnergy(strifeMob, amount);
   }
 
   public static void applyPotionEffect(LivingEntity entity, PotionEffectType type, int power,
@@ -694,6 +719,18 @@ public class DamageUtil {
 
   private static CorruptionManager getDarknessManager() {
     return StrifePlugin.getInstance().getCorruptionManager();
+  }
+
+  public static IndicatorData buildMissIndicator(Player player) {
+    IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
+    data.addOwner(player);
+    return data;
+  }
+
+  public static IndicatorData buildFloatIndicator(Player player) {
+    IndicatorData data = new IndicatorData(IND_FLOAT_VECTOR.clone(), IndicatorStyle.FLOAT_UP);
+    data.addOwner(player);
+    return data;
   }
 
   public enum DamageScale {

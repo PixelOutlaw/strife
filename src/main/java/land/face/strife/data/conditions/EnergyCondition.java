@@ -15,29 +15,17 @@ public class EnergyCondition extends Condition {
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
-    double energy;
-    if (!(target.getEntity() instanceof Player)) {
-      return true;
+    StrifeMob trueTarget = getCompareTarget() == CompareTarget.SELF ? attacker : target;
+    if (trueTarget == null || !(trueTarget.getEntity() instanceof Player)) {
+      return false;
     }
     if (percentage) {
-      if (getCompareTarget() == CompareTarget.SELF) {
-        if (attacker.getStat(StrifeStat.ENERGY) == 0D) {
-          return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
-        }
-        energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(attacker) / attacker
-            .getStat(StrifeStat.ENERGY);
-      } else {
-        if (target.getStat(StrifeStat.ENERGY) == 0D) {
-          return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
-        }
-        energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(target) / target
-            .getStat(StrifeStat.ENERGY);
-      }
+      float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(trueTarget) /
+          trueTarget.getStat(StrifeStat.ENERGY);
+      return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
     } else {
-      energy = getCompareTarget() == CompareTarget.SELF ?
-          StrifePlugin.getInstance().getEnergyManager().getEnergy(attacker) :
-          StrifePlugin.getInstance().getEnergyManager().getEnergy(target);
+      float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(target);
+      return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
     }
-    return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
   }
 }

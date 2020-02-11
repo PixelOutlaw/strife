@@ -38,6 +38,14 @@ public class StatUtil {
     return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(ae);
   }
 
+  public static float getMaximumEnergy(StrifeMob ae) {
+    return ae.getStat(StrifeStat.ENERGY);
+  }
+
+  public static float getEnergy(StrifeMob ae) {
+    return StrifePlugin.getInstance().getEnergyManager().getEnergy(ae);
+  }
+
   public static float getMaximumBarrier(StrifeMob ae) {
     return ae.getStat(StrifeStat.BARRIER);
   }

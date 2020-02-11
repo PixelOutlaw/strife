@@ -49,7 +49,6 @@ public class RegenTask extends BukkitRunnable {
   private static float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
 
   private Map<UUID, List<RestoreData>> lifeRestore = new HashMap<>();
-  private Map<UUID, List<RestoreData>> energyRestore = new HashMap<>();
 
   public RegenTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -64,9 +63,7 @@ public class RegenTask extends BukkitRunnable {
       float tickMult = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 
-      plugin.getEnergyManager().changeEnergy(mob, getBonusEnergy(player.getUniqueId()), false);
       PlayerDataUtil.restoreHealth(player, getBonusHealth(player.getUniqueId()));
-      plugin.getEnergyManager().regenerateEnergy(mob, tickMult);
 
       plugin.getBarrierManager()
           .restoreBarrier(mob, mob.getStat(StrifeStat.BARRIER_REGEN) * tickMult);
@@ -104,17 +101,6 @@ public class RegenTask extends BukkitRunnable {
     lifeRestore.get(uuid).add(restoreData);
   }
 
-  public void addEnergy(UUID uuid, float amount, int ticks) {
-    if (!energyRestore.containsKey(uuid)) {
-      energyRestore.put(uuid, new CopyOnWriteArrayList<>());
-    }
-    amount = (amount * REGEN_TICK_RATE) / ticks;
-    RestoreData restoreData = new RestoreData();
-    restoreData.setAmount(amount);
-    restoreData.setTicks(ticks / REGEN_TICK_RATE);
-    energyRestore.get(uuid).add(restoreData);
-  }
-
   private float getBonusHealth(UUID uuid) {
     if (!lifeRestore.containsKey(uuid)) {
       return 0;
@@ -124,22 +110,6 @@ public class RegenTask extends BukkitRunnable {
       amount += data.getAmount();
       if (data.getTicks() == 0) {
         lifeRestore.get(uuid).remove(data);
-      } else {
-        data.setTicks(data.getTicks() - 1);
-      }
-    }
-    return amount;
-  }
-
-  private float getBonusEnergy(UUID uuid) {
-    if (!energyRestore.containsKey(uuid)) {
-      return 0;
-    }
-    float amount = 0;
-    for (RestoreData data : energyRestore.get(uuid)) {
-      amount += data.getAmount();
-      if (data.getTicks() == 0) {
-        energyRestore.get(uuid).remove(data);
       } else {
         data.setTicks(data.getTicks() - 1);
       }

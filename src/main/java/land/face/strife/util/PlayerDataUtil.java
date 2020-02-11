@@ -1,6 +1,5 @@
 package land.face.strife.util;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -11,7 +10,6 @@ import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionUser;
-import land.face.strife.util.DamageUtil.DamageType;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
@@ -22,6 +20,7 @@ import me.libraryaddict.disguise.disguisetypes.RabbitType;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -43,7 +42,7 @@ public class PlayerDataUtil {
 
   public static void restoreEnergy(LivingEntity le, float amount) {
     if (le instanceof Player) {
-      StrifePlugin.getInstance().getEnergyManager().changeEnergy((Player) le, amount, false);
+      StrifePlugin.getInstance().getEnergyManager().changeEnergy((Player) le, amount);
     }
   }
 
@@ -55,7 +54,7 @@ public class PlayerDataUtil {
 
   public static void restoreEnergyOverTime(LivingEntity le, float amount, int ticks) {
     if (le instanceof Player) {
-      StrifePlugin.getInstance().getRegenTask().addEnergy(le.getUniqueId(), amount, ticks);
+      StrifePlugin.getInstance().getEnergyRegenTask().addEnergy(le.getUniqueId(), amount, ticks);
     }
   }
 
@@ -81,6 +80,7 @@ public class PlayerDataUtil {
       }
       PlayerDisguise playerDisguise = new PlayerDisguise(name, disguisePlayer);
       playerDisguise.setReplaceSounds(true);
+      playerDisguise.setName("<Inherit>");
       return playerDisguise;
     }
     if (type.isMob()) {
@@ -97,6 +97,9 @@ public class PlayerDataUtil {
             case RABBIT:
               RabbitType rabbitType = RabbitType.valueOf(typeData);
               ((RabbitWatcher) watcher).setType(rabbitType);
+              break;
+            case SLIME:
+              ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
               break;
             case SNOWMAN:
               ((SnowmanWatcher) watcher).setDerp(Boolean.parseBoolean(typeData));
@@ -132,47 +135,6 @@ public class PlayerDataUtil {
       return miscDisguise;
     }
     return null;
-  }
-
-  public static void sendActionbarDamage(LivingEntity entity, double damage, double overBonus,
-      double critBonus, Set<DamageType> triggeredElements, boolean isBleedApplied,
-      boolean isSneakAttack) {
-    if (!(entity instanceof Player)) {
-      return;
-    }
-    StringBuilder damageString = new StringBuilder("&f&l" + (int) Math.ceil(damage) + " Damage! ");
-    if (overBonus > 0) {
-      damageString.append("&e✦");
-    }
-    if (isSneakAttack) {
-      damageString.append("&7&l!");
-    }
-    if (critBonus > 0) {
-      damageString.append("&c✸");
-    }
-    if (triggeredElements.contains(DamageType.FIRE)) {
-      damageString.append("&6✷");
-    }
-    if (triggeredElements.contains(DamageType.ICE)) {
-      damageString.append("&b❊");
-    }
-    if (triggeredElements.contains(DamageType.LIGHTNING)) {
-      damageString.append("&e&l⚡");
-    }
-    if (triggeredElements.contains(DamageType.EARTH)) {
-      damageString.append("&2⚍");
-    }
-    if (triggeredElements.contains(DamageType.LIGHT)) {
-      damageString.append("&f❂");
-    }
-    if (triggeredElements.contains(DamageType.DARK)) {
-      damageString.append("&8❂");
-    }
-    if (isBleedApplied) {
-      damageString.append("&4✘");
-    }
-    //❖✜
-    MessageUtils.sendActionBar((Player) entity, damageString.toString());
   }
 
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,

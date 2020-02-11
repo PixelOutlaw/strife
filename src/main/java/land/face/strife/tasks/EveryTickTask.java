@@ -18,19 +18,17 @@
  */
 package land.face.strife.tasks;
 
-import land.face.strife.managers.CombatStatusManager;
+import land.face.strife.util.MoveUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class CombatStatusTask extends BukkitRunnable {
-
-  private CombatStatusManager combatStatusManager;
-
-  public CombatStatusTask(CombatStatusManager combatStatusManager) {
-    this.combatStatusManager = combatStatusManager;
-  }
+public class EveryTickTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    combatStatusManager.tickCombat();
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      MoveUtil.setSneak(player);
+    }
   }
 }
