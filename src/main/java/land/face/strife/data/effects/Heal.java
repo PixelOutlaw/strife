@@ -1,12 +1,19 @@
 package land.face.strife.data.effects;
 
+import static land.face.strife.util.DamageUtil.buildFloatIndicator;
+
+import java.text.DecimalFormat;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
+import org.bukkit.entity.Player;
 
 public class Heal extends Effect {
+
+  private static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
 
   private float amount;
   private DamageScale damageScale;
@@ -30,6 +37,12 @@ public class Heal extends Effect {
 
     for (StrifeStat attr : getStatMults().keySet()) {
       heal *= 1 + getStatMults().get(attr) * caster.getStat(attr);
+    }
+
+    if (caster != target && caster.getEntity() instanceof Player) {
+      String healText = "&a&l+" + INT_FORMAT.format(heal);
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
+          target.getEntity(), buildFloatIndicator((Player) caster.getEntity()), healText);
     }
 
     DamageUtil.restoreHealth(target.getEntity(), heal);
