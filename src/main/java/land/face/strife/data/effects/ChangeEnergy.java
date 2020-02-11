@@ -10,7 +10,6 @@ public class ChangeEnergy extends Effect {
 
   private float amount;
   private DamageScale damageScale;
-  private boolean bump;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -23,25 +22,25 @@ public class ChangeEnergy extends Effect {
     }
     switch (damageScale) {
       case FLAT:
-        DamageUtil.restoreEnergy(target, restoreAmount, bump);
+        DamageUtil.restoreEnergy(target, restoreAmount);
         return;
       case TARGET_CURRENT_ENERGY:
-        DamageUtil.restoreBarrier(target, restoreAmount * getEnergy(target));
+        DamageUtil.restoreEnergy(target, restoreAmount * getEnergy(target));
         return;
       case TARGET_MISSING_ENERGY:
-        DamageUtil.restoreBarrier(target, restoreAmount * getMissingEnergy(target));
+        DamageUtil.restoreEnergy(target, restoreAmount * getMissingEnergy(target));
         return;
       case TARGET_MAX_ENERGY:
-        DamageUtil.restoreBarrier(target, restoreAmount * target.getStat(StrifeStat.ENERGY));
+        DamageUtil.restoreEnergy(target, restoreAmount * target.getStat(StrifeStat.ENERGY));
         return;
       case CASTER_CURRENT_ENERGY:
-        DamageUtil.restoreBarrier(target, restoreAmount * getEnergy(caster));
+        DamageUtil.restoreEnergy(target, restoreAmount * getEnergy(caster));
         return;
       case CASTER_MISSING_ENERGY:
-        DamageUtil.restoreBarrier(target, restoreAmount * getMissingEnergy(caster));
+        DamageUtil.restoreEnergy(target, restoreAmount * getMissingEnergy(caster));
         return;
       case CASTER_MAX_ENERGY:
-        DamageUtil.restoreBarrier(target, restoreAmount * target.getStat(StrifeStat.ENERGY));
+        DamageUtil.restoreEnergy(target, restoreAmount * target.getStat(StrifeStat.ENERGY));
     }
   }
 
@@ -51,10 +50,6 @@ public class ChangeEnergy extends Effect {
 
   public void setDamageScale(DamageScale damageScale) {
     this.damageScale = damageScale;
-  }
-
-  public void setBump(boolean bump) {
-    this.bump = bump;
   }
 
   private float getEnergy(StrifeMob mob) {
