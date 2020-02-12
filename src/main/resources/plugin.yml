@@ -18,6 +18,8 @@ commands:
     aliases: [str]
   spawner:
     aliases: [spn]
+  agility:
+    aliases: [agi]
 
 permissions:
   strife.command.stats:

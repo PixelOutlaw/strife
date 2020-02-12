@@ -18,7 +18,7 @@
  */
 package land.face.strife.managers;
 
-import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
+import static land.face.strife.util.DamageUtil.buildMissIndicator;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import io.netty.util.internal.ConcurrentSet;

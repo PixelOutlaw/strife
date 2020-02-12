@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
+import land.face.strife.commands.AgilityCommand;
 import land.face.strife.commands.AttributesCommand;
 import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.SpawnerCommand;
@@ -67,6 +68,7 @@ import land.face.strife.listeners.FallListener;
 import land.face.strife.listeners.HeadDropListener;
 import land.face.strife.listeners.HealingListener;
 import land.face.strife.listeners.InventoryListener;
+import land.face.strife.listeners.LaunchAndLandListener;
 import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoveListener;
@@ -81,6 +83,7 @@ import land.face.strife.listeners.UniqueSplashListener;
 import land.face.strife.listeners.WandListener;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
+import land.face.strife.managers.AgilityManager;
 import land.face.strife.managers.AttackSpeedManager;
 import land.face.strife.managers.BarrierManager;
 import land.face.strife.managers.BleedManager;
@@ -181,6 +184,7 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration modsYAML;
   private VersionedSmartYamlConfiguration globalBoostsYAML;
   private SmartYamlConfiguration spawnerYAML;
+  private SmartYamlConfiguration agilityYAML;
 
   private StrifeMobManager strifeMobManager;
   private StatUpdateManager statUpdateManager;
@@ -216,6 +220,7 @@ public class StrifePlugin extends FacePlugin {
   private SoulManager soulManager;
   private EnergyManager energyManager;
   private WSEManager wseManager;
+  private AgilityManager agilityManager;
 
   private DataStorage storage;
 
@@ -260,6 +265,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
 
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
+    agilityYAML = new SmartYamlConfiguration(new File(getDataFolder(), "agility-locations.yml"));
 
     for (VersionedSmartYamlConfiguration config : configurations) {
       if (config.update()) {
@@ -299,6 +305,7 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = new MonsterManager(championManager);
     effectManager = new EffectManager(this);
     wseManager = new WSEManager();
+    agilityManager = new AgilityManager(this, agilityYAML);
     spawnerManager = new SpawnerManager(this);
     mobModManager = new MobModManager(this);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
@@ -358,6 +365,7 @@ public class StrifePlugin extends FacePlugin {
     commandHandler.registerCommands(new UniqueEntityCommand(this));
     commandHandler.registerCommands(new SpawnerCommand(this));
     commandHandler.registerCommands(new AbilityMacroCommand(this));
+    commandHandler.registerCommands(new AgilityCommand(this));
 
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);
@@ -447,6 +455,7 @@ public class StrifePlugin extends FacePlugin {
     ));
 
     globalBoostManager.startScheduledEvents();
+    agilityManager.loadAgilityContainers();
 
     //Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
@@ -476,6 +485,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(
         new LoreAbilityListener(strifeMobManager, championManager, loreAbilityManager), this);
@@ -532,6 +542,7 @@ public class StrifePlugin extends FacePlugin {
 
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.removeAllBars();
+    agilityManager.saveLocations();
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
     bleedManager.endBleedTasks();
@@ -938,6 +949,10 @@ public class StrifePlugin extends FacePlugin {
 
   public WSEManager getWseManager() {
     return wseManager;
+  }
+
+  public AgilityManager getAgilityManager() {
+    return agilityManager;
   }
 
   public ParticleTask getParticleTask() {

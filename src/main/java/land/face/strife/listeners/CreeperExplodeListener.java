@@ -35,7 +35,7 @@ public class CreeperExplodeListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.LOWEST)
   public void spawnerCreeperExplode(EntityExplodeEvent event) {
     if (event.isCancelled()) {
       return;

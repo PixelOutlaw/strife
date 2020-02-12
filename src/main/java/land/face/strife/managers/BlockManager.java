@@ -18,7 +18,7 @@
  */
 package land.face.strife.managers;
 
-import static land.face.strife.listeners.StrifeDamageListener.buildMissIndicator;
+import static land.face.strife.util.DamageUtil.buildMissIndicator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +59,7 @@ public class BlockManager {
       DamageUtil.doBlock(attacker.getEntity(), defender.getEntity());
       if (attacker.getEntity() instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-            defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "Blocked");
+            defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "&e&lBlocked!");
       }
       return true;
     }

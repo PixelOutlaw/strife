@@ -20,10 +20,7 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Map;
-import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.IndicatorData;
-import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
@@ -34,7 +31,6 @@ import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.DamageType;
-import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -43,27 +39,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.Vector;
 
 public class StrifeDamageListener implements Listener {
 
   private StrifePlugin plugin;
   private static float PVP_MULT;
-  private static float IND_FLOAT_SPEED;
-  private static float IND_MISS_SPEED;
-  private static Vector IND_FLOAT_VECTOR;
-  private static Vector IND_MISS_VECTOR;
 
   public StrifeDamageListener(StrifePlugin plugin) {
     this.plugin = plugin;
     PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
         .getDouble("config.mechanics.pvp-multiplier", 0.5);
-    IND_FLOAT_SPEED = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.indicators.float-speed", 70);
-    IND_MISS_SPEED = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.indicators.miss-speed", 80);
-    IND_FLOAT_VECTOR = new Vector(0, IND_FLOAT_SPEED, 0);
-    IND_MISS_VECTOR = new Vector(0, IND_MISS_SPEED, 0);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -153,17 +138,20 @@ public class StrifeDamageListener implements Listener {
     }
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
 
-    Set<DamageType> triggeredElements = DamageUtil
-        .applyElementalEffects(attacker, defender, damageMap, event.isConsumeEarthRunes());
+    DamageUtil.applyElementalEffects(attacker, defender, damageMap, event.isConsumeEarthRunes());
 
     float critMult = 0;
     double bonusOverchargeMultiplier = 0;
-    if (isCriticalHit(attacker, defender, attackMult,
-        event.getAbilityMods(AbilityMod.CRITICAL_CHANCE))) {
+
+    boolean criticalHit = isCriticalHit(attacker, defender, attackMult,
+        event.getAbilityMods(AbilityMod.CRITICAL_CHANCE));
+    if (criticalHit) {
       critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
           event.getAbilityMods(AbilityMod.CRITICAL_DAMAGE)) / 100;
     }
-    if (attackMult > 0.99) {
+
+    boolean overcharge = attackMult > 0.99;
+    if (overcharge) {
       bonusOverchargeMultiplier = attacker.getStat(StrifeStat.OVERCHARGE) / 100;
     }
 
@@ -225,41 +213,41 @@ public class StrifeDamageListener implements Listener {
       sneakDamage *= pvpMult;
       SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent((Player) attacker.getEntity(),
           defender.getEntity(), sneakSkill, sneakDamage);
-      if (sneakEvent.isCancelled()) {
-        isSneakAttack = false;
-      } else {
+      if (!sneakEvent.isCancelled()) {
         defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
         rawDamage += sneakEvent.getSneakAttackDamage();
       }
     }
 
+    String damageString = String.valueOf((int) Math.ceil(rawDamage));
+    if (overcharge) {
+      damageString = "&l" + damageString;
+    }
+    if (criticalHit) {
+      damageString = damageString + "!";
+    }
     if (attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()),
-          String.valueOf((int) Math.ceil(rawDamage)));
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()), damageString);
     }
     if (attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
           plugin.getDamageManager().buildHitIndicator((Player) attacker.getMaster()),
-          String.valueOf((int) Math.ceil(rawDamage)));
+          "&7" + damageString);
     }
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
-    boolean isBleedApplied = false;
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
-      isBleedApplied = DamageUtil.attemptBleed(attacker, defender,
-          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods(), false);
+      DamageUtil.attemptBleed(attacker, defender, damageMap.get(DamageType.PHYSICAL), attackMult,
+          event.getAbilityMods(), false);
     }
 
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
     plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
     plugin.getSneakManager().tempDisableSneak(attacker.getEntity());
-
-    PlayerDataUtil.sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
-        critMult, triggeredElements, isBleedApplied, isSneakAttack);
 
     defender.trackDamage(attacker, (float) finalDamage);
     event.setFinalDamage(finalDamage);
@@ -281,11 +269,5 @@ public class StrifeDamageListener implements Listener {
       return;
     }
     projectile.remove();
-  }
-
-  public static IndicatorData buildMissIndicator(Player player) {
-    IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
   }
 }

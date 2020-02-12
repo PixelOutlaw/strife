@@ -18,7 +18,8 @@ public class MoveListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPlayerMoveHorizontally(PlayerMoveEvent event) {
-    if (groundedLastTick.get(event.getPlayer().getUniqueId()) != event.getPlayer().isOnGround()) {
+    if (groundedLastTick.getOrDefault(event.getPlayer().getUniqueId(), true) != event.getPlayer()
+        .isOnGround()) {
       if (event.getPlayer().isOnGround()) {
         LandEvent ev = new LandEvent(event.getPlayer(), event.getPlayer().getLocation());
         Bukkit.getPluginManager().callEvent(ev);
