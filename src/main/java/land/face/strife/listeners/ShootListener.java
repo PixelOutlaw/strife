@@ -125,7 +125,7 @@ public class ShootListener implements Listener {
     ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
         .getEquipment()).getItemInMainHand();
     if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
-      WandListener.shootWand(mob, 1, event);
+      ProjectileUtil.shootWand(mob, 1);
       event.setCancelled(true);
       return;
     }

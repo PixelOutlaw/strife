@@ -157,8 +157,8 @@ public class UniqueEntityManager {
 
     StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(le, stats);
 
-    if (uniqueEntity.isAllowMods()) {
-      plugin.getMobModManager().doModApplication(strifeMob);
+    if (uniqueEntity.getMaxMods() > 0) {
+      plugin.getMobModManager().doModApplication(strifeMob, uniqueEntity.getMaxMods());
     }
 
     strifeMob.setUniqueEntityId(uniqueEntity.getId());

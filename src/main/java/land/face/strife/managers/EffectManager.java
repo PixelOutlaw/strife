@@ -484,8 +484,8 @@ public class EffectManager {
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
-        ((ShootProjectile) effect)
-            .setDisguise(PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"), key));
+        ((ShootProjectile) effect).setDisguise(PlayerDataUtil.parseDisguise(
+            cs.getConfigurationSection("disguise"), key, false));
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
         int color = cs.getInt("arrow-rgb-color", -1);

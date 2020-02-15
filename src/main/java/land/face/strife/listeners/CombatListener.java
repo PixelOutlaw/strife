@@ -22,8 +22,10 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ARMOR;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.events.StrifeDamageEvent;
@@ -48,11 +50,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
   private static Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
+  private static HashMap<UUID, Long> SLIME_HIT_MAP = new HashMap<>();
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -103,6 +107,10 @@ public class CombatListener implements Listener {
     if (attackEntity == null) {
       return;
     }
+    if (attackEntity instanceof Slime && !canSlimeHit(attackEntity.getUniqueId())) {
+      event.setCancelled(true);
+      return;
+    }
 
     boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) || (
         defendEntity instanceof Shulker && event.isApplicable(ARMOR)
@@ -122,6 +130,7 @@ public class CombatListener implements Listener {
 
     Projectile projectile = null;
     boolean isProjectile = false;
+    boolean isMultishot = false;
     String[] extraEffects = null;
 
     if (event.getDamager() instanceof Projectile) {
@@ -134,6 +143,16 @@ public class CombatListener implements Listener {
       }
       if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
         extraEffects = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString().split("~");
+      }
+      if (projectile.hasMetadata(ProjectileUtil.SHOT_ID_META)) {
+        int shotId = projectile.getMetadata(ProjectileUtil.SHOT_ID_META).get(0).asInt();
+        String idKey = ProjectileUtil.SHOT_ID_META + "_" + shotId;
+        if (defendEntity.hasMetadata(idKey)) {
+          isMultishot = true;
+        } else {
+          defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
+          Bukkit.getScheduler().runTaskLater(plugin, () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 1000L);
+        }
       }
     }
 
@@ -157,7 +176,7 @@ public class CombatListener implements Listener {
     if (damageType == AttackType.MELEE) {
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
       if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
-        WandListener.shootWand(attacker, attackMultiplier, event);
+        ProjectileUtil.shootWand(attacker, attackMultiplier);
         event.setCancelled(true);
         return;
       }
@@ -168,8 +187,15 @@ public class CombatListener implements Listener {
       healMultiplier = 0.3f;
     }
 
+    if (isMultishot) {
+      attackMultiplier *= 0.25;
+    }
+
     if (attackMultiplier < 0.10 && extraEffects == null) {
       event.setCancelled(true);
+      if (event.getDamager() instanceof Projectile) {
+        event.getDamager().remove();
+      }
       return;
     }
 
@@ -190,11 +216,6 @@ public class CombatListener implements Listener {
     if (strifeDamageEvent.isCancelled()) {
       event.setCancelled(true);
       return;
-    }
-
-    if (!(attackEntity instanceof Slime)) {
-      Bukkit.getScheduler()
-          .runTaskLater(plugin, () -> ((LivingEntity) event.getEntity()).setNoDamageTicks(0), 2L);
     }
 
     if (attackEntity instanceof Bee) {
@@ -218,6 +239,16 @@ public class CombatListener implements Listener {
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
       plugin.getRageManager().addRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));
+    }
+  }
+
+  private boolean canSlimeHit(UUID uuid) {
+    return SLIME_HIT_MAP.getOrDefault(uuid, 0L) + 250 < System.currentTimeMillis();
+  }
+
+  public static void putSlimeHit(LivingEntity livingEntity) {
+    if (livingEntity instanceof Slime) {
+      SLIME_HIT_MAP.put(livingEntity.getUniqueId(), System.currentTimeMillis());
     }
   }
 }

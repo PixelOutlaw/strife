@@ -72,6 +72,7 @@ public class StrifeDamageListener implements Listener {
 
     if (plugin.getCounterManager().executeCounters(event.getAttacker().getEntity(),
         event.getDefender().getEntity())) {
+      CombatListener.putSlimeHit(attacker.getEntity());
       event.setCancelled(true);
       return;
     }
@@ -85,6 +86,7 @@ public class StrifeDamageListener implements Listener {
         }
         DamageUtil.doEvasion(attacker.getEntity(), defender.getEntity());
         removeIfExisting(event.getProjectile());
+        CombatListener.putSlimeHit(attacker.getEntity());
         event.setCancelled(true);
         return;
       }
@@ -99,6 +101,7 @@ public class StrifeDamageListener implements Listener {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
         removeIfExisting(event.getProjectile());
+        CombatListener.putSlimeHit(attacker.getEntity());
         event.setCancelled(true);
         DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
         return;
