@@ -46,26 +46,24 @@ public class WandListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSwing(PlayerInteractEvent event) {
-    if (event.getHand() != EquipmentSlot.HAND) {
+    if (event.getHand() == EquipmentSlot.OFF_HAND) {
       return;
     }
-    if (!(event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK)) {
-      return;
-    }
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-    double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
-    if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
-      event.setCancelled(true);
-      if (!(mob.getEntity() instanceof Player)) {
-        ProjectileUtil.shootWand(mob, attackMult);
-      } else if (attackMult > 0.2) {
-        ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.5D));
-      } else {
-        MessageUtils.sendActionBar((Player) mob.getEntity(), notChargedMessage);
-        mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+    if (event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK) {
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+      double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
+      if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
+        if (attackMult > 0.2) {
+          ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.5D));
+        } else {
+          MessageUtils.sendActionBar((Player) mob.getEntity(), notChargedMessage);
+          mob.getEntity().getWorld()
+              .playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
+        }
+        event.setCancelled(true);
       }
+      plugin.getStatUpdateManager().updateAttackAttrs(
+          plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     }
-    plugin.getStatUpdateManager().updateAttackAttrs(
-        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
   }
 }
