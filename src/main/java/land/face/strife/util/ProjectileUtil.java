@@ -8,13 +8,11 @@ import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Trident;
-import org.bukkit.entity.WitherSkull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
@@ -22,6 +20,8 @@ public class ProjectileUtil {
 
   public final static String ATTACK_SPEED_META = "AS_MULT";
   public final static String SNEAK_ATTACK_META = "SNEAK_SHOT";
+  public final static String SHOT_ID_META = "SHOT_ID";
+  private static int shotId = 1;
 
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
@@ -37,58 +37,22 @@ public class ProjectileUtil {
     return (int) initialProjectiles;
   }
 
-  public static void createMagicMissile(LivingEntity shooter, double attackMult, double power,
-      double xOff, double yOff, double zOff) {
-    createMagicMissile(shooter, attackMult, power, xOff, yOff, zOff, true);
-  }
+  public static void shootWand(StrifeMob mob, double attackMult) {
+    float projectileSpeed = 1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-  public static void createMagicMissile(LivingEntity shooter, double attackMult, double power,
-      double xOff, double yOff, double zOff, boolean gravity) {
-    ShulkerBullet magicProj = shooter.getWorld().spawn(
-        shooter.getEyeLocation().clone().add(0, -0.35, 0), ShulkerBullet.class);
-    magicProj.setShooter(shooter);
-    magicProj.setGravity(gravity);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.23, true);
+    projectiles--;
 
-    Vector vec = shooter.getEyeLocation().getDirection();
-    xOff = vec.getX() * power + xOff;
-    yOff = vec.getY() * power + yOff;
-    zOff = vec.getZ() * power + zOff;
-    if (gravity) {
-      yOff += 0.23;
+    for (int i = projectiles; i > 0; i--) {
+      ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
+          randomWandOffset(projectiles), 0.23);
     }
-    magicProj.setVelocity(new Vector(xOff, yOff, zOff));
-    setProjctileAttackSpeedMeta(magicProj, attackMult);
-    if (shooter instanceof Player && ((Player) shooter).isSneaking()) {
-      setProjectileSneakMeta(magicProj);
-    }
-  }
 
-  public static void createGhastBall(LivingEntity shooter, double attackMult, double power,
-      double radius) {
-    shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_GHAST_SHOOT, 0.7f, 1.1f);
-    Fireball fireball = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Fireball.class);
-    fireball.setShooter(shooter);
-    fireball.setBounce(false);
-    fireball.setIsIncendiary(false);
-    fireball.setYield((float) (2 + radius * 0.5));
-
-    Vector vec = shooter.getLocation().getDirection().multiply(0.05 * power);
-    fireball.setVelocity(vec);
-    setProjctileAttackSpeedMeta(fireball, attackMult);
-  }
-
-  public static void createWitherSkull(LivingEntity shooter, double attackMult, double power,
-      double radius) {
-    shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 1.1f);
-    WitherSkull skull = shooter.getWorld().spawn(
-        shooter.getEyeLocation().clone().add(0, -0.35, 0), WitherSkull.class);
-    skull.setShooter(shooter);
-    skull.setYield((float) (2 + radius * 0.5));
-
-    Vector vec = shooter.getLocation().getDirection().multiply(0.05 * power);
-    skull.setVelocity(vec);
-    setProjctileAttackSpeedMeta(skull, attackMult);
+    mob.getEntity().getWorld()
+        .playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
+    StrifePlugin.getInstance().getSneakManager().tempDisableSneak(mob.getEntity());
+    shotId++;
   }
 
   public static void shootArrow(StrifeMob mob, float attackMult) {
@@ -102,9 +66,12 @@ public class ProjectileUtil {
       ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
           randomOffset(projectiles), 0.17);
     }
+    StrifePlugin.getInstance().getSneakManager().tempDisableSneak(mob.getEntity());
+    shotId++;
   }
 
-  public static void createArrow(LivingEntity shooter, double attackMult, float power, double spread,
+  public static void createArrow(LivingEntity shooter, double attackMult, float power,
+      double spread,
       double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
@@ -112,7 +79,9 @@ public class ProjectileUtil {
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
 
-    ProjectileUtil.setProjctileAttackSpeedMeta(arrow, attackMult);
+    setProjctileAttackSpeedMeta(arrow, attackMult);
+    setProjectileShotIdMeta(arrow);
+
     if (shooter instanceof Player) {
       if (attackMult > 0.95) {
         arrow.setCritical(true);
@@ -123,7 +92,25 @@ public class ProjectileUtil {
     }
   }
 
-  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
+  public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,
+      double spread, double vertBonus, boolean gravity) {
+    Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
+    ShulkerBullet bullet = shooter.getWorld()
+        .spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
+            ShulkerBullet.class, e -> e.setVelocity(velocity));
+    bullet.setShooter(shooter);
+    bullet.setGravity(gravity);
+
+    setProjctileAttackSpeedMeta(bullet, attackMult);
+    setProjectileShotIdMeta(bullet);
+
+    if (shooter instanceof Player && ((Player) shooter).isSneaking()) {
+      setProjectileSneakMeta(bullet);
+    }
+  }
+
+  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
+      double verticalBonus) {
     return getProjectileVelocity(shooter, speed, spread, verticalBonus, false);
   }
 
@@ -167,6 +154,10 @@ public class ProjectileUtil {
         new FixedMetadataValue(StrifePlugin.getInstance(), true));
   }
 
+  public static void setProjectileShotIdMeta(Projectile proj) {
+    proj.setMetadata(SHOT_ID_META, new FixedMetadataValue(StrifePlugin.getInstance(), shotId));
+  }
+
   public static boolean isProjectile(EntityType entityType) {
     switch (entityType) {
       case ARROW:
@@ -191,5 +182,9 @@ public class ProjectileUtil {
 
   private static double randomOffset(double magnitude) {
     return 0.11 + magnitude * 0.005;
+  }
+
+  private static double randomWandOffset(double magnitude) {
+    return 0.12 + magnitude * 0.005;
   }
 }

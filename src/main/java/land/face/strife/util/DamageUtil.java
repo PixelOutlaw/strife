@@ -58,7 +58,6 @@ import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
-  private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
   private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   public static double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
@@ -448,8 +447,7 @@ public class DamageUtil {
     }
     if (attacker instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-          buildMissIndicator((Player) attacker), "&7&oMiss");
-      MessageUtils.sendActionBar((Player) attacker, ATTACK_MISSED);
+          buildMissIndicator((Player) attacker), "&7&lMiss");
     }
   }
 
