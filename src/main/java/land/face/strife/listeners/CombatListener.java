@@ -220,6 +220,8 @@ public class CombatListener implements Listener {
       return;
     }
 
+    putSlimeHit(attackEntity);
+
     if (attackEntity instanceof Bee) {
       plugin.getDamageManager().dealDamage(attacker, defender, strifeDamageEvent.getFinalDamage());
       event.setCancelled(true);
