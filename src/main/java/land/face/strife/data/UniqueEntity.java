@@ -31,7 +31,7 @@ public class UniqueEntity {
   private boolean burnImmune;
   private boolean fallImmune;
   private boolean ignoreSneak;
-  private boolean allowMods;
+  private int maxMods;
   private boolean removeFollowMods;
   private boolean powered;
   private double displaceMultiplier;
@@ -155,12 +155,12 @@ public class UniqueEntity {
     this.ignoreSneak = ignoreSneak;
   }
 
-  public boolean isAllowMods() {
-    return allowMods;
+  public int getMaxMods() {
+    return maxMods;
   }
 
-  public void setAllowMods(boolean allowMods) {
-    this.allowMods = allowMods;
+  public void setMaxMods(int maxMods) {
+    this.maxMods = maxMods;
   }
 
   public boolean isRemoveFollowMods() {

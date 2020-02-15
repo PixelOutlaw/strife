@@ -701,7 +701,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
-      uniqueEntity.setAllowMods(cs.getBoolean("allow-mob-mods", true));
+      uniqueEntity.setMaxMods(cs.getInt("max-mods", 3));
       uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
       if (uniqueEntity.getType() == EntityType.CREEPER) {
         uniqueEntity.setPowered(cs.getBoolean("powered", false));
@@ -714,8 +714,9 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
-      Disguise disguise = PlayerDataUtil
-          .parseDisguise(cs.getConfigurationSection("disguise"), uniqueEntity.getName());
+      Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
+          uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0);
+
       if (disguise != null) {
         uniqueEntityManager.cacheDisguise(uniqueEntity, disguise);
       }
