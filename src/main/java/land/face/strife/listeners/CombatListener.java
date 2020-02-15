@@ -199,6 +199,8 @@ public class CombatListener implements Listener {
       return;
     }
 
+    Bukkit.getScheduler().runTaskLater(plugin, () -> defendEntity.setNoDamageTicks(0), 0L);
+
     boolean isSneakAttack = isProjectile ?
         plugin.getSneakManager().isSneakAttack(projectile, defender.getEntity())
         : plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity());
