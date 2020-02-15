@@ -22,6 +22,7 @@ import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -58,7 +59,7 @@ public class PlayerDataUtil {
     }
   }
 
-  public static Disguise parseDisguise(ConfigurationSection section, String name) {
+  public static Disguise parseDisguise(ConfigurationSection section, String name, boolean dynamic) {
     if (section == null) {
       return null;
     }
@@ -81,6 +82,7 @@ public class PlayerDataUtil {
       PlayerDisguise playerDisguise = new PlayerDisguise(name, disguisePlayer);
       playerDisguise.setReplaceSounds(true);
       playerDisguise.setName("<Inherit>");
+      playerDisguise.setDynamicName(dynamic);
       return playerDisguise;
     }
     if (type.isMob()) {
@@ -97,6 +99,11 @@ public class PlayerDataUtil {
             case RABBIT:
               RabbitType rabbitType = RabbitType.valueOf(typeData);
               ((RabbitWatcher) watcher).setType(rabbitType);
+              break;
+            case ZOMBIE:
+              if (Boolean.parseBoolean(typeData)) {
+                ((ZombieWatcher) watcher).setBaby();
+              }
               break;
             case SLIME:
               ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
