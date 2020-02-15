@@ -45,8 +45,8 @@ public class ProjectileUtil {
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
-          randomWandOffset(projectiles), 0.23);
+      ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed,
+          randomWandOffset(projectiles), 0.23, true);
     }
 
     mob.getEntity().getWorld()
