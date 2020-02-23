@@ -4,12 +4,18 @@ import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.AgilityLocationContainer;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.LandEvent;
 import land.face.strife.events.LaunchEvent;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 public class LaunchAndLandListener implements Listener {
 
@@ -24,6 +30,33 @@ public class LaunchAndLandListener implements Listener {
     for (AgilityLocationContainer cont : plugin.getAgilityManager()
         .getInWorld(event.getLocation().getWorld().getName())) {
       AgilityLocationContainer.checkStart(cont, event.getPlayer(), event.getLocation());
+    }
+    if (!event.getPlayer().isSprinting() || MoveUtil.timeOffGround(event.getPlayer()) > 65) {
+      return;
+    }
+    if (event.getPlayer().hasPotionEffect(PotionEffectType.JUMP)
+        && event.getPlayer().getPotionEffect(PotionEffectType.JUMP).getAmplifier() < 0) {
+      return;
+    }
+    int lastSneak = MoveUtil.getLastSneak(event.getPlayer().getUniqueId());
+    if (lastSneak == -1 || lastSneak > 200) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (plugin.getEnergyManager().getEnergy(mob) > 10) {
+      plugin.getEnergyManager().changeEnergy(mob, -10);
+      Vector bonusVelocity = event.getPlayer().getLocation().getDirection()
+          .add(new Vector(0, 0.25, 0));
+      bonusVelocity.setY(Math.max(0.08, bonusVelocity.getY()));
+      double moveMult = 1 + 0.25 * mob.getStat(StrifeStat.MOVEMENT_SPEED) / 100;
+      bonusVelocity.normalize().multiply(0.28);
+      bonusVelocity.setX(bonusVelocity.getX() * moveMult);
+      bonusVelocity.setZ(bonusVelocity.getZ() * moveMult);
+
+      Vector oldVelocity = event.getPlayer().getVelocity().clone().setY(0);
+      event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
+      plugin.getSkillExperienceManager().addExperience(mob.getChampion(), LifeSkillType.AGILITY,
+          2, false, true);
     }
   }
 
