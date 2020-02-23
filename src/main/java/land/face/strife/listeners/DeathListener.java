@@ -22,6 +22,8 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
+import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
@@ -45,6 +47,7 @@ public class DeathListener implements Listener {
   public void onEntityDeathEvent(EntityDeathEvent event) {
     if (event instanceof PlayerDeathEvent) {
       plugin.getSoulManager().createSoul((Player) event.getEntity());
+      EndlessEffect.cancelEffects(event.getEntity());
       return;
     }
 
@@ -53,6 +56,8 @@ public class DeathListener implements Listener {
     }
 
     StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
+
+    plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
 
     if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
         .isDespawnOnUnload())) {
