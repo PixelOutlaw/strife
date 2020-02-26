@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import static land.face.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,7 +99,10 @@ import land.face.strife.data.effects.StandardDamage;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.data.effects.Summon;
+import land.face.strife.data.effects.SwingArm;
 import land.face.strife.data.effects.Teleport;
+import land.face.strife.data.effects.TeleportBehind;
+import land.face.strife.data.effects.Undisguise;
 import land.face.strife.data.effects.UntoggleAbility;
 import land.face.strife.data.effects.Wait;
 import land.face.strife.stats.AbilitySlot;
@@ -374,6 +378,7 @@ public class EffectManager {
       case COUNTER:
         effect = new Counter();
         ((Counter) effect).setDuration(cs.getInt("duration", 500));
+        ((Counter) effect).setRemoveOnTrigger(cs.getBoolean("remove-on-trigger", false));
         List<String> counterEffects = cs.getStringList("effects");
         Effect finalEffect = effect;
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
@@ -486,6 +491,13 @@ public class EffectManager {
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setDisguise(PlayerDataUtil.parseDisguise(
             cs.getConfigurationSection("disguise"), key, false));
+        String thrownStackMaterial = cs.getString("thrown-stack-material");
+        if (StringUtils.isNotBlank(thrownStackMaterial)) {
+          ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
+          stack.setAmount(cs.getInt("thrown-stack-amount", 1));
+          ItemStackExtensionsKt.setCustomModelData(stack, cs.getInt("thrown-stack-custom-data", 0));
+          ((ShootProjectile) effect).setThrownStack(stack);
+        }
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
         int color = cs.getInt("arrow-rgb-color", -1);
@@ -571,6 +583,9 @@ public class EffectManager {
         ((Teleport) effect).setVector(new Vector(x, y, z));
         ((Teleport) effect).setRelative(cs.getBoolean("relative", false));
         break;
+      case TELEPORT_BEHIND:
+        effect = new TeleportBehind();
+        break;
       case CONSUME_BLEED:
         effect = new ConsumeBleed();
         ((ConsumeBleed) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
@@ -613,6 +628,7 @@ public class EffectManager {
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
         ((Push) effect).setCancelFall(cs.getBoolean("cancel-fall", false));
+        ((Push) effect).setClamp(cs.getBoolean("clamp", true));
         ((Push) effect).setPushType(
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
         break;
@@ -631,6 +647,15 @@ public class EffectManager {
         ((Charm) effect)
             .setLifespanSeconds((float) cs.getDouble("lifespan-seconds", 30));
         ((Charm) effect).setOverrideMaster(cs.getBoolean("override", false));
+        break;
+      case SWING:
+        effect = new SwingArm();
+        ((SwingArm) effect).setDelay(cs.getInt("delay", 0));
+        ((SwingArm) effect).setRandom(cs.getBoolean("random", false));
+        ((SwingArm) effect).setSlot(EquipmentSlot.valueOf(cs.getString("hand", "HAND")));
+        break;
+      case UNDISGUISE:
+        effect = new Undisguise();
         break;
       case TARGET:
         effect = new ForceTarget();
@@ -801,8 +826,7 @@ public class EffectManager {
         break;
       case LORE:
         String loreId = cs.getString("lore-id", "");
-        boolean inverted = cs.getBoolean("inverted", false);
-        condition = new LoreCondition(loreId, inverted);
+        condition = new LoreCondition(loreId);
         break;
       case ENDLESS_EFFECT:
         boolean state = cs.getBoolean("state", true);
@@ -893,9 +917,7 @@ public class EffectManager {
         condition = new BlockingCondition(cs.getBoolean("state", true));
         break;
       case GROUNDED:
-        condition = new GroundedCondition(
-            cs.getBoolean("inverted", false),
-            cs.getBoolean("strict", false));
+        condition = new GroundedCondition(cs.getBoolean("strict", false));
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");
@@ -953,6 +975,7 @@ public class EffectManager {
       conditionUser = ConditionUser.ANY;
     }
 
+    condition.setInverted(cs.getBoolean("inverted", false));
     condition.setCompareTarget(compareTarget);
     condition.setComparison(comparison);
     condition.setConditionUser(conditionUser);

@@ -88,6 +88,7 @@ public abstract class Effect {
     SILENCE,
     BLEED,
     TELEPORT,
+    TELEPORT_BEHIND,
     CORRUPT,
     ADD_EARTH_RUNES,
     CONSUME_BLEED,
@@ -105,6 +106,8 @@ public abstract class Effect {
     TARGET,
     FORCE_STAT,
     SUMMON,
-    CHARM
+    CHARM,
+    SWING,
+    UNDISGUISE
   }
 }
