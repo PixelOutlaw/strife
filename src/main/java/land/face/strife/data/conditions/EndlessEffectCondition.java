@@ -14,7 +14,7 @@ public class EndlessEffectCondition extends Condition {
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     StrifeMob finalTarget = getCompareTarget() == CompareTarget.SELF ? attacker : target;
-    return state == (endlessEffect.getEndlessTimer(finalTarget) != null);
+    return state == (EndlessEffect.getEndlessEffect(finalTarget, endlessEffect) != null);
   }
 
   public void setEndlessEffect(EndlessEffect endlessEffect) {

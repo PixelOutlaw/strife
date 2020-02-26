@@ -7,11 +7,9 @@ import org.bukkit.entity.Player;
 
 public class GroundedCondition extends Condition {
 
-  private boolean inverted;
   private boolean strict;
 
-  public GroundedCondition(boolean inverted, boolean strict) {
-    this.inverted = inverted;
+  public GroundedCondition(boolean strict) {
     this.strict = strict;
   }
 
@@ -20,13 +18,13 @@ public class GroundedCondition extends Condition {
       if (strict) {
         return caster.getEntity().isOnGround();
       } else {
-        return isGroundedOrCloseToGround(caster.getEntity()) == !inverted;
+        return isGroundedOrCloseToGround(caster.getEntity());
       }
     } else {
       if (strict) {
         return target.getEntity().isOnGround();
       } else {
-        return isGroundedOrCloseToGround(target.getEntity()) == !inverted;
+        return isGroundedOrCloseToGround(target.getEntity());
       }
     }
   }
@@ -35,6 +33,6 @@ public class GroundedCondition extends Condition {
   // as grounded for players, so small falls and knockbacks
   // don't disable ground based conditions
   private boolean isGroundedOrCloseToGround(LivingEntity le) {
-    return le.isOnGround() || (le instanceof Player && MoveUtil.timeOffGround((Player) le) < 250);
+    return le.isOnGround() || (le instanceof Player && MoveUtil.timeOffGround((Player) le) <= 151);
   }
 }

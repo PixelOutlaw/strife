@@ -22,30 +22,47 @@ import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
-public class WandListener implements Listener {
+public class SwingListener implements Listener {
 
   private final StrifePlugin plugin;
   private static String notChargedMessage;
 
-  public WandListener(StrifePlugin plugin) {
+  private static Set<UUID> FAKE_SWINGS = new HashSet<>();
+
+  public SwingListener(StrifePlugin plugin) {
     this.plugin = plugin;
     notChargedMessage = plugin.getSettings().getString("language.wand.not-charged", "");
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onSwingLowest(PlayerInteractEvent event) {
+    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+      FAKE_SWINGS.remove(event.getPlayer().getUniqueId());
+      event.setCancelled(true);
+    }
+  }
+
   @EventHandler(priority = EventPriority.NORMAL)
-  public void onSwing(PlayerInteractEvent event) {
+  public void onSwingLeft(PlayerInteractEvent event) {
+    if (event.useItemInHand() == Result.DENY) {
+      return;
+    }
     if (event.getHand() == EquipmentSlot.OFF_HAND) {
       return;
     }
@@ -65,5 +82,9 @@ public class WandListener implements Listener {
       plugin.getStatUpdateManager().updateAttackAttrs(
           plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     }
+  }
+
+  public static void addFakeSwing(UUID uuid) {
+    FAKE_SWINGS.add(uuid);
   }
 }

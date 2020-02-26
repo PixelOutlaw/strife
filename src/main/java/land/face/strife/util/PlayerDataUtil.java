@@ -1,7 +1,11 @@
 package land.face.strife.util;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -10,6 +14,7 @@ import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionUser;
+import land.face.strife.listeners.SwingListener;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
@@ -20,21 +25,29 @@ import me.libraryaddict.disguise.disguisetypes.RabbitType;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
+import net.minecraft.server.v1_15_R1.PacketPlayOutAnimation;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerDataUtil {
+
+  private static Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
 
   public static void restoreHealth(LivingEntity le, double amount) {
     le.setHealth(Math.min(le.getHealth() + amount,
@@ -57,6 +70,50 @@ public class PlayerDataUtil {
     if (le instanceof Player) {
       StrifePlugin.getInstance().getEnergyRegenTask().addEnergy(le.getUniqueId(), amount, ticks);
     }
+  }
+
+  public static void swingHand(LivingEntity entity, EquipmentSlot slot, long delay) {
+    if (delay == 0) {
+      swing(entity, slot);
+      return;
+    }
+    Bukkit.getScheduler()
+        .runTaskLater(StrifePlugin.getInstance(), () -> swing(entity, slot), delay);
+  }
+
+  private static void swing(LivingEntity entity, EquipmentSlot slot) {
+    int swingSlot;
+    if (slot == EquipmentSlot.HAND) {
+      entity.swingMainHand();
+      swingSlot = 0;
+    } else {
+      entity.swingOffHand();
+      swingSlot = 3;
+    }
+    if (entity instanceof Player) {
+      SwingListener.addFakeSwing(entity.getUniqueId());
+      Player targetPlayer = (Player) entity;
+      PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(
+          ((CraftEntity) targetPlayer).getHandle(), swingSlot);
+      ((CraftPlayer) targetPlayer).getHandle().playerConnection.sendPacket(animationPacket);
+    }
+  }
+
+  public static Set<Player> getCachedNearbyPlayers(LivingEntity le) {
+    if (NEARBY_PLAYER_CACHE.containsKey(le.getUniqueId())) {
+      return NEARBY_PLAYER_CACHE.get(le.getUniqueId());
+    }
+    Set<Player> players = new HashSet<>();
+    for (org.bukkit.entity.Entity entity : le.getWorld()
+        .getNearbyEntities(le.getLocation(), 40, 40, 40, entity -> entity instanceof Player)) {
+      players.add((Player) entity);
+    }
+    NEARBY_PLAYER_CACHE.put(le.getUniqueId(), players);
+    return players;
+  }
+
+  public static void clearNearbyPlayerCache() {
+    NEARBY_PLAYER_CACHE.clear();
   }
 
   public static Disguise parseDisguise(ConfigurationSection section, String name, boolean dynamic) {
@@ -95,6 +152,10 @@ public class PlayerDataUtil {
             case FOX:
               Fox.Type foxType = Fox.Type.valueOf(typeData);
               ((FoxWatcher) watcher).setType(foxType);
+              break;
+            case SHEEP:
+              DyeColor color = DyeColor.valueOf(typeData.toUpperCase());
+              ((SheepWatcher) watcher).setColor(color);
               break;
             case RABBIT:
               RabbitType rabbitType = RabbitType.valueOf(typeData);
@@ -160,7 +221,7 @@ public class PlayerDataUtil {
           continue;
         }
       }
-      if (!condition.isMet(caster, target)) {
+      if (condition.isMet(caster, target) == condition.isInverted()) {
         LogUtil.printDebug("-- Skipping, condition " + condition + " not met!");
         return false;
       }
