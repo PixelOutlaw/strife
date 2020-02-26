@@ -158,6 +158,10 @@ public class DataListener implements Listener {
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     plugin.getCounterManager().clearCounters(event.getPlayer().getUniqueId());
+    plugin.getEnergyManager().setEnergyUnsafe(event.getPlayer().getUniqueId(), 50000);
+    event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100), 2L);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

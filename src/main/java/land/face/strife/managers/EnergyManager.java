@@ -36,6 +36,10 @@ public class EnergyManager {
     this.plugin = plugin;
   }
 
+  public void setEnergyUnsafe(UUID uuid, float amount) {
+    energyMap.put(uuid, amount);
+  }
+
   public void changeEnergy(Player player, float amount) {
     changeEnergy(plugin.getStrifeMobManager().getStatMob(player), amount);
   }
