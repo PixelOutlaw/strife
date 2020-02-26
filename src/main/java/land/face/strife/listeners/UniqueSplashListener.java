@@ -52,7 +52,7 @@ public class UniqueSplashListener implements Listener {
           .getMinimumEvasionMult(StatUtil.getEvasion(defender), StatUtil.getAccuracy(attacker));
       evasionMultiplier = evasionMultiplier + (DamageUtil.rollDouble() * (1 - evasionMultiplier));
       if (evasionMultiplier <= 0.5) {
-        DamageUtil.doEvasion(attackEntity, defendEntity);
+        DamageUtil.doEvasion(attacker, defender);
         event.setCancelled(true);
         return;
       }
@@ -60,7 +60,7 @@ public class UniqueSplashListener implements Listener {
       if (blockManager.rollBlock(defender, false)) {
         blockManager.blockFatigue(defendEntity.getUniqueId(), 1.0, false);
         blockManager.bumpRunes(defender);
-        DamageUtil.doBlock(attackEntity, defendEntity);
+        DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);
         return;
       }

@@ -33,7 +33,7 @@ public class DirectDamage extends Effect {
     if (canBeEvaded) {
       evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, abilityMods);
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        DamageUtil.doEvasion(caster.getEntity(), target.getEntity());
+        DamageUtil.doEvasion(caster, target);
         LogUtil.printDebug(" [Pre-Damage] Direct damage EVADED!");
         return;
       }

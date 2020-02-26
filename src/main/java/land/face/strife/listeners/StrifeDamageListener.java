@@ -84,7 +84,7 @@ public class StrifeDamageListener implements Listener {
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
-        DamageUtil.doEvasion(attacker.getEntity(), defender.getEntity());
+        DamageUtil.doEvasion(attacker, defender);
         removeIfExisting(event.getProjectile());
         CombatListener.putSlimeHit(attacker.getEntity());
         event.setCancelled(true);
@@ -214,8 +214,7 @@ public class StrifeDamageListener implements Listener {
       sneakDamage += defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill);
       sneakDamage *= attackMult;
       sneakDamage *= pvpMult;
-      SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent((Player) attacker.getEntity(),
-          defender.getEntity(), sneakSkill, sneakDamage);
+      SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
       if (!sneakEvent.isCancelled()) {
         defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
         rawDamage += sneakEvent.getSneakAttackDamage();
@@ -259,7 +258,7 @@ public class StrifeDamageListener implements Listener {
   private boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, float attackMult,
       float bonusCrit) {
     if (DamageUtil.isCrit(attacker, attackMult, bonusCrit)) {
-      DamageUtil.callCritEvent(attacker.getEntity(), attacker.getEntity());
+      DamageUtil.callCritEvent(attacker, attacker);
       defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
           Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
       return true;

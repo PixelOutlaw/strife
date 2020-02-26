@@ -39,25 +39,32 @@ public class SneakAttackListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSneakAttack(final SneakAttackEvent event) {
-    event.getVictim().getWorld().playSound(event.getVictim().getEyeLocation(),
-        Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 1.5f);
-    if (event.getSneakAttackDamage() < event.getVictim().getHealth()) {
-      plugin.getSneakManager().tempDisableSneak(event.getAttacker());
+    event.getVictim().getEntity().getWorld()
+        .playSound(event.getVictim().getEntity().getEyeLocation(),
+            Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 1.5f);
+    if (event.getSneakAttackDamage() < event.getVictim().getEntity().getHealth()) {
+      plugin.getSneakManager().tempDisableSneak(event.getAttacker().getEntity());
     }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onSneakAttackExp(final SneakAttackEvent event) {
-    if (event.getVictim() instanceof Player || (!(event.getVictim() instanceof Mob))) {
+    if (event.getAttacker().getEntity() instanceof Player) {
       return;
     }
-    if (event.getAttacker().getGameMode() == GameMode.CREATIVE) {
+    if (event.getVictim().getEntity() instanceof Player || (!(event.getVictim()
+        .getEntity() instanceof Mob))) {
       return;
     }
-    boolean finishingBlow = event.getSneakAttackDamage() > event.getVictim().getHealth();
+    if (((Player) event.getAttacker().getEntity()).getGameMode() == GameMode.CREATIVE) {
+      return;
+    }
+    boolean finishingBlow =
+        event.getSneakAttackDamage() > event.getVictim().getEntity().getHealth();
     float gainedXp = plugin.getSneakManager()
-        .getSneakAttackExp(event.getVictim(), event.getSneakSkill(), finishingBlow);
+        .getSneakAttackExp(event.getVictim().getEntity(), event.getSneakSkill(), finishingBlow);
     plugin.getSkillExperienceManager()
-        .addExperience(event.getAttacker(), LifeSkillType.SNEAK, gainedXp, false);
+        .addExperience((Player) event.getAttacker().getEntity(), LifeSkillType.SNEAK, gainedXp,
+            false);
   }
 }

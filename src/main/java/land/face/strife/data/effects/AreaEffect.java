@@ -116,7 +116,7 @@ public class AreaEffect extends LocationEffect {
     if (canBeEvaded) {
       float evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, attackModifiers);
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        DamageUtil.doEvasion(caster.getEntity(), target.getEntity());
+        DamageUtil.doEvasion(caster, target);
         return true;
       }
     }

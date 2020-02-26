@@ -56,7 +56,7 @@ public class BlockManager {
       blockFatigue(defender.getEntity().getUniqueId(), attackMult, isBlocking);
       bumpRunes(defender);
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
-      DamageUtil.doBlock(attacker.getEntity(), defender.getEntity());
+      DamageUtil.doBlock(attacker, defender);
       if (attacker.getEntity() instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
             defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "&e&lBlocked!");

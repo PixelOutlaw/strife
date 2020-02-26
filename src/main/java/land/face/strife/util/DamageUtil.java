@@ -439,34 +439,34 @@ public class DamageUtil {
     return evasionMultiplier;
   }
 
-  public static void doEvasion(LivingEntity attacker, LivingEntity defender) {
+  public static void doEvasion(StrifeMob attacker, StrifeMob defender) {
     callEvadeEvent(defender, attacker);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-    if (defender instanceof Player) {
-      MessageUtils.sendActionBar((Player) defender, ATTACK_DODGED);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
+    if (defender.getEntity() instanceof Player) {
+      MessageUtils.sendActionBar((Player) defender.getEntity(), ATTACK_DODGED);
     }
-    if (attacker instanceof Player) {
-      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-          buildMissIndicator((Player) attacker), "&7&lMiss");
+    if (attacker.getEntity() instanceof Player) {
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+          defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "&7&lMiss");
     }
   }
 
-  public static void doBlock(LivingEntity attacker, LivingEntity defender) {
+  public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     String defenderBar = ATTACK_BLOCKED;
-    int runes = getBlockManager().getEarthRunes(defender.getUniqueId());
+    int runes = getBlockManager().getEarthRunes(defender.getEntity().getUniqueId());
     if (runes > 0) {
       StringBuilder sb = new StringBuilder(defenderBar);
       sb.append(TextUtils.color("&2 "));
       sb.append(IntStream.range(0, runes).mapToObj(i -> "▼").collect(Collectors.joining("")));
       defenderBar = sb.toString();
     }
-    if (defender instanceof Player) {
-      MessageUtils.sendActionBar((Player) defender, defenderBar);
+    if (defender.getEntity() instanceof Player) {
+      MessageUtils.sendActionBar((Player) defender.getEntity(), defenderBar);
     }
-    if (attacker instanceof Player) {
-      MessageUtils.sendActionBar((Player) attacker, ATTACK_BLOCKED);
+    if (attacker.getEntity() instanceof Player) {
+      MessageUtils.sendActionBar((Player) attacker.getEntity(), ATTACK_BLOCKED);
     }
   }
 
@@ -594,25 +594,24 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getBuffManager().getBuffFromId(id);
   }
 
-  public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {
+  public static void callCritEvent(StrifeMob attacker, StrifeMob victim) {
     CriticalEvent c = new CriticalEvent(attacker, victim);
     Bukkit.getPluginManager().callEvent(c);
   }
 
-  public static void callEvadeEvent(LivingEntity evader, LivingEntity attacker) {
+  public static void callEvadeEvent(StrifeMob evader, StrifeMob attacker) {
     EvadeEvent ev = new EvadeEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
   }
 
-  public static SneakAttackEvent callSneakAttackEvent(Player attacker, LivingEntity victim,
+  public static SneakAttackEvent callSneakAttackEvent(StrifeMob attacker, StrifeMob victim,
       float sneakSkill, float sneakDamage) {
-    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill,
-        sneakDamage);
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill, sneakDamage);
     Bukkit.getPluginManager().callEvent(sneakAttackEvent);
     return sneakAttackEvent;
   }
 
-  public static void callBlockEvent(LivingEntity evader, LivingEntity attacker) {
+  public static void callBlockEvent(StrifeMob evader, StrifeMob attacker) {
     BlockEvent ev = new BlockEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
   }
@@ -652,26 +651,6 @@ public class DamageUtil {
 
   public static void restoreEnergy(StrifeMob strifeMob, float amount) {
     StrifePlugin.getInstance().getEnergyManager().changeEnergy(strifeMob, amount);
-  }
-
-  public static void applyPotionEffect(LivingEntity entity, PotionEffectType type, int power,
-      int duration) {
-    if (entity == null || !entity.isValid()) {
-      return;
-    }
-    if (!entity.hasPotionEffect(type)) {
-      entity.addPotionEffect(new PotionEffect(type, duration, power));
-      return;
-    }
-    PotionEffect effect = entity.getPotionEffect(type);
-    if (power < effect.getAmplifier()) {
-      return;
-    }
-    if (power == Math.abs(effect.getAmplifier()) && duration < effect.getDuration()) {
-      return;
-    }
-    entity.removePotionEffect(type);
-    entity.addPotionEffect(new PotionEffect(type, duration, power));
   }
 
   public static AttackType getAttackType(EntityDamageByEntityEvent event) {
