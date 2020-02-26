@@ -23,7 +23,6 @@ import static land.face.strife.util.DamageUtil.buildMissIndicator;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CounterData;
@@ -79,7 +78,11 @@ public class CounterManager {
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
         plugin.getEffectManager().execute(defenderMob, attacker, data.getEffects());
-        data.setTriggered(true);
+        if (data.isRemoveOnTrigger()) {
+          counterMap.get(defender.getUniqueId()).remove(data);
+        } else {
+          data.setTriggered(true);
+        }
         break;
       }
     }

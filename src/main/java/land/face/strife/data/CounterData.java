@@ -8,6 +8,7 @@ public class CounterData {
   private final long endTime;
   private final List<Effect> effects;
   private boolean triggered = false;
+  private boolean removeOnTrigger = false;
 
   public CounterData(long endTime, List<Effect> effects) {
     this.endTime = endTime;
@@ -28,5 +29,13 @@ public class CounterData {
 
   public void setTriggered(boolean triggered) {
     this.triggered = triggered;
+  }
+
+  public boolean isRemoveOnTrigger() {
+    return removeOnTrigger;
+  }
+
+  public void setRemoveOnTrigger(boolean removeOnTrigger) {
+    this.removeOnTrigger = removeOnTrigger;
   }
 }
