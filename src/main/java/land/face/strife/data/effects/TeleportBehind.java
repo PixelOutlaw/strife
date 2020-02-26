@@ -15,10 +15,10 @@ public class TeleportBehind extends Effect {
 
     Location location = target.getEntity().getLocation().clone();
     location.add(new Vector(0, 0.25, 0));
-    location.subtract(direction.multiply(0.5));
+    location.subtract(direction.multiply(1));
     int attempts = 0;
     while (attempts <= 5 && location.getWorld().getBlockAt(location).getType().isSolid()) {
-      location.subtract(direction.multiply(0.1));
+      location.subtract(direction.multiply(0.2));
       attempts++;
     }
     location.setDirection(target.getEntity().getLocation().getDirection());
