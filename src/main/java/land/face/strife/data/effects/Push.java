@@ -12,6 +12,7 @@ public class Push extends Effect {
   private double power;
   private double height;
   private boolean cancelFall;
+  private boolean clamp;
   private PushType pushType;
   private Vector tempVector;
 
@@ -44,16 +45,34 @@ public class Push extends Effect {
       default:
         return;
     }
-    Vector newVelocity = target.getEntity().getVelocity();
+    Vector oldVelocity = target.getEntity().getVelocity().clone();
+    Vector newVelocity = oldVelocity.clone();
     if (cancelFall) {
-      if (newVelocity.getY() < 0) {
-        newVelocity.setY(0);
+      if (oldVelocity.getY() < 0) {
+        oldVelocity.setY(0);
       }
       target.getEntity().setFallDistance(0);
     }
-    newVelocity.add(direction);
-    newVelocity.add(new Vector(0, height / 10, 0));
+    if (clamp) {
+      newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
+      newVelocity.setY(clampRay(oldVelocity.getY(), height / 10));
+      newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
+    } else {
+      newVelocity.add(direction);
+      newVelocity.add(new Vector(0, height / 10, 0));
+    }
     target.getEntity().setVelocity(newVelocity);
+  }
+
+  private double clampRay(double old, double change) {
+    if (change == 0) {
+      return old;
+    }
+    if (change > 0) {
+      return Math.min(old + change, change);
+    } else {
+      return Math.max(old + change, change);
+    }
   }
 
   public void setTempVectorFromWSE(WorldSpaceEffect entity) {
@@ -86,6 +105,10 @@ public class Push extends Effect {
 
   public void setCancelFall(boolean cancelFall) {
     this.cancelFall = cancelFall;
+  }
+
+  public void setClamp(boolean clamp) {
+    this.clamp = clamp;
   }
 
   public void setPushType(PushType pushType) {
