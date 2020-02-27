@@ -32,7 +32,7 @@ public class EndlessEffectTimer extends BukkitRunnable {
     }
     if (mob.getEntity() == null || !mob.getEntity().isValid()) {
       LogUtil.printDebug("Cancelled endless effect due to invalid entity");
-      endlessEffect.removeEffectOnTarget(mob);
+      EndlessEffect.removeEffectOnTarget(mob, endlessEffect);
       cancel();
       return;
     }
@@ -59,7 +59,7 @@ public class EndlessEffectTimer extends BukkitRunnable {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
       plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }
-    endlessEffect.removeEffectOnTarget(mob);
+    EndlessEffect.removeEffectOnTarget(mob, endlessEffect);
     cancel();
   }
 
@@ -69,6 +69,14 @@ public class EndlessEffectTimer extends BukkitRunnable {
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
       plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }
-    endlessEffect.removeEffectOnTarget(mob);
+    EndlessEffect.removeEffectOnTarget(mob, endlessEffect);
+  }
+
+  public StrifeMob getMob() {
+    return mob;
+  }
+
+  public EndlessEffect getEndlessEffect() {
+    return endlessEffect;
   }
 }
