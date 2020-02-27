@@ -72,7 +72,7 @@ public class LoreAbilityListener implements Listener {
     Champion champion = event.getEvader().getChampion();
     if (champion != null) {
       executeBoundEffects(event.getEvader(), event.getAttacker().getEntity(),
-          event.getAttacker().getChampion().getLoreAbilities().get(ON_EVADE));
+          event.getEvader().getChampion().getLoreAbilities().get(ON_EVADE));
     }
     executeFiniteEffects(event.getEvader(), event.getAttacker(), ON_EVADE);
   }
@@ -145,6 +145,9 @@ public class LoreAbilityListener implements Listener {
 
   private void executeBoundEffects(StrifeMob caster, LivingEntity target,
       Set<LoreAbility> effects) {
+    if (effects == null || effects.isEmpty()) {
+      return;
+    }
     Iterator<LoreAbility> it = effects.iterator();
     while (it.hasNext()) {
       LoreAbility la = it.next();
