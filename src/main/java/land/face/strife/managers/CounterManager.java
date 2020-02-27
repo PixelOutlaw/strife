@@ -21,8 +21,11 @@ package land.face.strife.managers;
 import static land.face.strife.util.DamageUtil.buildMissIndicator;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CounterData;
@@ -33,7 +36,7 @@ import org.bukkit.entity.Player;
 
 public class CounterManager {
 
-  private final Map<UUID, ConcurrentSet<CounterData>> counterMap = new HashMap<>();
+  private final Map<UUID, Set<CounterData>> counterMap = new HashMap<>();
   private StrifePlugin plugin;
   private Sound counterSound;
   private float pitch;
@@ -51,7 +54,7 @@ public class CounterManager {
 
   public void addCounter(UUID uuid, CounterData counterData) {
     if (!counterMap.containsKey(uuid)) {
-      counterMap.put(uuid, new ConcurrentSet<>());
+      counterMap.put(uuid, new HashSet<>());
     }
     counterMap.get(uuid).add(counterData);
   }
@@ -61,7 +64,9 @@ public class CounterManager {
       return false;
     }
     boolean isCountered = false;
-    for (CounterData data : counterMap.get(defender.getUniqueId())) {
+    Iterator<CounterData> it = counterMap.get(defender.getUniqueId()).iterator();
+    while (it.hasNext()) {
+      CounterData data = it.next();
       if (System.currentTimeMillis() > data.getEndTime()) {
         counterMap.get(defender.getUniqueId()).remove(data);
         continue;
