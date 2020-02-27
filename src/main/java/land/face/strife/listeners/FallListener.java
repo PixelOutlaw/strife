@@ -46,9 +46,10 @@ public class FallListener implements Listener {
     int msSinceLastSneak = MoveUtil.getLastSneak(event.getEntity().getUniqueId());
     boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= fallMs;
 
-    double damage = event.getDamage(DamageModifier.BASE);
+    double damage = event.getDamage(DamageModifier.BASE) - 1;
     double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
-    damage += damage * maxHealth * 0.04;
+    damage += damage * maxHealth * 0.055;
+    damage = Math.max(damage, 0);
 
     Champion champion = plugin.getChampionManager().getChampion((Player) event.getEntity());
     if (rollBonus) {
@@ -73,7 +74,7 @@ public class FallListener implements Listener {
           .addExperience(champion, LifeSkillType.AGILITY, xp, false, true);
     }
 
-    if (damage < 2) {
+    if (damage <= 0) {
       event.setCancelled(true);
       return;
     }

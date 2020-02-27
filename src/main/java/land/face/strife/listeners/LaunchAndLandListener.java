@@ -43,17 +43,17 @@ public class LaunchAndLandListener implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-    if (plugin.getEnergyManager().getEnergy(mob) > 10) {
-      plugin.getEnergyManager().changeEnergy(mob, -10);
-      Vector bonusVelocity = event.getPlayer().getLocation().getDirection()
-          .add(new Vector(0, 0.25, 0));
-      bonusVelocity.setY(Math.max(0.08, bonusVelocity.getY()));
+    if (plugin.getEnergyManager().getEnergy(mob) > 12) {
+      plugin.getEnergyManager().changeEnergy(mob, -12);
+      Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
+      bonusVelocity.setY(Math.max(0.06, bonusVelocity.getY()));
       double moveMult = 1 + 0.25 * mob.getStat(StrifeStat.MOVEMENT_SPEED) / 100;
       bonusVelocity.normalize().multiply(0.28);
       bonusVelocity.setX(bonusVelocity.getX() * moveMult);
       bonusVelocity.setZ(bonusVelocity.getZ() * moveMult);
 
-      Vector oldVelocity = event.getPlayer().getVelocity().clone().setY(0);
+      Vector oldVelocity = event.getPlayer().getVelocity().clone()
+          .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
       event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
       plugin.getSkillExperienceManager().addExperience(mob.getChampion(), LifeSkillType.AGILITY,
           2, false, true);
