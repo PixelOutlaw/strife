@@ -20,7 +20,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
@@ -45,6 +47,7 @@ public class ShootProjectile extends Effect {
   private boolean silent;
   private float yield;
   private Disguise disguise = null;
+  private ItemStack thrownStack = null;
   private List<String> hitEffects;
 
   @Override
@@ -57,7 +60,7 @@ public class ShootProjectile extends Effect {
     if (radialAngle != 0) {
       startAngle = -radialAngle / 2;
     }
-    double newSpread = spread * projectiles;
+    double newSpread = projectiles == 1 ? spread : spread * Math.pow(projectiles, 0.5);
     for (int i = 0; i < projectiles; i++) {
       Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed,
           newSpread, verticalBonus, zeroPitch);
@@ -74,12 +77,15 @@ public class ShootProjectile extends Effect {
         projectile.setSilent(true);
       }
 
+      if (projectile instanceof ThrowableProjectile && thrownStack != null) {
+        ((ThrowableProjectile) projectile).setItem(thrownStack);
+      }
+      if (ignite) {
+        projectile.setFireTicks(200);
+      }
       if (projectileEntity == EntityType.ARROW) {
         if (arrowColor != null) {
           ((Arrow) projectile).setColor(arrowColor);
-        }
-        if (ignite) {
-          projectile.setFireTicks(200);
         }
         ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
         ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
@@ -206,6 +212,10 @@ public class ShootProjectile extends Effect {
 
   public void setDisguise(Disguise disguise) {
     this.disguise = disguise;
+  }
+
+  public void setThrownStack(ItemStack thrownStack) {
+    this.thrownStack = thrownStack;
   }
 
   private int getProjectileCount(StrifeMob caster) {
