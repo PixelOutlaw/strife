@@ -4,9 +4,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
+import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -36,6 +38,24 @@ public class StrifeMobManager {
     strifeMob.setLivingEntity(entity);
     plugin.getBarrierManager().createBarrierEntry(strifeMob);
     return strifeMob;
+  }
+
+  public void addFiniteEffect(StrifeMob mob, LoreAbility loreAbility, int uses, int maxDuration) {
+    for (FiniteUsesEffect finiteUsesEffect : mob.getTempEffects()) {
+      if (finiteUsesEffect.getExpiration() > System.currentTimeMillis()) {
+        mob.getTempEffects().remove(finiteUsesEffect);
+        continue;
+      }
+      if (finiteUsesEffect.getLoreAbility() == loreAbility) {
+        finiteUsesEffect.setExpiration(System.currentTimeMillis() + maxDuration);
+        finiteUsesEffect.setUses(Math.max(finiteUsesEffect.getUses(), uses));
+        return;
+      }
+    }
+    FiniteUsesEffect finiteUsesEffect = new FiniteUsesEffect();
+    finiteUsesEffect.setExpiration(System.currentTimeMillis() + maxDuration);
+    finiteUsesEffect.setUses(uses);
+    mob.getTempEffects().add(finiteUsesEffect);
   }
 
   public void addBuff(UUID uuid, String buffId, double durationMultiplier) {

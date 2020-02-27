@@ -57,7 +57,9 @@ public class DeathListener implements Listener {
 
     StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
 
-    plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
+    if (mob != null) {
+      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
+    }
 
     if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
         .isDespawnOnUnload())) {

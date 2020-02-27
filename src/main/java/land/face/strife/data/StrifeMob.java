@@ -1,8 +1,8 @@
 package land.face.strife.data;
 
-import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -35,12 +36,14 @@ public class StrifeMob {
   private Set<String> mods = new HashSet<>();
   private Set<String> factions = new HashSet<>();
 
+  private Set<FiniteUsesEffect> tempEffects = new HashSet<>();
+
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
 
   private LivingEntity master = null;
 
-  private final Set<StrifeMob> minions = new ConcurrentSet<>();
+  private final Set<StrifeMob> minions = new HashSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
@@ -224,7 +227,9 @@ public class StrifeMob {
   }
 
   public Set<StrifeMob> getMinions() {
-    for (StrifeMob minion : minions) {
+    Iterator<StrifeMob> it = minions.iterator();
+    while (it.hasNext()) {
+      StrifeMob minion = it.next();
       if (minion == null || minion.getEntity() == null || !minion.getEntity().isValid()) {
         minions.remove(minion);
       }
@@ -247,6 +252,10 @@ public class StrifeMob {
 
   public void setMaster(LivingEntity master) {
     this.master = master;
+  }
+
+  public Set<FiniteUsesEffect> getTempEffects() {
+    return tempEffects;
   }
 
   public boolean isDespawnOnUnload() {

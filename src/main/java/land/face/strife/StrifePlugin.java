@@ -487,8 +487,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
-    Bukkit.getPluginManager().registerEvents(
-        new LoreAbilityListener(strifeMobManager, championManager, loreAbilityManager), this);
+    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
