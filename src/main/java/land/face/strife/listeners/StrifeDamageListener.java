@@ -18,6 +18,8 @@
  */
 package land.face.strife.listeners;
 
+import static land.face.strife.util.DamageUtil.buildFloatIndicator;
+
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
@@ -47,8 +49,8 @@ public class StrifeDamageListener implements Listener {
 
   public StrifeDamageListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.pvp-multiplier", 0.5);
+    PVP_MULT = (float) StrifePlugin.getInstance().getSettings().getDouble(
+        "config.mechanics.pvp-multiplier", 0.5);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -65,7 +67,6 @@ public class StrifeDamageListener implements Listener {
           plugin.getChampionManager().getChampion((Player) attacker.getEntity()));
     }
     if (defender.getEntity() instanceof Player) {
-      plugin.getSneakManager().tempDisableSneak(defender.getEntity());
       plugin.getChampionManager().updateEquipmentStats(
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
@@ -204,8 +205,7 @@ public class StrifeDamageListener implements Listener {
     rawDamage *= DamageUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
-    boolean isSneakAttack =
-        event.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK");
+    boolean isSneakAttack = event.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK");
     if (isSneakAttack) {
       Player player = (Player) attacker.getEntity();
       float sneakSkill = plugin.getChampionManager().getChampion(player)
@@ -218,6 +218,8 @@ public class StrifeDamageListener implements Listener {
       if (!sneakEvent.isCancelled()) {
         defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
         rawDamage += sneakEvent.getSneakAttackDamage();
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+            defender.getEntity(), buildFloatIndicator((Player) attacker.getEntity()), "&7Sneak Attack!");
       }
     }
 
@@ -249,7 +251,6 @@ public class StrifeDamageListener implements Listener {
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
     plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
-    plugin.getSneakManager().tempDisableSneak(attacker.getEntity());
 
     defender.trackDamage(attacker, (float) finalDamage);
     event.setFinalDamage(finalDamage);

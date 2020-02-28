@@ -1,0 +1,166 @@
+/**
+ * The MIT License Copyright (c) 2015 Teal Cube Games
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+package land.face.strife.managers;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.util.MoveUtil;
+import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.util.Vector;
+
+public class StealthManager {
+
+  private StrifePlugin plugin;
+
+  private Set<UUID> stealthedPlayers = new HashSet<>();
+
+  private float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.base-sneak-exp");
+  private float SNEAK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.sneak-exp-per-level");
+  private float BASE_SNEAK_ATTACK_EXP = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.base-sneak-attack-exp");
+  private float SNEAK_ATTACK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.sneak-attack-exp-per-level");
+  private float BASE_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.base-particles", 2);
+  private float MOVEMENT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.movement-particle-penalty", 2);
+  private float SPRINT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.mechanics.sneak.sprint-particle-penalty", 2);
+  private float MAX_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
+      .getInt("config.mechanics.sneak.max-stealth-particles", 2);
+  private float SNEAK_SKILL_PARTICLE_REDUCTION = (float) StrifePlugin.getInstance().getSettings()
+      .getInt("config.mechanics.sneak.stealth-levels-per-removed-particle", 25);
+
+  public StealthManager(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  public boolean isSneakAttack(LivingEntity attacker, LivingEntity target) {
+    if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
+      return false;
+    }
+    target = TargetingUtil.getMobTarget(target);
+    return target == null || !target.isValid();
+  }
+
+  public boolean isSneakAttack(Projectile projectile, LivingEntity target) {
+    if (!projectile.hasMetadata(ProjectileUtil.SNEAK_ATTACK_META)) {
+      return false;
+    }
+    return isSneakAngle(target, projectile.getLocation().getDirection());
+  }
+
+  public boolean isSneakAngle(LivingEntity target, Vector direction) {
+    if (TargetingUtil.getMobTarget(target) != null) {
+      return false;
+    }
+    Vector entitySightVector = target.getLocation().getDirection();
+    float angle = entitySightVector.angle(direction);
+    return angle > 0.6;
+  }
+
+  public float getSneakActionExp(float enemyLevel, float sneakLevel) {
+    float levelPenaltyMult = 1;
+    if (enemyLevel + 10 < sneakLevel * 2) {
+      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(enemyLevel+10))));
+    }
+    return (BASE_SNEAK_EXP + enemyLevel * SNEAK_EXP_PER_LEVEL) * levelPenaltyMult;
+  }
+
+  public float getSneakAttackExp(LivingEntity victim, float sneakLevel, boolean finishingBlow) {
+    float victimLevel = StatUtil.getMobLevel(victim);
+    float levelPenaltyMult = 1;
+    if (victimLevel + 10 < sneakLevel * 2) {
+      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(victimLevel+10))));
+    }
+    float gainedXp = BASE_SNEAK_ATTACK_EXP + victimLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
+    if (finishingBlow) {
+      gainedXp *= 2;
+    }
+    return gainedXp * levelPenaltyMult;
+  }
+
+  public boolean isStealthed(LivingEntity livingEntity) {
+    if (!(livingEntity instanceof Player)) {
+      return false;
+    }
+    return isStealthed((Player) livingEntity);
+  }
+
+  public boolean isStealthed(Player player) {
+    return stealthedPlayers.contains(player.getUniqueId());
+  }
+
+  public void stealthPlayer(Player player) {
+    player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
+    stealthedPlayers.add(player.getUniqueId());
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      p.hidePlayer(plugin, player);
+    }
+  }
+
+  public void unstealthPlayer(Player player) {
+    if (!stealthedPlayers.contains(player.getUniqueId())) {
+      return;
+    }
+    player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
+    stealthedPlayers.remove(player.getUniqueId());
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      p.showPlayer(plugin, player);
+    }
+  }
+
+  public void doStealthParticles(Player player) {
+    if (!isStealthed(player)) {
+      return;
+    }
+    player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation(), 60, 12, 12, 12, 0);
+    double particles = Math.random() * BASE_STEALTH_PARTICLES;
+    if (MoveUtil.hasMoved(player)) {
+      if (!player.isSneaking()) {
+        particles *= MOVEMENT_PARTICLE_MULT;
+      }
+      if (player.isSprinting()) {
+        particles *= SPRINT_PARTICLE_MULT;
+      }
+    }
+    double sneakSkill = PlayerDataUtil.getEffectiveLifeSkill(player, LifeSkillType.SNEAK, false);
+    particles -= sneakSkill / SNEAK_SKILL_PARTICLE_REDUCTION;
+    particles = Math.min(Math.round(particles), MAX_STEALTH_PARTICLES);
+    for (int i = 0; i < particles; i++) {
+      Location newLoc = player.getLocation().clone()
+          .add(-0.7 + Math.random() * 1.4, Math.random() * 2, -0.7 + Math.random() * 1.4);
+      newLoc.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, 89, 98, 98, 1);
+    }
+  }
+}

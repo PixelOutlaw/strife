@@ -151,7 +151,8 @@ public class CombatListener implements Listener {
           isMultishot = true;
         } else {
           defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
-          Bukkit.getScheduler().runTaskLater(plugin, () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 1000L);
+          Bukkit.getScheduler().runTaskLater(plugin,
+              () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 1000L);
         }
       }
     }
@@ -201,9 +202,7 @@ public class CombatListener implements Listener {
 
     Bukkit.getScheduler().runTaskLater(plugin, () -> defendEntity.setNoDamageTicks(0), 0L);
 
-    boolean isSneakAttack = isProjectile ?
-        plugin.getSneakManager().isSneakAttack(projectile, defender.getEntity())
-        : plugin.getSneakManager().isSneakAttack(attacker.getEntity(), defender.getEntity());
+    boolean isSneakAttack = plugin.getStealthManager().isStealthed(attackEntity);
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageType);
     strifeDamageEvent.setSneakAttack(isSneakAttack);
@@ -214,6 +213,10 @@ public class CombatListener implements Listener {
     strifeDamageEvent.setConsumeEarthRunes(true);
     strifeDamageEvent.setProjectile(projectile);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
+
+    if (isSneakAttack) {
+      plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
+    }
 
     if (strifeDamageEvent.isCancelled()) {
       event.setCancelled(true);

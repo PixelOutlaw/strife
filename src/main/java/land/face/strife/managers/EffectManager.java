@@ -47,6 +47,7 @@ import land.face.strife.data.conditions.NearbyEntitiesCondition;
 import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.StatCondition;
+import land.face.strife.data.conditions.StealthCondition;
 import land.face.strife.data.conditions.TimeCondition;
 import land.face.strife.data.conditions.UniqueCondition;
 import land.face.strife.data.conditions.VelocityCondition;
@@ -96,6 +97,7 @@ import land.face.strife.data.effects.ShootProjectile;
 import land.face.strife.data.effects.Silence;
 import land.face.strife.data.effects.Speak;
 import land.face.strife.data.effects.StandardDamage;
+import land.face.strife.data.effects.Stealth;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.data.effects.Summon;
@@ -310,6 +312,7 @@ public class EffectManager {
             .setHealMultiplier((float) cs.getDouble("heal-multiplier", 0.3D));
         ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
         ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
+        ((StandardDamage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
         ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
@@ -670,6 +673,10 @@ public class EffectManager {
       case LIGHTNING:
         effect = new Lightning();
         break;
+      case STEALTH:
+        effect = new Stealth();
+        ((Stealth) effect).setRemoveStealth(cs.getBoolean("remove", false));
+        break;
       case MODIFY_PROJECTILE:
         effect = new ModifyProjectile();
         ((ModifyProjectile) effect)
@@ -906,6 +913,9 @@ public class EffectManager {
         break;
       case RANGE:
         condition = new RangeCondition();
+        break;
+      case STEALTHED:
+        condition = new StealthCondition();
         break;
       case BURNING:
         condition = new BurningCondition(cs.getBoolean("state", true));

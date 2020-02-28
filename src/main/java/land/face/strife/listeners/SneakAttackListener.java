@@ -43,7 +43,7 @@ public class SneakAttackListener implements Listener {
         .playSound(event.getVictim().getEntity().getEyeLocation(),
             Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 1.5f);
     if (event.getSneakAttackDamage() < event.getVictim().getEntity().getHealth()) {
-      plugin.getSneakManager().tempDisableSneak(event.getAttacker().getEntity());
+      plugin.getStealthManager().unstealthPlayer((Player) event.getAttacker().getEntity());
     }
   }
 
@@ -59,12 +59,10 @@ public class SneakAttackListener implements Listener {
     if (((Player) event.getAttacker().getEntity()).getGameMode() == GameMode.CREATIVE) {
       return;
     }
-    boolean finishingBlow =
-        event.getSneakAttackDamage() > event.getVictim().getEntity().getHealth();
-    float gainedXp = plugin.getSneakManager()
-        .getSneakAttackExp(event.getVictim().getEntity(), event.getSneakSkill(), finishingBlow);
-    plugin.getSkillExperienceManager()
-        .addExperience((Player) event.getAttacker().getEntity(), LifeSkillType.SNEAK, gainedXp,
-            false);
+    boolean finishingBlow = event.getSneakAttackDamage() > event.getVictim().getEntity().getHealth();
+    float gainedXp = plugin.getStealthManager().getSneakAttackExp(event.getVictim().getEntity(),
+        event.getSneakSkill(), finishingBlow);
+    plugin.getSkillExperienceManager().addExperience((Player) event.getAttacker().getEntity(),
+        LifeSkillType.SNEAK, gainedXp, false);
   }
 }

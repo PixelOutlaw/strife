@@ -121,6 +121,7 @@ public class EntityMagicListener implements Listener {
     standardDamage.setAttackType(AttackType.MAGIC);
     standardDamage.setCanBeBlocked(true);
     standardDamage.setCanBeEvaded(true);
+    standardDamage.setCanSneakAttack(false);
     return standardDamage;
   }
 

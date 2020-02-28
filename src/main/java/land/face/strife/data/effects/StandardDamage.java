@@ -9,6 +9,7 @@ import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 public class StandardDamage extends Effect {
 
@@ -20,6 +21,7 @@ public class StandardDamage extends Effect {
   private AttackType attackType;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
+  private boolean canSneakAttack;
   private boolean isBlocking;
 
   @Override
@@ -31,6 +33,13 @@ public class StandardDamage extends Effect {
     event.getAbilityMods().putAll(abilityMods);
     event.setCanBeBlocked(canBeBlocked);
     event.setCanBeEvaded(canBeEvaded);
+
+    if (canSneakAttack && StrifePlugin.getInstance().getStealthManager()
+        .isStealthed(caster.getEntity())) {
+      event.setSneakAttack(true);
+    }
+    StrifePlugin.getInstance().getStealthManager().unstealthPlayer((Player) target.getEntity());
+
     Bukkit.getPluginManager().callEvent(event);
     if (!event.isCancelled()) {
       StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
@@ -88,6 +97,10 @@ public class StandardDamage extends Effect {
 
   public void setCanBeBlocked(boolean canBeBlocked) {
     this.canBeBlocked = canBeBlocked;
+  }
+
+  public void setCanSneakAttack(boolean canSneakAttack) {
+    this.canSneakAttack = canSneakAttack;
   }
 
   public boolean isBlocking() {

@@ -174,7 +174,6 @@ public class ShootListener implements Listener {
         (Trident) event.getEntity(), attackMultiplier, speedMult);
 
     player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 1f, 1f);
-    plugin.getSneakManager().tempDisableSneak(player);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -253,6 +252,7 @@ public class ShootListener implements Listener {
     standardDamage.setAttackType(AttackType.RANGED);
     standardDamage.setCanBeBlocked(true);
     standardDamage.setCanBeEvaded(true);
+    standardDamage.setCanSneakAttack(true);
     return standardDamage;
   }
 

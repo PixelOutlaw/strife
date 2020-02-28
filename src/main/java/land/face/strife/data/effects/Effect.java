@@ -108,6 +108,7 @@ public abstract class Effect {
     SUMMON,
     CHARM,
     SWING,
-    UNDISGUISE
+    UNDISGUISE,
+    STEALTH
   }
 }

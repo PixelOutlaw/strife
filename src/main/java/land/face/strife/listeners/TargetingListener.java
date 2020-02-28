@@ -114,7 +114,7 @@ public class TargetingListener implements Listener {
     if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
       return;
     }
-    if (((Player) event.getTarget()).isSneaking()) {
+    if (!plugin.getStealthManager().isStealthed(event.getTarget())) {
       return;
     }
     int playerLevel = StatUtil.getMobLevel(event.getTarget());
@@ -132,16 +132,12 @@ public class TargetingListener implements Listener {
         .getEntity().hasMetadata("IGNORE_SNEAK")) {
       return;
     }
-    if (plugin.getSneakManager().isUnstealthed(event.getTarget().getUniqueId())) {
-      return;
-    }
     Player player = (Player) event.getTarget();
-    Mob creature = (Mob) event.getEntity();
-    if (!player.isSneaking()) {
+    if (!plugin.getStealthManager().isStealthed(player)) {
       return;
     }
 
-    Champion champion = plugin.getChampionManager().getChampion(player);
+    Mob creature = (Mob) event.getEntity();
     float level = StatUtil.getMobLevel(creature);
 
     LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + level + " " +
@@ -152,6 +148,7 @@ public class TargetingListener implements Listener {
     Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
     Vector entitySightVector = entityLoc.getDirection();
 
+    Champion champion = plugin.getChampionManager().getChampion(player);
     float angle = entitySightVector.angle(playerDifferenceVector);
     float sneakSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
     double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
@@ -161,6 +158,12 @@ public class TargetingListener implements Listener {
 
     if (player.hasPotionEffect(INVISIBILITY)) {
       sneakSkill += 5 + sneakSkill * 0.1;
+    }
+    if (!player.isSneaking()) {
+      sneakSkill *= 0.75;
+    }
+    if (player.isSprinting()) {
+      sneakSkill *= 0.5;
     }
 
     float awareness;
@@ -182,7 +185,7 @@ public class TargetingListener implements Listener {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
-        float xp = plugin.getSneakManager().getSneakActionExp(level, sneakSkill);
+        float xp = plugin.getStealthManager().getSneakActionExp(level, sneakSkill);
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }

@@ -21,93 +21,12 @@ package land.face.strife.managers;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import land.face.strife.StrifePlugin;
-import land.face.strife.util.ProjectileUtil;
-import land.face.strife.util.StatUtil;
-import land.face.strife.util.TargetingUtil;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.util.Vector;
 
 public class SneakManager {
 
   private final Map<UUID, Integer> sneakTickMap = new ConcurrentHashMap<>();
   // Disable duration is in half seconds
-  private static int SNEAK_DISABLE_DURATION = StrifePlugin.getInstance().getSettings()
-      .getInt("config.mechanics.sneak.disable-duration");
-  private static float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.base-sneak-exp");
-  private static float SNEAK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.sneak-exp-per-level");
-  private static float BASE_SNEAK_ATTACK_EXP = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.base-sneak-attack-exp");
-  private static float SNEAK_ATTACK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.sneak-attack-exp-per-level");
 
-  public void tempDisableSneak(LivingEntity player) {
-    if (!(player instanceof Player)) {
-      return;
-    }
-    sneakTickMap.put(player.getUniqueId(), SNEAK_DISABLE_DURATION);
-  }
 
-  public boolean isUnstealthed(UUID uuid) {
-    return sneakTickMap.containsKey(uuid);
-  }
 
-  public void tickAll() {
-    for (UUID uuid : sneakTickMap.keySet()) {
-      if (sneakTickMap.get(uuid) < 1) {
-        sneakTickMap.remove(uuid);
-        continue;
-      }
-      sneakTickMap.put(uuid, sneakTickMap.get(uuid) - 1);
-    }
-  }
-
-  public boolean isSneakAttack(LivingEntity attacker, LivingEntity target) {
-    if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
-      return false;
-    }
-    target = TargetingUtil.getMobTarget(target);
-    return target == null || !target.isValid();
-  }
-
-  public boolean isSneakAttack(Projectile projectile, LivingEntity target) {
-    if (!projectile.hasMetadata(ProjectileUtil.SNEAK_ATTACK_META)) {
-      return false;
-    }
-    return isSneakAngle(target, projectile.getLocation().getDirection());
-  }
-
-  public boolean isSneakAngle(LivingEntity target, Vector direction) {
-    if (TargetingUtil.getMobTarget(target) != null) {
-      return false;
-    }
-    Vector entitySightVector = target.getLocation().getDirection();
-    float angle = entitySightVector.angle(direction);
-    return angle > 0.6;
-  }
-
-  public float getSneakActionExp(float enemyLevel, float sneakLevel) {
-    float levelPenaltyMult = 1;
-    if (enemyLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(enemyLevel+10))));
-    }
-    return (BASE_SNEAK_EXP + enemyLevel * SNEAK_EXP_PER_LEVEL) * levelPenaltyMult;
-  }
-
-  public float getSneakAttackExp(LivingEntity victim, float sneakLevel, boolean finishingBlow) {
-    float victimLevel = StatUtil.getMobLevel(victim);
-    float levelPenaltyMult = 1;
-    if (victimLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(victimLevel+10))));
-    }
-    float gainedXp = BASE_SNEAK_ATTACK_EXP + victimLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
-    if (finishingBlow) {
-      gainedXp *= 2;
-    }
-    return gainedXp * levelPenaltyMult;
-  }
 }

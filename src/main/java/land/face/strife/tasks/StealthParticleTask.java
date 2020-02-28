@@ -18,19 +18,23 @@
  */
 package land.face.strife.tasks;
 
-import land.face.strife.managers.SneakManager;
+import land.face.strife.managers.StealthManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class SneakTask extends BukkitRunnable {
+public class StealthParticleTask extends BukkitRunnable {
 
-  private final SneakManager sneakManager;
+  private final StealthManager stealthManager;
 
-  public SneakTask(SneakManager sneakManager) {
-    this.sneakManager = sneakManager;
+  public StealthParticleTask(StealthManager stealthManager) {
+    this.stealthManager = stealthManager;
   }
 
   @Override
   public void run() {
-    sneakManager.tickAll();
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      stealthManager.doStealthParticles(p);
+    }
   }
 }

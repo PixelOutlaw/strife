@@ -12,6 +12,7 @@ public class Ability {
   private final TargetType targetType;
   private final boolean raycastsTargetEntities;
   private final boolean requireTarget;
+  private final boolean cancelStealth;
   private final float range;
   private final float cost;
   private final List<Effect> effects;
@@ -27,7 +28,7 @@ public class Ability {
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
       TargetType targetType, float range, float cost, int cooldown, int maxCharges, int globalCooldownTicks,
       boolean showMsgs, boolean requireTarget, boolean raycastsTargetEntities,
-      Set<Condition> conditions, boolean friendly, AbilityIconData abilityIconData) {
+      Set<Condition> conditions, boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -44,6 +45,7 @@ public class Ability {
     this.conditions = conditions;
     this.abilityIconData = abilityIconData;
     this.friendly = friendly;
+    this.cancelStealth = cancelStealth;
   }
 
   public String getId() {
@@ -72,6 +74,10 @@ public class Ability {
 
   public List<Effect> getToggleOffEffects() {
     return toggleOffEffects;
+  }
+
+  public boolean isCancelStealth() {
+    return cancelStealth;
   }
 
   public boolean isRequireTarget() {

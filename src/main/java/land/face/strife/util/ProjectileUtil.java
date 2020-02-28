@@ -51,7 +51,6 @@ public class ProjectileUtil {
 
     mob.getEntity().getWorld()
         .playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
-    StrifePlugin.getInstance().getSneakManager().tempDisableSneak(mob.getEntity());
     shotId++;
   }
 
@@ -66,7 +65,6 @@ public class ProjectileUtil {
       ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
           randomOffset(projectiles), 0.17);
     }
-    StrifePlugin.getInstance().getSneakManager().tempDisableSneak(mob.getEntity());
     shotId++;
   }
 

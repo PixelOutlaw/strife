@@ -124,6 +124,7 @@ public abstract class Condition {
     BLEEDING,
     DARKNESS,
     RANGE,
+    STEALTHED,
     BURNING,
     EARTH_RUNES
   }

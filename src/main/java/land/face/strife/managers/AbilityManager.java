@@ -75,6 +75,56 @@ public class AbilityManager {
     return null;
   }
 
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
+    return execute(ability, caster, target, false);
+  }
+
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
+      boolean ignoreReqs) {
+    if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
+      doOnCooldownPrompt(caster, ability);
+      return false;
+    }
+    if (!ignoreReqs && !hasEnergy(caster, ability)) {
+      doNoEnergyPrompt(caster, ability);
+      return false;
+    }
+    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
+      doRequirementNotMetPrompt(caster, ability);
+      return false;
+    }
+    Set<LivingEntity> targets = getTargets(caster, target, ability);
+    if (targets == null) {
+      throw new NullArgumentException("Null target list on ability " + ability.getId());
+    }
+    if (targets.isEmpty() && ability.isRequireTarget()) {
+      doTargetNotFoundPrompt(caster, ability);
+      return false;
+    }
+    if (ability.getTargetType() == TargetType.TOGGLE) {
+      boolean toggledOn = toggleAbility(caster, targets, ability);
+      if (!toggledOn) {
+        return true;
+      }
+    } else {
+      coolDownAbility(caster.getEntity(), ability);
+    }
+    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
+      caster.getChampion().getDetailsContainer().addWeights(ability);
+    }
+    if (caster.getEntity() instanceof Player) {
+      if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
+        plugin.getEnergyManager().changeEnergy(caster, -ability.getCost());
+      }
+    }
+    plugin.getEffectManager().execute(caster, targets, ability.getEffects());
+    if (ability.isCancelStealth()) {
+      plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
+    }
+    playChatMessages(caster, ability);
+    return true;
+  }
+
   public void cooldownReduce(LivingEntity livingEntity, String abilityId, int msReduction) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
       return;
@@ -97,17 +147,18 @@ public class AbilityManager {
   }
 
   public void unToggleAbility(StrifeMob mob, String abilityId) {
-    if (!coolingDownAbilities.containsKey(mob.getEntity())) {
-      return;
-    }
     AbilityCooldownContainer container = getCooldownContainer(mob.getEntity(), abilityId);
-    if (container == null || !container.isToggledOn()) {
+    if (container == null) {
       return;
     }
-    Ability ability = getAbility(abilityId);
-    Set<LivingEntity> targets = new HashSet<>();
-    targets.add(mob.getEntity());
-    toggleAbility(mob, targets, ability);
+    if (container.isToggledOn()) {
+      container.setToggledOn(false);
+      Ability ability = getAbility(abilityId);
+      coolDownAbility(mob.getEntity(), getAbility(abilityId));
+      Set<LivingEntity> targets = new HashSet<>();
+      targets.add(mob.getEntity());
+      plugin.getEffectManager().execute(mob, targets, ability.getToggleOffEffects());
+    }
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
@@ -214,52 +265,6 @@ public class AbilityManager {
       return true;
     }
     return System.currentTimeMillis() > container.getEndTime();
-  }
-
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
-    return execute(ability, caster, target, false);
-  }
-
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
-      boolean ignoreReqs) {
-    if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
-      doOnCooldownPrompt(caster, ability);
-      return false;
-    }
-    if (!ignoreReqs && !hasEnergy(caster, ability)) {
-      doNoEnergyPrompt(caster, ability);
-      return false;
-    }
-    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
-      doRequirementNotMetPrompt(caster, ability);
-      return false;
-    }
-    Set<LivingEntity> targets = getTargets(caster, target, ability);
-    if (targets == null) {
-      throw new NullArgumentException("Null target list on ability " + ability.getId());
-    }
-    if (targets.isEmpty() && ability.isRequireTarget()) {
-      doTargetNotFoundPrompt(caster, ability);
-      return false;
-    }
-    if (ability.getTargetType() != TargetType.TOGGLE) {
-      coolDownAbility(caster.getEntity(), ability);
-    } else {
-      boolean isOnAfterToggle = toggleAbility(caster, targets, ability);
-      if (!isOnAfterToggle) {
-        return true;
-      }
-    }
-    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
-      caster.getChampion().getDetailsContainer().addWeights(ability);
-    }
-    if (caster.getEntity() instanceof Player
-        && ((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
-      plugin.getEnergyManager().changeEnergy(caster, -ability.getCost());
-    }
-    plugin.getEffectManager().execute(caster, targets, ability.getEffects());
-    playChatMessages(caster, ability);
-    return true;
   }
 
   private void playChatMessages(StrifeMob caster, Ability ability) {
@@ -370,8 +375,8 @@ public class AbilityManager {
   }
 
   /*
-  Returns true with the toggle state of the ability afterwards.
-  Illegal state if it isn't a toggle ability at all...
+    Returns true with the toggle state of the ability afterwards.
+    Illegal state if it isn't a toggle ability at all...
    */
   private boolean toggleAbility(StrifeMob caster, Set<LivingEntity> targets, Ability ability) {
     if (ability.getTargetType() != TargetType.TOGGLE) {
@@ -388,6 +393,7 @@ public class AbilityManager {
       return true;
     }
     if (container.isToggledOn()) {
+      container.setToggledOn(false);
       coolDownAbility(caster.getEntity(), ability);
       plugin.getEffectManager().execute(caster, targets, ability.getToggleOffEffects());
       return false;
@@ -565,9 +571,10 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
+    boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
     loadedAbilities.put(key, new Ability(key, name, effects, toggleOffEffects, targetType, range,
         cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
-        raycastsHitEntities, conditions, friendly, abilityIconData));
+        raycastsHitEntities, conditions, friendly, abilityIconData, cancelStealth));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

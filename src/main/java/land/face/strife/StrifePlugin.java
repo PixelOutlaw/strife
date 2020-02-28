@@ -112,6 +112,7 @@ import land.face.strife.managers.SneakManager;
 import land.face.strife.managers.SoulManager;
 import land.face.strife.managers.SpawnerManager;
 import land.face.strife.managers.StatUpdateManager;
+import land.face.strife.managers.StealthManager;
 import land.face.strife.managers.StrifeAttributeManager;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.managers.UniqueEntityManager;
@@ -140,8 +141,8 @@ import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.PruneBossBarsTask;
 import land.face.strife.tasks.RegenTask;
 import land.face.strife.tasks.SaveTask;
-import land.face.strife.tasks.SneakTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
+import land.face.strife.tasks.StealthParticleTask;
 import land.face.strife.tasks.TrackedPruneTask;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DamageUtil;
@@ -201,6 +202,7 @@ public class StrifePlugin extends FacePlugin {
   private CorruptionManager corruptionManager;
   private RageManager rageManager;
   private MonsterManager monsterManager;
+  private StealthManager stealthManager;
   private UniqueEntityManager uniqueEntityManager;
   private SneakManager sneakManager;
   private BossBarManager bossBarManager;
@@ -303,6 +305,7 @@ public class StrifePlugin extends FacePlugin {
     statUpdateManager = new StatUpdateManager(strifeMobManager);
     rageManager = new RageManager();
     monsterManager = new MonsterManager(championManager);
+    stealthManager = new StealthManager(this);
     effectManager = new EffectManager(this);
     wseManager = new WSEManager();
     agilityManager = new AgilityManager(this, agilityYAML);
@@ -342,7 +345,7 @@ public class StrifePlugin extends FacePlugin {
 
     SaveTask saveTask = new SaveTask(this);
     TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
-    SneakTask sneakTask = new SneakTask(sneakManager);
+    StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BarrierTask barrierTask = new BarrierTask(this);
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
@@ -401,9 +404,9 @@ public class StrifePlugin extends FacePlugin {
         20L * 9, // Start timer after 9s
         RegenTask.REGEN_TICK_RATE
     ));
-    taskList.add(sneakTask.runTaskTimer(this,
-        20L * 10, // Start timer after 10s
-        10L // Run every 1/2 second
+    taskList.add(stealthParticleTask.runTaskTimer(this,
+        20L * 3, // Start timer after 10s
+        3L
     ));
     taskList.add(barrierTask.runTaskTimer(this,
         11 * 20L, // Start timer after 11s
@@ -849,6 +852,10 @@ public class StrifePlugin extends FacePlugin {
 
   public MonsterManager getMonsterManager() {
     return monsterManager;
+  }
+
+  public StealthManager getStealthManager() {
+    return stealthManager;
   }
 
   public UniqueEntityManager getUniqueEntityManager() {
