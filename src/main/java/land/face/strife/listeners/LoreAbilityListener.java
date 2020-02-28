@@ -82,7 +82,7 @@ public class LoreAbilityListener implements Listener {
     Champion champion = event.getBlocker().getChampion();
     if (champion != null) {
       executeBoundEffects(event.getBlocker(), event.getAttacker().getEntity(),
-          event.getAttacker().getChampion().getLoreAbilities().get(ON_BLOCK));
+          event.getBlocker().getChampion().getLoreAbilities().get(ON_BLOCK));
     }
     executeFiniteEffects(event.getBlocker(), event.getAttacker(), ON_BLOCK);
   }
