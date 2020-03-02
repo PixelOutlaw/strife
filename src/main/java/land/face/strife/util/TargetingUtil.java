@@ -1,5 +1,7 @@
 package land.face.strife.util;
 
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -33,6 +36,20 @@ public class TargetingUtil {
   public static DistanceComparator DISTANCE_COMPARATOR = new DistanceComparator();
   private static FlatHealthComparator HEALTH_COMPARATOR = new FlatHealthComparator();
   private static PercentHealthComparator PERCENT_HEALTH_COMPARATOR = new PercentHealthComparator();
+
+  public static void expandMobRange(LivingEntity attacker, LivingEntity victim) {
+    if (!(victim instanceof Mob)) {
+      return;
+    }
+    AttributeInstance attr = victim.getAttribute(GENERIC_FOLLOW_RANGE);
+    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
+    victim.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
+
+    LivingEntity target = ((Mob) victim).getTarget();
+    if (target == null || !target.isValid()) {
+      ((Mob) victim).setTarget(attacker);
+    }
+  }
 
   public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster,
       boolean friendly) {

@@ -18,7 +18,6 @@
  */
 package land.face.strife.listeners;
 
-import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
@@ -30,8 +29,8 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -81,24 +80,16 @@ public class TargetingListener implements Listener {
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
-  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void modifyAttackRange(EntityDamageByEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
     if (!(event.getEntity() instanceof Mob)) {
       return;
     }
     LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
-    if (!(attacker instanceof Player)) {
-      return;
-    }
-    Mob victimMob = (Mob) event.getEntity();
-    AttributeInstance attr = victimMob.getAttribute(GENERIC_FOLLOW_RANGE);
-    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
-    victimMob.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
-
-    LivingEntity target = victimMob.getTarget();
-    if (target == null || !target.isValid()) {
-      victimMob.setTarget(attacker);
-    }
+    TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
   }
 
   @EventHandler(priority = EventPriority.LOW)

@@ -117,8 +117,10 @@ public class AbilityManager {
         plugin.getEnergyManager().changeEnergy(caster, -ability.getCost());
       }
     }
+
     plugin.getEffectManager().execute(caster, targets, ability.getEffects());
-    if (ability.isCancelStealth()) {
+
+    if (caster.getEntity() instanceof Player && ability.isCancelStealth()) {
       plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
     }
     playChatMessages(caster, ability);

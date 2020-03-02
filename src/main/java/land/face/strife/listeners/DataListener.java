@@ -40,7 +40,7 @@ import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -71,11 +71,6 @@ public class DataListener implements Listener {
     }
   }
 
-  @EventHandler
-  public void onFoodChange(final FoodLevelChangeEvent event) {
-    event.setCancelled(true);
-  }
-
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onEntityCombust(final EntityCombustEvent event) {
     if (event instanceof EntityCombustByEntityEvent) {
@@ -87,6 +82,14 @@ public class DataListener implements Listener {
     if (event.getEntity().hasMetadata("NO_BURN")) {
       event.setCancelled(true);
     }
+  }
+
+  @EventHandler
+  public void onTameUnique(final EntityTameEvent event) {
+    if (plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId()) != null) {
+      return;
+    }
+    event.setCancelled(true);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

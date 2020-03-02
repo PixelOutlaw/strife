@@ -172,29 +172,32 @@ public class EffectManager {
     execute(caster, targets, taskEffects, waitTicks);
   }
 
-  private void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList,
-      int delay) {
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      LogUtil.printDebug("Effect task started - " + effectList.toString());
-      if (!caster.getEntity().isValid()) {
-        LogUtil.printDebug("- Task cancelled, caster is dead");
-        return;
+  private void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effects, int delay) {
+    if (delay == 0) {
+      executeEffectList(caster, targets, effects);
+      return;
+    }
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        executeEffectList(caster, targets, effects), delay);
+  }
+
+  private void executeEffectList(StrifeMob caster, Set<LivingEntity> targets,
+      List<Effect> effectList) {
+    LogUtil.printDebug("Effect task started - " + effectList.toString());
+    if (!caster.getEntity().isValid()) {
+      LogUtil.printDebug("- Task cancelled, caster is dead");
+      return;
+    }
+    for (Effect effect : effectList) {
+      LogUtil.printDebug("- Executing effect " + effect.getId());
+      for (LivingEntity target : targets) {
+        execute(effect, caster, target);
       }
-      for (Effect effect : effectList) {
-        LogUtil.printDebug("- Executing effect " + effect.getId());
-        for (LivingEntity target : targets) {
-          plugin.getEffectManager().execute(effect, caster, target);
-        }
-      }
-      LogUtil.printDebug("- Completed effect task.");
-    }, delay);
+    }
+    LogUtil.printDebug("- Completed effect task.");
   }
 
   public void execute(Effect effect, StrifeMob caster, LivingEntity target) {
-    applyEffectToTargets(effect, caster, target);
-  }
-
-  private void applyEffectToTargets(Effect effect, StrifeMob caster, LivingEntity target) {
     if (effect instanceof LocationEffect && TargetingUtil.isDetectionStand(target)) {
       if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
         ((LocationEffect) effect).applyAtLocation(caster, target.getLocation());

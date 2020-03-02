@@ -9,7 +9,6 @@ import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 public class StandardDamage extends Effect {
 
@@ -38,7 +37,6 @@ public class StandardDamage extends Effect {
         .isStealthed(caster.getEntity())) {
       event.setSneakAttack(true);
     }
-    StrifePlugin.getInstance().getStealthManager().unstealthPlayer((Player) target.getEntity());
 
     Bukkit.getPluginManager().callEvent(event);
     if (!event.isCancelled()) {

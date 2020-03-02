@@ -34,6 +34,7 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -82,13 +83,14 @@ public class StrifeDamageListener implements Listener {
     if (event.isCanBeEvaded()) {
       evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, event.getAbilityMods());
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        event.setCancelled(true);
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
         DamageUtil.doEvasion(attacker, defender);
         removeIfExisting(event.getProjectile());
         CombatListener.putSlimeHit(attacker.getEntity());
-        event.setCancelled(true);
+        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
         return;
       }
     }
@@ -98,12 +100,13 @@ public class StrifeDamageListener implements Listener {
     if (event.isCanBeBlocked()) {
       if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
           event.getAttackType(), event.isBlocking())) {
+        event.setCancelled(true);
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
         removeIfExisting(event.getProjectile());
         CombatListener.putSlimeHit(attacker.getEntity());
-        event.setCancelled(true);
+        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
         DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
         return;
       }
