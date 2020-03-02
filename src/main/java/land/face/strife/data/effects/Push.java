@@ -1,9 +1,10 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.WorldSpaceEffectEntity;
+import land.face.strife.data.WorldSpaceEffect;
 import land.face.strife.util.LogUtil;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
 
 public class Push extends Effect {
@@ -11,11 +12,15 @@ public class Push extends Effect {
   private double power;
   private double height;
   private boolean cancelFall;
+  private boolean clamp;
   private PushType pushType;
   private Vector tempVector;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    if (target.getEntity().getType() == EntityType.SHULKER) {
+      return;
+    }
     Vector direction;
     switch (pushType) {
       case AWAY_FROM_CASTER:
@@ -40,21 +45,39 @@ public class Push extends Effect {
       default:
         return;
     }
-    Vector newVelocity = target.getEntity().getVelocity();
+    Vector oldVelocity = target.getEntity().getVelocity().clone();
+    Vector newVelocity = oldVelocity.clone();
     if (cancelFall) {
-      if (newVelocity.getY() < 0) {
-        newVelocity.setY(0);
+      if (oldVelocity.getY() < 0) {
+        oldVelocity.setY(0);
       }
       target.getEntity().setFallDistance(0);
     }
-    newVelocity.add(direction);
-    newVelocity.add(new Vector(0, height / 10, 0));
+    if (clamp) {
+      newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
+      newVelocity.setY(clampRay(oldVelocity.getY(), height / 10));
+      newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
+    } else {
+      newVelocity.add(direction);
+      newVelocity.add(new Vector(0, height / 10, 0));
+    }
     target.getEntity().setVelocity(newVelocity);
   }
 
-  public void setTempVectorFromWSE(WorldSpaceEffectEntity entity) {
+  private double clampRay(double old, double change) {
+    if (change == 0) {
+      return old;
+    }
+    if (change > 0) {
+      return Math.min(old + change, change);
+    } else {
+      return Math.max(old + change, change);
+    }
+  }
+
+  public void setTempVectorFromWSE(WorldSpaceEffect entity) {
     if (pushType == PushType.WSE_DIRECTION) {
-      tempVector = entity.getVelocity().normalize();
+      tempVector = entity.getVelocity().clone().normalize();
       return;
     }
     if (pushType == PushType.TEMP_DIRECTION) {
@@ -82,6 +105,10 @@ public class Push extends Effect {
 
   public void setCancelFall(boolean cancelFall) {
     this.cancelFall = cancelFall;
+  }
+
+  public void setClamp(boolean clamp) {
+    this.clamp = clamp;
   }
 
   public void setPushType(PushType pushType) {

@@ -20,10 +20,12 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -38,6 +40,7 @@ import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -81,6 +84,14 @@ public class DataListener implements Listener {
     }
   }
 
+  @EventHandler
+  public void onTameUnique(final EntityTameEvent event) {
+    if (plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId()) != null) {
+      return;
+    }
+    event.setCancelled(true);
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityAttack(final EntityDamageByEntityEvent event) {
     if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
@@ -107,6 +118,7 @@ public class DataListener implements Listener {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
     plugin.getBossBarManager().getSkillBar(champion);
+    plugin.getCounterManager().clearCounters(event.getPlayer().getUniqueId());
     ensureAbilitiesDontInstantCast(event.getPlayer());
     Bukkit.getScheduler().runTaskLater(plugin,
         () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 2L);
@@ -134,6 +146,7 @@ public class DataListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
+    plugin.getCounterManager().clearCounters(player.getUniqueId());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -147,6 +160,11 @@ public class DataListener implements Listener {
     plugin.getBarrierManager().createBarrierEntry(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
+    plugin.getCounterManager().clearCounters(event.getPlayer().getUniqueId());
+    plugin.getEnergyManager().setEnergyUnsafe(event.getPlayer().getUniqueId(), 50000);
+    event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100), 2L);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -168,7 +186,7 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void onChunkUnload(ChunkUnloadEvent e) {
     for (Entity ent : e.getChunk().getEntities()) {
-      if (!(ent instanceof LivingEntity)) {
+      if (!(ent instanceof LivingEntity) || ent.hasMetadata("NPC")) {
         continue;
       }
       plugin.getStrifeMobManager().doChunkDespawn((LivingEntity) ent);
@@ -191,6 +209,23 @@ public class DataListener implements Listener {
         Math.max(3, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPostTeleportMinions(PlayerTeleportEvent event) {
+    if (event.isCancelled() || event.getPlayer().hasMetadata("NPC")) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (mob.getMinions().isEmpty()) {
+      return;
+    }
+    Chunk chunk = event.getTo().getChunk();
+    if (!chunk.isLoaded()) {
+      chunk.load();
+    }
+    for (StrifeMob minion : mob.getMinions()) {
+      minion.getEntity().teleport(event.getTo());
+    }
+  }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onInvyClose(InventoryCloseEvent event) {

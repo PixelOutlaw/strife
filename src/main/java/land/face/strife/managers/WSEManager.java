@@ -6,13 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.WorldSpaceEffectEntity;
+import land.face.strife.data.WorldSpaceEffect;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.EvokerFangEffect;
-import land.face.strife.data.effects.PlaySound;
+import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.Push;
-import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
@@ -21,55 +19,73 @@ import org.bukkit.util.Vector;
 
 public class WSEManager {
 
-  private EffectManager effectManager;
-  private Set<WorldSpaceEffectEntity> worldSpaceEffects;
+  private Set<WorldSpaceEffect> worldSpaceEffects;
 
-  public WSEManager(EffectManager effectManager) {
-    this.effectManager = effectManager;
+  public WSEManager() {
     this.worldSpaceEffects = new HashSet<>();
   }
 
-  public void createAtTarget(StrifeMob caster, Location location, int lifespan, int maxTicks,
-      double speed, Map<Integer, List<Effect>> effects, boolean strictDuration) {
+  public void createAtTarget(StrifeMob caster, Location location, int lifespan, float gravity,
+      float friction, int maxTicks, double speed, float maxDisplacement,
+      Map<Integer, List<Effect>> effects, boolean strictDuration, boolean zeroVertical) {
     LogUtil.printDebug(" Creating world space entity with effects " + effects);
     double newLifeSpan = lifespan;
     if (!strictDuration) {
       newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    Vector direction = caster.getEntity().getEyeLocation().getDirection().multiply(speed);
-    WorldSpaceEffectEntity entity = new WorldSpaceEffectEntity(caster, effects, location, direction,
-        maxTicks, (int) newLifeSpan);
+    Vector direction = caster.getEntity().getEyeLocation().getDirection();
+    if (zeroVertical) {
+      direction.setY(0.00001);
+      direction.normalize();
+    }
+    direction.multiply(speed);
+    WorldSpaceEffect entity = new WorldSpaceEffect(caster, effects, location, direction,
+        gravity, friction, maxDisplacement, maxTicks, (int) newLifeSpan);
     addWorldSpaceEffectEntity(entity);
   }
 
   public void tickAllWorldSpaceEffects() {
-    List<WorldSpaceEffectEntity> expiredEffects = new ArrayList<>();
-    for (WorldSpaceEffectEntity effect : worldSpaceEffects) {
+    List<WorldSpaceEffect> expiredEffects = new ArrayList<>();
+    for (WorldSpaceEffect effect : worldSpaceEffects) {
       boolean isAlive = tick(effect);
       if (!isAlive) {
         expiredEffects.add(effect);
       }
     }
-    for (WorldSpaceEffectEntity effect : expiredEffects) {
+    for (WorldSpaceEffect effect : expiredEffects) {
       LogUtil.printDebug(" - Remove expired worldspace entity from effect manager");
       worldSpaceEffects.remove(effect);
     }
   }
 
-  private void addWorldSpaceEffectEntity(WorldSpaceEffectEntity worldSpaceEffectEntity) {
+  private void addWorldSpaceEffectEntity(WorldSpaceEffect worldSpaceEffect) {
     LogUtil.printDebug(" - Added worldspace entity to effect manager");
-    worldSpaceEffects.add(worldSpaceEffectEntity);
+    worldSpaceEffects.add(worldSpaceEffect);
   }
 
-  private boolean tick(WorldSpaceEffectEntity wse) {
-    Location location = wse.getLocation();
-    StrifeMob caster = wse.getCaster();
-    location.add(wse.getVelocity());
+  private boolean tick(WorldSpaceEffect wse) {
+
+    Location location = wse.getLocation().clone();
+
+    Vector velocity = wse.getVelocity().clone();
+    velocity.multiply(wse.getFriction());
+    velocity.setY(velocity.getY() - wse.getGravity());
+    wse.setVelocity(velocity);
+    location.add(velocity);
+
     Block block = location.getBlock();
-    if (!block.getType().isTransparent()) {
-      LogUtil.printDebug(" - WSE at solid block... removing");
-      return false;
+    int displacement = 0;
+    while (block.getType().isSolid()) {
+      displacement += 0.4;
+      if (displacement >= wse.getMaxDisplacement()) {
+        LogUtil.printDebug("WSE effect location is solid! removing.");
+        return false;
+      }
+      location.setY(location.getY() + 0.4);
+      block = location.getBlock();
     }
+
+    wse.setLocation(location);
 
     if (wse.getEffectSchedule().containsKey(wse.getCurrentTick())) {
       List<Effect> effects = wse.getEffectSchedule().get(wse.getCurrentTick());
@@ -78,20 +94,12 @@ public class WSEManager {
           LogUtil.printError("Null WSE effect! Tick:" + wse.getCurrentTick());
           continue;
         }
-        if (effect instanceof StrifeParticle) {
-          ((StrifeParticle) effect).playAtLocation(location);
-          continue;
-        }
-        if (effect instanceof PlaySound) {
-          ((PlaySound) effect).playAtLocation(location);
-          continue;
-        }
-        if (effect instanceof EvokerFangEffect) {
-          ((EvokerFangEffect) effect).spawnAtLocation(wse.getCaster(), location);
+        if (!(effect instanceof LocationEffect)) {
+          LogUtil.printError("WSEs can only use effects with location! invalid: " + effect.getId());
           continue;
         }
         applyDirectionToPushEffects(wse, effect);
-        effectManager.execute(effect, caster, location);
+        ((LocationEffect) effect).applyAtLocation(wse.getCaster(), location);
       }
     }
     wse.setLifespan(wse.getLifespan() - 1);
@@ -106,7 +114,7 @@ public class WSEManager {
     return true;
   }
 
-  private void applyDirectionToPushEffects(WorldSpaceEffectEntity wse, Effect effect) {
+  private void applyDirectionToPushEffects(WorldSpaceEffect wse, Effect effect) {
     if (!(effect instanceof AreaEffect)) {
       return;
     }

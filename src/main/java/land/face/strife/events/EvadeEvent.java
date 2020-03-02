@@ -22,7 +22,7 @@
  */
 package land.face.strife.events;
 
-import org.bukkit.entity.LivingEntity;
+import land.face.strife.data.StrifeMob;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -34,10 +34,10 @@ public class EvadeEvent extends Event {
     return HANDLER_LIST;
   }
 
-  private final LivingEntity evader;
-  private final LivingEntity attacker;
+  private final StrifeMob evader;
+  private final StrifeMob attacker;
 
-  public EvadeEvent(LivingEntity evader, LivingEntity attacker) {
+  public EvadeEvent(StrifeMob evader, StrifeMob attacker) {
     this.evader = evader;
     this.attacker = attacker;
   }
@@ -47,11 +47,11 @@ public class EvadeEvent extends Event {
     return HANDLER_LIST;
   }
 
-  public LivingEntity getEvader() {
+  public StrifeMob getEvader() {
     return evader;
   }
 
-  public LivingEntity getAttacker() {
+  public StrifeMob getAttacker() {
     return attacker;
   }
 

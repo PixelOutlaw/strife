@@ -13,6 +13,7 @@ public class Bleed extends Effect {
   private boolean applyBleedMods;
   private DamageScale damageScale;
   private boolean ignoreArmor;
+  private boolean bypassBarrier;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -29,7 +30,7 @@ public class Bleed extends Effect {
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
     }
-    DamageUtil.applyBleed(target, bleedAmount);
+    DamageUtil.applyBleed(target, bleedAmount, bypassBarrier);
   }
 
   public void setDamageScale(DamageScale damageScale) {
@@ -42,6 +43,10 @@ public class Bleed extends Effect {
 
   public void setIgnoreArmor(boolean ignoreArmor) {
     this.ignoreArmor = ignoreArmor;
+  }
+
+  public void setBypassBarrier(boolean bypassBarrier) {
+    this.bypassBarrier = bypassBarrier;
   }
 
   public void setApplyBleedMods(boolean applyBleedMods) {

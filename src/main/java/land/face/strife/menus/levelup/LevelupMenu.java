@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class LevelupMenu extends ItemMenu {
@@ -38,6 +39,7 @@ public class LevelupMenu extends ItemMenu {
 
     int slot = plugin.getSettings().getInt("config.menu.unused-slot");
     setItem(slot, new LevelupPointsMenuItem(plugin));
+    fillEmptySlots(new BlankIcon());
   }
 
 }

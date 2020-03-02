@@ -20,9 +20,13 @@ package land.face.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import java.util.ArrayList;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
+import land.face.strife.data.effects.TargetingComparators.SpawnerComparator;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
@@ -36,13 +40,13 @@ public class SpawnerCommand {
   }
 
   @Command(identifier = "spawner create", permissions = "strife.command.spawner")
-  public void creationCommand(Player sender, @Arg(name = "spawnerName") String spawnerName,
+  public void creationCommand(Player sender, @Arg(name = "spawnerName") String spawnerId,
       @Arg(name = "uniqueName") String uniqueName, @Arg(name = "amount") int amount,
       @Arg(name = "leashRange") double leashRange,
       @Arg(name = "respawnDelaySeconds") int respawnSecs) {
 
-    if (plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
-      sendMessage(sender, "&eA spawner with the name " + spawnerName + " already exists!");
+    if (plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerId)) {
+      sendMessage(sender, "&eA spawner with the name " + spawnerId + " already exists!");
       return;
     }
     UniqueEntity uniqueEntity = plugin.getUniqueEntityManager().getLoadedUniquesMap()
@@ -52,10 +56,10 @@ public class SpawnerCommand {
       return;
     }
 
-    Spawner spawner = new Spawner(uniqueEntity, uniqueName, amount, sender.getLocation(),
-        respawnSecs, leashRange);
-    plugin.getSpawnerManager().addSpawner(spawnerName, spawner);
-    sendMessage(sender, "&aSpawner &f" + spawnerName + " &asuccessfully added!");
+    Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueName, amount,
+        sender.getLocation(), respawnSecs, leashRange);
+    plugin.getSpawnerManager().addSpawner(spawnerId, spawner);
+    sendMessage(sender, "&aSpawner &f" + spawnerId + " &asuccessfully added!");
   }
 
   @Command(identifier = "spawner delete", permissions = "strife.command.spawner")
@@ -72,8 +76,16 @@ public class SpawnerCommand {
   public void spawnerList(Player sender) {
     sendMessage(sender, "&2&lList of loaded spawners:");
     StringBuilder listString = new StringBuilder();
-    for (String s : plugin.getSpawnerManager().getSpawnerMap().keySet()) {
-      listString.append(s).append(" ");
+    List<Spawner> spawners = new ArrayList<>(plugin.getSpawnerManager().getSpawnerMap().values());
+    SpawnerComparator comparator = new SpawnerComparator();
+    comparator.setLoc(sender.getLocation());
+    spawners.sort(comparator);
+    for (Spawner s : spawners) {
+      if (s.getLocation().getWorld() == sender.getLocation().getWorld()) {
+        listString.append(ChatColor.WHITE).append(s.getId()).append(" ");
+      } else {
+        listString.append(ChatColor.GRAY).append(s.getId()).append(" ");
+      }
     }
     sendMessage(sender, "&f" + listString.toString());
   }

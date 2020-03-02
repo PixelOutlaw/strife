@@ -1,8 +1,8 @@
 package land.face.strife.data;
 
-import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -10,10 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -30,17 +33,22 @@ public class StrifeMob {
   private LivingEntity livingEntity;
   private EntityAbilitySet abilitySet;
   private String uniqueEntityId = null;
+  private Set<String> mods = new HashSet<>();
   private Set<String> factions = new HashSet<>();
+
+  private Set<FiniteUsesEffect> tempEffects = new HashSet<>();
 
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
 
-  private LivingEntity master;
-  private Spawner spawner;
-  private final Set<StrifeMob> minions = new ConcurrentSet<>();
+  private LivingEntity master = null;
+
+  private final Set<StrifeMob> minions = new HashSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
+
+  private EntityAbilityTimer abilityTimer;
 
   private long buffCacheStamp = System.currentTimeMillis();
 
@@ -52,6 +60,12 @@ public class StrifeMob {
   public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = livingEntity;
     this.champion = null;
+  }
+
+  public void killAllTasks() {
+    if (abilityTimer != null) {
+      abilityTimer.cancel();
+    }
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -113,6 +127,10 @@ public class StrifeMob {
 
   public void setUniqueEntityId(String uniqueEntityId) {
     this.uniqueEntityId = uniqueEntityId;
+  }
+
+  public Set<String> getMods() {
+    return mods;
   }
 
   public Set<String> getFactions() {
@@ -209,7 +227,9 @@ public class StrifeMob {
   }
 
   public Set<StrifeMob> getMinions() {
-    for (StrifeMob minion : minions) {
+    Iterator<StrifeMob> it = minions.iterator();
+    while (it.hasNext()) {
+      StrifeMob minion = it.next();
       if (minion == null || minion.getEntity() == null || !minion.getEntity().isValid()) {
         minions.remove(minion);
       }
@@ -219,6 +239,10 @@ public class StrifeMob {
 
   public void addMinion(StrifeMob strifeMob) {
     minions.add(strifeMob);
+    strifeMob.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
+    strifeMob.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
+    strifeMob.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
+    strifeMob.setDespawnOnUnload(true);
     strifeMob.setMaster(livingEntity);
   }
 
@@ -228,6 +252,10 @@ public class StrifeMob {
 
   public void setMaster(LivingEntity master) {
     this.master = master;
+  }
+
+  public Set<FiniteUsesEffect> getTempEffects() {
+    return tempEffects;
   }
 
   public boolean isDespawnOnUnload() {
@@ -246,15 +274,8 @@ public class StrifeMob {
     this.charmImmune = charmImmune;
   }
 
-  public void setSpawner(Spawner spawner) {
-    this.spawner = spawner;
-  }
-
-  public void doSpawnerDeath() {
-    if (spawner == null) {
-      return;
-    }
-    spawner.doDeath(livingEntity);
+  public void setAbilityTimer(EntityAbilityTimer abilityTimer) {
+    this.abilityTimer = abilityTimer;
   }
 
   private Map<StrifeStat, Float> getBuffStats() {

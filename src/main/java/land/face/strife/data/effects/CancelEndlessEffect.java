@@ -14,7 +14,7 @@ public class CancelEndlessEffect extends Effect {
       LogUtil.printError("Null EndlessEffect found in CancelEndlessEffect... Check your configs!");
       return;
     }
-    EndlessEffectTimer timer = endlessEffect.getEndlessTimer(target);
+    EndlessEffectTimer timer = EndlessEffect.getEndlessEffect(target, endlessEffect);
     if (timer == null) {
       return;
     }

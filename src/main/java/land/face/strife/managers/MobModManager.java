@@ -25,9 +25,8 @@ public class MobModManager {
 
   private final Map<String, MobMod> loadedMods = new HashMap<>();
 
-  private final double MOB_MOD_UP_CHANCE;
-  private final int MOB_MOD_MAX_MODS;
-  private final int STARTING_WEIGHT = 100000;
+  private double MOB_MOD_UP_CHANCE;
+  public static int MOB_MOD_MAX_MODS;
 
   private static Random random = new Random();
 
@@ -38,11 +37,11 @@ public class MobModManager {
         .getInt("config.leveled-monsters.max-mob-mods", 4);
   }
 
-  public void doModApplication(StrifeMob strifeMob) {
+  public void doModApplication(StrifeMob strifeMob, int max) {
     String prefix = "";
-    int prefixWeight = STARTING_WEIGHT;
+    int prefixWeight = Integer.MAX_VALUE;
     Set<MobMod> mods = getRandomMods(strifeMob.getEntity(), strifeMob.getEntity().getLocation(),
-        getModCount());
+        getModCount(max));
     for (MobMod mod : mods) {
       applyMobMod(strifeMob, mod);
       if (mod.getWeight() < prefixWeight && StringUtils.isNotBlank(mod.getPrefix())) {
@@ -50,6 +49,7 @@ public class MobModManager {
         prefixWeight = mod.getWeight();
       }
       strifeMob.setDespawnOnUnload(true);
+      strifeMob.getMods().add(mod.getId());
     }
     strifeMob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE +
         strifeMob.getEntity().getCustomName());
@@ -136,9 +136,10 @@ public class MobModManager {
     }
   }
 
-  private int getModCount() {
+  private int getModCount(int max) {
     int mods = 0;
-    for (int i = 0; i < MOB_MOD_MAX_MODS; i++) {
+    max = Math.min(max, MOB_MOD_MAX_MODS);
+    for (int i = 0; i < max; i++) {
       if (random.nextDouble() < MOB_MOD_UP_CHANCE) {
         mods++;
         continue;
@@ -154,7 +155,8 @@ public class MobModManager {
     mod.setPrefix(cs.getString("prefix"));
     mod.setWeight(cs.getInt("weight", 0));
     mod.setBaseStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("base-stats")));
-    mod.setPerLevelStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));
+    mod.setPerLevelStats(
+        StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));
     mod.setAbilitySet(new EntityAbilitySet(cs.getConfigurationSection("abilities")));
     for (String s : cs.getStringList("required-biome")) {
       mod.addValidBiome(Biome.valueOf(s));

@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.LogUtil;
-import net.minecraft.server.v1_14_R1.EntityItem;
+import net.minecraft.server.v1_15_R1.EntityItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;

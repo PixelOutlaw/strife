@@ -16,21 +16,29 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.tasks;
+package land.face.strife.menus.abilities;
 
-import land.face.strife.managers.SneakManager;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.tealcube.minecraft.bukkit.TextUtils;
+import java.util.List;
+import land.face.strife.StrifePlugin;
+import ninja.amp.ampmenus.menus.ItemMenu;
 
-public class SneakTask extends BukkitRunnable {
+public class AbilityPickerPickerMenu extends ItemMenu {
 
-  private final SneakManager sneakManager;
+  public AbilityPickerPickerMenu(StrifePlugin plugin, String name, List<AbilityPickerPickerItem> subMenuIcons) {
+    super(TextUtils.color(name), Size.fit(36), plugin);
 
-  public SneakTask(SneakManager sneakManager) {
-    this.sneakManager = sneakManager;
-  }
-
-  @Override
-  public void run() {
-    sneakManager.tickAll();
+    for (AbilityPickerPickerItem icon : subMenuIcons) {
+      setItem(icon.getSlot(), icon);
+    }
   }
 }
+
+/*
+00 01 02 03 04 05 06 07 08
+09 10 11 12 13 14 15 16 17
+18 19 20 21 22 23 24 25 26
+27 28 29 30 31 32 33 34 35
+36 37 38 39 40 41 42 43 44
+45 46 47 48 49 50 51 52 53
+*/

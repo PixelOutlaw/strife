@@ -11,7 +11,10 @@ public class Ability {
   private final String name;
   private final TargetType targetType;
   private final boolean raycastsTargetEntities;
+  private final boolean requireTarget;
+  private final boolean cancelStealth;
   private final float range;
+  private final float cost;
   private final List<Effect> effects;
   private final List<Effect> toggleOffEffects;
   private final int cooldown;
@@ -23,9 +26,9 @@ public class Ability {
   private final boolean friendly;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
-      TargetType targetType, float range, int cooldown, int maxCharges, int globalCooldownTicks,
-      boolean showMsgs, boolean raycastsTargetEntities, Set<Condition> conditions, boolean friendly,
-      AbilityIconData abilityIconData) {
+      TargetType targetType, float range, float cost, int cooldown, int maxCharges, int globalCooldownTicks,
+      boolean showMsgs, boolean requireTarget, boolean raycastsTargetEntities,
+      Set<Condition> conditions, boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -34,12 +37,15 @@ public class Ability {
     this.effects = effects;
     this.toggleOffEffects = toggleOffEffects;
     this.targetType = targetType;
+    this.requireTarget = requireTarget;
     this.raycastsTargetEntities = raycastsTargetEntities;
     this.range = range;
+    this.cost = cost;
     this.showMessages = showMsgs;
     this.conditions = conditions;
     this.abilityIconData = abilityIconData;
     this.friendly = friendly;
+    this.cancelStealth = cancelStealth;
   }
 
   public String getId() {
@@ -58,12 +64,24 @@ public class Ability {
     return range;
   }
 
+  public float getCost() {
+    return cost;
+  }
+
   public List<Effect> getEffects() {
     return effects;
   }
 
   public List<Effect> getToggleOffEffects() {
     return toggleOffEffects;
+  }
+
+  public boolean isCancelStealth() {
+    return cancelStealth;
+  }
+
+  public boolean isRequireTarget() {
+    return requireTarget;
   }
 
   public int getCooldown() {

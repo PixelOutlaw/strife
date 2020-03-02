@@ -45,8 +45,8 @@ public class ChaserManager {
       }
       chaser.setCurrentTick(chaser.getCurrentTick() + 1);
 
-      if (!chaser.getTarget().isValid() || !chaser.getLocation().getWorld()
-          .equals(chaser.getTarget().getWorld())) {
+      if (chaser.getTarget() == null || !chaser.getTarget().isValid() ||
+          !chaser.getLocation().getWorld().equals(chaser.getTarget().getWorld())) {
         chasers.remove(chaser);
         continue;
       }
@@ -72,7 +72,8 @@ public class ChaserManager {
     }
     chaser.getLocation().add(velocity);
     for (StrifeParticle particle : data.getParticles()) {
-      particle.playAtLocation(chaser.getLocation());
+      particle.applyAtLocation(null,
+          chaser.getLocation().clone().subtract(chaser.getVelocity().clone().multiply(0.5)));
     }
     if (isChaserCloseEnough(chaser, data, targetLocation)) {
       for (Effect effect : data.getEffectList()) {
@@ -111,6 +112,11 @@ public class ChaserManager {
         data.getParticles().add((StrifeParticle) getEffect(s));
       }
     }, 5L);
+    chaserData.put(id, data);
+    return data;
+  }
+
+  public LoadedChaser loadChaser(String id, LoadedChaser data) {
     chaserData.put(id, data);
     return data;
   }

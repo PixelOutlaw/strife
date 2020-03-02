@@ -9,6 +9,7 @@ import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.managers.MobModManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.apache.commons.lang.WordUtils;
@@ -134,7 +135,7 @@ public class SpawnListener implements Listener {
     equipEntity(entity);
 
     StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(entity);
-    plugin.getMobModManager().doModApplication(strifeMob);
+    plugin.getMobModManager().doModApplication(strifeMob, MobModManager.MOB_MOD_MAX_MODS);
     setEntityAttributes(strifeMob, entity);
 
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);

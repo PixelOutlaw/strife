@@ -18,29 +18,34 @@
  */
 package land.face.strife.menus.abilities;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.ChatColor;
 
 public class AbilityPickerMenu extends ItemMenu {
 
+  private String id;
+
   public AbilityPickerMenu(StrifePlugin plugin, String name, List<Ability> abilities) {
-    super(ChatColor.BLACK + name, Size.fit(abilities.size()), plugin);
+    super(TextUtils.color(name), Size.fit(abilities.size()), plugin);
 
     int index = 0;
     for (Ability ability : abilities) {
       setItem(index, new AbilityPickerItem(plugin, ability));
       index++;
     }
+    fillEmptySlots(new BlankIcon());
   }
 
-  public enum AbilityMenuType {
-    BASIC_LEVEL_MENU,
-    MELEE_ABILITY,
-    ARCHERY_ABILITY,
-    MAGIC_ABILITY
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 }
 

@@ -12,6 +12,7 @@ public abstract class Condition {
   private ConditionType type;
   private ConditionUser conditionUser;
   private float value;
+  private boolean inverted;
 
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
 
@@ -59,6 +60,14 @@ public abstract class Condition {
     this.value = value;
   }
 
+  public boolean isInverted() {
+    return inverted;
+  }
+
+  public void setInverted(boolean inverted) {
+    this.inverted = inverted;
+  }
+
   public Map<StrifeStat, Float> getStatMults() {
     return statMults;
   }
@@ -101,17 +110,21 @@ public abstract class Condition {
     LIGHT_LEVEL,
     HEALTH,
     BARRIER,
+    ENERGY,
     POTION_EFFECT,
     TIME,
     LEVEL,
     BONUS_LEVEL,
     ITS_OVER_ANAKIN,
     ENTITY_TYPE,
+    UNIQUE_ID,
+    FACTION_MEMBER,
     VELOCITY,
     GROUNDED,
     BLEEDING,
     DARKNESS,
     RANGE,
+    STEALTHED,
     BURNING,
     EARTH_RUNES
   }

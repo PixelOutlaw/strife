@@ -21,6 +21,7 @@ package land.face.strife.menus.stats;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
+import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -45,6 +46,10 @@ public class StatsMenu extends ItemMenu {
     setItem(16, new StatsMiscMenuItem());
     setItem(22, new StatsBonusMenuItem());
     setItem(24, new StatsEffectMenuItem());
+
+    setItem(35, new StatsChangeHealthDisplay(StrifePlugin.getInstance()));
+
+    fillEmptySlots(new BlankIcon());
   }
 }
 

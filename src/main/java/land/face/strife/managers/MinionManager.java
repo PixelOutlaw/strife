@@ -44,6 +44,9 @@ public class MinionManager {
         minionDecayMap.remove(le);
         continue;
       }
+      if (!le.getPassengers().isEmpty()) {
+        continue;
+      }
       int ticks = minionDecayMap.get(le);
       if (ticks > 0) {
         minionDecayMap.put(le, ticks - 1);

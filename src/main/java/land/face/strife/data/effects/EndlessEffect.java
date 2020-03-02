@@ -2,14 +2,14 @@ package land.face.strife.data.effects;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.EndlessEffectTimer;
+import org.bukkit.entity.LivingEntity;
 
 public class EndlessEffect extends Effect {
 
@@ -20,10 +20,10 @@ public class EndlessEffect extends Effect {
   private StrifeStat reducerStat;
   private float reducerValue;
   private int tickRate;
-  private int maxDuration;
+  private float maxDuration;
   private boolean strictDuration;
 
-  private final Map<StrifeMob, EndlessEffectTimer> runningEffects = new ConcurrentHashMap<>();
+  private static Set<EndlessEffectTimer> runningEndlessEffects = new HashSet<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -33,24 +33,44 @@ public class EndlessEffect extends Effect {
       newTickRate = Math.max(1, (int) ((float) tickRate / tickDivisor));
     }
     float newDuration = maxDuration;
-    newDuration = (newDuration * 20) / newTickRate;
     if (!strictDuration) {
-      newDuration = maxDuration * (1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
+      newDuration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
+    newDuration = (newDuration * 20) / newTickRate;
     EndlessEffectTimer timer = new EndlessEffectTimer(this, target, newTickRate, (int) newDuration);
-    runningEffects.put(target, timer);
+    runningEndlessEffects.add(timer);
   }
 
-  public EndlessEffectTimer getEndlessTimer(StrifeMob target) {
-    return runningEffects.getOrDefault(target, null);
-  }
-
-  public void removeEffectOnTarget(StrifeMob target) {
-    if (runningEffects.containsKey(target)) {
-      if (!runningEffects.get(target).isCancelled()) {
-        runningEffects.get(target).cancel();
+  public static EndlessEffectTimer getEndlessEffect(StrifeMob mob, EndlessEffect effect) {
+    Iterator<EndlessEffectTimer> it = runningEndlessEffects.iterator();
+    while (it.hasNext()) {
+      EndlessEffectTimer timer = it.next();
+      if (timer.getEndlessEffect() == effect && timer.getMob() == mob) {
+        return timer;
       }
-      runningEffects.remove(target);
+    }
+    return null;
+  }
+
+  public static void removeEffectOnTarget(StrifeMob target, EndlessEffect effect) {
+    EndlessEffectTimer timer = getEndlessEffect(target, effect);
+    if (timer != null) {
+      if (!timer.isCancelled()) {
+        timer.cancel();
+      }
+      runningEndlessEffects.remove(timer);
+    }
+  }
+
+  public static void cancelEffects(LivingEntity target) {
+    for (EndlessEffectTimer timer : runningEndlessEffects) {
+      if (timer.getMob().getEntity() != target) {
+        continue;
+      }
+      if (!timer.isCancelled()) {
+        timer.cancel();
+      }
+      runningEndlessEffects.remove(timer);
     }
   }
 
@@ -78,7 +98,7 @@ public class EndlessEffect extends Effect {
     return cancelEffects;
   }
 
-  public void setMaxDuration(int maxDuration) {
+  public void setMaxDuration(float maxDuration) {
     this.maxDuration = maxDuration;
   }
 

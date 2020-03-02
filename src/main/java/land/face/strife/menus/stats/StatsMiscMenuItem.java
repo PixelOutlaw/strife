@@ -18,7 +18,9 @@
  */
 package land.face.strife.menus.stats;
 
+import static land.face.strife.menus.stats.StatsDefenseMenuItem.PER_TEN;
 import static land.face.strife.menus.stats.StatsMenu.INT_FORMAT;
+import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
@@ -52,10 +54,17 @@ public class StatsMiscMenuItem extends MenuItem {
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
+    lore.add(ChatColor.DARK_AQUA + "Maximum Energy: " + ChatColor.WHITE + INT_FORMAT.format(
+        pStats.getStat(StrifeStat.ENERGY)));
+    lore.add(ChatColor.DARK_AQUA + "Energy Regeneration: " + ChatColor.WHITE + ONE_DECIMAL
+        .format(pStats.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
+    lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
         pStats.getStat(StrifeStat.MOVEMENT_SPEED)));
+    lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
         100 + pStats.getStat(StrifeStat.EFFECT_DURATION)) + "%");
+    lore.add(breakLine);
     if (pStats.getStat(StrifeStat.DOGE) > 0) {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN
           + "many levels");

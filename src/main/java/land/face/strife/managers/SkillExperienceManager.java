@@ -33,7 +33,6 @@ import land.face.strife.events.SkillExpGainEvent;
 import land.face.strife.events.SkillLevelUpEvent;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class SkillExperienceManager {
@@ -55,10 +54,15 @@ public class SkillExperienceManager {
   }
 
   public void addExperience(Player player, LifeSkillType type, double amount, boolean exact) {
-    addExperience(plugin.getChampionManager().getChampion(player), type, amount, exact);
+    addExperience(plugin.getChampionManager().getChampion(player), type, amount, exact, true);
   }
 
   public void addExperience(Champion champion, LifeSkillType type, double amount, boolean exact) {
+    addExperience(champion, type, amount, exact, true);
+  }
+
+  public void addExperience(Champion champion, LifeSkillType type, double amount, boolean exact,
+      boolean displayXp) {
     ChampionSaveData saveData = champion.getSaveData();
     if (amount < 0.001) {
       return;
@@ -69,7 +73,7 @@ public class SkillExperienceManager {
     if (!exact) {
       double statsMult = champion.getCombinedCache().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f) / 100f;
       amount *= 1 + statsMult;
-      if (champion.getSaveData().isDisplayExp()) {
+      if (champion.getSaveData().isDisplayExp() && displayXp) {
         String xp = FORMAT.format(amount * (1 + statsMult));
         MessageUtils.sendMessage(champion.getPlayer(), XP_MSG
             .replace("{c}", "" + type.getColor())
@@ -100,11 +104,13 @@ public class SkillExperienceManager {
     }
 
     saveData.setSkillExp(type, (float) currentExp);
-    ChatColor c = type.getColor();
-    String xpMsg = XP_AB.replace("{0}", "" + c).replace("{1}", FORMAT.format((int) currentExp))
-        .replace("{2}", FORMAT.format((int) maxExp));
-    MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
-    plugin.getBossBarManager().bumpSkillBar(champion, type);
+    //ChatColor c = type.getColor();
+    //String xpMsg = XP_AB.replace("{0}", "" + c).replace("{1}", FORMAT.format((int) currentExp))
+    //    .replace("{2}", FORMAT.format((int) maxExp));
+    //MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
+    if (displayXp) {
+      plugin.getBossBarManager().bumpSkillBar(champion, type);
+    }
   }
 
   public Integer getMaxExp(LifeSkillType type, int level) {

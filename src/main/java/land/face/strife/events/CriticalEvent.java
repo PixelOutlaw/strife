@@ -22,7 +22,7 @@
  */
 package land.face.strife.events;
 
-import org.bukkit.entity.LivingEntity;
+import land.face.strife.data.StrifeMob;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -34,10 +34,10 @@ public class CriticalEvent extends Event {
     return HANDLER_LIST;
   }
 
-  private final LivingEntity attacker;
-  private final LivingEntity victim;
+  private final StrifeMob attacker;
+  private final StrifeMob victim;
 
-  public CriticalEvent(LivingEntity attacker, LivingEntity victim) {
+  public CriticalEvent(StrifeMob attacker, StrifeMob victim) {
     this.attacker = attacker;
     this.victim = victim;
   }
@@ -47,11 +47,11 @@ public class CriticalEvent extends Event {
     return HANDLER_LIST;
   }
 
-  public LivingEntity getAttacker() {
+  public StrifeMob getAttacker() {
     return attacker;
   }
 
-  public LivingEntity getVictim() {
+  public StrifeMob getVictim() {
     return victim;
   }
 

@@ -33,12 +33,17 @@ public class DirectDamage extends Effect {
     if (canBeEvaded) {
       evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, abilityMods);
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        DamageUtil.doEvasion(caster.getEntity(), target.getEntity());
+        DamageUtil.doEvasion(caster, target);
         LogUtil.printDebug(" [Pre-Damage] Direct damage EVADED!");
         return;
       }
     }
     if (canBeBlocked) {
+      if (StrifePlugin.getInstance().getCounterManager()
+          .executeCounters(caster.getEntity(), target.getEntity())) {
+        LogUtil.printDebug(" [Pre-Damage] Direct damage COUNTERED!");
+        return;
+      }
       if (StrifePlugin.getInstance().getBlockManager()
           .isAttackBlocked(caster, target, damageReductionRatio, attackType, false)) {
         LogUtil.printDebug(" [Pre-Damage] Direct damage BLOCKED!");
@@ -66,6 +71,8 @@ public class DirectDamage extends Effect {
     damage = Math.max(0,
         damage - target.getStat(StrifeStat.DAMAGE_REDUCTION) * damageReductionRatio * pvpMult);
     LogUtil.printDebug(" [Pre-Damage] Target Health: " + target.getEntity().getHealth());
+
+    target.trackDamage(caster, damage);
     StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target, damage, true);
     LogUtil.printDebug(" [Post-Damage] Target Health: " + target.getEntity().getHealth());
   }

@@ -14,7 +14,7 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
-public class ShootBlock extends Effect {
+public class ShootBlock extends LocationEffect {
 
   private BlockData blockData;
   private OriginLocation originType;
@@ -29,9 +29,13 @@ public class ShootBlock extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-
-    Vector castDirection = target.getEntity().getEyeLocation().getDirection();
     Location originLocation = TargetingUtil.getOriginLocation(target.getEntity(), originType);
+    applyAtLocation(caster, originLocation);
+  }
+
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
+    Vector castDirection = caster.getEntity().getEyeLocation().getDirection();
     if (zeroPitch) {
       castDirection.setY(0.001);
       castDirection.normalize();
@@ -39,7 +43,7 @@ public class ShootBlock extends Effect {
     castDirection.normalize().multiply(speed);
 
     for (int i = 0; i < quantity; i++) {
-      FallingBlock block = originLocation.getWorld().spawnFallingBlock(originLocation, blockData);
+      FallingBlock block = location.getWorld().spawnFallingBlock(location, blockData);
       Vector newDirection = castDirection.clone();
       applySpread(newDirection, spread);
       block.setVelocity(newDirection);

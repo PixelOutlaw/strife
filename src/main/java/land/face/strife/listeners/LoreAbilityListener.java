@@ -9,16 +9,19 @@ import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_KILL;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK_ATTACK;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
 
+import java.util.Iterator;
+import java.util.Set;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeDamageEvent;
-import land.face.strife.managers.ChampionManager;
 import land.face.strife.managers.LoreAbilityManager;
+import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StrifeMobManager;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -32,27 +35,22 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class LoreAbilityListener implements Listener {
 
   private final StrifeMobManager strifeMobManager;
-  private final ChampionManager championManager;
   private final LoreAbilityManager loreAbilityManager;
 
   public LoreAbilityListener(StrifeMobManager strifeMobManager,
-      ChampionManager championManager,
       LoreAbilityManager loreAbilityManager) {
     this.strifeMobManager = strifeMobManager;
-    this.championManager = championManager;
     this.loreAbilityManager = loreAbilityManager;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onCriticalHit(CriticalEvent event) {
-    if (!(event.getAttacker() instanceof Player)) {
-      return;
+    Champion champion = event.getAttacker().getChampion();
+    if (champion != null) {
+      executeBoundEffects(event.getAttacker(), event.getVictim().getEntity(),
+          event.getAttacker().getChampion().getLoreAbilities().get(ON_CRIT));
     }
-    Champion champion = championManager.getChampion((Player) event.getAttacker());
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_CRIT)) {
-      loreAbilityManager
-          .applyLoreAbility(la, getAttrEntity(event.getAttacker()), event.getVictim());
-    }
+    executeFiniteEffects(event.getAttacker(), event.getVictim(), ON_CRIT);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -63,63 +61,63 @@ public class LoreAbilityListener implements Listener {
     if (!(event.getEntity() instanceof Player)) {
       return;
     }
-    Champion champion = championManager.getChampion((Player) event.getEntity());
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_FALL)) {
-      loreAbilityManager.applyLoreAbility(la, getAttrEntity((Player) event.getEntity()),
-          (Player) event.getEntity());
-    }
+    StrifeMob mob = getAttrEntity((Player) event.getEntity());
+    executeBoundEffects(mob, (LivingEntity) event.getEntity(),
+        mob.getChampion().getLoreAbilities().get(ON_FALL));
+    executeFiniteEffects(mob, mob, ON_FALL);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEvade(EvadeEvent event) {
-    if (!(event.getEvader() instanceof Player)) {
-      return;
+    Champion champion = event.getEvader().getChampion();
+    if (champion != null) {
+      executeBoundEffects(event.getEvader(), event.getAttacker().getEntity(),
+          event.getEvader().getChampion().getLoreAbilities().get(ON_EVADE));
     }
-    Champion champion = championManager.getChampion((Player) event.getEvader());
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_EVADE)) {
-      loreAbilityManager
-          .applyLoreAbility(la, getAttrEntity(event.getEvader()), event.getAttacker());
-    }
+    executeFiniteEffects(event.getEvader(), event.getAttacker(), ON_EVADE);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onBlock(BlockEvent event) {
-    if (!(event.getBlocker() instanceof Player)) {
-      return;
+    Champion champion = event.getBlocker().getChampion();
+    if (champion != null) {
+      executeBoundEffects(event.getBlocker(), event.getAttacker().getEntity(),
+          event.getBlocker().getChampion().getLoreAbilities().get(ON_BLOCK));
     }
-    Champion champion = championManager.getChampion((Player) event.getBlocker());
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_BLOCK)) {
-      loreAbilityManager
-          .applyLoreAbility(la, getAttrEntity(event.getBlocker()), event.getAttacker());
-    }
+    executeFiniteEffects(event.getBlocker(), event.getAttacker(), ON_BLOCK);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onSneakAttack(SneakAttackEvent event) {
-    Champion champion = championManager.getChampion(event.getAttacker());
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_SNEAK_ATTACK)) {
-      loreAbilityManager
-          .applyLoreAbility(la, getAttrEntity(event.getAttacker()), event.getVictim());
+    Champion champion = event.getAttacker().getChampion();
+    if (champion != null) {
+      executeBoundEffects(event.getAttacker(), event.getVictim().getEntity(),
+          event.getAttacker().getChampion().getLoreAbilities().get(ON_SNEAK_ATTACK));
     }
+    executeFiniteEffects(event.getAttacker(), event.getVictim(), ON_SNEAK_ATTACK);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(EntityDeathEvent event) {
-    if (event.getEntity().getKiller() == null) {
-      return;
+    StrifeMob victim = strifeMobManager.getStatMob(event.getEntity());
+    Player killer = event.getEntity().getKiller();
+    if (killer == null) {
+      killer = victim.getKiller();
+      if (killer == null) {
+        return;
+      }
     }
-    Champion champion = championManager.getChampion(event.getEntity().getKiller());
-    StrifeMob strifeMob = getAttrEntity(event.getEntity().getKiller());
-    if (strifeMob.isMasterOf(event.getEntity())) {
-      return;
-    }
-    for (LoreAbility la : champion.getLoreAbilities().get(ON_KILL)) {
-      loreAbilityManager.applyLoreAbility(la, strifeMob, event.getEntity());
-    }
+    StrifeMob killerMob = strifeMobManager.getStatMob(killer);
+    executeBoundEffects(killerMob, event.getEntity(),
+        killerMob.getChampion().getLoreAbilities().get(ON_KILL));
+    executeFiniteEffects(killerMob, victim, ON_KILL);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onStrifeDamage(StrifeDamageEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
     StrifeMob attacker = event.getAttacker();
     if (attacker == null) {
       return;
@@ -130,16 +128,46 @@ public class LoreAbilityListener implements Listener {
       if (attacker.isMasterOf(defender)) {
         return;
       }
-      for (LoreAbility la : attacker.getChampion().getLoreAbilities().get(ON_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, attacker, defender.getEntity());
-      }
+      executeBoundEffects(defender, attacker.getEntity(),
+          attacker.getChampion().getLoreAbilities().get(ON_HIT));
     }
+    executeFiniteEffects(attacker, defender, ON_HIT);
+
     if (defender.getEntity() instanceof Player) {
       if (attacker.isMasterOf(defender)) {
         return;
       }
-      for (LoreAbility la : event.getDefender().getChampion().getLoreAbilities().get(WHEN_HIT)) {
-        loreAbilityManager.applyLoreAbility(la, defender, attacker.getEntity());
+      executeBoundEffects(defender, attacker.getEntity(),
+          event.getDefender().getChampion().getLoreAbilities().get(WHEN_HIT));
+    }
+    executeFiniteEffects(defender, attacker, WHEN_HIT);
+  }
+
+  private void executeBoundEffects(StrifeMob caster, LivingEntity target,
+      Set<LoreAbility> effects) {
+    if (effects == null || effects.isEmpty()) {
+      return;
+    }
+    Iterator<LoreAbility> it = effects.iterator();
+    while (it.hasNext()) {
+      LoreAbility la = it.next();
+      loreAbilityManager.applyLoreAbility(la, caster, target);
+    }
+  }
+
+  private void executeFiniteEffects(StrifeMob attacker, StrifeMob target, TriggerType type) {
+    Iterator<FiniteUsesEffect> it = attacker.getTempEffects().iterator();
+    while (it.hasNext()) {
+      FiniteUsesEffect tempEffect = it.next();
+      if (tempEffect.getLoreAbility().getTriggerType() != type) {
+        continue;
+      }
+      loreAbilityManager.applyLoreAbility(tempEffect.getLoreAbility(), attacker,
+          target.getEntity());
+      if (tempEffect.getUses() > 1) {
+        tempEffect.setUses(tempEffect.getUses() - 1);
+      } else {
+        attacker.getTempEffects().remove(tempEffect);
       }
     }
   }

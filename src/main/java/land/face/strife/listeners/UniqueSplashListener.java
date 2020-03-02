@@ -34,8 +34,8 @@ public class UniqueSplashListener implements Listener {
     if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
       return;
     }
-    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0).asString()
-        .split("~");
+    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0)
+        .asString().split("~");
     if (effects.length == 0) {
       return;
     }
@@ -52,7 +52,7 @@ public class UniqueSplashListener implements Listener {
           .getMinimumEvasionMult(StatUtil.getEvasion(defender), StatUtil.getAccuracy(attacker));
       evasionMultiplier = evasionMultiplier + (DamageUtil.rollDouble() * (1 - evasionMultiplier));
       if (evasionMultiplier <= 0.5) {
-        DamageUtil.doEvasion(attackEntity, defendEntity);
+        DamageUtil.doEvasion(attacker, defender);
         event.setCancelled(true);
         return;
       }
@@ -60,7 +60,7 @@ public class UniqueSplashListener implements Listener {
       if (blockManager.rollBlock(defender, false)) {
         blockManager.blockFatigue(defendEntity.getUniqueId(), 1.0, false);
         blockManager.bumpRunes(defender);
-        DamageUtil.doBlock(attackEntity, defendEntity);
+        DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);
         return;
       }

@@ -17,18 +17,13 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
-import me.libraryaddict.disguise.disguisetypes.DisguiseType;
-import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
-import me.libraryaddict.disguise.disguisetypes.MobDisguise;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
-import me.libraryaddict.disguise.disguisetypes.RabbitType;
-import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
-import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Rabbit;
@@ -97,28 +92,46 @@ public class UniqueEntityManager {
     if (le instanceof Zombie) {
       ((Zombie) le).setBaby(uniqueEntity.isBaby());
     } else if (le instanceof Slime) {
-      ((Slime) le).setSize(uniqueEntity.getSize());
+      int size = uniqueEntity.getSize();
+      if (size < 1) {
+        size = 2 + (int) (Math.random() * 3);
+      }
+      ((Slime) le).setSize(size);
     } else if (le instanceof Phantom) {
-      ((Phantom) le).setSize(uniqueEntity.getSize());
+      int size = uniqueEntity.getSize();
+      if (size < 1) {
+        size = 1 + (int) (Math.random() * 3);
+      }
+      ((Phantom) le).setSize(size);
     } else if (le instanceof Rabbit) {
       ((Rabbit) le).setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
       ((Rabbit) le).setAdult();
+    } else if (le instanceof Creeper) {
+      ((Creeper) le).setPowered(uniqueEntity.isPowered());
+    }
+
+    if (le instanceof Ageable) {
+      ((Ageable) le).setAgeLock(true);
+      if (uniqueEntity.isBaby()) {
+        ((Ageable) le).setBaby();
+      } else {
+        ((Ageable) le).setAdult();
+      }
     }
 
     if (uniqueEntity.getFollowRange() != -1) {
-      if (le.getAttribute(GENERIC_FOLLOW_RANGE) != null) {
-        le.getAttribute(GENERIC_FOLLOW_RANGE)
-            .setBaseValue(uniqueEntity.getFollowRange());
-      }
-      if (le instanceof Zombie && uniqueEntity.isRemoveFollowMods()) {
-        for (AttributeModifier mod : le.getAttribute(GENERIC_FOLLOW_RANGE).getModifiers()) {
-          le.getAttribute(GENERIC_FOLLOW_RANGE).removeModifier(mod);
+      AttributeInstance attributeInstance = le.getAttribute(GENERIC_FOLLOW_RANGE);
+      if (attributeInstance != null) {
+        attributeInstance.setBaseValue(uniqueEntity.getFollowRange());
+        if (uniqueEntity.isRemoveFollowMods()) {
+          for (AttributeModifier mod : attributeInstance.getModifiers()) {
+            attributeInstance.removeModifier(mod);
+          }
         }
       }
     }
 
-    if (le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null && uniqueEntity
-        .isKnockbackImmune()) {
+    if (uniqueEntity.isKnockbackImmune() && le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
       le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
@@ -144,8 +157,8 @@ public class UniqueEntityManager {
 
     StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(le, stats);
 
-    if (uniqueEntity.isAllowMods()) {
-      plugin.getMobModManager().doModApplication(strifeMob);
+    if (uniqueEntity.getMaxMods() > 0) {
+      plugin.getMobModManager().doModApplication(strifeMob, uniqueEntity.getMaxMods());
     }
 
     strifeMob.setUniqueEntityId(uniqueEntity.getId());
@@ -155,13 +168,21 @@ public class UniqueEntityManager {
     if (uniqueEntity.isBurnImmune()) {
       le.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
     }
+    if (uniqueEntity.isFallImmune()) {
+      le.setMetadata("NO_FALL", new FixedMetadataValue(plugin, true));
+    }
     if (uniqueEntity.isIgnoreSneak()) {
       le.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
+    }
+    if (uniqueEntity.isRemoveFollowMods()) {
+      le.setMetadata("WEAK_AGGRO", new FixedMetadataValue(plugin, true));
     }
     if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
       StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
       if (mountMob != null) {
         mountMob.getEntity().addPassenger(strifeMob.getEntity());
+        strifeMob.addMinion(mountMob);
+        StrifePlugin.getInstance().getMinionManager().addMinion(mountMob.getEntity(), 10);
       }
     }
 
@@ -178,37 +199,7 @@ public class UniqueEntityManager {
     return strifeMob;
   }
 
-  public void cacheDisguise(UniqueEntity uniqueEntity, String disguiseType, String playerName,
-      String typeData) {
-    DisguiseType type = DisguiseType.valueOf(disguiseType);
-    if (type == DisguiseType.PLAYER) {
-      if (StringUtils.isBlank(playerName)) {
-        playerName = "Pur3p0w3r";
-      }
-      PlayerDisguise playerDisguise = new PlayerDisguise(uniqueEntity.getName(), playerName);
-      cachedDisguises.put(uniqueEntity, playerDisguise);
-      return;
-    }
-    MobDisguise mobDisguise = new MobDisguise(type);
-    if (StringUtils.isNotBlank(typeData)) {
-      FlagWatcher watcher = mobDisguise.getWatcher();
-      try {
-        switch (type) {
-          case FOX:
-            Fox.Type foxType = Fox.Type.valueOf(typeData);
-            ((FoxWatcher) watcher).setType(foxType);
-            break;
-          case RABBIT:
-            RabbitType rabbitType = RabbitType.valueOf(typeData);
-            ((RabbitWatcher) watcher).setType(rabbitType);
-            break;
-        }
-      } catch (Exception e) {
-        LogUtil.printWarning("Cannot load type " + typeData + " for " + uniqueEntity.getId());
-      }
-    }
-    mobDisguise.setShowName(true);
-    mobDisguise.setReplaceSounds(true);
-    cachedDisguises.put(uniqueEntity, mobDisguise);
+  public void cacheDisguise(UniqueEntity uniqueEntity, Disguise disguise) {
+    cachedDisguises.put(uniqueEntity, disguise);
   }
 }

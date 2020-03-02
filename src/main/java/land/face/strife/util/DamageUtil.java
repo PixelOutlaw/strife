@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
+import land.face.strife.data.IndicatorData;
+import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.events.BlockEvent;
@@ -52,10 +54,10 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
-  private static final String ATTACK_MISSED = TextUtils.color("&f&lMiss!");
   private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
   public static double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
@@ -64,7 +66,18 @@ public class DamageUtil {
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   private static final DamageType[] DMG_TYPES = DamageType.values();
 
+  private static Vector IND_FLOAT_VECTOR;
+  private static Vector IND_MISS_VECTOR;
   private static final float BLEED_PERCENT = 0.5f;
+
+  public static void reloadConfig() {
+    float floatSpeed = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.indicators.float-speed", 70);
+    float missSpeed = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.indicators.miss-speed", 80);
+    IND_FLOAT_VECTOR = new Vector(0, floatSpeed, 0);
+    IND_MISS_VECTOR = new Vector(0, missSpeed, 0);
+  }
 
   public static float getRawDamage(StrifeMob attacker, DamageType damageType, AttackType type) {
     switch (damageType) {
@@ -144,6 +157,18 @@ public class DamageUtil {
         return amount * StatUtil.getMaximumBarrier(target);
       case CASTER_MAX_BARRIER:
         return amount * StatUtil.getMaximumBarrier(caster);
+      case TARGET_CURRENT_ENERGY:
+        return amount * StatUtil.getEnergy(target);
+      case CASTER_CURRENT_ENERGY:
+        return amount * StatUtil.getEnergy(caster);
+      case TARGET_MISSING_ENERGY:
+        return amount * (StatUtil.getMaximumEnergy(target) - StatUtil.getEnergy(target));
+      case CASTER_MISSING_ENERGY:
+        return amount * (StatUtil.getMaximumEnergy(caster) - StatUtil.getEnergy(caster));
+      case TARGET_MAX_ENERGY:
+        return amount * StatUtil.getMaximumEnergy(target);
+      case CASTER_MAX_ENERGY:
+        return amount * StatUtil.getMaximumEnergy(caster);
     }
     return amount;
   }
@@ -414,33 +439,34 @@ public class DamageUtil {
     return evasionMultiplier;
   }
 
-  public static void doEvasion(LivingEntity attacker, LivingEntity defender) {
+  public static void doEvasion(StrifeMob attacker, StrifeMob defender) {
     callEvadeEvent(defender, attacker);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-    if (defender instanceof Player) {
-      MessageUtils.sendActionBar((Player) defender, ATTACK_DODGED);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
+    if (defender.getEntity() instanceof Player) {
+      MessageUtils.sendActionBar((Player) defender.getEntity(), ATTACK_DODGED);
     }
-    if (attacker instanceof Player) {
-      MessageUtils.sendActionBar((Player) attacker, ATTACK_MISSED);
+    if (attacker.getEntity() instanceof Player) {
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+          defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "&7&lMiss");
     }
   }
 
-  public static void doBlock(LivingEntity attacker, LivingEntity defender) {
+  public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     String defenderBar = ATTACK_BLOCKED;
-    int runes = getBlockManager().getEarthRunes(defender.getUniqueId());
+    int runes = getBlockManager().getEarthRunes(defender.getEntity().getUniqueId());
     if (runes > 0) {
       StringBuilder sb = new StringBuilder(defenderBar);
       sb.append(TextUtils.color("&2 "));
       sb.append(IntStream.range(0, runes).mapToObj(i -> "▼").collect(Collectors.joining("")));
       defenderBar = sb.toString();
     }
-    if (defender instanceof Player) {
-      MessageUtils.sendActionBar((Player) defender, defenderBar);
+    if (defender.getEntity() instanceof Player) {
+      MessageUtils.sendActionBar((Player) defender.getEntity(), defenderBar);
     }
-    if (attacker instanceof Player) {
-      MessageUtils.sendActionBar((Player) attacker, ATTACK_BLOCKED);
+    if (attacker.getEntity() instanceof Player) {
+      MessageUtils.sendActionBar((Player) attacker.getEntity(), ATTACK_BLOCKED);
     }
   }
 
@@ -507,7 +533,7 @@ public class DamageUtil {
   }
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
-      float attackMult, Map<AbilityMod, Float> abilityMods) {
+      float attackMult, Map<AbilityMod, Float> abilityMods, boolean bypassBarrier) {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
       return false;
     }
@@ -522,16 +548,16 @@ public class DamageUtil {
           abilityMods.getOrDefault(AbilityMod.BLEED_DAMAGE, 0f)) / 100;
       damage *= damageMult;
       damage *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
-      applyBleed(defender, damage);
+      applyBleed(defender, damage, bypassBarrier);
     }
     return false;
   }
 
-  public static void applyBleed(StrifeMob defender, float amount) {
+  public static void applyBleed(StrifeMob defender, float amount, boolean bypassBarrier) {
     if (amount < 0.1) {
       return;
     }
-    StrifePlugin.getInstance().getBleedManager().addBleed(defender, amount);
+    StrifePlugin.getInstance().getBleedManager().addBleed(defender, amount, bypassBarrier);
     defender.getEntity().getWorld()
         .playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
   }
@@ -568,25 +594,24 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getBuffManager().getBuffFromId(id);
   }
 
-  public static void callCritEvent(LivingEntity attacker, LivingEntity victim) {
+  public static void callCritEvent(StrifeMob attacker, StrifeMob victim) {
     CriticalEvent c = new CriticalEvent(attacker, victim);
     Bukkit.getPluginManager().callEvent(c);
   }
 
-  public static void callEvadeEvent(LivingEntity evader, LivingEntity attacker) {
+  public static void callEvadeEvent(StrifeMob evader, StrifeMob attacker) {
     EvadeEvent ev = new EvadeEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
   }
 
-  public static SneakAttackEvent callSneakAttackEvent(Player attacker, LivingEntity victim,
+  public static SneakAttackEvent callSneakAttackEvent(StrifeMob attacker, StrifeMob victim,
       float sneakSkill, float sneakDamage) {
-    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill,
-        sneakDamage);
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill, sneakDamage);
     Bukkit.getPluginManager().callEvent(sneakAttackEvent);
     return sneakAttackEvent;
   }
 
-  public static void callBlockEvent(LivingEntity evader, LivingEntity attacker) {
+  public static void callBlockEvent(StrifeMob evader, StrifeMob attacker) {
     BlockEvent ev = new BlockEvent(evader, attacker);
     Bukkit.getPluginManager().callEvent(ev);
   }
@@ -624,24 +649,8 @@ public class DamageUtil {
     StrifePlugin.getInstance().getBarrierManager().restoreBarrier(strifeMob, amount);
   }
 
-  public static void applyPotionEffect(LivingEntity entity, PotionEffectType type, int power,
-      int duration) {
-    if (entity == null || !entity.isValid()) {
-      return;
-    }
-    if (!entity.hasPotionEffect(type)) {
-      entity.addPotionEffect(new PotionEffect(type, duration, power));
-      return;
-    }
-    PotionEffect effect = entity.getPotionEffect(type);
-    if (power < effect.getAmplifier()) {
-      return;
-    }
-    if (power == Math.abs(effect.getAmplifier()) && duration < effect.getDuration()) {
-      return;
-    }
-    entity.removePotionEffect(type);
-    entity.addPotionEffect(new PotionEffect(type, duration, power));
+  public static void restoreEnergy(StrifeMob strifeMob, float amount) {
+    StrifePlugin.getInstance().getEnergyManager().changeEnergy(strifeMob, amount);
   }
 
   public static AttackType getAttackType(EntityDamageByEntityEvent event) {
@@ -689,6 +698,18 @@ public class DamageUtil {
     return StrifePlugin.getInstance().getCorruptionManager();
   }
 
+  public static IndicatorData buildMissIndicator(Player player) {
+    IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
+    data.addOwner(player);
+    return data;
+  }
+
+  public static IndicatorData buildFloatIndicator(Player player) {
+    IndicatorData data = new IndicatorData(IND_FLOAT_VECTOR.clone(), IndicatorStyle.FLOAT_UP);
+    data.addOwner(player);
+    return data;
+  }
+
   public enum DamageScale {
     FLAT,
     CASTER_STAT_PERCENT,
@@ -707,6 +728,12 @@ public class DamageUtil {
     CASTER_MISSING_BARRIER,
     TARGET_MAX_BARRIER,
     CASTER_MAX_BARRIER,
+    TARGET_CURRENT_ENERGY,
+    CASTER_CURRENT_ENERGY,
+    TARGET_MISSING_ENERGY,
+    CASTER_MISSING_ENERGY,
+    TARGET_MAX_ENERGY,
+    CASTER_MAX_ENERGY,
   }
 
   public enum OriginLocation {

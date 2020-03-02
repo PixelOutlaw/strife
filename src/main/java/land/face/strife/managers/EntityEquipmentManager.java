@@ -7,9 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.EquipmentSlot;
@@ -57,7 +56,7 @@ public class EntityEquipmentManager {
     if (material == Material.PLAYER_HEAD) {
       String base64 = cs.getString("base64",
           "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
-      stack = withBase64(stack, base64);
+      stack = ItemUtil.withBase64(stack, base64);
     } else {
       stack = new ItemStack(material);
     }
@@ -77,10 +76,5 @@ public class EntityEquipmentManager {
     ItemStackExtensionsKt.setLore(stack, lore);
     ItemStackExtensionsKt.setUnbreakable(stack, true);
     getItemMap().put(key, stack);
-  }
-
-  public ItemStack withBase64(ItemStack item, String base64) {
-    UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());
-    return Bukkit.getUnsafe().modifyItemStack(item, "{SkullOwner:{Id:\"" + hashAsId + "\",Properties:{textures:[{Value:\"" + base64 + "\"}]}}}");
   }
 }

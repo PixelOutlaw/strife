@@ -26,14 +26,19 @@ import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -75,13 +80,32 @@ public class TargetingListener implements Listener {
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
-        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void modifyAttackRange(EntityDamageByEntityEvent event) {
+    if (event.isCancelled()) {
       return;
     }
-    if (((Player) event.getTarget()).isSneaking()) {
+    if (!(event.getEntity() instanceof Mob)) {
+      return;
+    }
+    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
+    TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getReason() == TargetReason.FOLLOW_LEADER && event
+        .getEntity().hasMetadata("WEAK_AGGRO")) {
+      event.setCancelled(true);
+      return;
+    }
+    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
+      return;
+    }
+    if (!plugin.getStealthManager().isStealthed(event.getTarget())) {
       return;
     }
     int playerLevel = StatUtil.getMobLevel(event.getTarget());
@@ -99,16 +123,12 @@ public class TargetingListener implements Listener {
         .getEntity().hasMetadata("IGNORE_SNEAK")) {
       return;
     }
-    if (plugin.getSneakManager().isUnstealthed(event.getTarget().getUniqueId())) {
-      return;
-    }
     Player player = (Player) event.getTarget();
-    Mob creature = (Mob) event.getEntity();
-    if (!player.isSneaking()) {
+    if (!plugin.getStealthManager().isStealthed(player)) {
       return;
     }
 
-    Champion champion = plugin.getChampionManager().getChampion(player);
+    Mob creature = (Mob) event.getEntity();
     float level = StatUtil.getMobLevel(creature);
 
     LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + level + " " +
@@ -119,6 +139,7 @@ public class TargetingListener implements Listener {
     Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
     Vector entitySightVector = entityLoc.getDirection();
 
+    Champion champion = plugin.getChampionManager().getChampion(player);
     float angle = entitySightVector.angle(playerDifferenceVector);
     float sneakSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
     double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
@@ -128,6 +149,12 @@ public class TargetingListener implements Listener {
 
     if (player.hasPotionEffect(INVISIBILITY)) {
       sneakSkill += 5 + sneakSkill * 0.1;
+    }
+    if (!player.isSneaking()) {
+      sneakSkill *= 0.75;
+    }
+    if (player.isSprinting()) {
+      sneakSkill *= 0.5;
     }
 
     float awareness;
@@ -149,7 +176,7 @@ public class TargetingListener implements Listener {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
-        float xp = plugin.getSneakManager().getSneakActionExp(level, sneakSkill);
+        float xp = plugin.getStealthManager().getSneakActionExp(level, sneakSkill);
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }

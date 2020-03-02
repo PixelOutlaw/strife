@@ -2,6 +2,7 @@ package land.face.strife.data.champion;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -19,9 +20,10 @@ public class ChampionSaveData {
   private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
   private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
+  private final Map<AbilitySlot, List<String>> castMessages = new HashMap<>();
   private final Set<LoreAbility> boundAbilities = new HashSet<>();
 
-  private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_HEALTH_HEARTS;
+  private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;
   private boolean displayExp;
 
   private int unusedStatPoints;
@@ -34,6 +36,10 @@ public class ChampionSaveData {
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
+  }
+
+  public Map<AbilitySlot, List<String>> getCastMessages() {
+    return castMessages;
   }
 
   public void setAbility(AbilitySlot abilitySlot, Ability ability) {
@@ -56,8 +62,7 @@ public class ChampionSaveData {
     return healthDisplayType;
   }
 
-  public void setHealthDisplayType(
-      HealthDisplayType healthDisplayType) {
+  public void setHealthDisplayType(HealthDisplayType healthDisplayType) {
     this.healthDisplayType = healthDisplayType;
   }
 
@@ -142,7 +147,7 @@ public class ChampionSaveData {
   }
 
   public int getSkillLevel(LifeSkillType type) {
-    return skillLevelMap.getOrDefault(type, 0);
+    return skillLevelMap.getOrDefault(type, 1);
   }
 
   public float getSkillExp(LifeSkillType type) {
@@ -150,11 +155,11 @@ public class ChampionSaveData {
   }
 
   public enum HealthDisplayType {
-    TWO_HEALTH_HEARTS,
-    FIVE_HEALTH_HEARTS,
-    TEN_HEALTH_HEARTS,
-    TEN_PERCENT_HEARTS,
-    FIVE_PERCENT_HEARTS,
-    THREE_PERCENT_HEARTS
+    VANILLA_TWO_LIFE_PER_HEART,
+    FIVE_LIFE_PER_HEART,
+    TEN_LIFE_PER_HEART,
+    ONE_ROW_OF_LIFE,
+    TWO_ROWS_OF_LIFE,
+    THREE_ROWS_OF_LIFE
   }
 }

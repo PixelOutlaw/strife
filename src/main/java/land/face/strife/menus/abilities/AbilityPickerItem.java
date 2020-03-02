@@ -27,6 +27,7 @@ import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.util.ItemUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Material;
@@ -48,10 +49,17 @@ public class AbilityPickerItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack stack = ability.getAbilityIconData().getStack().clone();
-    List<String> stackLore = plugin.getAbilityIconManager().buildRequirementsLore(
-        plugin.getChampionManager().getChampion(player), ability.getAbilityIconData());
+    Champion champ = plugin.getChampionManager().getChampion(player);
+    List<String> stackLore = plugin.getAbilityIconManager().buildRequirementsLore(champ, ability.getAbilityIconData());
     stackLore.addAll(ItemStackExtensionsKt.getLore(stack));
     ItemStackExtensionsKt.setLore(stack, stackLore);
+
+    if (ability.getAbilityIconData().isRequirementMet(champ)) {
+      ItemStackExtensionsKt.setCustomModelData(stack, ItemUtil.getCustomData(stack));
+    } else {
+      ItemStackExtensionsKt.setCustomModelData(stack, 7998);
+    }
+
     if (plugin.getAbilityIconManager().playerHasAbility(player, ability)) {
       stack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
     }

@@ -52,11 +52,11 @@ public class BleedManager {
     return 0;
   }
 
-  public void addBleed(StrifeMob mob, float amount) {
+  public void addBleed(StrifeMob mob, float amount, boolean bypassBarrier) {
     if (!mob.getEntity().isValid()) {
       return;
     }
-    if (plugin.getBarrierManager().isBarrierUp(mob)) {
+    if (!bypassBarrier && plugin.getBarrierManager().isBarrierUp(mob)) {
       return;
     }
     if (bleedMap.containsKey(mob.getEntity().getUniqueId())) {
@@ -67,7 +67,7 @@ public class BleedManager {
   }
 
   public void spawnBleedParticles(LivingEntity entity, double damage) {
-    int particleAmount = 1 + (int) (damage * 20);
+    int particleAmount = Math.min(2 + (int) (damage * 12), 50);
     entity.getWorld().spawnParticle(
         Particle.ITEM_CRACK,
         entity.getEyeLocation().clone().add(0, -entity.getEyeHeight() / 2, 0),

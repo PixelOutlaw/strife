@@ -22,22 +22,33 @@ import static org.bukkit.potion.PotionEffectType.POISON;
 import static org.bukkit.potion.PotionEffectType.REGENERATION;
 import static org.bukkit.potion.PotionEffectType.WITHER;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class RegenTask extends BukkitRunnable {
 
+  public static int REGEN_TICK_RATE = 4;
+
   private final StrifePlugin plugin;
-  public static int REGEN_TICK_RATE = 10;
   private static float REGEN_PERCENT_PER_SECOND = 0.1f;
   private static float POTION_REGEN_FLAT_PER_LEVEL = 5f;
   private static float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
+
+  private Map<UUID, List<RestoreData>> lifeRestore = new HashMap<>();
 
   public RegenTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -46,16 +57,18 @@ public class RegenTask extends BukkitRunnable {
   @Override
   public void run() {
     for (Player player : Bukkit.getOnlinePlayers()) {
-      if (player.getHealth() <= 0 || player.isDead()) {
+      if (player.getHealth() <= 0 || player.isDead() || player.getGameMode() == GameMode.CREATIVE) {
         continue;
       }
       float tickMult = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
-      if (plugin.getBarrierManager().hasBarrierEntry(player)) {
-        plugin.getBarrierManager()
-            .restoreBarrier(mob, mob.getStat(StrifeStat.BARRIER_REGEN) * tickMult);
-      }
+
+      PlayerDataUtil.restoreHealth(player, getBonusHealth(player.getUniqueId()));
+
+      plugin.getBarrierManager()
+          .restoreBarrier(mob, mob.getStat(StrifeStat.BARRIER_REGEN) * tickMult);
       double playerMaxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+
       if (player.getHealth() >= playerMaxHealth) {
         continue;
       }
@@ -73,10 +86,34 @@ public class RegenTask extends BukkitRunnable {
       }
       lifeAmount *= tickMult;
 
-      if (player.getFoodLevel() <= 6) {
-        lifeAmount *= player.getFoodLevel() / 6F;
-      }
       player.setHealth(Math.min(player.getHealth() + lifeAmount, playerMaxHealth));
     }
+  }
+
+  public void addHealing(UUID uuid, float amount, int ticks) {
+    if (!lifeRestore.containsKey(uuid)) {
+      lifeRestore.put(uuid, new CopyOnWriteArrayList<>());
+    }
+    amount = (amount * REGEN_TICK_RATE) / ticks;
+    RestoreData restoreData = new RestoreData();
+    restoreData.setAmount(amount);
+    restoreData.setTicks(ticks / REGEN_TICK_RATE);
+    lifeRestore.get(uuid).add(restoreData);
+  }
+
+  private float getBonusHealth(UUID uuid) {
+    if (!lifeRestore.containsKey(uuid)) {
+      return 0;
+    }
+    float amount = 0;
+    for (RestoreData data : lifeRestore.get(uuid)) {
+      amount += data.getAmount();
+      if (data.getTicks() == 0) {
+        lifeRestore.get(uuid).remove(data);
+      } else {
+        data.setTicks(data.getTicks() - 1);
+      }
+    }
+    return amount;
   }
 }

@@ -28,6 +28,9 @@ public enum StrifeStat {
   HEALTH("Maximum Life"),
   REGENERATION("Life Regeneration"),
 
+  ENERGY("Maximum Energy"),
+  ENERGY_REGEN("Energy Regeneration"),
+
   BARRIER("Maximum Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
   BARRIER_REGEN("Barrier Regeneration"),

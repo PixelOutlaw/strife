@@ -24,6 +24,7 @@ import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import land.face.strife.events.SkillLevelUpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -45,13 +46,17 @@ public class SkillLevelUpListener implements Listener {
     String name = event.getSkillType().getName();
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
-    String lowerTitle = color + name + " Level &f" + level;
+    String lowerTitle =
+        color + "You've reached " + ChatColor.WHITE + name + " Lv" + level + color + "!";
 
-    TitleUtils.sendTitle(event.getPlayer(),upperTitle, lowerTitle);
+    TitleUtils.sendTitle(event.getPlayer(), upperTitle, lowerTitle, 20, 5, 5);
+    event.getPlayer()
+        .playSound(event.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1.3f);
 
     if (event.getNewSkillLevel() % 5 == 0) {
       for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p, buildMessage(event.getPlayer().getDisplayName(), name, color, level));
+        MessageUtils
+            .sendMessage(p, buildMessage(event.getPlayer().getDisplayName(), name, color, level));
       }
     } else {
       MessageUtils.sendMessage(event.getPlayer(), buildMessage(name, color, level));

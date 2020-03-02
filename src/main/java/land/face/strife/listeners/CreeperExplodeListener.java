@@ -25,13 +25,24 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 
-public class CreeperEffectListener implements Listener {
+public class CreeperExplodeListener implements Listener {
 
   private StrifePlugin plugin;
 
-  public CreeperEffectListener(StrifePlugin plugin) {
+  public CreeperExplodeListener(StrifePlugin plugin) {
     this.plugin = plugin;
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void spawnerCreeperExplode(EntityExplodeEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getEntity() instanceof LivingEntity) {
+      plugin.getSpawnerManager().addRespawnTime((LivingEntity) event.getEntity());
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -49,7 +60,7 @@ public class CreeperEffectListener implements Listener {
     if (plugin.getBleedManager().isBleeding(creeper)) {
       float amount = plugin.getBleedManager().getBleedOnEntity(creeper);
       plugin.getBleedManager()
-          .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5);
+          .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5, false);
     }
     if (plugin.getCorruptionManager().isCorrupted((LivingEntity) event.getDamager())) {
       float amount = plugin.getCorruptionManager().getCorruption((LivingEntity) event.getDamager());

@@ -2,18 +2,27 @@ package land.face.strife.data.effects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.HitData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
+import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
+import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 
-public class AreaEffect extends Effect {
+public class AreaEffect extends LocationEffect {
 
   private Map<UUID, List<HitData>> targetDelay = new HashMap<>();
   private long lastApplication = System.currentTimeMillis();
@@ -28,38 +37,98 @@ public class AreaEffect extends Effect {
   private boolean isLineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
+  private boolean canBeCountered;
   private final Map<AbilityMod, Float> attackModifiers = new HashMap<>();
   private long targetingCooldown;
 
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (targetingCooldown > 0) {
-      if (lastApplication < System.currentTimeMillis()) {
-        targetDelay.clear();
-      }
-      lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
-      if (!canTargetBeHit(caster.getEntity().getUniqueId(), target.getEntity().getUniqueId())) {
+    applyAtLocation(caster, target.getEntity().getLocation());
+  }
+
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
+    Set<LivingEntity> targets = getAreaEffectTargets(caster, location);
+    for (LivingEntity le : targets) {
+      if (isCancelled(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le))) {
         return;
       }
+      if (targetingCooldown > 0) {
+        if (lastApplication < System.currentTimeMillis()) {
+          targetDelay.clear();
+        }
+        lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
+        if (!canTargetBeHit(caster.getEntity().getUniqueId(), le.getUniqueId())) {
+          return;
+        }
+      }
+      StrifePlugin.getInstance().getEffectManager().execute(caster, le, effects);
     }
-    if (!TargetingUtil.isFriendly(caster, target) && isCancelled(caster, target)) {
-      return;
+  }
+
+  private Set<LivingEntity> getAreaEffectTargets(StrifeMob caster, Location location) {
+    if (range < 0.1) {
+      if (caster.getEntity() instanceof Mob) {
+        range = caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
+      } else {
+        range = 16;
+      }
     }
-    for (Effect effect : effects) {
-      StrifePlugin.getInstance().getEffectManager().execute(effect, caster, target.getEntity());
+    Set<LivingEntity> areaTargets = new HashSet<>();
+    switch (areaType) {
+      case RADIUS:
+        areaTargets.addAll(TargetingUtil.getEntitiesInArea(location, range));
+        break;
+      case LINE:
+        areaTargets.addAll(TargetingUtil.getEntitiesInLine(caster.getEntity(), range));
+        break;
+      case CONE:
+        areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity(),
+            caster.getEntity().getLocation(), caster.getEntity().getLocation().getDirection(),
+            (float) range, maxConeRadius));
+        break;
+      case PARTY:
+        if (caster.getEntity() instanceof Player) {
+          areaTargets.addAll(StrifePlugin.getInstance().getSnazzyPartiesHook()
+              .getNearbyPartyMembers((Player) caster.getEntity(), location, range));
+        } else {
+          areaTargets
+              .addAll(TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), range));
+        }
+        break;
     }
+    TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
+    if (isLineOfSight) {
+      areaTargets.removeIf(e -> !caster.getEntity().hasLineOfSight(e));
+    }
+    if (maxTargets > 0) {
+      int numTargets = maxTargets;
+      if (scaleTargetsWithMultishot) {
+        float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.5);
+        numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult);
+      }
+      TargetingUtil.filterByTargetPriority(areaTargets, this, caster,
+          Math.min(numTargets, areaTargets.size()));
+    }
+    return areaTargets;
   }
 
   private boolean isCancelled(StrifeMob caster, StrifeMob target) {
     if (canBeEvaded) {
       float evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, attackModifiers);
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        DamageUtil.doEvasion(caster.getEntity(), target.getEntity());
+        DamageUtil.doEvasion(caster, target);
+        return true;
+      }
+    }
+    if (canBeCountered) {
+      if (StrifePlugin.getInstance().getCounterManager().executeCounters(caster.getEntity(),
+          target.getEntity())) {
         return true;
       }
     }
     if (canBeBlocked) {
-      return StrifePlugin.getInstance().getBlockManager()
-          .isAttackBlocked(caster, target, 1.0f, AttackType.MAGIC, false);
+      return StrifePlugin.getInstance().getBlockManager().isAttackBlocked(caster, target,
+          1.0f, AttackType.MAGIC, false);
     }
     return false;
   }
@@ -115,6 +184,10 @@ public class AreaEffect extends Effect {
     this.canBeBlocked = canBeBlocked;
   }
 
+  public void setCanBeCountered(boolean canBeCountered) {
+    this.canBeCountered = canBeCountered;
+  }
+
   public boolean isLineOfSight() {
     return isLineOfSight;
   }
@@ -167,6 +240,7 @@ public class AreaEffect extends Effect {
   }
 
   public enum AreaType {
+    PARTY,
     RADIUS,
     LINE,
     CONE

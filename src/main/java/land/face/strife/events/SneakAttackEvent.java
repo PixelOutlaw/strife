@@ -18,8 +18,7 @@
  */
 package land.face.strife.events;
 
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import land.face.strife.data.StrifeMob;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -32,13 +31,13 @@ public class SneakAttackEvent extends Event implements Cancellable {
     return HANDLER_LIST;
   }
 
-  private final Player attacker;
-  private final LivingEntity victim;
+  private final StrifeMob attacker;
+  private final StrifeMob victim;
   private float sneakSkill;
   private float sneakAttackDamage;
   private boolean cancel;
 
-  public SneakAttackEvent(Player attacker, LivingEntity victim, float sneakSkill,
+  public SneakAttackEvent(StrifeMob attacker, StrifeMob victim, float sneakSkill,
       float sneakDamage) {
     this.attacker = attacker;
     this.victim = victim;
@@ -51,11 +50,11 @@ public class SneakAttackEvent extends Event implements Cancellable {
     return HANDLER_LIST;
   }
 
-  public Player getAttacker() {
+  public StrifeMob getAttacker() {
     return attacker;
   }
 
-  public LivingEntity getVictim() {
+  public StrifeMob getVictim() {
     return victim;
   }
 

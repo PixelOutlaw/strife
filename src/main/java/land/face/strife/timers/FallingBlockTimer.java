@@ -2,6 +2,8 @@ package land.face.strife.timers;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Particle;
 import org.bukkit.entity.FallingBlock;
@@ -45,9 +47,12 @@ public class FallingBlockTimer extends BukkitRunnable {
       return;
     }
     for (String s : effects) {
-      StrifePlugin.getInstance().getEffectManager()
-          .execute(StrifePlugin.getInstance().getEffectManager().getEffect(s), caster,
-              block.getLocation());
+      Effect effect = StrifePlugin.getInstance().getEffectManager().getEffect(s);
+      if (effect instanceof LocationEffect) {
+        ((LocationEffect) effect).applyAtLocation(caster, block.getLocation());
+      } else {
+        LogUtil.printError("Falling blocks only use location effects! Invalid: " + effect.getId());
+      }
     }
     cancel();
   }

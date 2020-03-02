@@ -29,9 +29,12 @@ public class UniqueEntity {
   private boolean knockbackImmune;
   private boolean charmImmune;
   private boolean burnImmune;
+  private boolean fallImmune;
   private boolean ignoreSneak;
-  private boolean allowMods;
+  private int maxMods;
   private boolean removeFollowMods;
+  private boolean powered;
+  private double displaceMultiplier;
   private String mount;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private StrifeParticle strifeParticle;
@@ -152,12 +155,12 @@ public class UniqueEntity {
     this.ignoreSneak = ignoreSneak;
   }
 
-  public boolean isAllowMods() {
-    return allowMods;
+  public int getMaxMods() {
+    return maxMods;
   }
 
-  public void setAllowMods(boolean allowMods) {
-    this.allowMods = allowMods;
+  public void setMaxMods(int maxMods) {
+    this.maxMods = maxMods;
   }
 
   public boolean isRemoveFollowMods() {
@@ -166,6 +169,22 @@ public class UniqueEntity {
 
   public void setRemoveFollowMods(boolean removeFollowMods) {
     this.removeFollowMods = removeFollowMods;
+  }
+
+  public boolean isPowered() {
+    return powered;
+  }
+
+  public void setPowered(boolean powered) {
+    this.powered = powered;
+  }
+
+  public double getDisplaceMultiplier() {
+    return displaceMultiplier;
+  }
+
+  public void setDisplaceMultiplier(double displaceMultiplier) {
+    this.displaceMultiplier = displaceMultiplier;
   }
 
   public String getMount() {
@@ -182,6 +201,14 @@ public class UniqueEntity {
 
   public void setBurnImmune(boolean burnImmune) {
     this.burnImmune = burnImmune;
+  }
+
+  public boolean isFallImmune() {
+    return fallImmune;
+  }
+
+  public void setFallImmune(boolean fallImmune) {
+    this.fallImmune = fallImmune;
   }
 
   public boolean isCharmImmune() {

@@ -11,16 +11,21 @@ menu:
   close-marker-y: 5
 
 ability-menus:
-  BASIC_LEVEL_MENU:
-    - "instant-ignite"
-  MELEE_ABILITY:
-     - "instant-ignite"
-  MAGIC_ABILITY:
-    - "instant-ignite"
-  ARCHERY_ABILITY:
-    - "instant-ignite"
-  LIFE_SKILL:
-    - "instant-ignite"
+  basic-menu:
+    name: "&eLevel Based Abilities"
+    title: "&0PICK SUM"
+    material: BARRIER
+    slot: 1
+    abilities:
+      - "instant-ignite"
+  swords-menu:
+    name: "&csword Based Abilities"
+    title: "&0PICK SUM sord"
+    material: BARRIER
+    slot: 3
+    abilities:
+      - "instant-ignite"
+
 indicators:
   gravity-fall-speed: 20
   gravity-vertical-speed: 200
@@ -31,6 +36,9 @@ mechanics:
   dual-wield-bonus-attack-speed: 35
   pvp-damage: 0.5
   evasion-threshold: 0.5
+  counter:
+    sound: ENCHANT_THORNS_HIT
+    pitch: 0.65
   sneak:
     disable-duration: 6
     base-sneak-exp: 0.2
@@ -52,6 +60,19 @@ mechanics:
   percent-corrupt-loss: 0.05
   health-bar-duration: 200
   skill-bar-duration: 200
+
+flintlock:
+  min-custom-data: 11000
+  max-custom-data: 11999
+  range: 24
+  smoke-quantity: 2
+  smoke-spread: 0.04
+  smoke-speed: 0.007
+  smoke-offset: 0.8
+  flare-quantity: 2
+  flare-spread: 0
+  flare-speed: 0.01
+  flare-offset: 0.8
 
 custom-spawn-limits:
   world:

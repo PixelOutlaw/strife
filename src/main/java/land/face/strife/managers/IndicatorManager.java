@@ -7,15 +7,19 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.IndicatorData;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
-import net.minecraft.server.v1_14_R1.ChatBaseComponent;
-import net.minecraft.server.v1_14_R1.EntityArmorStand;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntity.PacketPlayOutRelEntityMove;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntityDestroy;
-import net.minecraft.server.v1_14_R1.PacketPlayOutSpawnEntityLiving;
-import net.minecraft.server.v1_14_R1.WorldServer;
+import net.minecraft.server.v1_15_R1.ChatComponentText;
+import net.minecraft.server.v1_15_R1.EntityArmorStand;
+import net.minecraft.server.v1_15_R1.ItemStack;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntity.PacketPlayOutRelEntityMove;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityDestroy;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityMetadata;
+import net.minecraft.server.v1_15_R1.PacketPlayOutSpawnEntityLiving;
+import net.minecraft.server.v1_15_R1.WorldServer;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -25,17 +29,30 @@ public class IndicatorManager {
   private Map<EntityArmorStand, IndicatorData> indicators = new ConcurrentHashMap<>();
   public static float GRAVITY_FALL_SPEED;
   private static final int MAX_STAGE = 10;
+  private static final ItemStack indicatorItem = CraftItemStack
+      .asNMSCopy(new org.bukkit.inventory.ItemStack(Material.APPLE));
 
   public IndicatorManager() {
     GRAVITY_FALL_SPEED = (float) StrifePlugin.getInstance().getSettings()
         .getDouble("config.indicators.gravity-fall-speed", 20);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data, String text) {
+  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data,
+      String text) {
     if (!(creator instanceof Player) || creator == target) {
       return;
     }
+
     Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);
+    if (!loc.getWorld().getName().equals(target.getLocation().getWorld().getName())) {
+      return;
+    }
+
+    double distance = creator.getLocation().distanceSquared(target.getLocation());
+    if (distance > 1024) {
+      return;
+    }
+
     Location midway;
     if (creator.getLocation().distanceSquared(target.getLocation()) < 144) {
       midway = creator.getEyeLocation().clone()
@@ -55,12 +72,15 @@ public class IndicatorManager {
     armorstand.setSmall(true);
     armorstand.setMarker(true);
     armorstand.setCustomNameVisible(false);
-    armorstand.setCustomName(ChatBaseComponent.ChatSerializer.b(TextUtils.color(text)));
+    armorstand.setCustomName(new ChatComponentText(TextUtils.color(text)));
     armorstand.setCustomNameVisible(true);
 
     PacketPlayOutSpawnEntityLiving spawnPacket = new PacketPlayOutSpawnEntityLiving(armorstand);
+    PacketPlayOutEntityMetadata meta = new PacketPlayOutEntityMetadata(armorstand.getId(),
+        armorstand.getDataWatcher(), true);
 
     ((CraftPlayer) creator).getHandle().playerConnection.sendPacket(spawnPacket);
+    ((CraftPlayer) creator).getHandle().playerConnection.sendPacket(meta);
     indicators.put(armorstand, data);
   }
 

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.ContinuousParticle;
 import land.face.strife.data.effects.StrifeParticle;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -49,7 +50,8 @@ public class ParticleTask extends BukkitRunnable {
           continuousParticles.get(le).remove(particle);
           continue;
         }
-        particle.getParticle().playAtLocation(le);
+        particle.getParticle().applyAtLocation(null, TargetingUtil
+            .getOriginLocation(le, particle.getParticle().getParticleOriginLocation()));
         particle.setTicksRemaining(particle.getTicksRemaining() - 1);
       }
     }
@@ -58,7 +60,7 @@ public class ParticleTask extends BukkitRunnable {
         boundParticles.remove(le);
         continue;
       }
-      boundParticles.get(le).playAtLocation(le);
+      boundParticles.get(le).applyAtLocation(null, le.getLocation());
     }
   }
 
@@ -66,7 +68,20 @@ public class ParticleTask extends BukkitRunnable {
     if (!continuousParticles.containsKey(livingEntity)) {
       continuousParticles.put(livingEntity, new ConcurrentSet<>());
     }
+    if (particleUpdate(particle.getId(), ticks, continuousParticles.get(livingEntity))) {
+      return;
+    }
     continuousParticles.get(livingEntity).add(new ContinuousParticle(particle, ticks));
+  }
+
+  private boolean particleUpdate(String id, int ticks, Set<ContinuousParticle> particles) {
+    for (ContinuousParticle particle : particles) {
+      if (particle.getParticle().getId().equals(id)) {
+        particle.setTicksRemaining(Math.max(ticks, particle.getTicksRemaining()));
+        return true;
+      }
+    }
+    return false;
   }
 
   public void addParticle(LivingEntity livingEntity, StrifeParticle particle) {

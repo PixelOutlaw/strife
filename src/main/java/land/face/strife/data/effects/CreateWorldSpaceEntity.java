@@ -8,31 +8,39 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.Location;
 
-public class CreateWorldSpaceEntity extends Effect {
+public class CreateWorldSpaceEntity extends LocationEffect {
 
   private final Map<Integer, List<Effect>> cachedEffectSchedule = new HashMap<>();
   private Map<Integer, List<String>> effectSchedule;
   private OriginLocation originLocation;
+  private float gravity;
+  private float friction;
   private int maxTicks;
   private double velocity;
   private int lifespan;
+  private float maxDisplacement;
   private boolean strictDuration;
+  private boolean zeroVerticalAxis;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     cacheEffects();
-    StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
-        TargetingUtil.getOriginLocation(target.getEntity(), originLocation), lifespan, maxTicks,
-            velocity, cachedEffectSchedule, strictDuration);
+    apply(caster, TargetingUtil.getOriginLocation(target.getEntity(), originLocation));
   }
 
-  public void apply(StrifeMob caster, LivingEntity target) {
+  @Override
+  public void applyAtLocation(StrifeMob caster, Location location) {
     cacheEffects();
-    StrifePlugin.getInstance().getWseManager().createAtTarget(caster,
-        TargetingUtil.getOriginLocation(target, originLocation), lifespan, maxTicks,
-        velocity, cachedEffectSchedule, strictDuration);
+    apply(caster, location);
+  }
+
+  public void apply(StrifeMob caster, Location location) {
+    cacheEffects();
+    StrifePlugin.getInstance().getWseManager().createAtTarget(caster, location, lifespan, gravity,
+        friction, maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
+        zeroVerticalAxis);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {
@@ -55,8 +63,24 @@ public class CreateWorldSpaceEntity extends Effect {
     this.originLocation = originLocation;
   }
 
+  public void setGravity(float gravity) {
+    this.gravity = gravity;
+  }
+
+  public void setFriction(float friction) {
+    this.friction = friction;
+  }
+
+  public void setMaxDisplacement(float maxDisplacement) {
+    this.maxDisplacement = maxDisplacement;
+  }
+
   public void setStrictDuration(boolean strictDuration) {
     this.strictDuration = strictDuration;
+  }
+
+  public void setZeroVerticalAxis(boolean zeroVerticalAxis) {
+    this.zeroVerticalAxis = zeroVerticalAxis;
   }
 
   private void cacheEffects() {

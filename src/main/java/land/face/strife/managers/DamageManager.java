@@ -18,17 +18,15 @@
  */
 package land.face.strife.managers;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.IndicatorData;
 import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
-import net.minecraft.server.v1_14_R1.DamageSource;
-import net.minecraft.server.v1_14_R1.EntityLiving;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftLivingEntity;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.util.Vector;
 
 public class DamageManager {
@@ -36,6 +34,7 @@ public class DamageManager {
   private StrifePlugin plugin;
   private float IND_GRAVITY_HSPEED;
   private float IND_GRAVITY_VSPEED;
+  private Map<UUID, Double> handledDamages = new HashMap<>();
 
   public DamageManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -43,6 +42,14 @@ public class DamageManager {
         .getDouble("config.indicators.gravity-horizontal-speed", 30);
     IND_GRAVITY_VSPEED = (float) plugin.getSettings()
         .getDouble("config.indicators.gravity-vertical-speed", 80);
+  }
+
+  public boolean isHandledDamage(Entity entity) {
+    return handledDamages.containsKey(entity.getUniqueId());
+  }
+
+  public double getHandledDamage(Entity entity) {
+    return handledDamages.getOrDefault(entity.getUniqueId(), 0D);
   }
 
   public double dealDamage(StrifeMob attacker, StrifeMob defender, double damage) {
@@ -64,16 +71,9 @@ public class DamageManager {
     Vector velocity = defender.getEntity().getVelocity();
     defender.getEntity().setNoDamageTicks(0);
 
-    defender.trackDamage(attacker, (float) damage);
-
-    EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(attacker.getEntity(),
-        defender.getEntity(), DamageCause.MAGIC, 1);
-    Bukkit.getPluginManager().callEvent(event);
-    defender.getEntity().setLastDamageCause(event);
-
-    EntityLiving craftDefender = ((CraftLivingEntity) defender.getEntity()).getHandle();
-    craftDefender.setLastDamager(((CraftLivingEntity) attacker.getEntity()).getHandle());
-    craftDefender.damageEntity(DamageSource.MAGIC, (float) damage);
+    handledDamages.put(attacker.getEntity().getUniqueId(), damage);
+    defender.getEntity().damage(damage, attacker.getEntity());
+    handledDamages.remove(attacker.getEntity().getUniqueId());
 
     defender.getEntity().setNoDamageTicks(noDamageTicks);
     defender.getEntity().setVelocity(velocity);

@@ -22,7 +22,8 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
-import land.face.strife.events.UniqueKillEvent;
+import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
@@ -46,29 +47,7 @@ public class DeathListener implements Listener {
   public void onEntityDeathEvent(EntityDeathEvent event) {
     if (event instanceof PlayerDeathEvent) {
       plugin.getSoulManager().createSoul((Player) event.getEntity());
-      return;
-    }
-
-    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
-
-    if (mob == null) {
-      return;
-    }
-
-    Player killer = mob.getKiller();
-    if (killer == null) {
-      killer = event.getEntity().getKiller();
-      if (killer == null) {
-        return;
-      }
-    }
-
-    UniqueKillEvent ev = new UniqueKillEvent(mob, killer);
-    Bukkit.getPluginManager().callEvent(ev);
-
-    if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob.isDespawnOnUnload())) {
-      event.setDroppedExp(0);
-      event.getDrops().clear();
+      EndlessEffect.cancelEffects(event.getEntity());
       return;
     }
 
@@ -76,20 +55,19 @@ public class DeathListener implements Listener {
       return;
     }
 
-    int killerLevel = killer.getLevel();
-    int mobLevel;
-    if (killerLevel < 100) {
-      int killerRange = Math.max(5, killerLevel / 5);
-      mobLevel = Math.min(StatUtil.getMobLevel(event.getEntity()), killerLevel + killerRange);
-    } else {
-      mobLevel = StatUtil.getMobLevel(event.getEntity());
-    }
-    int levelDiff = Math.abs(mobLevel - killer.getLevel());
-    float levelPenalty = 1;
-    if (levelDiff > 6) {
-      levelPenalty = Math.max(0.1f, 1 - ((levelDiff - 6) * 0.1f));
+    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
+
+    if (mob != null) {
+      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
     }
 
+    if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
+        .isDespawnOnUnload())) {
+      event.setDroppedExp(0);
+      return;
+    }
+
+    int mobLevel = StatUtil.getMobLevel(event.getEntity());
     float exp = plugin.getMonsterManager().getBaseExp(event.getEntity(), mobLevel);
 
     UniqueEntity uniqueEntity = plugin.getUniqueEntityManager().getUnique(mob.getUniqueEntityId());
@@ -98,8 +76,7 @@ public class DeathListener implements Listener {
       exp += uniqueEntity.getBonusExperience();
     }
     exp *= 1 + mob.getStat(StrifeStat.XP_GAIN) / 100;
-    plugin.getExperienceManager().addExperience(killer, (exp * levelPenalty), false);
-    event.setDroppedExp(0);
+    event.setDroppedExp((int) exp);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -111,7 +88,6 @@ public class DeathListener implements Listener {
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_C);
     } else {
       UUID uuid = event.getEntity().getUniqueId();
-      plugin.getStrifeMobManager().doSpawnerDeath(uuid);
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getStrifeMobManager().removeMob(uuid), 20L * 30);
     }
@@ -124,5 +100,6 @@ public class DeathListener implements Listener {
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     plugin.getSpawnerManager().addRespawnTime(event.getEntity());
+    plugin.getCounterManager().clearCounters(event.getEntity().getUniqueId());
   }
 }

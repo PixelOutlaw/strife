@@ -34,9 +34,8 @@ public class InventoryListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerItemHeldEvent event) {
     if (isIcon(event.getPlayer().getInventory().getItem(event.getNewSlot()))) {
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
-          () -> plugin.getAbilityIconManager()
-              .triggerAbility(event.getPlayer(), event.getNewSlot()), 1L);
+      Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getAbilityIconManager()
+          .triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
       event.setCancelled(true);
       return;
     }

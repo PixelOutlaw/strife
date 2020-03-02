@@ -18,12 +18,11 @@
  */
 package land.face.strife.listeners;
 
+import static land.face.strife.util.DamageUtil.buildFloatIndicator;
+
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Map;
-import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.IndicatorData;
-import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
@@ -34,8 +33,8 @@ import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.DamageType;
-import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -43,22 +42,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.Vector;
 
 public class StrifeDamageListener implements Listener {
 
   private StrifePlugin plugin;
-  private float PVP_MULT = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.pvp-multiplier", 0.5);
-  private float IND_FLOAT_SPEED = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.indicators.float-speed", 70);
-  private float IND_MISS_SPEED = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.indicators.miss-speed", 80);
-  private Vector IND_FLOAT_VECTOR = new Vector(0, IND_FLOAT_SPEED, 0);
-  private Vector IND_MISS_VECTOR = new Vector(0, IND_MISS_SPEED, 0);
+  private static float PVP_MULT;
 
   public StrifeDamageListener(StrifePlugin plugin) {
     this.plugin = plugin;
+    PVP_MULT = (float) StrifePlugin.getInstance().getSettings().getDouble(
+        "config.mechanics.pvp-multiplier", 0.5);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -75,25 +68,29 @@ public class StrifeDamageListener implements Listener {
           plugin.getChampionManager().getChampion((Player) attacker.getEntity()));
     }
     if (defender.getEntity() instanceof Player) {
-      plugin.getSneakManager().tempDisableSneak(defender.getEntity());
       plugin.getChampionManager().updateEquipmentStats(
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
+    }
+
+    if (plugin.getCounterManager().executeCounters(event.getAttacker().getEntity(),
+        event.getDefender().getEntity())) {
+      CombatListener.putSlimeHit(attacker.getEntity());
+      event.setCancelled(true);
+      return;
     }
 
     float evasionMultiplier = 1;
     if (event.isCanBeEvaded()) {
       evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, event.getAbilityMods());
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        event.setCancelled(true);
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
-        DamageUtil.doEvasion(attacker.getEntity(), defender.getEntity());
+        DamageUtil.doEvasion(attacker, defender);
         removeIfExisting(event.getProjectile());
-        event.setCancelled(true);
-        if (attacker.getEntity() instanceof Player) {
-          plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-              buildMissIndicator((Player) attacker.getEntity()), "&fMiss");
-        }
+        CombatListener.putSlimeHit(attacker.getEntity());
+        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
         return;
       }
     }
@@ -103,15 +100,13 @@ public class StrifeDamageListener implements Listener {
     if (event.isCanBeBlocked()) {
       if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
           event.getAttackType(), event.isBlocking())) {
+        event.setCancelled(true);
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
         removeIfExisting(event.getProjectile());
-        event.setCancelled(true);
-        if (attacker.getEntity() instanceof Player) {
-          plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-              buildMissIndicator((Player) attacker.getEntity()), "Blocked");
-        }
+        CombatListener.putSlimeHit(attacker.getEntity());
+        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
         DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
         return;
       }
@@ -150,17 +145,20 @@ public class StrifeDamageListener implements Listener {
     }
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, event.getAbilityMods());
 
-    Set<DamageType> triggeredElements = DamageUtil
-        .applyElementalEffects(attacker, defender, damageMap, event.isConsumeEarthRunes());
+    DamageUtil.applyElementalEffects(attacker, defender, damageMap, event.isConsumeEarthRunes());
 
     float critMult = 0;
     double bonusOverchargeMultiplier = 0;
-    if (isCriticalHit(attacker, defender, attackMult,
-        event.getAbilityMods(AbilityMod.CRITICAL_CHANCE))) {
+
+    boolean criticalHit = isCriticalHit(attacker, defender, attackMult,
+        event.getAbilityMods(AbilityMod.CRITICAL_CHANCE));
+    if (criticalHit) {
       critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
           event.getAbilityMods(AbilityMod.CRITICAL_DAMAGE)) / 100;
     }
-    if (attackMult > 0.99) {
+
+    boolean overcharge = attackMult > 0.99;
+    if (overcharge) {
       bonusOverchargeMultiplier = attacker.getStat(StrifeStat.OVERCHARGE) / 100;
     }
 
@@ -210,8 +208,8 @@ public class StrifeDamageListener implements Listener {
     rawDamage *= DamageUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
-    boolean isSneakAttack = event.isSneakAttack();
-    if (isSneakAttack && !defender.getEntity().hasMetadata("IGNORE_SNEAK")) {
+    boolean isSneakAttack = event.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK");
+    if (isSneakAttack) {
       Player player = (Player) attacker.getEntity();
       float sneakSkill = plugin.getChampionManager().getChampion(player)
           .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
@@ -219,46 +217,52 @@ public class StrifeDamageListener implements Listener {
       sneakDamage += defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill);
       sneakDamage *= attackMult;
       sneakDamage *= pvpMult;
-      SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent((Player) attacker.getEntity(),
-          defender.getEntity(), sneakSkill, sneakDamage);
-      if (sneakEvent.isCancelled()) {
-        isSneakAttack = false;
-      } else {
+      SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
+      if (!sneakEvent.isCancelled()) {
         defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
         rawDamage += sneakEvent.getSneakAttackDamage();
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+            defender.getEntity(), buildFloatIndicator((Player) attacker.getEntity()), "&7Sneak Attack!");
       }
     }
 
+    String damageString = String.valueOf((int) Math.ceil(rawDamage));
+    if (overcharge) {
+      damageString = "&l" + damageString;
+    }
+    if (criticalHit) {
+      damageString = damageString + "!";
+    }
     if (attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()),
-          String.valueOf((int) Math.ceil(rawDamage)));
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()), damageString);
+    }
+    if (attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
+      plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getMaster()),
+          "&7" + damageString);
     }
 
     double finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
-    boolean isBleedApplied = false;
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
-      isBleedApplied = DamageUtil.attemptBleed(attacker, defender,
-          damageMap.get(DamageType.PHYSICAL), attackMult, event.getAbilityMods());
+      DamageUtil.attemptBleed(attacker, defender, damageMap.get(DamageType.PHYSICAL), attackMult,
+          event.getAbilityMods(), false);
     }
 
     DamageUtil.doReflectedDamage(defender, attacker, event.getAttackType());
-    plugin.getAbilityManager().abilityCast(attacker, TriggerAbilityType.ON_HIT);
-    plugin.getAbilityManager().abilityCast(defender, TriggerAbilityType.WHEN_HIT);
-    plugin.getSneakManager().tempDisableSneak(attacker.getEntity());
+    plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+    plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
 
-    PlayerDataUtil.sendActionbarDamage(attacker.getEntity(), rawDamage, bonusOverchargeMultiplier,
-        critMult, triggeredElements, isBleedApplied, isSneakAttack);
-
+    defender.trackDamage(attacker, (float) finalDamage);
     event.setFinalDamage(finalDamage);
   }
 
   private boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, float attackMult,
       float bonusCrit) {
     if (DamageUtil.isCrit(attacker, attackMult, bonusCrit)) {
-      DamageUtil.callCritEvent(attacker.getEntity(), attacker.getEntity());
+      DamageUtil.callCritEvent(attacker, attacker);
       defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
           Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
       return true;
@@ -271,11 +275,5 @@ public class StrifeDamageListener implements Listener {
       return;
     }
     projectile.remove();
-  }
-
-  private IndicatorData buildMissIndicator(Player player) {
-    IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
   }
 }

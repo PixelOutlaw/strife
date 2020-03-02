@@ -26,12 +26,24 @@ public class StatUtil {
     return ae.getStat(StrifeStat.REGENERATION) * (1 + ae.getStat(StrifeStat.REGEN_MULT) / 100);
   }
 
+  public static float getBarrierRegen(StrifeMob ae) {
+    return ae.getStat(StrifeStat.BARRIER_REGEN);
+  }
+
   public static float getHealth(StrifeMob ae) {
     return ae.getStat(StrifeStat.HEALTH) * (1 + ae.getStat(StrifeStat.HEALTH_MULT) / 100);
   }
 
   public static float getBarrier(StrifeMob ae) {
     return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(ae);
+  }
+
+  public static float getMaximumEnergy(StrifeMob ae) {
+    return ae.getStat(StrifeStat.ENERGY);
+  }
+
+  public static float getEnergy(StrifeMob ae) {
+    return StrifePlugin.getInstance().getEnergyManager().getEnergy(ae);
   }
 
   public static float getMaximumBarrier(StrifeMob ae) {
@@ -234,12 +246,13 @@ public class StatUtil {
       level = livingEntity.getMetadata("LVL").get(0).asInt();
     } else if (StringUtils.isBlank(livingEntity.getCustomName())) {
       level = 0;
+      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     } else {
       String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
           .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
       level = NumberUtils.toInt(lev.split(" ")[0], 0);
+      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     }
-    livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
     return level;
   }
 

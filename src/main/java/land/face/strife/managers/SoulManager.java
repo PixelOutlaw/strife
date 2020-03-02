@@ -13,19 +13,19 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.timers.SoulTimer;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
-import net.minecraft.server.v1_14_R1.ChatBaseComponent;
-import net.minecraft.server.v1_14_R1.EntityItem;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntityDestroy;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntityVelocity;
-import net.minecraft.server.v1_14_R1.PacketPlayOutSpawnEntity;
-import net.minecraft.server.v1_14_R1.Vec3D;
-import net.minecraft.server.v1_14_R1.WorldServer;
+import net.minecraft.server.v1_15_R1.ChatBaseComponent;
+import net.minecraft.server.v1_15_R1.EntityItem;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityDestroy;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityMetadata;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityVelocity;
+import net.minecraft.server.v1_15_R1.PacketPlayOutSpawnEntity;
+import net.minecraft.server.v1_15_R1.Vec3D;
+import net.minecraft.server.v1_15_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -90,7 +90,7 @@ public class SoulManager {
 
   public SoulTimer getNearestSoul(LivingEntity le, float maxDistSquared) {
     SoulTimer selectedSoul = null;
-    double selectedDist = maxDistSquared;
+    double selectedDist = Math.pow(maxDistSquared, 2);
     for (SoulTimer soulTimer : souls) {
       if (!soulTimer.getLocation().getWorld().equals(le.getWorld())) {
         continue;
@@ -157,7 +157,7 @@ public class SoulManager {
     skull.setItemMeta(skullMeta);
 
     CraftItemStack craft = CraftItemStack.asCraftCopy(skull);
-    net.minecraft.server.v1_14_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(craft);
+    net.minecraft.server.v1_15_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(craft);
 
     return new EntityItem(w, location.getX(), location.getY() - 0.2, location.getZ(), nmsStack);
   }

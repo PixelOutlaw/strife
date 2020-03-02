@@ -1,15 +1,9 @@
 package land.face.strife.managers;
 
-import static land.face.strife.data.ability.Ability.TargetType.NEAREST_SOUL;
-import static land.face.strife.data.ability.Ability.TargetType.SINGLE_OTHER;
-import static land.face.strife.data.ability.Ability.TargetType.TARGET_GROUND;
-import static land.face.strife.data.ability.Ability.TargetType.TOGGLE;
-
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import io.netty.util.internal.ConcurrentSet;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,11 +22,11 @@ import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.Phase;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.Wait;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.timers.SoulTimer;
@@ -41,6 +35,7 @@ import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -56,12 +51,12 @@ public class AbilityManager {
   private Map<String, Ability> loadedAbilities = new HashMap<>();
   private Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
   private Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
-  private Set<EntityAbilityTimer> abilityTimers = new HashSet<>();
 
   private final Random random = new Random();
 
-  private static final String ON_COOLDOWN = TextUtils.color("&e&lAbility On Cooldown!");
-  private static final String NO_TARGET = TextUtils.color("&e&lNo Ability Target Found!");
+  private static final String ON_COOLDOWN = TextUtils.color("&6&lAbility On Cooldown!");
+  private static final String NO_ENERGY = TextUtils.color("&e&lNot enough energy!");
+  private static final String NO_TARGET = TextUtils.color("&7&lNo Target Found!");
   private static final String NO_REQUIRE = TextUtils.color("&c&lAbility Requirements Not Met!");
 
   public AbilityManager(StrifePlugin plugin) {
@@ -78,6 +73,58 @@ public class AbilityManager {
     }
     LogUtil.printWarning("Attempted to get unknown ability '" + name + "'.");
     return null;
+  }
+
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
+    return execute(ability, caster, target, false);
+  }
+
+  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
+      boolean ignoreReqs) {
+    if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
+      doOnCooldownPrompt(caster, ability);
+      return false;
+    }
+    if (!ignoreReqs && !hasEnergy(caster, ability)) {
+      doNoEnergyPrompt(caster, ability);
+      return false;
+    }
+    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
+      doRequirementNotMetPrompt(caster, ability);
+      return false;
+    }
+    Set<LivingEntity> targets = getTargets(caster, target, ability);
+    if (targets == null) {
+      throw new NullArgumentException("Null target list on ability " + ability.getId());
+    }
+    if (targets.isEmpty() && ability.isRequireTarget()) {
+      doTargetNotFoundPrompt(caster, ability);
+      return false;
+    }
+    if (ability.getTargetType() == TargetType.TOGGLE) {
+      boolean toggledOn = toggleAbility(caster, targets, ability);
+      if (!toggledOn) {
+        return true;
+      }
+    } else {
+      coolDownAbility(caster.getEntity(), ability);
+    }
+    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
+      caster.getChampion().getDetailsContainer().addWeights(ability);
+    }
+    if (caster.getEntity() instanceof Player) {
+      if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
+        plugin.getEnergyManager().changeEnergy(caster, -ability.getCost());
+      }
+    }
+
+    plugin.getEffectManager().execute(caster, targets, ability.getEffects());
+
+    if (caster.getEntity() instanceof Player && ability.isCancelStealth()) {
+      plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
+    }
+    playChatMessages(caster, ability);
+    return true;
   }
 
   public void cooldownReduce(LivingEntity livingEntity, String abilityId, int msReduction) {
@@ -101,8 +148,19 @@ public class AbilityManager {
     }
   }
 
-  public void createCooldownContainer(LivingEntity le) {
-    coolingDownAbilities.put(le, new ConcurrentSet<>());
+  public void unToggleAbility(StrifeMob mob, String abilityId) {
+    AbilityCooldownContainer container = getCooldownContainer(mob.getEntity(), abilityId);
+    if (container == null) {
+      return;
+    }
+    if (container.isToggledOn()) {
+      container.setToggledOn(false);
+      Ability ability = getAbility(abilityId);
+      coolDownAbility(mob.getEntity(), getAbility(abilityId));
+      Set<LivingEntity> targets = new HashSet<>();
+      targets.add(mob.getEntity());
+      plugin.getEffectManager().execute(mob, targets, ability.getToggleOffEffects());
+    }
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
@@ -190,6 +248,16 @@ public class AbilityManager {
     savedPlayerCooldowns.remove(player.getUniqueId());
   }
 
+  private boolean hasEnergy(StrifeMob caster, Ability ability) {
+    if (caster.getEntity() instanceof Player) {
+      if (((Player) caster.getEntity()).getGameMode() == GameMode.CREATIVE) {
+        return true;
+      }
+      return plugin.getEnergyManager().getEnergy(caster) >= ability.getCost();
+    }
+    return true;
+  }
+
   private boolean canBeCast(LivingEntity entity, Ability ability) {
     if (entity == null || !entity.isValid()) {
       return false;
@@ -201,61 +269,21 @@ public class AbilityManager {
     return System.currentTimeMillis() > container.getEndTime();
   }
 
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
-    return execute(ability, caster, target, false);
-  }
-
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
-      boolean ignoreReqs) {
-    if (!ignoreReqs && ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
-      doOnCooldownPrompt(caster, ability);
-      return false;
+  private void playChatMessages(StrifeMob caster, Ability ability) {
+    if (caster.getChampion() == null || ability.getAbilityIconData() == null) {
+      return;
     }
-    if (!ignoreReqs && !PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
-      doRequirementNotMetPrompt(caster, ability);
-      return false;
+    ChampionSaveData data = caster.getChampion().getSaveData();
+    if (data.getCastMessages() == null || data.getCastMessages().isEmpty()) {
+      return;
     }
-    Set<LivingEntity> targets = getTargets(caster, target, ability);
-    if (targets == null) {
-      throw new NullArgumentException("Null target list on ability " + ability.getId());
+    AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
+    List<String> messages = data.getCastMessages().get(slot);
+    if (messages.isEmpty()) {
+      return;
     }
-    if (targets.isEmpty()) {
-      if (ability.getTargetType() == TARGET_GROUND || ability.getTargetType() == NEAREST_SOUL) {
-        doTargetNotFoundPrompt(caster, ability);
-        return false;
-      }
-    }
-    if (shouldSingleTargetFail(ability, caster, targets)) {
-      return false;
-    }
-    if (ability.getTargetType() != TOGGLE) {
-      coolDownAbility(caster.getEntity(), ability);
-    } else {
-      boolean isOnAfterToggle = toggleAbility(caster.getEntity(), ability);
-      if (!isOnAfterToggle) {
-        coolDownAbility(caster.getEntity(), ability);
-        runEffects(caster, targets, ability.getToggleOffEffects(), 0);
-        return true;
-      }
-    }
-    if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
-      caster.getChampion().getDetailsContainer().addWeights(ability);
-    }
-    List<Effect> taskEffects = new ArrayList<>();
-    int waitTicks = 0;
-    for (Effect effect : ability.getEffects()) {
-      if (effect instanceof Wait) {
-        LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
-        runEffects(caster, targets, taskEffects, waitTicks);
-        waitTicks += ((Wait) effect).getTickDelay();
-        taskEffects = new ArrayList<>();
-        continue;
-      }
-      taskEffects.add(effect);
-      LogUtil.printDebug("Added effect " + effect.getId() + " to task list");
-    }
-    runEffects(caster, targets, taskEffects, waitTicks);
-    return true;
+    ((Player) caster.getEntity())
+        .chat("==ability==" + messages.get(random.nextInt(messages.size())));
   }
 
   public void startAbilityTimerTask(StrifeMob mob) {
@@ -268,20 +296,17 @@ public class AbilityManager {
     }
     for (Phase phase : abilitySet.getAbilities(TriggerAbilityType.TIMER).keySet()) {
       if (!abilitySet.getAbilities(TriggerAbilityType.TIMER).get(phase).isEmpty()) {
-        abilityTimers.add(new EntityAbilityTimer(mob));
+        mob.setAbilityTimer(new EntityAbilityTimer(mob));
         return;
       }
     }
   }
 
-  public void cancelTimerTimers() {
-    for (EntityAbilityTimer timer : abilityTimers) {
-      timer.cancel();
-    }
-    abilityTimers.clear();
+  public boolean abilityCast(StrifeMob caster, TriggerAbilityType type) {
+    return abilityCast(caster, null, type);
   }
 
-  public boolean abilityCast(StrifeMob caster, TriggerAbilityType type) {
+  public boolean abilityCast(StrifeMob caster, StrifeMob target, TriggerAbilityType type) {
     EntityAbilitySet abilitySet = caster.getAbilitySet();
     if (abilitySet == null) {
       return false;
@@ -302,11 +327,18 @@ public class AbilityManager {
       }
       return true;
     }
-    LivingEntity target = TargetingUtil.getMobTarget(caster);
-    StrifeMob targetMob = target == null ? null : plugin.getStrifeMobManager().getStatMob(target);
 
+    LivingEntity targetEntity;
+    if (target == null) {
+      targetEntity = TargetingUtil.getMobTarget(caster);
+      target = targetEntity == null ? null : plugin.getStrifeMobManager().getStatMob(targetEntity);
+    } else {
+      targetEntity = target.getEntity();
+    }
+
+    StrifeMob finalTarget = target;
     List<Ability> selectorList = abilities.stream()
-        .filter(ability -> isAbilityCastReady(caster, targetMob, ability))
+        .filter(ability -> isAbilityCastReady(caster, finalTarget, ability))
         .collect(Collectors.toList());
 
     if (selectorList.isEmpty()) {
@@ -315,7 +347,7 @@ public class AbilityManager {
       return false;
     }
     Ability ability = selectorList.get(random.nextInt(selectorList.size()));
-    return execute(ability, caster, target, true);
+    return execute(ability, caster, targetEntity, true);
   }
 
   public void setGlobalCooldown(Player player, Ability ability) {
@@ -344,37 +376,32 @@ public class AbilityManager {
     container.setToggledOn(false);
   }
 
-  private boolean toggleAbility(LivingEntity livingEntity, Ability ability) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
-      coolingDownAbilities.put(livingEntity, new ConcurrentSet<>());
+  /*
+    Returns true with the toggle state of the ability afterwards.
+    Illegal state if it isn't a toggle ability at all...
+   */
+  private boolean toggleAbility(StrifeMob caster, Set<LivingEntity> targets, Ability ability) {
+    if (ability.getTargetType() != TargetType.TOGGLE) {
+      throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
-    AbilityCooldownContainer container = getCooldownContainer(livingEntity, ability.getId());
+    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
+      coolingDownAbilities.put(caster.getEntity(), new ConcurrentSet<>());
+    }
+    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
     if (container == null) {
       container = new AbilityCooldownContainer(ability.getId(), 0);
       container.setToggledOn(true);
-      coolingDownAbilities.get(livingEntity).add(container);
-    } else {
-      container.setToggledOn(!container.isToggledOn());
+      coolingDownAbilities.get(caster.getEntity()).add(container);
+      return true;
     }
-    return container.isToggledOn();
-  }
-
-  private boolean shouldSingleTargetFail(Ability ability, StrifeMob caster,
-      Set<LivingEntity> targets) {
-    if (ability.getTargetType() != SINGLE_OTHER) {
+    if (container.isToggledOn()) {
+      container.setToggledOn(false);
+      coolDownAbility(caster.getEntity(), ability);
+      plugin.getEffectManager().execute(caster, targets, ability.getToggleOffEffects());
       return false;
     }
-    TargetingUtil.filterFriendlyEntities(targets, caster, ability.isFriendly());
-    if (targets.isEmpty()) {
-      doTargetNotFoundPrompt(caster, ability);
-      return true;
-    }
-    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.iterator().next());
-    if (!PlayerDataUtil.areConditionsMet(caster, targetMob, ability.getConditions())) {
-      doRequirementNotMetPrompt(caster, ability);
-      return true;
-    }
-    return false;
+    container.setToggledOn(true);
+    return true;
   }
 
   private void checkPhaseChange(StrifeMob strifeMob) {
@@ -392,29 +419,20 @@ public class AbilityManager {
     }
   }
 
-  private void runEffects(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList,
-      int delay) {
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      LogUtil.printDebug("Effect task started - " + effectList.toString());
-      if (!caster.getEntity().isValid()) {
-        LogUtil.printDebug("- Task cancelled, caster is dead");
-        return;
-      }
-      for (Effect effect : effectList) {
-        LogUtil.printDebug("- Executing effect " + effect.getId());
-        plugin.getEffectManager().execute(effect, caster, targets);
-      }
-      LogUtil.printDebug("- Completed effect task.");
-    }, delay);
-  }
-
   private Set<LivingEntity> getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF:
       case TOGGLE:
-      case PARTY:
         targets.add(caster.getEntity());
+        return targets;
+      case PARTY:
+        if (caster.getEntity() instanceof Player) {
+          targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers(
+              (Player) caster.getEntity(), caster.getEntity().getLocation(), 30));
+        } else {
+          targets.add(caster.getEntity());
+        }
         return targets;
       case MASTER:
         if (caster.getMaster() != null) {
@@ -440,13 +458,22 @@ public class AbilityManager {
       case TARGET_AREA:
         Location loc = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        return TargetingUtil.getTempStandTargetList(loc, 0);
+        LivingEntity stando = TargetingUtil.getTempStand(loc, 0);
+        if (stando != null) {
+          targets.add(stando);
+        }
+        return targets;
       case TARGET_GROUND:
         Location loc2 = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        return TargetingUtil.getTempStandTargetList(loc2, ability.getRange() + 3);
+        LivingEntity stando2 = TargetingUtil.getTempStand(loc2, ability.getRange() + 3);
+        if (stando2 != null) {
+          targets.add(stando2);
+        }
+        return targets;
       case NEAREST_SOUL:
-        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), ability.getRange());
+        SoulTimer soul = plugin.getSoulManager()
+            .getNearestSoul(caster.getEntity(), ability.getRange());
         if (soul != null) {
           targets.add(Bukkit.getPlayer(soul.getOwner()));
         }
@@ -490,6 +517,16 @@ public class AbilityManager {
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
 
+  private void doNoEnergyPrompt(StrifeMob caster, Ability ability) {
+    LogUtil.printDebug("Failed. Not enough energy to cast Ability " + ability.getId());
+    if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
+      return;
+    }
+    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_ENERGY);
+    ((Player) caster.getEntity())
+        .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.2f, 1.3f);
+  }
+
   public void loadAbility(String key, ConfigurationSection cs) {
     String name = TextUtils.color(cs.getString("name", "ABILITY NOT NAMED"));
     TargetType targetType;
@@ -500,8 +537,8 @@ public class AbilityManager {
       return;
     }
 
-    boolean raycastsHitEntities = cs
-        .getBoolean("raycasts-hit-entities", targetType == TARGET_GROUND);
+    boolean raycastsHitEntities = cs.getBoolean("raycasts-hit-entities",
+        targetType == TargetType.TARGET_GROUND);
 
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {
@@ -511,7 +548,7 @@ public class AbilityManager {
     List<Effect> effects = plugin.getEffectManager().getEffects(effectStrings);
 
     List<String> toggleStrings = cs.getStringList("toggle-off-effects");
-    if (targetType == TOGGLE && toggleStrings.isEmpty()) {
+    if (targetType == TargetType.TOGGLE && toggleStrings.isEmpty()) {
       LogUtil.printError("Skipping. Toggle abilities must have toggle-off-effects! Ability:" + key);
       return;
     }
@@ -521,7 +558,9 @@ public class AbilityManager {
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);
+    float cost = (float) cs.getDouble("cost", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
+    boolean requireTarget = cs.getBoolean("require-target", false);
     List<String> conditionStrings = cs.getStringList("conditions");
     Set<Condition> conditions = new HashSet<>();
     for (String s : conditionStrings) {
@@ -534,9 +573,10 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
+    boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
     loadedAbilities.put(key, new Ability(key, name, effects, toggleOffEffects, targetType, range,
-        cooldown, maxCharges, globalCooldownTicks, showMessages, raycastsHitEntities, conditions,
-        friendly, abilityIconData));
+        cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
+        raycastsHitEntities, conditions, friendly, abilityIconData, cancelStealth));
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

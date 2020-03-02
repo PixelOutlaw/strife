@@ -7,6 +7,9 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
+import me.libraryaddict.disguise.DisguiseAPI;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
@@ -17,7 +20,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
@@ -41,6 +46,8 @@ public class ShootProjectile extends Effect {
   private boolean blockHitEffects;
   private boolean silent;
   private float yield;
+  private Disguise disguise = null;
+  private ItemStack thrownStack = null;
   private List<String> hitEffects;
 
   @Override
@@ -53,10 +60,10 @@ public class ShootProjectile extends Effect {
     if (radialAngle != 0) {
       startAngle = -radialAngle / 2;
     }
-    double newSpread = spread * projectiles;
+    double newSpread = projectiles == 1 ? spread : spread * Math.pow(projectiles, 0.5);
     for (int i = 0; i < projectiles; i++) {
-      Vector velocity = ProjectileUtil
-          .getProjectileVelocity(caster.getEntity(), newSpeed, newSpread, verticalBonus);
+      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed,
+          newSpread, verticalBonus, zeroPitch);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
       }
@@ -70,12 +77,15 @@ public class ShootProjectile extends Effect {
         projectile.setSilent(true);
       }
 
+      if (projectile instanceof ThrowableProjectile && thrownStack != null) {
+        ((ThrowableProjectile) projectile).setItem(thrownStack);
+      }
+      if (ignite) {
+        projectile.setFireTicks(200);
+      }
       if (projectileEntity == EntityType.ARROW) {
         if (arrowColor != null) {
           ((Arrow) projectile).setColor(arrowColor);
-        }
-        if (ignite) {
-          projectile.setFireTicks(200);
         }
         ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
         ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
@@ -105,6 +115,10 @@ public class ShootProjectile extends Effect {
         }
         projectile.setMetadata("EFFECT_PROJECTILE",
             new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
+      }
+
+      if (disguise != null) {
+        DisguiseAPI.disguiseToPlayers(projectile, disguise, Bukkit.getOnlinePlayers());
       }
     }
   }
@@ -193,11 +207,15 @@ public class ShootProjectile extends Effect {
     } else {
       direction = caster.getEyeLocation().getDirection();
     }
-    if (zeroPitch) {
-      direction.setY(0);
-      direction.normalize();
-    }
     return direction;
+  }
+
+  public void setDisguise(Disguise disguise) {
+    this.disguise = disguise;
+  }
+
+  public void setThrownStack(ItemStack thrownStack) {
+    this.thrownStack = thrownStack;
   }
 
   private int getProjectileCount(StrifeMob caster) {

@@ -7,11 +7,9 @@ import land.face.strife.data.StrifeMob;
 public class LoreCondition extends Condition {
 
   private final String loreId;
-  private final boolean inverted;
 
-  public LoreCondition(String loreId, boolean inverted) {
+  public LoreCondition(String loreId) {
     this.loreId = loreId;
-    this.inverted = inverted;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
@@ -20,11 +18,10 @@ public class LoreCondition extends Condition {
       for (Set<LoreAbility> las : actualTarget.getChampion().getLoreAbilities().values()) {
         for (LoreAbility la : las) {
           if (loreId.equals(la.getId())) {
-            return !inverted;
+            return true;
           }
         }
       }
-      return inverted;
     }
     return false;
   }

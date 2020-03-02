@@ -109,7 +109,8 @@ public class EntityAbilitySet {
     WHEN_HIT,
     PHASE_SHIFT,
     SHOOT,
-    TIMER
+    TIMER,
+    DEATH
   }
 
   public enum Phase {
