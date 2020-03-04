@@ -19,6 +19,7 @@
 package land.face.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import land.face.strife.StrifePlugin;
 import land.face.strife.util.ItemUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -38,7 +39,11 @@ public class StatsEquipmentItem extends MenuItem {
   }
 
   @Override
-  public ItemStack getFinalIcon(Player player) {
+  public ItemStack getFinalIcon(Player commandSender) {
+    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    if (!player.isValid()) {
+      return getIcon();
+    }
     ItemStack item = ItemUtil.getItem(player.getEquipment(), slot);
     if (item == null || item.getType() == Material.AIR) {
       item = new ItemStack(this.getIcon());

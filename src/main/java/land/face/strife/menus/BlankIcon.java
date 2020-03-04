@@ -50,4 +50,8 @@ public class BlankIcon extends MenuItem {
     ItemStackExtensionsKt.setDisplayName(stack, " ");
     return stack;
   }
+
+  public static ItemStack getBlankStack() {
+    return stack.clone();
+  }
 }

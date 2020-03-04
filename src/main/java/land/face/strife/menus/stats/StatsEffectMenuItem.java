@@ -37,21 +37,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsEffectMenuItem extends MenuItem {
 
-  private Player player;
-
-  StatsEffectMenuItem(Player player) {
-    super(TextUtils.color("&6&Additional Effects"), new ItemStack(Material.EMERALD));
-    this.player = player;
-  }
-
   StatsEffectMenuItem() {
     super(TextUtils.color("&6&lAdditional Effects"), new ItemStack(Material.EMERALD));
   }
 
   @Override
-  public ItemStack getFinalIcon(Player player) {
-    if (this.player != null) {
-      player = this.player;
+  public ItemStack getFinalIcon(Player commandSender) {
+    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    if (!player.isValid()) {
+      return getIcon();
     }
     StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.EMERALD);

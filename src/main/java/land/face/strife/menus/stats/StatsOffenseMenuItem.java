@@ -48,7 +48,11 @@ public class StatsOffenseMenuItem extends MenuItem {
   }
 
   @Override
-  public ItemStack getFinalIcon(Player player) {
+  public ItemStack getFinalIcon(Player commandSender) {
+    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    if (!player.isValid()) {
+      return getIcon();
+    }
     StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     Map<StrifeStat, Float> bases = StrifePlugin.getInstance().getMonsterManager()
         .getBaseStats(player, player.getLevel());
@@ -97,7 +101,7 @@ public class StatsOffenseMenuItem extends MenuItem {
         lore.add(addStat("Multishot: ", pStats.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
       }
     }
-    lore.add(addStat("Critical Rate: ", pStats.getStat(StrifeStat.CRITICAL_RATE), "%", INT_FORMAT));
+    lore.add(addStat("Critical Chance: ", pStats.getStat(StrifeStat.CRITICAL_RATE), "%", INT_FORMAT));
     lore.add(
         addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(pStats), "x", TWO_DECIMAL));
     double aPen =

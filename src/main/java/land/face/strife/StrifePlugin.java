@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
-import land.face.strife.commands.AttributesCommand;
+import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
@@ -362,7 +362,7 @@ public class StrifePlugin extends FacePlugin {
     energyRegenTask = new EnergyRegenTask(this);
     regenTask = new RegenTask(this);
 
-    commandHandler.registerCommands(new AttributesCommand(this));
+    commandHandler.registerCommands(new InspectCommand(this));
     commandHandler.registerCommands(new LevelUpCommand(this));
     commandHandler.registerCommands(new StrifeCommand(this));
     commandHandler.registerCommands(new UniqueEntityCommand(this));

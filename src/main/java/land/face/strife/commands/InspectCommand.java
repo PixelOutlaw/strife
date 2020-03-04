@@ -25,11 +25,11 @@ import org.bukkit.entity.Player;
 import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
 
-public class AttributesCommand {
+public class InspectCommand {
 
   private final StrifePlugin plugin;
 
-  public AttributesCommand(StrifePlugin plugin) {
+  public InspectCommand(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
@@ -38,6 +38,7 @@ public class AttributesCommand {
     Champion champion = plugin.getChampionManager().getChampion(sender);
     plugin.getChampionManager().updateAll(champion);
     plugin.getStatUpdateManager().updateAttributes(sender);
+    plugin.getStatsMenu().setTargetPlayer(sender);
     plugin.getStatsMenu().open(sender);
   }
 
@@ -47,6 +48,7 @@ public class AttributesCommand {
       MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
       return;
     }
+    plugin.getStatsMenu().setTargetPlayer(target);
     plugin.getStatsMenu().open(sender);
   }
 
