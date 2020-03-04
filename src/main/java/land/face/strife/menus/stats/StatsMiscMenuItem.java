@@ -46,7 +46,11 @@ public class StatsMiscMenuItem extends MenuItem {
   }
 
   @Override
-  public ItemStack getFinalIcon(Player player) {
+  public ItemStack getFinalIcon(Player commandSender) {
+    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    if (!player.isValid()) {
+      return getIcon();
+    }
     StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());

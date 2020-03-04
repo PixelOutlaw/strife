@@ -26,13 +26,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.EloResponse;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.util.EloUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -52,6 +55,8 @@ public class StrifeCommand {
   private final String REVEAL_REPLACEMENT;
   private final String XP_MSG;
   private final String SET_LEVEL_MSG;
+  private final String PVP_WIN_MSG;
+  private final String PVP_LOSE_MSG;
 
   public StrifeCommand(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -67,6 +72,30 @@ public class StrifeCommand {
         .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
     SET_LEVEL_MSG = plugin.getSettings()
         .getString("language.command.set-level-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
+    PVP_WIN_MSG = "&aGained PvP Rating! &f{0} (+{1})";
+    PVP_LOSE_MSG = "&eLost PvP Rating... &f{0} ({1})";
+  }
+
+  @Command(identifier = "strife defeat", permissions = "strife.command.strife.defeat", onlyPlayers = false)
+  public void defeatCommand(CommandSender sender, @Arg(name = "winner") Player winner,
+      @Arg(name = "loser") Player loser) {
+    ChampionSaveData winData = plugin.getChampionManager().getChampion(winner).getSaveData();
+    ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser).getSaveData();
+
+    EloResponse response = EloUtil.getEloChange(winData.getPvpScore(), loseData.getPvpScore(), 30f);
+
+    float winDiff = response.getNewWinnerValue() - winData.getPvpScore();
+    float loseDiff = response.getNewLoserValue() - loseData.getPvpScore();
+
+    winData.setPvpScore(response.getNewWinnerValue());
+    loseData.setPvpScore(response.getNewLoserValue());
+
+    sendMessage(winner,
+        PVP_WIN_MSG.replace("{0}", String.valueOf(Math.round(response.getNewWinnerValue())))
+            .replace("{1}", String.valueOf(Math.round(winDiff))));
+    sendMessage(loser,
+        PVP_LOSE_MSG.replace("{0}", String.valueOf(Math.round(response.getNewLoserValue())))
+            .replace("{1}", String.valueOf(Math.round(loseDiff))));
   }
 
   @Command(identifier = "strife reload", permissions = "strife.command.strife.reload", onlyPlayers = false)
@@ -102,7 +131,8 @@ public class StrifeCommand {
 
   @Command(identifier = "strife mobinfo", permissions = "strife.command.strife.info")
   public void infoCommand(CommandSender sender) {
-    List<LivingEntity> targets = new ArrayList<>(TargetingUtil.getEntitiesInLine((Player) sender, 30));
+    List<LivingEntity> targets = new ArrayList<>(
+        TargetingUtil.getEntitiesInLine((Player) sender, 30));
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
       return;

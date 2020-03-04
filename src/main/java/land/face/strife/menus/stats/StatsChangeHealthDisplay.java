@@ -20,10 +20,14 @@ package land.face.strife.menus.stats;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
+import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.apache.commons.lang.WordUtils;
@@ -36,6 +40,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsChangeHealthDisplay extends MenuItem {
 
   private final StrifePlugin plugin;
+  private Map<UUID, Boolean> selfInspectMap = new HashMap<>();
 
   StatsChangeHealthDisplay(StrifePlugin plugin) {
     super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
@@ -43,7 +48,13 @@ public class StatsChangeHealthDisplay extends MenuItem {
   }
 
   @Override
-  public ItemStack getFinalIcon(Player player) {
+  public ItemStack getFinalIcon(Player commandSender) {
+    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    if (!player.isValid() || commandSender != player) {
+      selfInspectMap.put(commandSender.getUniqueId(), false);
+      return BlankIcon.getBlankStack();
+    }
+    selfInspectMap.put(commandSender.getUniqueId(), true);
     ItemStack itemStack = new ItemStack(Material.APPLE);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
@@ -64,6 +75,9 @@ public class StatsChangeHealthDisplay extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
+    if (!selfInspectMap.getOrDefault(event.getPlayer().getUniqueId(), false)) {
+      return;
+    }
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     int ordinal = champion.getSaveData().getHealthDisplayType().ordinal();
     ordinal++;

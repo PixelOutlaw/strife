@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 
 public class StatsMenu extends ItemMenu {
@@ -31,6 +32,8 @@ public class StatsMenu extends ItemMenu {
   static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
   static final DecimalFormat TWO_DECIMAL = new DecimalFormat("#.##");
   static final String breakLine = TextUtils.color("&7&m-----------------------");
+
+  private Player player;
 
   public StatsMenu() {
     super(TextUtils.color("&0&lStats!"), Size.fit(36), StrifePlugin.getInstance());
@@ -50,6 +53,14 @@ public class StatsMenu extends ItemMenu {
     setItem(35, new StatsChangeHealthDisplay(StrifePlugin.getInstance()));
 
     fillEmptySlots(new BlankIcon());
+  }
+
+  public void setTargetPlayer(Player player) {
+    this.player = player;
+  }
+
+  public Player getTargetPlayer() {
+    return player;
   }
 }
 

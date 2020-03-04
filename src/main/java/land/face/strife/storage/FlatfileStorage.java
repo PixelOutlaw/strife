@@ -90,6 +90,7 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
     config.set(champUuid + ".bonus-levels", champion.getBonusLevels());
+    config.set(champUuid + ".pvp-score", (int) champion.getPvpScore());
     for (LifeSkillType type : LifeSkillType.types) {
       config.set(champUuid + "." + type.getDataName() + "-level", champion.getSkillLevel(type));
       config.set(champUuid + "." + type.getDataName() + "-exp", champion.getSkillExp(type));
@@ -197,6 +198,7 @@ public class FlatfileStorage implements DataStorage {
           saveData.setLevel(s, 0);
         }
       }
+      saveData.setPvpScore((float) section.getDouble("pvp-score", 1000));
     }
     return saveData;
   }
