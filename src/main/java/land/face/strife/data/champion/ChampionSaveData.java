@@ -34,7 +34,7 @@ public class ChampionSaveData {
   private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
   private final Map<LifeSkillType, Float> skillExpMap = new HashMap<>();
 
-  private float pvpScore = 1000;
+  private float pvpScore = 700;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;

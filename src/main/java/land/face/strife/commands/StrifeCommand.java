@@ -18,6 +18,7 @@
  */
 package land.face.strife.commands;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendActionBar;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
@@ -72,17 +73,20 @@ public class StrifeCommand {
         .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
     SET_LEVEL_MSG = plugin.getSettings()
         .getString("language.command.set-level-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
-    PVP_WIN_MSG = "&aGained PvP Rating! &f{0} (+{1})";
-    PVP_LOSE_MSG = "&eLost PvP Rating... &f{0} ({1})";
+    PVP_WIN_MSG = plugin.getSettings()
+        .getString("language.pvp.gain-score-action-bar", "&aGained PvP Rating! &f{0} (+{1})");
+    PVP_LOSE_MSG = plugin.getSettings()
+        .getString("language.pvp.lose-score-action-bar", "&eLost PvP Rating... &f{0} ({1})");
   }
 
   @Command(identifier = "strife defeat", permissions = "strife.command.strife.defeat", onlyPlayers = false)
   public void defeatCommand(CommandSender sender, @Arg(name = "winner") Player winner,
-      @Arg(name = "loser") Player loser) {
+      @Arg(name = "loser") Player loser, @Arg(name = "weight") double weight) {
     ChampionSaveData winData = plugin.getChampionManager().getChampion(winner).getSaveData();
     ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser).getSaveData();
 
-    EloResponse response = EloUtil.getEloChange(winData.getPvpScore(), loseData.getPvpScore(), 30f);
+    EloResponse response = EloUtil
+        .getEloChange(winData.getPvpScore(), loseData.getPvpScore(), (float) weight);
 
     float winDiff = response.getNewWinnerValue() - winData.getPvpScore();
     float loseDiff = response.getNewLoserValue() - loseData.getPvpScore();
@@ -90,10 +94,10 @@ public class StrifeCommand {
     winData.setPvpScore(response.getNewWinnerValue());
     loseData.setPvpScore(response.getNewLoserValue());
 
-    sendMessage(winner,
+    sendActionBar(winner,
         PVP_WIN_MSG.replace("{0}", String.valueOf(Math.round(response.getNewWinnerValue())))
             .replace("{1}", String.valueOf(Math.round(winDiff))));
-    sendMessage(loser,
+    sendActionBar(loser,
         PVP_LOSE_MSG.replace("{0}", String.valueOf(Math.round(response.getNewLoserValue())))
             .replace("{1}", String.valueOf(Math.round(loseDiff))));
   }
