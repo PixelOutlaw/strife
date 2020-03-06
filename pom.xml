@@ -63,6 +63,10 @@
       <id>papermc</id>
       <url>https://papermc.io/repo/repository/maven-public/</url>
     </repository>
+    <repository>
+      <id>Scarsz-Nexus</id>
+      <url>https://nexus.scarsz.me/content/groups/public/</url>
+    </repository>
   </repositories>
 
   <dependencies>
@@ -86,6 +90,12 @@
       <groupId>LibsDisguises</groupId>
       <artifactId>LibsDisguises</artifactId>
       <version>9.9.3-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.discordsrv</groupId>
+      <artifactId>discordsrv</artifactId>
+      <version>1.18.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

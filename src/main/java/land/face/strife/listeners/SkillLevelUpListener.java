@@ -18,8 +18,12 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
+import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
+import github.scarsz.discordsrv.util.DiscordUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import land.face.strife.events.SkillLevelUpEvent;
 import org.bukkit.Bukkit;
@@ -54,9 +58,13 @@ public class SkillLevelUpListener implements Listener {
         .playSound(event.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1.3f);
 
     if (event.getNewSkillLevel() % 5 == 0) {
+      String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + "has reached "
+          + event.getSkillType().getName() + " skill level " + event.getNewSkillLevel() + "!**";
+      TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
+      DiscordUtil.sendMessage(textChannel, discordMessage);
+      String msg = TextUtils.color(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
       for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils
-            .sendMessage(p, buildMessage(event.getPlayer().getDisplayName(), name, color, level));
+        MessageUtils.sendMessage(p, msg);
       }
     } else {
       MessageUtils.sendMessage(event.getPlayer(), buildMessage(name, color, level));

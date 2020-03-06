@@ -21,6 +21,9 @@ package land.face.strife.managers;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
+import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
+import github.scarsz.discordsrv.util.DiscordUtil;
 import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
 import land.face.strife.api.StrifeExperienceManager;
@@ -106,10 +109,16 @@ public class ExperienceManager implements StrifeExperienceManager {
     String lowerTitle = TextUtils.color("&aYou've reached &fLevel " + player.getLevel());
     TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
     if (announce) {
+      String discordMessage =
+          ":video_game: **" + player.getDisplayName() + "has reached level " + player.getLevel()
+              + "!**";
+      TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
+      DiscordUtil.sendMessage(textChannel, discordMessage);
+      String chatMessage =
+          "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" + player
+              .getLevel() + "&a!";
       for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p,
-            "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" + player
-                .getLevel() + "&a!");
+        MessageUtils.sendMessage(p, chatMessage);
       }
     }
   }
