@@ -32,12 +32,14 @@ import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
+import land.face.strife.util.FireworkUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Bee;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -84,6 +86,17 @@ public class CombatListener implements Listener {
       double multiplier = Math.max(0.3, 4 / (distance + 3));
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(multiplier * (10 + ((LivingEntity) event.getEntity()).getMaxHealth() * 0.4));
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void handleFireworks(EntityDamageByEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getDamager() instanceof Firework && event.getDamager()
+        .hasMetadata(FireworkUtil.FW_NO_DMG)) {
+      event.setCancelled(true);
     }
   }
 
