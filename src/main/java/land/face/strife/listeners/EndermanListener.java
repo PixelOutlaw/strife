@@ -29,7 +29,7 @@ public class EndermanListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onEndermanTeleport(EndermanEscapeEvent event) {
-    if (DamageUtil.rollBool(0.5f) && event.getReason() == Reason.INDIRECT) {
+    if (event.getReason() == Reason.INDIRECT && DamageUtil.rollBool(0.75f)) {
       event.setCancelled(true);
     }
   }

@@ -100,6 +100,16 @@ public class CombatListener implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void handleNpcHits(EntityDamageByEntityEvent event) {
+    if (event.getDamager() instanceof Projectile) {
+      if (event.getEntity().hasMetadata("NPC")) {
+        event.getDamager().remove();
+        event.setCancelled(true);
+      }
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
     if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
@@ -149,11 +159,6 @@ public class CombatListener implements Listener {
     if (event.getDamager() instanceof Projectile) {
       isProjectile = true;
       projectile = (Projectile) event.getDamager();
-      if (defendEntity.hasMetadata("NPC")) {
-        event.getDamager().remove();
-        event.setCancelled(true);
-        return;
-      }
       if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
         extraEffects = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString().split("~");
       }
