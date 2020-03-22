@@ -77,7 +77,6 @@ import land.face.strife.listeners.SkillLevelUpListener;
 import land.face.strife.listeners.SneakAttackListener;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.listeners.StatUpdateListener;
-import land.face.strife.listeners.StrifeDamageListener;
 import land.face.strife.listeners.SwingListener;
 import land.face.strife.listeners.TargetingListener;
 import land.face.strife.listeners.UniqueSplashListener;
@@ -465,7 +464,6 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(

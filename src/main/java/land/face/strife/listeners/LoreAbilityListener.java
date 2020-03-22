@@ -124,7 +124,8 @@ public class LoreAbilityListener implements Listener {
     }
     StrifeMob defender = event.getDefender();
 
-    if (attacker.getEntity() instanceof Player && event.getAttackMultiplier() > Math.random()) {
+    if (attacker.getEntity() instanceof Player &&
+        event.getDamageModifiers().getAttackMultiplier() > Math.random()) {
       if (attacker.isMasterOf(defender)) {
         return;
       }

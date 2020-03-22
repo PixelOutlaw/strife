@@ -13,20 +13,23 @@ import static land.face.strife.util.StatUtil.getWardingMult;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageContainer;
+import land.face.strife.data.DamageModifiers;
+import land.face.strife.data.DamageModifiers.ElementalStatus;
 import land.face.strife.data.IndicatorData;
 import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.buff.LoadedBuff;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
@@ -35,6 +38,7 @@ import land.face.strife.listeners.CombatListener;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.CorruptionManager;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -52,31 +56,272 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
+  private static StrifePlugin plugin;
+
   private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
   private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
-  public static double EVASION_THRESHOLD = StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.evasion-threshold", 0.5);
-  private static final Random RANDOM = new Random(System.currentTimeMillis());
+  public static double EVASION_THRESHOLD;
+
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
-  private static final DamageType[] DMG_TYPES = DamageType.values();
+  public static final DamageType[] DMG_TYPES = DamageType.values();
 
   private static Vector IND_FLOAT_VECTOR;
   private static Vector IND_MISS_VECTOR;
   private static final float BLEED_PERCENT = 0.5f;
 
-  public static void reloadConfig() {
-    float floatSpeed = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.indicators.float-speed", 70);
-    float missSpeed = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.indicators.miss-speed", 80);
+  private static float PVP_MULT;
+
+  private static final Random RANDOM = new Random(System.currentTimeMillis());
+
+  public static void refresh() {
+    plugin = StrifePlugin.getInstance();
+    float floatSpeed = (float) plugin.getSettings().getDouble("config.indicators.float-speed", 70);
+    float missSpeed = (float) plugin.getSettings().getDouble("config.indicators.miss-speed", 80);
+    EVASION_THRESHOLD = plugin.getSettings().getDouble("config.mechanics.evasion-threshold", 0.5);
     IND_FLOAT_VECTOR = new Vector(0, floatSpeed, 0);
     IND_MISS_VECTOR = new Vector(0, missSpeed, 0);
+    PVP_MULT = (float) plugin.getSettings().getDouble("config.mechanics.pvp-multiplier", 0.5);
+  }
+
+  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender,
+      String[] extraEffects) {
+    if (extraEffects != null) {
+      for (String s : extraEffects) {
+        if (StringUtils.isBlank(s)) {
+          continue;
+        }
+        plugin.getEffectManager()
+            .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
+      }
+    }
+  }
+
+  public static boolean preDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
+
+    if (attacker.getEntity() instanceof Player) {
+      plugin.getChampionManager().updateEquipmentStats(
+          plugin.getChampionManager().getChampion((Player) attacker.getEntity()));
+    }
+    if (defender.getEntity() instanceof Player) {
+      plugin.getChampionManager().updateEquipmentStats(
+          plugin.getChampionManager().getChampion((Player) defender.getEntity()));
+    }
+
+    if (plugin.getCounterManager().executeCounters(attacker.getEntity(), defender.getEntity())) {
+      CombatListener.putSlimeHit(attacker.getEntity());
+      return false;
+    }
+
+    float attackMult = mods.getAttackMultiplier();
+
+    if (mods.isCanBeEvaded()) {
+      float evasionMultiplier = DamageUtil
+          .getFullEvasionMult(attacker, defender, mods.getAbilityMods());
+      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
+        if (defender.getEntity() instanceof Player) {
+          plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
+        }
+        DamageUtil.doEvasion(attacker, defender);
+        CombatListener.putSlimeHit(attacker.getEntity());
+        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+        return false;
+      }
+      mods.setAttackMultiplier(attackMult * evasionMultiplier);
+    }
+
+    if (mods.isCanBeBlocked()) {
+      if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
+          mods.getAttackType(), mods.isBlocking())) {
+        if (defender.getEntity() instanceof Player) {
+          plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
+        }
+        CombatListener.putSlimeHit(attacker.getEntity());
+        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+        DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender,
+      DamageModifiers mods) {
+
+    float attackMult = mods.getAttackMultiplier();
+
+    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, mods.getAttackType());
+    damageMap.replaceAll((t, v) ->
+        damageMap.get(t) * mods.getDamageModifiers().getOrDefault(t, 0f) * attackMult);
+    for (DamageType type : DMG_TYPES) {
+      if (mods.getFlatDamageBonuses().containsKey(type)) {
+        damageMap
+            .put(type, damageMap.getOrDefault(type, 0f) + mods.getFlatDamageBonuses().get(type));
+      }
+    }
+    DamageUtil.applyElementalEffects(attacker, defender, damageMap, mods);
+
+    return damageMap;
+  }
+
+  public static void reduceDamage(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Float> damageMap, DamageModifiers mods) {
+    DamageUtil.applyDamageReductions(attacker, defender, damageMap, mods.getAbilityMods());
+  }
+
+  public static float damage(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Float> damageMap, DamageModifiers mods) {
+
+    double standardDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f) +
+        damageMap.getOrDefault(DamageType.MAGICAL, 0f);
+    double elementalDamage = damageMap.getOrDefault(DamageType.FIRE, 0f) +
+        damageMap.getOrDefault(DamageType.ICE, 0f) +
+        damageMap.getOrDefault(DamageType.LIGHTNING, 0f) +
+        damageMap.getOrDefault(DamageType.DARK, 0f) +
+        damageMap.getOrDefault(DamageType.EARTH, 0f) +
+        damageMap.getOrDefault(DamageType.LIGHT, 0f);
+
+    float potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
+
+    float critMult = 0;
+    double bonusOverchargeMultiplier = 0;
+
+    boolean criticalHit = isCriticalHit(attacker, defender, mods.getAttackMultiplier(),
+        mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f));
+    if (criticalHit) {
+      critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
+          mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
+    }
+
+    boolean overcharge = mods.getAttackMultiplier() > 0.99;
+    if (overcharge) {
+      bonusOverchargeMultiplier = attacker.getStat(StrifeStat.OVERCHARGE) / 100;
+    }
+
+    float pvpMult = 1f;
+    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
+      pvpMult = PVP_MULT;
+    }
+
+    standardDamage += standardDamage * critMult + standardDamage * bonusOverchargeMultiplier;
+    standardDamage *= potionMult;
+    standardDamage *= StatUtil.getDamageMult(attacker);
+    standardDamage *= pvpMult;
+
+    DamageUtil.applyLifeSteal(attacker, Math.min(standardDamage, defender.getEntity().getHealth()),
+        mods.getHealMultiplier(), mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f));
+
+    if (attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
+      elementalDamage += elementalDamage * critMult;
+    }
+    elementalDamage *= potionMult;
+    elementalDamage *= StatUtil.getDamageMult(attacker);
+    elementalDamage *= pvpMult;
+
+    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * pvpMult;
+    float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
+
+    rawDamage *= DamageUtil.getRageMult(defender);
+
+    if (mods.getAttackType() == AttackType.PROJECTILE) {
+      rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
+    }
+    rawDamage *= DamageUtil.getTenacityMult(defender);
+    rawDamage *= DamageUtil.getMinionMult(attacker);
+    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
+
+    if (mods.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK")) {
+      rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
+    }
+
+    String damageString = String.valueOf((int) Math.ceil(rawDamage));
+    if (overcharge) {
+      damageString = "&l" + damageString;
+    }
+    if (criticalHit) {
+      damageString = damageString + "!";
+    }
+    if (attacker.getEntity() instanceof Player) {
+      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()), damageString);
+    }
+    if (attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
+      plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
+          plugin.getDamageManager().buildHitIndicator((Player) attacker.getMaster()),
+          "&7" + damageString);
+    }
+
+    float finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
+    plugin.getBarrierManager().updateShieldDisplay(defender);
+
+    defender.trackDamage(attacker, finalDamage);
+    return finalDamage;
+  }
+
+  public static void postDamage(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Float> damageMap, DamageModifiers mods) {
+
+    float attackMult = mods.getAttackMultiplier();
+
+    DamageUtil.applyHealthOnHit(attacker, mods.getAttackMultiplier(), mods.getHealMultiplier(),
+        mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
+
+    if (damageMap.containsKey(DamageType.PHYSICAL)) {
+      DamageUtil.attemptBleed(attacker, defender, damageMap.get(DamageType.PHYSICAL),
+          mods.getAttackMultiplier(), mods.getAbilityMods(), false);
+    }
+
+    DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
+
+    if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
+      plugin.getRageManager()
+          .addRage(attacker, attacker.getStat(StrifeStat.RAGE_ON_HIT) * attackMult);
+    }
+    if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
+      plugin.getRageManager().addRage(defender, defender.getStat(StrifeStat.RAGE_WHEN_HIT));
+    }
+
+    plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+    plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
+  }
+
+  private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods,
+      float pvpMult) {
+    Player player = (Player) attacker.getEntity();
+    float sneakSkill = plugin.getChampionManager().getChampion(player)
+        .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
+    float sneakDamage = sneakSkill;
+    sneakDamage += defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill);
+    sneakDamage *= mods.getAttackMultiplier();
+    sneakDamage *= pvpMult;
+    SneakAttackEvent sneakEvent = DamageUtil
+        .callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
+    if (!sneakEvent.isCancelled()) {
+      defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+          defender.getEntity(), buildFloatIndicator((Player) attacker.getEntity()),
+          "&7Sneak Attack!");
+      return sneakEvent.getSneakAttackDamage();
+    }
+    return 0f;
+  }
+
+  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, float attackMult,
+      float bonusCrit) {
+    if (DamageUtil.isCrit(attacker, attackMult, bonusCrit)) {
+      DamageUtil.callCritEvent(attacker, attacker);
+      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
+          Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
+      return true;
+    }
+    return false;
   }
 
   public static float getRawDamage(StrifeMob attacker, DamageType damageType, AttackType type) {
@@ -85,7 +330,7 @@ public class DamageUtil {
         float damage = attacker.getStat(StrifeStat.PHYSICAL_DAMAGE);
         if (type == AttackType.MELEE) {
           damage *= 1 + attacker.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100;
-        } else if (type == AttackType.RANGED) {
+        } else if (type == AttackType.RANGED || type == AttackType.PROJECTILE) {
           damage *= 1 + attacker.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100;
         }
         return damage;
@@ -130,7 +375,8 @@ public class DamageUtil {
       case CASTER_LEVEL:
         return amount * StatUtil.getMobLevel(caster.getEntity());
       case CASTER_DAMAGE:
-        return amount * DamageUtil.getRawDamage(caster, damageContainer.getDamageType(), attackType);
+        return amount * DamageUtil
+            .getRawDamage(caster, damageContainer.getDamageType(), attackType);
       case TARGET_CURRENT_HEALTH:
         return amount * (float) target.getEntity().getHealth();
       case CASTER_CURRENT_HEALTH:
@@ -203,30 +449,29 @@ public class DamageUtil {
     }
   }
 
-  public static Set<DamageType> applyElementalEffects(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Float> damageMap, boolean consumeEarthRunes) {
-    Set<DamageType> triggeredElements = new HashSet<>();
+  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Float> damageMap, DamageModifiers mods) {
     for (DamageType type : damageMap.keySet()) {
       float bonus;
       switch (type) {
         case FIRE:
           bonus = attemptIgnite(damageMap.get(type), attacker, defender.getEntity());
           if (bonus != 0) {
-            triggeredElements.add(type);
+            mods.getElementalStatuses().add(ElementalStatus.IGNITE);
             damageMap.put(type, damageMap.get(type) + bonus);
           }
           break;
         case ICE:
           bonus = attemptFreeze(damageMap.get(type), attacker, defender.getEntity());
           if (bonus != 0) {
-            triggeredElements.add(type);
+            mods.getElementalStatuses().add(ElementalStatus.FREEZE);
             damageMap.put(type, damageMap.get(type) + bonus);
           }
           break;
         case LIGHTNING:
           bonus = attemptShock(damageMap.get(type), attacker, defender.getEntity());
           if (bonus != 0) {
-            triggeredElements.add(type);
+            mods.getElementalStatuses().add(ElementalStatus.SHOCK);
             damageMap.put(type, damageMap.get(type) + bonus);
           }
           break;
@@ -235,30 +480,27 @@ public class DamageUtil {
               damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
           boolean corrupt = attemptCorrupt(damageMap.get(type), attacker, defender.getEntity());
           if (corrupt) {
-            triggeredElements.add(type);
+            mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
             damageMap.put(type, damageMap.get(type) + bonus);
           }
           break;
         case EARTH:
-          if (!consumeEarthRunes) {
+          if (!mods.isConsumeEarthRunes()) {
             break;
           }
-          bonus = consumeEarthRunes(damageMap.get(type), attacker, defender.getEntity());
-          if (bonus != 0) {
-            triggeredElements.add(type);
-            damageMap.put(type, damageMap.get(type) + bonus);
+          int earthRunes = consumeEarthRune(attacker, defender.getEntity());
+          if (earthRunes != 0) {
+            damageMap.put(type, damageMap.get(type) * (1 + earthRunes * 0.3f));
           }
           break;
         case LIGHT:
           bonus = getLightBonus(damageMap.get(type), attacker, defender.getEntity());
           if (bonus > damageMap.get(type) / 2) {
-            triggeredElements.add(type);
             damageMap.put(type, damageMap.get(type) + bonus);
           }
           break;
       }
     }
-    return triggeredElements;
   }
 
   public static float getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend,
@@ -389,9 +631,8 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static float consumeEarthRunes(float damage, StrifeMob attacker, LivingEntity defender) {
-    int runes = StrifePlugin.getInstance().getBlockManager().consumeEarthRunes(attacker, defender);
-    return damage * 0.5f * runes;
+  public static int consumeEarthRune(StrifeMob attacker, LivingEntity defender) {
+    return StrifePlugin.getInstance().getBlockManager().consumeEarthRune(attacker, defender);
   }
 
   public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {
@@ -441,7 +682,8 @@ public class DamageUtil {
 
   public static void doEvasion(StrifeMob attacker, StrifeMob defender) {
     callEvadeEvent(defender, attacker);
-    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (defender.getEntity() instanceof Player) {
       MessageUtils.sendActionBar((Player) defender.getEntity(), ATTACK_DODGED);
     }
@@ -453,7 +695,8 @@ public class DamageUtil {
 
   public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     String defenderBar = ATTACK_BLOCKED;
     int runes = getBlockManager().getEarthRunes(defender.getEntity().getUniqueId());
     if (runes > 0) {
@@ -513,10 +756,9 @@ public class DamageUtil {
   }
 
   public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
-    return Math.max(0.05D,
-        1
-            + (atk.getStat(StrifeStat.PROJECTILE_DAMAGE) - def
-            .getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100);
+    return Math.max(0.05D, 1
+        + (atk.getStat(StrifeStat.PROJECTILE_DAMAGE) - def.getStat(StrifeStat.PROJECTILE_REDUCTION))
+        / 100);
   }
 
   public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier,
@@ -606,7 +848,8 @@ public class DamageUtil {
 
   public static SneakAttackEvent callSneakAttackEvent(StrifeMob attacker, StrifeMob victim,
       float sneakSkill, float sneakDamage) {
-    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill, sneakDamage);
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill,
+        sneakDamage);
     Bukkit.getPluginManager().callEvent(sneakAttackEvent);
     return sneakAttackEvent;
   }
@@ -772,6 +1015,6 @@ public class DamageUtil {
   }
 
   public enum AttackType {
-    MELEE, RANGED, MAGIC, EXPLOSION, OTHER
+    MELEE, PROJECTILE, AREA, RANGED, MAGIC, EXPLOSION, OTHER
   }
 }
