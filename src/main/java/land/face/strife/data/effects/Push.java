@@ -77,14 +77,12 @@ public class Push extends Effect {
 
   public void setTempVectorFromWSE(WorldSpaceEffect entity) {
     if (pushType == PushType.WSE_DIRECTION) {
-      tempVector = entity.getVelocity().clone().normalize();
+      tempVector = entity.getLocation().getDirection().clone().normalize();
       return;
     }
     if (pushType == PushType.TEMP_DIRECTION) {
       tempVector = entity.getLocation().toVector();
-      return;
     }
-    throw new IllegalArgumentException("Can only set temp vector with a WSE knockback type");
   }
 
   private Vector getEffectVelocity(Vector originLocation, Entity to) {
