@@ -53,7 +53,6 @@ public class Spawner extends BukkitRunnable {
       double zDist = Math.abs(location.getZ() - le.getLocation().getZ());
       if (Math.abs(xDist) + Math.abs(zDist) > leashRange) {
         despawnParticles(le);
-        addRespawnTimeIfApplicable(le);
         le.remove();
         LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
       }

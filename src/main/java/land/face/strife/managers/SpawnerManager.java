@@ -48,40 +48,51 @@ public class SpawnerManager {
       if (s.getUniqueEntity() == null || s.getLocation() == null) {
         continue;
       }
+
       int maxMobs = s.getAmount();
       for (long stamp : s.getRespawnTimes()) {
         if (System.currentTimeMillis() > stamp) {
           s.getRespawnTimes().remove(stamp);
         }
       }
+
       for (LivingEntity livingEntity : s.getEntities()) {
         if (livingEntity == null || !livingEntity.isValid()) {
           s.getEntities().remove(livingEntity);
         }
       }
-      if (s.getRespawnTimes().size() + s.getEntities().size() >= maxMobs) {
+
+      int existingMobs = s.getRespawnTimes().size() + s.getEntities().size();
+      if (existingMobs >= maxMobs) {
         continue;
       }
       if (!isChuckLoaded(s)) {
         continue;
       }
 
-      StrifeMob mob = plugin.getUniqueEntityManager()
-          .spawnUnique(s.getUniqueEntity(), s.getLocation());
-      if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
-        Bukkit.getLogger().warning("Spawner failed to spawn unique! " + s.getId());
-        continue;
-      }
+      int mobDiff = maxMobs - existingMobs;
+      while (mobDiff > 0) {
 
-      mob.setDespawnOnUnload(true);
-      s.addEntity(mob.getEntity());
+        StrifeMob mob = plugin.getUniqueEntityManager()
+            .spawnUnique(s.getUniqueEntity(), s.getLocation());
 
-      // Random displacement to prevent clumping
-      if (s.getUniqueEntity().getDisplaceMultiplier() != 0) {
-        Vector vec = new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize();
-        vec.multiply(s.getUniqueEntity().getDisplaceMultiplier());
-        mob.getEntity().setVelocity(vec);
-        mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
+        if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+          Bukkit.getLogger().warning("Spawner failed to spawn unique! " + s.getId());
+          continue;
+        }
+
+        mob.setDespawnOnUnload(true);
+        s.addEntity(mob.getEntity());
+
+        // Random displacement to prevent clumping
+        if (s.getUniqueEntity().getDisplaceMultiplier() != 0) {
+          Vector vec = new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize();
+          vec.multiply(s.getUniqueEntity().getDisplaceMultiplier());
+          mob.getEntity().setVelocity(vec);
+          mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
+        }
+
+        mobDiff--;
       }
     }
   }
