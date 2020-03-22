@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
@@ -31,7 +32,9 @@ import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.util.Vector;
@@ -92,7 +95,7 @@ public class StealthManager {
   public float getSneakActionExp(float enemyLevel, float sneakLevel) {
     float levelPenaltyMult = 1;
     if (enemyLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(enemyLevel+10))));
+      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel * 2) - (enemyLevel + 10))));
     }
     return (BASE_SNEAK_EXP + enemyLevel * SNEAK_EXP_PER_LEVEL) * levelPenaltyMult;
   }
@@ -101,7 +104,8 @@ public class StealthManager {
     float victimLevel = StatUtil.getMobLevel(victim);
     float levelPenaltyMult = 1;
     if (victimLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel*2)-(victimLevel+10))));
+      levelPenaltyMult = (float) Math
+          .max(0.1, 1 - (0.15 * ((sneakLevel * 2) - (victimLevel + 10))));
     }
     float gainedXp = BASE_SNEAK_ATTACK_EXP + victimLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
     if (finishingBlow) {
@@ -122,6 +126,14 @@ public class StealthManager {
   }
 
   public void stealthPlayer(Player player) {
+    for (Entity e : player.getWorld().getNearbyEntities(
+        player.getLocation(), 60, 60, 60, e -> e instanceof Mob)) {
+      if (((Mob) e).getTarget() == player) {
+        ((Mob) e).setTarget(null);
+        plugin.getIndicatorManager()
+            .addIndicator(player, (Mob) e, DamageUtil.buildMissIndicator(player), "&e&l???");
+      }
+    }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
     stealthedPlayers.add(player.getUniqueId());
     for (Player p : Bukkit.getOnlinePlayers()) {
