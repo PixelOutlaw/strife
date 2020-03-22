@@ -107,7 +107,6 @@ import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
 import land.face.strife.managers.RageManager;
 import land.face.strife.managers.SkillExperienceManager;
-import land.face.strife.managers.SneakManager;
 import land.face.strife.managers.SoulManager;
 import land.face.strife.managers.SpawnerManager;
 import land.face.strife.managers.StatUpdateManager;
@@ -203,7 +202,6 @@ public class StrifePlugin extends FacePlugin {
   private MonsterManager monsterManager;
   private StealthManager stealthManager;
   private UniqueEntityManager uniqueEntityManager;
-  private SneakManager sneakManager;
   private BossBarManager bossBarManager;
   private MinionManager minionManager;
   private DamageManager damageManager;
@@ -283,7 +281,6 @@ public class StrifePlugin extends FacePlugin {
     minionManager = new MinionManager();
     damageManager = new DamageManager(this);
     chaserManager = new ChaserManager(this);
-    sneakManager = new SneakManager();
     experienceManager = new ExperienceManager(this);
     skillExperienceManager = new SkillExperienceManager(this);
     strifeMobManager = new StrifeMobManager(this);
@@ -942,10 +939,6 @@ public class StrifePlugin extends FacePlugin {
 
   public IndicatorManager getIndicatorManager() {
     return indicatorManager;
-  }
-
-  public SneakManager getSneakManager() {
-    return sneakManager;
   }
 
   public StrifeMobManager getStrifeMobManager() {
