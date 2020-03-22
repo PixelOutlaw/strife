@@ -141,20 +141,21 @@ public class TargetingListener implements Listener {
 
     Champion champion = plugin.getChampionManager().getChampion(player);
     float angle = entitySightVector.angle(playerDifferenceVector);
-    float sneakSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
+    float stealthLevel = champion.getLifeSkillLevel(LifeSkillType.SNEAK);
+    float stealthSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
     double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
     float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
     float lightMult = (float) Math.max(0.15,
         (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel())));
 
     if (player.hasPotionEffect(INVISIBILITY)) {
-      sneakSkill += 5 + sneakSkill * 0.1;
+      stealthSkill += 5 + stealthSkill * 0.1;
     }
     if (!player.isSneaking()) {
-      sneakSkill *= 0.75;
+      stealthSkill *= 0.75;
     }
     if (player.isSprinting()) {
-      sneakSkill *= 0.5;
+      stealthSkill *= 0.5;
     }
 
     float awareness;
@@ -165,7 +166,7 @@ public class TargetingListener implements Listener {
     }
     awareness *= distanceMult;
     awareness *= lightMult;
-    awareness -= sneakSkill * SNEAK_EFFECTIVENESS;
+    awareness -= stealthSkill * SNEAK_EFFECTIVENESS;
 
     LogUtil.printDebug(" DIST MULT: " + distanceMult);
     LogUtil.printDebug(" LIGHT MULT: " + lightMult);
@@ -176,7 +177,7 @@ public class TargetingListener implements Listener {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
-        float xp = plugin.getStealthManager().getSneakActionExp(level, sneakSkill);
+        float xp = plugin.getStealthManager().getSneakActionExp(level, stealthLevel);
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }

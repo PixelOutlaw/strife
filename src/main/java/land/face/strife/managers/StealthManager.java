@@ -92,11 +92,11 @@ public class StealthManager {
     return angle > 0.6;
   }
 
-  public float getSneakActionExp(float enemyLevel, float sneakLevel) {
-    float levelPenaltyMult = 1;
-    if (enemyLevel + 10 < sneakLevel * 2) {
-      levelPenaltyMult = (float) Math.max(0.1, 1 - (0.15 * ((sneakLevel * 2) - (enemyLevel + 10))));
+  public float getSneakActionExp(float enemyLevel, float stealthLevel) {
+    if (stealthLevel != 99 && enemyLevel - stealthLevel > 20) {
+      return 0;
     }
+    float levelPenaltyMult = Math.min(1.0f, (float) Math.pow(enemyLevel / stealthLevel, 1.5));
     return (BASE_SNEAK_EXP + enemyLevel * SNEAK_EXP_PER_LEVEL) * levelPenaltyMult;
   }
 
