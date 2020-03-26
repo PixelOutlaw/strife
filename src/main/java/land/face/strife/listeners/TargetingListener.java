@@ -105,7 +105,7 @@ public class TargetingListener implements Listener {
     if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
       return;
     }
-    if (!plugin.getStealthManager().isStealthed(event.getTarget())) {
+    if (plugin.getStealthManager().isStealthed(event.getTarget())) {
       return;
     }
     int playerLevel = StatUtil.getMobLevel(event.getTarget());
@@ -178,6 +178,7 @@ public class TargetingListener implements Listener {
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
         float xp = plugin.getStealthManager().getSneakActionExp(level, stealthLevel);
+        xp *= distanceMult;
         plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }

@@ -20,7 +20,6 @@ package land.face.strife.listeners;
 
 import com.destroystokyo.paper.event.entity.EndermanEscapeEvent;
 import com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason;
-import land.face.strife.util.DamageUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,7 +28,7 @@ public class EndermanListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onEndermanTeleport(EndermanEscapeEvent event) {
-    if (event.getReason() == Reason.INDIRECT && DamageUtil.rollBool(0.75f)) {
+    if (event.getReason() == Reason.INDIRECT) {
       event.setCancelled(true);
     }
   }

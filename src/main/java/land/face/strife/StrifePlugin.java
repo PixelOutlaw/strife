@@ -74,7 +74,6 @@ import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoveListener;
 import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
-import land.face.strife.listeners.SneakAttackListener;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.listeners.StatUpdateListener;
 import land.face.strife.listeners.SwingListener;
@@ -456,7 +455,7 @@ public class StrifePlugin extends FacePlugin {
     globalBoostManager.startScheduledEvents();
     agilityManager.loadAgilityContainers();
 
-    //Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
+    Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
@@ -482,7 +481,6 @@ public class StrifePlugin extends FacePlugin {
         new MinionListener(strifeMobManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);

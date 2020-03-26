@@ -237,8 +237,15 @@ public class DamageUtil {
     rawDamage *= DamageUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
+    float postBarrierDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
+
     if (mods.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK")) {
       rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
+      boolean finishingBlow = postBarrierDamage > defender.getEntity().getHealth();
+      float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
+          attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
+      plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
+          LifeSkillType.SNEAK, gainedXp, false);
     }
 
     String damageString = String.valueOf((int) Math.ceil(rawDamage));
@@ -258,11 +265,10 @@ public class DamageUtil {
           "&7" + damageString);
     }
 
-    float finalDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
     plugin.getBarrierManager().updateShieldDisplay(defender);
 
-    defender.trackDamage(attacker, finalDamage);
-    return finalDamage;
+    defender.trackDamage(attacker, postBarrierDamage);
+    return postBarrierDamage;
   }
 
   public static void postDamage(StrifeMob attacker, StrifeMob defender,
@@ -301,13 +307,18 @@ public class DamageUtil {
     sneakDamage += defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill);
     sneakDamage *= mods.getAttackMultiplier();
     sneakDamage *= pvpMult;
+
     SneakAttackEvent sneakEvent = DamageUtil
         .callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
+
     if (!sneakEvent.isCancelled()) {
       defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), buildFloatIndicator((Player) attacker.getEntity()),
           "&7Sneak Attack!");
+      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
+          Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
+      plugin.getStealthManager().unstealthPlayer(player);
       return sneakEvent.getSneakAttackDamage();
     }
     return 0f;

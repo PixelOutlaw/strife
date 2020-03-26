@@ -33,7 +33,7 @@ public class SneakAttackEvent extends Event implements Cancellable {
 
   private final StrifeMob attacker;
   private final StrifeMob victim;
-  private float sneakSkill;
+  private final float sneakSkill;
   private float sneakAttackDamage;
   private boolean cancel;
 
@@ -60,10 +60,6 @@ public class SneakAttackEvent extends Event implements Cancellable {
 
   public float getSneakSkill() {
     return sneakSkill;
-  }
-
-  public void setSneakSkill(float sneakSkill) {
-    this.sneakSkill = sneakSkill;
   }
 
   public float getSneakAttackDamage() {

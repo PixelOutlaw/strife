@@ -226,6 +226,13 @@ public class CombatListener implements Listener {
 
     putSlimeHit(attackEntity);
 
+    if (attackEntity instanceof Player) {
+      plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
+    }
+    if (defendEntity instanceof Player) {
+      plugin.getStealthManager().unstealthPlayer((Player) defendEntity);
+    }
+
     DamageModifiers damageModifiers = new DamageModifiers();
     damageModifiers.setAttackType(attackType);
     damageModifiers.setAttackMultiplier(attackMultiplier);
@@ -255,10 +262,6 @@ public class CombatListener implements Listener {
     }
 
     DamageUtil.postDamage(attacker, defender, damage, damageModifiers);
-
-    if (attackEntity instanceof Player) {
-      plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
-    }
 
     DamageUtil.applyExtraEffects(attacker, defender, extraEffects);
 
