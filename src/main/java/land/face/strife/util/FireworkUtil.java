@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import land.face.strife.StrifePlugin;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
@@ -8,9 +9,12 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 public class FireworkUtil {
+
+  public static String FW_NO_DMG = "FX_FIREWORK";
 
   public static void spawnFirework(Location loc, Type type, Color color, Color fade, boolean trail,
       boolean flicker) {
@@ -25,6 +29,8 @@ public class FireworkUtil {
             .trail(trail).build());
 
     fw.setFireworkMeta(fwm);
+    fw.setMetadata(FW_NO_DMG, new FixedMetadataValue(StrifePlugin.getInstance(), true));
+    fw.setSilent(true);
     fw.detonate();
   }
 

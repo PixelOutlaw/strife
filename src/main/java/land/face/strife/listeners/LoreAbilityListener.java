@@ -124,11 +124,12 @@ public class LoreAbilityListener implements Listener {
     }
     StrifeMob defender = event.getDefender();
 
-    if (attacker.getEntity() instanceof Player && event.getAttackMultiplier() > Math.random()) {
+    if (attacker.getEntity() instanceof Player &&
+        event.getDamageModifiers().getAttackMultiplier() > Math.random()) {
       if (attacker.isMasterOf(defender)) {
         return;
       }
-      executeBoundEffects(defender, attacker.getEntity(),
+      executeBoundEffects(attacker, defender.getEntity(),
           attacker.getChampion().getLoreAbilities().get(ON_HIT));
     }
     executeFiniteEffects(attacker, defender, ON_HIT);
@@ -155,19 +156,19 @@ public class LoreAbilityListener implements Listener {
     }
   }
 
-  private void executeFiniteEffects(StrifeMob attacker, StrifeMob target, TriggerType type) {
-    Iterator<FiniteUsesEffect> it = attacker.getTempEffects().iterator();
+  private void executeFiniteEffects(StrifeMob caster, StrifeMob target, TriggerType type) {
+    Iterator<FiniteUsesEffect> it = caster.getTempEffects().iterator();
     while (it.hasNext()) {
       FiniteUsesEffect tempEffect = it.next();
       if (tempEffect.getLoreAbility().getTriggerType() != type) {
         continue;
       }
-      loreAbilityManager.applyLoreAbility(tempEffect.getLoreAbility(), attacker,
+      loreAbilityManager.applyLoreAbility(tempEffect.getLoreAbility(), caster,
           target.getEntity());
       if (tempEffect.getUses() > 1) {
         tempEffect.setUses(tempEffect.getUses() - 1);
       } else {
-        attacker.getTempEffects().remove(tempEffect);
+        caster.getTempEffects().remove(tempEffect);
       }
     }
   }

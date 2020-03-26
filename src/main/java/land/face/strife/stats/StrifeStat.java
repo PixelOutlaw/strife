@@ -65,7 +65,7 @@ public enum StrifeStat {
   MULTISHOT("Multishot"),
   PROJECTILE_SPEED("Projectile Speed"),
   PROJECTILE_DAMAGE("Projectile Damage"),
-  PROJECTILE_REDUCTION("Projectile Damage Reduction"),
+  PROJECTILE_REDUCTION("Projectile Protection"),
 
   ATTACK_SPEED("Attack Speed"),
   OVERCHARGE("Overcharge"),

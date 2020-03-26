@@ -18,13 +18,8 @@
  */
 package land.face.strife.events;
 
-import java.util.HashMap;
-import java.util.Map;
+import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.util.DamageUtil.AbilityMod;
-import land.face.strife.util.DamageUtil.AttackType;
-import land.face.strife.util.DamageUtil.DamageType;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -41,33 +36,13 @@ public class StrifeDamageEvent extends Event implements Cancellable {
 
   private final StrifeMob attacker;
   private final StrifeMob defender;
-  private final AttackType attackType;
-
-  private float attackMultiplier = 1f;
-  private float healMultiplier = 1f;
-  private final Map<DamageType, Float> damageModifiers = new HashMap<>();
-  private final Map<DamageType, Float> flatDamageBonuses = new HashMap<>();
-  private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
-  private boolean isSneakAttack = false;
-  private boolean isBlocking = false;
-  private boolean canBeBlocked = true;
-  private boolean canBeEvaded = true;
-  private boolean consumeEarthRunes = false;
-  private Projectile projectile;
-  private String[] extraEffects;
+  private final DamageModifiers damageModifiers;
   private boolean cancel;
 
-  public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, AttackType attackType) {
+  public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, DamageModifiers damageModifiers) {
     this.attacker = attacker;
     this.defender = defender;
-    this.attackType = attackType;
-  }
-
-  public StrifeDamageEvent(StrifeMob attacker, StrifeMob defender, AttackType attackType, float attackMultiplier) {
-    this.attacker = attacker;
-    this.defender = defender;
-    this.attackType = attackType;
-    this.attackMultiplier = attackMultiplier;
+    this.damageModifiers = damageModifiers;
   }
 
   @Override
@@ -83,104 +58,8 @@ public class StrifeDamageEvent extends Event implements Cancellable {
     return defender;
   }
 
-  public AttackType getAttackType() {
-    return attackType;
-  }
-
-  public float getAttackMultiplier() {
-    return attackMultiplier;
-  }
-
-  public void setAttackMultiplier(float attackMultiplier) {
-    this.attackMultiplier = attackMultiplier;
-  }
-
-  public float getHealMultiplier() {
-    return healMultiplier;
-  }
-
-  public void setHealMultiplier(float healMultiplier) {
-    this.healMultiplier = healMultiplier;
-  }
-
-  public boolean isSneakAttack() {
-    return isSneakAttack;
-  }
-
-  public void setSneakAttack(boolean sneakAttack) {
-    isSneakAttack = sneakAttack;
-  }
-
-  public boolean isBlocking() {
-    return isBlocking;
-  }
-
-  public void setBlocking(boolean blocking) {
-    isBlocking = blocking;
-  }
-
-  public boolean isCanBeBlocked() {
-    return canBeBlocked;
-  }
-
-  public void setCanBeBlocked(boolean canBeBlocked) {
-    this.canBeBlocked = canBeBlocked;
-  }
-
-  public boolean isCanBeEvaded() {
-    return canBeEvaded;
-  }
-
-  public void setCanBeEvaded(boolean canBeEvaded) {
-    this.canBeEvaded = canBeEvaded;
-  }
-
-  public boolean isConsumeEarthRunes() {
-    return consumeEarthRunes;
-  }
-
-  public void setConsumeEarthRunes(boolean consumeEarthRunes) {
-    this.consumeEarthRunes = consumeEarthRunes;
-  }
-
-  public Projectile getProjectile() {
-    return projectile;
-  }
-
-  public void setProjectile(Projectile projectile) {
-    this.projectile = projectile;
-  }
-
-  public String[] getExtraEffects() {
-    return extraEffects;
-  }
-
-  public void setExtraEffects(String[] extraEffects) {
-    this.extraEffects = extraEffects;
-  }
-
-  public Map<DamageType, Float> getDamageModifiers() {
+  public DamageModifiers getDamageModifiers() {
     return damageModifiers;
-  }
-
-  public Map<DamageType, Float> getFlatDamageBonuses() {
-    return flatDamageBonuses;
-  }
-
-  public float getDamageMod(DamageType damageType) {
-    return damageModifiers.getOrDefault(damageType, 1f);
-  }
-
-  public float getFlatDamageBonus(DamageType damageType) {
-    return flatDamageBonuses.getOrDefault(damageType, 0f);
-  }
-
-  public Map<AbilityMod, Float> getAbilityMods() {
-    return abilityMods;
-  }
-
-  public float getAbilityMods(AbilityMod mod) {
-    return abilityMods.getOrDefault(mod, 0f);
   }
 
   public double getFinalDamage() {

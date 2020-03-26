@@ -74,10 +74,8 @@ import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoveListener;
 import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
-import land.face.strife.listeners.SneakAttackListener;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.listeners.StatUpdateListener;
-import land.face.strife.listeners.StrifeDamageListener;
 import land.face.strife.listeners.SwingListener;
 import land.face.strife.listeners.TargetingListener;
 import land.face.strife.listeners.UniqueSplashListener;
@@ -108,7 +106,6 @@ import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
 import land.face.strife.managers.RageManager;
 import land.face.strife.managers.SkillExperienceManager;
-import land.face.strife.managers.SneakManager;
 import land.face.strife.managers.SoulManager;
 import land.face.strife.managers.SpawnerManager;
 import land.face.strife.managers.StatUpdateManager;
@@ -204,7 +201,6 @@ public class StrifePlugin extends FacePlugin {
   private MonsterManager monsterManager;
   private StealthManager stealthManager;
   private UniqueEntityManager uniqueEntityManager;
-  private SneakManager sneakManager;
   private BossBarManager bossBarManager;
   private MinionManager minionManager;
   private DamageManager damageManager;
@@ -284,7 +280,6 @@ public class StrifePlugin extends FacePlugin {
     minionManager = new MinionManager();
     damageManager = new DamageManager(this);
     chaserManager = new ChaserManager(this);
-    sneakManager = new SneakManager();
     experienceManager = new ExperienceManager(this);
     skillExperienceManager = new SkillExperienceManager(this);
     strifeMobManager = new StrifeMobManager(this);
@@ -460,12 +455,11 @@ public class StrifePlugin extends FacePlugin {
     globalBoostManager.startScheduledEvents();
     agilityManager.loadAgilityContainers();
 
-    //Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
+    Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new StrifeDamageListener(this), this);
     Bukkit.getPluginManager().registerEvents(
         new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(
@@ -487,7 +481,6 @@ public class StrifePlugin extends FacePlugin {
         new MinionListener(strifeMobManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new SneakAttackListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
@@ -526,7 +519,7 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.setAllAbilityIcons(player);
     }
 
-    DamageUtil.reloadConfig();
+    DamageUtil.refresh();
 
     LogUtil.printInfo("Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
     LogUtil.printInfo("Loaded " + effectManager.getLoadedEffects().size() + " effects");
@@ -944,10 +937,6 @@ public class StrifePlugin extends FacePlugin {
 
   public IndicatorManager getIndicatorManager() {
     return indicatorManager;
-  }
-
-  public SneakManager getSneakManager() {
-    return sneakManager;
   }
 
   public StrifeMobManager getStrifeMobManager() {

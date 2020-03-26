@@ -121,20 +121,20 @@ public class BlockManager {
     StrifePlugin.getInstance().getBlockManager().setEarthRunes(mob, runes + 1);
   }
 
-  public int consumeEarthRunes(StrifeMob attacker, LivingEntity defender) {
+  public int consumeEarthRune(StrifeMob attacker, LivingEntity defender) {
     int runes = getEarthRunes(attacker.getEntity().getUniqueId());
-    setEarthRunes(attacker, 0);
     if (runes == 0) {
       return 0;
     }
+    setEarthRunes(attacker, runes - 1);
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
     defender.getWorld().spawnParticle(
         Particle.ITEM_CRACK,
         defender.getLocation().clone().add(0, defender.getEyeHeight() / 2, 0),
-        20 + 20 * runes, 0, 0, 0, 0.2f,
+        20 + 20 * runes, 0, 0, 0, 0.1f,
         BLOCK_DATA
     );
-    return runes;
+    return runes + 1;
   }
 
   private void updateStoredBlock(StrifeMob strifeMob) {

@@ -198,7 +198,7 @@ public class FlatfileStorage implements DataStorage {
           saveData.setLevel(s, 0);
         }
       }
-      saveData.setPvpScore((float) section.getDouble("pvp-score", 1000));
+      saveData.setPvpScore((float) section.getDouble("pvp-score", 700));
     }
     return saveData;
   }

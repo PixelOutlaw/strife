@@ -33,7 +33,7 @@ public class WSEManager {
     if (!strictDuration) {
       newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    Vector direction = caster.getEntity().getEyeLocation().getDirection();
+    Vector direction = caster.getEntity().getEyeLocation().getDirection().clone();
     if (zeroVertical) {
       direction.setY(0.00001);
       direction.normalize();
@@ -68,10 +68,11 @@ public class WSEManager {
     Location location = wse.getLocation().clone();
 
     Vector velocity = wse.getVelocity().clone();
-    velocity.multiply(wse.getFriction());
     velocity.setY(velocity.getY() - wse.getGravity());
+    velocity.multiply(wse.getFriction());
     wse.setVelocity(velocity);
     location.add(velocity);
+    location.setDirection(velocity);
 
     Block block = location.getBlock();
     int displacement = 0;

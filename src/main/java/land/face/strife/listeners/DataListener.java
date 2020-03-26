@@ -205,6 +205,11 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerTeleport(PlayerTeleportEvent event) {
+    if (event.getTo().getWorld() != event.getTo().getWorld()) {
+      event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
+          Math.max(40, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
+      return;
+    }
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
         Math.max(3, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
   }

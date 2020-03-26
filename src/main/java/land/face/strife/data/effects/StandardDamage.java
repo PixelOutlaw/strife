@@ -3,8 +3,10 @@ package land.face.strife.data.effects;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.events.StrifeDamageEvent;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
@@ -25,23 +27,42 @@ public class StandardDamage extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    StrifeDamageEvent event = new StrifeDamageEvent(caster, target, attackType, attackMultiplier);
-    event.setHealMultiplier(healMultiplier);
-    event.getDamageModifiers().putAll(damageModifiers);
-    event.getFlatDamageBonuses().putAll(damageBonuses);
-    event.getAbilityMods().putAll(abilityMods);
-    event.setCanBeBlocked(canBeBlocked);
-    event.setCanBeEvaded(canBeEvaded);
 
-    if (canSneakAttack && StrifePlugin.getInstance().getStealthManager()
-        .isStealthed(caster.getEntity())) {
-      event.setSneakAttack(true);
+    DamageModifiers mods = new DamageModifiers();
+    mods.setAttackType(attackType);
+    mods.setAttackMultiplier(attackMultiplier);
+    mods.setHealMultiplier(healMultiplier);
+    mods.setCanBeEvaded(canBeEvaded);
+    mods.setCanBeBlocked(canBeBlocked);
+    mods.setApplyOnHitEffects(attackMultiplier > 0.75);
+    if (canSneakAttack && StrifePlugin.getInstance().getStealthManager().isStealthed(
+        caster.getEntity())) {
+      mods.setSneakAttack(true);
+    }
+    mods.setBlocking(isBlocking);
+    mods.getFlatDamageBonuses().putAll(damageBonuses);
+    mods.getDamageModifiers().putAll(damageModifiers);
+    mods.getAbilityMods().putAll(abilityMods);
+
+    boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);
+
+    if (!attackSuccess) {
+      return;
     }
 
-    Bukkit.getPluginManager().callEvent(event);
-    if (!event.isCancelled()) {
+    Map<DamageType, Float> damage =  DamageUtil.buildDamage(caster, target, mods);
+    DamageUtil.reduceDamage(caster, target, damage, mods);
+    float finalDamage = DamageUtil.damage(caster, target, damage, mods);
+
+    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(caster, target, mods);
+    strifeDamageEvent.setFinalDamage(finalDamage);
+
+    Bukkit.getPluginManager().callEvent(strifeDamageEvent);
+
+    if (!strifeDamageEvent.isCancelled()) {
+      DamageUtil.postDamage(caster, target, damage, mods);
       StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
-          (float) event.getFinalDamage(), false);
+          (float) strifeDamageEvent.getFinalDamage(), false);
     }
   }
 
