@@ -110,7 +110,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
     if (announce) {
       String discordMessage =
-          ":video_game: **" + player.getDisplayName() + "has reached level " + player.getLevel()
+          ":video_game: **" + player.getDisplayName() + " has reached level " + player.getLevel()
               + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);

@@ -39,7 +39,7 @@ public class SkillExperienceManager {
 
   private final StrifePlugin plugin;
   private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
-  private static final String XP_AB = "{0}( &f&l{1} {0}/ &f&l{2} XP {0})";
+  //private static final String XP_AB = "{0}( &f&l{1} {0}/ &f&l{2} XP {0})";
   private final String XP_MSG;
   private final int MAX_SKILL_LEVEL;
 
