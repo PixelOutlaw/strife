@@ -58,7 +58,7 @@ public class SkillLevelUpListener implements Listener {
         .playSound(event.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1.3f);
 
     if (event.getNewSkillLevel() % 5 == 0) {
-      String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + "has reached "
+      String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached "
           + event.getSkillType().getName() + " skill level " + event.getNewSkillLevel() + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);

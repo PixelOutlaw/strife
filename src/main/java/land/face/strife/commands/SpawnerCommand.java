@@ -90,6 +90,29 @@ public class SpawnerCommand {
     sendMessage(sender, "&f" + listString.toString());
   }
 
+  @Command(identifier = "spawner nearest", permissions = "strife.command.spawner")
+  public void spawnerListNearest(Player sender) {
+    sendMessage(sender, "&2&lList of loaded spawners:");
+    StringBuilder listString = new StringBuilder();
+    List<Spawner> spawners = new ArrayList<>(plugin.getSpawnerManager().getSpawnerMap().values());
+    SpawnerComparator comparator = new SpawnerComparator();
+    comparator.setLoc(sender.getLocation());
+    spawners.sort(comparator);
+    int count = 0;
+    for (Spawner s : spawners) {
+      if (count >= 10) {
+        break;
+      }
+      if (s.getLocation().getWorld() == sender.getLocation().getWorld()) {
+        listString.append(ChatColor.WHITE).append(s.getId()).append(" ");
+      } else {
+        listString.append(ChatColor.GRAY).append(s.getId()).append(" ");
+      }
+      count++;
+    }
+    sendMessage(sender, "&f" + listString.toString());
+  }
+
   @Command(identifier = "spawner info", permissions = "strife.command.spawner")
   public void spawnerInfo(Player sender, @Arg(name = "spawnerName") String spawnerName) {
     if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
@@ -145,6 +168,17 @@ public class SpawnerCommand {
     }
     plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setLeashRange(leashRange);
     sendMessage(sender, "&aUpdated leash range of &f" + spawnerName + " &ato &f" + leashRange);
+  }
+
+  @Command(identifier = "spawner respawn", permissions = "strife.command.spawner")
+  public void updateRespawnCommand(Player sender, @Arg(name = "spawnerName") String spawnerName,
+      @Arg(name = "respawnTime") int seconds) {
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setRespawnSeconds(seconds);
+    sendMessage(sender, "&aUpdated respawn time range of &f" + spawnerName + " &ato &f" + seconds);
   }
 
 }

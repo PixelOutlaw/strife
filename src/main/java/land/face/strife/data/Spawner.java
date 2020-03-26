@@ -120,6 +120,10 @@ public class Spawner extends BukkitRunnable {
     return respawnSeconds;
   }
 
+  public void setRespawnSeconds(long respawnSeconds) {
+    this.respawnSeconds = respawnSeconds;
+  }
+
   public Set<LivingEntity> getEntities() {
     return entities;
   }
