@@ -14,6 +14,7 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
@@ -29,7 +30,6 @@ import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Zombie;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class UniqueEntityManager {
 
@@ -78,7 +78,7 @@ public class UniqueEntityManager {
     assert uniqueEntity.getType().getEntityClass() != null;
     Entity entity = Objects.requireNonNull(location.getWorld())
         .spawn(location, uniqueEntity.getType().getEntityClass(),
-            e -> e.setMetadata("UNIQUE_ID", new FixedMetadataValue(plugin, uniqueEntity.getId())));
+            e -> SpecialStatusUtil.setUniqueId(e, uniqueEntity.getId()));
 
     if (!entity.isValid()) {
       LogUtil.printWarning(
@@ -166,16 +166,13 @@ public class UniqueEntityManager {
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
     if (uniqueEntity.isBurnImmune()) {
-      le.setMetadata("NO_BURN", new FixedMetadataValue(plugin, true));
+      SpecialStatusUtil.setBurnImmune(le);
     }
     if (uniqueEntity.isFallImmune()) {
-      le.setMetadata("NO_FALL", new FixedMetadataValue(plugin, true));
+      SpecialStatusUtil.setFallImmune(le);
     }
     if (uniqueEntity.isIgnoreSneak()) {
-      le.setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
-    }
-    if (uniqueEntity.isRemoveFollowMods()) {
-      le.setMetadata("WEAK_AGGRO", new FixedMetadataValue(plugin, true));
+      SpecialStatusUtil.setSneakImmune(le);
     }
     if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
       StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);

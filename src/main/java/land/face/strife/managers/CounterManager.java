@@ -21,12 +21,11 @@ package land.face.strife.managers;
 import static land.face.strife.util.DamageUtil.buildMissIndicator;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CounterData;
 import land.face.strife.data.StrifeMob;
@@ -36,7 +35,7 @@ import org.bukkit.entity.Player;
 
 public class CounterManager {
 
-  private final Map<UUID, Set<CounterData>> counterMap = new HashMap<>();
+  private final Map<LivingEntity, Set<CounterData>> counterMap = new WeakHashMap<>();
   private StrifePlugin plugin;
   private Sound counterSound;
   private float pitch;
@@ -48,27 +47,27 @@ public class CounterManager {
     pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
   }
 
-  public void clearCounters(UUID uuid) {
-    counterMap.remove(uuid);
+  public void clearCounters(LivingEntity livingEntity) {
+    counterMap.remove(livingEntity);
   }
 
-  public void addCounter(UUID uuid, CounterData counterData) {
-    if (!counterMap.containsKey(uuid)) {
-      counterMap.put(uuid, new HashSet<>());
+  public void addCounter(LivingEntity livingEntity, CounterData counterData) {
+    if (!counterMap.containsKey(livingEntity)) {
+      counterMap.put(livingEntity, new HashSet<>());
     }
-    counterMap.get(uuid).add(counterData);
+    counterMap.get(livingEntity).add(counterData);
   }
 
   public boolean executeCounters(LivingEntity attacker, LivingEntity defender) {
-    if (!counterMap.containsKey(defender.getUniqueId())) {
+    if (!counterMap.containsKey(defender)) {
       return false;
     }
     boolean isCountered = false;
-    Iterator<CounterData> it = counterMap.get(defender.getUniqueId()).iterator();
+    Iterator<CounterData> it = counterMap.get(defender).iterator();
     while (it.hasNext()) {
       CounterData data = it.next();
       if (System.currentTimeMillis() > data.getEndTime()) {
-        counterMap.get(defender.getUniqueId()).remove(data);
+        counterMap.get(defender).remove(data);
         continue;
       }
       isCountered = true;
@@ -84,7 +83,7 @@ public class CounterManager {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
         plugin.getEffectManager().execute(defenderMob, attacker, data.getEffects());
         if (data.isRemoveOnTrigger()) {
-          counterMap.get(defender.getUniqueId()).remove(data);
+          counterMap.get(defender).remove(data);
         } else {
           data.setTriggered(true);
         }

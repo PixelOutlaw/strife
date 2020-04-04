@@ -11,6 +11,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.MoveUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,7 +36,7 @@ public class FallListener implements Listener {
     if (event.getCause() != DamageCause.FALL || event.isCancelled()) {
       return;
     }
-    if (event.getEntity().hasMetadata("NO_FALL")) {
+    if (SpecialStatusUtil.isFallImmune(event.getEntity())) {
       event.setCancelled(true);
       return;
     }

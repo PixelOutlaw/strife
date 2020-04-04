@@ -1,9 +1,11 @@
 package land.face.strife.data;
 
 import io.netty.util.internal.ConcurrentSet;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +16,6 @@ import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
@@ -29,8 +30,8 @@ public class StrifeMob {
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
   private final Map<StrifeStat, Float> tempBonuses = new HashMap<>();
 
-  private final Champion champion;
-  private LivingEntity livingEntity;
+  private WeakReference<Champion> champion;
+  private WeakReference<LivingEntity> livingEntity;
   private EntityAbilitySet abilitySet;
   private String uniqueEntityId = null;
   private Set<String> mods = new HashSet<>();
@@ -41,31 +42,23 @@ public class StrifeMob {
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
 
-  private LivingEntity master = null;
+  private WeakReference<LivingEntity> master;
 
   private final Set<StrifeMob> minions = new ConcurrentSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
 
-  private EntityAbilityTimer abilityTimer;
-
   private long buffCacheStamp = System.currentTimeMillis();
 
   public StrifeMob(Champion champion) {
-    this.livingEntity = champion.getPlayer();
-    this.champion = champion;
+    this.livingEntity = new WeakReference<>(champion.getPlayer());
+    this.champion = new WeakReference<>(champion);
   }
 
   public StrifeMob(LivingEntity livingEntity) {
-    this.livingEntity = livingEntity;
-    this.champion = null;
-  }
-
-  public void killAllTasks() {
-    if (abilityTimer != null) {
-      abilityTimer.cancel();
-    }
+    this.livingEntity = new WeakReference<>(livingEntity);
+    this.champion = new WeakReference<>(null);
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -106,11 +99,7 @@ public class StrifeMob {
   }
 
   public LivingEntity getEntity() {
-    return livingEntity;
-  }
-
-  public void setLivingEntity(LivingEntity livingEntity) {
-    this.livingEntity = livingEntity;
+    return livingEntity.get();
   }
 
   public EntityAbilitySet getAbilitySet() {
@@ -142,7 +131,7 @@ public class StrifeMob {
   }
 
   public Champion getChampion() {
-    return champion;
+    return champion == null ? null : champion.get();
   }
 
   public Map<StrifeStat, Float> getFinalStats() {
@@ -195,15 +184,15 @@ public class StrifeMob {
     if (runningBuffs.get(buffId) == null || runningBuffs.get(buffId).isExpired()) {
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.put(buffId, buff);
-      LogUtil.printDebug("Adding new buff: " + buffId + " to " + livingEntity.getName());
+      LogUtil.printDebug("Adding new buff: " + buffId + " to " + livingEntity.get().getName());
       return;
     }
     runningBuffs.get(buffId).bumpBuff(duration);
-    LogUtil.printDebug("Bumping buff: " + buffId + " for " + livingEntity.getName());
+    LogUtil.printDebug("Bumping buff: " + buffId + " for " + livingEntity.get().getName());
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
-    return master == strifeMob.getEntity();
+    return getMaster() == strifeMob.getEntity();
   }
 
   public boolean isMasterOf(StrifeMob strifeMob) {
@@ -220,10 +209,10 @@ public class StrifeMob {
   }
 
   public boolean hasTrait(StrifeTrait trait) {
-    if (champion == null) {
+    if (getChampion() == null) {
       return false;
     }
-    return champion.hasTrait(trait);
+    return Objects.requireNonNull(champion.get()).hasTrait(trait);
   }
 
   public Set<StrifeMob> getMinions() {
@@ -241,15 +230,15 @@ public class StrifeMob {
     strifeMob.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
     strifeMob.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
     strifeMob.setDespawnOnUnload(true);
-    strifeMob.setMaster(livingEntity);
+    strifeMob.setMaster(livingEntity.get());
   }
 
   public LivingEntity getMaster() {
-    return master;
+    return master == null ? null : master.get();
   }
 
   public void setMaster(LivingEntity master) {
-    this.master = master;
+    this.master = new WeakReference<>(master);
   }
 
   public Set<FiniteUsesEffect> getTempEffects() {
@@ -270,10 +259,6 @@ public class StrifeMob {
 
   public void setCharmImmune(boolean charmImmune) {
     this.charmImmune = charmImmune;
-  }
-
-  public void setAbilityTimer(EntityAbilityTimer abilityTimer) {
-    this.abilityTimer = abilityTimer;
   }
 
   private Map<StrifeStat, Float> getBuffStats() {

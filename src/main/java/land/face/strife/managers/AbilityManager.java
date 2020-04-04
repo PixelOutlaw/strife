@@ -296,7 +296,7 @@ public class AbilityManager {
     }
     for (Phase phase : abilitySet.getAbilities(TriggerAbilityType.TIMER).keySet()) {
       if (!abilitySet.getAbilities(TriggerAbilityType.TIMER).get(phase).isEmpty()) {
-        mob.setAbilityTimer(new EntityAbilityTimer(mob));
+        new EntityAbilityTimer(mob);
         return;
       }
     }

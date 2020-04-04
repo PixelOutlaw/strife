@@ -56,7 +56,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -237,16 +236,17 @@ public class DamageUtil {
     rawDamage *= DamageUtil.getMinionMult(attacker);
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
-    float postBarrierDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
-
-    if (mods.isSneakAttack() && !defender.getEntity().hasMetadata("IGNORE_SNEAK")) {
+    if (mods.isSneakAttack() && !SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
       rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
-      boolean finishingBlow = postBarrierDamage > defender.getEntity().getHealth();
+      boolean finishingBlow = rawDamage > defender.getEntity().getHealth() +
+          plugin.getBarrierManager().getCurrentBarrier(defender);
       float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
           attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
       plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
           LifeSkillType.SNEAK, gainedXp, false);
     }
+
+    float postBarrierDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
 
     String damageString = String.valueOf((int) Math.ceil(rawDamage));
     if (overcharge) {
@@ -312,7 +312,9 @@ public class DamageUtil {
         .callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
 
     if (!sneakEvent.isCancelled()) {
-      defender.getEntity().setMetadata("IGNORE_SNEAK", new FixedMetadataValue(plugin, true));
+      if (!(defender.getEntity() instanceof Player)) {
+        SpecialStatusUtil.setSneakImmune(defender.getEntity());
+      }
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), buildFloatIndicator((Player) attacker.getEntity()),
           "&7Sneak Attack!");
@@ -840,7 +842,7 @@ public class DamageUtil {
 
   public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, double durationMult) {
     StrifePlugin.getInstance().getStrifeMobManager()
-        .addBuff(target.getEntity().getUniqueId(), loadedBuff, durationMult);
+        .addBuff(target.getEntity(), loadedBuff, durationMult);
   }
 
   public static LoadedBuff getBuff(String id) {

@@ -27,7 +27,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -217,7 +216,7 @@ public class TargetingUtil {
   }
 
   public static boolean isDetectionStand(LivingEntity le) {
-    return le instanceof ArmorStand && le.hasMetadata("STANDO");
+    return le instanceof ArmorStand && SpecialStatusUtil.isDetectionStand(le);
   }
 
   public static ArmorStand buildAndRemoveDetectionStand(Location location) {
@@ -233,7 +232,7 @@ public class TargetingUtil {
     stando.setMarker(true);
     stando.setGravity(false);
     stando.setCollidable(false);
-    stando.setMetadata("STANDO", new FixedMetadataValue(StrifePlugin.getInstance(), ""));
+    SpecialStatusUtil.setDetectionStand(stando);
   }
 
   public static LivingEntity getTempStand(Location loc, float groundCheckRange) {

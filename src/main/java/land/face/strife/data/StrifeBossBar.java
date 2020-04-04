@@ -8,7 +8,7 @@ import org.bukkit.boss.BossBar;
 public class StrifeBossBar {
 
   private StrifeMob owner;
-  private Map<UUID, Integer> playerUuidTickMap;
+  private Map<UUID, Integer> viewers;
   private BossBar barrierBar;
   private BossBar healthBar;
 
@@ -18,7 +18,7 @@ public class StrifeBossBar {
     this.owner = owner;
     this.healthBar = healthBar;
     this.barrierBar = barrierBar;
-    this.playerUuidTickMap = new ConcurrentHashMap<>();
+    this.viewers = new ConcurrentHashMap<>();
     this.dead = false;
   }
 
@@ -26,8 +26,8 @@ public class StrifeBossBar {
     return owner;
   }
 
-  public Map<UUID, Integer> getPlayerUuidTickMap() {
-    return playerUuidTickMap;
+  public Map<UUID, Integer> getViewers() {
+    return viewers;
   }
 
   public BossBar getBarrierBar() {

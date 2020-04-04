@@ -18,6 +18,7 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -181,19 +182,19 @@ public class ShootListener implements Listener {
     if (event.getHitBlock() == null) {
       return;
     }
-    if (!event.getEntity().hasMetadata("GROUND_TRIGGER")) {
+    if (!ProjectileUtil.isGroundTrigger(event.getEntity())) {
       return;
     }
     StrifeMob caster = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) Objects.requireNonNull(event.getEntity().getShooter()));
 
-    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0).asString()
-        .split("~");
-    if (effects.length == 0) {
+    String effectString = ProjectileUtil.getHitEffects(event.getEntity());
+    if (StringUtils.isBlank(effectString)) {
       LogUtil.printWarning(
           "A handled GroundProjectile was missing effect meta... something's wrong");
       return;
     }
+    String[] effects = effectString.split("~");
     Location loc = event.getEntity().getLocation().clone()
         .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
     for (String s : effects) {

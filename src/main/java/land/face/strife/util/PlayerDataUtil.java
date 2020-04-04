@@ -177,13 +177,11 @@ public class PlayerDataUtil {
           LogUtil.printWarning("Cannot load type " + typeData + " for " + name);
         }
       }
-      mobDisguise.setShowName(true);
       mobDisguise.setReplaceSounds(true);
       return mobDisguise;
     }
     if (type.isMisc()) {
       MiscDisguise miscDisguise = new MiscDisguise(type);
-      miscDisguise.setShowName(true);
       miscDisguise.setReplaceSounds(true);
       FlagWatcher watcher = miscDisguise.getWatcher();
       try {

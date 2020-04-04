@@ -27,6 +27,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.events.UniqueKillEvent;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -59,13 +60,15 @@ public class ExperienceListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onXpShare(EntityDeathEvent event) {
-    if (event.getDroppedExp() == 0 || event.getEntity().hasMetadata("SPAWNED")) {
+    if (event.getDroppedExp() == 0 || SpecialStatusUtil.isSpawnerMob(event.getEntity())) {
       return;
     }
-    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
-    if (mob == null) {
+
+    if (!plugin.getStrifeMobManager().isTrackedEntity(event.getEntity())) {
       return;
     }
+
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
 
     Player killer = mob.getKiller();
     if (killer == null) {

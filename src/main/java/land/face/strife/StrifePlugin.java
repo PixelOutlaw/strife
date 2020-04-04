@@ -140,7 +140,7 @@ import land.face.strife.tasks.RegenTask;
 import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
 import land.face.strife.tasks.StealthParticleTask;
-import land.face.strife.tasks.TrackedPruneTask;
+import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
@@ -339,7 +339,7 @@ public class StrifePlugin extends FacePlugin {
     loadSpawners();
 
     SaveTask saveTask = new SaveTask(this);
-    TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
+    StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
     StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BarrierTask barrierTask = new BarrierTask(this);
@@ -383,7 +383,7 @@ public class StrifePlugin extends FacePlugin {
         20L * 5, // Start save after 5s
         9L // Run slightly more often than every 0.5s to catch odd rounding
     ));
-    taskList.add(trackedPruneTask.runTaskTimer(this,
+    taskList.add(strifeMobTracker.runTaskTimer(this,
         20L * 61, // Start save after 1 minute
         20L * 60 // Run every 1 minute after that
     ));
@@ -787,6 +787,10 @@ public class StrifePlugin extends FacePlugin {
         spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
         LogUtil.printDebug("Spawner " + spawnerId + " has been removed.");
       }
+    }
+    if (spawnerManager.getSpawnerMap().size() == 0) {
+      Bukkit.getLogger().warning("Spawner map size in memory is 0. Not saving.");
+      return;
     }
     for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);

@@ -1,7 +1,7 @@
 package land.face.strife.data;
 
-import io.netty.util.internal.ConcurrentSet;
-import java.util.Set;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
@@ -13,8 +13,8 @@ public class Spawner extends BukkitRunnable {
 
   public static int SPAWNER_OFFSET = 0;
 
-  private Set<LivingEntity> entities = new ConcurrentSet<>();
-  private Set<Long> respawnTimes = new ConcurrentSet<>();
+  private List<LivingEntity> entities = new CopyOnWriteArrayList<>();
+  private List<Long> respawnTimes = new CopyOnWriteArrayList<>();
   private final String id;
   private final String uniqueId;
   private final UniqueEntity uniqueEntity;
@@ -124,7 +124,7 @@ public class Spawner extends BukkitRunnable {
     this.respawnSeconds = respawnSeconds;
   }
 
-  public Set<LivingEntity> getEntities() {
+  public List<LivingEntity> getEntities() {
     return entities;
   }
 
@@ -132,7 +132,7 @@ public class Spawner extends BukkitRunnable {
     entities.add(trackedEntity);
   }
 
-  public Set<Long> getRespawnTimes() {
+  public List<Long> getRespawnTimes() {
     return respawnTimes;
   }
 

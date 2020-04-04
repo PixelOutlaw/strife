@@ -56,12 +56,6 @@ public class SpawnerManager {
         }
       }
 
-      for (LivingEntity livingEntity : s.getEntities()) {
-        if (livingEntity == null || !livingEntity.isValid()) {
-          s.getEntities().remove(livingEntity);
-        }
-      }
-
       int existingMobs = s.getRespawnTimes().size() + s.getEntities().size();
       if (existingMobs >= maxMobs) {
         continue;

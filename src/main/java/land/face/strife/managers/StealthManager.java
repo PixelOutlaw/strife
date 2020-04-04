@@ -26,9 +26,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
-import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
-import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -36,8 +34,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.util.Vector;
 
 public class StealthManager {
 
@@ -68,21 +64,7 @@ public class StealthManager {
     this.plugin = plugin;
   }
 
-  public boolean isSneakAttack(LivingEntity attacker, LivingEntity target) {
-    if (!(attacker instanceof Player) || !((Player) attacker).isSneaking()) {
-      return false;
-    }
-    target = TargetingUtil.getMobTarget(target);
-    return target == null || !target.isValid();
-  }
-
-  public boolean isSneakAttack(Projectile projectile, LivingEntity target) {
-    if (!projectile.hasMetadata(ProjectileUtil.SNEAK_ATTACK_META)) {
-      return false;
-    }
-    return isSneakAngle(target, projectile.getLocation().getDirection());
-  }
-
+  /*
   public boolean isSneakAngle(LivingEntity target, Vector direction) {
     if (TargetingUtil.getMobTarget(target) != null) {
       return false;
@@ -91,6 +73,7 @@ public class StealthManager {
     float angle = entitySightVector.angle(direction);
     return angle > 0.6;
   }
+  */
 
   public float getSneakActionExp(float enemyLevel, float stealthLevel) {
     if (stealthLevel != 99 && enemyLevel - stealthLevel > 20) {

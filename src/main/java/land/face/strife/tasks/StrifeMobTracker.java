@@ -22,17 +22,16 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.util.LogUtil;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class TrackedPruneTask extends BukkitRunnable {
+public class StrifeMobTracker extends BukkitRunnable {
 
   private final StrifePlugin plugin;
 
-  public TrackedPruneTask(StrifePlugin plugin) {
+  public StrifeMobTracker(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
   @Override
   public void run() {
-    int removed = plugin.getStrifeMobManager().removeInvalidEntities();
-    LogUtil.printDebug("Cleared " + removed + " invalid attributed entities.");
+    LogUtil.printInfo("Current StrifeMobs: " + plugin.getStrifeMobManager().getMobCount());
   }
 }

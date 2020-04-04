@@ -65,7 +65,7 @@ public class MinionListener implements Listener {
     if (!(event.getEntity() instanceof Mob) || !(event.getTarget() instanceof LivingEntity)) {
       return;
     }
-    if (!entityManager.isTrackedEntity(event.getEntity())) {
+    if (!entityManager.isTrackedEntity((LivingEntity) event.getEntity())) {
       return;
     }
     StrifeMob attrEnt = entityManager.getStatMob((LivingEntity) event.getEntity());
@@ -89,8 +89,7 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    if (!(entityManager.isTrackedEntity(event.getEntity()) && entityManager
-        .isTrackedEntity(attacker))) {
+    if (!entityManager.isTrackedEntity((LivingEntity) attacker)) {
       return;
     }
     StrifeMob attackMob = entityManager.getStatMob((LivingEntity) attacker);

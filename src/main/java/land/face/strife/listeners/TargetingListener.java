@@ -28,6 +28,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -38,7 +39,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -97,12 +97,8 @@ public class TargetingListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    if (event.getReason() == TargetReason.FOLLOW_LEADER && event
-        .getEntity().hasMetadata("WEAK_AGGRO")) {
-      event.setCancelled(true);
-      return;
-    }
-    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
+    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob)
+        || event.getReason() != CLOSEST_PLAYER) {
       return;
     }
     if (plugin.getStealthManager().isStealthed(event.getTarget())) {
@@ -119,8 +115,8 @@ public class TargetingListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
-        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER || event
-        .getEntity().hasMetadata("IGNORE_SNEAK")) {
+        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER || SpecialStatusUtil
+        .isSneakImmune(event.getEntity())) {
       return;
     }
     Player player = (Player) event.getTarget();

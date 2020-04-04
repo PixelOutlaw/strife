@@ -48,7 +48,7 @@ public class StatUpdateListener implements Listener {
       plugin.getChampionManager().updateAll(
           plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
-    }, 20L);
+    }, 3L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -77,7 +77,7 @@ public class StatUpdateListener implements Listener {
       return;
     }
     plugin.getChampionManager().updateEquipmentStats(
-        plugin.getChampionManager().getChampion((Player)event.getPlayer()));
+        plugin.getChampionManager().getChampion((Player) event.getPlayer()));
     plugin.getStatUpdateManager().updateAttributes(player);
   }
 
@@ -90,11 +90,13 @@ public class StatUpdateListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerQuit(PlayerQuitEvent event) {
-    plugin.getStrifeMobManager().removeMob(event.getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> plugin.getStrifeMobManager().removeEntity(event.getPlayer()), 1L);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerKick(PlayerKickEvent event) {
-    plugin.getStrifeMobManager().removeMob(event.getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> plugin.getStrifeMobManager().removeEntity(event.getPlayer()), 1L);
   }
 }

@@ -1,11 +1,11 @@
 package land.face.strife.data.effects;
 
+import java.util.Map;
 import java.util.Random;
-import land.face.strife.StrifePlugin;
+import java.util.WeakHashMap;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.Location;
 import org.bukkit.entity.EvokerFangs;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class EvokerFangEffect extends LocationEffect {
 
@@ -15,7 +15,8 @@ public class EvokerFangEffect extends LocationEffect {
 
   private static final int MAX_GROUND_CHECK = 9;
   private static final Random RANDOM = new Random();
-  public static final String FANG_META = "EFFECT_FANGS";
+
+  public static final Map<EvokerFangs, String> FANG_EFFECT_MAP = new WeakHashMap<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -46,7 +47,7 @@ public class EvokerFangEffect extends LocationEffect {
       }
       EvokerFangs fangs = fangLoc.getWorld().spawn(fangLoc, EvokerFangs.class);
       fangs.setOwner(caster.getEntity());
-      fangs.setMetadata(FANG_META, new FixedMetadataValue(StrifePlugin.getInstance(), hitEffects));
+      FANG_EFFECT_MAP.put(fangs, hitEffects);
     }
   }
 

@@ -84,10 +84,11 @@ public class EntityEquipmentManager {
     }
 
     if (stack.getItemMeta() instanceof LeatherArmorMeta) {
-      int rgb = cs.getInt("dye-rgb", -1);
+      int rgb = cs.getInt("dye-red", -1);
       if (rgb != -1) {
         LeatherArmorMeta meta = ((LeatherArmorMeta) stack.getItemMeta());
-        meta.setColor(Color.fromRGB(rgb));
+        meta.setColor(Color
+            .fromRGB(cs.getInt("dye-red", 0), cs.getInt("dye-green", 0), cs.getInt("dye-blue", 0)));
         stack.setItemMeta(meta);
       }
     }

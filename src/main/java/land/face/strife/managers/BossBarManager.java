@@ -109,13 +109,13 @@ public class BossBarManager {
       removePlayerFromBar(bossBar, player.getUniqueId());
     }
     addPlayerToBar(strifeBossBar, player);
-    updateBar(target);
+    updateBar(target.getEntity().getUniqueId(), strifeBossBar);
     refreshCounter(strifeBossBar, player.getUniqueId());
   }
 
   public void tickHealthBars() {
     for (UUID uuid : barMap.keySet()) {
-      updateBar(barMap.get(uuid).getOwner());
+      updateBar(uuid, barMap.get(uuid));
       tickDownBar(barMap.get(uuid));
     }
   }
@@ -187,13 +187,13 @@ public class BossBarManager {
       bossBar.getBarrierBar().setProgress(0);
     }
     bossBar.getHealthBar().setProgress(0);
-    for (UUID playerUuid : bossBar.getPlayerUuidTickMap().keySet()) {
-      bossBar.getPlayerUuidTickMap().put(playerUuid, 25);
+    for (UUID playerUuid : bossBar.getViewers().keySet()) {
+      bossBar.getViewers().put(playerUuid, 25);
     }
   }
 
   private void pruneBarIfNoOwners(UUID uuid) {
-    if (barMap.get(uuid).getPlayerUuidTickMap().isEmpty()) {
+    if (barMap.get(uuid).getViewers().isEmpty()) {
       removeBar(uuid);
     }
   }
@@ -202,37 +202,40 @@ public class BossBarManager {
     if (strifeBossBar == null) {
       return;
     }
-    for (UUID barPlayer : strifeBossBar.getPlayerUuidTickMap().keySet()) {
-      int ticksRemaining = strifeBossBar.getPlayerUuidTickMap().get(barPlayer);
+    for (UUID barPlayer : strifeBossBar.getViewers().keySet()) {
+      int ticksRemaining = strifeBossBar.getViewers().get(barPlayer);
       if (ticksRemaining < 1) {
         removePlayerFromBar(strifeBossBar, barPlayer);
         continue;
       }
-      strifeBossBar.getPlayerUuidTickMap().replace(barPlayer, ticksRemaining - 1);
+      strifeBossBar.getViewers().replace(barPlayer, ticksRemaining - 1);
     }
     pruneBarIfNoOwners(strifeBossBar.getOwner().getEntity().getUniqueId());
   }
 
-  private void updateBar(StrifeMob barOwner) {
-    UUID uuid = barOwner.getEntity().getUniqueId();
-    StrifeBossBar strifeBossBar = barMap.get(uuid);
-    if (!strifeBossBar.isDead() && !strifeBossBar.getOwner().getEntity().isValid()) {
+  private void updateBar(UUID uuid, StrifeBossBar bossBar) {
+    StrifeMob barOwner = bossBar.getOwner();
+    if (barOwner == null || barOwner.getEntity() == null) {
+      removeBar(uuid);
+      return;
+    }
+    if (!bossBar.isDead() && !bossBar.getOwner().getEntity().isValid()) {
       removeBar(barOwner.getEntity().getUniqueId());
       return;
     }
-    if (strifeBossBar.isDead()) {
+    if (bossBar.isDead()) {
       return;
     }
-    updateBarrierProgress(strifeBossBar);
-    updateHealthProgress(strifeBossBar);
-    updateBarTitle(strifeBossBar, createBarTitle(barOwner));
+    updateBarrierProgress(bossBar);
+    updateHealthProgress(bossBar);
+    updateBarTitle(bossBar, createBarTitle(barOwner));
   }
 
   private void removePlayerFromBar(StrifeBossBar strifeBossBar, Player player) {
-    if (strifeBossBar == null || strifeBossBar.getPlayerUuidTickMap().isEmpty()) {
+    if (strifeBossBar == null || strifeBossBar.getViewers().isEmpty()) {
       return;
     }
-    strifeBossBar.getPlayerUuidTickMap().remove(player.getUniqueId());
+    strifeBossBar.getViewers().remove(player.getUniqueId());
     if (strifeBossBar.getBarrierBar() != null) {
       strifeBossBar.getBarrierBar().removePlayer(player);
     }
@@ -251,7 +254,7 @@ public class BossBarManager {
     if (strifeBossBar.isDead()) {
       return;
     }
-    strifeBossBar.getPlayerUuidTickMap().put(uuid, healthDuration);
+    strifeBossBar.getViewers().put(uuid, healthDuration);
   }
 
   private void updateHealthProgress(StrifeBossBar bar) {
