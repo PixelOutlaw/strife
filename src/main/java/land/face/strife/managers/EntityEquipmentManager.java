@@ -9,14 +9,19 @@ import java.util.List;
 import java.util.Map;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import me.arcaniax.hdb.api.HeadDatabaseAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class EntityEquipmentManager {
 
   public static final EquipmentSlot[] SLOTS = EquipmentSlot.values();
+  private HeadDatabaseAPI headDatabaseAPI = new HeadDatabaseAPI();
   private final Map<String, ItemStack> itemMap;
 
   public EntityEquipmentManager() {
@@ -54,11 +59,37 @@ public class EntityEquipmentManager {
 
     ItemStack stack = new ItemStack(material);
     if (material == Material.PLAYER_HEAD) {
-      String base64 = cs.getString("base64",
-          "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
-      stack = ItemUtil.withBase64(stack, base64);
+      String base64 = cs.getString("base64");
+      String hdbId = cs.getString("head-db-id");
+      if (StringUtils.isNotBlank(base64)) {
+        stack = ItemUtil.withBase64(stack, base64);
+      } else if (StringUtils.isNotBlank(hdbId)) {
+        try {
+          stack = headDatabaseAPI.getItemHead(hdbId);
+        } catch (NullPointerException e) {
+          Bukkit.getLogger().warning("Invalid HeadDatabaseID! " + key + " | " + hdbId);
+          return;
+        }
+        Bukkit.getLogger().info("Loaded HDB Head " + hdbId + " successfully!");
+      } else {
+        Bukkit.getLogger().warning("Invalid head config for key " + key);
+        return;
+      }
+      if (stack == null) {
+        Bukkit.getLogger().warning("Null head stack! Aborting... Key:" + key);
+        return;
+      }
     } else {
       stack = new ItemStack(material);
+    }
+
+    if (stack.getItemMeta() instanceof LeatherArmorMeta) {
+      int rgb = cs.getInt("dye-rgb", -1);
+      if (rgb != -1) {
+        LeatherArmorMeta meta = ((LeatherArmorMeta) stack.getItemMeta());
+        meta.setColor(Color.fromRGB(rgb));
+        stack.setItemMeta(meta);
+      }
     }
 
     String name = cs.getString("name", "");

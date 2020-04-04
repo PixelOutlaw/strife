@@ -89,7 +89,7 @@
     <dependency>
       <groupId>LibsDisguises</groupId>
       <artifactId>LibsDisguises</artifactId>
-      <version>9.9.3-SNAPSHOT</version>
+      <version>9.9.9-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -103,6 +103,11 @@
       <artifactId>SnazzyParties</artifactId>
       <version>1.0.2</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.shynixn.headdatabase</groupId>
+      <artifactId>hdb-api</artifactId>
+      <version>1.0</version>
     </dependency>
   </dependencies>
 
