@@ -96,7 +96,9 @@ public class DeathListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathClearData(final EntityDeathEvent event) {
-    plugin.getBossBarManager().doBarDeath(event.getEntity());
+    if (event.getEntity().getKiller() != null) {
+      plugin.getBossBarManager().doBarDeath(event.getEntity().getKiller());
+    }
     plugin.getBarrierManager().removeEntity(event.getEntity());
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());

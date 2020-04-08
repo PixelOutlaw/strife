@@ -83,9 +83,9 @@ public class DamageManager {
 
   public IndicatorData buildHitIndicator(Player player) {
     IndicatorData data = new IndicatorData(new Vector(
-        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED,
+        IND_GRAVITY_HSPEED * 6 * (0.5 - Math.random()),
         IND_GRAVITY_VSPEED * (1 + Math.random()),
-        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED),
+        IND_GRAVITY_HSPEED * 6 * (0.5 - Math.random())),
         IndicatorStyle.GRAVITY);
     data.addOwner(player);
     return data;

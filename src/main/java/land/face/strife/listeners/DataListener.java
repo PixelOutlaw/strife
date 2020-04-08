@@ -118,7 +118,6 @@ public class DataListener implements Listener {
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    plugin.getBossBarManager().getSkillBar(champion);
     plugin.getCounterManager().clearCounters(event.getPlayer());
     ensureAbilitiesDontInstantCast(event.getPlayer());
     Bukkit.getScheduler().runTaskLater(plugin,
@@ -143,7 +142,6 @@ public class DataListener implements Listener {
 
   private void doPlayerLeave(Player player) {
     plugin.getAbilityManager().savePlayerCooldowns(player);
-    plugin.getBossBarManager().removeBar(player.getUniqueId());
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
@@ -157,7 +155,6 @@ public class DataListener implements Listener {
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
     plugin.getCorruptionManager().clearCorrupt(event.getPlayer().getUniqueId());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
-    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());

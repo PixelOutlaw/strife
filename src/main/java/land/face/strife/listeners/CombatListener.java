@@ -198,12 +198,11 @@ public class CombatListener implements Listener {
     }
 
     if (attackType == AttackType.MELEE) {
-      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
       if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
-        ProjectileUtil.shootWand(attacker, attackMultiplier);
         event.setCancelled(true);
         return;
       }
+      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
       attackMultiplier = (float) Math.pow(attackMultiplier, 1.25);
     } else if (attackType == AttackType.EXPLOSION) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
