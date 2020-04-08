@@ -135,7 +135,6 @@ import land.face.strife.tasks.GlobalMultiplierTask;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.MinionDecayTask;
 import land.face.strife.tasks.ParticleTask;
-import land.face.strife.tasks.PruneBossBarsTask;
 import land.face.strife.tasks.RegenTask;
 import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
@@ -346,7 +345,6 @@ public class StrifePlugin extends FacePlugin {
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
     GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
-    PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
@@ -418,10 +416,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(globalMultiplierTask.runTaskTimer(this,
         20L * 15, // Start timer after 15s
         20L * 60 // Run it every minute after
-    ));
-    taskList.add(pruneBossBarsTask.runTaskTimer(this,
-        20L * 13, // Start timer after 13s
-        20L * 60 * 7 // Run it every 7 minutes
     ));
     taskList.add(particleTask.runTaskTimer(this,
         2L,
@@ -536,7 +530,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getScheduler().cancelTasks(this);
 
     strifeMobManager.despawnAllTempEntities();
-    bossBarManager.removeAllBars();
+    bossBarManager.clearBars();
     agilityManager.saveLocations();
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
