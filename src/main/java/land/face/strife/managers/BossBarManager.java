@@ -209,7 +209,14 @@ public class BossBarManager {
   }
 
   public void clearBars() {
+    for (Player p : statusBars.keySet()) {
+      statusBars.get(p).getBarrierBar().removeAll();
+      statusBars.get(p).getHealthBar().removeAll();
+    }
     statusBars.clear();
+    for (Player p : skillBars.keySet()) {
+      skillBars.get(p).getSkillBar().removeAll();
+    }
     skillBars.clear();
   }
 
