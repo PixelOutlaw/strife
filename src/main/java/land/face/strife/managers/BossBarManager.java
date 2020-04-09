@@ -35,6 +35,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -88,11 +89,14 @@ public class BossBarManager {
     skillBars.put(player, bar);
   }
 
-  public void pushSkillBar(Player player, LifeSkillType lifeSkillType) {
+  void pushSkillBar(Player player, LifeSkillType lifeSkillType) {
     createSkillBar(player);
     String name = lifeSkillType.getName();
     SkillBar bar = skillBars.get(player);
-    String barName = name + " Lv" + bar.getOwner().getSaveData().getSkillLevel(lifeSkillType);
+    String barName =
+        name + " Lv" + bar.getOwner().getSaveData().getSkillLevel(lifeSkillType) + ChatColor.GRAY
+            + " - " + ChatColor.YELLOW + PlayerDataUtil
+            .getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType) + "XP To Levelup";
     bar.getSkillBar().setTitle(barName);
     bar.setLifeTicks(skillDuration);
     bar.setLifeSkillType(lifeSkillType);
@@ -140,8 +144,8 @@ public class BossBarManager {
       return;
     }
     updateBarTitle(bossBar, createBarTitle(bossBar.getTarget()));
-    updateHealthProgress(bossBar);
     updateBarrierProgress(bossBar);
+    updateHealthProgress(bossBar);
   }
 
   private void updateSkillBar(SkillBar skillBar) {
