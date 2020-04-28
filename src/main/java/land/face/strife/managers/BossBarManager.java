@@ -21,7 +21,7 @@ package land.face.strife.managers;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,7 @@ import land.face.strife.data.SkillBar;
 import land.face.strife.data.StatusBar;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
@@ -50,6 +51,8 @@ public class BossBarManager {
   private final int healthDuration;
   private final int skillDuration;
   private final Random random = new Random();
+
+  private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###,###");
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -93,10 +96,11 @@ public class BossBarManager {
     createSkillBar(player);
     String name = lifeSkillType.getName();
     SkillBar bar = skillBars.get(player);
-    String barName =
-        name + " Lv" + bar.getOwner().getSaveData().getSkillLevel(lifeSkillType) + ChatColor.GRAY
-            + " - " + ChatColor.YELLOW + PlayerDataUtil
-            .getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType) + "XP To Levelup";
+    int level = bar.getOwner().getSaveData().getSkillLevel(lifeSkillType);
+    String xp = INT_FORMAT
+        .format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
+    String barName = TextUtils.color("&f" + name + " Lv" + level + " &8- " +
+        "&f(&a" + xp + "xp to " + (level + 1) + "&f)");
     bar.getSkillBar().setTitle(barName);
     bar.setLifeTicks(skillDuration);
     bar.setLifeSkillType(lifeSkillType);
@@ -195,11 +199,19 @@ public class BossBarManager {
   }
 
   private String createBarTitle(StrifeMob barOwner) {
-    String customName = barOwner.getEntity().getCustomName();
-    if (StringUtils.isBlank(customName)) {
-      return StringUtils.capitalize(barOwner.getEntity().getName().replace('_', ' '));
+    String name;
+    if (barOwner.getEntity() instanceof Player) {
+      name = (barOwner.getEntity().getName()) + ChatColor.GRAY + " Lv"
+          + ((Player) barOwner.getEntity()).getLevel();
+    } else {
+      name = barOwner.getEntity().getCustomName();
     }
-    return customName;
+    name += "   ";
+    if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
+      name = name + ChatColor.WHITE + INT_FORMAT.format(StatUtil.getBarrier(barOwner)) + "❤ ";
+    }
+    name = name + ChatColor.RED + INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";
+    return name;
   }
 
   private void updateBarTitle(StatusBar bossBar, String title) {
