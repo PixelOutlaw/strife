@@ -153,9 +153,7 @@ public class DamageUtil {
 
   public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender,
       DamageModifiers mods) {
-
     float attackMult = mods.getAttackMultiplier();
-
     Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, mods.getAttackType());
     damageMap.replaceAll((t, v) ->
         damageMap.get(t) * mods.getDamageModifiers().getOrDefault(t, 0f) * attackMult);
@@ -166,7 +164,6 @@ public class DamageUtil {
       }
     }
     DamageUtil.applyElementalEffects(attacker, defender, damageMap, mods);
-
     return damageMap;
   }
 
@@ -197,11 +194,6 @@ public class DamageUtil {
     if (criticalHit) {
       critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
           mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
-    }
-
-    boolean overcharge = mods.getAttackMultiplier() > 0.99;
-    if (overcharge) {
-      bonusOverchargeMultiplier = attacker.getStat(StrifeStat.OVERCHARGE) / 100;
     }
 
     float pvpMult = 1f;
@@ -249,11 +241,8 @@ public class DamageUtil {
     float postBarrierDamage = plugin.getBarrierManager().damageBarrier(defender, rawDamage);
 
     String damageString = String.valueOf((int) Math.ceil(rawDamage));
-    if (overcharge) {
-      damageString = "&l" + damageString;
-    }
     if (criticalHit) {
-      damageString = damageString + "!";
+      damageString = "&l" + damageString;
     }
     if (attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
@@ -462,57 +451,82 @@ public class DamageUtil {
     }
   }
 
-  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Float> damageMap, DamageModifiers mods) {
-    for (DamageType type : damageMap.keySet()) {
-      float bonus;
-      switch (type) {
-        case FIRE:
-          bonus = attemptIgnite(damageMap.get(type), attacker, defender.getEntity());
-          if (bonus != 0) {
-            mods.getElementalStatuses().add(ElementalStatus.IGNITE);
-            damageMap.put(type, damageMap.get(type) + bonus);
-          }
-          break;
-        case ICE:
-          bonus = attemptFreeze(damageMap.get(type), attacker, defender.getEntity());
-          if (bonus != 0) {
-            mods.getElementalStatuses().add(ElementalStatus.FREEZE);
-            damageMap.put(type, damageMap.get(type) + bonus);
-          }
-          break;
-        case LIGHTNING:
-          bonus = attemptShock(damageMap.get(type), attacker, defender.getEntity());
-          if (bonus != 0) {
-            mods.getElementalStatuses().add(ElementalStatus.SHOCK);
-            damageMap.put(type, damageMap.get(type) + bonus);
-          }
-          break;
-        case DARK:
-          bonus =
-              damageMap.get(type) * getDarknessManager().getCorruptionMult(defender.getEntity());
-          boolean corrupt = attemptCorrupt(damageMap.get(type), attacker, defender.getEntity());
-          if (corrupt) {
-            mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-            damageMap.put(type, damageMap.get(type) + bonus);
-          }
-          break;
-        case EARTH:
-          if (!mods.isConsumeEarthRunes()) {
-            break;
-          }
-          int earthRunes = consumeEarthRune(attacker, defender.getEntity());
-          if (earthRunes != 0) {
-            damageMap.put(type, damageMap.get(type) * (1 + earthRunes * 0.3f));
-          }
-          break;
-        case LIGHT:
-          bonus = getLightBonus(damageMap.get(type), attacker, defender.getEntity());
-          if (bonus > damageMap.get(type) / 2) {
-            damageMap.put(type, damageMap.get(type) + bonus);
-          }
-          break;
+  private static void applyElementalEffects(StrifeMob attacker,
+      StrifeMob defender, Map<DamageType, Float> damageMap, DamageModifiers mods) {
+    if (!mods.isConsumeEarthRunes()) {
+      int earthRunes = consumeEarthRune(attacker, defender.getEntity());
+      if (earthRunes != 0) {
+        damageMap.put(DamageType.EARTH, damageMap.get(DamageType.EARTH) * (1 + earthRunes * 0.3f));
       }
+    }
+    if (!DamageUtil.rollBool(attacker.getStat(StrifeStat.ELEMENTAL_STATUS) / 100, true)) {
+      return;
+    }
+    float totalElementalDamage = 0;
+    Map<DamageType, Float> elementalDamages = new HashMap<>();
+    for (DamageType type : damageMap.keySet()) {
+      if (type != DamageType.PHYSICAL && type != DamageType.MAGICAL
+          && type != DamageType.TRUE_DAMAGE && type != DamageType.EARTH) {
+        float amount = damageMap.get(type);
+        totalElementalDamage += amount;
+        elementalDamages.put(type, amount);
+      }
+    }
+    if (totalElementalDamage <= 0.1) {
+      return;
+    }
+    float currentWeight = 0;
+    totalElementalDamage *= Math.random();
+    DamageType finalElementType = null;
+    for (DamageType type : elementalDamages.keySet()) {
+      currentWeight += elementalDamages.get(type);
+      if (currentWeight >= totalElementalDamage) {
+        finalElementType = type;
+        break;
+      }
+    }
+    if (finalElementType == null) {
+      return;
+    }
+    float bonus;
+    switch (finalElementType) {
+      case FIRE:
+        bonus = attemptIgnite(damageMap.get(finalElementType), attacker, defender.getEntity());
+        if (bonus != 0) {
+          mods.getElementalStatuses().add(ElementalStatus.IGNITE);
+          damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
+        }
+        break;
+      case ICE:
+        bonus = attemptFreeze(damageMap.get(finalElementType), attacker, defender.getEntity());
+        if (bonus != 0) {
+          mods.getElementalStatuses().add(ElementalStatus.FREEZE);
+          damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
+        }
+        break;
+      case LIGHTNING:
+        bonus = attemptShock(damageMap.get(finalElementType), attacker, defender.getEntity());
+        if (bonus != 0) {
+          mods.getElementalStatuses().add(ElementalStatus.SHOCK);
+          damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
+        }
+        break;
+      case DARK:
+        bonus = damageMap.get(finalElementType) * getDarknessManager()
+            .getCorruptionMult(defender.getEntity());
+        boolean corrupt = attemptCorrupt(damageMap.get(finalElementType), attacker,
+            defender.getEntity());
+        if (corrupt) {
+          mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
+          damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
+        }
+        break;
+      case LIGHT:
+        bonus = getLightBonus(damageMap.get(finalElementType), attacker, defender.getEntity());
+        if (bonus > damageMap.get(finalElementType) / 2) {
+          damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
+        }
+        break;
     }
   }
 
@@ -593,22 +607,19 @@ public class DamageUtil {
   }
 
   public static float attemptIgnite(float damage, StrifeMob attacker, LivingEntity defender) {
-    if (rollDouble() >= attacker.getStat(StrifeStat.IGNITE_CHANCE) / 100) {
-      return 0;
-    }
     float bonusDamage = defender.getFireTicks() > 0 ? damage : 1f;
-    defender.setFireTicks(Math.max(60 + (int) damage, defender.getFireTicks()));
+    defender.setFireTicks(Math.max(25 + (int) damage, defender.getFireTicks()));
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
-    defender.getWorld()
-        .spawnParticle(Particle.FLAME, defender.getEyeLocation(), 6 + (int) damage / 2,
-            0.3, 0.3, 0.3, 0.03);
+    defender.getWorld().spawnParticle(
+        Particle.FLAME,
+        defender.getEyeLocation(),
+        6 + (int) damage / 2,
+        0.3, 0.3, 0.3, 0.03
+    );
     return bonusDamage;
   }
 
   public static float attemptShock(float damage, StrifeMob attacker, LivingEntity defender) {
-    if (rollDouble() >= attacker.getStat(StrifeStat.SHOCK_CHANCE) / 100) {
-      return 0;
-    }
     float multiplier = 0.5f;
     float percentHealth =
         (float) defender.getHealth() / (float) defender.getAttribute(Attribute.GENERIC_MAX_HEALTH)
@@ -630,9 +641,6 @@ public class DamageUtil {
   }
 
   public static float attemptFreeze(float damage, StrifeMob attacker, LivingEntity defender) {
-    if (rollDouble() >= attacker.getStat(StrifeStat.FREEZE_CHANCE) / 100) {
-      return 0;
-    }
     float multiplier = 0.25f + 0.25f * (StatUtil.getHealth(attacker) / 100);
     if (!defender.hasPotionEffect(PotionEffectType.SLOW)) {
       defender.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 30, 1));
@@ -667,9 +675,6 @@ public class DamageUtil {
 
   public static boolean attemptCorrupt(float baseDamage, StrifeMob attacker,
       LivingEntity defender) {
-    if (rollDouble() >= attacker.getStat(StrifeStat.CORRUPT_CHANCE) / 100) {
-      return false;
-    }
     applyCorrupt(defender, baseDamage);
     return true;
   }
