@@ -30,7 +30,9 @@ public class ItemUtil {
 
   public static ItemStack withBase64(ItemStack item, String base64) {
     UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());
-    return Bukkit.getUnsafe().modifyItemStack(item, "{SkullOwner:{Id:\"" + hashAsId + "\",Properties:{textures:[{Value:\"" + base64 + "\"}]}}}");
+    return Bukkit.getUnsafe().modifyItemStack(item,
+        "{SkullOwner:{Id:\"" + hashAsId + "\",Properties:{textures:[{Value:\"" + base64
+            + "\"}]}}}");
   }
 
   public static boolean isArmor(Material material) {
@@ -172,36 +174,25 @@ public class ItemUtil {
   }
 
   public static void delayedEquip(Map<EquipmentSlot, ItemStack> items, LivingEntity entity) {
+    entity.setCanPickupItems(false);
     if (entity.getEquipment() == null) {
       return;
     }
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      entity.setCanPickupItems(false);
+      entity.getEquipment().clear();
       entity.getEquipment().setHelmetDropChance(0f);
       entity.getEquipment().setChestplateDropChance(0f);
       entity.getEquipment().setLeggingsDropChance(0f);
       entity.getEquipment().setBootsDropChance(0f);
       entity.getEquipment().setItemInMainHandDropChance(0f);
       entity.getEquipment().setItemInOffHandDropChance(0f);
-      if (items.containsKey(EquipmentSlot.HEAD)) {
-        entity.getEquipment().setHelmet(items.get(EquipmentSlot.HEAD));
-      }
-      if (items.containsKey(EquipmentSlot.CHEST)) {
-        entity.getEquipment().setChestplate(items.get(EquipmentSlot.CHEST));
-      }
-      if (items.containsKey(EquipmentSlot.LEGS)) {
-        entity.getEquipment().setLeggings(items.get(EquipmentSlot.LEGS));
-      }
-      if (items.containsKey(EquipmentSlot.FEET)) {
-        entity.getEquipment().setBoots(items.get(EquipmentSlot.FEET));
-      }
-      if (items.containsKey(EquipmentSlot.HAND)) {
-        entity.getEquipment().setItemInMainHand(items.get(EquipmentSlot.HAND));
-      }
-      if (items.containsKey(EquipmentSlot.OFF_HAND)) {
-        entity.getEquipment().setItemInOffHand(items.get(EquipmentSlot.OFF_HAND));
-      }
-    }, 1L);
+      entity.getEquipment().setHelmet(items.getOrDefault(EquipmentSlot.HEAD, null));
+      entity.getEquipment().setChestplate(items.getOrDefault(EquipmentSlot.CHEST, null));
+      entity.getEquipment().setLeggings(items.getOrDefault(EquipmentSlot.LEGS, null));
+      entity.getEquipment().setBoots(items.getOrDefault(EquipmentSlot.FEET, null));
+      entity.getEquipment().setItemInMainHand(items.getOrDefault(EquipmentSlot.HAND, null));
+      entity.getEquipment().setItemInOffHand(items.getOrDefault(EquipmentSlot.OFF_HAND, null));
+    }, 2L);
   }
 
   public static int getCustomData(ItemStack stack) {
