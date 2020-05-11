@@ -136,7 +136,7 @@ public class StrifeCommand {
   @Command(identifier = "strife mobinfo", permissions = "strife.command.strife.info")
   public void infoCommand(CommandSender sender) {
     List<LivingEntity> targets = new ArrayList<>(
-        TargetingUtil.getEntitiesInLine((Player) sender, 30));
+        TargetingUtil.getEntitiesInLine(((Player) sender).getEyeLocation(), 30));
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
       return;
@@ -332,7 +332,7 @@ public class StrifeCommand {
   @Command(identifier = "strife startBoost", permissions = "strife.command.strife.boosts", onlyPlayers = false)
   public void startBoostCommand(CommandSender sender, @Arg(name = "boostId") String boostId,
       @Arg(name = "creator") String creator, @Arg(name = "duration") int duration) {
-    boolean success = plugin.getGlobalBoostManager().createStatBoost(boostId, creator, duration);
+    boolean success = plugin.getBoostManager().startBoost(creator, boostId, duration);
     if (!success) {
       sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
     }

@@ -21,8 +21,10 @@ package land.face.strife.managers;
 import static land.face.strife.util.DamageUtil.buildMissIndicator;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -64,10 +66,11 @@ public class CounterManager {
     }
     boolean isCountered = false;
     Iterator<CounterData> it = counterMap.get(defender).iterator();
+    List<CounterData> removeData = new ArrayList<>();
     while (it.hasNext()) {
       CounterData data = it.next();
       if (System.currentTimeMillis() > data.getEndTime()) {
-        counterMap.get(defender).remove(data);
+        removeData.add(data);
         continue;
       }
       isCountered = true;
@@ -90,6 +93,7 @@ public class CounterManager {
         break;
       }
     }
+    counterMap.get(defender).removeAll(removeData);
     return isCountered;
   }
 }

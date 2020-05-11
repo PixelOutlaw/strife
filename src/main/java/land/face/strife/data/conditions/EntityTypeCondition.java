@@ -10,16 +10,18 @@ public class EntityTypeCondition extends Condition {
 
   private final Set<EntityType> types;
   private final boolean whitelist;
+  private final boolean useDisguise;
 
-  public EntityTypeCondition(Set<EntityType> types, boolean whitelist) {
+  public EntityTypeCondition(Set<EntityType> types, boolean whitelist, boolean useDisguise) {
     this.types = types;
     this.whitelist = whitelist;
+    this.useDisguise = useDisguise;
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     LogUtil.printDebug("EntityType condition, type=" + target.getEntity().getType());
     EntityType type;
-    if (DisguiseAPI.isDisguised(target.getEntity())) {
+    if (useDisguise && DisguiseAPI.isDisguised(target.getEntity())) {
       type = DisguiseAPI.getDisguise(target.getEntity()).getType().getEntityType();
     } else {
       type = target.getEntity().getType();

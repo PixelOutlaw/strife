@@ -341,6 +341,12 @@ public class PlayerDataUtil {
     return StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level);
   }
 
+  public static int getLifeSkillExpToLevel(Champion champion, LifeSkillType type) {
+    int level = champion.getLifeSkillLevel(type);
+    return (int) (StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level)
+        - champion.getLifeSkillExp(type));
+  }
+
   public static float getSkillProgress(Champion champion, LifeSkillType type) {
     return champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
         .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));

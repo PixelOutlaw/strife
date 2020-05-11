@@ -1,9 +1,9 @@
 package land.face.strife.data;
 
-import io.netty.util.internal.ConcurrentSet;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -35,7 +35,9 @@ public class StrifeMob {
   private EntityAbilitySet abilitySet;
   private String uniqueEntityId = null;
   private Set<String> mods = new HashSet<>();
+
   private Set<String> factions = new HashSet<>();
+  private UUID alliedGuild;
 
   private Set<FiniteUsesEffect> tempEffects = new HashSet<>();
 
@@ -44,7 +46,7 @@ public class StrifeMob {
 
   private WeakReference<LivingEntity> master;
 
-  private final Set<StrifeMob> minions = new ConcurrentSet<>();
+  private final Set<StrifeMob> minions = new HashSet<>();
   private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
@@ -120,6 +122,14 @@ public class StrifeMob {
 
   public Set<String> getMods() {
     return mods;
+  }
+
+  public UUID getAlliedGuild() {
+    return alliedGuild;
+  }
+
+  public void setAlliedGuild(UUID alliedGuild) {
+    this.alliedGuild = alliedGuild;
   }
 
   public Set<String> getFactions() {
@@ -216,9 +226,11 @@ public class StrifeMob {
   }
 
   public Set<StrifeMob> getMinions() {
-    for (StrifeMob minion : minions) {
+    Iterator iterator = minions.iterator();
+    while (iterator.hasNext()) {
+      StrifeMob minion = (StrifeMob) iterator.next();
       if (minion == null || minion.getEntity() == null || !minion.getEntity().isValid()) {
-        minions.remove(minion);
+        iterator.remove();
       }
     }
     return new HashSet<>(minions);

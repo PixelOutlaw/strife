@@ -80,8 +80,8 @@ public class SpawnListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
-    if (event.isCancelled() || event.getEntity().hasMetadata("NPC")
-        || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
+    if (event.isCancelled() || event.getEntity().hasMetadata("NPC") ||
+        event.getEntity().hasMetadata("pet") || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
       return;
     }
     if (StringUtils.isNotBlank(SpecialStatusUtil.getUniqueId(event.getEntity()))) {

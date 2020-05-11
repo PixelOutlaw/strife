@@ -94,10 +94,6 @@ public class StatUtil {
     return attackTime;
   }
 
-  public static float getOverchargeMultiplier(StrifeMob ae) {
-    return 1 + (ae.getStat(StrifeStat.OVERCHARGE) / 100);
-  }
-
   public static float getCriticalMultiplier(StrifeMob ae) {
     return 1 + (ae.getStat(StrifeStat.CRITICAL_DAMAGE) / 100);
   }

@@ -68,8 +68,6 @@ public enum StrifeStat {
   PROJECTILE_REDUCTION("Projectile Protection"),
 
   ATTACK_SPEED("Attack Speed"),
-  OVERCHARGE("Overcharge"),
-
   CRITICAL_RATE("Critical Chance"),
   CRITICAL_DAMAGE("Critical Damage"),
 
@@ -84,11 +82,7 @@ public enum StrifeStat {
   LIGHT_DAMAGE("Light Damage"),
   DARK_DAMAGE("Shadow Damage"),
 
-  IGNITE_CHANCE("Ignite Chance"),
-  IGNITE_DURATION("Ignite Duration"),
-  SHOCK_CHANCE("Shock Chance"),
-  FREEZE_CHANCE("Freeze Chance"),
-  CORRUPT_CHANCE("Corrupt Chance"),
+  ELEMENTAL_STATUS("Elemental Status Chance"),
   MAX_EARTH_RUNES("Max Earth Runes"),
 
   MAXIMUM_RAGE("Maximum Rage"),
@@ -145,7 +139,6 @@ public enum StrifeStat {
   ACCURACY_MULT(),
   MINION_MULT_INTERNAL(),
 
-  SPELL_STRIKE_RANGE("Spell Strike Range"),
   EFFECT_DURATION("Effect Duration");
 
   // values() is dumb, so we only run it once, and hit use this to

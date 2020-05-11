@@ -22,6 +22,7 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -108,6 +109,11 @@ public class TargetingUtil {
         .collect(Collectors.toSet());
   }
 
+  public static boolean isFriendly(LivingEntity attacker, LivingEntity defender) {
+    return isFriendly(StrifePlugin.getInstance().getStrifeMobManager().getStatMob(attacker),
+        StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
+  }
+
   public static boolean isFriendly(StrifeMob attacker, LivingEntity defender) {
     return isFriendly(attacker,
         StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
@@ -150,8 +156,8 @@ public class TargetingUtil {
     return validTargets;
   }
 
-  public static Set<LivingEntity> getEntitiesInCone(LivingEntity originEntity, Location origin,
-      Vector direction, float length, float maxConeRadius) {
+  public static Set<LivingEntity> getEntitiesInCone(Location origin, Vector direction, float length,
+      float maxConeRadius) {
     Collection<Entity> targetList = Objects.requireNonNull(origin.getWorld())
         .getNearbyEntities(origin, length, length, length);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
@@ -163,20 +169,18 @@ public class TargetingUtil {
           validTargets.add((LivingEntity) entity);
         }
       }
-      targetList.removeAll(validTargets);
+      validTargets.retainAll(targetList);
     }
-    validTargets.removeIf(e -> !originEntity.hasLineOfSight(e));
     return validTargets;
   }
 
-  public static Set<LivingEntity> getEntitiesInLine(LivingEntity caster, double range) {
-    Collection<Entity> targetList = Objects.requireNonNull(caster.getLocation().getWorld())
-        .getNearbyEntities(caster.getEyeLocation(), range, range, range);
+  public static Set<LivingEntity> getEntitiesInLine(Location location, double range) {
+    Collection<Entity> targetList = Objects.requireNonNull(location.getWorld())
+        .getNearbyEntities(location, range, range, range);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (float incRange = 0; incRange <= range + 0.01; incRange += 0.8) {
-      Location loc = caster.getEyeLocation().clone()
-          .add(caster.getEyeLocation().getDirection().clone().multiply(incRange));
+      Location loc = location.clone().add(location.getDirection().clone().multiply(incRange));
       for (Entity entity : targetList) {
         if (entityWithinRadius(entity, loc, 0)) {
           validTargets.add((LivingEntity) entity);
@@ -187,25 +191,27 @@ public class TargetingUtil {
       }
       targetList.removeAll(validTargets);
     }
-    validTargets.removeIf(e -> !caster.hasLineOfSight(e));
     return validTargets;
   }
 
-  public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range) {
-    RayTraceResult result = caster.getWorld()
-        .rayTraceEntities(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-            0.8, entity -> isValidRaycastTarget(caster, entity));
+  public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range,
+      boolean friendly) {
+    RayTraceResult result = caster.getWorld().rayTraceEntities(caster.getEyeLocation(),
+        caster.getEyeLocation().getDirection(), range, 0.9, entity ->
+            isValidRaycastTarget(caster, entity) && friendly == isFriendly(caster,
+                (LivingEntity) entity));
     if (result == null || result.getHitEntity() == null) {
       return null;
     }
     return (LivingEntity) result.getHitEntity();
   }
 
-  public static boolean isInvalidTarget(Entity e) {
-    if (!e.isValid() || !(e instanceof LivingEntity) || e instanceof ArmorStand) {
+  private static boolean isInvalidTarget(Entity e) {
+    if (!e.isValid() || e.isInvulnerable() || !(e instanceof LivingEntity)
+        || e instanceof ArmorStand) {
       return true;
     }
-    if (e.hasMetadata("NPC")) {
+    if (e.hasMetadata("NPC") || e.hasMetadata("pet")) {
       return true;
     }
     if (e instanceof Player) {
@@ -220,8 +226,11 @@ public class TargetingUtil {
   }
 
   public static ArmorStand buildAndRemoveDetectionStand(Location location) {
-    ArmorStand stando = location.getWorld().spawn(location, ArmorStand.class,
-        TargetingUtil::applyDetectionStandChanges);
+    Location spawnLoc = location.clone();
+    spawnLoc.setY(-1);
+    ArmorStand stando = location.getWorld()
+        .spawn(spawnLoc, ArmorStand.class, TargetingUtil::applyDetectionStandChanges);
+    stando.teleport(location);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
     return stando;
   }
@@ -235,24 +244,25 @@ public class TargetingUtil {
     SpecialStatusUtil.setDetectionStand(stando);
   }
 
-  public static LivingEntity getTempStand(Location loc, float groundCheckRange) {
-    if (groundCheckRange < 1) {
+  public static LivingEntity getTempStand(Location loc, float verticalRange) {
+    if (verticalRange == -1) {
       return TargetingUtil.buildAndRemoveDetectionStand(loc);
-    } else {
-      for (int i = 0; i < groundCheckRange; i++) {
-        if (loc.getBlock().getType().isSolid()) {
-          loc.setY(loc.getBlockY() + 1.3);
-          return TargetingUtil.buildAndRemoveDetectionStand(loc);
-        }
-        loc.add(0, -1, 0);
-      }
-      return null;
     }
+    Location detectionLocation = loc.toCenterLocation().clone();
+    for (int i = 0; i < verticalRange; i++) {
+      if (detectionLocation.getBlock().getRelative(BlockFace.DOWN, i).getType().isSolid()) {
+        detectionLocation.add(0, -i + 0.6, 0);
+        return TargetingUtil.buildAndRemoveDetectionStand(detectionLocation);
+      }
+    }
+    return null;
   }
 
   private static boolean isValidRaycastTarget(LivingEntity caster, Entity entity) {
-    return entity instanceof LivingEntity && entity != caster && entity.isValid() && !entity
-        .hasMetadata("NPC");
+    return entity.isValid() && !entity.isInvulnerable() && entity instanceof LivingEntity &&
+        entity != caster && !entity.hasMetadata("NPC") && !entity.hasMetadata("pet") &&
+        !(entity instanceof Player && (((Player) entity).getGameMode() == GameMode.CREATIVE
+            || ((Player) entity).getGameMode() == GameMode.SPECTATOR));
   }
 
   private static boolean entityWithinRadius(Entity e, Location loc, float radius) {
@@ -265,9 +275,10 @@ public class TargetingUtil {
         && Math.abs(loc.getY() - ey) < Math.max(e.getHeight(), 1.2) + radius;
   }
 
-  public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range) {
+  public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range,
+      boolean friendly) {
     LivingEntity mobTarget = TargetingUtil.getMobTarget(caster);
-    return mobTarget != null ? mobTarget : getFirstEntityInLine(caster, range);
+    return mobTarget != null ? mobTarget : getFirstEntityInLine(caster, range, friendly);
   }
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
@@ -284,13 +295,11 @@ public class TargetingUtil {
     RayTraceResult result;
     if (targetEntities) {
       result = caster.getWorld().rayTrace(caster.getEyeLocation(),
-          caster.getEyeLocation().getDirection(), range,
-          FluidCollisionMode.NEVER, true, 0.2,
+          caster.getEyeLocation().getDirection(), range, FluidCollisionMode.NEVER, true, 0.2,
           entity -> isValidRaycastTarget(caster, entity));
     } else {
-      result = caster.getWorld()
-          .rayTraceBlocks(caster.getEyeLocation(), caster.getEyeLocation().getDirection(), range,
-              FluidCollisionMode.NEVER, true);
+      result = caster.getWorld().rayTraceBlocks(caster.getEyeLocation(),
+          caster.getEyeLocation().getDirection(), range, FluidCollisionMode.NEVER, true);
     }
     if (result == null) {
       LogUtil.printDebug(" - Using MAX RANGE location calculation");

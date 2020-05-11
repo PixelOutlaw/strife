@@ -11,6 +11,7 @@ import org.bukkit.entity.Firework;
 public class SpecialStatusUtil {
 
   private static final Map<Entity, Boolean> BURN_IMMUNE = new WeakHashMap<>();
+  private static final Map<Entity, Boolean> WEAK_AGGRO = new WeakHashMap<>();
   private static final Map<Entity, Boolean> FALL_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SNEAK_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SPAWNER_SPAWNED = new WeakHashMap<>();
@@ -36,6 +37,14 @@ public class SpecialStatusUtil {
 
   public static boolean isBurnImmune(Entity e) {
     return BURN_IMMUNE.getOrDefault(e, false);
+  }
+
+  public static void setWeakAggro(Entity e) {
+    WEAK_AGGRO.put(e, true);
+  }
+
+  public static boolean isWeakAggro(Entity e) {
+    return WEAK_AGGRO.getOrDefault(e, false);
   }
 
   public static void setFallImmune(Entity e) {

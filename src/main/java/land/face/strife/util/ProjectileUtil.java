@@ -72,15 +72,15 @@ public class ProjectileUtil {
   }
 
   public static void shootWand(StrifeMob mob, double attackMult) {
-    float projectileSpeed = 1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    float projectileSpeed = 0.9f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.23, true);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.24, true);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
       ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed,
-          randomWandOffset(projectiles), 0.23, true);
+          randomWandOffset(projectiles), 0.24, true);
     }
 
     mob.getEntity().getWorld()
@@ -89,15 +89,15 @@ public class ProjectileUtil {
   }
 
   public static void shootArrow(StrifeMob mob, float attackMult) {
-    float projectileSpeed = 2.5f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    float projectileSpeed = 1.65f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.17);
+    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.185);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
       ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
-          randomOffset(projectiles), 0.17);
+          randomOffset(projectiles), 0.185);
     }
     shotId++;
   }

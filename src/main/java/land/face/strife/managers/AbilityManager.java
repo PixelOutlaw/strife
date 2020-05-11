@@ -2,10 +2,10 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import io.netty.util.internal.ConcurrentSet;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -165,7 +165,7 @@ public class AbilityManager {
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
     if (coolingDownAbilities.get(le) == null) {
-      coolingDownAbilities.put(le, new ConcurrentSet<>());
+      coolingDownAbilities.put(le, new HashSet<>());
       return null;
     }
     for (AbilityCooldownContainer cont : coolingDownAbilities.get(le)) {
@@ -191,7 +191,9 @@ public class AbilityManager {
         coolingDownAbilities.remove(le);
         continue;
       }
-      for (AbilityCooldownContainer container : coolingDownAbilities.get(le)) {
+      Iterator iterator = coolingDownAbilities.get(le).iterator();
+      while (iterator.hasNext()) {
+        AbilityCooldownContainer container = (AbilityCooldownContainer) iterator.next();
         Ability ability = getAbility(container.getAbilityId());
         if (container.isToggledOn()) {
           plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
@@ -199,7 +201,8 @@ public class AbilityManager {
         }
         if (System.currentTimeMillis() >= container.getEndTime()) {
           if (container.getSpentCharges() <= 1) {
-            coolingDownAbilities.get(le).remove(container);
+            iterator.remove();
+            //coolingDownAbilities.get(le).remove(container);
             LogUtil.printDebug("Final cooldown for " + container.getAbilityId() + ", removing");
             if (le instanceof Player) {
               plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
@@ -232,7 +235,7 @@ public class AbilityManager {
   }
 
   public void loadPlayerCooldowns(Player player) {
-    coolingDownAbilities.put(player, new ConcurrentSet<>());
+    coolingDownAbilities.put(player, new HashSet<>());
     if (!savedPlayerCooldowns.containsKey(player.getUniqueId())) {
       return;
     }
@@ -342,8 +345,6 @@ public class AbilityManager {
         .collect(Collectors.toList());
 
     if (selectorList.isEmpty()) {
-      LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " failed to cast " +
-          phase + " type " + type);
       return false;
     }
     Ability ability = selectorList.get(random.nextInt(selectorList.size()));
@@ -360,7 +361,7 @@ public class AbilityManager {
 
   private void coolDownAbility(LivingEntity livingEntity, Ability ability) {
     if (!coolingDownAbilities.containsKey(livingEntity)) {
-      coolingDownAbilities.put(livingEntity, new ConcurrentSet<>());
+      coolingDownAbilities.put(livingEntity, new HashSet<>());
     }
     AbilityCooldownContainer container = getCooldownContainer(livingEntity, ability.getId());
     if (container == null) {
@@ -385,7 +386,7 @@ public class AbilityManager {
       throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
     if (!coolingDownAbilities.containsKey(caster.getEntity())) {
-      coolingDownAbilities.put(caster.getEntity(), new ConcurrentSet<>());
+      coolingDownAbilities.put(caster.getEntity(), new HashSet<>());
     }
     AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
     if (container == null) {
@@ -450,7 +451,7 @@ public class AbilityManager {
           return targets;
         }
         LivingEntity newTarget = TargetingUtil
-            .selectFirstEntityInSight(caster.getEntity(), ability.getRange());
+            .selectFirstEntityInSight(caster.getEntity(), ability.getRange(), ability.isFriendly());
         if (newTarget != null) {
           targets.add(newTarget);
         }
@@ -458,7 +459,7 @@ public class AbilityManager {
       case TARGET_AREA:
         Location loc = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        LivingEntity stando = TargetingUtil.getTempStand(loc, 0);
+        LivingEntity stando = TargetingUtil.getTempStand(loc, -1);
         if (stando != null) {
           targets.add(stando);
         }
@@ -466,7 +467,7 @@ public class AbilityManager {
       case TARGET_GROUND:
         Location loc2 = TargetingUtil.getTargetLocation(
             caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        LivingEntity stando2 = TargetingUtil.getTempStand(loc2, ability.getRange() + 3);
+        LivingEntity stando2 = TargetingUtil.getTempStand(loc2, ability.getRange() + 2);
         if (stando2 != null) {
           targets.add(stando2);
         }

@@ -20,6 +20,7 @@ package land.face.strife.menus.abilities;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -34,8 +35,10 @@ public class AbilityPickerPickerItem extends MenuItem {
   private final AbilityPickerMenu menu;
   private final int slot;
 
-  public AbilityPickerPickerItem(AbilityPickerMenu menu, Material material, String name, int slot) {
-    super(TextUtils.color(name), new ItemStack(material));
+  public AbilityPickerPickerItem(AbilityPickerMenu menu, Material material, String name,
+      List<String> lore, int slot) {
+    super(TextUtils.color(name), setNameAndLore(new ItemStack(material), TextUtils.color(name),
+        TextUtils.color(lore)));
     this.menu = menu;
     this.slot = slot;
   }

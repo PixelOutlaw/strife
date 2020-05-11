@@ -5,7 +5,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ParticleTask;
-import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -42,7 +41,6 @@ public class StrifeParticle extends LocationEffect {
   private int tickDuration;
   private boolean strictDuration;
 
-  private OriginLocation particleOriginLocation = OriginLocation.CENTER;
   private ItemStack blockData = null;
 
   private static Random random = new Random();
@@ -111,14 +109,6 @@ public class StrifeParticle extends LocationEffect {
 
   public void setSpread(float spread) {
     this.spread = spread;
-  }
-
-  public OriginLocation getParticleOriginLocation() {
-    return particleOriginLocation;
-  }
-
-  public void setParticleOriginLocation(OriginLocation particleOriginLocation) {
-    this.particleOriginLocation = particleOriginLocation;
   }
 
   public void setStyle(ParticleStyle style) {
@@ -190,7 +180,7 @@ public class StrifeParticle extends LocationEffect {
   }
 
   public Location getLoc(LivingEntity le) {
-    return TargetingUtil.getOriginLocation(le, particleOriginLocation);
+    return TargetingUtil.getOriginLocation(le, getOrigin());
   }
 
   public void setBlockData(ItemStack blockData) {

@@ -3,7 +3,7 @@ package land.face.strife.listeners;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.effects.StandardDamage;
+import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -35,7 +35,7 @@ public class EntityMagicListener implements Listener {
   private ItemStack skeletonWand;
 
   private StrifeParticle chaserParticle;
-  private StandardDamage witchSpell;
+  private Damage witchSpell;
 
   private static final String WITCH_SPELL_ID = "INTERNAL-WITCH-ATTACK";
 
@@ -114,15 +114,15 @@ public class EntityMagicListener implements Listener {
     return loadedChaser;
   }
 
-  private StandardDamage buildStandardDamage() {
-    StandardDamage standardDamage = new StandardDamage();
-    standardDamage.setAttackMultiplier(1.0f);
-    standardDamage.setHealMultiplier(1.0f);
-    standardDamage.setAttackType(AttackType.MAGIC);
-    standardDamage.setCanBeBlocked(true);
-    standardDamage.setCanBeEvaded(true);
-    standardDamage.setCanSneakAttack(false);
-    return standardDamage;
+  private Damage buildStandardDamage() {
+    Damage damage = new Damage();
+    damage.setAttackMultiplier(1.0f);
+    damage.setHealMultiplier(1.0f);
+    damage.setAttackType(AttackType.PROJECTILE);
+    damage.setCanBeBlocked(true);
+    damage.setCanBeEvaded(true);
+    damage.setCanSneakAttack(false);
+    return damage;
   }
 
   private StrifeParticle buildChaserParticle() {
@@ -132,7 +132,7 @@ public class EntityMagicListener implements Listener {
     particle.setRed(0.8);
     particle.setBlue(0.8);
     particle.setGreen(0.2);
-    particle.setParticleOriginLocation(OriginLocation.CENTER);
+    particle.setOrigin(OriginLocation.CENTER);
     particle.setStyle(ParticleStyle.NORMAL);
     particle.setQuantity(5);
     particle.setSpeed(0.05F);

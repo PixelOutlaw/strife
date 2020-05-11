@@ -4,7 +4,7 @@ import static land.face.strife.util.DamageUtil.buildFloatIndicator;
 
 import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.DamageContainer;
+import land.face.strife.data.BonusDamage;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -27,8 +27,8 @@ public class Heal extends Effect {
       heal += getStatMults().get(attr) * caster.getStat(attr);
     }
 
-    DamageContainer container = new DamageContainer(damageScale, null, null, heal);
-    heal = DamageUtil.applyDamageScale(caster, target, container, null);
+    BonusDamage container = new BonusDamage(damageScale, null, null, heal);
+    heal = DamageUtil.applyDamageScale(caster, target, container);
     heal += flatBonus;
 
     if (useHealingPower) {

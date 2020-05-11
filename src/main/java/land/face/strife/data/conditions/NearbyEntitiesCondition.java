@@ -1,6 +1,6 @@
 package land.face.strife.data.conditions;
 
-import io.netty.util.internal.ConcurrentSet;
+import java.util.HashSet;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.LogUtil;
@@ -24,7 +24,7 @@ public class NearbyEntitiesCondition extends Condition {
 
     LogUtil.printDebug("Nearby condition, type=" + target.getEntity().getType());
 
-    Set<LivingEntity> entities = new ConcurrentSet<>();
+    Set<LivingEntity> entities = new HashSet<>();
     for (Entity e : target.getEntity().getWorld().getNearbyEntities(
         target.getEntity().getLocation(), range, range, range, this::isValid)) {
       entities.add((LivingEntity) e);

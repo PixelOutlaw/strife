@@ -11,24 +11,31 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.events.UniqueSpawnEvent;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.ItemPassengerTask;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.Vindicator;
+import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
 
 public class UniqueEntityManager {
@@ -68,6 +75,13 @@ public class UniqueEntityManager {
     return spawnUnique(uniqueEntity, location);
   }
 
+  private void lambdaSetup(Entity e, UniqueEntity uniqueEntity) {
+    SpecialStatusUtil.setUniqueId(e, uniqueEntity.getId());
+    if (cachedDisguises.containsKey(uniqueEntity)) {
+      DisguiseAPI.disguiseToAll(e, cachedDisguises.get(uniqueEntity));
+    }
+  }
+
   StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
       LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
@@ -76,9 +90,8 @@ public class UniqueEntityManager {
     LogUtil.printDebug("Spawning unique entity " + uniqueEntity.getId());
 
     assert uniqueEntity.getType().getEntityClass() != null;
-    Entity entity = Objects.requireNonNull(location.getWorld())
-        .spawn(location, uniqueEntity.getType().getEntityClass(),
-            e -> SpecialStatusUtil.setUniqueId(e, uniqueEntity.getId()));
+    Entity entity = Objects.requireNonNull(location.getWorld()).spawn(location,
+        uniqueEntity.getType().getEntityClass(), e -> lambdaSetup(e, uniqueEntity));
 
     if (!entity.isValid()) {
       LogUtil.printWarning(
@@ -119,6 +132,24 @@ public class UniqueEntityManager {
       }
     }
 
+    if (le instanceof Bee) {
+      ((Bee) le).setCannotEnterHiveTicks(Integer.MAX_VALUE);
+    }
+
+    if (uniqueEntity.isAngry()) {
+      if (le instanceof Vindicator) {
+        ((Vindicator) le).setJohnny(true);
+      } else if (le instanceof Wolf) {
+        ((Wolf) le).setAngry(true);
+      } else if (le instanceof Bee) {
+        ((Bee) le).setAnger(500000);
+      }
+    }
+
+    if (uniqueEntity.isRemoveFollowMods()) {
+      SpecialStatusUtil.setWeakAggro(le);
+    }
+
     if (uniqueEntity.getFollowRange() != -1) {
       AttributeInstance attributeInstance = le.getAttribute(GENERIC_FOLLOW_RANGE);
       if (attributeInstance != null) {
@@ -131,13 +162,21 @@ public class UniqueEntityManager {
       }
     }
 
-    if (uniqueEntity.isKnockbackImmune() && le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
+    if (uniqueEntity.isKnockbackImmune()
+        && le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
       le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
     if (le.getEquipment() != null) {
       le.getEquipment().clear();
       ItemUtil.delayedEquip(uniqueEntity.getEquipment(), le);
+    }
+
+    if (uniqueEntity.getItemPassenger() != null) {
+      Item item = Objects.requireNonNull(location.getWorld()).spawn(location, Item.class,
+          i -> modifyPassengerItem(le, i));
+      item.setItemStack(uniqueEntity.getItemPassenger());
+      le.addPassenger(item);
     }
 
     le.setCustomName(uniqueEntity.getName());
@@ -163,8 +202,10 @@ public class UniqueEntityManager {
 
     strifeMob.setUniqueEntityId(uniqueEntity.getId());
     strifeMob.setFactions(uniqueEntity.getFactions());
+    strifeMob.setAlliedGuild(null);
     strifeMob.setDespawnOnUnload(true);
     strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
+
     if (uniqueEntity.isBurnImmune()) {
       SpecialStatusUtil.setBurnImmune(le);
     }
@@ -189,11 +230,20 @@ public class UniqueEntityManager {
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
     plugin.getParticleTask().addParticle(le, uniqueEntity.getStrifeParticle());
 
-    if (cachedDisguises.containsKey(uniqueEntity)) {
-      DisguiseAPI.disguiseToAll(le, cachedDisguises.get(uniqueEntity));
-    }
     plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
+
+    UniqueSpawnEvent event = new UniqueSpawnEvent(strifeMob);
+    Bukkit.getPluginManager().callEvent(event);
+
     return strifeMob;
+  }
+
+  private void modifyPassengerItem(LivingEntity rider, Item item) {
+    item.setOwner(rider.getUniqueId());
+    item.setCanMobPickup(false);
+    item.setPickupDelay(Integer.MAX_VALUE);
+    item.setGravity(false);
+    new ItemPassengerTask(item);
   }
 
   public void cacheDisguise(UniqueEntity uniqueEntity, Disguise disguise) {

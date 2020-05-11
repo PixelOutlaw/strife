@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.timers.FallingBlockTimer;
-import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -17,7 +16,6 @@ import org.bukkit.util.Vector;
 public class ShootBlock extends LocationEffect {
 
   private BlockData blockData;
-  private OriginLocation originType;
   private int quantity;
   private double speed;
   private double spread;
@@ -29,7 +27,7 @@ public class ShootBlock extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    Location originLocation = TargetingUtil.getOriginLocation(target.getEntity(), originType);
+    Location originLocation = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
     applyAtLocation(caster, originLocation);
   }
 
@@ -89,10 +87,6 @@ public class ShootBlock extends LocationEffect {
 
   public void setZeroPitch(boolean zeroPitch) {
     this.zeroPitch = zeroPitch;
-  }
-
-  public void setOriginType(OriginLocation originType) {
-    this.originType = originType;
   }
 
   private void applySpread(Vector direction, double spread) {

@@ -24,6 +24,7 @@ public class UniqueEntity {
   private int baseLevel;
   private boolean showName;
   private boolean baby;
+  private boolean angry;
   private int size;
   private int followRange = -1;
   private boolean knockbackImmune;
@@ -37,6 +38,7 @@ public class UniqueEntity {
   private double displaceMultiplier;
   private String mount;
   private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
+  private ItemStack itemPassenger = null;
   private StrifeParticle strifeParticle;
 
   public String getId() {
@@ -121,6 +123,14 @@ public class UniqueEntity {
 
   public void setBaby(boolean baby) {
     this.baby = baby;
+  }
+
+  public boolean isAngry() {
+    return angry;
+  }
+
+  public void setAngry(boolean angry) {
+    this.angry = angry;
   }
 
   public int getSize() {
@@ -229,6 +239,14 @@ public class UniqueEntity {
 
   public void setEquipment(Map<EquipmentSlot, ItemStack> equipment) {
     this.equipment = equipment;
+  }
+
+  public ItemStack getItemPassenger() {
+    return itemPassenger;
+  }
+
+  public void setItemPassenger(ItemStack itemPassenger) {
+    this.itemPassenger = itemPassenger;
   }
 
   public StrifeParticle getStrifeParticle() {

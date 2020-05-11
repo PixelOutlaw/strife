@@ -1,6 +1,6 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.data.DamageContainer;
+import land.face.strife.data.BonusDamage;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -21,8 +21,8 @@ public class Bleed extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       bleedAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
-    DamageContainer container = new DamageContainer(damageScale, null, null, bleedAmount);
-    bleedAmount = DamageUtil.applyDamageScale(caster, target, container, null);
+    BonusDamage container = new BonusDamage(damageScale, null, null, bleedAmount);
+    bleedAmount = DamageUtil.applyDamageScale(caster, target, container);
     if (applyBleedMods) {
       bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;
       bleedAmount *= 1 - target.getStat(StrifeStat.BLEED_RESIST) / 100;

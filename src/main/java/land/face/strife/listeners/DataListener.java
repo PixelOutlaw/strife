@@ -72,7 +72,7 @@ public class DataListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGH)
   public void onEntityCombust(final EntityCombustEvent event) {
     if (event instanceof EntityCombustByEntityEvent) {
       return;
@@ -171,7 +171,7 @@ public class DataListener implements Listener {
         .getRightClicked() instanceof ArmorStand) {
       return;
     }
-    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC")) {
+    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked().hasMetadata("pet")) {
       return;
     }
     final Player player = event.getPlayer();

@@ -19,72 +19,83 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
+import com.tealcube.minecraft.bukkit.shade.google.gson.JsonArray;
+import com.tealcube.minecraft.bukkit.shade.google.gson.JsonElement;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import land.face.strife.data.GlobalStatBoost;
+import java.util.concurrent.CopyOnWriteArrayList;
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.Boost;
 import land.face.strife.data.LoadedStatBoost;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
-public class GlobalBoostManager {
+public class BoostManager {
 
-  private final Map<DayOfWeek, String> scheduledBoosts = new HashMap<>();
+  private StrifePlugin plugin;
+
+  private final Map<DayOfWeek, String> boostSchedule = new HashMap<>();
   private final Map<String, LoadedStatBoost> loadedBoosts = new HashMap<>();
-  private final List<GlobalStatBoost> runningBoosts = new ArrayList<>();
 
-  public double getAttribute(StrifeStat attribute) {
-    double amount = 0;
-    for (GlobalStatBoost boost : runningBoosts) {
-      amount += boost.getAttribute(attribute);
-    }
-    return amount;
+  private final List<Boost> boosts = new CopyOnWriteArrayList<>();
+
+  private Gson gson = new Gson();
+
+  public BoostManager(StrifePlugin plugin) {
+    this.plugin = plugin;
   }
 
   public Map<StrifeStat, Float> getAttributes() {
     Map<StrifeStat, Float> attrMap = new HashMap<>();
-    for (GlobalStatBoost boost : runningBoosts) {
-      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getAttributes()));
+    for (Boost boost : boosts) {
+      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getStats()));
     }
     return attrMap;
   }
 
-  public boolean createStatBoost(String boostId, String creator, int duration) {
-    LoadedStatBoost loadedStatBoost = loadedBoosts.get(boostId);
-    if (loadedStatBoost == null) {
+  public boolean startBoost(String name, String boostId, int seconds) {
+    if (!loadedBoosts.containsKey(boostId)) {
+      LogUtil.printWarning("Invalid boostID Failed to start boost " + boostId + " for " + " name");
       return false;
     }
-    for (GlobalStatBoost boost : runningBoosts) {
-      if (boost.getBoostId().equals(boostId)) {
-        return false;
-      }
-    }
-    GlobalStatBoost boost = new GlobalStatBoost(boostId, creator, loadedStatBoost.getStats(),
-        duration);
-    runningBoosts.add(boost);
-    announceBoost(loadedStatBoost.getAnnounceStart(), creator, duration);
+    LoadedStatBoost loadedStatBoost = loadedBoosts.get(boostId);
+    Boost boost = new Boost();
+    boost.setBoostId(boostId);
+    boost.setBoosterName(name);
+    boost.setSecondsRemaining(seconds);
+    boost.setStats(new HashMap<>(loadedBoosts.get(boostId).getStats()));
+    boosts.add(boost);
+    announceBoost(loadedStatBoost.getAnnounceStart(), name, seconds);
     return true;
   }
 
   public void tickBoosts() {
-    for (GlobalStatBoost boost : runningBoosts) {
+    for (Boost boost : boosts) {
       LoadedStatBoost loadedStatBoost = loadedBoosts.get(boost.getBoostId());
-      int minutesRemaining = boost.getMinutesRemaining();
-      if (minutesRemaining == 0) {
-        announceBoost(loadedStatBoost.getAnnounceEnd(), boost.getCreator(), 0);
-        runningBoosts.remove(boost);
+      if (boost.getSecondsRemaining() <= 0) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+          plugin.getChampionManager().updateAll(plugin.getChampionManager().getChampion(p));
+        }
+        announceBoost(loadedStatBoost.getAnnounceEnd(), boost.getBoosterName(), 0);
+        boosts.remove(boost);
         continue;
       }
-      if (minutesRemaining % loadedStatBoost.getAnnounceInterval() == 0) {
-        announceBoost(loadedStatBoost.getAnnounceRun(), boost.getCreator(), minutesRemaining);
+      boost.setSecondsRemaining(boost.getSecondsRemaining() - 1);
+      if (boost.getSecondsRemaining() % loadedStatBoost.getAnnounceInterval() == 0) {
+        announceBoost(loadedStatBoost.getAnnounceRun(), boost.getBoosterName(),
+            boost.getSecondsRemaining());
       }
-      boost.setMinutesRemaining(minutesRemaining - 1);
     }
   }
 
@@ -122,30 +133,62 @@ public class GlobalBoostManager {
         continue;
       }
       String boostId = cs.getString(dayString);
-      scheduledBoosts.put(dayOfWeek, boostId);
+      boostSchedule.put(dayOfWeek, boostId);
     }
   }
 
-  public void startScheduledEvents() {
+  public void checkBoostSchedule() {
     LocalDate date = LocalDate.now();
     DayOfWeek dow = date.getDayOfWeek();
-    String boostId = scheduledBoosts.get(dow);
+    String boostId = boostSchedule.get(dow);
     if (boostId == null) {
       return;
     }
-    LoadedStatBoost loadedStatBoost = loadedBoosts.get(scheduledBoosts.get(dow));
+    for (Boost b : boosts) {
+      if (b.getBoostId().equals(boostId)) {
+        b.setSecondsRemaining(901);
+        return;
+      }
+    }
+    LoadedStatBoost loadedStatBoost = loadedBoosts.get(boostSchedule.get(dow));
     if (loadedStatBoost == null) {
       LogUtil.printWarning("OI! Invalid event for today?? What is... " + boostId + "??");
       return;
     }
-    createStatBoost(boostId, loadedStatBoost.getCreator(), loadedStatBoost.getDuration());
+    announceBoost(loadedStatBoost.getAnnounceStart(), "SERVER", loadedStatBoost.getDuration());
+    startBoost("SERVER", boostId, 901);
   }
 
-  private void announceBoost(List<String> announce, String creator, int minutesRemaining) {
+  private void announceBoost(List<String> announce, String creator, int secondsRemaining) {
+    int minutes = secondsRemaining / 60;
     for (String line : announce) {
       Bukkit.broadcastMessage(line
           .replace("{name}", creator)
-          .replace("{duration}", String.valueOf(minutesRemaining)));
+          .replace("{seconds}", String.valueOf(secondsRemaining))
+          .replace("{minutes}", String.valueOf(minutes)));
+    }
+  }
+
+  public void saveBoosts() {
+    try (FileWriter writer = new FileWriter(plugin.getDataFolder() + "/boosts.json")) {
+      gson.toJson(boosts.toArray(), writer);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void loadBoosts() {
+    try (FileReader reader = new FileReader(plugin.getDataFolder() + "/boosts.json")) {
+      JsonArray array = gson.fromJson(reader, JsonArray.class);
+      for (JsonElement e : array) {
+        Boost boost = gson.fromJson(e, Boost.class);
+        if (boostSchedule.containsValue(boost.getBoostId())) {
+          continue;
+        }
+        boosts.add(boost);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 }

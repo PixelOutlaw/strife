@@ -18,6 +18,7 @@ import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -34,7 +35,7 @@ public class AreaEffect extends LocationEffect {
   private float maxConeRadius;
   private int maxTargets;
   private boolean scaleTargetsWithMultishot;
-  private boolean isLineOfSight;
+  private LineOfSight lineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
   private boolean canBeCountered;
@@ -79,12 +80,11 @@ public class AreaEffect extends LocationEffect {
         areaTargets.addAll(TargetingUtil.getEntitiesInArea(location, range));
         break;
       case LINE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInLine(caster.getEntity(), range));
+        areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, range));
         break;
       case CONE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity(),
-            caster.getEntity().getLocation(), caster.getEntity().getLocation().getDirection(),
-            (float) range, maxConeRadius));
+        areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity().getLocation(),
+            caster.getEntity().getLocation().getDirection(), (float) range, maxConeRadius));
         break;
       case PARTY:
         if (caster.getEntity() instanceof Player) {
@@ -97,8 +97,17 @@ public class AreaEffect extends LocationEffect {
         break;
     }
     TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
-    if (isLineOfSight) {
-      areaTargets.removeIf(e -> !caster.getEntity().hasLineOfSight(e));
+    if (areaTargets.size() == 0) {
+      return areaTargets;
+    }
+    switch (lineOfSight) {
+      case CASTER:
+        areaTargets.removeIf(e -> !caster.getEntity().hasLineOfSight(e));
+        break;
+      case CENTER:
+        ArmorStand detector = TargetingUtil.buildAndRemoveDetectionStand(location);
+        areaTargets.removeIf(e -> !detector.hasLineOfSight(e));
+        break;
     }
     if (maxTargets > 0) {
       int numTargets = maxTargets;
@@ -128,7 +137,7 @@ public class AreaEffect extends LocationEffect {
     }
     if (canBeBlocked) {
       return StrifePlugin.getInstance().getBlockManager().isAttackBlocked(caster, target,
-          1.0f, AttackType.MAGIC, false);
+          1.0f, AttackType.AREA, false);
     }
     return false;
   }
@@ -188,12 +197,12 @@ public class AreaEffect extends LocationEffect {
     this.canBeCountered = canBeCountered;
   }
 
-  public boolean isLineOfSight() {
-    return isLineOfSight;
+  public LineOfSight getLineOfSight() {
+    return lineOfSight;
   }
 
-  public void setLineOfSight(boolean lineOfSight) {
-    isLineOfSight = lineOfSight;
+  public void setLineOfSight(LineOfSight lineOfSight) {
+    this.lineOfSight = lineOfSight;
   }
 
   public double getRange() {
@@ -237,6 +246,12 @@ public class AreaEffect extends LocationEffect {
 
   public void setTargetingCooldown(long targetingCooldown) {
     this.targetingCooldown = targetingCooldown;
+  }
+
+  public enum LineOfSight {
+    CASTER,
+    CENTER,
+    NONE
   }
 
   public enum AreaType {

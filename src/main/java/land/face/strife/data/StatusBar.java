@@ -62,12 +62,12 @@ public class StatusBar {
 
   public void setHidden(boolean hidden) {
     this.hidden = hidden;
-    healthBar.setVisible(!hidden);
     if (target.get() == null) {
       barrierBar.setVisible(!hidden);
     } else {
       barrierBar.setVisible(!hidden && StatUtil.getMaximumBarrier(
           Objects.requireNonNull(target.get())) > 1);
     }
+    healthBar.setVisible(!hidden);
   }
 }

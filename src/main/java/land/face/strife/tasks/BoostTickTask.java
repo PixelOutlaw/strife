@@ -16,44 +16,21 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.menus.abilities;
+package land.face.strife.tasks;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import java.util.List;
-import land.face.strife.StrifePlugin;
-import land.face.strife.data.ability.Ability;
-import land.face.strife.data.effects.TargetingComparators.AbilityComparator;
-import land.face.strife.menus.BlankIcon;
-import ninja.amp.ampmenus.menus.ItemMenu;
+import land.face.strife.managers.BoostManager;
+import org.bukkit.scheduler.BukkitRunnable;
 
-public class AbilityPickerMenu extends ItemMenu {
+public class BoostTickTask extends BukkitRunnable {
 
-  private String id;
-  public AbilityPickerMenu(StrifePlugin plugin, String name, List<Ability> abilities) {
-    super(TextUtils.color(name), Size.fit(abilities.size()), plugin);
-    int index = 0;
-    abilities.sort(new AbilityComparator());
-    for (Ability ability : abilities) {
-      setItem(index, new AbilityPickerItem(plugin, ability));
-      index++;
-    }
-    fillEmptySlots(new BlankIcon());
+  private BoostManager boostManager;
+
+  public BoostTickTask(BoostManager boostManager) {
+    this.boostManager = boostManager;
   }
 
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
+  @Override
+  public void run() {
+    boostManager.tickBoosts();
   }
 }
-
-/*
-00 01 02 03 04 05 06 07 08
-09 10 11 12 13 14 15 16 17
-18 19 20 21 22 23 24 25 26
-27 28 29 30 31 32 33 34 35
-36 37 38 39 40 41 42 43 44
-45 46 47 48 49 50 51 52 53
-*/

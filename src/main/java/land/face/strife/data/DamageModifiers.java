@@ -1,7 +1,9 @@
 package land.face.strife.data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.util.DamageUtil;
@@ -16,8 +18,9 @@ public class DamageModifiers {
   private AttackType attackType = AttackType.OTHER;
   private float attackMultiplier = 1f;
   private float healMultiplier = 1f;
+  private float damageReductionRatio = 1f;
   private final Map<DamageType, Float> damageModifiers = new HashMap<>(baseDamageMults);
-  private final Map<DamageType, Float> flatDamageBonuses = new HashMap<>();
+  private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private final Set<ElementalStatus> elementalStatuses = new HashSet<>();
   private boolean isSneakAttack = false;
@@ -26,6 +29,7 @@ public class DamageModifiers {
   private boolean canBeEvaded = true;
   private boolean applyOnHitEffects = true;
   private boolean consumeEarthRunes = true;
+  private boolean scaleChancesWithAttack = false;
 
   public AttackType getAttackType() {
     return attackType;
@@ -43,6 +47,14 @@ public class DamageModifiers {
     this.attackMultiplier = attackMultiplier;
   }
 
+  public float getDamageReductionRatio() {
+    return damageReductionRatio;
+  }
+
+  public void setDamageReductionRatio(float damageReductionRatio) {
+    this.damageReductionRatio = damageReductionRatio;
+  }
+
   public float getHealMultiplier() {
     return healMultiplier;
   }
@@ -55,8 +67,8 @@ public class DamageModifiers {
     return damageModifiers;
   }
 
-  public Map<DamageType, Float> getFlatDamageBonuses() {
-    return flatDamageBonuses;
+  public List<BonusDamage> getBonusDamages() {
+    return bonusDamages;
   }
 
   public Map<AbilityMod, Float> getAbilityMods() {
@@ -105,6 +117,14 @@ public class DamageModifiers {
 
   public void setApplyOnHitEffects(boolean applyOnHitEffects) {
     this.applyOnHitEffects = applyOnHitEffects;
+  }
+
+  public boolean isScaleChancesWithAttack() {
+    return scaleChancesWithAttack;
+  }
+
+  public void setScaleChancesWithAttack(boolean scaleChancesWithAttack) {
+    this.scaleChancesWithAttack = scaleChancesWithAttack;
   }
 
   public boolean isConsumeEarthRunes() {

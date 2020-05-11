@@ -1,7 +1,8 @@
 package land.face.strife.managers;
 
-import io.netty.util.internal.ConcurrentSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -26,7 +27,7 @@ public class ChaserManager {
 
   public ChaserManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.chasers = new ConcurrentSet<>();
+    this.chasers = new HashSet<>();
   }
 
   public void createChaser(StrifeMob caster, String id, Vector velocity, Location spawnLocation,
@@ -38,29 +39,37 @@ public class ChaserManager {
   }
 
   public void tickChasers() {
-    for (ChaserEntity chaser : chasers) {
+    Iterator iterator = chasers.iterator();
+    while (iterator.hasNext()) {
+      ChaserEntity chaser = (ChaserEntity) iterator.next();
       if (chaser.getCurrentTick() > chaser.getLifespan()) {
-        chasers.remove(chaser);
+        iterator.remove();
+        //chasers.remove(chaser);
         continue;
       }
       chaser.setCurrentTick(chaser.getCurrentTick() + 1);
 
       if (chaser.getTarget() == null || !chaser.getTarget().isValid() ||
           !chaser.getLocation().getWorld().equals(chaser.getTarget().getWorld())) {
-        chasers.remove(chaser);
+        iterator.remove();
+        //chasers.remove(chaser);
         continue;
       }
 
       LoadedChaser data = chaserData.get(chaser.getChaserId());
       if (data.isRemoveAtSolids() && chaser.getLocation().getBlock().getType().isSolid()) {
-        chasers.remove(chaser);
+        iterator.remove();
+        //chasers.remove(chaser);
         continue;
       }
-      executeChaserMovement(chaser, data);
+      boolean hitTarget = executeChaserMovement(chaser, data);
+      if (hitTarget) {
+        iterator.remove();
+      }
     }
   }
 
-  private void executeChaserMovement(ChaserEntity chaser, LoadedChaser data) {
+  private boolean executeChaserMovement(ChaserEntity chaser, LoadedChaser data) {
     Location targetLocation = TargetingUtil
         .getOriginLocation(chaser.getTarget(), OriginLocation.CENTER);
     Vector change = targetLocation.toVector()
@@ -79,10 +88,10 @@ public class ChaserManager {
       for (Effect effect : data.getEffectList()) {
         plugin.getEffectManager().execute(effect, chaser.getCaster(), chaser.getTarget());
       }
-      chasers.remove(chaser);
-      return;
+      return true;
     }
     chaser.setVelocity(velocity);
+    return false;
   }
 
   private boolean isChaserCloseEnough(ChaserEntity chaser, LoadedChaser data, Location targetLoc) {

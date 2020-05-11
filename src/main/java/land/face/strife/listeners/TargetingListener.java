@@ -24,6 +24,7 @@ import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
 import java.util.Random;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
@@ -39,6 +40,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -92,6 +94,20 @@ public class TargetingListener implements Listener {
     TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void ignoreGuildAllies(EntityTargetLivingEntityEvent event) {
+    if (!(event.getEntity() instanceof LivingEntity) || !(event.getTarget() instanceof Player)) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+    if (mob == null || mob.getAlliedGuild() == null) {
+      return;
+    }
+    if (DamageUtil.isGuildAlly(mob, (Player) event.getTarget())) {
+      event.setCancelled(true);
+    }
+  }
+
   @EventHandler(priority = EventPriority.LOW)
   public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled()) {
@@ -114,11 +130,26 @@ public class TargetingListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
-        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER || SpecialStatusUtil
-        .isSneakImmune(event.getEntity())) {
+    if (event.isCancelled()) {
       return;
     }
+    if (!(event.getEntity() instanceof Mob)) {
+      return;
+    }
+    if (event.getReason() == TargetReason.TARGET_ATTACKED_NEARBY_ENTITY
+        || event.getReason() == TargetReason.FOLLOW_LEADER
+        || event.getReason() == TargetReason.PIG_ZOMBIE_TARGET
+        || event.getReason() == TargetReason.REINFORCEMENT_TARGET) {
+      if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
+        event.setCancelled(true);
+        return;
+      }
+    }
+
+    if (event.getReason() != CLOSEST_PLAYER || SpecialStatusUtil.isSneakImmune(event.getEntity())) {
+      return;
+    }
+
     Player player = (Player) event.getTarget();
     if (!plugin.getStealthManager().isStealthed(player)) {
       return;

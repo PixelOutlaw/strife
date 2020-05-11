@@ -9,6 +9,7 @@ import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.stats.StrifeStat;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -21,8 +22,8 @@ public class StrifeMobManager {
     this.plugin = plugin;
   }
 
-  public int getMobCount() {
-    return trackedEntities.size();
+  public Map<LivingEntity, StrifeMob> getMobs() {
+    return trackedEntities;
   }
 
   public StrifeMob getStatMob(LivingEntity entity) {
@@ -85,6 +86,9 @@ public class StrifeMobManager {
   }
 
   public void removeEntity(LivingEntity entity) {
+    if (entity.getPassengers().size() > 0 && entity.getPassengers().get(0) instanceof Item) {
+      entity.getPassengers().get(0).remove();
+    }
     trackedEntities.remove(entity);
   }
 
@@ -94,6 +98,7 @@ public class StrifeMobManager {
     }
     if (trackedEntities.get(entity).isDespawnOnUnload()) {
       entity.remove();
+      removeEntity(entity);
     }
   }
 

@@ -25,10 +25,11 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.AreaType;
+import land.face.strife.data.effects.AreaEffect.LineOfSight;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
+import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.LocationEffect;
-import land.face.strife.data.effects.StandardDamage;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
@@ -59,7 +60,7 @@ public class ShootListener implements Listener {
   private StrifeParticle flintlockSmoke;
   private StrifeParticle flintlockFlare;
   private AreaEffect flintlockHitscan;
-  private StandardDamage flintlockDamage;
+  private Damage flintlockDamage;
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -116,9 +117,7 @@ public class ShootListener implements Listener {
     StrifeMob mob = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) event.getEntity().getShooter());
 
-    if (mob.getAbilitySet() != null
-        && mob.getAbilitySet().getAbilities(TriggerAbilityType.SHOOT) != null) {
-      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
+    if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
       event.setCancelled(true);
       return;
     }
@@ -195,8 +194,8 @@ public class ShootListener implements Listener {
       return;
     }
     String[] effects = effectString.split("~");
-    Location loc = event.getEntity().getLocation().clone()
-        .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
+    Location loc = event.getEntity().getLocation().clone().add(
+        event.getEntity().getLocation().getDirection().multiply(-0.25));
     for (String s : effects) {
       Effect effect = StrifePlugin.getInstance().getEffectManager().getEffect(s);
       if (effect instanceof LocationEffect) {
@@ -234,7 +233,7 @@ public class ShootListener implements Listener {
     StrifeParticle particle = new StrifeParticle();
     particle.setFriendly(true);
     particle.setParticle(Particle.CAMPFIRE_COSY_SMOKE);
-    particle.setParticleOriginLocation(OriginLocation.BELOW_HEAD);
+    particle.setOrigin(OriginLocation.BELOW_HEAD);
     particle.setStyle(ParticleStyle.LINE);
     particle.setSize(2);
     particle.setRadius(0);
@@ -246,22 +245,22 @@ public class ShootListener implements Listener {
     return particle;
   }
 
-  private StandardDamage buildStandardDamage() {
-    StandardDamage standardDamage = new StandardDamage();
-    standardDamage.setAttackMultiplier(1.0f);
-    standardDamage.setHealMultiplier(1.0f);
-    standardDamage.setAttackType(AttackType.RANGED);
-    standardDamage.setCanBeBlocked(true);
-    standardDamage.setCanBeEvaded(true);
-    standardDamage.setCanSneakAttack(true);
-    return standardDamage;
+  private Damage buildStandardDamage() {
+    Damage damage = new Damage();
+    damage.setAttackMultiplier(1.0f);
+    damage.setHealMultiplier(1.0f);
+    damage.setAttackType(AttackType.PROJECTILE);
+    damage.setCanBeBlocked(true);
+    damage.setCanBeEvaded(true);
+    damage.setCanSneakAttack(true);
+    return damage;
   }
 
   private StrifeParticle buildFlintlockFlare() {
     StrifeParticle particle = new StrifeParticle();
     particle.setFriendly(true);
     particle.setParticle(Particle.FLAME);
-    particle.setParticleOriginLocation(OriginLocation.BELOW_HEAD);
+    particle.setOrigin(OriginLocation.BELOW_HEAD);
     particle.setStyle(ParticleStyle.LINE);
     particle.setSize(1);
     particle.setRadius(0);
@@ -279,7 +278,7 @@ public class ShootListener implements Listener {
     hitscan.setPriority(TargetingPriority.CLOSEST);
     hitscan.setScaleTargetsWithMultishot(false);
     hitscan.setRange((float) plugin.getSettings().getDouble("config.flintlock.range", 16f));
-    hitscan.setLineOfSight(true);
+    hitscan.setLineOfSight(LineOfSight.CASTER);
     hitscan.setMaxTargets(1);
     hitscan.setCanBeBlocked(false);
     hitscan.setCanBeEvaded(false);

@@ -35,6 +35,8 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
@@ -203,8 +205,11 @@ public class BossBarManager {
     if (barOwner.getEntity() instanceof Player) {
       name = (barOwner.getEntity().getName()) + ChatColor.GRAY + " Lv"
           + ((Player) barOwner.getEntity()).getLevel();
-    } else {
+    } else if (StringUtils.isNotBlank(barOwner.getEntity().getCustomName())) {
       name = barOwner.getEntity().getCustomName();
+    } else {
+      name = WordUtils.capitalizeFully(
+          barOwner.getEntity().getType().toString().replaceAll("_", " "));
     }
     name += "   ";
     if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
