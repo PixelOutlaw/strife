@@ -278,7 +278,7 @@ public class ChampionManager {
   private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
     plugin.getStrifeMobManager().setEntityStats(champion.getPlayer(), StatUpdateManager
-        .combineMaps(champion.getCombinedCache(), plugin.getGlobalBoostManager().getAttributes()));
+        .combineMaps(champion.getCombinedCache(), plugin.getBoostManager().getAttributes()));
   }
 
   private Set<LoreAbility> getItemAbilities(EquipmentSlot slot, EntityEquipment equipment) {

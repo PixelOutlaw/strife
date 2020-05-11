@@ -1,5 +1,6 @@
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.EvokerFangEffect;
@@ -30,17 +31,18 @@ public class EvokerFangEffectListener implements Listener {
     if (!(event.getEntity() instanceof LivingEntity)) {
       return;
     }
-    if (!event.getDamager().hasMetadata(EvokerFangEffect.FANG_META)) {
+    String effects = EvokerFangEffect.FANG_EFFECT_MAP.getOrDefault(event.getDamager(), null);
+    if (StringUtils.isBlank(effects)) {
       return;
     }
-    String[] effects = event.getDamager().getMetadata(EvokerFangEffect.FANG_META).get(0).asString()
-        .split("~");
-    if (effects.length == 0) {
+
+    String[] split = effects.split("~");
+    if (split.length == 0) {
       return;
     }
     EvokerFangs fangs = (EvokerFangs) event.getDamager();
     StrifeMob attacker = strifeMobManager.getStatMob(Objects.requireNonNull(fangs.getOwner()));
-    for (String s : effects) {
+    for (String s : split) {
       effectManager.execute(effectManager.getEffect(s), attacker, (LivingEntity) event.getEntity());
     }
     event.setCancelled(true);

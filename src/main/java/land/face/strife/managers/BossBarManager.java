@@ -21,38 +21,40 @@ package land.face.strife.managers;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.SkillBossBar;
-import land.face.strife.data.StrifeBossBar;
+import land.face.strife.data.SkillBar;
+import land.face.strife.data.StatusBar;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BossBarManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, StrifeBossBar> barMap = new ConcurrentHashMap<>();
-  private final Map<UUID, SkillBossBar> skillBarMap = new HashMap<>();
+  private final Map<Player, StatusBar> statusBars = new WeakHashMap<>();
+  private final Map<Player, SkillBar> skillBars = new HashMap<>();
   private final List<String> deathMessages;
   private final int healthDuration;
   private final int skillDuration;
   private final Random random = new Random();
+
+  private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###,###");
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -62,249 +64,195 @@ public class BossBarManager {
     this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
 
-  private void createBars(StrifeMob target) {
-    if (barMap.containsKey(target.getEntity().getUniqueId())) {
+  private void createHealthBar(Player player, StrifeMob target) {
+    if (statusBars.containsKey(player)) {
       return;
     }
-    StrifeBossBar bossBar = new StrifeBossBar(target, makeBarrierBar(target), makeHealthBar());
-    updateBarTitle(bossBar, createBarTitle(target));
-    barMap.put(target.getEntity().getUniqueId(), bossBar);
+    BossBar barrierBar = makeBarrierBar();
+    barrierBar.addPlayer(player);
+    BossBar healthBar = makeHealthBar();
+    healthBar.addPlayer(player);
+
+    StatusBar bar = new StatusBar(target, healthBar, barrierBar);
+    bar.setLifeTicks(healthDuration);
+    bar.setHidden(false);
+    bar.setDead(false);
+
+    statusBars.put(player, bar);
   }
 
-  public SkillBossBar getSkillBar(Champion champion) {
-    if (skillBarMap.containsKey(champion.getUniqueId())
-        && skillBarMap.get(champion.getUniqueId()) != null
-        && skillBarMap.get(champion.getUniqueId()).getSkillBar() != null) {
-      SkillBossBar bar = skillBarMap.get(champion.getUniqueId());
-      for (Player p : bar.getSkillBar().getPlayers()) {
-        bar.getSkillBar().removePlayer(p);
-      }
-      bar.getSkillBar().addPlayer(champion.getPlayer());
-      return bar;
+  private void createSkillBar(Player player) {
+    if (skillBars.containsKey(player)) {
+      return;
     }
-    SkillBossBar skillBar = new SkillBossBar(champion, makeSkillBar());
-    skillBar.getSkillBar().setVisible(false);
-    skillBar.getSkillBar().addPlayer(champion.getPlayer());
-    skillBarMap.put(champion.getUniqueId(), skillBar);
-    return skillBar;
+    BossBar skillBar = makeSkillBar();
+    skillBar.addPlayer(player);
+
+    SkillBar bar = new SkillBar(plugin.getChampionManager().getChampion(player), skillBar);
+    bar.setLifeTicks(skillDuration);
+
+    skillBars.put(player, bar);
   }
 
-  public void bumpSkillBar(Champion champion, LifeSkillType lifeSkillType) {
+  void pushSkillBar(Player player, LifeSkillType lifeSkillType) {
+    createSkillBar(player);
     String name = lifeSkillType.getName();
-    SkillBossBar skillBar = getSkillBar(champion);
-    skillBar.getSkillBar().setVisible(true);
-    String barName = name + " Lv" + champion.getSaveData().getSkillLevel(lifeSkillType);
-    skillBar.getSkillBar().setTitle(barName);
-    skillBar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(champion, lifeSkillType));
-    skillBar.setDisplayTicks(skillDuration);
+    SkillBar bar = skillBars.get(player);
+    int level = bar.getOwner().getSaveData().getSkillLevel(lifeSkillType);
+    String xp = INT_FORMAT
+        .format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
+    String barName = TextUtils.color("&f" + name + " Lv" + level + " &8- " +
+        "&f(&a" + xp + "xp to " + (level + 1) + "&f)");
+    bar.getSkillBar().setTitle(barName);
+    bar.setLifeTicks(skillDuration);
+    bar.setLifeSkillType(lifeSkillType);
+    bar.getSkillBar().setVisible(true);
+    updateSkillBar(bar);
   }
 
   public void pushBar(Player player, StrifeMob target) {
-    createBars(target);
-    StrifeBossBar strifeBossBar = barMap.get(target.getEntity().getUniqueId());
-    for (StrifeBossBar bossBar : barMap.values()) {
-      if (bossBar.equals(strifeBossBar)) {
-        continue;
-      }
-      removePlayerFromBar(bossBar, player.getUniqueId());
-    }
-    addPlayerToBar(strifeBossBar, player);
-    updateBar(target);
-    refreshCounter(strifeBossBar, player.getUniqueId());
+    createHealthBar(player, target);
+    StatusBar bar = statusBars.get(player);
+    bar.setTarget(target);
+    bar.setLifeTicks(healthDuration);
+    bar.setHidden(false);
+    bar.setDead(false);
+    updateBar(bar);
   }
 
-  public void tickHealthBars() {
-    for (UUID uuid : barMap.keySet()) {
-      updateBar(barMap.get(uuid).getOwner());
-      tickDownBar(barMap.get(uuid));
-    }
-  }
-
-  public void tickSkillBars() {
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      SkillBossBar skillBossBar = skillBarMap.getOrDefault(player.getUniqueId(),
-          getSkillBar(plugin.getChampionManager().getChampion(player)));
-      if (!skillBossBar.getSkillBar().isVisible()) {
-        continue;
-      }
-      skillBossBar.setDisplayTicks(skillBossBar.getDisplayTicks() - 1);
-      if (skillBossBar.getDisplayTicks() < 1) {
-        skillBossBar.getSkillBar().setVisible(false);
+  public void doBarDeath(Player player) {
+    if (statusBars.containsKey(player)) {
+      StatusBar bossBar = statusBars.get(player);
+      if (!bossBar.isDead()) {
+        bossBar.setDead(true);
+        updateBarTitle(bossBar, deathMessages.get(random.nextInt(deathMessages.size())));
+        bossBar.getBarrierBar().setProgress(0);
+        bossBar.getHealthBar().setProgress(0);
+        bossBar.setLifeTicks(25);
       }
     }
   }
 
-  public void pruneOldBars() {
-    for (UUID uuid : barMap.keySet()) {
-      pruneBarIfNoOwners(uuid);
-    }
-  }
-
-  public void removeBar(UUID uuid) {
-    if (!barMap.containsKey(uuid)) {
+  private void updateBar(StatusBar bossBar) {
+    if (bossBar.isHidden()) {
       return;
     }
-    StrifeBossBar strifeBossBar = barMap.get(uuid);
-    barMap.remove(uuid);
-
-    strifeBossBar.getHealthBar().removeAll();
-    if (strifeBossBar.getBarrierBar() != null) {
-      strifeBossBar.getBarrierBar().removeAll();
-    }
-
-    strifeBossBar.setHealthBar(null);
-    strifeBossBar.setBarrierBar(null);
-  }
-
-  public void removeAllBars() {
-    for (UUID uuid : barMap.keySet()) {
-      removeBar(uuid);
-    }
-  }
-
-  private void addPlayerToBar(StrifeBossBar strifeBossBar, Player player) {
-    if (strifeBossBar.getBarrierBar() != null) {
-      if (!strifeBossBar.getBarrierBar().getPlayers().contains(player)) {
-        strifeBossBar.getBarrierBar().addPlayer(player);
-      }
-    }
-    if (!strifeBossBar.getHealthBar().getPlayers().contains(player)) {
-      strifeBossBar.getHealthBar().addPlayer(player);
-    }
-  }
-
-  public void doBarDeath(LivingEntity livingEntity) {
-    StrifeBossBar bossBar = barMap.getOrDefault(livingEntity.getUniqueId(), null);
-    if (bossBar != null) {
-      doBarDeath(bossBar);
-    }
-  }
-
-  public void doBarDeath(StrifeBossBar bossBar) {
-    bossBar.setDead(true);
-    updateBarTitle(bossBar, deathMessages.get(random.nextInt(deathMessages.size())));
-    if (bossBar.getBarrierBar() != null) {
-      bossBar.getBarrierBar().setProgress(0);
-    }
-    bossBar.getHealthBar().setProgress(0);
-    for (UUID playerUuid : bossBar.getPlayerUuidTickMap().keySet()) {
-      bossBar.getPlayerUuidTickMap().put(playerUuid, 25);
-    }
-  }
-
-  private void pruneBarIfNoOwners(UUID uuid) {
-    if (barMap.get(uuid).getPlayerUuidTickMap().isEmpty()) {
-      removeBar(uuid);
-    }
-  }
-
-  private void tickDownBar(StrifeBossBar strifeBossBar) {
-    if (strifeBossBar == null) {
+    bossBar.setLifeTicks(bossBar.getLifeTicks() - 1);
+    if (bossBar.getTarget() == null || bossBar.getLifeTicks() < 1) {
+      bossBar.setHidden(true);
       return;
     }
-    for (UUID barPlayer : strifeBossBar.getPlayerUuidTickMap().keySet()) {
-      int ticksRemaining = strifeBossBar.getPlayerUuidTickMap().get(barPlayer);
-      if (ticksRemaining < 1) {
-        removePlayerFromBar(strifeBossBar, barPlayer);
-        continue;
-      }
-      strifeBossBar.getPlayerUuidTickMap().replace(barPlayer, ticksRemaining - 1);
-    }
-    pruneBarIfNoOwners(strifeBossBar.getOwner().getEntity().getUniqueId());
-  }
-
-  private void updateBar(StrifeMob barOwner) {
-    UUID uuid = barOwner.getEntity().getUniqueId();
-    StrifeBossBar strifeBossBar = barMap.get(uuid);
-    if (!strifeBossBar.isDead() && !strifeBossBar.getOwner().getEntity().isValid()) {
-      removeBar(barOwner.getEntity().getUniqueId());
+    if (bossBar.isDead()) {
       return;
     }
-    if (strifeBossBar.isDead()) {
+    if (bossBar.getTarget().getEntity() == null || !bossBar.getTarget().getEntity().isValid()) {
+      bossBar.setHidden(true);
       return;
     }
-    updateBarrierProgress(strifeBossBar);
-    updateHealthProgress(strifeBossBar);
-    updateBarTitle(strifeBossBar, createBarTitle(barOwner));
+    updateBarTitle(bossBar, createBarTitle(bossBar.getTarget()));
+    updateBarrierProgress(bossBar);
+    updateHealthProgress(bossBar);
   }
 
-  private void removePlayerFromBar(StrifeBossBar strifeBossBar, Player player) {
-    if (strifeBossBar == null || strifeBossBar.getPlayerUuidTickMap().isEmpty()) {
+  private void updateSkillBar(SkillBar skillBar) {
+    if (!skillBar.getSkillBar().isVisible()) {
       return;
     }
-    strifeBossBar.getPlayerUuidTickMap().remove(player.getUniqueId());
-    if (strifeBossBar.getBarrierBar() != null) {
-      strifeBossBar.getBarrierBar().removePlayer(player);
-    }
-    strifeBossBar.getHealthBar().removePlayer(player);
-  }
-
-  private void removePlayerFromBar(StrifeBossBar strifeBossBar, UUID uuid) {
-    Player player = Bukkit.getPlayer(uuid);
-    if (player == null) {
+    if (skillBar.getLifeTicks() < 1) {
+      skillBar.getSkillBar().setVisible(false);
       return;
     }
-    removePlayerFromBar(strifeBossBar, player);
+    skillBar.setLifeTicks(skillBar.getLifeTicks() - 1);
+    updateSkillProgress(skillBar);
   }
 
-  private void refreshCounter(StrifeBossBar strifeBossBar, UUID uuid) {
-    if (strifeBossBar.isDead()) {
-      return;
-    }
-    strifeBossBar.getPlayerUuidTickMap().put(uuid, healthDuration);
-  }
-
-  private void updateHealthProgress(StrifeBossBar bar) {
-    double health = bar.getOwner().getEntity().getHealth();
-    double maxHealth = bar.getOwner().getEntity().getAttribute(GENERIC_MAX_HEALTH).getValue();
+  private void updateHealthProgress(StatusBar bar) {
+    double health = bar.getTarget().getEntity().getHealth();
+    double maxHealth = bar.getTarget().getEntity().getAttribute(GENERIC_MAX_HEALTH).getValue();
     bar.getHealthBar().setProgress(Math.min(health / maxHealth, 1D));
   }
 
-  private void updateBarrierProgress(StrifeBossBar bar) {
-    if (StatUtil.getMaximumBarrier(bar.getOwner()) < 1) {
-      bar.setBarrierBar(null);
+  private void updateBarrierProgress(StatusBar bar) {
+    if (StatUtil.getMaximumBarrier(bar.getTarget()) < 1) {
+      bar.getBarrierBar().setVisible(false);
       return;
     }
-    double barrier = plugin.getBarrierManager().getCurrentBarrier(bar.getOwner());
-    double maxBarrier = StatUtil.getMaximumBarrier(bar.getOwner());
+    double barrier = plugin.getBarrierManager().getCurrentBarrier(bar.getTarget());
+    double maxBarrier = StatUtil.getMaximumBarrier(bar.getTarget());
     bar.getBarrierBar().setProgress(Math.min(barrier / maxBarrier, 1D));
   }
 
-  private BossBar makeSkillBar() {
-    return plugin.getServer().createBossBar("skillbar", BarColor.GREEN, BarStyle.SOLID,
-        new BarFlag[0]);
+  private void updateSkillProgress(SkillBar bar) {
+    bar.getSkillBar().setProgress(
+        PlayerDataUtil.getSkillProgress(bar.getOwner(), bar.getLifeSkillType()));
   }
 
-  private BossBar makeHealthBar() {
-    return plugin.getServer().createBossBar("healthbar", BarColor.RED, BarStyle.SOLID,
-        new BarFlag[0]);
-  }
-
-  private BossBar makeBarrierBar(StrifeMob entity) {
-    if (StatUtil.getMaximumBarrier(entity) < 1) {
-      return null;
+  public void tickBars() {
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      StatusBar bar = statusBars.get(p);
+      if (bar != null) {
+        updateBar(bar);
+      }
+      SkillBar skillBar = skillBars.get(p);
+      if (skillBar != null) {
+        updateSkillBar(skillBar);
+      }
     }
-    return plugin.getServer().createBossBar("barrierBar", BarColor.WHITE, BarStyle.SOLID,
-        new BarFlag[0]);
   }
 
   private String createBarTitle(StrifeMob barOwner) {
-    String customName = barOwner.getEntity().getCustomName();
-    if (StringUtils.isBlank(customName)) {
-      return StringUtils.capitalize(barOwner.getEntity().getName().replace('_', ' '));
+    String name;
+    if (barOwner.getEntity() instanceof Player) {
+      name = (barOwner.getEntity().getName()) + ChatColor.GRAY + " Lv"
+          + ((Player) barOwner.getEntity()).getLevel();
+    } else if (StringUtils.isNotBlank(barOwner.getEntity().getCustomName())) {
+      name = barOwner.getEntity().getCustomName();
+    } else {
+      name = WordUtils.capitalizeFully(
+          barOwner.getEntity().getType().toString().replaceAll("_", " "));
     }
-    return customName;
+    name += "   ";
+    if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
+      name = name + ChatColor.WHITE + INT_FORMAT.format(StatUtil.getBarrier(barOwner)) + "❤ ";
+    }
+    name = name + ChatColor.RED + INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";
+    return name;
   }
 
-  private void updateBarTitle(StrifeBossBar bossBar, String title) {
-    if (bossBar.getHealthBar() == null) {
-      return;
-    }
-    if (bossBar.getBarrierBar() != null) {
+  private void updateBarTitle(StatusBar bossBar, String title) {
+    if (bossBar.getBarrierBar().isVisible()) {
       bossBar.getBarrierBar().setTitle(title);
       bossBar.getHealthBar().setTitle(null);
-      return;
+    } else {
+      bossBar.getBarrierBar().setTitle(null);
+      bossBar.getHealthBar().setTitle(title);
     }
-    bossBar.getHealthBar().setTitle(title);
+  }
+
+  public void clearBars() {
+    for (Player p : statusBars.keySet()) {
+      statusBars.get(p).getBarrierBar().removeAll();
+      statusBars.get(p).getHealthBar().removeAll();
+    }
+    statusBars.clear();
+    for (Player p : skillBars.keySet()) {
+      skillBars.get(p).getSkillBar().removeAll();
+    }
+    skillBars.clear();
+  }
+
+  private static BossBar makeSkillBar() {
+    return StrifePlugin.getInstance().getServer()
+        .createBossBar("skillbar", BarColor.GREEN, BarStyle.SOLID);
+  }
+
+  private static BossBar makeHealthBar() {
+    return StrifePlugin.getInstance().getServer()
+        .createBossBar("healthbar", BarColor.RED, BarStyle.SOLID);
+  }
+
+  private static BossBar makeBarrierBar() {
+    return StrifePlugin.getInstance().getServer()
+        .createBossBar("barrierBar", BarColor.WHITE, BarStyle.SOLID);
   }
 }

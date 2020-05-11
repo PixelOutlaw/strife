@@ -30,21 +30,22 @@ public class Summon extends LocationEffect {
     if (caster.getMinions().size() >= caster.getStat(StrifeStat.MAX_MINIONS)) {
       return;
     }
+
     StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager()
         .spawnUnique(uniqueEntity, location);
+
     if (summonedEntity == null || summonedEntity.getEntity() == null) {
       return;
     }
+
     LivingEntity summon = summonedEntity.getEntity();
-    summon.setMaxHealth(summon.getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100)));
-    summon.setHealth(summon.getMaxHealth());
     caster.addMinion(summonedEntity);
 
     StrifePlugin.getInstance().getMinionManager()
         .addMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
 
     if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
-      ((Mob)summon).setTarget(((Mob) caster.getEntity()).getTarget());
+      ((Mob) summon).setTarget(((Mob) caster.getEntity()).getTarget());
     }
 
     if (summon instanceof Tameable && caster.getEntity() instanceof Player) {
@@ -52,13 +53,16 @@ public class Summon extends LocationEffect {
     }
 
     if (soundEffect != null) {
-      PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager().getEffect(soundEffect);
+      PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager()
+          .getEffect(soundEffect);
       sound.applyAtLocation(caster, summon.getLocation());
     }
 
     if (mount) {
       summon.addPassenger(caster.getEntity());
     }
+    double maxHealth = summon.getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
+    summon.setHealth(maxHealth);
   }
 
   public void setUniqueEntity(String uniqueEntity) {

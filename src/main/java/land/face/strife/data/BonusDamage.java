@@ -4,14 +4,14 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.DamageUtil.DamageType;
 
-public class DamageContainer {
+public class BonusDamage {
 
-  private DamageScale damageScale;
-  private DamageType damageType;
-  private StrifeStat damageStat;
-  private float amount;
+  private final DamageScale damageScale;
+  private final DamageType damageType;
+  private final StrifeStat damageStat;
+  private final float amount;
 
-  public DamageContainer(DamageScale damageScale, DamageType damageType,
+  public BonusDamage(DamageScale damageScale, DamageType damageType,
       StrifeStat damageStat, float amount) {
     this.damageScale = damageScale;
     this.damageType = damageType;

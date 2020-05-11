@@ -1,7 +1,8 @@
 package land.face.strife.util;
 
+import java.util.Map;
 import java.util.Random;
-import land.face.strife.StrifePlugin;
+import java.util.WeakHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Sound;
@@ -13,17 +14,50 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Trident;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 public class ProjectileUtil {
 
-  public final static String ATTACK_SPEED_META = "AS_MULT";
-  public final static String SNEAK_ATTACK_META = "SNEAK_SHOT";
-  public final static String SHOT_ID_META = "SHOT_ID";
   private static int shotId = 1;
 
+  private static final Map<Projectile, Boolean> GROUND_TRIGGER = new WeakHashMap<>();
+  private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
+  private static final Map<Projectile, String> HIT_EFFECTS = new WeakHashMap<>();
+  private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
+
   private static final Random RANDOM = new Random(System.currentTimeMillis());
+
+  public static void setGroundTrigger(Projectile projectile) {
+    GROUND_TRIGGER.put(projectile, true);
+  }
+
+  public static boolean isGroundTrigger(Projectile projectile) {
+    return GROUND_TRIGGER.containsKey(projectile);
+  }
+
+  public static void setAttackMult(Projectile projectile, float mult) {
+    ATTACK_MULT.put(projectile, mult);
+  }
+
+  public static float getAttackMult(Projectile projectile) {
+    return ATTACK_MULT.getOrDefault(projectile, 1f);
+  }
+
+  public static void setShotId(Projectile projectile) {
+    SHOT_ID.put(projectile, shotId);
+  }
+
+  public static int getShotId(Projectile projectile) {
+      return SHOT_ID.getOrDefault(projectile, 0);
+  }
+
+  public static void setHitEffects(Projectile projectile, String effectString) {
+    HIT_EFFECTS.put(projectile, effectString);
+  }
+
+  public static String getHitEffects(Projectile projectile) {
+    return HIT_EFFECTS.get(projectile);
+  }
 
   public static int getTotalProjectiles(double initialProjectiles, double multiShot) {
     double projectiles = initialProjectiles;
@@ -38,15 +72,15 @@ public class ProjectileUtil {
   }
 
   public static void shootWand(StrifeMob mob, double attackMult) {
-    float projectileSpeed = 1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    float projectileSpeed = 0.9f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.23, true);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.24, true);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
       ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed,
-          randomWandOffset(projectiles), 0.23, true);
+          randomWandOffset(projectiles), 0.24, true);
     }
 
     mob.getEntity().getWorld()
@@ -55,15 +89,15 @@ public class ProjectileUtil {
   }
 
   public static void shootArrow(StrifeMob mob, float attackMult) {
-    float projectileSpeed = 2.5f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    float projectileSpeed = 1.65f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.17);
+    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.185);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
       ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
-          randomOffset(projectiles), 0.17);
+          randomOffset(projectiles), 0.185);
     }
     shotId++;
   }
@@ -77,15 +111,12 @@ public class ProjectileUtil {
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
 
-    setProjctileAttackSpeedMeta(arrow, attackMult);
-    setProjectileShotIdMeta(arrow);
+    setAttackMult(arrow, (float) attackMult);
+    setShotId(arrow);
 
     if (shooter instanceof Player) {
       if (attackMult > 0.95) {
         arrow.setCritical(true);
-      }
-      if (((Player) shooter).isSneaking()) {
-        ProjectileUtil.setProjectileSneakMeta(arrow);
       }
     }
   }
@@ -99,12 +130,8 @@ public class ProjectileUtil {
     bullet.setShooter(shooter);
     bullet.setGravity(gravity);
 
-    setProjctileAttackSpeedMeta(bullet, attackMult);
-    setProjectileShotIdMeta(bullet);
-
-    if (shooter instanceof Player && ((Player) shooter).isSneaking()) {
-      setProjectileSneakMeta(bullet);
-    }
+    setAttackMult(bullet, (float) attackMult);
+    setShotId(bullet);
   }
 
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
@@ -136,24 +163,7 @@ public class ProjectileUtil {
         .spawn(trident.getLocation(), Trident.class, e -> e.setVelocity(vector));
     newTrident.setShooter(shooter);
     newTrident.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    ProjectileUtil.setProjctileAttackSpeedMeta(trident, attackMult);
-    if (shooter.isSneaking()) {
-      ProjectileUtil.setProjectileSneakMeta(trident);
-    }
-  }
-
-  public static void setProjctileAttackSpeedMeta(Projectile proj, double attackMult) {
-    proj.setMetadata(ATTACK_SPEED_META,
-        new FixedMetadataValue(StrifePlugin.getInstance(), attackMult));
-  }
-
-  public static void setProjectileSneakMeta(Projectile projectile) {
-    projectile.setMetadata(SNEAK_ATTACK_META,
-        new FixedMetadataValue(StrifePlugin.getInstance(), true));
-  }
-
-  public static void setProjectileShotIdMeta(Projectile proj) {
-    proj.setMetadata(SHOT_ID_META, new FixedMetadataValue(StrifePlugin.getInstance(), shotId));
+    setAttackMult(trident, attackMult);
   }
 
   public static boolean isProjectile(EntityType entityType) {

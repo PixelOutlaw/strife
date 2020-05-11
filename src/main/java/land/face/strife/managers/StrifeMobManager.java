@@ -1,8 +1,7 @@
 package land.face.strife.managers;
 
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
@@ -10,21 +9,25 @@ import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.stats.StrifeStat;
-import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class StrifeMobManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, StrifeMob> trackedEntities = new ConcurrentHashMap<>();
+  private final Map<LivingEntity, StrifeMob> trackedEntities = new WeakHashMap<>();
 
   public StrifeMobManager(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
+  public Map<LivingEntity, StrifeMob> getMobs() {
+    return trackedEntities;
+  }
+
   public StrifeMob getStatMob(LivingEntity entity) {
-    if (!trackedEntities.containsKey(entity.getUniqueId())) {
+    if (!trackedEntities.containsKey(entity)) {
       StrifeMob strifeMob;
       if (entity instanceof Player) {
         strifeMob = new StrifeMob(plugin.getChampionManager().getChampion((Player) entity));
@@ -32,10 +35,9 @@ public class StrifeMobManager {
         strifeMob = new StrifeMob(entity);
       }
       strifeMob.setStats(plugin.getMonsterManager().getBaseStats(entity));
-      trackedEntities.put(entity.getUniqueId(), strifeMob);
+      trackedEntities.put(entity, strifeMob);
     }
-    StrifeMob strifeMob = trackedEntities.get(entity.getUniqueId());
-    strifeMob.setLivingEntity(entity);
+    StrifeMob strifeMob = trackedEntities.get(entity);
     plugin.getBarrierManager().createBarrierEntry(strifeMob);
     return strifeMob;
   }
@@ -58,77 +60,49 @@ public class StrifeMobManager {
     mob.getTempEffects().add(finiteUsesEffect);
   }
 
-  public void addBuff(UUID uuid, String buffId, double durationMultiplier) {
-    addBuff(uuid, plugin.getBuffManager().getBuffFromId(buffId), durationMultiplier);
+  public void addBuff(LivingEntity entity, String buffId, double durationMultiplier) {
+    addBuff(entity, plugin.getBuffManager().getBuffFromId(buffId), durationMultiplier);
   }
 
-  public void addBuff(UUID uuid, LoadedBuff loadedBuff, double durationMultiplier) {
-    StrifeMob strifeMob = trackedEntities.get(uuid);
+  public void addBuff(LivingEntity entity, LoadedBuff loadedBuff, double durationMultiplier) {
+    StrifeMob strifeMob = trackedEntities.get(entity);
     Buff buff = plugin.getBuffManager().buildFromLoadedBuff(loadedBuff);
     strifeMob.addBuff(loadedBuff.getId(), buff, loadedBuff.getSeconds() * durationMultiplier);
-  }
-
-  public int removeInvalidEntities() {
-    int initialSize = trackedEntities.size();
-    for (UUID uuid : trackedEntities.keySet()) {
-      LivingEntity le = trackedEntities.get(uuid).getEntity();
-      if (le != null && le.isValid()) {
-        continue;
-      }
-      remove(uuid);
-      plugin.getCounterManager().clearCounters(uuid);
-    }
-    return initialSize - trackedEntities.size();
   }
 
   public StrifeMob setEntityStats(LivingEntity entity, Map<StrifeStat, Float> statMap) {
     StrifeMob strifeMob = getStatMob(entity);
     strifeMob.setStats(statMap);
-    trackedEntities.put(entity.getUniqueId(), strifeMob);
+    trackedEntities.put(entity, strifeMob);
     return strifeMob;
   }
 
   public void despawnAllTempEntities() {
     for (StrifeMob strifeMob : trackedEntities.values()) {
       if (strifeMob.getEntity().isValid() && strifeMob.isDespawnOnUnload()) {
-        remove(strifeMob.getEntity().getUniqueId());
+        strifeMob.getEntity().remove();
       }
     }
+  }
+
+  public void removeEntity(LivingEntity entity) {
+    if (entity.getPassengers().size() > 0 && entity.getPassengers().get(0) instanceof Item) {
+      entity.getPassengers().get(0).remove();
+    }
+    trackedEntities.remove(entity);
   }
 
   public void doChunkDespawn(LivingEntity entity) {
     if (!isTrackedEntity(entity)) {
       return;
     }
-    if (trackedEntities.get(entity.getUniqueId()).isDespawnOnUnload()) {
-      remove(entity.getUniqueId());
+    if (trackedEntities.get(entity).isDespawnOnUnload()) {
+      entity.remove();
+      removeEntity(entity);
     }
   }
 
-  public StrifeMob getMobUnsafe(UUID uuid) {
-    return trackedEntities.getOrDefault(uuid, null);
-  }
-
-  public void removeMob(LivingEntity entity) {
-    remove(entity.getUniqueId());
-  }
-
-  public void removeMob(UUID uuid) {
-    remove(uuid);
-  }
-
-  public void remove(UUID uuid) {
-    StrifeMob mob = trackedEntities.get(uuid);
-    if (mob != null) {
-      if (mob.getEntity().isValid() && !(mob.getEntity() instanceof Player)) {
-        mob.getEntity().remove();
-      }
-      mob.killAllTasks();
-      trackedEntities.remove(uuid);
-    }
-  }
-
-  public boolean isTrackedEntity(Entity entity) {
-    return trackedEntities.containsKey(entity.getUniqueId());
+  public boolean isTrackedEntity(LivingEntity entity) {
+    return trackedEntities.containsKey(entity);
   }
 }

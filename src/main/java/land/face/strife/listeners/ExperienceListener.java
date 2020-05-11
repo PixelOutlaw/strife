@@ -27,6 +27,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.events.UniqueKillEvent;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -59,13 +60,15 @@ public class ExperienceListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onXpShare(EntityDeathEvent event) {
-    if (event.getDroppedExp() == 0 || event.getEntity().hasMetadata("SPAWNED")) {
+    if (event.getDroppedExp() == 0 || SpecialStatusUtil.isSpawnerMob(event.getEntity())) {
       return;
     }
-    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
-    if (mob == null) {
+
+    if (!plugin.getStrifeMobManager().isTrackedEntity(event.getEntity())) {
       return;
     }
+
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
 
     Player killer = mob.getKiller();
     if (killer == null) {
@@ -100,11 +103,13 @@ public class ExperienceListener implements Listener {
 
     int levelDiff = Math.max(Math.abs(mobLevel - highestPlayerLevel),
         Math.abs(mobLevel - lowestPlayerLevel));
+
+    float expMultiplier = 1f / killers.size() + ((killers.size() - 1) * 0.2f);
+    if (levelDiff > 7) {
+      expMultiplier *= Math.pow(0.98, Math.pow(levelDiff - 7, 2));
+    }
+
     for (Player player : killers) {
-      float expMultiplier = (1f / killers.size()) + ((killers.size() - 1) * 0.2f);
-      if (levelDiff > 7) {
-        expMultiplier *= Math.pow(0.98, Math.pow(levelDiff - 7, 2));
-      }
       plugin.getExperienceManager().addExperience(player, (droppedXp * expMultiplier), false);
     }
   }
@@ -121,7 +126,14 @@ public class ExperienceListener implements Listener {
     if (penaltyFreeWorlds.contains(p.getWorld().getName())) {
       return;
     }
+    if (p.getKiller() != null) {
+      return;
+    }
     if (p.getLevel() >= 100) {
+      return;
+    }
+    if (p.getLevel() < 10) {
+      sendMessage(p, "&cYou lost &f0 XP &cfrom dying &a(No loss below level 10!)");
       return;
     }
     PlayerInventory inv = p.getInventory();
@@ -132,7 +144,7 @@ public class ExperienceListener implements Listener {
     } else {
       double xpToLevel = plugin.getLevelingRate().get(p.getLevel());
       lostXP = Math.min(xpToLevel * 0.025, p.getExp() * xpToLevel);
-      sendMessage(p, "<red>You lost <gold>" + (int) lostXP + " XP<red>!");
+      sendMessage(p, "&cAlas! You lost &f" + (int) lostXP + " XP &cfrom dying!");
       p.setExp(Math.max(p.getExp() - 0.025f, 0.00001f));
     }
     plugin.getSoulManager().setLostExp(p, lostXP);

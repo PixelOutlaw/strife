@@ -3,7 +3,6 @@ package land.face.strife.managers;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
-import io.netty.util.internal.ConcurrentSet;
 import java.util.HashSet;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -34,7 +33,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 public class SoulManager {
 
   private StrifePlugin plugin;
-  private Set<SoulTimer> souls = new ConcurrentSet<>();
+  private Set<SoulTimer> souls = new HashSet<>();
   private Set<String> deathWorlds = new HashSet<>();
   private String reviveMessage;
   private String soulName;
@@ -61,11 +60,15 @@ public class SoulManager {
   }
 
   public void createSoul(Player player) {
+    SoulTimer oldSoul = null;
     for (SoulTimer soulTimer : souls) {
       if (soulTimer.getOwner() == player.getUniqueId()) {
-        removeSoul(soulTimer);
+        oldSoul = soulTimer;
         break;
       }
+    }
+    if (oldSoul != null) {
+      removeSoul(oldSoul);
     }
     Location location = TargetingUtil.getOriginLocation(player, OriginLocation.CENTER);
 

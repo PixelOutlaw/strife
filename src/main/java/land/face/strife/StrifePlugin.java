@@ -86,6 +86,7 @@ import land.face.strife.managers.AttackSpeedManager;
 import land.face.strife.managers.BarrierManager;
 import land.face.strife.managers.BleedManager;
 import land.face.strife.managers.BlockManager;
+import land.face.strife.managers.BoostManager;
 import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.BuffManager;
 import land.face.strife.managers.ChampionManager;
@@ -98,7 +99,6 @@ import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.EnergyManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
-import land.face.strife.managers.GlobalBoostManager;
 import land.face.strife.managers.IndicatorManager;
 import land.face.strife.managers.LoreAbilityManager;
 import land.face.strife.managers.MinionManager;
@@ -126,21 +126,21 @@ import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.AbilityTickTask;
 import land.face.strife.tasks.BarrierTask;
+import land.face.strife.tasks.BoostTickTask;
 import land.face.strife.tasks.BossBarsTask;
 import land.face.strife.tasks.CombatStatusTask;
+import land.face.strife.tasks.DamageOverTimeTask;
 import land.face.strife.tasks.EnergyRegenTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.ForceAttackSpeed;
-import land.face.strife.tasks.GlobalMultiplierTask;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.MinionDecayTask;
 import land.face.strife.tasks.ParticleTask;
-import land.face.strife.tasks.PruneBossBarsTask;
 import land.face.strife.tasks.RegenTask;
 import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
 import land.face.strife.tasks.StealthParticleTask;
-import land.face.strife.tasks.TrackedPruneTask;
+import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
@@ -214,7 +214,7 @@ public class StrifePlugin extends FacePlugin {
   private CombatStatusManager combatStatusManager;
   private SpawnerManager spawnerManager;
   private MobModManager mobModManager;
-  private GlobalBoostManager globalBoostManager;
+  private BoostManager boostManager;
   private SoulManager soulManager;
   private EnergyManager energyManager;
   private WSEManager wseManager;
@@ -224,6 +224,7 @@ public class StrifePlugin extends FacePlugin {
 
   private List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
+  private DamageOverTimeTask damageOverTimeTask;
   private EnergyRegenTask energyRegenTask;
   private RegenTask regenTask;
 
@@ -242,9 +243,12 @@ public class StrifePlugin extends FacePlugin {
     return instance;
   }
 
+  public StrifePlugin() {
+    instance = this;
+  }
+
   @Override
   public void enable() {
-    instance = this;
     debugPrinter = new PluginLogger(this);
 
     List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();
@@ -293,7 +297,7 @@ public class StrifePlugin extends FacePlugin {
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager();
     equipmentManager = new EntityEquipmentManager();
-    globalBoostManager = new GlobalBoostManager();
+    boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
     energyManager = new EnergyManager(this);
     barrierManager = new BarrierManager();
@@ -339,20 +343,20 @@ public class StrifePlugin extends FacePlugin {
     loadSpawners();
 
     SaveTask saveTask = new SaveTask(this);
-    TrackedPruneTask trackedPruneTask = new TrackedPruneTask(this);
+    StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
     StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BarrierTask barrierTask = new BarrierTask(this);
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
-    GlobalMultiplierTask globalMultiplierTask = new GlobalMultiplierTask(globalBoostManager);
-    PruneBossBarsTask pruneBossBarsTask = new PruneBossBarsTask(bossBarManager);
+    BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     SpawnerSpawnTask spawnerSpawnTask = new SpawnerSpawnTask(spawnerManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     CombatStatusTask combatStatusTask = new CombatStatusTask(combatStatusManager);
     EveryTickTask everyTickTask = new EveryTickTask();
     IndicatorTask indicatorTask = new IndicatorTask(this);
+    damageOverTimeTask = new DamageOverTimeTask(this);
     particleTask = new ParticleTask();
     energyRegenTask = new EnergyRegenTask(this);
     regenTask = new RegenTask(this);
@@ -383,9 +387,9 @@ public class StrifePlugin extends FacePlugin {
         20L * 5, // Start save after 5s
         9L // Run slightly more often than every 0.5s to catch odd rounding
     ));
-    taskList.add(trackedPruneTask.runTaskTimer(this,
+    taskList.add(strifeMobTracker.runTaskTimer(this,
         20L * 61, // Start save after 1 minute
-        20L * 60 // Run every 1 minute after that
+        20L * 120 // Run every 2 minutes after that
     ));
     taskList.add(saveTask.runTaskTimer(this,
         20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
@@ -407,6 +411,10 @@ public class StrifePlugin extends FacePlugin {
         11 * 20L, // Start timer after 11s
         2L // Run it every 1/5th of a second after
     ));
+    taskList.add(damageOverTimeTask.runTaskTimer(this,
+        20L, // Start timer after 11s
+        5L // Run it every 5 ticks
+    ));
     taskList.add(bossBarsTask.runTaskTimer(this,
         240L, // Start timer after 12s
         2L // Run it every 1/10th of a second after
@@ -415,13 +423,9 @@ public class StrifePlugin extends FacePlugin {
         220L, // Start timer after 11s
         11L
     ));
-    taskList.add(globalMultiplierTask.runTaskTimer(this,
-        20L * 15, // Start timer after 15s
-        20L * 60 // Run it every minute after
-    ));
-    taskList.add(pruneBossBarsTask.runTaskTimer(this,
-        20L * 13, // Start timer after 13s
-        20L * 60 * 7 // Run it every 7 minutes
+    taskList.add(boostTickTask.runTaskTimer(this,
+        20L,
+        20L
     ));
     taskList.add(particleTask.runTaskTimer(this,
         2L,
@@ -451,9 +455,14 @@ public class StrifePlugin extends FacePlugin {
         3 * 20L + 2L, // Start timer after 3s
         20L
     ));
+    taskList.add(Bukkit.getScheduler().runTaskTimer(this,
+        () -> boostManager.checkBoostSchedule(),
+        60L,
+        20L * 900
+    ));
 
-    globalBoostManager.startScheduledEvents();
     agilityManager.loadAgilityContainers();
+    boostManager.loadBoosts();
 
     Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
@@ -483,7 +492,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
-    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
+    Bukkit.getPluginManager()
+        .registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
@@ -500,9 +510,11 @@ public class StrifePlugin extends FacePlugin {
       menu.setId(menuId);
 
       String name = abilityMenus.getString(menuId + ".name", "CONFIGURE ME");
+      List<String> lore = abilityMenus.getStringList(menuId + ".lore");
       Material material = Material.valueOf(abilityMenus.getString(menuId + ".material", "BARRIER"));
       int slot = abilityMenus.getInt(menuId + ".slot", 0);
-      AbilityPickerPickerItem subMenuIcon = new AbilityPickerPickerItem(menu, material, name, slot);
+      AbilityPickerPickerItem subMenuIcon = new AbilityPickerPickerItem(menu, material, name, lore,
+          slot);
       pickerItems.add(subMenuIcon);
     }
 
@@ -530,13 +542,14 @@ public class StrifePlugin extends FacePlugin {
   @Override
   public void disable() {
     saveSpawners();
+    boostManager.saveBoosts();
     storage.saveAll();
 
     HandlerList.unregisterAll(this);
     Bukkit.getScheduler().cancelTasks(this);
 
     strifeMobManager.despawnAllTempEntities();
-    bossBarManager.removeAllBars();
+    bossBarManager.clearBars();
     agilityManager.saveLocations();
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
@@ -661,12 +674,12 @@ public class StrifePlugin extends FacePlugin {
 
   private void loadScheduledBoosts() {
     ConfigurationSection cs = globalBoostsYAML.getConfigurationSection("scheduled-boosts");
-    globalBoostManager.loadScheduledBoosts(cs);
+    boostManager.loadScheduledBoosts(cs);
   }
 
   private void loadBoosts() {
     ConfigurationSection cs = globalBoostsYAML.getConfigurationSection("boost-templates");
-    globalBoostManager.loadStatBoosts(cs);
+    boostManager.loadStatBoosts(cs);
   }
 
   private void buildUniqueEnemies() {
@@ -692,7 +705,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
       uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
-      uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", true));
+      uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", false));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
@@ -707,6 +720,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setSize(cs.getInt("size", -1));
       uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
+      uniqueEntity.setAngry(cs.getBoolean("angry", false));
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
       Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
@@ -722,6 +736,11 @@ public class StrifePlugin extends FacePlugin {
 
       ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");
       uniqueEntity.setEquipment(equipmentManager.buildEquipmentFromConfigSection(equipmentCS));
+
+      String passengerItem = cs.getString("item-passenger", "");
+      if (StringUtils.isNotBlank(passengerItem)) {
+        uniqueEntity.setItemPassenger(equipmentManager.getItem(passengerItem));
+      }
 
       String particle = cs.getString("particle", "");
       if (StringUtils.isNotBlank(particle)) {
@@ -787,6 +806,10 @@ public class StrifePlugin extends FacePlugin {
         spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
         LogUtil.printDebug("Spawner " + spawnerId + " has been removed.");
       }
+    }
+    if (spawnerManager.getSpawnerMap().size() == 0) {
+      Bukkit.getLogger().warning("Spawner map size in memory is 0. Not saving.");
+      return;
     }
     for (String spawnerId : spawnerManager.getSpawnerMap().keySet()) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
@@ -887,8 +910,8 @@ public class StrifePlugin extends FacePlugin {
     return spawnerManager;
   }
 
-  public GlobalBoostManager getGlobalBoostManager() {
-    return globalBoostManager;
+  public BoostManager getBoostManager() {
+    return boostManager;
   }
 
   public SoulManager getSoulManager() {
@@ -977,6 +1000,10 @@ public class StrifePlugin extends FacePlugin {
 
   public EnergyRegenTask getEnergyRegenTask() {
     return energyRegenTask;
+  }
+
+  public DamageOverTimeTask getDamageOverTimeTask() {
+    return damageOverTimeTask;
   }
 
   public RegenTask getRegenTask() {

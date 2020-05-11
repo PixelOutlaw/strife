@@ -24,6 +24,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -71,7 +72,7 @@ public class DataListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGH)
   public void onEntityCombust(final EntityCombustEvent event) {
     if (event instanceof EntityCombustByEntityEvent) {
       return;
@@ -79,14 +80,14 @@ public class DataListener implements Listener {
     if (event instanceof EntityCombustByBlockEvent) {
       return;
     }
-    if (event.getEntity().hasMetadata("NO_BURN")) {
+    if (SpecialStatusUtil.isBurnImmune(event.getEntity())) {
       event.setCancelled(true);
     }
   }
 
   @EventHandler
   public void onTameUnique(final EntityTameEvent event) {
-    if (plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId()) != null) {
+    if (!plugin.getStrifeMobManager().isTrackedEntity(event.getEntity())) {
       return;
     }
     event.setCancelled(true);
@@ -117,8 +118,7 @@ public class DataListener implements Listener {
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
-    plugin.getBossBarManager().getSkillBar(champion);
-    plugin.getCounterManager().clearCounters(event.getPlayer().getUniqueId());
+    plugin.getCounterManager().clearCounters(event.getPlayer());
     ensureAbilitiesDontInstantCast(event.getPlayer());
     Bukkit.getScheduler().runTaskLater(plugin,
         () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 2L);
@@ -142,11 +142,10 @@ public class DataListener implements Listener {
 
   private void doPlayerLeave(Player player) {
     plugin.getAbilityManager().savePlayerCooldowns(player);
-    plugin.getBossBarManager().removeBar(player.getUniqueId());
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
-    plugin.getCounterManager().clearCounters(player.getUniqueId());
+    plugin.getCounterManager().clearCounters(player);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -156,11 +155,10 @@ public class DataListener implements Listener {
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
     plugin.getCorruptionManager().clearCorrupt(event.getPlayer().getUniqueId());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
-    plugin.getBossBarManager().removeBar(event.getPlayer().getUniqueId());
     plugin.getBarrierManager().createBarrierEntry(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
-    plugin.getCounterManager().clearCounters(event.getPlayer().getUniqueId());
+    plugin.getCounterManager().clearCounters(event.getPlayer());
     plugin.getEnergyManager().setEnergyUnsafe(event.getPlayer().getUniqueId(), 50000);
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
     Bukkit.getScheduler().runTaskLater(plugin, () ->
@@ -173,7 +171,7 @@ public class DataListener implements Listener {
         .getRightClicked() instanceof ArmorStand) {
       return;
     }
-    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC")) {
+    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked().hasMetadata("pet")) {
       return;
     }
     final Player player = event.getPlayer();
@@ -198,7 +196,7 @@ public class DataListener implements Listener {
     if (!(event.getEntity() instanceof FallingBlock)) {
       return;
     }
-    if (event.getEntity().hasMetadata("EFFECT_PROJECTILE")) {
+    if (SpecialStatusUtil.isHandledBlock((FallingBlock) event.getEntity())) {
       event.setCancelled(true);
     }
   }

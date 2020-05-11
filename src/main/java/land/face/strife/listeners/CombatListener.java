@@ -22,6 +22,7 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ARMOR;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,14 +31,15 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
-import land.face.strife.util.FireworkUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
@@ -97,8 +99,8 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    if (event.getDamager() instanceof Firework && event.getDamager()
-        .hasMetadata(FireworkUtil.FW_NO_DMG)) {
+    if (event.getDamager() instanceof Firework && SpecialStatusUtil
+        .isNoDamage((Firework) event.getDamager())) {
       event.setCancelled(true);
     }
   }
@@ -106,7 +108,8 @@ public class CombatListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void handleNpcHits(EntityDamageByEntityEvent event) {
     if (event.getDamager() instanceof Projectile) {
-      if (event.getEntity().hasMetadata("NPC")) {
+      if (event.getEntity().isInvulnerable() || event.getEntity().hasMetadata("NPC") || event
+          .getEntity().hasMetadata("pet")) {
         event.getDamager().remove();
         event.setCancelled(true);
       }
@@ -115,12 +118,15 @@ public class CombatListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || event.getCause() == DamageCause.CUSTOM) {
+    if (event.isCancelled() || event.getEntity().isInvulnerable()) {
       return;
     }
     if (plugin.getDamageManager().isHandledDamage(event.getDamager())) {
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(BASE, plugin.getDamageManager().getHandledDamage(event.getDamager()));
+      return;
+    }
+    if (event.getCause() == DamageCause.CUSTOM) {
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
@@ -162,12 +168,13 @@ public class CombatListener implements Listener {
     if (event.getDamager() instanceof Projectile) {
       isProjectile = true;
       projectile = (Projectile) event.getDamager();
-      if (projectile.hasMetadata("EFFECT_PROJECTILE")) {
-        extraEffects = projectile.getMetadata("EFFECT_PROJECTILE").get(0).asString().split("~");
+      String hitEffects = ProjectileUtil.getHitEffects(projectile);
+      if (StringUtils.isNotBlank(hitEffects)) {
+        extraEffects = hitEffects.split("~");
       }
-      if (projectile.hasMetadata(ProjectileUtil.SHOT_ID_META)) {
-        int shotId = projectile.getMetadata(ProjectileUtil.SHOT_ID_META).get(0).asInt();
-        String idKey = ProjectileUtil.SHOT_ID_META + "_" + shotId;
+      int shotId = ProjectileUtil.getShotId(projectile);
+      if (shotId != 0) {
+        String idKey = "SHOT_HIT_" + shotId;
         if (defendEntity.hasMetadata(idKey)) {
           isMultishot = true;
         } else {
@@ -191,19 +198,18 @@ public class CombatListener implements Listener {
 
     AttackType attackType = DamageUtil.getAttackType(event);
 
-    if (isProjectile && projectile.hasMetadata(ProjectileUtil.ATTACK_SPEED_META)) {
-      attackMultiplier = projectile.getMetadata(ProjectileUtil.ATTACK_SPEED_META).get(0).asFloat();
+    if (isProjectile) {
+      attackMultiplier = ProjectileUtil.getAttackMult(projectile);
     }
 
     if (attackType == AttackType.MELEE) {
-      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
       if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
-        ProjectileUtil.shootWand(attacker, attackMultiplier);
         event.setCancelled(true);
         return;
       }
+      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
       attackMultiplier = (float) Math.pow(attackMultiplier, 1.25);
-    } else if (attackType == AttackType.EXPLOSION) {
+    } else if (attackType == AttackType.AREA) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
       healMultiplier = 0.3f;
@@ -226,6 +232,13 @@ public class CombatListener implements Listener {
 
     putSlimeHit(attackEntity);
 
+    boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+
+    if (mobAbility) {
+      event.setCancelled(true);
+      return;
+    }
+
     if (attackEntity instanceof Player) {
       plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
     }
@@ -237,22 +250,28 @@ public class CombatListener implements Listener {
     damageModifiers.setAttackType(attackType);
     damageModifiers.setAttackMultiplier(attackMultiplier);
     damageModifiers.setHealMultiplier(healMultiplier);
+    damageModifiers.setDamageReductionRatio(1f);
+    damageModifiers.setScaleChancesWithAttack(true);
     damageModifiers.setApplyOnHitEffects(applyOnHit);
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
 
     boolean attackSuccess = DamageUtil.preDamage(attacker, defender, damageModifiers);
+
     if (!attackSuccess) {
       removeIfExisting(projectile);
       event.setCancelled(true);
       return;
     }
 
-    Map<DamageType, Float> damage =  DamageUtil.buildDamage(attacker, defender, damageModifiers);
+    Map<DamageType, Float> damage = DamageUtil.buildDamage(attacker, defender, damageModifiers);
     DamageUtil.reduceDamage(attacker, defender, damage, damageModifiers);
-    float finalDamage = DamageUtil.damage(attacker, defender, damage, damageModifiers);
 
-    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageModifiers);
+    float finalDamage = DamageUtil
+        .calculateFinalDamage(attacker, defender, damage, damageModifiers);
+
+    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender,
+        damageModifiers);
     strifeDamageEvent.setFinalDamage(finalDamage);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
 
@@ -261,17 +280,25 @@ public class CombatListener implements Listener {
       return;
     }
 
-    DamageUtil.postDamage(attacker, defender, damage, damageModifiers);
+    float eventDamage = Math.max(0.002f, plugin.getBarrierManager()
+        .damageBarrier(defender, (float) strifeDamageEvent.getFinalDamage()));
 
+    if (damage.containsKey(DamageType.PHYSICAL)) {
+      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), damageModifiers,
+          false);
+    }
+
+    DamageUtil.postDamage(attacker, defender, damageModifiers);
     DamageUtil.applyExtraEffects(attacker, defender, extraEffects);
 
     if (attackEntity instanceof Bee) {
-      plugin.getDamageManager().dealDamage(attacker, defender, finalDamage);
+      plugin.getDamageManager()
+          .dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage());
       event.setCancelled(true);
       return;
     }
 
-    event.setDamage(BASE, finalDamage);
+    event.setDamage(BASE, eventDamage);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

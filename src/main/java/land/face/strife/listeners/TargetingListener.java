@@ -24,10 +24,12 @@ import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
 import java.util.Random;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -92,17 +94,27 @@ public class TargetingListener implements Listener {
     TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void ignoreGuildAllies(EntityTargetLivingEntityEvent event) {
+    if (!(event.getEntity() instanceof LivingEntity) || !(event.getTarget() instanceof Player)) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+    if (mob == null || mob.getAlliedGuild() == null) {
+      return;
+    }
+    if (DamageUtil.isGuildAlly(mob, (Player) event.getTarget())) {
+      event.setCancelled(true);
+    }
+  }
+
   @EventHandler(priority = EventPriority.LOW)
   public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled()) {
       return;
     }
-    if (event.getReason() == TargetReason.FOLLOW_LEADER && event
-        .getEntity().hasMetadata("WEAK_AGGRO")) {
-      event.setCancelled(true);
-      return;
-    }
-    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER) {
+    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob)
+        || event.getReason() != CLOSEST_PLAYER) {
       return;
     }
     if (plugin.getStealthManager().isStealthed(event.getTarget())) {
@@ -118,11 +130,26 @@ public class TargetingListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled() || !(event.getTarget() instanceof Player) || !(event
-        .getEntity() instanceof Mob) || event.getReason() != CLOSEST_PLAYER || event
-        .getEntity().hasMetadata("IGNORE_SNEAK")) {
+    if (event.isCancelled()) {
       return;
     }
+    if (!(event.getEntity() instanceof Mob)) {
+      return;
+    }
+    if (event.getReason() == TargetReason.TARGET_ATTACKED_NEARBY_ENTITY
+        || event.getReason() == TargetReason.FOLLOW_LEADER
+        || event.getReason() == TargetReason.PIG_ZOMBIE_TARGET
+        || event.getReason() == TargetReason.REINFORCEMENT_TARGET) {
+      if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
+        event.setCancelled(true);
+        return;
+      }
+    }
+
+    if (event.getReason() != CLOSEST_PLAYER || SpecialStatusUtil.isSneakImmune(event.getEntity())) {
+      return;
+    }
+
     Player player = (Player) event.getTarget();
     if (!plugin.getStealthManager().isStealthed(player)) {
       return;

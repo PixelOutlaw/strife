@@ -21,7 +21,6 @@ package land.face.strife.listeners;
 import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -29,8 +28,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
-import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -72,10 +69,6 @@ public class SwingListener implements Listener {
       if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
         if (attackMult > 0.2) {
           ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.5D));
-        } else {
-          MessageUtils.sendActionBar((Player) mob.getEntity(), notChargedMessage);
-          mob.getEntity().getWorld()
-              .playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_AMBIENT, 0.5f, 2.0f);
         }
         event.setCancelled(true);
       }

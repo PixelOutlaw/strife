@@ -22,35 +22,38 @@ public class Charm extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     if (target.isCharmImmune() || !(target.getEntity() instanceof Mob) || target
         .getEntity() instanceof Player) {
+      System.out.println("1");
       return;
     }
     if (!overrideMaster && target.getMaster() != null) {
+      System.out.println("2");
       return;
     }
     if (caster.getMinions().size() >= caster.getStat(StrifeStat.MAX_MINIONS)) {
+      System.out.println("3");
       return;
     }
     if (target.getEntity() instanceof Wolf) {
       if (((Wolf) target.getEntity()).getOwner() != null) {
+        System.out.println("4");
         return;
       }
       ((Wolf) target.getEntity()).setAngry(true);
     }
     if (!rollCharmChance(caster, target)) {
+      System.out.println("5");
       return;
     }
     ((Mob) target.getEntity()).setTarget(null);
-    target.setMaster(caster.getEntity());
-    target.setDespawnOnUnload(true);
-    target.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, caster.getStat(StrifeStat.MINION_DAMAGE));
     caster.addMinion(target);
+    target.getFactions().clear();
     StrifePlugin.getInstance().getMinionManager()
         .addMinion(target.getEntity(), (int) ((lifespanSeconds * 20D) / 11D));
+    StrifePlugin.getInstance().getSpawnerManager().addRespawnTime(target.getEntity());
   }
 
   private boolean rollCharmChance(StrifeMob caster, StrifeMob target) {
-    int levelDiff =
-        StatUtil.getMobLevel(caster.getEntity()) - StatUtil.getMobLevel(target.getEntity());
+    int levelDiff = StatUtil.getMobLevel(caster.getEntity()) - StatUtil.getMobLevel(target.getEntity());
     if (levelDiff >= 0) {
       return chance + levelDiff * chancePerLevel > random.nextDouble();
     }

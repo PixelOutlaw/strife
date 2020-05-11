@@ -11,6 +11,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.MoveUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -35,7 +36,7 @@ public class FallListener implements Listener {
     if (event.getCause() != DamageCause.FALL || event.isCancelled()) {
       return;
     }
-    if (event.getEntity().hasMetadata("NO_FALL")) {
+    if (SpecialStatusUtil.isFallImmune(event.getEntity())) {
       event.setCancelled(true);
       return;
     }
@@ -57,7 +58,7 @@ public class FallListener implements Listener {
       MessageUtils.sendActionBar((Player) event.getEntity(), TextUtils.color("&3&l- Roll -"));
     } else {
       damage *= 50.0 / (50 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
-      ((Player) event.getEntity()).addPotionEffect(new PotionEffect(SLOW, 100, 0, true));
+      ((Player) event.getEntity()).addPotionEffect(new PotionEffect(SLOW, 100, 0, true), false);
     }
 
     if (((Player) event.getEntity()).hasPotionEffect(DAMAGE_RESISTANCE)) {

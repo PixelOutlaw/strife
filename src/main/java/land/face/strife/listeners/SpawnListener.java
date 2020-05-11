@@ -12,6 +12,8 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.managers.MobModManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.SpecialStatusUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -24,7 +26,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class SpawnListener implements Listener {
 
@@ -79,9 +80,11 @@ public class SpawnListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
-    if (event.isCancelled() || event.getEntity().hasMetadata("UNIQUE_ID") ||
-        event.getEntity().hasMetadata("NPC")
-        || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
+    if (event.isCancelled() || event.getEntity().hasMetadata("NPC") ||
+        event.getEntity().hasMetadata("pet") || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
+      return;
+    }
+    if (StringUtils.isNotBlank(SpecialStatusUtil.getUniqueId(event.getEntity()))) {
       return;
     }
 
@@ -129,7 +132,7 @@ public class SpawnListener implements Listener {
         .replace("%LEVEL%", "" + level);
 
     entity.setCustomName(name + levelSuffix);
-    entity.setMetadata("LVL", new FixedMetadataValue(plugin, level));
+    SpecialStatusUtil.setMobLevel(entity, level);
     entity.setCanPickupItems(false);
     entity.getEquipment().clear();
     equipEntity(entity);

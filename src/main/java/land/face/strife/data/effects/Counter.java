@@ -17,8 +17,7 @@ public class Counter extends Effect {
     long endStamp = System.currentTimeMillis() + duration;
     CounterData counterData = new CounterData(endStamp, new ArrayList<>(effects));
     counterData.setRemoveOnTrigger(removeOnTrigger);
-    StrifePlugin.getInstance().getCounterManager()
-        .addCounter(caster.getEntity().getUniqueId(), counterData);
+    StrifePlugin.getInstance().getCounterManager().addCounter(caster.getEntity(), counterData);
   }
 
   public void setDuration(int duration) {

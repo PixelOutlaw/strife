@@ -22,17 +22,17 @@ import com.tealcube.minecraft.bukkit.TextUtils;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.effects.TargetingComparators.AbilityComparator;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class AbilityPickerMenu extends ItemMenu {
 
   private String id;
-
   public AbilityPickerMenu(StrifePlugin plugin, String name, List<Ability> abilities) {
     super(TextUtils.color(name), Size.fit(abilities.size()), plugin);
-
     int index = 0;
+    abilities.sort(new AbilityComparator());
     for (Ability ability : abilities) {
       setItem(index, new AbilityPickerItem(plugin, ability));
       index++;

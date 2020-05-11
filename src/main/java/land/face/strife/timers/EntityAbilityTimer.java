@@ -35,7 +35,8 @@ public class EntityAbilityTimer extends BukkitRunnable {
       return;
     }
     double max = Math.pow(strifeMob.getEntity().getAttribute(GENERIC_FOLLOW_RANGE).getValue(), 2);
-    if (strifeMob.getEntity().getLocation().distanceSquared(target.getLocation()) > max) {
+    if (strifeMob.getEntity().getLocation().getWorld() != target.getLocation().getWorld()
+        || strifeMob.getEntity().getLocation().distanceSquared(target.getLocation()) > max) {
       ((Mob) strifeMob.getEntity()).setTarget(null);
       return;
     }

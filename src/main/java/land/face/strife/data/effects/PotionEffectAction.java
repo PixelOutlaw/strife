@@ -25,8 +25,7 @@ public class PotionEffectAction extends Effect {
       bumpPotionEffect(target.getEntity(), duration);
       return;
     }
-    target.getEntity()
-        .addPotionEffect(new PotionEffect(potionEffectType, (int) duration, intensity));
+    target.getEntity().addPotionEffect(new PotionEffect(potionEffectType, (int) duration, intensity));
   }
 
   private void bumpPotionEffect(LivingEntity target, double duration) {

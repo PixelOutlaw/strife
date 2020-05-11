@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 
 public class Ignite extends Effect {
@@ -14,6 +15,7 @@ public class Ignite extends Effect {
     } else {
       target.getEntity().setFireTicks(Math.max(duration, target.getEntity().getFireTicks()));
     }
+    StrifePlugin.getInstance().getDamageOverTimeTask().trackBurning(target.getEntity());
   }
 
   public void setForceDuration(boolean forceDuration) {

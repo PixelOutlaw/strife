@@ -18,19 +18,19 @@
  */
 package land.face.strife.tasks;
 
-import land.face.strife.managers.GlobalBoostManager;
+import land.face.strife.managers.BoostManager;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class GlobalMultiplierTask extends BukkitRunnable {
+public class BoostTickTask extends BukkitRunnable {
 
-  private GlobalBoostManager globalBoostManager;
+  private BoostManager boostManager;
 
-  public GlobalMultiplierTask(GlobalBoostManager globalBoostManager) {
-    this.globalBoostManager = globalBoostManager;
+  public BoostTickTask(BoostManager boostManager) {
+    this.boostManager = boostManager;
   }
 
   @Override
   public void run() {
-    globalBoostManager.tickBoosts();
+    boostManager.tickBoosts();
   }
 }

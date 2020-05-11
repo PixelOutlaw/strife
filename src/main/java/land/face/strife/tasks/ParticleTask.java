@@ -18,7 +18,8 @@
  */
 package land.face.strife.tasks;
 
-import io.netty.util.internal.ConcurrentSet;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,13 +46,16 @@ public class ParticleTask extends BukkitRunnable {
         continuousParticles.remove(le);
         continue;
       }
-      for (ContinuousParticle particle : continuousParticles.get(le)) {
+      Iterator iterator = continuousParticles.get(le).iterator();
+      while (iterator.hasNext()) {
+        ContinuousParticle particle = (ContinuousParticle) iterator.next();
         if (particle.getTicksRemaining() < 1) {
-          continuousParticles.get(le).remove(particle);
+          iterator.remove();
+          //continuousParticles.get(le).remove(particle);
           continue;
         }
         particle.getParticle().applyAtLocation(null, TargetingUtil
-            .getOriginLocation(le, particle.getParticle().getParticleOriginLocation()));
+            .getOriginLocation(le, particle.getParticle().getOrigin()));
         particle.setTicksRemaining(particle.getTicksRemaining() - 1);
       }
     }
@@ -66,7 +70,7 @@ public class ParticleTask extends BukkitRunnable {
 
   public void addContinuousParticle(LivingEntity livingEntity, StrifeParticle particle, int ticks) {
     if (!continuousParticles.containsKey(livingEntity)) {
-      continuousParticles.put(livingEntity, new ConcurrentSet<>());
+      continuousParticles.put(livingEntity, new HashSet<>());
     }
     if (particleUpdate(particle.getId(), ticks, continuousParticles.get(livingEntity))) {
       return;

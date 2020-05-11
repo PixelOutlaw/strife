@@ -63,7 +63,6 @@ public abstract class Effect {
   }
 
   public enum EffectType {
-    STANDARD_DAMAGE,
     DAMAGE,
     WORLD_SPACE_ENTITY,
     CHASER,
@@ -89,6 +88,7 @@ public abstract class Effect {
     BLEED,
     TELEPORT,
     TELEPORT_BEHIND,
+    TITLE,
     CORRUPT,
     ADD_EARTH_RUNES,
     CONSUME_BLEED,

@@ -44,6 +44,10 @@ public class EndlessEffectTimer extends BukkitRunnable {
       }
     }
     for (Effect effect : endlessEffect.getRunEffects()) {
+      if (effect == null) {
+        LogUtil.printWarning("Invalid effect in endless runner " + endlessEffect.getId());
+        continue;
+      }
       LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
       plugin.getEffectManager().execute(effect, mob, mob.getEntity());
     }

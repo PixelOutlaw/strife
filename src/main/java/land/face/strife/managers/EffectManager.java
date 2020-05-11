@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.DamageContainer;
+import land.face.strife.data.BonusDamage;
 import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
@@ -56,6 +56,7 @@ import land.face.strife.data.conditions.WeaponsCondition;
 import land.face.strife.data.effects.AddEarthRunes;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.AreaType;
+import land.face.strife.data.effects.AreaEffect.LineOfSight;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Bleed;
 import land.face.strife.data.effects.BuffEffect;
@@ -70,7 +71,7 @@ import land.face.strife.data.effects.CooldownReduction;
 import land.face.strife.data.effects.Corrupt;
 import land.face.strife.data.effects.Counter;
 import land.face.strife.data.effects.CreateWorldSpaceEntity;
-import land.face.strife.data.effects.DirectDamage;
+import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.EndlessEffect;
@@ -96,7 +97,6 @@ import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.ShootProjectile;
 import land.face.strife.data.effects.Silence;
 import land.face.strife.data.effects.Speak;
-import land.face.strife.data.effects.StandardDamage;
 import land.face.strife.data.effects.Stealth;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
@@ -104,6 +104,7 @@ import land.face.strife.data.effects.Summon;
 import land.face.strife.data.effects.SwingArm;
 import land.face.strife.data.effects.Teleport;
 import land.face.strife.data.effects.TeleportBehind;
+import land.face.strife.data.effects.Title;
 import land.face.strife.data.effects.Undisguise;
 import land.face.strife.data.effects.UntoggleAbility;
 import land.face.strife.data.effects.Wait;
@@ -172,7 +173,8 @@ public class EffectManager {
     execute(caster, targets, taskEffects, waitTicks);
   }
 
-  private void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effects, int delay) {
+  private void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effects,
+      int delay) {
     if (delay == 0) {
       executeEffectList(caster, targets, effects);
       return;
@@ -198,12 +200,21 @@ public class EffectManager {
   }
 
   public void execute(Effect effect, StrifeMob caster, LivingEntity target) {
-    if (effect instanceof LocationEffect && TargetingUtil.isDetectionStand(target)) {
-      if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-        ((LocationEffect) effect).applyAtLocation(caster, target.getLocation());
+    if (effect instanceof LocationEffect) {
+      if (TargetingUtil.isDetectionStand(target)) {
+        if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
+          ((LocationEffect) effect).applyAtLocation(caster, TargetingUtil.getOriginLocation(target,
+              ((LocationEffect) effect).getOrigin()));
+        }
         return;
       }
-    } else if (effect.isForceTargetCaster()) {
+    } else {
+      StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(target);
+      if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+        return;
+      }
+    }
+    if (effect.isForceTargetCaster()) {
       applyEffectIfConditionsMet(effect, caster, null);
       return;
     }
@@ -268,55 +279,19 @@ public class EffectManager {
         ((IncreaseRage) effect).setAmount((float) cs.getDouble("amount", 1));
         break;
       case DAMAGE:
-        effect = new DirectDamage();
-        try {
-          ConfigurationSection damages = cs.getConfigurationSection("damages");
-          if (damages != null) {
-            for (String k : damages.getKeys(false)) {
-              ConfigurationSection damage = damages.getConfigurationSection(k);
-              DamageType damageType = DamageType.valueOf(damage.getString("damage-type"));
-              String scaleString = damage.getString("damage-scale", "FLAT");
-              DamageScale scale = DamageScale.valueOf(scaleString);
-              float amount = (float) damage.getDouble("amount", 1);
-              String statString = damage.getString("stat", "");
-              StrifeStat damageStat =
-                  StringUtils.isBlank(statString) ? null : StrifeStat.valueOf(statString);
-              DamageContainer container = new DamageContainer(scale, damageType,
-                  damageStat, amount);
-              ((DirectDamage) effect).getDamages().add(container);
-            }
-          }
-          ((DirectDamage) effect).setAttackType(
-              AttackType.valueOf(cs.getString("attack-type", "OTHER")));
-          ((DirectDamage) effect).setDamageReductionRatio(
-              (float) cs.getDouble("damage-reduction-ratio", 0.35));
-          ((DirectDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", false));
-          ((DirectDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
-
-          ConfigurationSection damageMod = cs.getConfigurationSection("attack-mods");
-          Map<AbilityMod, Float> damageModMap = new HashMap<>();
-          if (damageMod != null) {
-            for (String k : damageMod.getKeys(false)) {
-              AbilityMod mod = AbilityMod.valueOf(k);
-              damageModMap.put(mod, (float) damageMod.getDouble(k));
-            }
-          }
-          ((DirectDamage) effect).getAbilityMods().putAll(damageModMap);
-        } catch (Exception e) {
-          LogUtil.printError("Skipping effect " + key + " for invalid damage config!");
-          return;
-        }
-        break;
-      case STANDARD_DAMAGE:
-        effect = new StandardDamage();
-        ((StandardDamage) effect)
-            .setAttackMultiplier((float) cs.getDouble("attack-multiplier", 1D));
-        ((StandardDamage) effect)
-            .setHealMultiplier((float) cs.getDouble("heal-multiplier", 0.3D));
-        ((StandardDamage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
-        ((StandardDamage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
-        ((StandardDamage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
-        ((StandardDamage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type")));
+        effect = new Damage();
+        float attackMult = (float) cs.getDouble("attack-multiplier", 1D);
+        ((Damage) effect).setAttackMultiplier(attackMult);
+        ((Damage) effect).setHealMultiplier(
+            (float) cs.getDouble("heal-multiplier", 0.3D));
+        ((Damage) effect).setDamageReductionRatio(
+            (float) cs.getDouble("damage-reduction-ratio", 1D));
+        ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
+        ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
+        ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
+        ((Damage) effect)
+            .setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult > 0.75));
+        ((Damage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
         if (multCs != null) {
@@ -325,14 +300,8 @@ public class EffectManager {
             multMap.put(mod, (float) multCs.getDouble(k));
           }
         }
-        ConfigurationSection flatCs = cs.getConfigurationSection("flat-damage-bonuses");
-        Map<DamageType, Float> flatMap = new HashMap<>();
-        if (flatCs != null) {
-          for (String k : flatCs.getKeys(false)) {
-            DamageType mod = DamageType.valueOf(k);
-            flatMap.put(mod, (float) flatCs.getDouble(k));
-          }
-        }
+        List<BonusDamage> bonusDamages = loadBonusDamages(key,
+            cs.getConfigurationSection("bonus-damages"));
         ConfigurationSection modsCs = cs.getConfigurationSection("attack-mods");
         Map<AbilityMod, Float> attackModMap = new HashMap<>();
         if (modsCs != null) {
@@ -341,9 +310,9 @@ public class EffectManager {
             attackModMap.put(mod, (float) modsCs.getDouble(k));
           }
         }
-        ((StandardDamage) effect).getDamageModifiers().putAll(multMap);
-        ((StandardDamage) effect).getDamageBonuses().putAll(flatMap);
-        ((StandardDamage) effect).getAbilityMods().putAll(attackModMap);
+        ((Damage) effect).getDamageMultipliers().putAll(multMap);
+        ((Damage) effect).getBonusDamages().addAll(bonusDamages);
+        ((Damage) effect).getAbilityMods().putAll(attackModMap);
         break;
       case WORLD_SPACE_ENTITY:
         effect = new CreateWorldSpaceEntity();
@@ -406,7 +375,8 @@ public class EffectManager {
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
         ((AreaEffect) effect)
             .setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
-        ((AreaEffect) effect).setLineOfSight(cs.getBoolean("line-of-sight", true));
+        ((AreaEffect) effect).setLineOfSight(
+            LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
         ((AreaEffect) effect).setCanBeBlocked(canBeBlocked);
@@ -548,7 +518,6 @@ public class EffectManager {
           return;
         }
         ((ShootBlock) effect).setBlockData(Bukkit.getServer().createBlockData(material));
-        ((ShootBlock) effect).setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootBlock) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootBlock) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootBlock) effect).setSpeed(cs.getDouble("speed", 1));
@@ -588,9 +557,40 @@ public class EffectManager {
         double z = cs.getDouble("z", 0);
         ((Teleport) effect).setVector(new Vector(x, y, z));
         ((Teleport) effect).setRelative(cs.getBoolean("relative", false));
+        Teleport tpEffect = (Teleport) effect;
+        List<String> destEffects = cs.getStringList("destination-effects");
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (String s : destEffects) {
+            Effect e = getEffect(s);
+            if (!(e instanceof LocationEffect)) {
+              LogUtil.printWarning("Failed to attach effect " + e.getId() + " to " + key);
+              LogUtil.printWarning("Teleport bonus effects can only be location based!");
+              continue;
+            }
+            tpEffect.getDestinationEffects().add(e);
+          }
+        }, 5L);
+        List<String> originEffects = cs.getStringList("origin-effects");
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (String s : originEffects) {
+            Effect e = getEffect(s);
+            if (!(e instanceof LocationEffect)) {
+              LogUtil.printWarning("Failed to attach effect " + e.getId() + " to " + key);
+              LogUtil.printWarning("Teleport bonus effects can only be location based!");
+              continue;
+            }
+            tpEffect.getOriginEffects().add(e);
+          }
+        }, 5L);
         break;
       case TELEPORT_BEHIND:
         effect = new TeleportBehind();
+        break;
+      case TITLE:
+        effect = new Title();
+        ((Title) effect).setTopTitle(cs.getString("upper", ""));
+        ((Title) effect).setLowerTitle(cs.getString("lower", ""));
+        ((Title) effect).setRange(cs.getDouble("range", 8));
         break;
       case CONSUME_BLEED:
         effect = new ConsumeBleed();
@@ -756,7 +756,7 @@ public class EffectManager {
         ((StrifeParticle) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         ((StrifeParticle) effect).setSpeed((float) cs.getDouble("speed", 0));
         ((StrifeParticle) effect).setSpread((float) cs.getDouble("spread", 1));
-        ((StrifeParticle) effect).setParticleOriginLocation(
+        ((StrifeParticle) effect).setOrigin(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((StrifeParticle) effect).setSize(cs.getDouble("size", 1));
         String materialType = cs.getString("material", "");
@@ -764,6 +764,9 @@ public class EffectManager {
           ((StrifeParticle) effect).setBlockData(new ItemStack(Material.getMaterial(materialType)));
         }
         break;
+    }
+    if (effect instanceof LocationEffect) {
+      ((LocationEffect) effect).setOrigin(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
     }
     if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
@@ -784,6 +787,33 @@ public class EffectManager {
     }
     loadedEffects.put(key, effect);
     LogUtil.printDebug("Loaded effect " + key + " successfully.");
+  }
+
+  private List<BonusDamage> loadBonusDamages(String effectId, ConfigurationSection section) {
+    List<BonusDamage> damages = new ArrayList<>();
+    if (section == null) {
+      return damages;
+    }
+    for (String k : section.getKeys(false)) {
+      ConfigurationSection bonus = section.getConfigurationSection(k);
+      DamageType type;
+      DamageScale scale;
+      StrifeStat stat = null;
+      try {
+        type = DamageType.valueOf(bonus.getString("damage-type"));
+        scale = DamageScale.valueOf(bonus.getString("damage-scale", "FLAT"));
+        String statString = bonus.getString("damage-stat", "");
+        if (StringUtils.isNotBlank(statString)) {
+          stat = StrifeStat.valueOf(statString);
+        }
+      } catch (Exception e) {
+        LogUtil.printWarning("Check config for " + effectId + " invalid bonus dmg " + k);
+        continue;
+      }
+      double amount = bonus.getDouble("amount", 0);
+      damages.add(new BonusDamage(scale, type, stat, (float) amount));
+    }
+    return damages;
   }
 
   public void loadCondition(String key, ConfigurationSection cs) {
@@ -935,6 +965,7 @@ public class EffectManager {
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");
         boolean whitelist = cs.getBoolean("whitelist", true);
+        boolean useDisguise = cs.getBoolean("use-disguise-type", true);
         Set<EntityType> typesSet = new HashSet<>();
         try {
           for (String s : entityTypes) {
@@ -944,7 +975,7 @@ public class EffectManager {
           LogUtil.printError("Failed to load condition " + key + ". Invalid entity type!");
           return;
         }
-        condition = new EntityTypeCondition(typesSet, whitelist);
+        condition = new EntityTypeCondition(typesSet, whitelist, useDisguise);
         break;
       case UNIQUE_ID:
         String uniqueId = cs.getString("unique-id");

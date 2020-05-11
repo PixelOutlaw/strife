@@ -1,10 +1,12 @@
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -28,14 +30,14 @@ public class UniqueSplashListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onAbilityPotionSplash(PotionSplashEvent event) {
-    if (!event.getEntity().hasMetadata("EFFECT_PROJECTILE")) {
+    String hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    if (StringUtils.isBlank(hitEffects)) {
       return;
     }
     if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
       return;
     }
-    String[] effects = event.getEntity().getMetadata("EFFECT_PROJECTILE").get(0)
-        .asString().split("~");
+    String[] effects = hitEffects.split("~");
     if (effects.length == 0) {
       return;
     }

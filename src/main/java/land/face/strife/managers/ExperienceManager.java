@@ -36,7 +36,6 @@ import org.bukkit.entity.Player;
 public class ExperienceManager implements StrifeExperienceManager {
 
   private final StrifePlugin plugin;
-  private static final String EXP_TEXT = "&a&l( &f&l{0} &a&l/ &f&l{1} &a&l)";
   private static final String EXP_MESSAGE = " &a&l+&f&l{0}&a&lXP";
   private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
 
@@ -85,16 +84,12 @@ public class ExperienceManager implements StrifeExperienceManager {
     }
 
     double newExpPercent = currentExpPercent + amount / maxFaceExp;
-    //int currentExp = (int) (newExpPercent * maxFaceExp);
-    //String xpMsg = EXP_TEXT.replace("{0}", FORMAT.format(currentExp))
-    //    .replace("{1}", FORMAT.format(maxFaceExp));
-    //MessageUtils.sendActionBar(player, xpMsg);
 
     player.setExp((float) newExpPercent);
   }
 
   public Integer getMaxFaceExp(int level) {
-    if (level == 100) {
+    if (level >= 100) {
       return 10000000;
     }
     return plugin.getLevelingRate().get(level);

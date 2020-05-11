@@ -14,7 +14,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class StatUtil {
 
@@ -60,11 +59,13 @@ public class StatUtil {
   }
 
   public static double getMeleeDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100);
+    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1
+        + ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100);
   }
 
   public static double getRangedDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100);
+    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1
+        + ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100);
   }
 
   public static double getMagicDamage(StrifeMob ae) {
@@ -91,10 +92,6 @@ public class StatUtil {
       attackTime *= 1 + Math.abs(attackBonus / 100);
     }
     return attackTime;
-  }
-
-  public static float getOverchargeMultiplier(StrifeMob ae) {
-    return 1 + (ae.getStat(StrifeStat.OVERCHARGE) / 100);
   }
 
   public static float getCriticalMultiplier(StrifeMob ae) {
@@ -239,19 +236,20 @@ public class StatUtil {
   }
 
   public static int getMobLevel(LivingEntity livingEntity) {
-    int level;
     if (livingEntity instanceof Player) {
-      level = ((Player) livingEntity).getLevel();
-    } else if (livingEntity.hasMetadata("LVL")) {
-      level = livingEntity.getMetadata("LVL").get(0).asInt();
-    } else if (StringUtils.isBlank(livingEntity.getCustomName())) {
-      level = 0;
-      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
-    } else {
+      return ((Player) livingEntity).getLevel();
+    }
+    int level = SpecialStatusUtil.getMobLevel(livingEntity);
+    if (level == -1) {
+      if (StringUtils.isBlank(livingEntity.getCustomName())) {
+        SpecialStatusUtil.setMobLevel(livingEntity, 0);
+        return 0;
+      }
       String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
           .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
       level = NumberUtils.toInt(lev.split(" ")[0], 0);
-      livingEntity.setMetadata("LVL", new FixedMetadataValue(StrifePlugin.getInstance(), level));
+      SpecialStatusUtil.setMobLevel(livingEntity, level);
+      return level;
     }
     return level;
   }

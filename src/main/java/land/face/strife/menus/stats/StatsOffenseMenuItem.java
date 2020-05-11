@@ -92,8 +92,6 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
     lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(pStats), "s", TWO_DECIMAL));
     lore.add(breakLine);
-    lore.add(addStat("Overcharge Multiplier: ", StatUtil.getOverchargeMultiplier(pStats), "x",
-        TWO_DECIMAL));
     if (pStats.getStat(StrifeStat.MULTISHOT) > 0) {
       if (pStats.getStat(StrifeStat.DOGE) > 0) {
         lore.add(addStat("MultiTHOT: ", pStats.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
@@ -148,14 +146,11 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
     lore.add(breakLine);
     lore.add(addStat("Fire Damage: ", StatUtil.getFireDamage(pStats), INT_FORMAT));
-    lore.add(addStat("Ignite Chance: ", pStats.getStat(StrifeStat.IGNITE_CHANCE), "%", INT_FORMAT));
     if (pStats.getStat(StrifeStat.ICE_DAMAGE) > 0) {
       lore.add(addStat("Ice Damage: ", StatUtil.getIceDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Freeze Chance: ", pStats.getStat(StrifeStat.FREEZE_CHANCE), "%", INT_FORMAT));
     }
     if (pStats.getStat(StrifeStat.LIGHTNING_DAMAGE) > 0) {
       lore.add(addStat("Lightning Damage: ", StatUtil.getLightningDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Shock Chance: ", pStats.getStat(StrifeStat.SHOCK_CHANCE), "%", INT_FORMAT));
     }
     if (pStats.getStat(StrifeStat.EARTH_DAMAGE) > 0) {
       lore.add(addStat("Earth Damage: ", StatUtil.getEarthDamage(pStats), INT_FORMAT));
@@ -166,8 +161,8 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
     if (pStats.getStat(StrifeStat.DARK_DAMAGE) > 0) {
       lore.add(addStat("Shadow Damage: ", StatUtil.getShadowDamage(pStats), INT_FORMAT));
-      lore.add(addStat("Corrupt Chance: ", pStats.getStat(StrifeStat.CORRUPT_CHANCE), "%", INT_FORMAT));
     }
+    lore.add(addStat("Elemental Status Chance: ", pStats.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
     lore.add(breakLine);
     lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
     itemMeta.setLore(lore);

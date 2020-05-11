@@ -52,26 +52,17 @@ public class DamageManager {
     return handledDamages.getOrDefault(entity.getUniqueId(), 0D);
   }
 
-  public double dealDamage(StrifeMob attacker, StrifeMob defender, double damage) {
-    return dealDamage(attacker, defender, damage, false);
-  }
-
-  public double dealDamage(StrifeMob attacker, StrifeMob defender, double damage,
-      boolean indicators) {
-    if (indicators && attacker.getEntity() instanceof Player) {
-      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          buildHitIndicator((Player) attacker.getEntity()),
-          String.valueOf((int) Math.ceil(damage)));
+  public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage) {
+    damage = Math.max(0.002f, plugin.getBarrierManager().damageBarrier(defender, damage));
+    if (attacker == defender) {
+      defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
+      return damage;
     }
-
-    damage = plugin.getBarrierManager().damageBarrier(defender, (float) damage);
-    damage = Math.min(damage, defender.getEntity().getHealth());
-
     int noDamageTicks = defender.getEntity().getNoDamageTicks();
     Vector velocity = defender.getEntity().getVelocity();
     defender.getEntity().setNoDamageTicks(0);
 
-    handledDamages.put(attacker.getEntity().getUniqueId(), damage);
+    handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);
     defender.getEntity().damage(damage, attacker.getEntity());
     handledDamages.remove(attacker.getEntity().getUniqueId());
 
@@ -83,9 +74,9 @@ public class DamageManager {
 
   public IndicatorData buildHitIndicator(Player player) {
     IndicatorData data = new IndicatorData(new Vector(
-        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED,
+        IND_GRAVITY_HSPEED * 6 * (0.5 - Math.random()),
         IND_GRAVITY_VSPEED * (1 + Math.random()),
-        IND_GRAVITY_HSPEED - Math.random() * 2 * IND_GRAVITY_HSPEED),
+        IND_GRAVITY_HSPEED * 6 * (0.5 - Math.random())),
         IndicatorStyle.GRAVITY);
     data.addOwner(player);
     return data;

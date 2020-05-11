@@ -22,8 +22,10 @@ import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import me.libraryaddict.disguise.disguisetypes.RabbitType;
+import me.libraryaddict.disguise.disguisetypes.watchers.AgeableWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.MushroomCowWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
@@ -41,6 +43,7 @@ import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.MushroomCow.Variant;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -144,11 +147,22 @@ public class PlayerDataUtil {
     }
     if (type.isMob()) {
       String typeData = section.getString("disguise-type-data", "");
+      boolean babyData = section.getBoolean("baby", false);
       MobDisguise mobDisguise = new MobDisguise(type);
       if (StringUtils.isNotBlank(typeData)) {
         FlagWatcher watcher = mobDisguise.getWatcher();
+        if (watcher instanceof AgeableWatcher) {
+          ((AgeableWatcher) watcher).setBaby(babyData);
+        }
         try {
           switch (type) {
+            case MUSHROOM_COW:
+              if (typeData.toUpperCase().equals("BROWN")) {
+                ((MushroomCowWatcher) watcher).setVariant(Variant.BROWN);
+              } else {
+                ((MushroomCowWatcher) watcher).setVariant(Variant.RED);
+              }
+              break;
             case FOX:
               Fox.Type foxType = Fox.Type.valueOf(typeData);
               ((FoxWatcher) watcher).setType(foxType);
@@ -162,9 +176,7 @@ public class PlayerDataUtil {
               ((RabbitWatcher) watcher).setType(rabbitType);
               break;
             case ZOMBIE:
-              if (Boolean.parseBoolean(typeData)) {
-                ((ZombieWatcher) watcher).setBaby();
-              }
+              ((ZombieWatcher) watcher).setBaby(babyData);
               break;
             case SLIME:
               ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
@@ -177,13 +189,11 @@ public class PlayerDataUtil {
           LogUtil.printWarning("Cannot load type " + typeData + " for " + name);
         }
       }
-      mobDisguise.setShowName(true);
       mobDisguise.setReplaceSounds(true);
       return mobDisguise;
     }
     if (type.isMisc()) {
       MiscDisguise miscDisguise = new MiscDisguise(type);
-      miscDisguise.setShowName(true);
       miscDisguise.setReplaceSounds(true);
       FlagWatcher watcher = miscDisguise.getWatcher();
       try {
@@ -316,10 +326,25 @@ public class PlayerDataUtil {
         .getLifeSkillExp(type);
   }
 
+  public static float getLifeSkillExp(Champion champion, LifeSkillType type) {
+    return champion.getLifeSkillExp(type);
+  }
+
   public static float getLifeSkillMaxExp(Player player, LifeSkillType type) {
     int level = StrifePlugin.getInstance().getChampionManager().getChampion(player)
         .getLifeSkillLevel(type);
     return StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level);
+  }
+
+  public static float getLifeSkillMaxExp(Champion champion, LifeSkillType type) {
+    int level = champion.getLifeSkillLevel(type);
+    return StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level);
+  }
+
+  public static int getLifeSkillExpToLevel(Champion champion, LifeSkillType type) {
+    int level = champion.getLifeSkillLevel(type);
+    return (int) (StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level)
+        - champion.getLifeSkillExp(type));
   }
 
   public static float getSkillProgress(Champion champion, LifeSkillType type) {

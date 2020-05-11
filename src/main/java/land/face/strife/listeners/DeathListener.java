@@ -18,7 +18,6 @@
  */
 package land.face.strife.listeners;
 
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
@@ -26,6 +25,7 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -51,18 +51,20 @@ public class DeathListener implements Listener {
       return;
     }
 
-    if (event.getEntity().hasMetadata("SPAWNED")) {
+    if (SpecialStatusUtil.isSpawnerMob(event.getEntity())) {
       return;
     }
 
-    StrifeMob mob = plugin.getStrifeMobManager().getMobUnsafe(event.getEntity().getUniqueId());
-
-    if (mob != null) {
-      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
+    if (!plugin.getStrifeMobManager().isTrackedEntity(event.getEntity())) {
+      event.setDroppedExp(0);
+      return;
     }
 
-    if (mob == null || mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob
-        .isDespawnOnUnload())) {
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
+
+    plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
+
+    if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && mob.isDespawnOnUnload())) {
       event.setDroppedExp(0);
       return;
     }
@@ -87,19 +89,20 @@ public class DeathListener implements Listener {
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_B);
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_C);
     } else {
-      UUID uuid = event.getEntity().getUniqueId();
       Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getStrifeMobManager().removeMob(uuid), 20L * 30);
+          () -> plugin.getStrifeMobManager().removeEntity(event.getEntity()), 2L);
     }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathClearData(final EntityDeathEvent event) {
-    plugin.getBossBarManager().doBarDeath(event.getEntity());
+    if (event.getEntity().getKiller() != null) {
+      plugin.getBossBarManager().doBarDeath(event.getEntity().getKiller());
+    }
     plugin.getBarrierManager().removeEntity(event.getEntity());
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     plugin.getSpawnerManager().addRespawnTime(event.getEntity());
-    plugin.getCounterManager().clearCounters(event.getEntity().getUniqueId());
+    plugin.getCounterManager().clearCounters(event.getEntity());
   }
 }

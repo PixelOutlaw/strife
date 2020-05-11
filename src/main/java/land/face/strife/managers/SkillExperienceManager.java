@@ -104,12 +104,9 @@ public class SkillExperienceManager {
     }
 
     saveData.setSkillExp(type, (float) currentExp);
-    //ChatColor c = type.getColor();
-    //String xpMsg = XP_AB.replace("{0}", "" + c).replace("{1}", FORMAT.format((int) currentExp))
-    //    .replace("{2}", FORMAT.format((int) maxExp));
-    //MessageUtils.sendActionBar(champion.getPlayer(), xpMsg);
+
     if (displayXp) {
-      plugin.getBossBarManager().bumpSkillBar(champion, type);
+      plugin.getBossBarManager().pushSkillBar(champion.getPlayer(), type);
     }
   }
 

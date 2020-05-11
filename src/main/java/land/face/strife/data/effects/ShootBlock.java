@@ -1,23 +1,21 @@
 package land.face.strife.data.effects;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.timers.FallingBlockTimer;
-import land.face.strife.util.DamageUtil.OriginLocation;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 public class ShootBlock extends LocationEffect {
 
   private BlockData blockData;
-  private OriginLocation originType;
   private int quantity;
   private double speed;
   private double spread;
@@ -29,7 +27,7 @@ public class ShootBlock extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    Location originLocation = TargetingUtil.getOriginLocation(target.getEntity(), originType);
+    Location originLocation = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
     applyAtLocation(caster, originLocation);
   }
 
@@ -51,15 +49,8 @@ public class ShootBlock extends LocationEffect {
       block.setDropItem(false);
       block.setHurtEntities(false);
 
-      if (!hitEffects.isEmpty()) {
-        StringBuilder hitString = new StringBuilder();
-        for (String s : hitEffects) {
-          hitString.append(s).append("~");
-        }
-        block.setMetadata("EFFECT_PROJECTILE",
-            new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
-      }
       FALLING_BLOCKS.add(new FallingBlockTimer(caster, block));
+      SpecialStatusUtil.setHandledBlock(block, StringUtils.join(hitEffects, "~"));
     }
   }
 
@@ -96,10 +87,6 @@ public class ShootBlock extends LocationEffect {
 
   public void setZeroPitch(boolean zeroPitch) {
     this.zeroPitch = zeroPitch;
-  }
-
-  public void setOriginType(OriginLocation originType) {
-    this.originType = originType;
   }
 
   private void applySpread(Vector direction, double spread) {

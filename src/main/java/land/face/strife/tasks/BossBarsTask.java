@@ -31,7 +31,6 @@ public class BossBarsTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    bossBarManager.tickHealthBars();
-    bossBarManager.tickSkillBars();
+    bossBarManager.tickBars();
   }
 }

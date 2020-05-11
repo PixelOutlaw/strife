@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import java.util.List;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.OriginLocation;
@@ -23,7 +22,6 @@ import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 public class ShootProjectile extends Effect {
@@ -101,11 +99,10 @@ public class ShootProjectile extends Effect {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
       projectile.setBounce(bounce);
-      ProjectileUtil.setProjctileAttackSpeedMeta(projectile, attackMultiplier);
+      ProjectileUtil.setAttackMult(projectile, (float) attackMultiplier);
 
       if (blockHitEffects) {
-        projectile.setMetadata("GROUND_TRIGGER",
-            new FixedMetadataValue(StrifePlugin.getInstance(), 1));
+        ProjectileUtil.setGroundTrigger(projectile);
       }
 
       if (!hitEffects.isEmpty()) {
@@ -113,8 +110,7 @@ public class ShootProjectile extends Effect {
         for (String s : hitEffects) {
           hitString.append(s).append("~");
         }
-        projectile.setMetadata("EFFECT_PROJECTILE",
-            new FixedMetadataValue(StrifePlugin.getInstance(), hitString.toString()));
+        ProjectileUtil.setHitEffects(projectile, hitString.toString());
       }
 
       if (disguise != null) {
