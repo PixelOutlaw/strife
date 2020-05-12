@@ -67,6 +67,10 @@
       <id>Scarsz-Nexus</id>
       <url>https://nexus.scarsz.me/content/groups/public/</url>
     </repository>
+    <repository>
+      <id>glares-repo</id>
+      <url>https://repo.glaremasters.me/repository/public/</url>
+    </repository>
   </repositories>
 
   <dependencies>
@@ -108,8 +112,7 @@
       <groupId>me.glaremasters</groupId>
       <artifactId>guilds</artifactId>
       <version>3.5.4.9</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/Guilds-3.5.4.9.jar</systemPath>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.github.shynixn.headdatabase</groupId>
