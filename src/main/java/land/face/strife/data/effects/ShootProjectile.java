@@ -60,8 +60,15 @@ public class ShootProjectile extends Effect {
     }
     double newSpread = projectiles == 1 ? spread : spread * Math.pow(projectiles, 0.5);
     for (int i = 0; i < projectiles; i++) {
-      Vector velocity = ProjectileUtil.getProjectileVelocity(caster.getEntity(), newSpeed,
-          newSpread, verticalBonus, zeroPitch);
+      Vector direction;
+      if (targeted && target != null) {
+        direction = target.getEntity().getLocation().toVector()
+            .subtract(caster.getEntity().getLocation().toVector()).normalize();
+      } else {
+        direction = caster.getEntity().getEyeLocation().getDirection();
+      }
+      Vector velocity = ProjectileUtil
+          .getProjectileVelocity(direction, newSpeed, newSpread, verticalBonus, zeroPitch);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
       }

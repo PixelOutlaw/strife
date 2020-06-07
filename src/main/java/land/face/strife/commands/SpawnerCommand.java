@@ -77,6 +77,7 @@ public class SpawnerCommand {
     sendMessage(sender, "&2&lList of loaded spawners:");
     StringBuilder listString = new StringBuilder();
     List<Spawner> spawners = new ArrayList<>(plugin.getSpawnerManager().getSpawnerMap().values());
+    spawners.removeIf(s -> s.getLocation().getWorld() != sender.getWorld());
     SpawnerComparator comparator = new SpawnerComparator();
     comparator.setLoc(sender.getLocation());
     spawners.sort(comparator);
@@ -95,6 +96,7 @@ public class SpawnerCommand {
     sendMessage(sender, "&2&lList of loaded spawners:");
     StringBuilder listString = new StringBuilder();
     List<Spawner> spawners = new ArrayList<>(plugin.getSpawnerManager().getSpawnerMap().values());
+    spawners.removeIf(s -> s.getLocation().getWorld() != sender.getWorld());
     SpawnerComparator comparator = new SpawnerComparator();
     comparator.setLoc(sender.getLocation());
     spawners.sort(comparator);

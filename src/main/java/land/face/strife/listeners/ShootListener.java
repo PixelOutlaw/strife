@@ -282,6 +282,7 @@ public class ShootListener implements Listener {
     hitscan.setMaxTargets(1);
     hitscan.setCanBeBlocked(false);
     hitscan.setCanBeEvaded(false);
+    hitscan.setOrigin(OriginLocation.HEAD);
 
     hitscan.getEffects().add(flintlockDamage);
 

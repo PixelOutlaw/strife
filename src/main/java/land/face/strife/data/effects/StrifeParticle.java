@@ -6,9 +6,11 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.TargetingUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -41,7 +43,8 @@ public class StrifeParticle extends LocationEffect {
   private int tickDuration;
   private boolean strictDuration;
 
-  private ItemStack blockData = null;
+  private ItemStack itemData = null;
+  private BlockData blockData = null;
 
   private static Random random = new Random();
 
@@ -183,8 +186,11 @@ public class StrifeParticle extends LocationEffect {
     return TargetingUtil.getOriginLocation(le, getOrigin());
   }
 
-  public void setBlockData(ItemStack blockData) {
-    this.blockData = blockData;
+  public void setItemData(ItemStack itemData) {
+    this.itemData = itemData;
+    if (itemData.getType().isBlock()) {
+      blockData = Bukkit.getServer().createBlockData(itemData.getType());
+    }
   }
 
   private void spawnParticleArc(Vector direction, Location center, double radius, double angle,
@@ -277,9 +283,14 @@ public class StrifeParticle extends LocationEffect {
             -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
         location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
       }
-    } else if (blockData != null) {
-      location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed,
-          blockData);
+    } else if (itemData != null) {
+      if (particle == Particle.FALLING_DUST) {
+        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread,
+            speed, blockData);
+      } else  {
+        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread,
+            speed, itemData);
+      }
     } else {
       location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
     }

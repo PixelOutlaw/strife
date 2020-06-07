@@ -20,7 +20,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class EntityEquipmentManager {
 
-  public static final EquipmentSlot[] SLOTS = EquipmentSlot.values();
+  private static final EquipmentSlot[] SLOTS = EquipmentSlot.values();
   private HeadDatabaseAPI headDatabaseAPI = new HeadDatabaseAPI();
   private final Map<String, ItemStack> itemMap;
 
@@ -28,21 +28,28 @@ public class EntityEquipmentManager {
     this.itemMap = new HashMap<>();
   }
 
-  public Map<String, ItemStack> getItemMap() {
-    return itemMap;
-  }
-
   public ItemStack getItem(String key) {
     return itemMap.getOrDefault(key, null);
   }
 
-  public Map<EquipmentSlot, ItemStack> buildEquipmentFromConfigSection(ConfigurationSection cs) {
+  public Map<EquipmentSlot, ItemStack> getEquipmentMap(Map<EquipmentSlot, String> data) {
     Map<EquipmentSlot, ItemStack> equipmentMap = new HashMap<>();
+    if (data == null) {
+      return equipmentMap;
+    }
+    for (EquipmentSlot slot : data.keySet()) {
+      equipmentMap.put(slot, getItem(data.get(slot)));
+    }
+    return equipmentMap;
+  }
+
+  public Map<EquipmentSlot, String> buildEquipmentFromConfigSection(ConfigurationSection cs) {
+    Map<EquipmentSlot, String> equipmentMap = new HashMap<>();
     if (cs == null) {
       return equipmentMap;
     }
     for (EquipmentSlot slot : EntityEquipmentManager.SLOTS) {
-      equipmentMap.put(slot, getItem(cs.getString(slot.toString(), "")));
+      equipmentMap.put(slot, cs.getString(slot.toString(), null));
     }
     return equipmentMap;
   }
@@ -63,17 +70,13 @@ public class EntityEquipmentManager {
       String hdbId = cs.getString("head-db-id");
       if (StringUtils.isNotBlank(base64)) {
         stack = ItemUtil.withBase64(stack, base64);
-      } else if (StringUtils.isNotBlank(hdbId)) {
+      } else if (StringUtils.isNotBlank(hdbId) && headDatabaseAPI != null) {
         try {
           stack = headDatabaseAPI.getItemHead(hdbId);
+          Bukkit.getLogger().info("Loaded HDB Head " + hdbId + " successfully!");
         } catch (NullPointerException e) {
-          Bukkit.getLogger().warning("Invalid HeadDatabaseID! " + key + " | " + hdbId);
-          return;
+          stack = null;
         }
-        Bukkit.getLogger().info("Loaded HDB Head " + hdbId + " successfully!");
-      } else {
-        Bukkit.getLogger().warning("Invalid head config for key " + key);
-        return;
       }
       if (stack == null) {
         Bukkit.getLogger().warning("Null head stack! Aborting... Key:" + key);
@@ -107,6 +110,10 @@ public class EntityEquipmentManager {
     }
     ItemStackExtensionsKt.setLore(stack, lore);
     ItemStackExtensionsKt.setUnbreakable(stack, true);
-    getItemMap().put(key, stack);
+    itemMap.put(key, stack);
+  }
+
+  public void setHeadDatabaseAPI(HeadDatabaseAPI api) {
+    headDatabaseAPI = api;
   }
 }

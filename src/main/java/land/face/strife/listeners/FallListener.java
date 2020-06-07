@@ -71,8 +71,8 @@ public class FallListener implements Listener {
       if (rollBonus) {
         xp *= 1.8;
       }
-      plugin.getSkillExperienceManager()
-          .addExperience(champion, LifeSkillType.AGILITY, xp, false, true);
+      plugin.getSkillExperienceManager().addExperience((Player) event.getEntity(),
+          LifeSkillType.AGILITY, xp, false, false);
     }
 
     if (damage <= 0) {

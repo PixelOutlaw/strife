@@ -176,7 +176,9 @@ public class PlayerDataUtil {
               ((RabbitWatcher) watcher).setType(rabbitType);
               break;
             case ZOMBIE:
-              ((ZombieWatcher) watcher).setBaby(babyData);
+              if (babyData) {
+                ((ZombieWatcher) watcher).setBaby();
+              }
               break;
             case SLIME:
               ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));

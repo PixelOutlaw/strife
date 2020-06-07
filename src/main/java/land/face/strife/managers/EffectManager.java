@@ -344,10 +344,7 @@ public class EffectManager {
         break;
       case CONSOLE_COMMAND:
         effect = new ConsoleCommand();
-        String cmd = cs.getString("command", "/broadcast REEE");
-        if (!cmd.startsWith("/")) {
-          cmd = "/" + cmd;
-        }
+        String cmd = cs.getString("command", "broadcast REEE");
         ((ConsoleCommand) effect).setCommand(cmd);
         break;
       case COUNTER:
@@ -697,6 +694,7 @@ public class EffectManager {
           LogUtil.printWarning("Invalid potion effect type in effect " + key + ". Skipping.");
           return;
         }
+        ((PotionEffectAction) effect).setRemove(cs.getBoolean("remove", false));
         ((PotionEffectAction) effect).setPotionEffectType(potionType);
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
@@ -761,7 +759,7 @@ public class EffectManager {
         ((StrifeParticle) effect).setSize(cs.getDouble("size", 1));
         String materialType = cs.getString("material", "");
         if (StringUtils.isNotBlank(materialType)) {
-          ((StrifeParticle) effect).setBlockData(new ItemStack(Material.getMaterial(materialType)));
+          ((StrifeParticle) effect).setItemData(new ItemStack(Material.getMaterial(materialType)));
         }
         break;
     }
@@ -946,6 +944,7 @@ public class EffectManager {
         break;
       case RANGE:
         condition = new RangeCondition();
+        ((RangeCondition) condition).setRangeSquared(Math.pow(cs.getDouble("value", 0), 2));
         break;
       case STEALTHED:
         condition = new StealthCondition();

@@ -15,7 +15,7 @@ public class BuffCondition extends Condition {
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     StrifeMob actualTarget = getCompareTarget() == CompareTarget.SELF ? attacker : target;
-    int buffStacks = actualTarget.getBuffStacks(buffId);
+    int buffStacks = actualTarget.getBuffStacks(buffId, attacker.getEntity().getUniqueId());
     return PlayerDataUtil.conditionCompare(getComparison(), buffStacks, stacks);
   }
 }

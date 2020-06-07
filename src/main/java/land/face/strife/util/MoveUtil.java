@@ -10,6 +10,28 @@ public class MoveUtil {
   private final static Map<UUID, Long> LAST_MOVED = new HashMap<>();
   private final static Map<UUID, Long> LAST_GROUNDED = new HashMap<>();
   private final static Map<UUID, Long> SNEAK_START = new HashMap<>();
+  private final static Map<UUID, Integer> JUMP_MAP = new HashMap<>();
+
+  public static int getMaxJumps(int agilityLevel) {
+    if (agilityLevel > 59) {
+      return 2;
+    }
+    if (agilityLevel > 39) {
+      return 1;
+    }
+    return 0;
+  }
+
+  public static void setJumps(Player player, int amount) {
+    if (amount == 0) {
+      JUMP_MAP.remove(player.getUniqueId());
+    }
+    JUMP_MAP.put(player.getUniqueId(), amount);
+  }
+
+  public static int getJumps(Player player) {
+    return JUMP_MAP.getOrDefault(player.getUniqueId(), 0);
+  }
 
   public static void setLastMoved(Player player) {
     LAST_MOVED.put(player.getUniqueId(), System.currentTimeMillis());

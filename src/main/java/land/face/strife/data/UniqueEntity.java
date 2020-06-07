@@ -8,6 +8,7 @@ import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
@@ -25,6 +26,8 @@ public class UniqueEntity {
   private boolean showName;
   private boolean baby;
   private boolean angry;
+  private boolean armsRaised;
+  private Profession profession;
   private int size;
   private int followRange = -1;
   private boolean knockbackImmune;
@@ -37,7 +40,7 @@ public class UniqueEntity {
   private boolean powered;
   private double displaceMultiplier;
   private String mount;
-  private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
+  private Map<EquipmentSlot, String> equipment = new HashMap<>();
   private ItemStack itemPassenger = null;
   private StrifeParticle strifeParticle;
 
@@ -131,6 +134,22 @@ public class UniqueEntity {
 
   public void setAngry(boolean angry) {
     this.angry = angry;
+  }
+
+  public boolean isArmsRaised() {
+    return armsRaised;
+  }
+
+  public void setArmsRaised(boolean armsRaised) {
+    this.armsRaised = armsRaised;
+  }
+
+  public Profession getProfession() {
+    return profession;
+  }
+
+  public void setProfession(Profession profession) {
+    this.profession = profession;
   }
 
   public int getSize() {
@@ -229,15 +248,15 @@ public class UniqueEntity {
     this.charmImmune = charmImmune;
   }
 
-  public Map<EquipmentSlot, ItemStack> getEquipment() {
+  public Map<EquipmentSlot, String> getEquipment() {
     return equipment;
   }
 
-  public ItemStack getEquipmentItem(EquipmentSlot slot) {
+  public String getEquipmentItem(EquipmentSlot slot) {
     return equipment.get(slot);
   }
 
-  public void setEquipment(Map<EquipmentSlot, ItemStack> equipment) {
+  public void setEquipment(Map<EquipmentSlot, String> equipment) {
     this.equipment = equipment;
   }
 

@@ -47,7 +47,7 @@ public class Damage extends Effect {
     }
     mods.setBlocking(isBlocking);
     mods.getBonusDamages().addAll(bonusDamages);
-    mods.getDamageModifiers().putAll(damageMultipliers);
+    mods.getDamageMultipliers().putAll(damageMultipliers);
     mods.getAbilityMods().putAll(abilityMods);
 
     boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);

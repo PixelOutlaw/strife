@@ -16,26 +16,25 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.tasks;
+package land.face.strife.listeners;
 
-import land.face.strife.util.MoveUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import land.face.strife.StrifePlugin;
+import me.arcaniax.hdb.api.DatabaseLoadEvent;
+import me.arcaniax.hdb.api.HeadDatabaseAPI;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
-public class EveryTickTask extends BukkitRunnable {
+public class HeadLoadListener implements Listener {
 
-  @Override
-  public void run() {
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      MoveUtil.setSneak(player);
-      if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) {
-        player.setAllowFlight(true);
-      } else {
-        player.setAllowFlight(player.getFoodLevel() >= 6 && MoveUtil.getJumps(player) > 0);
-        player.setFlying(false);
-      }
-    }
+  private final StrifePlugin plugin;
+
+  public HeadLoadListener(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  @EventHandler
+  public void onDatabaseLoad(DatabaseLoadEvent e) {
+    plugin.getEquipmentManager().setHeadDatabaseAPI(new HeadDatabaseAPI());
+    plugin.buildEquipment();
   }
 }

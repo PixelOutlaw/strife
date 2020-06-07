@@ -105,8 +105,8 @@ public class ExperienceListener implements Listener {
         Math.abs(mobLevel - lowestPlayerLevel));
 
     float expMultiplier = 1f / killers.size() + ((killers.size() - 1) * 0.2f);
-    if (levelDiff > 7) {
-      expMultiplier *= Math.pow(0.98, Math.pow(levelDiff - 7, 2));
+    if (levelDiff > 8) {
+      expMultiplier *= Math.pow(0.98, Math.pow(levelDiff - 8, 2));
     }
 
     for (Player player : killers) {

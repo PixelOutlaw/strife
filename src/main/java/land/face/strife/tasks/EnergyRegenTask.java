@@ -80,8 +80,6 @@ public class EnergyRegenTask extends BukkitRunnable {
       if (player.isSprinting()) {
         energy *= runCostPercent;
         energy -= runCostFlat * agilityMult;
-        plugin.getSkillExperienceManager().addExperience(mob.getChampion(), LifeSkillType.AGILITY,
-            agilityExp, false, false);
       } else if (MoveUtil.hasMoved(player)) {
         energy *= walkCostPercent;
         energy -= walkCostFlat * agilityMult;

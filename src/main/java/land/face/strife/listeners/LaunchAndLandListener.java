@@ -20,7 +20,6 @@ import org.bukkit.util.Vector;
 public class LaunchAndLandListener implements Listener {
 
   private StrifePlugin plugin;
-
   public LaunchAndLandListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
@@ -43,6 +42,9 @@ public class LaunchAndLandListener implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (mob.getChampion().getLifeSkillLevel(AGILITY) < 20) {
+      return;
+    }
     if (plugin.getEnergyManager().getEnergy(mob) > 12) {
       plugin.getEnergyManager().changeEnergy(mob, -12);
       Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
@@ -55,8 +57,8 @@ public class LaunchAndLandListener implements Listener {
       Vector oldVelocity = event.getPlayer().getVelocity().clone()
           .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
       event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
-      plugin.getSkillExperienceManager().addExperience(mob.getChampion(), LifeSkillType.AGILITY,
-          2, false, true);
+      plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY,
+          2, false, false);
     }
   }
 
@@ -71,7 +73,7 @@ public class LaunchAndLandListener implements Listener {
         float xp = cont.getExp();
         xp *= PlayerDataUtil.getLifeSkillLevel(champion, AGILITY) / cont.getDifficulty();
         xp = Math.min(cont.getExp(), xp);
-        plugin.getSkillExperienceManager().addExperience(champion, AGILITY, xp, false, true);
+        plugin.getSkillExperienceManager().addExperience(event.getPlayer(), AGILITY, xp, false, false);
       }
     }
   }

@@ -19,7 +19,7 @@ public class DamageModifiers {
   private float attackMultiplier = 1f;
   private float healMultiplier = 1f;
   private float damageReductionRatio = 1f;
-  private final Map<DamageType, Float> damageModifiers = new HashMap<>(baseDamageMults);
+  private final Map<DamageType, Float> damageMultipliers = new HashMap<>(baseDamageMults);
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private final Set<ElementalStatus> elementalStatuses = new HashSet<>();
@@ -63,8 +63,8 @@ public class DamageModifiers {
     this.healMultiplier = healMultiplier;
   }
 
-  public Map<DamageType, Float> getDamageModifiers() {
-    return damageModifiers;
+  public Map<DamageType, Float> getDamageMultipliers() {
+    return damageMultipliers;
   }
 
   public List<BonusDamage> getBonusDamages() {

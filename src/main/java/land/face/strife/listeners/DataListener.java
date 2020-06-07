@@ -115,6 +115,7 @@ public class DataListener implements Listener {
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
+    plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
@@ -141,6 +142,7 @@ public class DataListener implements Listener {
   }
 
   private void doPlayerLeave(Player player) {
+    plugin.getBoostManager().removeBooster(player.getUniqueId());
     plugin.getAbilityManager().savePlayerCooldowns(player);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);

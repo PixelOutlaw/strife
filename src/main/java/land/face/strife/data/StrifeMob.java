@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
@@ -47,7 +46,7 @@ public class StrifeMob {
   private WeakReference<LivingEntity> master;
 
   private final Set<StrifeMob> minions = new HashSet<>();
-  private final Map<String, Buff> runningBuffs = new ConcurrentHashMap<>();
+  private final Set<Buff> runningBuffs = new HashSet<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
 
@@ -172,33 +171,45 @@ public class StrifeMob {
     baseStats.putAll(stats);
   }
 
-  public boolean hasBuff(String buffId) {
-    if (runningBuffs.containsKey(buffId)) {
-      if (runningBuffs.get(buffId).isExpired()) {
-        runningBuffs.remove(buffId);
-        return false;
+  public Buff hasBuff(String buffId, UUID source) {
+    Iterator iterator = runningBuffs.iterator();
+    while (iterator.hasNext()) {
+      Buff buff = (Buff) iterator.next();
+      if (buff == null || buff.isExpired()) {
+        iterator.remove();
+      } else {
+        if (source == null) {
+          if (buffId.equals(buff.getId()) && buff.getSource() == null) {
+            return buff;
+          }
+        } else {
+          if (buffId.equals(buff.getId()) && source.equals(buff.getSource())) {
+            return buff;
+          }
+        }
       }
-      return true;
     }
-    return false;
+    return null;
   }
 
-  public int getBuffStacks(String buffId) {
-    if (hasBuff(buffId)) {
-      return runningBuffs.get(buffId).getStacks();
+  public int getBuffStacks(String buffId, UUID source) {
+    Buff buff = hasBuff(buffId, source);
+    if (buff == null) {
+      return 0;
     }
-    return 0;
+    return buff.getStacks();
   }
 
-  public void addBuff(String buffId, Buff buff, double duration) {
-    if (runningBuffs.get(buffId) == null || runningBuffs.get(buffId).isExpired()) {
-      buff.setExpireTimeFromDuration(duration);
-      runningBuffs.put(buffId, buff);
+  public void addBuff(String buffId, UUID source, Buff buff, double duration) {
+    Buff oldBuff = hasBuff(buffId, source);
+    if (oldBuff == null) {
       LogUtil.printDebug("Adding new buff: " + buffId + " to " + livingEntity.get().getName());
+      buff.setExpireTimeFromDuration(duration);
+      runningBuffs.add(buff);
       return;
     }
-    runningBuffs.get(buffId).bumpBuff(duration);
     LogUtil.printDebug("Bumping buff: " + buffId + " for " + livingEntity.get().getName());
+    buff.bumpBuff(duration);
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
@@ -273,18 +284,20 @@ public class StrifeMob {
     this.charmImmune = charmImmune;
   }
 
-  private Map<StrifeStat, Float> getBuffStats() {
+  public Map<StrifeStat, Float> getBuffStats() {
     Map<StrifeStat, Float> stats = new HashMap<>();
-    for (Buff buff : runningBuffs.values()) {
-      if (buff.isExpired()) {
-        runningBuffs.remove(buff.getId());
-        continue;
-      }
-      for (StrifeStat stat : buff.getTotalStats().keySet()) {
-        if (stats.containsKey(stat)) {
-          stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
-        } else {
-          stats.put(stat, buff.getTotalStats().get(stat));
+    Iterator iterator = runningBuffs.iterator();
+    while (iterator.hasNext()) {
+      Buff buff = (Buff) iterator.next();
+      if (buff == null || buff.isExpired()) {
+        iterator.remove();
+      } else {
+        for (StrifeStat stat : buff.getTotalStats().keySet()) {
+          if (stats.containsKey(stat)) {
+            stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
+          } else {
+            stats.put(stat, buff.getTotalStats().get(stat));
+          }
         }
       }
     }

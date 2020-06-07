@@ -18,7 +18,7 @@ public class BuffEffect extends Effect {
     if (!strictDuration) {
       durationMult *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    DamageUtil.applyBuff(loadedBuff, target, durationMult);
+    DamageUtil.applyBuff(loadedBuff, target, caster.getEntity().getUniqueId(), durationMult);
   }
 
   public void setLoadedBuff(String buffId) {
