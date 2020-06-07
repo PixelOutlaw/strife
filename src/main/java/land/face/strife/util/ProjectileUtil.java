@@ -72,10 +72,10 @@ public class ProjectileUtil {
   }
 
   public static void shootWand(StrifeMob mob, double attackMult) {
-    float projectileSpeed = 0.9f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    float projectileSpeed = 1.0f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.24, true);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.19, true);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
@@ -89,10 +89,10 @@ public class ProjectileUtil {
   }
 
   public static void shootArrow(StrifeMob mob, float attackMult) {
-    float projectileSpeed = 1.65f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    float projectileSpeed = 1.75f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.185);
+    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.165);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
@@ -136,24 +136,23 @@ public class ProjectileUtil {
 
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
       double verticalBonus) {
-    return getProjectileVelocity(shooter, speed, spread, verticalBonus, false);
+    return getProjectileVelocity(shooter.getEyeLocation().getDirection(), speed, spread, verticalBonus, false);
   }
 
-  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
+  public static Vector getProjectileVelocity(Vector direction, float speed, double spread,
       double verticalBonus, boolean zeroPitch) {
-    Vector vector = shooter.getEyeLocation().getDirection();
     if (zeroPitch) {
-      vector.setY(0);
-      vector.normalize();
+      direction.setY(0);
+      direction.normalize();
     }
-    vector.multiply(speed);
+    direction.multiply(speed);
     if (spread == 0) {
-      return vector.add(new Vector(0, verticalBonus, 0));
+      return direction.add(new Vector(0, verticalBonus, 0));
     }
     double xOff = -spread + spread * 2 * Math.random();
     double yOff = -spread + spread * 2 * Math.random();
     double zOff = -spread + spread * 2 * Math.random();
-    return vector.add(new Vector(xOff, verticalBonus + yOff, zOff));
+    return direction.add(new Vector(xOff, verticalBonus + yOff, zOff));
   }
 
   public static void createTrident(Player shooter, Trident trident, float attackMult,

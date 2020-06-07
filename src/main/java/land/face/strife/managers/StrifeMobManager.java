@@ -1,6 +1,7 @@
 package land.face.strife.managers;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
@@ -60,14 +61,19 @@ public class StrifeMobManager {
     mob.getTempEffects().add(finiteUsesEffect);
   }
 
-  public void addBuff(LivingEntity entity, String buffId, double durationMultiplier) {
-    addBuff(entity, plugin.getBuffManager().getBuffFromId(buffId), durationMultiplier);
+  public void addBuff(LivingEntity target, UUID source, String buffId, double durationMultiplier) {
+    addBuff(target, source, plugin.getBuffManager().getBuffFromId(buffId), durationMultiplier);
   }
 
-  public void addBuff(LivingEntity entity, LoadedBuff loadedBuff, double durationMultiplier) {
-    StrifeMob strifeMob = trackedEntities.get(entity);
+  public void addBuff(LivingEntity target, UUID source, LoadedBuff loadedBuff, double durationMultiplier) {
+    StrifeMob strifeMob = trackedEntities.get(target);
+    addBuff(strifeMob, source, loadedBuff, durationMultiplier);
+  }
+
+  public void addBuff(StrifeMob target, UUID source, LoadedBuff loadedBuff, double durationMultiplier) {
     Buff buff = plugin.getBuffManager().buildFromLoadedBuff(loadedBuff);
-    strifeMob.addBuff(loadedBuff.getId(), buff, loadedBuff.getSeconds() * durationMultiplier);
+    buff.setSource(source);
+    target.addBuff(loadedBuff.getId(), source, buff, loadedBuff.getSeconds() * durationMultiplier);
   }
 
   public StrifeMob setEntityStats(LivingEntity entity, Map<StrifeStat, Float> statMap) {

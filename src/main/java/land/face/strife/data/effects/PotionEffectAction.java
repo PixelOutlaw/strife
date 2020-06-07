@@ -12,11 +12,16 @@ public class PotionEffectAction extends Effect {
   private PotionEffectType potionEffectType;
   private double duration;
   private int intensity;
+  private boolean remove;
   private boolean bumpUpToIntensity;
   private boolean strictDuration;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    if (remove) {
+      target.getEntity().removePotionEffect(potionEffectType);
+      return;
+    }
     double duration = this.duration;
     if (!strictDuration) {
       duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
@@ -51,6 +56,14 @@ public class PotionEffectAction extends Effect {
 
   public void setIntensity(int intensity) {
     this.intensity = intensity;
+  }
+
+  public boolean isRemove() {
+    return remove;
+  }
+
+  public void setRemove(boolean remove) {
+    this.remove = remove;
   }
 
   public void setStrictDuration(boolean strictDuration) {

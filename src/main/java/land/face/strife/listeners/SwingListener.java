@@ -28,10 +28,13 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -55,25 +58,30 @@ public class SwingListener implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onAttackShulkerBullet(EntityDamageByEntityEvent event) {
+    if (event.getEntity() instanceof ShulkerBullet && event.getDamager() instanceof Player) {
+      if (((ShulkerBullet) event.getEntity()).getShooter() == event.getDamager()) {
+        event.setCancelled(true);
+      }
+    }
+  }
+
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSwingLeft(PlayerInteractEvent event) {
-    if (event.useItemInHand() == Result.DENY) {
-      return;
-    }
-    if (event.getHand() == EquipmentSlot.OFF_HAND) {
+    if (event.useItemInHand() == Result.DENY || event.getHand() == EquipmentSlot.OFF_HAND) {
       return;
     }
     if (event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK) {
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
       double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
       if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
-        if (attackMult > 0.2) {
+        if (attackMult > 0.15) {
           ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.5D));
         }
         event.setCancelled(true);
       }
-      plugin.getStatUpdateManager().updateAttackAttrs(
-          plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+      plugin.getStatUpdateManager().updateAttackAttrs(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     }
   }
 

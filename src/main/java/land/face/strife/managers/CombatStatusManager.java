@@ -69,9 +69,8 @@ public class CombatStatusManager {
       return;
     }
     for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
-      plugin.getSkillExperienceManager()
-          .addExperience(champion, type, champion.getDetailsContainer().getExpValues().get(type),
-              false);
+      plugin.getSkillExperienceManager().addExperience(player, type,
+          champion.getDetailsContainer().getExpValues().get(type), false, false);
     }
     champion.getDetailsContainer().clearAll();
   }

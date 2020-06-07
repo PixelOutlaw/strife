@@ -22,7 +22,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -35,7 +34,7 @@ public class DOTListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler
   public void onEntityDOTEvent(EntityDamageEvent event) {
     if (event.isCancelled()) {
       return;
@@ -50,7 +49,7 @@ public class DOTListener implements Listener {
     LivingEntity le = (LivingEntity) event.getEntity();
     if (event.getCause() == DamageCause.LAVA || event.getCause() == DamageCause.FIRE) {
       DamageUtil.removeDamageModifiers(event);
-      event.setDamage(0);
+      event.setDamage(1);
       le.setFireTicks(Math.max(le.getFireTicks(), 40));
       plugin.getDamageOverTimeTask().trackBurning(le);
       return;

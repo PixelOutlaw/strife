@@ -18,7 +18,6 @@ import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -43,7 +42,7 @@ public class AreaEffect extends LocationEffect {
   private long targetingCooldown;
 
   public void apply(StrifeMob caster, StrifeMob target) {
-    applyAtLocation(caster, target.getEntity().getLocation());
+    applyAtLocation(caster, TargetingUtil.getOriginLocation(target.getEntity(), getOrigin()));
   }
 
   @Override
@@ -102,11 +101,10 @@ public class AreaEffect extends LocationEffect {
     }
     switch (lineOfSight) {
       case CASTER:
-        areaTargets.removeIf(e -> !caster.getEntity().hasLineOfSight(e));
+        areaTargets.removeIf(e -> !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
         break;
       case CENTER:
-        ArmorStand detector = TargetingUtil.buildAndRemoveDetectionStand(location);
-        areaTargets.removeIf(e -> !detector.hasLineOfSight(e));
+        areaTargets.removeIf(e -> !TargetingUtil.hasLineOfSight(location, e.getEyeLocation(), e));
         break;
     }
     if (maxTargets > 0) {

@@ -16,7 +16,6 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -93,16 +92,16 @@ public class DamageUtil {
     PVP_MULT = (float) plugin.getSettings().getDouble("config.mechanics.pvp-multiplier", 0.5);
   }
 
-  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender,
-      String[] extraEffects) {
-    if (extraEffects != null) {
-      for (String s : extraEffects) {
-        if (StringUtils.isBlank(s)) {
-          continue;
-        }
-        plugin.getEffectManager()
-            .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
+  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender, String[] effects) {
+    if (effects == null) {
+      return;
+    }
+    for (String s : effects) {
+      if (StringUtils.isBlank(s)) {
+        continue;
       }
+      plugin.getEffectManager()
+          .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
     }
   }
 
@@ -173,8 +172,7 @@ public class DamageUtil {
 
   public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender,
       DamageModifiers mods) {
-    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, defender,
-        mods.getBonusDamages(), mods.getAttackMultiplier());
+    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, defender, mods);
     applyAttackTypeMods(attacker, mods.getAttackType(), damageMap);
     applyElementalEffects(attacker, defender, damageMap, mods);
     return damageMap;
@@ -202,7 +200,7 @@ public class DamageUtil {
 
     float critMult = 0;
 
-    boolean criticalHit = isCriticalHit(attacker, defender, mods);
+    boolean criticalHit = standardDamage > 0.9 && isCriticalHit(attacker, defender, mods);
     if (criticalHit) {
       critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
           mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
@@ -248,7 +246,7 @@ public class DamageUtil {
       float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
           attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
       plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
-          LifeSkillType.SNEAK, gainedXp, false);
+          LifeSkillType.SNEAK, gainedXp, false, false);
     }
 
     String damageString = String.valueOf((int) Math.ceil(rawDamage));
@@ -420,15 +418,16 @@ public class DamageUtil {
   }
 
   public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, StrifeMob target,
-      List<BonusDamage> bonusDamages, float attackMultiplier) {
+      DamageModifiers mods) {
     Map<DamageType, Float> damageMap = new HashMap<>();
     for (DamageType damageType : DMG_TYPES) {
       float amount = getRawDamage(attacker, damageType);
       if (amount > 0) {
-        damageMap.put(damageType, amount * attackMultiplier);
+        damageMap.put(damageType, amount * mods.getDamageMultipliers().getOrDefault(damageType, 1f)
+            * mods.getAttackMultiplier());
       }
     }
-    for (BonusDamage bd : bonusDamages) {
+    for (BonusDamage bd : mods.getBonusDamages()) {
       float bonus = applyDamageScale(attacker, target, bd);
       damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
     }
@@ -455,7 +454,7 @@ public class DamageUtil {
     }
     if (damageMap.containsKey(DamageType.MAGICAL)) {
       damageMap.put(DamageType.MAGICAL, damageMap.get(DamageType.MAGICAL)
-            * (1 + attacker.getStat(StrifeStat.MAGIC_MULT) / 100));
+          * (1 + attacker.getStat(StrifeStat.MAGIC_MULT) / 100));
     }
     float elementalMult = 1 + (attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100);
     if (damageMap.containsKey(DamageType.FIRE)) {
@@ -854,13 +853,13 @@ public class DamageUtil {
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }
 
-  public static void applyBuff(LoadedBuff buff, StrifeMob target) {
-    applyBuff(buff, target, 1);
+  public static void applyBuff(LoadedBuff buff, UUID source, StrifeMob target) {
+    applyBuff(buff, target, source, 1);
   }
 
-  public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, double durationMult) {
+  public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, UUID source, double durationMult) {
     StrifePlugin.getInstance().getStrifeMobManager()
-        .addBuff(target.getEntity(), loadedBuff, durationMult);
+        .addBuff(target.getEntity(), source, loadedBuff, durationMult);
   }
 
   public static LoadedBuff getBuff(String id) {

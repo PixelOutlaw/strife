@@ -64,7 +64,7 @@ public class MobModManager {
       }
     }
     if (!mobMod.getEquipment().isEmpty()) {
-      ItemUtil.delayedEquip(mobMod.getEquipment(), strifeMob.getEntity());
+      ItemUtil.delayedEquip(mobMod.getEquipment(), strifeMob.getEntity(), false);
     }
     int level = StatUtil.getMobLevel(strifeMob.getEntity());
     Map<StrifeStat, Float> stats = StatUpdateManager

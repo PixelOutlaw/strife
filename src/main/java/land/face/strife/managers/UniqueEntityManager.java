@@ -33,10 +33,15 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Raider;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.Villager;
 import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
+import org.bukkit.entity.ZombieVillager;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 public class UniqueEntityManager {
 
@@ -104,6 +109,7 @@ public class UniqueEntityManager {
 
     if (le instanceof Zombie) {
       ((Zombie) le).setBaby(uniqueEntity.isBaby());
+      ((Zombie) le).setArmsRaised(uniqueEntity.isArmsRaised());
     } else if (le instanceof Slime) {
       int size = uniqueEntity.getSize();
       if (size < 1) {
@@ -121,6 +127,11 @@ public class UniqueEntityManager {
       ((Rabbit) le).setAdult();
     } else if (le instanceof Creeper) {
       ((Creeper) le).setPowered(uniqueEntity.isPowered());
+    }
+
+    if (le instanceof Raider) {
+      ((Raider) le).setCanJoinRaid(false);
+      ((Raider) le).setPatrolLeader(false);
     }
 
     if (le instanceof Ageable) {
@@ -146,6 +157,14 @@ public class UniqueEntityManager {
       }
     }
 
+    if (uniqueEntity.getProfession() != null) {
+      if (le instanceof ZombieVillager) {
+        ((ZombieVillager) le).setVillagerProfession(uniqueEntity.getProfession());
+      } else if (le instanceof Villager) {
+        ((Villager) le).setProfession(uniqueEntity.getProfession());
+      }
+    }
+
     if (uniqueEntity.isRemoveFollowMods()) {
       SpecialStatusUtil.setWeakAggro(le);
     }
@@ -167,9 +186,11 @@ public class UniqueEntityManager {
       le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
     }
 
+    le.setCanPickupItems(false);
     if (le.getEquipment() != null) {
-      le.getEquipment().clear();
-      ItemUtil.delayedEquip(uniqueEntity.getEquipment(), le);
+      Map<EquipmentSlot, ItemStack> equipmentMap = plugin.getEquipmentManager()
+          .getEquipmentMap(uniqueEntity.getEquipment());
+      ItemUtil.delayedEquip(equipmentMap, le, true);
     }
 
     if (uniqueEntity.getItemPassenger() != null) {

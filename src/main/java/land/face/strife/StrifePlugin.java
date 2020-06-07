@@ -60,12 +60,14 @@ import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DogeListener;
+import land.face.strife.listeners.DoubleJumpListener;
 import land.face.strife.listeners.EndermanListener;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
 import land.face.strife.listeners.ExperienceListener;
 import land.face.strife.listeners.FallListener;
 import land.face.strife.listeners.HeadDropListener;
+import land.face.strife.listeners.HeadLoadListener;
 import land.face.strife.listeners.HealingListener;
 import land.face.strife.listeners.InventoryListener;
 import land.face.strife.listeners.LaunchAndLandListener;
@@ -156,6 +158,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitTask;
 import se.ranzdo.bukkit.methodcommand.CommandHandler;
@@ -231,6 +234,7 @@ public class StrifePlugin extends FacePlugin {
   private LevelingRate levelingRate;
 
   private AbilityPickerPickerMenu abilitySubcategoryMenu;
+  private Map<String, AbilityPickerMenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
@@ -458,7 +462,7 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> boostManager.checkBoostSchedule(),
         60L,
-        20L * 900
+        20L * 1860
     ));
 
     agilityManager.loadAgilityContainers();
@@ -491,15 +495,21 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager()
         .registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
+
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
     }
+    if (Bukkit.getPluginManager().getPlugin("HeadDatabase") != null) {
+      Bukkit.getPluginManager().registerEvents(new HeadLoadListener(this), this);
+    }
 
     ConfigurationSection abilityMenus = configYAML.getConfigurationSection("ability-menus");
+    abilitySubmenus = new HashMap<>();
     List<AbilityPickerPickerItem> pickerItems = new ArrayList<>();
     for (String menuId : abilityMenus.getKeys(false)) {
       List<String> abilities = abilityMenus.getStringList(menuId + ".abilities");
@@ -508,6 +518,7 @@ public class StrifePlugin extends FacePlugin {
           .collect(Collectors.toList());
       AbilityPickerMenu menu = new AbilityPickerMenu(this, title, abilityList);
       menu.setId(menuId);
+      abilitySubmenus.put(menuId, menu);
 
       String name = abilityMenus.getString(menuId + ".name", "CONFIGURE ME");
       List<String> lore = abilityMenus.getStringList(menuId + ".lore");
@@ -621,7 +632,7 @@ public class StrifePlugin extends FacePlugin {
     }
   }
 
-  private void buildEquipment() {
+  public void buildEquipment() {
     for (String itemStackKey : equipmentYAML.getKeys(false)) {
       if (!equipmentYAML.isConfigurationSection(itemStackKey)) {
         continue;
@@ -721,6 +732,14 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setAngry(cs.getBoolean("angry", false));
+      uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
+      if (uniqueEntity.getType() == EntityType.VILLAGER
+          || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
+        String prof = cs.getString("profession");
+        if (prof != null) {
+          uniqueEntity.setProfession(Profession.valueOf(prof.toUpperCase()));
+        }
+      }
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
       Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
@@ -734,8 +753,8 @@ public class StrifePlugin extends FacePlugin {
       Map<StrifeStat, Float> attributeMap = StatUtil.getStatMapFromSection(statCs);
       uniqueEntity.setAttributeMap(attributeMap);
 
-      ConfigurationSection equipmentCS = cs.getConfigurationSection("equipment");
-      uniqueEntity.setEquipment(equipmentManager.buildEquipmentFromConfigSection(equipmentCS));
+      uniqueEntity.setEquipment(equipmentManager
+          .buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
 
       String passengerItem = cs.getString("item-passenger", "");
       if (StringUtils.isNotBlank(passengerItem)) {
@@ -992,6 +1011,10 @@ public class StrifePlugin extends FacePlugin {
 
   public AbilityPickerPickerMenu getAbilityPicker() {
     return abilitySubcategoryMenu;
+  }
+
+  public AbilityPickerMenu getSubmenu(String name) {
+    return abilitySubmenus.get(name);
   }
 
   public StatsMenu getStatsMenu() {

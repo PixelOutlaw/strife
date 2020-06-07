@@ -206,7 +206,7 @@ public class TargetingListener implements Listener {
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
         float xp = plugin.getStealthManager().getSneakActionExp(level, stealthLevel);
         xp *= distanceMult;
-        plugin.getSkillExperienceManager().addExperience(champion, LifeSkillType.SNEAK, xp, false);
+        plugin.getSkillExperienceManager().addExperience(player, LifeSkillType.SNEAK, xp, false, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }
     } else {

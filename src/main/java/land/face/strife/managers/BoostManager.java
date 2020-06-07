@@ -19,17 +19,25 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
 import com.tealcube.minecraft.bukkit.shade.google.gson.JsonArray;
 import com.tealcube.minecraft.bukkit.shade.google.gson.JsonElement;
+import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
+import github.scarsz.discordsrv.util.DiscordUtil;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.Boost;
@@ -47,19 +55,72 @@ public class BoostManager {
 
   private final Map<DayOfWeek, String> boostSchedule = new HashMap<>();
   private final Map<String, LoadedStatBoost> loadedBoosts = new HashMap<>();
-
   private final List<Boost> boosts = new CopyOnWriteArrayList<>();
+  private LoadedStatBoost dailyBoost = null;
 
   private Gson gson = new Gson();
 
+  private Set<UUID> discordBoosters = new HashSet<>();
+  private Set<UUID> contributors = new HashSet<>();
+
   public BoostManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      updateGlobalBoostStatus(p);
+    }
+  }
+
+  public int getContributorSize() {
+    return contributors.size();
+  }
+
+  public int getDiscordBoostSize() {
+    return discordBoosters.size();
+  }
+
+  public void removeBooster(UUID uuid) {
+    discordBoosters.remove(uuid);
+    contributors.remove(uuid);
+  }
+
+  public void updateGlobalBoostStatus(Player player) {
+    if (player.hasPermission("has.donated")) {
+      contributors.add(player.getUniqueId());
+    }
+    String id = DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(player.getUniqueId());
+    if (StringUtils.isBlank(id)) {
+      Bukkit.getLogger().info("No discord linked id found for user - no boost bonus");
+      return;
+    }
+    Member member = DiscordUtil.getMemberById(id);
+    if (member == null) {
+      Bukkit.getLogger().info("No discord member found for id - no boost bonus");
+      return;
+    }
+    for (Role role : member.getRoles()) {
+      Bukkit.getLogger().info(role.getName());
+      if (role.getName().equals("Boosty Bois")) {
+        discordBoosters.add(player.getUniqueId());
+        return;
+      }
+    }
+    Bukkit.getLogger().info("member not a booster - no boost bonus");
   }
 
   public Map<StrifeStat, Float> getAttributes() {
     Map<StrifeStat, Float> attrMap = new HashMap<>();
     for (Boost boost : boosts) {
       attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getStats()));
+    }
+    if (dailyBoost != null) {
+      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, dailyBoost.getStats()));
+    }
+    if (discordBoosters.size() > 0) {
+      attrMap.put(StrifeStat.SKILL_XP_GAIN, discordBoosters.size() *
+          2 + attrMap.getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
+    }
+    if (contributors.size() > 0) {
+      attrMap.put(StrifeStat.XP_GAIN, contributors.size() + attrMap.getOrDefault(StrifeStat.XP_GAIN, 0f));
     }
     return attrMap;
   }
@@ -142,21 +203,17 @@ public class BoostManager {
     DayOfWeek dow = date.getDayOfWeek();
     String boostId = boostSchedule.get(dow);
     if (boostId == null) {
+      dailyBoost = null;
       return;
-    }
-    for (Boost b : boosts) {
-      if (b.getBoostId().equals(boostId)) {
-        b.setSecondsRemaining(901);
-        return;
-      }
     }
     LoadedStatBoost loadedStatBoost = loadedBoosts.get(boostSchedule.get(dow));
     if (loadedStatBoost == null) {
+      dailyBoost = null;
       LogUtil.printWarning("OI! Invalid event for today?? What is... " + boostId + "??");
       return;
     }
-    announceBoost(loadedStatBoost.getAnnounceStart(), "SERVER", loadedStatBoost.getDuration());
-    startBoost("SERVER", boostId, 901);
+    dailyBoost = loadedStatBoost;
+    announceBoost(loadedStatBoost.getAnnounceRun(), "SERVER", 0);
   }
 
   private void announceBoost(List<String> announce, String creator, int secondsRemaining) {

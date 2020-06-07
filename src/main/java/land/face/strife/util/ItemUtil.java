@@ -173,13 +173,11 @@ public class ItemUtil {
     return traits;
   }
 
-  public static void delayedEquip(Map<EquipmentSlot, ItemStack> items, LivingEntity entity) {
-    entity.setCanPickupItems(false);
-    if (entity.getEquipment() == null) {
-      return;
-    }
+  public static void delayedEquip(Map<EquipmentSlot, ItemStack> items, LivingEntity entity, boolean overwrite) {
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      entity.getEquipment().clear();
+      if (overwrite) {
+        entity.getEquipment().clear();
+      }
       entity.getEquipment().setHelmetDropChance(0f);
       entity.getEquipment().setChestplateDropChance(0f);
       entity.getEquipment().setLeggingsDropChance(0f);

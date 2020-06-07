@@ -26,7 +26,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.champion.Champion;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.SkillExpGainEvent;
@@ -53,17 +53,15 @@ public class SkillExperienceManager {
     setupLevelingRates(plugin);
   }
 
-  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact) {
-    addExperience(plugin.getChampionManager().getChampion(player), type, amount, exact, true);
+  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact,
+      boolean forceDisplay) {
+    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, amount, exact, forceDisplay);
   }
 
-  public void addExperience(Champion champion, LifeSkillType type, double amount, boolean exact) {
-    addExperience(champion, type, amount, exact, true);
-  }
-
-  public void addExperience(Champion champion, LifeSkillType type, double amount, boolean exact,
-      boolean displayXp) {
-    ChampionSaveData saveData = champion.getSaveData();
+  public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact,
+      boolean forceDisplay) {
+    Player player = (Player) mob.getEntity();
+    ChampionSaveData saveData = mob.getChampion().getSaveData();
     if (amount < 0.001) {
       return;
     }
@@ -71,19 +69,20 @@ public class SkillExperienceManager {
       return;
     }
     if (!exact) {
-      double statsMult = champion.getCombinedCache().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f) / 100f;
-      amount *= 1 + statsMult;
-      if (champion.getSaveData().isDisplayExp() && displayXp) {
-        String xp = FORMAT.format(amount * (1 + statsMult));
-        MessageUtils.sendMessage(champion.getPlayer(), XP_MSG
-            .replace("{c}", "" + type.getColor())
-            .replace("{n}", type.getName())
-            .replace("{a}", xp)
-        );
-      }
+      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player)
+          .getStat(StrifeStat.SKILL_XP_GAIN) / 100;
+      amount *= 1 + skillXpMult;
+    }
+    if (saveData.isDisplayExp() || forceDisplay) {
+      String xp = FORMAT.format(amount);
+      MessageUtils.sendMessage(player, XP_MSG
+          .replace("{c}", "" + type.getColor())
+          .replace("{n}", type.getName())
+          .replace("{a}", xp)
+      );
     }
 
-    SkillExpGainEvent xpEvent = new SkillExpGainEvent(champion, type, (float) amount);
+    SkillExpGainEvent xpEvent = new SkillExpGainEvent(mob.getChampion(), type, (float) amount);
     StrifePlugin.getInstance().getServer().getPluginManager().callEvent(xpEvent);
 
     double currentExp = saveData.getSkillExp(type) + xpEvent.getAmount();
@@ -93,7 +92,7 @@ public class SkillExperienceManager {
       currentExp -= maxExp;
       saveData.setSkillLevel(type, saveData.getSkillLevel(type) + 1);
 
-      SkillLevelUpEvent levelUpEvent = new SkillLevelUpEvent(champion.getPlayer(), type,
+      SkillLevelUpEvent levelUpEvent = new SkillLevelUpEvent(player, type,
           saveData.getSkillLevel(type));
       Bukkit.getPluginManager().callEvent(levelUpEvent);
 
@@ -102,12 +101,8 @@ public class SkillExperienceManager {
       }
       maxExp = (double) getMaxExp(type, saveData.getSkillLevel(type));
     }
-
     saveData.setSkillExp(type, (float) currentExp);
-
-    if (displayXp) {
-      plugin.getBossBarManager().pushSkillBar(champion.getPlayer(), type);
-    }
+    plugin.getBossBarManager().pushSkillBar(player, type);
   }
 
   public Integer getMaxExp(LifeSkillType type, int level) {

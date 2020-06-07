@@ -53,15 +53,53 @@ public class StatsBonusMenuItem extends MenuItem {
 
     lore.add(StatsMenu.breakLine);
 
-    lore.add(ChatColor.GREEN + "Combat Experience Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.XP_GAIN)) + "%");
-    lore.add(ChatColor.GREEN + "Skill Experience Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.SKILL_XP_GAIN)) + "%");
-    lore.add(ChatColor.GREEN + "Item Drop Rate Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+    int totalCombatXp = Math.round(pStats.getStat(StrifeStat.XP_GAIN));
+    lore.add(ChatColor.GREEN + "Combat XP: " + ChatColor.WHITE + "+" + totalCombatXp + "%");
+    int running = Math.round(StrifePlugin.getInstance().getBoostManager().getAttributes().getOrDefault(StrifeStat.XP_GAIN, 0f));
+    int contributors = StrifePlugin.getInstance().getBoostManager().getContributorSize();
+    int buffs = Math.round(pStats.getBuffStats().getOrDefault(StrifeStat.XP_GAIN, 0f));
+    if (buffs > 0 || running > 0 || contributors > 0) {
+      int fromItems = totalCombatXp - buffs - running;
+      if (fromItems > 0) {
+        lore.add(ChatColor.GRAY + " +" + fromItems + "% From Items");
+      }
+      if (buffs > 0) {
+        lore.add(ChatColor.GRAY + " +" + buffs + "% From Buffs");
+      }
+      if (running - contributors > 0) {
+        lore.add(ChatColor.GRAY + " +" + (running - contributors) + "% From Global Boosts");
+      }
+      if (contributors > 0) {
+        lore.add(ChatColor.GRAY + " +" + contributors + "% From Contributors");
+      }
+    }
+
+    int totalSkillXp = Math.round(pStats.getStat(StrifeStat.SKILL_XP_GAIN));
+    lore.add(ChatColor.GREEN + "Skill XP: " + ChatColor.WHITE + "+" + totalSkillXp + "%");
+    int running2 = Math.round(StrifePlugin.getInstance().getBoostManager().getAttributes().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
+    int boosters = StrifePlugin.getInstance().getBoostManager().getDiscordBoostSize() * 2;
+    int buffs2 = Math.round(pStats.getBuffStats().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
+    if (buffs2 > 0 || running2 > 0 || boosters > 0) {
+      int skillXpFromItems = totalSkillXp - buffs2 - running2;
+      if (skillXpFromItems > 0) {
+        lore.add(ChatColor.GRAY + " +" + skillXpFromItems + "% From Items");
+      }
+      if (buffs2 > 0) {
+        lore.add(ChatColor.GRAY + " +" + buffs2 + "% From Buffs");
+      }
+      if (running2 - boosters > 0) {
+        lore.add(ChatColor.GRAY + " +" + (running2 - boosters) + "% From Global Boosts");
+      }
+      if (boosters > 0) {
+        lore.add(ChatColor.GRAY + " +" + boosters + "% From Discord Boosters");
+      }
+    }
+
+    lore.add(ChatColor.GREEN + "Loot Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.ITEM_DISCOVERY)) + "%");
-    lore.add(ChatColor.GREEN + "Item Rarity Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+    lore.add(ChatColor.GREEN + "Loot Rarity: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.ITEM_RARITY)) + "%");
-    lore.add(ChatColor.GREEN + "Bit Drop Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+    lore.add(ChatColor.GREEN + "Gold Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.GOLD_FIND)) + "%");
     lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.HEAD_DROP)) + "%");

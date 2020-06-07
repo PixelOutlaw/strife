@@ -119,6 +119,11 @@ public class TargetingUtil {
         StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
   }
 
+  public static boolean isFriendly(LivingEntity attacker, StrifeMob defender) {
+    return isFriendly(StrifePlugin.getInstance().getStrifeMobManager().getStatMob(attacker),
+        defender);
+  }
+
   public static boolean isFriendly(StrifeMob attacker, StrifeMob defender) {
     if (attacker.getEntity() == defender.getEntity()) {
       return true;
@@ -129,6 +134,9 @@ public class TargetingUtil {
           return true;
         }
       }
+    }
+    if (attacker.getMaster() != null) {
+      return isFriendly(attacker.getMaster(), defender);
     }
     if (defender.getMaster() != null) {
       return isFriendly(attacker, defender.getMaster());
@@ -169,7 +177,6 @@ public class TargetingUtil {
           validTargets.add((LivingEntity) entity);
         }
       }
-      validTargets.retainAll(targetList);
     }
     return validTargets;
   }
@@ -182,16 +189,40 @@ public class TargetingUtil {
     for (float incRange = 0; incRange <= range + 0.01; incRange += 0.8) {
       Location loc = location.clone().add(location.getDirection().clone().multiply(incRange));
       for (Entity entity : targetList) {
-        if (entityWithinRadius(entity, loc, 0)) {
+        if (entityWithinRadius(entity, loc, 0.2f)) {
           validTargets.add((LivingEntity) entity);
         }
-        if (loc.getBlock().getType().isSolid()) {
-          break;
-        }
       }
-      targetList.removeAll(validTargets);
     }
     return validTargets;
+  }
+
+  public static boolean hasLineOfSight(Location start, Location target, Entity entity) {
+    if (start.getWorld() != target.getWorld()) {
+      return false;
+    }
+    Vector direction = target.toVector().subtract(start.toVector());
+    if (direction.length() < 0.05) {
+      return true;
+    }
+    direction.normalize();
+    RayTraceResult result = start.getWorld()
+        .rayTrace(start, direction, 40, FluidCollisionMode.NEVER, true, 0.5, e -> e == entity);
+    if (result == null) {
+      return false;
+    }
+    //if (result.getHitBlock() != null) {
+    //  Location particleLoc = result.getHitPosition().toLocation(start.getWorld());
+    //  particleLoc.getWorld().spawnParticle(
+    //      Particle.ITEM_CRACK,
+    //      particleLoc,
+    //      3,
+    //      0.0, 0.0, 0.0,
+    //      0.1,
+    //      new ItemStack(result.getHitBlock().getType())
+    //  );
+    //}
+    return result.getHitEntity() != null;
   }
 
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range,

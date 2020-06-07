@@ -147,6 +147,7 @@ public class CombatListener implements Listener {
     boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) || (
         defendEntity instanceof Shulker && event.isApplicable(ARMOR)
             && event.getDamage(ARMOR) != 0);
+
     DamageUtil.removeDamageModifiers(event);
 
     if (attackEntity instanceof Player && FRIENDLY_PLAYER_CHECKER.contains(attackEntity)) {
@@ -164,6 +165,7 @@ public class CombatListener implements Listener {
     boolean isProjectile = false;
     boolean isMultishot = false;
     String[] extraEffects = null;
+    int shotId = -1;
 
     if (event.getDamager() instanceof Projectile) {
       isProjectile = true;
@@ -172,15 +174,11 @@ public class CombatListener implements Listener {
       if (StringUtils.isNotBlank(hitEffects)) {
         extraEffects = hitEffects.split("~");
       }
-      int shotId = ProjectileUtil.getShotId(projectile);
-      if (shotId != 0) {
+      shotId = ProjectileUtil.getShotId(projectile);
+      if (shotId != -1) {
         String idKey = "SHOT_HIT_" + shotId;
         if (defendEntity.hasMetadata(idKey)) {
           isMultishot = true;
-        } else {
-          defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
-          Bukkit.getScheduler().runTaskLater(plugin,
-              () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 1000L);
         }
       }
     }
@@ -204,6 +202,8 @@ public class CombatListener implements Listener {
 
     if (attackType == AttackType.MELEE) {
       if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
+        double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.5D));
         event.setCancelled(true);
         return;
       }
@@ -219,7 +219,7 @@ public class CombatListener implements Listener {
       attackMultiplier *= 0.25;
     }
 
-    if (attackMultiplier < 0.10 && extraEffects == null) {
+    if (attackMultiplier < 0.05 && extraEffects == null) {
       event.setCancelled(true);
       removeIfExisting(projectile);
       return;
@@ -232,7 +232,8 @@ public class CombatListener implements Listener {
 
     putSlimeHit(attackEntity);
 
-    boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+    boolean mobAbility = plugin.getAbilityManager()
+        .abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
 
     if (mobAbility) {
       event.setCancelled(true);
@@ -250,7 +251,7 @@ public class CombatListener implements Listener {
     damageModifiers.setAttackType(attackType);
     damageModifiers.setAttackMultiplier(attackMultiplier);
     damageModifiers.setHealMultiplier(healMultiplier);
-    damageModifiers.setDamageReductionRatio(1f);
+    damageModifiers.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
     damageModifiers.setScaleChancesWithAttack(true);
     damageModifiers.setApplyOnHitEffects(applyOnHit);
     damageModifiers.setSneakAttack(isSneakAttack);
@@ -261,6 +262,20 @@ public class CombatListener implements Listener {
     if (!attackSuccess) {
       removeIfExisting(projectile);
       event.setCancelled(true);
+      return;
+    }
+
+    if (!isMultishot && shotId != -1) {
+      String idKey = "SHOT_HIT_" + shotId;
+      defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 1000L);
+    }
+
+    DamageUtil.applyExtraEffects(attacker, defender, extraEffects);
+
+    if (attackMultiplier < 0.05) {
+      event.setDamage(BASE, 0);
       return;
     }
 
@@ -289,7 +304,6 @@ public class CombatListener implements Listener {
     }
 
     DamageUtil.postDamage(attacker, defender, damageModifiers);
-    DamageUtil.applyExtraEffects(attacker, defender, extraEffects);
 
     if (attackEntity instanceof Bee) {
       plugin.getDamageManager()

@@ -46,6 +46,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import se.ranzdo.bukkit.methodcommand.Arg;
 import se.ranzdo.bukkit.methodcommand.Command;
+import se.ranzdo.bukkit.methodcommand.FlagArg;
+import se.ranzdo.bukkit.methodcommand.Flags;
 
 public class StrifeCommand {
 
@@ -240,6 +242,12 @@ public class StrifeCommand {
     plugin.getAbilityPicker().open(target);
   }
 
+  @Command(identifier = "strife ability submenu", permissions = "strife.command.strife.binding", onlyPlayers = false)
+  public void submenuAbilityCommand(CommandSender sender, @Arg(name = "target") Player target,
+      @Arg(name = "menu") String menu) {
+    plugin.getSubmenu(menu).open(target);
+  }
+
   @Command(identifier = "strife bind", permissions = "strife.command.strife.binding", onlyPlayers = false)
   public void bindCommand(CommandSender sender, @Arg(name = "target") Player target,
       @Arg(name = "loreAbility") String id) {
@@ -301,8 +309,12 @@ public class StrifeCommand {
   }
 
   @Command(identifier = "strife addskillxp", permissions = "strife.command.strife.setskill", onlyPlayers = false)
+  @Flags(identifier = {"s", "d"},
+      description = {"scale experience with stats", "silent xp display"})
   public void addSkillXp(CommandSender sender, @Arg(name = "target") Player target,
-      @Arg(name = "skill") String skill, @Arg(name = "xpAmount") int amount) {
+      @Arg(name = "skill") String skill, @Arg(name = "xpAmount") int amount,
+      @FlagArg("s") boolean scaleXp,
+      @FlagArg("d") boolean silentDisplay) {
     String skillName = skill.toUpperCase();
     LifeSkillType type;
     try {
@@ -311,15 +323,7 @@ public class StrifeCommand {
       sendMessage(sender, "<red>Unknown skill " + skill + "???");
       return;
     }
-    ChatColor color = type.getColor();
-    String name = type.getName();
-
-    plugin.getSkillExperienceManager().addExperience(target, type, amount, true);
-    sendMessage(target, XP_MSG
-        .replace("{c}", "" + color)
-        .replace("{n}", name)
-        .replace("{a}", Integer.toString(amount))
-    );
+    plugin.getSkillExperienceManager().addExperience(target, type, amount, !scaleXp, !silentDisplay);
   }
 
   @Command(identifier = "strife addxp", permissions = "strife.command.strife.addxp", onlyPlayers = false)
