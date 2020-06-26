@@ -269,6 +269,10 @@ public class DamageUtil {
 
   public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
 
+    if (defender.getEntity() instanceof Player) {
+      plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
+    }
+
     float attackMult = mods.getAttackMultiplier();
 
     DamageUtil.applyHealthOnHit(attacker, mods.getAttackMultiplier(), mods.getHealMultiplier(),
@@ -816,9 +820,9 @@ public class DamageUtil {
     if (chance >= rollDouble()) {
       float multiplier = mods.isScaleChancesWithAttack() ? mods.getAttackMultiplier() : 1f;
       float damage = rawPhysical * multiplier * BLEED_PERCENT;
-      float damageMult = 1 + (attacker.getStat(StrifeStat.BLEED_DAMAGE) +
-          mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_DAMAGE, 0f)) / 100;
-      damage *= damageMult;
+      float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) + mods.getAbilityMods()
+          .getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
+      damage *= 1 + (bleedDamage / 100);
       damage *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
       applyBleed(defender, damage, bypassBarrier);
     }
@@ -857,7 +861,8 @@ public class DamageUtil {
     applyBuff(buff, target, source, 1);
   }
 
-  public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, UUID source, double durationMult) {
+  public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, UUID source,
+      double durationMult) {
     StrifePlugin.getInstance().getStrifeMobManager()
         .addBuff(target.getEntity(), source, loadedBuff, durationMult);
   }

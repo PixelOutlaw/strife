@@ -25,6 +25,8 @@ public enum StrifeStat {
 
   LEVEL_REQUIREMENT("Level Requirement"),
 
+  WEIGHT("Weight"),
+
   HEALTH("Maximum Life"),
   REGENERATION("Life Regeneration"),
 
@@ -121,6 +123,8 @@ public enum StrifeStat {
   ITEM_RARITY("Loot Rarity"),
   GOLD_FIND("Gold Bonus"),
   HEAD_DROP("Head Drop"),
+  MONEY_KEPT("Bits Kept On Death"),
+  AIR_JUMPS("Additional Air Jumps"),
 
   DOGE("Doge Chance"),
 

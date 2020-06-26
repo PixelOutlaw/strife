@@ -84,7 +84,7 @@ public class CounterManager {
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
-        plugin.getEffectManager().execute(defenderMob, attacker, data.getEffects());
+        plugin.getEffectManager().processEffectList(defenderMob, attacker, data.getEffects());
         if (data.isRemoveOnTrigger()) {
           counterMap.get(defender).remove(data);
         } else {

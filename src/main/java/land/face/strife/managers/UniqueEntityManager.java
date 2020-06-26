@@ -83,7 +83,9 @@ public class UniqueEntityManager {
   private void lambdaSetup(Entity e, UniqueEntity uniqueEntity) {
     SpecialStatusUtil.setUniqueId(e, uniqueEntity.getId());
     if (cachedDisguises.containsKey(uniqueEntity)) {
+      //System.out.println(DisguiseParser.parseToString(cachedDisguises.get(uniqueEntity)));
       DisguiseAPI.disguiseToAll(e, cachedDisguises.get(uniqueEntity));
+      //System.out.println(DisguiseParser.parseToString(DisguiseAPI.getDisguise(e)));
     }
   }
 

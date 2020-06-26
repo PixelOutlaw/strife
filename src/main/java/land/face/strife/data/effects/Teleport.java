@@ -18,7 +18,7 @@ public class Teleport extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    StrifePlugin.getInstance().getEffectManager().execute(caster, caster.getEntity(), originEffects);
+    StrifePlugin.getInstance().getEffectManager().processEffectList(caster, caster.getEntity(), originEffects);
     target.getEntity().setVelocity(new Vector(0, 0, 0));
     if (targeted) {
       Location location = target.getEntity().getLocation().clone();
@@ -35,7 +35,7 @@ public class Teleport extends Effect {
       location.setDirection(target.getEntity().getLocation().getDirection());
       target.getEntity().teleport(location, TeleportCause.PLUGIN);
     }
-    StrifePlugin.getInstance().getEffectManager().execute(caster, caster.getEntity(), destinationEffects);
+    StrifePlugin.getInstance().getEffectManager().processEffectList(caster, caster.getEntity(), destinationEffects);
   }
 
   public void setVector(Vector vector) {

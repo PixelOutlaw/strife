@@ -149,9 +149,7 @@ public class LoreAbilityListener implements Listener {
     if (effects == null || effects.isEmpty()) {
       return;
     }
-    Iterator<LoreAbility> it = effects.iterator();
-    while (it.hasNext()) {
-      LoreAbility la = it.next();
+    for (LoreAbility la : effects) {
       loreAbilityManager.applyLoreAbility(la, caster, target);
     }
   }
@@ -168,7 +166,7 @@ public class LoreAbilityListener implements Listener {
       if (tempEffect.getUses() > 1) {
         tempEffect.setUses(tempEffect.getUses() - 1);
       } else {
-        caster.getTempEffects().remove(tempEffect);
+        it.remove();
       }
     }
   }

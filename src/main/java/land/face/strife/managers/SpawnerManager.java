@@ -1,12 +1,17 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.StrifeMob;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class SpawnerManager {
@@ -60,6 +65,7 @@ public class SpawnerManager {
       if (existingMobs >= maxMobs) {
         continue;
       }
+
       if (!isChuckLoaded(s)) {
         continue;
       }
@@ -75,6 +81,15 @@ public class SpawnerManager {
           continue;
         }
 
+        if (mob.getMods().size() >= 2) {
+          announceSpawnToNearbyPlayers(mob, s.getLocation());
+        }
+
+        if (StringUtils.isBlank(s.getUniqueEntity().getMount())
+            && mob.getEntity().getVehicle() != null) {
+          mob.getEntity().getVehicle().remove();
+        }
+
         mob.setDespawnOnUnload(true);
         s.addEntity(mob.getEntity());
 
@@ -87,6 +102,20 @@ public class SpawnerManager {
         }
 
         mobDiff--;
+      }
+    }
+  }
+
+  private void announceSpawnToNearbyPlayers(StrifeMob mob, Location location) {
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      if (location.getWorld() != p.getWorld()) {
+        continue;
+      }
+      Vector diff = location.toVector().subtract(p.getLocation().toVector());
+      if (diff.lengthSquared() < 6400) {
+        p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.5F);
+        MessageUtils.sendMessage(p,
+            "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!");
       }
     }
   }

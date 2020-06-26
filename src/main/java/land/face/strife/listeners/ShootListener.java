@@ -155,18 +155,18 @@ public class ShootListener implements Listener {
 
     Player player = (Player) event.getEntity().getShooter();
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
-    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
-    attackMultiplier = (float) Math.pow(attackMultiplier, 1.5D);
 
-    ((Player) event.getEntity().getShooter()).setCooldown(Material.TRIDENT, 50);
+    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
+    attackMultiplier = (float) Math.pow(attackMultiplier, 1.2);
+
+    int throwCooldownTicks = (int) (40 * StatUtil.getAttackTime(pStats));
+
+    ((Player) event.getEntity().getShooter()).setCooldown(Material.TRIDENT, throwCooldownTicks);
 
     if (attackMultiplier <= 0.05) {
       event.setCancelled(true);
       return;
     }
-
-    plugin.getChampionManager().updateEquipmentStats(
-        plugin.getChampionManager().getChampion(player));
 
     double speedMult = 1 + (pStats.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
 

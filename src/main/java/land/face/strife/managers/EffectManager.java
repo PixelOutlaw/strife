@@ -146,13 +146,13 @@ public class EffectManager {
     this.conditions = new HashMap<>();
   }
 
-  public void execute(StrifeMob caster, LivingEntity target, List<Effect> effectList) {
+  public void processEffectList(StrifeMob caster, LivingEntity target, List<Effect> effectList) {
     Set<LivingEntity> targets = new HashSet<>();
     targets.add(target);
-    execute(caster, targets, effectList);
+    processEffectList(caster, targets, effectList);
   }
 
-  public void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList) {
+  public void processEffectList(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList) {
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : effectList) {
@@ -162,7 +162,9 @@ public class EffectManager {
       }
       if (effect instanceof Wait) {
         LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
-        execute(caster, targets, taskEffects, waitTicks);
+        List<Effect> finalTaskEffects1 = taskEffects;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+            executeEffectList(caster, targets, finalTaskEffects1), waitTicks);
         waitTicks += ((Wait) effect).getTickDelay();
         taskEffects = new ArrayList<>();
         continue;
@@ -170,17 +172,9 @@ public class EffectManager {
       taskEffects.add(effect);
       LogUtil.printDebug("Added effect " + effect.getId() + " to task list");
     }
-    execute(caster, targets, taskEffects, waitTicks);
-  }
-
-  private void execute(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effects,
-      int delay) {
-    if (delay == 0) {
-      executeEffectList(caster, targets, effects);
-      return;
-    }
+    List<Effect> finalTaskEffects = taskEffects;
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        executeEffectList(caster, targets, effects), delay);
+        executeEffectList(caster, targets, finalTaskEffects), waitTicks);
   }
 
   private void executeEffectList(StrifeMob caster, Set<LivingEntity> targets,

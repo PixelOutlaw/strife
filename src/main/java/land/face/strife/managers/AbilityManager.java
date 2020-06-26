@@ -118,7 +118,7 @@ public class AbilityManager {
       }
     }
 
-    plugin.getEffectManager().execute(caster, targets, ability.getEffects());
+    plugin.getEffectManager().processEffectList(caster, targets, ability.getEffects());
 
     if (caster.getEntity() instanceof Player && ability.isCancelStealth()) {
       plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
@@ -159,7 +159,7 @@ public class AbilityManager {
       coolDownAbility(mob.getEntity(), getAbility(abilityId));
       Set<LivingEntity> targets = new HashSet<>();
       targets.add(mob.getEntity());
-      plugin.getEffectManager().execute(mob, targets, ability.getToggleOffEffects());
+      plugin.getEffectManager().processEffectList(mob, targets, ability.getToggleOffEffects());
     }
   }
 
@@ -398,7 +398,7 @@ public class AbilityManager {
     if (container.isToggledOn()) {
       container.setToggledOn(false);
       coolDownAbility(caster.getEntity(), ability);
-      plugin.getEffectManager().execute(caster, targets, ability.getToggleOffEffects());
+      plugin.getEffectManager().processEffectList(caster, targets, ability.getToggleOffEffects());
       return false;
     }
     container.setToggledOn(true);
@@ -476,7 +476,11 @@ public class AbilityManager {
         SoulTimer soul = plugin.getSoulManager()
             .getNearestSoul(caster.getEntity(), ability.getRange());
         if (soul != null) {
-          targets.add(Bukkit.getPlayer(soul.getOwner()));
+          Player playerTarget = Bukkit.getPlayer(soul.getOwner());
+          boolean friendlyTarget = TargetingUtil.isFriendly(caster, playerTarget);
+          if (ability.isFriendly() == friendlyTarget) {
+            targets.add(Bukkit.getPlayer(soul.getOwner()));
+          }
         }
         return targets;
     }

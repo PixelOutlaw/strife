@@ -35,6 +35,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.LogUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class FlatfileStorage implements DataStorage {
@@ -156,7 +157,13 @@ public class FlatfileStorage implements DataStorage {
       for (LifeSkillType type : LifeSkillType.types) {
         int level = section.getInt(type.getDataName() + "-level", 1);
         saveData.setSkillLevel(type, Math.max(1, level));
-        saveData.setSkillExp(type, (float) section.getDouble(type.getDataName() + "-exp", 0f));
+        float xp = (float) section.getDouble(type.getDataName() + "-exp", 0f);
+        Float primXp = new Float(xp);
+        if (primXp.isNaN() || primXp.isInfinite()) {
+          xp = 0f;
+          Bukkit.getLogger().warning("Hey! NaN xp value for " + type + " on user " + uuid);
+        }
+        saveData.setSkillExp(type, xp);
       }
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
 

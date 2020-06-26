@@ -16,22 +16,31 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.tasks;
+package land.face.strife.listeners;
 
-import land.face.strife.util.MoveUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.tealcube.minecraft.bukkit.bullion.PlayerDeathDropEvent;
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 
-public class EveryTickTask extends BukkitRunnable {
+public class MoneyDropListener implements Listener {
 
-  @Override
-  public void run() {
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      MoveUtil.setSneak(player);
-      if (player.isOnGround()) {
-        MoveUtil.setLastGrounded(player);
-      }
+  private final StrifePlugin plugin;
+
+  public MoneyDropListener(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onEntityDeathEvent(PlayerDeathDropEvent event) {
+    if (event.getAmountProtected() <= 0) {
+      return;
     }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getVictim());
+    double multiplier = 1 + mob.getStat(StrifeStat.MONEY_KEPT) / 100;
+    event.setAmountProtected(event.getAmountProtected() * multiplier);
   }
 }
