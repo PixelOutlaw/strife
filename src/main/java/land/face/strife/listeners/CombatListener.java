@@ -208,7 +208,7 @@ public class CombatListener implements Listener {
         return;
       }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
-      attackMultiplier = (float) Math.pow(attackMultiplier, 1.25);
+      attackMultiplier = (float) Math.pow(attackMultiplier, 1.1);
     } else if (attackType == AttackType.AREA) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
@@ -243,9 +243,6 @@ public class CombatListener implements Listener {
     if (attackEntity instanceof Player) {
       plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
     }
-    if (defendEntity instanceof Player) {
-      plugin.getStealthManager().unstealthPlayer((Player) defendEntity);
-    }
 
     DamageModifiers damageModifiers = new DamageModifiers();
     damageModifiers.setAttackType(attackType);
@@ -269,7 +266,7 @@ public class CombatListener implements Listener {
       String idKey = "SHOT_HIT_" + shotId;
       defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
       Bukkit.getScheduler().runTaskLater(plugin,
-          () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 1000L);
+          () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 2500L);
     }
 
     DamageUtil.applyExtraEffects(attacker, defender, extraEffects);

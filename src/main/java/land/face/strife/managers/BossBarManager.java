@@ -183,8 +183,7 @@ public class BossBarManager {
   }
 
   private void updateSkillProgress(SkillBar bar) {
-    bar.getSkillBar().setProgress(
-        PlayerDataUtil.getSkillProgress(bar.getOwner(), bar.getLifeSkillType()));
+    bar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(bar.getOwner(), bar.getLifeSkillType()));
   }
 
   public void tickBars() {

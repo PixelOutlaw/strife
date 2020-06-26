@@ -87,6 +87,12 @@ public class SpawnListener implements Listener {
     if (StringUtils.isNotBlank(SpecialStatusUtil.getUniqueId(event.getEntity()))) {
       return;
     }
+    if (event.getEntityType().equals(EntityType.CHICKEN)) {
+      if (!event.getEntity().getPassengers().isEmpty()) {
+        event.setCancelled(true);
+        return;
+      }
+    }
 
     LivingEntity entity = event.getEntity();
     if (!plugin.getMonsterManager().containsEntityType(event.getEntityType())) {
@@ -152,7 +158,7 @@ public class SpawnListener implements Listener {
       return;
     }
     switch (livingEntity.getType()) {
-      case PIG_ZOMBIE:
+      case ZOMBIFIED_PIGLIN:
         entityEquipment.setHelmet(new ItemStack(Material.GOLDEN_HELMET));
         if (random.nextDouble() < 0.5) {
           entityEquipment.setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));

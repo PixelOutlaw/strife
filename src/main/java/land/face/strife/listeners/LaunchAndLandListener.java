@@ -12,6 +12,9 @@ import land.face.strife.events.LaunchEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
+import org.bukkit.GameMode;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffectType;
@@ -20,6 +23,7 @@ import org.bukkit.util.Vector;
 public class LaunchAndLandListener implements Listener {
 
   private StrifePlugin plugin;
+
   public LaunchAndLandListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
@@ -45,21 +49,27 @@ public class LaunchAndLandListener implements Listener {
     if (mob.getChampion().getLifeSkillLevel(AGILITY) < 20) {
       return;
     }
-    if (plugin.getEnergyManager().getEnergy(mob) > 12) {
+    if (event.getPlayer().getGameMode() == GameMode.SURVIVAL
+        || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
       plugin.getEnergyManager().changeEnergy(mob, -12);
-      Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
-      bonusVelocity.setY(Math.max(0.06, bonusVelocity.getY()));
-      double moveMult = 1 + 0.25 * mob.getStat(StrifeStat.MOVEMENT_SPEED) / 100;
-      bonusVelocity.normalize().multiply(0.28);
-      bonusVelocity.setX(bonusVelocity.getX() * moveMult);
-      bonusVelocity.setZ(bonusVelocity.getZ() * moveMult);
-
-      Vector oldVelocity = event.getPlayer().getVelocity().clone()
-          .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
-      event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
-      plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY,
-          2, false, false);
     }
+    Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
+    bonusVelocity.setY(Math.max(0.06, bonusVelocity.getY()));
+    double moveMult = 1 + 0.25 * mob.getStat(StrifeStat.MOVEMENT_SPEED) / 100;
+    bonusVelocity.normalize().multiply(0.28);
+    bonusVelocity.setX(bonusVelocity.getX() * moveMult);
+    bonusVelocity.setZ(bonusVelocity.getZ() * moveMult);
+
+    Vector oldVelocity = event.getPlayer().getVelocity().clone()
+        .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
+    event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
+    plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY,
+        2, false, false);
+    event.getPlayer().getWorld()
+        .spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.35);
+    event.getPlayer().getWorld()
+        .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+
   }
 
   @EventHandler
@@ -73,7 +83,8 @@ public class LaunchAndLandListener implements Listener {
         float xp = cont.getExp();
         xp *= PlayerDataUtil.getLifeSkillLevel(champion, AGILITY) / cont.getDifficulty();
         xp = Math.min(cont.getExp(), xp);
-        plugin.getSkillExperienceManager().addExperience(event.getPlayer(), AGILITY, xp, false, false);
+        plugin.getSkillExperienceManager()
+            .addExperience(event.getPlayer(), AGILITY, xp, false, false);
       }
     }
   }

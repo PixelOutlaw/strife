@@ -47,7 +47,7 @@ public class Spawner extends BukkitRunnable {
     for (LivingEntity le : entities) {
       if (le == null || !le.isValid()) {
         entities.remove(le);
-        return;
+        continue;
       }
       double xDist = Math.abs(location.getX() - le.getLocation().getX());
       double zDist = Math.abs(location.getZ() - le.getLocation().getZ());

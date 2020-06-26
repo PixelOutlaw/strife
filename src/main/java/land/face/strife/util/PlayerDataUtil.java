@@ -26,6 +26,7 @@ import me.libraryaddict.disguise.disguisetypes.watchers.AgeableWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.MushroomCowWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.ParrotWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
@@ -44,6 +45,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MushroomCow.Variant;
+import org.bukkit.entity.Parrot;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -149,11 +151,14 @@ public class PlayerDataUtil {
       String typeData = section.getString("disguise-type-data", "");
       boolean babyData = section.getBoolean("baby", false);
       MobDisguise mobDisguise = new MobDisguise(type);
+      FlagWatcher watcher = mobDisguise.getWatcher();
+      if (babyData && type == DisguiseType.ZOMBIE) {
+        ((ZombieWatcher) watcher).setBaby();
+      }
+      if (watcher instanceof AgeableWatcher) {
+        ((AgeableWatcher) watcher).setBaby(babyData);
+      }
       if (StringUtils.isNotBlank(typeData)) {
-        FlagWatcher watcher = mobDisguise.getWatcher();
-        if (watcher instanceof AgeableWatcher) {
-          ((AgeableWatcher) watcher).setBaby(babyData);
-        }
         try {
           switch (type) {
             case MUSHROOM_COW:
@@ -167,6 +172,10 @@ public class PlayerDataUtil {
               Fox.Type foxType = Fox.Type.valueOf(typeData);
               ((FoxWatcher) watcher).setType(foxType);
               break;
+            case PARROT:
+              Parrot.Variant parrotType = Parrot.Variant.valueOf(typeData);
+              ((ParrotWatcher) watcher).setVariant(parrotType);
+              break;
             case SHEEP:
               DyeColor color = DyeColor.valueOf(typeData.toUpperCase());
               ((SheepWatcher) watcher).setColor(color);
@@ -174,11 +183,6 @@ public class PlayerDataUtil {
             case RABBIT:
               RabbitType rabbitType = RabbitType.valueOf(typeData);
               ((RabbitWatcher) watcher).setType(rabbitType);
-              break;
-            case ZOMBIE:
-              if (babyData) {
-                ((ZombieWatcher) watcher).setBaby();
-              }
               break;
             case SLIME:
               ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
@@ -350,7 +354,8 @@ public class PlayerDataUtil {
   }
 
   public static float getSkillProgress(Champion champion, LifeSkillType type) {
-    return champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
+    float progress =  champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
         .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));
+    return Math.max(0.0f, Math.min(1.0f, progress));
   }
 }

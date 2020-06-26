@@ -175,6 +175,8 @@ public class TargetingListener implements Listener {
     float lightMult = (float) Math.max(0.15,
         (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel())));
 
+    stealthSkill = Math.max(stealthSkill, 10);
+
     if (player.hasPotionEffect(INVISIBILITY)) {
       stealthSkill += 5 + stealthSkill * 0.1;
     }

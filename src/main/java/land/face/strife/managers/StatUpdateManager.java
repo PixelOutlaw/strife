@@ -113,6 +113,11 @@ public class StatUpdateManager {
     }
   }
 
+  public void updateWeight(StrifeMob mob) {
+    float value = 50 / mob.getStat(StrifeStat.WEIGHT);
+    mob.getEntity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(value);
+  }
+
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
     double speed = strifeMob.getFinalStats().getOrDefault(StrifeStat.MOVEMENT_SPEED, 80f) / 100f;
@@ -152,6 +157,7 @@ public class StatUpdateManager {
     updateMovementSpeed(strifeMob);
     updateAttackAttrs(strifeMob);
     updateHealth(strifeMob);
+    updateWeight(strifeMob);
     updateBarrier(strifeMob);
   }
 

@@ -30,7 +30,7 @@ public class AreaEffect extends LocationEffect {
   private List<Effect> effects = new ArrayList<>();
   private AreaType areaType;
   private TargetingPriority priority;
-  private double range;
+  private float range;
   private float maxConeRadius;
   private int maxTargets;
   private boolean scaleTargetsWithMultishot;
@@ -61,14 +61,15 @@ public class AreaEffect extends LocationEffect {
           return;
         }
       }
-      StrifePlugin.getInstance().getEffectManager().execute(caster, le, effects);
+      StrifePlugin.getInstance().getEffectManager().processEffectList(caster, le, effects);
     }
   }
 
   private Set<LivingEntity> getAreaEffectTargets(StrifeMob caster, Location location) {
     if (range < 0.1) {
       if (caster.getEntity() instanceof Mob) {
-        range = caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
+        range = (float) caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE)
+            .getBaseValue();
       } else {
         range = 16;
       }
@@ -82,8 +83,8 @@ public class AreaEffect extends LocationEffect {
         areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, range));
         break;
       case CONE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInCone(caster.getEntity().getLocation(),
-            caster.getEntity().getLocation().getDirection(), (float) range, maxConeRadius));
+        areaTargets.addAll(TargetingUtil.getEntitiesInCone(location, location.getDirection(),
+            range, maxConeRadius));
         break;
       case PARTY:
         if (caster.getEntity() instanceof Player) {
@@ -101,7 +102,8 @@ public class AreaEffect extends LocationEffect {
     }
     switch (lineOfSight) {
       case CASTER:
-        areaTargets.removeIf(e -> !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
+        areaTargets.removeIf(e -> !TargetingUtil
+            .hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
         break;
       case CENTER:
         areaTargets.removeIf(e -> !TargetingUtil.hasLineOfSight(location, e.getEyeLocation(), e));
@@ -208,7 +210,7 @@ public class AreaEffect extends LocationEffect {
   }
 
   public void setRange(double range) {
-    this.range = range;
+    this.range = (float) range;
   }
 
   public float getMaxConeRadius() {

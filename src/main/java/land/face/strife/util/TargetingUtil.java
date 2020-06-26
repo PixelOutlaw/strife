@@ -181,13 +181,13 @@ public class TargetingUtil {
     return validTargets;
   }
 
-  public static Set<LivingEntity> getEntitiesInLine(Location location, double range) {
+  public static Set<LivingEntity> getEntitiesInLine(Location location, float range) {
     Collection<Entity> targetList = Objects.requireNonNull(location.getWorld())
         .getNearbyEntities(location, range, range, range);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (float incRange = 0; incRange <= range + 0.01; incRange += 0.8) {
-      Location loc = location.clone().add(location.getDirection().clone().multiply(incRange));
+      Location loc = location.clone().add(location.getDirection().multiply(incRange));
       for (Entity entity : targetList) {
         if (entityWithinRadius(entity, loc, 0.2f)) {
           validTargets.add((LivingEntity) entity);
@@ -297,13 +297,13 @@ public class TargetingUtil {
   }
 
   private static boolean entityWithinRadius(Entity e, Location loc, float radius) {
-    double ex = e.getLocation().getX();
-    double ey = e.getLocation().getY();
-    double ez = e.getLocation().getZ();
-    double width = Math.max(e.getWidth(), 0.6);
-    return Math.abs(loc.getX() - ex) < width + radius
-        && Math.abs(loc.getZ() - ez) < width + radius
-        && Math.abs(loc.getY() - ey) < Math.max(e.getHeight(), 1.2) + radius;
+    Vector centerPoint = e.getLocation().toVector();
+    centerPoint.setY(centerPoint.getY() + e.getHeight() / 2);
+    double width = e.getWidth() * 0.55 + 0.2;
+    double height = e.getHeight() * 0.55 + 0.2;
+    return Math.abs(loc.getX() - centerPoint.getX()) < width + radius
+        && Math.abs(loc.getZ() - centerPoint.getZ()) < width + radius
+        && Math.abs(loc.getY() - centerPoint.getY()) < height + radius;
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range,

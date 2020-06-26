@@ -9,6 +9,7 @@ import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.events.StrifeDamageEvent;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -55,6 +56,12 @@ public class Damage extends Effect {
     if (!attackSuccess) {
       return;
     }
+
+    float statMultiplier = 1;
+    for (StrifeStat s : getStatMults().keySet()) {
+      statMultiplier += caster.getStat(s) * getStatMults().get(s);
+    }
+    mods.setAttackMultiplier(mods.getAttackMultiplier() * statMultiplier);
 
     Map<DamageType, Float> damage =  DamageUtil.buildDamage(caster, target, mods);
     DamageUtil.reduceDamage(caster, target, damage, mods);

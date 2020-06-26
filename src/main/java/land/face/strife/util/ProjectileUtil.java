@@ -48,7 +48,7 @@ public class ProjectileUtil {
   }
 
   public static int getShotId(Projectile projectile) {
-      return SHOT_ID.getOrDefault(projectile, 0);
+      return SHOT_ID.getOrDefault(projectile, -1);
   }
 
   public static void setHitEffects(Projectile projectile, String effectString) {
@@ -162,7 +162,7 @@ public class ProjectileUtil {
         .spawn(trident.getLocation(), Trident.class, e -> e.setVelocity(vector));
     newTrident.setShooter(shooter);
     newTrident.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    setAttackMult(trident, attackMult);
+    setAttackMult(newTrident, attackMult);
   }
 
   public static boolean isProjectile(EntityType entityType) {

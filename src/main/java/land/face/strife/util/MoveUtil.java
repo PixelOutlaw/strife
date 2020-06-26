@@ -3,6 +3,9 @@ package land.face.strife.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.stats.StrifeStat;
 import org.bukkit.entity.Player;
 
 public class MoveUtil {
@@ -11,6 +14,11 @@ public class MoveUtil {
   private final static Map<UUID, Long> LAST_GROUNDED = new HashMap<>();
   private final static Map<UUID, Long> SNEAK_START = new HashMap<>();
   private final static Map<UUID, Integer> JUMP_MAP = new HashMap<>();
+
+  public static int getMaxJumps(StrifeMob mob) {
+    return getMaxJumps(mob.getChampion().getLifeSkillLevel(LifeSkillType.AGILITY)) +
+        (int) mob.getStat(StrifeStat.AIR_JUMPS);
+  }
 
   public static int getMaxJumps(int agilityLevel) {
     if (agilityLevel > 59) {
