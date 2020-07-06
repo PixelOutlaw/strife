@@ -63,7 +63,7 @@ public class IndicatorManager {
     }
 
     Location midway;
-    if (creator.getLocation().distanceSquared(target.getLocation()) < 144) {
+    if (distance < 144) {
       midway = creator.getEyeLocation().clone().add(creator.getEyeLocation().clone().subtract(loc).multiply(-0.65));
     } else {
       midway = creator.getEyeLocation().clone().add(creator.getEyeLocation().clone().subtract(loc).toVector()
