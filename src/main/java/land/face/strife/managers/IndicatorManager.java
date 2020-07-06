@@ -1,45 +1,59 @@
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.IndicatorData;
+import land.face.strife.data.effects.DamagePopoff;
 import land.face.strife.util.DamageUtil.OriginLocation;
+import land.face.strife.util.PopoffUtil;
 import land.face.strife.util.TargetingUtil;
-import net.minecraft.server.v1_15_R1.ChatComponentText;
-import net.minecraft.server.v1_15_R1.EntityArmorStand;
-import net.minecraft.server.v1_15_R1.PacketPlayOutEntity.PacketPlayOutRelEntityMove;
-import net.minecraft.server.v1_15_R1.PacketPlayOutEntityDestroy;
-import net.minecraft.server.v1_15_R1.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_15_R1.PacketPlayOutSpawnEntityLiving;
-import net.minecraft.server.v1_15_R1.WorldServer;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class IndicatorManager {
 
-  private Map<EntityArmorStand, IndicatorData> indicators = new ConcurrentHashMap<>();
-  public static float GRAVITY_FALL_SPEED;
-  private static final int MAX_STAGE = 10;
+  private final Set<DamagePopoff> indicators = new HashSet<>();
+  private final float randomDamageVSpeed;
+  private final float randomDamageHSpeed;
+  private final float randomDamageGravity;
+  private final float bounceGravity;
 
-  public IndicatorManager() {
-    GRAVITY_FALL_SPEED = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.indicators.gravity-fall-speed", 20);
+  private final Vector slowFloatVector;
+  private final Vector fastFloatVector;
+  private final Vector bounceVector;
+
+  public IndicatorManager(StrifePlugin plugin) {
+    randomDamageHSpeed = (float) plugin.getSettings()
+        .getDouble("config.indicators.damage-horizontal-speed", 0.2);
+    randomDamageVSpeed = (float) plugin.getSettings()
+        .getDouble("config.indicators.damage-vertical-speed", 0.2);
+    randomDamageGravity = (float) plugin.getSettings()
+        .getDouble("config.indicators.damage-gravity", 0.1);
+    bounceGravity = (float) plugin.getSettings()
+        .getDouble("config.indicators.bounce-gravity", 0.2);
+
+    float slowFloatSpeed = (float) plugin.getSettings()
+        .getDouble("config.indicators.float-slow-speed", 0.2);
+    float fastFloatSpeed = (float) plugin.getSettings()
+        .getDouble("config.indicators.float-fast-speed", 0.2);
+    float bounceSpeed = (float) plugin.getSettings()
+        .getDouble("config.indicators.bounce-speed", 0.1);
+
+    bounceVector = new Vector(0, bounceSpeed, 0);
+    slowFloatVector = new Vector(0, slowFloatSpeed, 0);
+    fastFloatVector = new Vector(0, fastFloatSpeed, 0);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorData data,
-      String text) {
-    if (!(creator instanceof Player) || creator == target) {
+  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text) {
+    if (!(creator instanceof Player) || creator == target || target.getWorld() != creator.getWorld()) {
       return;
     }
 
-    Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);
-    if (!loc.getWorld().getName().equals(target.getLocation().getWorld().getName())) {
+    Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.BELOW_HEAD);
+    if (!loc.getWorld().getName().equals(target.getEyeLocation().getWorld().getName())) {
       return;
     }
 
@@ -50,57 +64,53 @@ public class IndicatorManager {
 
     Location midway;
     if (creator.getLocation().distanceSquared(target.getLocation()) < 144) {
-      midway = creator.getEyeLocation().clone()
-          .add(creator.getEyeLocation().clone().subtract(loc).multiply(-0.65));
+      midway = creator.getEyeLocation().clone().add(creator.getEyeLocation().clone().subtract(loc).multiply(-0.65));
     } else {
-      midway = creator.getEyeLocation().clone()
-          .add(creator.getEyeLocation().clone().subtract(loc).toVector().normalize().multiply(-8));
+      midway = creator.getEyeLocation().clone().add(creator.getEyeLocation().clone().subtract(loc).toVector()
+          .normalize().multiply(-8));
     }
 
-    WorldServer w = ((CraftWorld) loc.getWorld()).getHandle();
+    Vector velocity = null;
+    double gravity = 0;
+    switch (type) {
+      case RANDOM_POPOFF:
+        velocity = new Vector(
+            -randomDamageHSpeed + 2 * Math.random() * randomDamageHSpeed,
+            randomDamageVSpeed / 2 + Math.random() * randomDamageVSpeed,
+            -randomDamageHSpeed + 2 * Math.random() * randomDamageHSpeed);
+        gravity = randomDamageGravity;
+        break;
+      case BOUNCE:
+        velocity = bounceVector.clone();
+        gravity = bounceGravity;
+        break;
+      case FLOAT_UP_FAST:
+        velocity = fastFloatVector.clone();
+        break;
+      case FLOAT_UP_SLOW:
+        velocity = slowFloatVector.clone();
+        break;
+    }
 
-    EntityArmorStand armorstand = new EntityArmorStand(w.getMinecraftWorld(),
-        midway.getX(), midway.getY(), midway.getZ());
-
-    armorstand.setNoGravity(true);
-    armorstand.setInvisible(true);
-    armorstand.setSmall(true);
-    armorstand.setMarker(true);
-    armorstand.setCustomNameVisible(false);
-    armorstand.setCustomName(new ChatComponentText(TextUtils.color(text)));
-    armorstand.setCustomNameVisible(true);
-
-    PacketPlayOutSpawnEntityLiving spawnPacket = new PacketPlayOutSpawnEntityLiving(armorstand);
-    PacketPlayOutEntityMetadata meta = new PacketPlayOutEntityMetadata(armorstand.getId(),
-        armorstand.getDataWatcher(), true);
-
-    ((CraftPlayer) creator).getHandle().playerConnection.sendPacket(spawnPacket);
-    ((CraftPlayer) creator).getHandle().playerConnection.sendPacket(meta);
-    indicators.put(armorstand, data);
+    DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) creator, midway, velocity, gravity, life, text);
+    indicators.add(damagePopoff);
   }
 
   public void tickAllIndicators() {
-    for (EntityArmorStand stand : indicators.keySet()) {
-      IndicatorData data = indicators.get(stand);
-      if (data.getStage() >= MAX_STAGE) {
-        indicators.remove(stand);
-        PacketPlayOutEntityDestroy killStand = new PacketPlayOutEntityDestroy(stand.getId());
-        for (Player p : data.getOwners()) {
-          ((CraftPlayer) p).getHandle().playerConnection.sendPacket(killStand);
-        }
-        continue;
-      }
-      data.setStage(data.getStage() + 1);
-      Vector change = IndicatorData.getRelativeChange(data);
-      PacketPlayOutRelEntityMove goal = new PacketPlayOutRelEntityMove(stand.getId(),
-          (short) (change.getX() * data.getStage()),
-          (short) (change.getY() * data.getStage()),
-          (short) (change.getZ() * data.getStage()),
-          false);
-      for (Player p : data.getOwners()) {
-        ((CraftPlayer) p).getHandle().playerConnection.sendPacket(goal);
+    Iterator<DamagePopoff> iterator = indicators.iterator();
+    while (iterator.hasNext()) {
+      boolean delete = PopoffUtil.tickDamagePopoff(iterator.next());
+      if (delete) {
+        iterator.remove();
       }
     }
+  }
+
+  public enum IndicatorStyle {
+    RANDOM_POPOFF,
+    BOUNCE,
+    FLOAT_UP_FAST,
+    FLOAT_UP_SLOW
   }
 
 }

@@ -81,7 +81,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
-      <version>1.16.1.0</version>
+      <version>1.16.1.8</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -105,7 +105,7 @@
     <dependency>
       <groupId>com.github.UltraFaceguy</groupId>
       <artifactId>SnazzyParties</artifactId>
-      <version>1.0.4</version>
+      <version>1.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -118,6 +118,19 @@
       <groupId>com.github.shynixn.headdatabase</groupId>
       <artifactId>hdb-api</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.gmail.filoghost.holographicdisplays</groupId>
+      <artifactId>holographicdisplays-api</artifactId>
+      <version>2.4.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>craftbukkit</groupId>
+      <artifactId>craftbukkit</artifactId>
+      <version>1.16.1-R0.1-SNAPSHOT.jar</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/lib/craftbukkit.jar</systemPath>
     </dependency>
   </dependencies>
 

@@ -25,8 +25,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.DamageModifiers.ElementalStatus;
-import land.face.strife.data.IndicatorData;
-import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.buff.LoadedBuff;
@@ -38,6 +36,7 @@ import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.CorruptionManager;
+import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import me.glaremasters.guilds.Guilds;
@@ -59,7 +58,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
 
 public class DamageUtil {
 
@@ -73,8 +71,6 @@ public class DamageUtil {
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
 
-  private static Vector IND_FLOAT_VECTOR;
-  private static Vector IND_MISS_VECTOR;
   private static final float BLEED_PERCENT = 0.5f;
 
   private static float PVP_MULT;
@@ -84,11 +80,7 @@ public class DamageUtil {
   public static void refresh() {
     plugin = StrifePlugin.getInstance();
     guildsAPI = Guilds.getApi();
-    float floatSpeed = (float) plugin.getSettings().getDouble("config.indicators.float-speed", 70);
-    float missSpeed = (float) plugin.getSettings().getDouble("config.indicators.miss-speed", 80);
     EVASION_THRESHOLD = plugin.getSettings().getDouble("config.mechanics.evasion-threshold", 0.5);
-    IND_FLOAT_VECTOR = new Vector(0, floatSpeed, 0);
-    IND_MISS_VECTOR = new Vector(0, missSpeed, 0);
     PVP_MULT = (float) plugin.getSettings().getDouble("config.mechanics.pvp-multiplier", 0.5);
   }
 
@@ -254,13 +246,12 @@ public class DamageUtil {
       damageString = "&l" + damageString;
     }
     if (attacker.getEntity() instanceof Player) {
-      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          plugin.getDamageManager().buildHitIndicator((Player) attacker.getEntity()), damageString);
+      plugin.getIndicatorManager().addIndicator(attacker.getEntity(),
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 12, damageString);
     }
     if (attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
-      plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
-          plugin.getDamageManager().buildHitIndicator((Player) attacker.getMaster()),
-          "&7" + damageString);
+      plugin.getIndicatorManager().addIndicator(attacker.getMaster(),
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 12, "&7" + damageString);
     }
 
     defender.trackDamage(attacker, rawDamage);
@@ -273,19 +264,22 @@ public class DamageUtil {
       plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
     }
 
-    float attackMult = mods.getAttackMultiplier();
+    float ratio = mods.getDamageReductionRatio();
 
-    DamageUtil.applyHealthOnHit(attacker, mods.getAttackMultiplier(), mods.getHealMultiplier(),
+    DamageUtil.applyHealthOnHit(attacker, ratio, mods.getHealMultiplier(),
         mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
+    DamageUtil.applyEnergyOnHit(attacker, ratio, mods.getHealMultiplier());
 
     DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
 
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
-      plugin.getRageManager()
-          .addRage(attacker, attacker.getStat(StrifeStat.RAGE_ON_HIT) * attackMult);
+      plugin.getRageManager().addRage(attacker, attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
     if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
       plugin.getRageManager().addRage(defender, defender.getStat(StrifeStat.RAGE_WHEN_HIT));
+    }
+    if (defender.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0.1) {
+      DamageUtil.restoreEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
     }
 
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
@@ -309,8 +303,7 @@ public class DamageUtil {
         SpecialStatusUtil.setSneakImmune(defender.getEntity());
       }
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), buildFloatIndicator((Player) attacker.getEntity()),
-          "&7Sneak Attack!");
+          defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 7, "&7Sneak Attack!");
       defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
           Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
       plugin.getStealthManager().unstealthPlayer(player);
@@ -334,7 +327,7 @@ public class DamageUtil {
           Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
       if (attacker.getEntity() instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-            defender.getEntity(), buildCritIndicator((Player) attacker.getEntity()), "&c&lCRIT!");
+            defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 5, "&c&lCRIT!");
       }
     }
     return success;
@@ -573,7 +566,7 @@ public class DamageUtil {
         warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
         return getWardingMult(warding);
       case FIRE:
-        return 1 - getFireResist(defend) / 100;
+        return 1 - getFireResist(defend, attack.hasTrait(StrifeTrait.SOUL_FLAME)) / 100;
       case ICE:
         return 1 - getIceResist(defend) / 100;
       case LIGHTNING:
@@ -723,7 +716,7 @@ public class DamageUtil {
     }
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "&7&lMiss");
+          defender.getEntity(), IndicatorStyle.BOUNCE, 12, "&7&lMiss");
     }
   }
 
@@ -807,6 +800,11 @@ public class DamageUtil {
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
+  public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier, float healMultiplier) {
+    float energy = attacker.getStat(StrifeStat.ENERGY_ON_HIT) * attackMultiplier * healMultiplier;
+    restoreEnergy(attacker, energy);
+  }
+
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
       DamageModifiers mods, boolean bypassBarrier) {
     if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
@@ -853,7 +851,12 @@ public class DamageUtil {
     double reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
     reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
     defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 0.2f, 1f);
+        .playSound(defender.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 1f, 1f);
+    if (attacker.getEntity() instanceof Player) {
+      ((Player) attacker.getEntity()).spawnParticle(Particle.DAMAGE_INDICATOR,
+          TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER), (int) reflectDamage, 0.3, 0.3,
+          0.3, 0.1);
+    }
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }
 
@@ -916,7 +919,7 @@ public class DamageUtil {
   }
 
   public static void restoreHealth(LivingEntity livingEntity, double amount) {
-    if (amount == 0) {
+    if (amount <= 0 || !livingEntity.isValid()) {
       return;
     }
     livingEntity.setHealth(Math.min(livingEntity.getHealth() + amount,
@@ -970,25 +973,6 @@ public class DamageUtil {
 
   private static CorruptionManager getDarknessManager() {
     return StrifePlugin.getInstance().getCorruptionManager();
-  }
-
-  public static IndicatorData buildMissIndicator(Player player) {
-    IndicatorData data = new IndicatorData(IND_MISS_VECTOR.clone(), IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
-  }
-
-  public static IndicatorData buildFloatIndicator(Player player) {
-    IndicatorData data = new IndicatorData(IND_FLOAT_VECTOR.clone(), IndicatorStyle.FLOAT_UP);
-    data.addOwner(player);
-    return data;
-  }
-
-  public static IndicatorData buildCritIndicator(Player player) {
-    IndicatorData data = new IndicatorData(IND_FLOAT_VECTOR.clone(), IndicatorStyle.FLOAT_UP);
-    data.addOwner(player);
-    data.setStage(5);
-    return data;
   }
 
   public enum DamageScale {
