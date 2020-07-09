@@ -21,7 +21,7 @@ package land.face.strife.commands;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendActionBar;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,9 +67,9 @@ public class StrifeCommand {
         .getString("language.command.reveal-success", "Reveal success");
     REVEAL_FAIL = plugin.getSettings()
         .getString("language.command.reveal-fail", "Reveal failure");
-    REVEAL_PREFIX = TextUtils.color(plugin.getSettings()
+    REVEAL_PREFIX = StringExtensionsKt.chatColorize(plugin.getSettings()
         .getString("language.command.reveal-prefix", "&0&k"));
-    REVEAL_REPLACEMENT = TextUtils.color(plugin.getSettings()
+    REVEAL_REPLACEMENT = StringExtensionsKt.chatColorize(plugin.getSettings()
         .getString("language.command.reveal-replace", "&f"));
     XP_MSG = plugin.getSettings()
         .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");

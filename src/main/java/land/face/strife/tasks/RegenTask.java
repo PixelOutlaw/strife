@@ -45,7 +45,7 @@ public class RegenTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
   private static float REGEN_PERCENT_PER_SECOND = 0.1f;
-  private static float POTION_REGEN_FLAT_PER_LEVEL = 5f;
+  private static float POTION_REGEN_FLAT_PER_LEVEL = 2f;
   private static float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
 
   private Map<UUID, List<RestoreData>> lifeRestore = new HashMap<>();

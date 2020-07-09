@@ -39,12 +39,11 @@ public class ChaserManager {
   }
 
   public void tickChasers() {
-    Iterator iterator = chasers.iterator();
+    Iterator<ChaserEntity> iterator = chasers.iterator();
     while (iterator.hasNext()) {
-      ChaserEntity chaser = (ChaserEntity) iterator.next();
+      ChaserEntity chaser = iterator.next();
       if (chaser.getCurrentTick() > chaser.getLifespan()) {
         iterator.remove();
-        //chasers.remove(chaser);
         continue;
       }
       chaser.setCurrentTick(chaser.getCurrentTick() + 1);
@@ -52,14 +51,12 @@ public class ChaserManager {
       if (chaser.getTarget() == null || !chaser.getTarget().isValid() ||
           !chaser.getLocation().getWorld().equals(chaser.getTarget().getWorld())) {
         iterator.remove();
-        //chasers.remove(chaser);
         continue;
       }
 
       LoadedChaser data = chaserData.get(chaser.getChaserId());
       if (data.isRemoveAtSolids() && chaser.getLocation().getBlock().getType().isSolid()) {
         iterator.remove();
-        //chasers.remove(chaser);
         continue;
       }
       boolean hitTarget = executeChaserMovement(chaser, data);
@@ -81,7 +78,7 @@ public class ChaserManager {
     }
     chaser.getLocation().add(velocity);
     for (StrifeParticle particle : data.getParticles()) {
-      particle.applyAtLocation(null,
+      particle.applyAtLocation(chaser.getCaster(),
           chaser.getLocation().clone().subtract(chaser.getVelocity().clone().multiply(0.5)));
     }
     if (isChaserCloseEnough(chaser, data, targetLocation)) {

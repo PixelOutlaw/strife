@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +39,10 @@ public class LevelupMenuItem extends MenuItem {
   private final StrifePlugin plugin;
   private final StrifeAttribute attribute;
 
-  private static final String breakLine = TextUtils.color("&7&m---------------------------");
+  private static final String breakLine = StringExtensionsKt.chatColorize("&7&m---------------------------");
 
   LevelupMenuItem(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
-    super(TextUtils.color(strifeAttribute.getName()), new ItemStack(Material.MAGMA_CREAM));
+    super(StringExtensionsKt.chatColorize(strifeAttribute.getName()), new ItemStack(Material.MAGMA_CREAM));
     this.plugin = plugin;
     this.attribute = strifeAttribute;
   }
@@ -82,7 +82,7 @@ public class LevelupMenuItem extends MenuItem {
     lore.addAll(reqList);
     lore.add(breakLine);
     for (String desc : attribute.getDescription()) {
-      lore.add(TextUtils.color(desc));
+      lore.add(StringExtensionsKt.chatColorize(desc));
     }
     lore.add(breakLine);
 

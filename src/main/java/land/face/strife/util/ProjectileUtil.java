@@ -43,12 +43,28 @@ public class ProjectileUtil {
     return ATTACK_MULT.getOrDefault(projectile, 1f);
   }
 
+  public static void setPierce(Arrow arrow, float chance) {
+    if (chance > 0) {
+      int maxPuncture = 0;
+      while (maxPuncture < 3) {
+        if (RANDOM.nextDouble() > chance) {
+          break;
+        }
+        maxPuncture++;
+      }
+      if (maxPuncture > 0) {
+        arrow.setShotFromCrossbow(true);
+        arrow.setPierceLevel(maxPuncture);
+      }
+    }
+  }
+
   public static void setShotId(Projectile projectile) {
     SHOT_ID.put(projectile, shotId);
   }
 
   public static int getShotId(Projectile projectile) {
-      return SHOT_ID.getOrDefault(projectile, -1);
+    return SHOT_ID.getOrDefault(projectile, -1);
   }
 
   public static void setHitEffects(Projectile projectile, String effectString) {
@@ -90,27 +106,29 @@ public class ProjectileUtil {
 
   public static void shootArrow(StrifeMob mob, float attackMult) {
     float projectileSpeed = 1.75f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, 0, 0.165);
+    ProjectileUtil
+        .createArrow(mob.getEntity(), attackMult, projectileSpeed, pierceChance, 0, 0.165);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed,
+      ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, pierceChance,
           randomOffset(projectiles), 0.185);
     }
     shotId++;
   }
 
   public static void createArrow(LivingEntity shooter, double attackMult, float power,
-      double spread,
-      double vertBonus) {
+      float pierceChance, double spread, double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
     Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
         Arrow.class, e -> e.setVelocity(velocity));
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
 
+    setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
     setShotId(arrow);
 
@@ -136,7 +154,8 @@ public class ProjectileUtil {
 
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
       double verticalBonus) {
-    return getProjectileVelocity(shooter.getEyeLocation().getDirection(), speed, spread, verticalBonus, false);
+    return getProjectileVelocity(shooter.getEyeLocation().getDirection(), speed, spread,
+        verticalBonus, false);
   }
 
   public static Vector getProjectileVelocity(Vector direction, float speed, double spread,

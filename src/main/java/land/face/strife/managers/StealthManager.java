@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.util.DamageUtil;
+import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -110,8 +110,7 @@ public class StealthManager {
         player.getLocation(), 60, 60, 60, e -> e instanceof Mob)) {
       if (((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
-        plugin.getIndicatorManager()
-            .addIndicator(player, (Mob) e, DamageUtil.buildMissIndicator(player), "&e&l???");
+        plugin.getIndicatorManager().addIndicator(player, (Mob) e, IndicatorStyle.FLOAT_UP_SLOW, 8, "&e&l???");
       }
     }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);

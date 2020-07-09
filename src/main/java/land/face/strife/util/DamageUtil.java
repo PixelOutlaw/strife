@@ -14,6 +14,7 @@ import static land.face.strife.util.StatUtil.getWardingMult;
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -716,7 +717,7 @@ public class DamageUtil {
     }
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.BOUNCE, 12, "&7&lMiss");
+          defender.getEntity(), IndicatorStyle.BOUNCE, 8, "&7&oMiss");
     }
   }
 
@@ -727,10 +728,8 @@ public class DamageUtil {
     String defenderBar = ATTACK_BLOCKED;
     int runes = getBlockManager().getEarthRunes(defender.getEntity().getUniqueId());
     if (runes > 0) {
-      StringBuilder sb = new StringBuilder(defenderBar);
-      sb.append(TextUtils.color("&2 "));
-      sb.append(IntStream.range(0, runes).mapToObj(i -> "▼").collect(Collectors.joining("")));
-      defenderBar = sb.toString();
+      defenderBar = defenderBar + StringExtensionsKt.chatColorize("&2 ")
+          + IntStream.range(0, runes).mapToObj(i -> "▼").collect(Collectors.joining(""));
     }
     if (defender.getEntity() instanceof Player) {
       MessageUtils.sendActionBar((Player) defender.getEntity(), defenderBar);

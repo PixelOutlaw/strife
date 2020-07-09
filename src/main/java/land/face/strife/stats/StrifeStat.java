@@ -32,6 +32,9 @@ public enum StrifeStat {
 
   ENERGY("Maximum Energy"),
   ENERGY_REGEN("Energy Regeneration"),
+  ENERGY_ON_HIT("Energy On Hit"),
+  ENERGY_ON_KILL("Energy On Kill"),
+  ENERGY_WHEN_HIT("Energy When Hit"),
 
   BARRIER("Maximum Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
@@ -65,6 +68,7 @@ public enum StrifeStat {
   DAMAGE_REFLECT("Reflected Damage"),
 
   MULTISHOT("Multishot"),
+  PIERCE_CHANCE("Pierce Chance"),
   PROJECTILE_SPEED("Projectile Speed"),
   PROJECTILE_DAMAGE("Projectile Damage"),
   PROJECTILE_REDUCTION("Projectile Protection"),

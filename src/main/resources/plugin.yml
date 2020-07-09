@@ -1,7 +1,7 @@
 name: Strife
 version: ${project.version}
 main: land.face.strife.StrifePlugin
-api-version: 1.15
+api-version: 1.16
 depend: [Facecore, ProtocolLib]
 softdepend: [Loot, Bullion, LibsDisguises, SnazzyParties, DiscordSRV, HeadDatabase]
 

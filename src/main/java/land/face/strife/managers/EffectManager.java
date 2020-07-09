@@ -259,14 +259,12 @@ public class EffectManager {
       case RESTORE_BARRIER:
         effect = new RestoreBarrier();
         ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
-        ((RestoreBarrier) effect)
-            .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((RestoreBarrier) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case RESTORE_ENERGY:
         effect = new ChangeEnergy();
         ((ChangeEnergy) effect).setAmount((float) cs.getDouble("amount", 1));
-        ((ChangeEnergy) effect)
-            .setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((ChangeEnergy) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case INCREASE_RAGE:
         effect = new IncreaseRage();
@@ -276,15 +274,12 @@ public class EffectManager {
         effect = new Damage();
         float attackMult = (float) cs.getDouble("attack-multiplier", 1D);
         ((Damage) effect).setAttackMultiplier(attackMult);
-        ((Damage) effect).setHealMultiplier(
-            (float) cs.getDouble("heal-multiplier", 0.3D));
-        ((Damage) effect).setDamageReductionRatio(
-            (float) cs.getDouble("damage-reduction-ratio", 1D));
+        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", 0.3D));
+        ((Damage) effect).setDamageReductionRatio((float) cs.getDouble("damage-reduction-ratio", 1D));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
-        ((Damage) effect)
-            .setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult > 0.75));
+        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.7));
         ((Damage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
@@ -319,10 +314,8 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
-        ((CreateWorldSpaceEntity) effect)
-            .setMaxDisplacement((float) cs.getDouble("max-displacement", 0));
-        ((CreateWorldSpaceEntity) effect)
-            .setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((CreateWorldSpaceEntity) effect).setMaxDisplacement((float) cs.getDouble("max-displacement", 0));
+        ((CreateWorldSpaceEntity) effect).setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));

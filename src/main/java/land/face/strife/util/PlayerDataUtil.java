@@ -32,15 +32,14 @@ import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
-import net.minecraft.server.v1_15_R1.PacketPlayOutAnimation;
+import net.minecraft.server.v1_16_R1.PacketPlayOutAnimation;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
@@ -55,8 +54,7 @@ public class PlayerDataUtil {
   private static Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
 
   public static void restoreHealth(LivingEntity le, double amount) {
-    le.setHealth(Math.min(le.getHealth() + amount,
-        le.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue()));
+    DamageUtil.restoreHealth(le, amount);
   }
 
   public static void restoreEnergy(LivingEntity le, float amount) {

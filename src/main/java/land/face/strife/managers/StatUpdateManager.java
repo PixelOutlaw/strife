@@ -114,7 +114,7 @@ public class StatUpdateManager {
   }
 
   public void updateWeight(StrifeMob mob) {
-    float value = 50 / mob.getStat(StrifeStat.WEIGHT);
+    float value = 1 - 40 / (40 + mob.getStat(StrifeStat.WEIGHT));
     mob.getEntity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(value);
   }
 

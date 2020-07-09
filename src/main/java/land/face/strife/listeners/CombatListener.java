@@ -228,7 +228,6 @@ public class CombatListener implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> defendEntity.setNoDamageTicks(0), 0L);
 
     boolean isSneakAttack = plugin.getStealthManager().isStealthed(attackEntity);
-    boolean applyOnHit = attackMultiplier > 0.5f;
 
     putSlimeHit(attackEntity);
 
@@ -250,7 +249,7 @@ public class CombatListener implements Listener {
     damageModifiers.setHealMultiplier(healMultiplier);
     damageModifiers.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
     damageModifiers.setScaleChancesWithAttack(true);
-    damageModifiers.setApplyOnHitEffects(applyOnHit);
+    damageModifiers.setApplyOnHitEffects(attackMultiplier > Math.random());
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
 
@@ -282,8 +281,7 @@ public class CombatListener implements Listener {
     float finalDamage = DamageUtil
         .calculateFinalDamage(attacker, defender, damage, damageModifiers);
 
-    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender,
-        damageModifiers);
+    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageModifiers);
     strifeDamageEvent.setFinalDamage(finalDamage);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
 
@@ -296,15 +294,14 @@ public class CombatListener implements Listener {
         .damageBarrier(defender, (float) strifeDamageEvent.getFinalDamage()));
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
-      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), damageModifiers,
-          false);
+      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), damageModifiers, false);
     }
 
-    DamageUtil.postDamage(attacker, defender, damageModifiers);
+    Bukkit.getScheduler().runTaskLater(plugin,
+        () -> DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
 
     if (attackEntity instanceof Bee) {
-      plugin.getDamageManager()
-          .dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage());
+      plugin.getDamageManager().dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage());
       event.setCancelled(true);
       return;
     }
@@ -321,6 +318,9 @@ public class CombatListener implements Listener {
     if (killer.getStat(StrifeStat.HP_ON_KILL) > 0.1) {
       DamageUtil.restoreHealthWithPenalties(event.getEntity().getKiller(), killer.getStat(
           StrifeStat.HP_ON_KILL));
+    }
+    if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
+      DamageUtil.restoreEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
       plugin.getRageManager().addRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));

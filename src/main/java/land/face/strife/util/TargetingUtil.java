@@ -28,6 +28,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -127,6 +128,9 @@ public class TargetingUtil {
   public static boolean isFriendly(StrifeMob attacker, StrifeMob defender) {
     if (attacker.getEntity() == defender.getEntity()) {
       return true;
+    }
+    if (defender.getEntity() instanceof Tameable) {
+      return isFriendly(attacker, (LivingEntity) Bukkit.getEntity(((Tameable) attacker.getEntity()).getOwnerUniqueId()));
     }
     for (String casterFaction : attacker.getFactions()) {
       for (String targetFaction : defender.getFactions()) {

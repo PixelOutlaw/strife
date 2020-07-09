@@ -4,6 +4,7 @@ import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
@@ -59,34 +60,38 @@ public class StrifeParticle extends LocationEffect {
           .addContinuousParticle(target.getEntity(), this, (int) duration);
       return;
     }
-    playAtLocation(getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
+    playAtLocation(caster, getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
   }
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
-    playAtLocation(location, location.getDirection());
+    playAtLocation(caster, location, location.getDirection());
   }
 
-  private void playAtLocation(Location location, Vector direction) {
+  private void playAtLocation(StrifeMob attacker, Location location, Vector direction) {
+    Particle particleInUse = particle;
+    if (attacker != null && attacker.hasTrait(StrifeTrait.SOUL_FLAME) && particleInUse == Particle.FLAME) {
+      particleInUse = Particle.SOUL_FIRE_FLAME;
+    }
     switch (style) {
       case CIRCLE:
-        spawnParticleCircle(location, size);
+        spawnParticleCircle(particleInUse, location, size);
         return;
       case ORBIT:
-        spawnParticleOrbit(location, size, orbitSpeed);
+        spawnParticleOrbit(particleInUse, location, size, orbitSpeed);
         return;
       case LINE:
         if (direction == null) {
           throw new IllegalArgumentException("Cannot use LINE particle without defined direction");
         }
-        spawnParticleLine(location, direction, size + lineOffset);
+        spawnParticleLine(particleInUse, location, direction, size + lineOffset);
         return;
       case ARC:
-        spawnParticleArc(direction, location, size, arcAngle, arcOffset);
+        spawnParticleArc(particleInUse, direction, location, size, arcAngle, arcOffset);
         return;
       case NORMAL:
       default:
-        spawnParticle(location);
+        spawnParticle(particleInUse, location);
     }
   }
 
@@ -193,7 +198,7 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
-  private void spawnParticleArc(Vector direction, Location center, double radius, double angle,
+  private void spawnParticleArc(Particle particle, Vector direction, Location center, double radius, double angle,
       double offset) {
     int segments = (int) (6 * (angle / 90) * (1 + radius / 3));
     double startAngle = -angle * 0.5;
@@ -210,7 +215,7 @@ public class StrifeParticle extends LocationEffect {
       double radialAngle = Math.toRadians(startAngle + i * segmentAngle);
       applyRadialAngles(newDirection, radialAngle);
       newDirection.setY(startVerticalOffset - segmentOffset * i);
-      spawnParticle(center.clone().add(newDirection));
+      spawnParticle(particle, center.clone().add(newDirection));
     }
   }
 
@@ -221,23 +226,23 @@ public class StrifeParticle extends LocationEffect {
     direction.setX(z * Math.sin(angle) + x * Math.cos(angle));
   }
 
-  private void spawnParticleCircle(Location center, double radius) {
+  private void spawnParticleCircle(Particle particle, Location center, double radius) {
     for (double degree = 0; degree < 360; degree += 30 / radius) {
       double radian1 = Math.toRadians(degree);
       Location loc = center.clone();
       loc.add(Math.cos(radian1) * radius, 0, Math.sin(radian1) * radius);
-      spawnParticle(loc);
+      spawnParticle(particle, loc);
     }
   }
 
-  private void spawnParticleOrbit(Location center, double radius, double orbitSpeed) {
+  private void spawnParticleOrbit(Particle particle, Location center, double radius, double orbitSpeed) {
     double step = 360d / quantity;
     for (int i = 0; i <= quantity; i++) {
       double start = orbitSpeed * ParticleTask.getCurrentTick();
       double radian1 = Math.toRadians(start + step * i);
       Location loc = center.clone();
       loc.add(Math.cos(radian1) * radius, 0, Math.sin(radian1) * radius);
-      spawnParticle(loc);
+      spawnParticle(particle, loc);
     }
   }
 
@@ -249,7 +254,7 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
-  private void spawnParticleLine(Location center, Vector direction, double length) {
+  private void spawnParticleLine(Particle particle, Location center, Vector direction, double length) {
     for (double dist = lineOffset; dist < length; dist += lineIncrement) {
       Location loc = center.clone();
       if (lineVertical) {
@@ -265,17 +270,17 @@ public class StrifeParticle extends LocationEffect {
       }
 
       if (radius <= 0) {
-        spawnParticle(loc);
+        spawnParticle(particle, loc);
       } else {
         double percent = (lineOffset + dist) / length;
         double currentOrbitSpeed = orbitSpeed + ((endOrbitSpeed - orbitSpeed) * percent);
         double currentRadius = radius + ((endRadius - radius) * percent);
-        spawnParticleOrbit(loc, currentRadius, currentOrbitSpeed);
+        spawnParticleOrbit(particle, loc, currentRadius, currentOrbitSpeed);
       }
     }
   }
 
-  private void spawnParticle(Location location) {
+  private void spawnParticle(Particle particle, Location location) {
     if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
         || particle == Particle.SPELL_INSTANT) {
       for (int i = 0; i < quantity; i++) {
