@@ -41,9 +41,7 @@ public class Buff {
     if (stacks == 1) {
       return stackedStats;
     }
-    for (StrifeStat stat : stackedStats.keySet()) {
-      stackedStats.put(stat, stackedStats.get(stat) * stacks);
-    }
+    stackedStats.replaceAll((s, v) -> stackedStats.get(s) * stacks);
     return stackedStats;
   }
 
@@ -53,7 +51,7 @@ public class Buff {
 
   public void bumpBuff(double duration) {
     setExpireTimeFromDuration(duration);
-    stacks = Math.min(stacks+1, maxStacks);
+    stacks = Math.min(stacks + 1, maxStacks);
     LogUtil.printDebug(" Stacks: " + stacks + "/" + maxStacks);
   }
 
