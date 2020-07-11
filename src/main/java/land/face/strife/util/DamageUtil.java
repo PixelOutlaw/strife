@@ -859,16 +859,6 @@ public class DamageUtil {
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }
 
-  public static void applyBuff(LoadedBuff buff, UUID source, StrifeMob target) {
-    applyBuff(buff, target, source, 1);
-  }
-
-  public static void applyBuff(LoadedBuff loadedBuff, StrifeMob target, UUID source,
-      double durationMult) {
-    StrifePlugin.getInstance().getStrifeMobManager()
-        .addBuff(target.getEntity(), source, loadedBuff, durationMult);
-  }
-
   public static LoadedBuff getBuff(String id) {
     return StrifePlugin.getInstance().getBuffManager().getBuffFromId(id);
   }

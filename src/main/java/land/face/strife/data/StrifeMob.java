@@ -184,8 +184,8 @@ public class StrifeMob {
     return buff.getStacks();
   }
 
-  public void addBuff(String buffId, UUID source, Buff buff, double duration) {
-    Buff oldBuff = hasBuff(buffId, source);
+  public void addBuff(Buff buff, double duration) {
+    Buff oldBuff = hasBuff(buff.getId(), buff.getSource());
     if (oldBuff == null) {
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.add(buff);
