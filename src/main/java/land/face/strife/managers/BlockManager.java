@@ -18,8 +18,6 @@
  */
 package land.face.strife.managers;
 
-import static land.face.strife.util.DamageUtil.buildMissIndicator;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -27,6 +25,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BlockData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -58,8 +57,8 @@ public class BlockManager {
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
       DamageUtil.doBlock(attacker, defender);
       if (attacker.getEntity() instanceof Player) {
-        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-            defender.getEntity(), buildMissIndicator((Player) attacker.getEntity()), "&e&lBlocked!");
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+            IndicatorStyle.BOUNCE, 8, "&e&lBlocked!");
       }
       return true;
     }

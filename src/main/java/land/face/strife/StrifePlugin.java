@@ -19,7 +19,6 @@
 package land.face.strife;
 
 import com.comphenix.xp.lookup.LevelingRate;
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
@@ -28,6 +27,7 @@ import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -300,7 +300,7 @@ public class StrifePlugin extends FacePlugin {
     bleedManager = new BleedManager(this);
     corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager(this);
-    indicatorManager = new IndicatorManager();
+    indicatorManager = new IndicatorManager(this);
     equipmentManager = new EntityEquipmentManager();
     boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
@@ -414,7 +414,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(barrierTask.runTaskTimer(this,
         11 * 20L, // Start timer after 11s
-        2L // Run it every 1/5th of a second after
+        2L
     ));
     taskList.add(damageOverTimeTask.runTaskTimer(this,
         20L, // Start timer after 11s
@@ -713,7 +713,7 @@ public class StrifePlugin extends FacePlugin {
       }
 
       uniqueEntity.setId(entityNameKey);
-      uniqueEntity.setName(TextUtils.color(cs.getString("name", "&fSET &cA &9NAME")));
+      uniqueEntity.setName(StringExtensionsKt.chatColorize(cs.getString("name", "&fSET &cA &9NAME")));
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
@@ -734,6 +734,7 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setAngry(cs.getBoolean("angry", false));
+      uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
       uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
       if (uniqueEntity.getType() == EntityType.VILLAGER
           || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {

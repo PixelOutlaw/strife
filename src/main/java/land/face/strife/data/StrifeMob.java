@@ -15,7 +15,6 @@ import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -29,16 +28,16 @@ public class StrifeMob {
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
   private final Map<StrifeStat, Float> tempBonuses = new HashMap<>();
 
-  private WeakReference<Champion> champion;
-  private WeakReference<LivingEntity> livingEntity;
+  private final WeakReference<Champion> champion;
+  private final WeakReference<LivingEntity> livingEntity;
   private EntityAbilitySet abilitySet;
   private String uniqueEntityId = null;
-  private Set<String> mods = new HashSet<>();
+  private final Set<String> mods = new HashSet<>();
 
   private Set<String> factions = new HashSet<>();
   private UUID alliedGuild;
 
-  private Set<FiniteUsesEffect> tempEffects = new HashSet<>();
+  private final Set<FiniteUsesEffect> tempEffects = new HashSet<>();
 
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
@@ -151,42 +150,27 @@ public class StrifeMob {
     return baseStats;
   }
 
-  public void flattenBaseStats() {
-    float flattenedArmor = baseStats.getOrDefault(StrifeStat.ARMOR, 0f) *
-        (1 + (baseStats.get(StrifeStat.ARMOR_MULT) / 100));
-    baseStats.put(StrifeStat.ARMOR, flattenedArmor);
-    baseStats.remove(StrifeStat.ARMOR_MULT);
-    float flattenedWarding = baseStats.getOrDefault(StrifeStat.WARDING, 0f) *
-        (1 + (baseStats.get(StrifeStat.WARD_MULT) / 100));
-    baseStats.put(StrifeStat.WARDING, flattenedWarding);
-    baseStats.remove(StrifeStat.WARD_MULT);
-    float flattenedRegen = baseStats.getOrDefault(StrifeStat.REGENERATION, 0f) *
-        (1 + (baseStats.get(StrifeStat.REGEN_MULT) / 100));
-    baseStats.put(StrifeStat.REGENERATION, flattenedRegen);
-    baseStats.remove(StrifeStat.REGEN_MULT);
-  }
-
   public void setStats(Map<StrifeStat, Float> stats) {
     baseStats.clear();
     baseStats.putAll(stats);
   }
 
   public Buff hasBuff(String buffId, UUID source) {
-    Iterator iterator = runningBuffs.iterator();
+    Iterator<Buff> iterator = runningBuffs.iterator();
     while (iterator.hasNext()) {
-      Buff buff = (Buff) iterator.next();
+      Buff buff = iterator.next();
       if (buff == null || buff.isExpired()) {
         iterator.remove();
-      } else {
-        if (source == null) {
-          if (buffId.equals(buff.getId()) && buff.getSource() == null) {
-            return buff;
-          }
-        } else {
-          if (buffId.equals(buff.getId()) && source.equals(buff.getSource())) {
-            return buff;
-          }
+        continue;
+      }
+      if (source == null) {
+        if (buffId.equals(buff.getId()) && buff.getSource() == null) {
+          return buff;
         }
+        continue;
+      }
+      if (buffId.equals(buff.getId()) && source.equals(buff.getSource())) {
+        return buff;
       }
     }
     return null;
@@ -200,15 +184,13 @@ public class StrifeMob {
     return buff.getStacks();
   }
 
-  public void addBuff(String buffId, UUID source, Buff buff, double duration) {
-    Buff oldBuff = hasBuff(buffId, source);
+  public void addBuff(Buff buff, double duration) {
+    Buff oldBuff = hasBuff(buff.getId(), buff.getSource());
     if (oldBuff == null) {
-      LogUtil.printDebug("Adding new buff: " + buffId + " to " + livingEntity.get().getName());
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.add(buff);
       return;
     }
-    LogUtil.printDebug("Bumping buff: " + buffId + " for " + livingEntity.get().getName());
     buff.bumpBuff(duration);
   }
 
@@ -237,13 +219,7 @@ public class StrifeMob {
   }
 
   public Set<StrifeMob> getMinions() {
-    Iterator iterator = minions.iterator();
-    while (iterator.hasNext()) {
-      StrifeMob minion = (StrifeMob) iterator.next();
-      if (minion == null || minion.getEntity() == null || !minion.getEntity().isValid()) {
-        iterator.remove();
-      }
-    }
+    minions.removeIf(minion -> minion == null || minion.getEntity() == null || !minion.getEntity().isValid());
     return new HashSet<>(minions);
   }
 
@@ -286,18 +262,18 @@ public class StrifeMob {
 
   public Map<StrifeStat, Float> getBuffStats() {
     Map<StrifeStat, Float> stats = new HashMap<>();
-    Iterator iterator = runningBuffs.iterator();
+    Iterator<Buff> iterator = runningBuffs.iterator();
     while (iterator.hasNext()) {
-      Buff buff = (Buff) iterator.next();
+      Buff buff = iterator.next();
       if (buff == null || buff.isExpired()) {
         iterator.remove();
-      } else {
-        for (StrifeStat stat : buff.getTotalStats().keySet()) {
-          if (stats.containsKey(stat)) {
-            stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
-          } else {
-            stats.put(stat, buff.getTotalStats().get(stat));
-          }
+        continue;
+      }
+      for (StrifeStat stat : buff.getTotalStats().keySet()) {
+        if (stats.containsKey(stat)) {
+          stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
+        } else {
+          stats.put(stat, buff.getTotalStats().get(stat));
         }
       }
     }

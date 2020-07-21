@@ -23,16 +23,22 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BarrierManager {
 
-  private static final int BASE_BARRIER_TICKS = 40;
+  private static final int BASE_BARRIER_TICKS = 60;
   private final Map<UUID, Float> barrierMap = new ConcurrentHashMap<>();
   private final Map<UUID, Integer> tickMap = new ConcurrentHashMap<>();
+
+  private static final BlockData BLOCK_DATA = Bukkit.getServer().createBlockData(Material.WHITE_STAINED_GLASS);
 
   public void createBarrierEntry(StrifeMob strifeMob) {
     if (strifeMob.getEntity() == null || !strifeMob.getEntity().isValid()) {
@@ -125,7 +131,9 @@ public class BarrierManager {
       return amount;
     }
     LivingEntity entity = strifeMob.getEntity();
-    float remainingBarrier = getCurrentBarrier(strifeMob) - amount;
+    float currentBarrier = getCurrentBarrier(strifeMob);
+    float remainingBarrier = currentBarrier - amount;
+    spawnBarrierParticles(strifeMob.getEntity(), Math.min(currentBarrier, amount));
     if (remainingBarrier > 0) {
       setEntityBarrier(entity.getUniqueId(), remainingBarrier);
       updateShieldDisplay(strifeMob);
@@ -160,5 +168,17 @@ public class BarrierManager {
       player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
     }
     player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(20 * percent);
+  }
+
+  public void spawnBarrierParticles(LivingEntity entity, float amount) {
+    int particleAmount = (int) Math.ceil(amount / 5);
+    entity.getWorld().spawnParticle(
+        Particle.BLOCK_CRACK,
+        entity.getLocation().clone().add(0, entity.getEyeHeight() / 2, 0),
+        particleAmount,
+        0.0, 0.0, 0.0,
+        0.85,
+        BLOCK_DATA
+    );
   }
 }

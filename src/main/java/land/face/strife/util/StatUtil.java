@@ -159,9 +159,12 @@ public class StatUtil {
     return Math.min(1.1f, BASE_EVASION_MULT - bonusMultiplier);
   }
 
-  public static float getFireResist(StrifeMob ae) {
-    double amount = ae.getStat(StrifeStat.FIRE_RESIST) + ae.getStat(StrifeStat.ALL_RESIST);
-    return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
+  public static float getFireResist(StrifeMob ae, boolean soulFlame) {
+    float amount = ae.getStat(StrifeStat.FIRE_RESIST) + ae.getStat(StrifeStat.ALL_RESIST);
+    if (amount > 0 && soulFlame) {
+      amount *= 0.5;
+    }
+    return Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
   public static float getIceResist(StrifeMob ae) {

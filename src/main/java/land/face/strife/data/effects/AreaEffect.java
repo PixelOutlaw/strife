@@ -24,10 +24,10 @@ import org.bukkit.entity.Player;
 
 public class AreaEffect extends LocationEffect {
 
-  private Map<UUID, List<HitData>> targetDelay = new HashMap<>();
+  private final Map<UUID, List<HitData>> targetDelay = new HashMap<>();
   private long lastApplication = System.currentTimeMillis();
 
-  private List<Effect> effects = new ArrayList<>();
+  private final List<Effect> effects = new ArrayList<>();
   private AreaType areaType;
   private TargetingPriority priority;
   private float range;
@@ -68,8 +68,7 @@ public class AreaEffect extends LocationEffect {
   private Set<LivingEntity> getAreaEffectTargets(StrifeMob caster, Location location) {
     if (range < 0.1) {
       if (caster.getEntity() instanceof Mob) {
-        range = (float) caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE)
-            .getBaseValue();
+        range = (float) caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
       } else {
         range = 16;
       }

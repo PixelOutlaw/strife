@@ -93,7 +93,7 @@ public class StatsDefenseMenuItem extends MenuItem {
           INT_FORMAT));
     }
     lore.add(breakLine);
-    lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats), "%", INT_FORMAT));
+    lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats, false), "%", INT_FORMAT));
     lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));
     lore.add(
         addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));

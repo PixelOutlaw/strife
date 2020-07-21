@@ -22,26 +22,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.IndicatorData;
-import land.face.strife.data.IndicatorData.IndicatorStyle;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class DamageManager {
 
   private StrifePlugin plugin;
-  private float IND_GRAVITY_HSPEED;
-  private float IND_GRAVITY_VSPEED;
   private Map<UUID, Double> handledDamages = new HashMap<>();
 
   public DamageManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    IND_GRAVITY_HSPEED = (float) plugin.getSettings()
-        .getDouble("config.indicators.gravity-horizontal-speed", 30);
-    IND_GRAVITY_VSPEED = (float) plugin.getSettings()
-        .getDouble("config.indicators.gravity-vertical-speed", 80);
   }
 
   public boolean isHandledDamage(Entity entity) {
@@ -70,15 +61,5 @@ public class DamageManager {
     defender.getEntity().setVelocity(velocity);
 
     return damage;
-  }
-
-  public IndicatorData buildHitIndicator(Player player) {
-    IndicatorData data = new IndicatorData(new Vector(
-        IND_GRAVITY_HSPEED * 6 * (0.5 - Math.random()),
-        IND_GRAVITY_VSPEED * (1 + Math.random()),
-        IND_GRAVITY_HSPEED * 6 * (0.5 - Math.random())),
-        IndicatorStyle.GRAVITY);
-    data.addOwner(player);
-    return data;
   }
 }

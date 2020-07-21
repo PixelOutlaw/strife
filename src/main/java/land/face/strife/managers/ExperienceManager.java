@@ -59,7 +59,6 @@ public class ExperienceManager implements StrifeExperienceManager {
         String xp = FORMAT.format(amount * (1 + statsMult));
         MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));
       }
-      amount = Math.min(amount, (maxFaceExp / Math.pow(player.getLevel(), 1.5)));
       pStats.getChampion().getDetailsContainer().addExp((float) amount);
       amount *= 1 + statsMult;
     }

@@ -66,7 +66,7 @@ public class LaunchAndLandListener implements Listener {
     plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY,
         2, false, false);
     event.getPlayer().getWorld()
-        .spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.35);
+        .spawnParticle(Particle.CRIT_MAGIC, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.35);
     event.getPlayer().getWorld()
         .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
 

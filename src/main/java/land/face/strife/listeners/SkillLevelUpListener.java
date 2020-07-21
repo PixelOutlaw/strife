@@ -18,13 +18,13 @@
  */
 package land.face.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.events.SkillLevelUpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -62,7 +62,7 @@ public class SkillLevelUpListener implements Listener {
           + event.getSkillType().getName() + " skill level " + event.getNewSkillLevel() + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);
-      String msg = TextUtils.color(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
+      String msg = StringExtensionsKt.chatColorize(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p, msg);
       }

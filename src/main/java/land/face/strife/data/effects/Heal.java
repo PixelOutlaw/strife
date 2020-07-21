@@ -1,11 +1,10 @@
 package land.face.strife.data.effects;
 
-import static land.face.strife.util.DamageUtil.buildFloatIndicator;
-
 import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
@@ -22,6 +21,9 @@ public class Heal extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    if (target.getEntity().isDead()) {
+      return;
+    }
     float heal = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getStat(attr);
@@ -42,7 +44,7 @@ public class Heal extends Effect {
     if (caster != target && caster.getEntity() instanceof Player) {
       String healText = "&a&l+" + INT_FORMAT.format(heal);
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
-          target.getEntity(), buildFloatIndicator((Player) caster.getEntity()), healText);
+          target.getEntity(), IndicatorStyle.FLOAT_UP_SLOW, 12, healText);
     }
 
     DamageUtil.restoreHealth(target.getEntity(), heal);

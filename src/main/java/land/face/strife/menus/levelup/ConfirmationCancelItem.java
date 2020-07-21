@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ConfirmationCancelItem extends MenuItem {
 
-  private static final String DISPLAY_NAME = TextUtils.color("&c&nDiscard Changes");
+  private static final String DISPLAY_NAME = StringExtensionsKt.chatColorize("&c&nDiscard Changes");
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.BARRIER);
   private static final String[] DISPLAY_LORE = {
       ChatColor.GRAY + "Click here to discard",
@@ -41,7 +41,7 @@ public class ConfirmationCancelItem extends MenuItem {
   private final StrifePlugin plugin;
 
   ConfirmationCancelItem(StrifePlugin plugin) {
-    super(TextUtils.color(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
+    super(StringExtensionsKt.chatColorize(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
     this.plugin = plugin;
   }
 

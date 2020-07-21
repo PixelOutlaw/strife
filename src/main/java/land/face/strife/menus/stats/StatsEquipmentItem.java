@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.ItemUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -34,7 +34,7 @@ public class StatsEquipmentItem extends MenuItem {
   private EquipmentSlot slot;
 
   public StatsEquipmentItem(EquipmentSlot slot, String invalidText) {
-    super(TextUtils.color(invalidText), new ItemStack(Material.BARRIER));
+    super(StringExtensionsKt.chatColorize(invalidText), new ItemStack(Material.BARRIER));
     this.slot = slot;
   }
 

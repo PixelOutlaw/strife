@@ -1,7 +1,8 @@
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +62,7 @@ public class LoreAbilityManager {
       return;
     }
 
-    String triggerText = TextUtils.color(cs.getString("trigger-text", ""));
+    String triggerText = StringExtensionsKt.chatColorize(cs.getString("trigger-text", ""));
     if (StringUtils.isBlank(triggerText)) {
       LogUtil.printError("Failed to load " + key + ". Must provide trigger-text!");
       return;
@@ -87,7 +88,7 @@ public class LoreAbilityManager {
       LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
     }
-    List<String> description = TextUtils.color(cs.getStringList("description"));
+    List<String> description = ListExtensionsKt.chatColorize(cs.getStringList("description"));
     LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);

@@ -29,9 +29,11 @@ import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
+import org.bukkit.entity.Piglin;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Raider;
 import org.bukkit.entity.Slime;
@@ -138,10 +140,20 @@ public class UniqueEntityManager {
 
     if (le instanceof Ageable) {
       ((Ageable) le).setAgeLock(true);
+      ((Ageable) le).setBreed(false);
       if (uniqueEntity.isBaby()) {
         ((Ageable) le).setBaby();
       } else {
         ((Ageable) le).setAdult();
+      }
+    }
+
+    if (uniqueEntity.isZombificationImmune()) {
+      if (le instanceof Piglin) {
+        ((Piglin) le).setImmuneToZombification(true);
+      }
+      if (le instanceof Hoglin) {
+        ((Hoglin) le).setImmuneToZombification(true);
       }
     }
 

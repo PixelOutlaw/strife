@@ -77,12 +77,19 @@ public class EnergyRegenTask extends BukkitRunnable {
       energy += 0.005f * mob.getStat(StrifeStat.ENERGY_REGEN);
       energy *= getHungerPotionMult(mob.getEntity());
 
-      if (player.isSprinting()) {
+      if (player.getFoodLevel() > 6 && player.isSprinting()) {
         energy *= runCostPercent;
         energy -= runCostFlat * agilityMult;
       } else if (MoveUtil.hasMoved(player)) {
+        if (player.isSprinting()) {
+          player.setSprinting(false);
+        }
         energy *= walkCostPercent;
         energy -= walkCostFlat * agilityMult;
+      } else {
+        if (player.isSprinting()) {
+          player.setSprinting(false);
+        }
       }
 
       energy += getBonusEnergy(player.getUniqueId());

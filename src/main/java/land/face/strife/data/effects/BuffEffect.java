@@ -1,6 +1,8 @@
 package land.face.strife.data.effects;
 
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -18,7 +20,10 @@ public class BuffEffect extends Effect {
     if (!strictDuration) {
       durationMult *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    DamageUtil.applyBuff(loadedBuff, target, caster.getEntity().getUniqueId(), durationMult);
+    Buff buff = StrifePlugin.getInstance().getBuffManager().buildFromLoadedBuff(loadedBuff);
+    buff.setSource(caster.getEntity().getUniqueId());
+
+    target.addBuff(buff, loadedBuff.getSeconds() * durationMult);
   }
 
   public void setLoadedBuff(String buffId) {

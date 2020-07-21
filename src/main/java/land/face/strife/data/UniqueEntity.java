@@ -26,6 +26,7 @@ public class UniqueEntity {
   private boolean showName;
   private boolean baby;
   private boolean angry;
+  private boolean zombificationImmune;
   private boolean armsRaised;
   private Profession profession;
   private int size;
@@ -134,6 +135,14 @@ public class UniqueEntity {
 
   public void setAngry(boolean angry) {
     this.angry = angry;
+  }
+
+  public boolean isZombificationImmune() {
+    return zombificationImmune;
+  }
+
+  public void setZombificationImmune(boolean zombificationImmune) {
+    this.zombificationImmune = zombificationImmune;
   }
 
   public boolean isArmsRaised() {

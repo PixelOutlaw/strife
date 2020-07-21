@@ -75,14 +75,16 @@ public class Damage extends Effect {
     if (strifeDamageEvent.isCancelled()) {
       return;
     }
+
+    StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
+        (float) strifeDamageEvent.getFinalDamage());
+
     if (damage.containsKey(DamageType.PHYSICAL)) {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
     }
-    if (mods.isApplyOnHitEffects()) {
-      DamageUtil.postDamage(caster, target, mods);
-    }
-    StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
-        (float) strifeDamageEvent.getFinalDamage());
+
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> DamageUtil.postDamage(caster, target, mods), 0L);
   }
 
   public float getDamageReductionRatio() {

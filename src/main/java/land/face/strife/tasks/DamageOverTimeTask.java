@@ -118,7 +118,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
         continue;
       }
       float damage = BURN_FLAT_DAMAGE;
-      damage *= 1 - StatUtil.getFireResist(plugin.getStrifeMobManager().getStatMob(le)) / 100;
+      damage *= 1 - StatUtil.getFireResist(plugin.getStrifeMobManager().getStatMob(le), false) / 100;
       damage = plugin.getBarrierManager().damageBarrier(
           plugin.getStrifeMobManager().getStatMob(le), damage);
       if (le.getHealth() <= damage) {

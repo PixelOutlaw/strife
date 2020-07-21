@@ -4,6 +4,8 @@ import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
@@ -25,10 +27,16 @@ import org.bukkit.util.Vector;
 
 public class DoubleJumpListener implements Listener {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
+  private final Map<Integer, Vector> cachedJumpAnimation = new HashMap<>();
 
   public DoubleJumpListener(StrifePlugin plugin) {
     this.plugin = plugin;
+    for (int step = 0; step < 21; step++) {
+      double radian = Math.toRadians(360 * (step * 0.05));
+      Vector vector = new Vector(Math.cos(radian), 0, Math.sin(radian));
+      cachedJumpAnimation.put(step, vector);
+    }
   }
 
   @EventHandler
@@ -106,13 +114,19 @@ public class DoubleJumpListener implements Listener {
     MessageUtils.sendActionBar(event.getPlayer(), TextUtils.color("&3&lAir Jumps: &b" + bars));
 
     plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 3, false, false);
-    event.getPlayer().getWorld()
-        .spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.35);
+    flingParticle(event.getPlayer());
     event.getPlayer().getWorld()
         .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
   }
 
   public static String insert(String str, String insert, int position) {
     return str.substring(0, position) + insert + str.substring(position);
+  }
+
+  private void flingParticle(Player player) {
+    for (Integer step : cachedJumpAnimation.keySet()) {
+      player.getWorld().spawnParticle(Particle.CRIT_MAGIC, player.getLocation(), 0,
+          cachedJumpAnimation.get(step).getX(), 0, cachedJumpAnimation.get(step).getZ(), 0.35);
+    }
   }
 }
