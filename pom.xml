@@ -32,7 +32,7 @@
   </parent>
 
   <artifactId>strife</artifactId>
-  <version>3.1.1</version>
+  <version>3.1.2</version>
   <packaging>jar</packaging>
 
   <name>strife</name>
