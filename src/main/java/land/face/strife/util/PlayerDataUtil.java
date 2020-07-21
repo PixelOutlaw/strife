@@ -32,14 +32,11 @@ import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
-import net.minecraft.server.v1_16_R1.PacketPlayOutAnimation;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
@@ -85,20 +82,13 @@ public class PlayerDataUtil {
   }
 
   private static void swing(LivingEntity entity, EquipmentSlot slot) {
-    int swingSlot;
     if (slot == EquipmentSlot.HAND) {
       entity.swingMainHand();
-      swingSlot = 0;
     } else {
       entity.swingOffHand();
-      swingSlot = 3;
     }
     if (entity instanceof Player) {
       SwingListener.addFakeSwing(entity.getUniqueId());
-      Player targetPlayer = (Player) entity;
-      PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(
-          ((CraftEntity) targetPlayer).getHandle(), swingSlot);
-      ((CraftPlayer) targetPlayer).getHandle().playerConnection.sendPacket(animationPacket);
     }
   }
 

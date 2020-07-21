@@ -68,17 +68,19 @@ public class WSEManager {
     Location location = wse.getLocation().clone();
 
     Vector velocity = wse.getVelocity().clone();
-    Block blockBelow = location.clone().add(0, Math.min(-0.3, velocity.getY()), 0).getBlock();
-    if (!blockBelow.getType().isSolid()) {
-      if (!blockBelow.getLocation().add(0, -1, 0).getBlock().getType().isSolid() && !blockBelow.getLocation()
-          .add(0, -2, 0).getBlock().getType().isSolid()) {
-        LogUtil.printDebug("WSE effect cannot fall this far! Removing...");
-        return false;
+    if (wse.getGravity() > 0) {
+      Block blockBelow = location.clone().add(0, Math.min(-0.3, velocity.getY()), 0).getBlock();
+      if (!blockBelow.getType().isSolid()) {
+        if (!blockBelow.getLocation().add(0, -1, 0).getBlock().getType().isSolid() && !blockBelow.getLocation()
+            .add(0, -2, 0).getBlock().getType().isSolid()) {
+          LogUtil.printDebug("WSE effect cannot fall this far! Removing...");
+          return false;
+        }
+        velocity.setY(Math.max(-0.99, velocity.getY() - wse.getGravity()));
+      } else {
+        velocity.setY(0);
+        location.setY(blockBelow.getY() + 1.3);
       }
-      velocity.setY(Math.max(-0.99, velocity.getY() - wse.getGravity()));
-    } else {
-      velocity.setY(0);
-      location.setY(blockBelow.getY() + 1.3);
     }
     velocity.multiply(wse.getFriction());
     wse.setVelocity(velocity);

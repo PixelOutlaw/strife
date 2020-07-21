@@ -22,6 +22,7 @@
  */
 package land.face.strife.events;
 
+import java.util.Set;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -36,11 +37,11 @@ public class UniqueKillEvent extends Event {
   }
 
   private final StrifeMob entity;
-  private final Player killer;
+  private final Set<Player> killers;
 
-  public UniqueKillEvent(StrifeMob entity, Player killer) {
+  public UniqueKillEvent(StrifeMob entity, Set<Player> killers) {
     this.entity = entity;
-    this.killer = killer;
+    this.killers = killers;
   }
 
   @Override
@@ -52,7 +53,7 @@ public class UniqueKillEvent extends Event {
     return entity;
   }
 
-  public Player getKiller() {
-    return killer;
+  public Set<Player> getKillers() {
+    return killers;
   }
 }
