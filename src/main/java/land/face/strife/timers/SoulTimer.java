@@ -18,12 +18,12 @@
  */
 package land.face.strife.timers;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.LogUtil;
-import net.minecraft.server.v1_16_R1.EntityItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -36,14 +36,14 @@ public class SoulTimer extends BukkitRunnable {
   private final Location location;
   private final UUID owner;
   private final Set<Player> viewers = new HashSet<>();
-  private final EntityItem soulHead;
+  private final Hologram soulHead;
   private final long creationTime = System.currentTimeMillis();
 
   private static int MAX_SOUL_LIFESPAN = 300000;
 
   private double lostExp = 0;
 
-  public SoulTimer(UUID owner, EntityItem soulHead, Location location) {
+  public SoulTimer(UUID owner, Hologram soulHead, Location location) {
     this.owner = owner;
     this.location = location;
     this.soulHead = soulHead;
@@ -75,7 +75,7 @@ public class SoulTimer extends BukkitRunnable {
     viewers.addAll(playerSet);
     playerSet.removeAll(oldViewers);
     for (Player player : playerSet) {
-      StrifePlugin.getInstance().getSoulManager().sendCreationPacket(player, soulHead);
+      soulHead.getVisibilityManager().showTo(player);
     }
   }
 
@@ -91,8 +91,8 @@ public class SoulTimer extends BukkitRunnable {
     return viewers;
   }
 
-  public int getStandId() {
-    return soulHead.getId();
+  public Hologram getSoulHead() {
+    return soulHead;
   }
 
   public double getLostExp() {
