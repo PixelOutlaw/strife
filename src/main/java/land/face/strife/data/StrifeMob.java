@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import land.face.SnazzyPartiesPlugin;
+import land.face.data.Party;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
@@ -69,7 +71,7 @@ public class StrifeMob {
     takenDamage.put(uuid, takenDamage.getOrDefault(uuid, 0f) + amount);
   }
 
-  public Player getKiller() {
+  public Player getTopDamager() {
     Player killer = null;
     float topDamage = 0;
     for (UUID uuid : takenDamage.keySet()) {
@@ -80,6 +82,41 @@ public class StrifeMob {
       }
     }
     return killer;
+  }
+
+  public static Set<Player> getKillers(StrifeMob mob) {
+    Map<Party, Float> partyScores = new HashMap<>();
+    Set<Player> killers = new HashSet<>();
+    UUID topUUID = null;
+    float topScore = 0;
+    for (UUID uuid : mob.takenDamage.keySet()) {
+      Player player = Bukkit.getPlayer(uuid);
+      if (player == null || !player.isValid()) {
+        continue;
+      }
+      float score = mob.takenDamage.get(uuid);
+      Party party = SnazzyPartiesPlugin.getInstance().getPartyManager().getParty(player);
+      if (party == null) {
+        if (score > topScore) {
+          killers.clear();
+          killers.add(player);
+          topScore = score;
+          topUUID = player.getUniqueId();
+        }
+        continue;
+      }
+      float partyScore = partyScores.getOrDefault(party, 0f);
+      partyScore += score;
+      if (partyScore > topScore && topUUID != party.getLeader().getUUID()) {
+        killers.clear();
+        killers.addAll(SnazzyPartiesPlugin.getInstance().getPartyManager()
+            .getNearbyPlayers(party, mob.getEntity().getLocation(), 30));
+        topScore = partyScore;
+        topUUID = party.getLeader().getUUID();
+      }
+      partyScores.put(party, partyScore);
+    }
+    return killers;
   }
 
   public float getStat(StrifeStat stat) {

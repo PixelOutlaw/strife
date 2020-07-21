@@ -102,7 +102,7 @@ public class LoreAbilityListener implements Listener {
     StrifeMob victim = strifeMobManager.getStatMob(event.getEntity());
     Player killer = event.getEntity().getKiller();
     if (killer == null) {
-      killer = victim.getKiller();
+      killer = victim.getTopDamager();
       if (killer == null) {
         return;
       }

@@ -70,16 +70,9 @@ public class ExperienceListener implements Listener {
 
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
 
-    Player killer = mob.getKiller();
-    if (killer == null) {
-      killer = event.getEntity().getKiller();
-      if (killer == null) {
-        event.setDroppedExp(0);
-        return;
-      }
-    }
+    Set<Player> killers = StrifeMob.getKillers(mob);
 
-    UniqueKillEvent ev = new UniqueKillEvent(mob, killer);
+    UniqueKillEvent ev = new UniqueKillEvent(mob, killers);
     Bukkit.getPluginManager().callEvent(ev);
 
     float droppedXp = event.getDroppedExp();
@@ -88,9 +81,6 @@ public class ExperienceListener implements Listener {
     int mobLevel = StatUtil.getMobLevel(event.getEntity());
     int highestPlayerLevel = mobLevel;
     int lowestPlayerLevel = mobLevel;
-
-    Set<Player> killers = plugin.getSnazzyPartiesHook()
-        .getNearbyPartyMembers(killer, event.getEntity().getLocation(), 30);
 
     for (Player player : killers) {
       if (player.getLevel() > highestPlayerLevel) {
