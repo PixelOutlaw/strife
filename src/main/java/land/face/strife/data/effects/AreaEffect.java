@@ -10,6 +10,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.HitData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
@@ -48,21 +49,24 @@ public class AreaEffect extends LocationEffect {
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
     Set<LivingEntity> targets = getAreaEffectTargets(caster, location);
-    for (LivingEntity le : targets) {
-      if (isCancelled(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le))) {
-        return;
-      }
-      if (targetingCooldown > 0) {
-        if (lastApplication < System.currentTimeMillis()) {
-          targetDelay.clear();
-        }
-        lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
-        if (!canTargetBeHit(caster.getEntity().getUniqueId(), le.getUniqueId())) {
-          return;
-        }
-      }
-      StrifePlugin.getInstance().getEffectManager().processEffectList(caster, le, effects);
+    targets.removeIf(target -> ignoreEntity(caster, target));
+    TargetResponse response = new TargetResponse();
+    response.setEntities(targets);
+    StrifePlugin.getInstance().getEffectManager().executeEffectList(caster, response, effects);
+  }
+
+  private boolean ignoreEntity(StrifeMob caster, LivingEntity le) {
+    if (isCancelled(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le))) {
+      return true;
     }
+    if (targetingCooldown > 0) {
+      if (lastApplication < System.currentTimeMillis()) {
+        targetDelay.clear();
+      }
+      lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
+      return !canTargetBeHit(caster.getEntity().getUniqueId(), le.getUniqueId());
+    }
+    return false;
   }
 
   private Set<LivingEntity> getAreaEffectTargets(StrifeMob caster, Location location) {

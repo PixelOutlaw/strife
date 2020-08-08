@@ -1,16 +1,19 @@
 package land.face.strife.timers;
 
+import java.util.HashSet;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.effects.Effect;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class EndlessEffectTimer extends BukkitRunnable {
 
-  private StrifePlugin plugin = StrifePlugin.getInstance();
+  private final StrifePlugin plugin = StrifePlugin.getInstance();
   private final StrifeMob mob;
   private final EndlessEffect endlessEffect;
   private int ticks;
@@ -43,14 +46,14 @@ public class EndlessEffectTimer extends BukkitRunnable {
         return;
       }
     }
-    for (Effect effect : endlessEffect.getRunEffects()) {
-      if (effect == null) {
-        LogUtil.printWarning("Invalid effect in endless runner " + endlessEffect.getId());
-        continue;
-      }
-      LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
-      plugin.getEffectManager().execute(effect, mob, mob.getEntity());
-    }
+
+    TargetResponse response = new TargetResponse();
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(mob.getEntity());
+    response.setEntities(entities);
+
+    plugin.getEffectManager().executeEffectList(mob, response, endlessEffect.getRunEffects());
+
     ticks--;
     if (ticks < 1) {
       doExpiry();
@@ -59,20 +62,28 @@ public class EndlessEffectTimer extends BukkitRunnable {
 
   private void runCancelEffects() {
     LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
-    for (Effect effect : endlessEffect.getCancelEffects()) {
-      LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
-      plugin.getEffectManager().execute(effect, mob, mob.getEntity());
-    }
+
+    TargetResponse response = new TargetResponse();
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(mob.getEntity());
+    response.setEntities(entities);
+
+    plugin.getEffectManager().processEffectList(mob, response, endlessEffect.getCancelEffects());
+
     EndlessEffect.removeEffectOnTarget(mob, endlessEffect);
     cancel();
   }
 
   public void doExpiry() {
     LogUtil.printDebug("Cancelled endless effect due to max tick duration reached");
-    for (Effect effect : endlessEffect.getExpiryEffects()) {
-      LogUtil.printDebug("Executing " + effect.getId() + " as part of " + endlessEffect.getId());
-      plugin.getEffectManager().execute(effect, mob, mob.getEntity());
-    }
+
+    TargetResponse response = new TargetResponse();
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(mob.getEntity());
+    response.setEntities(entities);
+
+    plugin.getEffectManager().processEffectList(mob, response, endlessEffect.getExpiryEffects());
+
     EndlessEffect.removeEffectOnTarget(mob, endlessEffect);
   }
 

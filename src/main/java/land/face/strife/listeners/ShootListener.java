@@ -19,9 +19,12 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.AreaType;
@@ -215,8 +218,8 @@ public class ShootListener implements Listener {
     }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
       double randomMultishot = Math.pow(Math.random(), 1.5);
-      int projectiles = ProjectileUtil
-          .getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
+      int projectiles = ProjectileUtil.getTotalProjectiles(1,
+          mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
       flintlockHitscan.setMaxTargets(projectiles);
       flintlockHitscan.setMaxConeRadius(0.35f * (projectiles - 1));
     } else {
@@ -224,7 +227,13 @@ public class ShootListener implements Listener {
       flintlockHitscan.setMaxConeRadius(0f);
     }
     flintlockDamage.setAttackMultiplier(attackMultiplier);
-    plugin.getEffectManager().execute(flintlockHitscan, mob, mob.getEntity());
+
+    TargetResponse response = new TargetResponse();
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(mob.getEntity());
+    response.setEntities(entities);
+
+    plugin.getEffectManager().execute(flintlockHitscan, mob, response);
     flintlockSmoke.apply(mob, mob);
     flintlockFlare.apply(mob, mob);
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),

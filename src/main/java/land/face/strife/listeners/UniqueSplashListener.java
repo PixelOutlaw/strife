@@ -1,7 +1,13 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.StrifeMobManager;
@@ -67,9 +73,19 @@ public class UniqueSplashListener implements Listener {
         return;
       }
 
+      TargetResponse response = new TargetResponse();
+      Set<LivingEntity> targets = new HashSet<>();
+      response.setEntities(targets);
+
+      List<Effect> effectList = new ArrayList<>();
       for (String s : effects) {
-        effectManager.execute(effectManager.getEffect(s), attacker, defender.getEntity());
+        Effect effect = effectManager.getEffect(s);
+        if (effect != null) {
+          effectList.add(effect);
+        }
       }
+
+      effectManager.processEffectList(attacker, response, effectList);
     }
   }
 }

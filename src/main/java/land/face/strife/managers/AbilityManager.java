@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.ability.AbilityCooldownContainer;
@@ -35,7 +36,6 @@ import land.face.strife.timers.SoulTimer;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
-import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -96,16 +96,13 @@ public class AbilityManager {
       doRequirementNotMetPrompt(caster, ability);
       return false;
     }
-    Set<LivingEntity> targets = getTargets(caster, target, ability);
-    if (targets == null) {
-      throw new NullArgumentException("Null target list on ability " + ability.getId());
-    }
-    if (targets.isEmpty() && ability.isRequireTarget()) {
+    TargetResponse response = getTargets(caster, target, ability);
+    if (response.getLocation() == null && (response.getEntities() == null || response.getEntities().isEmpty())) {
       doTargetNotFoundPrompt(caster, ability);
       return false;
     }
     if (ability.getTargetType() == TargetType.TOGGLE) {
-      boolean toggledOn = toggleAbility(caster, targets, ability);
+      boolean toggledOn = toggleAbility(caster, response.getEntities(), ability);
       if (!toggledOn) {
         return true;
       }
@@ -121,7 +118,7 @@ public class AbilityManager {
       }
     }
 
-    plugin.getEffectManager().processEffectList(caster, targets, ability.getEffects());
+    plugin.getEffectManager().processEffectList(caster, response, ability.getEffects());
 
     if (caster.getEntity() instanceof Player) {
       if (ability.isCancelStealth()) {
@@ -167,7 +164,9 @@ public class AbilityManager {
       coolDownAbility(mob.getEntity(), getAbility(abilityId));
       Set<LivingEntity> targets = new HashSet<>();
       targets.add(mob.getEntity());
-      plugin.getEffectManager().processEffectList(mob, targets, ability.getToggleOffEffects());
+      TargetResponse response = new TargetResponse();
+      response.setEntities(targets);
+      plugin.getEffectManager().processEffectList(mob, response, ability.getToggleOffEffects());
     }
   }
 
@@ -405,7 +404,10 @@ public class AbilityManager {
     if (container.isToggledOn()) {
       container.setToggledOn(false);
       coolDownAbility(caster.getEntity(), ability);
-      plugin.getEffectManager().processEffectList(caster, targets, ability.getToggleOffEffects());
+      TargetResponse response = new TargetResponse();
+      Set<LivingEntity> entities = new HashSet<>();
+      response.setEntities(entities);
+      plugin.getEffectManager().processEffectList(caster, response, ability.getToggleOffEffects());
       return false;
     }
     container.setToggledOn(true);
@@ -427,61 +429,62 @@ public class AbilityManager {
     }
   }
 
-  private Set<LivingEntity> getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
+  private TargetResponse getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
+    TargetResponse targetResponse = new TargetResponse();
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF:
       case TOGGLE:
         targets.add(caster.getEntity());
-        return targets;
+        targetResponse.setEntities(targets);
+        break;
       case PARTY:
         if (caster.getEntity() instanceof Player) {
-          targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers(
-              (Player) caster.getEntity(), caster.getEntity().getLocation(), 30));
+          targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers((Player) caster.getEntity(),
+              caster.getEntity().getLocation(), 30));
         } else {
           targets.add(caster.getEntity());
         }
-        return targets;
+        targetResponse.setEntities(targets);
+        break;
       case MASTER:
         if (caster.getMaster() != null) {
           targets.add(caster.getMaster());
         }
-        return targets;
+        targetResponse.setEntities(targets);
+        break;
       case MINIONS:
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
         }
-        return targets;
+        targetResponse.setEntities(targets);
+        break;
       case SINGLE_OTHER:
         if (target != null) {
           targets.add(target);
-          return targets;
+          targetResponse.setEntities(targets);
+          break;
         }
-        LivingEntity newTarget = TargetingUtil
-            .selectFirstEntityInSight(caster.getEntity(), ability.getRange(), ability.isFriendly());
+        LivingEntity newTarget = TargetingUtil.selectFirstEntityInSight(caster.getEntity(),
+            ability.getRange(), ability.isFriendly());
         if (newTarget != null) {
           targets.add(newTarget);
         }
-        return targets;
+        targetResponse.setEntities(targets);
+        break;
       case TARGET_AREA:
-        Location loc = TargetingUtil.getTargetLocation(
-            caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        LivingEntity stando = TargetingUtil.getTempStand(loc, -1);
-        if (stando != null) {
-          targets.add(stando);
-        }
-        return targets;
+        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), target, ability.getRange(),
+            ability.isRaycastsTargetEntities());
+        targetResponse.setLocation(loc);
+        break;
       case TARGET_GROUND:
-        Location loc2 = TargetingUtil.getTargetLocation(
-            caster.getEntity(), target, ability.getRange(), ability.isRaycastsTargetEntities());
-        LivingEntity stando2 = TargetingUtil.getTempStand(loc2, ability.getRange() + 2);
-        if (stando2 != null) {
-          targets.add(stando2);
-        }
-        return targets;
+        Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), target,
+            ability.getRange(), ability.isRaycastsTargetEntities());
+        loc = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
+        targetResponse.setLocation(loc);
+        break;
       case NEAREST_SOUL:
-        SoulTimer soul = plugin.getSoulManager()
-            .getNearestSoul(caster.getEntity(), ability.getRange());
+        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), ability.getRange());
         if (soul != null) {
           Player playerTarget = Bukkit.getPlayer(soul.getOwner());
           boolean friendlyTarget = TargetingUtil.isFriendly(caster, playerTarget);
@@ -489,9 +492,10 @@ public class AbilityManager {
             targets.add(Bukkit.getPlayer(soul.getOwner()));
           }
         }
-        return targets;
+        targetResponse.setEntities(targets);
+        break;
     }
-    return null;
+    return targetResponse;
   }
 
   private boolean isAbilityCastReady(StrifeMob caster, StrifeMob target, Ability ability) {
@@ -557,8 +561,7 @@ public class AbilityManager {
       return;
     }
 
-    boolean raycastsHitEntities = cs.getBoolean("raycasts-hit-entities",
-        targetType == TargetType.TARGET_GROUND);
+    boolean raycastsHitEntities = cs.getBoolean("raycasts-hit-entities", targetType == TargetType.TARGET_GROUND);
 
     List<String> effectStrings = cs.getStringList("effects");
     if (effectStrings.isEmpty()) {

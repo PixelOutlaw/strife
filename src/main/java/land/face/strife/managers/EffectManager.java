@@ -15,6 +15,7 @@ import land.face.strife.data.BonusDamage;
 import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AttributeCondition;
 import land.face.strife.data.conditions.BarrierCondition;
@@ -147,14 +148,7 @@ public class EffectManager {
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
   }
-
-  public void processEffectList(StrifeMob caster, LivingEntity target, List<Effect> effectList) {
-    Set<LivingEntity> targets = new HashSet<>();
-    targets.add(target);
-    processEffectList(caster, targets, effectList);
-  }
-
-  public void processEffectList(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList) {
+  public void processEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
     for (Effect effect : effectList) {
@@ -166,7 +160,7 @@ public class EffectManager {
         LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
         List<Effect> finalTaskEffects1 = taskEffects;
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-            executeEffectList(caster, targets, finalTaskEffects1), waitTicks);
+            executeEffectList(caster, response, finalTaskEffects1), waitTicks);
         waitTicks += ((Wait) effect).getTickDelay();
         taskEffects = new ArrayList<>();
         continue;
@@ -176,10 +170,10 @@ public class EffectManager {
     }
     List<Effect> finalTaskEffects = taskEffects;
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        executeEffectList(caster, targets, finalTaskEffects), waitTicks);
+        executeEffectList(caster, response, finalTaskEffects), waitTicks);
   }
 
-  private void executeEffectList(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList) {
+  public void executeEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
     LogUtil.printDebug("Effect task started - " + effectList.toString());
     if (!caster.getEntity().isValid()) {
       LogUtil.printDebug("- Task cancelled, caster is dead");
@@ -187,44 +181,47 @@ public class EffectManager {
     }
     for (Effect effect : effectList) {
       LogUtil.printDebug("- Executing effect " + effect.getId());
-      for (LivingEntity target : targets) {
-        execute(effect, caster, target);
-      }
+      execute(effect, caster, response);
     }
     LogUtil.printDebug("- Completed effect task.");
   }
 
-  public void execute(Effect effect, StrifeMob caster, LivingEntity target) {
+  public void execute(Effect effect, StrifeMob caster, TargetResponse response) {
     if (effect instanceof LocationEffect) {
-      if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
+      LocationEffect locEffect = (LocationEffect) effect;
+      if (response.getEntities() != null && !response.getEntities().isEmpty()) {
+        for (LivingEntity le : response.getEntities()) {
+          StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
+          if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+            continue;
+          }
+          Location location = TargetingUtil.getOriginLocation(le, locEffect.getOrigin());
+          locEffect.applyAtLocation(caster, location);
+        }
         return;
       }
-      LocationEffect locEffect = (LocationEffect) effect;
-      LivingEntity targetEntity = effect.isForceTargetCaster() ? caster.getEntity() : target;
-      Location location = TargetingUtil.getOriginLocation(targetEntity, locEffect.getOrigin());
-      if (location != null) {
-        locEffect.applyAtLocation(caster, location);
+      if (response.getLocation() != null) {
+        PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions());
+        locEffect.applyAtLocation(caster, response.getLocation());
+        return;
       }
       return;
     }
-
-    StrifeMob targetMob;
-    if (caster.getEntity() == target) {
-      targetMob = caster;
-    } else {
-      targetMob = plugin.getStrifeMobManager().getStatMob(target);
+    if (response.getEntities() == null || response.getEntities().isEmpty()) {
+      return;
     }
 
-    if (effect.isForceTargetCaster()) {
+    for (LivingEntity le : response.getEntities()) {
+      StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
+      if (effect.isForceTargetCaster()) {
+        applyEffectIfConditionsMet(effect, caster, targetMob);
+        return;
+      }
+      if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+        return;
+      }
       applyEffectIfConditionsMet(effect, caster, targetMob);
-      return;
     }
-
-    if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
-      return;
-    }
-
-    applyEffectIfConditionsMet(effect, caster, targetMob);
   }
 
   private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {

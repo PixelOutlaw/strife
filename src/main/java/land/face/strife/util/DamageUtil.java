@@ -16,8 +16,10 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -26,6 +28,7 @@ import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.DamageModifiers.ElementalStatus;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.LifeSkillType;
@@ -88,12 +91,15 @@ public class DamageUtil {
     if (effects == null) {
       return;
     }
+    TargetResponse response = new TargetResponse();
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(defender.getEntity());
+    response.setEntities(entities);
     for (String s : effects) {
       if (StringUtils.isBlank(s)) {
         continue;
       }
-      plugin.getEffectManager()
-          .execute(plugin.getEffectManager().getEffect(s), attacker, defender.getEntity());
+      plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, response);
     }
   }
 

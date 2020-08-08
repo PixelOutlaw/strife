@@ -27,6 +27,7 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CounterData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -73,15 +74,19 @@ public class CounterManager {
       isCountered = true;
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
-        StrifePlugin.getInstance().getIndicatorManager()
-            .addIndicator(attacker, defender, IndicatorStyle.BOUNCE, 8, "&3&o&lCounter!");
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
+            IndicatorStyle.BOUNCE, 8, "&3&o&lCounter!");
       }
       if (defender instanceof Player) {
         MessageUtils.sendActionBar((Player) defender, "&e&lCountered!");
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
-        plugin.getEffectManager().processEffectList(defenderMob, attacker, data.getEffects());
+        TargetResponse response = new TargetResponse();
+        Set<LivingEntity> entities = new HashSet<>();
+        entities.add(attacker);
+        response.setEntities(entities);
+        plugin.getEffectManager().processEffectList(defenderMob, response, data.getEffects());
         if (data.isRemoveOnTrigger()) {
           counterMap.get(defender).remove(data);
         } else {

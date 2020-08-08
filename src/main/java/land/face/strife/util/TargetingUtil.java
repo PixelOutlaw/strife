@@ -252,38 +252,12 @@ public class TargetingUtil {
     return false;
   }
 
-  public static boolean isDetectionStand(LivingEntity le) {
-    return le instanceof ArmorStand && SpecialStatusUtil.isDetectionStand(le);
-  }
-
-  public static ArmorStand buildAndRemoveDetectionStand(Location location) {
-    Location spawnLoc = location.clone();
-    spawnLoc.setY(-1);
-    ArmorStand stando = location.getWorld().spawn(spawnLoc,
-        ArmorStand.class, TargetingUtil::applyDetectionStandChanges);
-    stando.teleport(location);
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
-    return stando;
-  }
-
-  private static void applyDetectionStandChanges(ArmorStand stando) {
-    stando.setVisible(false);
-    stando.setSmall(true);
-    stando.setMarker(true);
-    stando.setGravity(false);
-    stando.setCollidable(false);
-    SpecialStatusUtil.setDetectionStand(stando);
-  }
-
-  public static LivingEntity getTempStand(Location loc, float verticalRange) {
-    if (verticalRange == -1) {
-      return TargetingUtil.buildAndRemoveDetectionStand(loc);
-    }
+  public static Location modifyLocation(Location loc, float verticalRange) {
     Location detectionLocation = loc.toCenterLocation().clone();
     for (int i = 0; i < verticalRange; i++) {
       if (detectionLocation.getBlock().getRelative(BlockFace.DOWN, i).getType().isSolid()) {
         detectionLocation.add(0, -i + 0.6, 0);
-        return TargetingUtil.buildAndRemoveDetectionStand(detectionLocation);
+        return detectionLocation;
       }
     }
     return null;
