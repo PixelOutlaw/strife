@@ -37,7 +37,7 @@ public class EndlessEffectTimer extends BukkitRunnable {
       return;
     }
     if (!endlessEffect.getCancelConditions().isEmpty()) {
-      if (PlayerDataUtil.areConditionsMet(mob, null, endlessEffect.getCancelConditions())) {
+      if (PlayerDataUtil.areConditionsMet(mob, mob, endlessEffect.getCancelConditions())) {
         runCancelEffects();
         cancel();
         return;

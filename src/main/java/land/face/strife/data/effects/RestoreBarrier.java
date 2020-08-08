@@ -1,10 +1,11 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
+import land.face.strife.data.BonusDamage;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
+import land.face.strife.util.DamageUtil.DamageType;
 
 public class RestoreBarrier extends Effect {
 
@@ -20,28 +21,9 @@ public class RestoreBarrier extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       restoreAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
-    switch (damageScale) {
-      case FLAT:
-        DamageUtil.restoreBarrier(target, restoreAmount);
-        return;
-      case TARGET_CURRENT_BARRIER:
-        DamageUtil.restoreBarrier(target, restoreAmount * getCurrentBarrier(target));
-        return;
-      case TARGET_MISSING_BARRIER:
-        DamageUtil.restoreBarrier(target, restoreAmount * getMissingBarrier(target));
-        return;
-      case TARGET_MAX_BARRIER:
-        DamageUtil.restoreBarrier(target, restoreAmount * target.getStat(StrifeStat.BARRIER));
-        return;
-      case CASTER_CURRENT_BARRIER:
-        DamageUtil.restoreBarrier(target, restoreAmount * getCurrentBarrier(caster));
-        return;
-      case CASTER_MISSING_BARRIER:
-        DamageUtil.restoreBarrier(target, restoreAmount * getMissingBarrier(caster));
-        return;
-      case CASTER_MAX_BARRIER:
-        DamageUtil.restoreBarrier(target, restoreAmount * target.getStat(StrifeStat.BARRIER));
-    }
+    BonusDamage bonusDamage = new BonusDamage(damageScale, DamageType.TRUE_DAMAGE, null, restoreAmount);
+    restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
+    DamageUtil.restoreBarrier(target, restoreAmount);
   }
 
   public void setAmount(float amount) {
@@ -50,13 +32,5 @@ public class RestoreBarrier extends Effect {
 
   public void setDamageScale(DamageScale damageScale) {
     this.damageScale = damageScale;
-  }
-
-  private float getCurrentBarrier(StrifeMob mob) {
-    return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(mob);
-  }
-
-  private float getMissingBarrier(StrifeMob mob) {
-    return 1 - getCurrentBarrier(mob) / mob.getStat(StrifeStat.BARRIER);
   }
 }

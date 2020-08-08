@@ -24,16 +24,16 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LastAttackTracker;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 public class AttackSpeedManager {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
   private final Map<UUID, LastAttackTracker> lastAttackMap;
-
-  private float attackCost;
+  private final float attackCost;
 
   public AttackSpeedManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -65,11 +65,14 @@ public class AttackSpeedManager {
     }
 
     float attackMult = Math.min(1, (float) millisPassed / fullAttackMillis);
+
+    if (attacker.hasTrait(StrifeTrait.NO_ENERGY_BASICS)) {
+      return attackMult;
+    }
+
     float energyCost = 0.35f * attackCost + 0.65f * attackMult * attackCost;
     float energyMult = Math.min(1, plugin.getEnergyManager().getEnergy(attacker) / energyCost);
-
     plugin.getEnergyManager().changeEnergy((Player) attacker.getEntity(), -energyCost);
-
     return attackMult * energyMult;
   }
 

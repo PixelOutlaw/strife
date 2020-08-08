@@ -148,11 +148,11 @@ public class StatUpdateManager {
     StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(mob);
   }
 
-  public void updateAttributes(Player player) {
-    updateAttributes(strifeMobManager.getStatMob(player));
+  public void updateVanillaAttributes(Player player) {
+    updateVanillaAttributes(strifeMobManager.getStatMob(player));
   }
 
-  public void updateAttributes(StrifeMob strifeMob) {
+  public void updateVanillaAttributes(StrifeMob strifeMob) {
     strifeMob.getEntity().setMaximumNoDamageTicks(0);
     updateMovementSpeed(strifeMob);
     updateAttackAttrs(strifeMob);

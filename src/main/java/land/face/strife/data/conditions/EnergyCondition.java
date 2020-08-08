@@ -2,8 +2,8 @@ package land.face.strife.data.conditions;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Player;
 
 public class EnergyCondition extends Condition {
@@ -20,8 +20,7 @@ public class EnergyCondition extends Condition {
       return false;
     }
     if (percentage) {
-      float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(trueTarget) /
-          trueTarget.getStat(StrifeStat.ENERGY);
+      float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(trueTarget) / StatUtil.getMaximumEnergy(trueTarget);
       return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
     } else {
       float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(target);

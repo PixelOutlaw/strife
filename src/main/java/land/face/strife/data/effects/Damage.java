@@ -30,6 +30,7 @@ public class Damage extends Effect {
   private boolean canSneakAttack;
   private boolean isBlocking;
   private boolean applyOnHitEffects;
+  private boolean showPopoffs;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -42,6 +43,7 @@ public class Damage extends Effect {
     mods.setCanBeEvaded(canBeEvaded);
     mods.setCanBeBlocked(canBeBlocked);
     mods.setApplyOnHitEffects(applyOnHitEffects);
+    mods.setShowPopoffs(showPopoffs);
     if (canSneakAttack && StrifePlugin.getInstance().getStealthManager()
         .isStealthed(caster.getEntity())) {
       mods.setSneakAttack(true);
@@ -63,7 +65,7 @@ public class Damage extends Effect {
     }
     mods.setAttackMultiplier(mods.getAttackMultiplier() * statMultiplier);
 
-    Map<DamageType, Float> damage =  DamageUtil.buildDamage(caster, target, mods);
+    Map<DamageType, Float> damage = DamageUtil.buildDamage(caster, target, mods);
     DamageUtil.reduceDamage(caster, target, damage, mods);
     float finalDamage = DamageUtil.calculateFinalDamage(caster, target, damage, mods);
 
@@ -157,6 +159,14 @@ public class Damage extends Effect {
 
   public void setApplyOnHitEffects(boolean applyOnHitEffects) {
     this.applyOnHitEffects = applyOnHitEffects;
+  }
+
+  public boolean isShowPopoffs() {
+    return showPopoffs;
+  }
+
+  public void setShowPopoffs(boolean showPopoffs) {
+    this.showPopoffs = showPopoffs;
   }
 
   public boolean isBlocking() {

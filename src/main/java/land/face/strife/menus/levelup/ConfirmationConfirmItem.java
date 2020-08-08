@@ -73,7 +73,7 @@ public class ConfirmationConfirmItem extends MenuItem {
     event.getPlayer().closeInventory();
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     plugin.getChampionManager().savePendingStats(champion);
-    plugin.getChampionManager().updateAll(champion);
-    plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
+    plugin.getChampionManager().update(event.getPlayer());
+    plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
   }
 }

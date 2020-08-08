@@ -20,7 +20,7 @@ public class UniqueEntity {
   private int bonusExperience;
   private float experienceMultiplier;
   private Map<StrifeStat, Float> attributeMap;
-  private Set<String> factions = new HashSet<>();
+  private final Set<String> factions = new HashSet<>();
   private EntityAbilitySet abilitySet;
   private int baseLevel;
   private boolean showName;
@@ -177,14 +177,6 @@ public class UniqueEntity {
     this.followRange = followRange;
   }
 
-  public boolean isKnockbackImmune() {
-    return knockbackImmune;
-  }
-
-  public void setKnockbackImmune(boolean knockbackImmune) {
-    this.knockbackImmune = knockbackImmune;
-  }
-
   public boolean isIgnoreSneak() {
     return ignoreSneak;
   }
@@ -259,10 +251,6 @@ public class UniqueEntity {
 
   public Map<EquipmentSlot, String> getEquipment() {
     return equipment;
-  }
-
-  public String getEquipmentItem(EquipmentSlot slot) {
-    return equipment.get(slot);
   }
 
   public void setEquipment(Map<EquipmentSlot, String> equipment) {

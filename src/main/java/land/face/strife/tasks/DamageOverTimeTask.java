@@ -24,8 +24,10 @@ import static org.bukkit.potion.PotionEffectType.WITHER;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
 import org.bukkit.entity.LivingEntity;
@@ -33,16 +35,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class DamageOverTimeTask extends BukkitRunnable {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
-  private float WITHER_FLAT_DAMAGE;
-  private float BURN_FLAT_DAMAGE;
-  private float POISON_FLAT_DAMAGE;
-  private float POISON_PERCENT_MAX_HEALTH_DAMAGE;
+  private final float WITHER_FLAT_DAMAGE;
+  private final float BURN_FLAT_DAMAGE;
+  private final float POISON_FLAT_DAMAGE;
+  private final float POISON_PERCENT_MAX_HEALTH_DAMAGE;
 
-  private Set<LivingEntity> poisonedMobs = new HashSet<>();
-  private Set<LivingEntity> burningMobs = new HashSet<>();
-  private Set<LivingEntity> witheredMobs = new HashSet<>();
+  private final Set<LivingEntity> poisonedMobs = new HashSet<>();
+  private final Set<LivingEntity> burningMobs = new HashSet<>();
+  private final Set<LivingEntity> witheredMobs = new HashSet<>();
 
   public DamageOverTimeTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -70,62 +72,81 @@ public class DamageOverTimeTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    Iterator poisonIterator = poisonedMobs.iterator();
+    dealPoisonDamage();
+    dealWitherDamage();
+    dealFireDamage();
+  }
+
+  private void dealPoisonDamage() {
+    Iterator<LivingEntity> poisonIterator = poisonedMobs.iterator();
     while (poisonIterator.hasNext()) {
-      LivingEntity le = (LivingEntity) poisonIterator.next();
+      LivingEntity le = poisonIterator.next();
       if (le == null || !le.isValid() || !le.hasPotionEffect(POISON)) {
         poisonIterator.remove();
         continue;
       }
-      int poisonPower = le.getPotionEffect(POISON).getAmplifier() + 1;
-      double damage =
-          poisonPower * (POISON_FLAT_DAMAGE + le.getMaxHealth() * POISON_PERCENT_MAX_HEALTH_DAMAGE);
-      damage *=
-          1 - plugin.getStrifeMobManager().getStatMob(le).getStat(StrifeStat.POISON_RESIST) / 100;
+      int poisonPower = Objects.requireNonNull(le.getPotionEffect(POISON)).getAmplifier() + 1;
+      float damage = poisonPower * (POISON_FLAT_DAMAGE + (float) le.getMaxHealth() * POISON_PERCENT_MAX_HEALTH_DAMAGE);
+
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
+      damage *= 1 - mob.getStat(StrifeStat.POISON_RESIST) / 100;
       damage *= 0.25;
-      if (le.getHealth() <= damage) {
-        le.damage(damage);
-      } else {
-        le.setHealth(le.getHealth() - damage);
-      }
+      damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
+
+      dealDirectDamage(le, damage);
     }
-    Iterator witherIterator = witheredMobs.iterator();
+  }
+
+  private void dealWitherDamage() {
+    Iterator<LivingEntity> witherIterator = witheredMobs.iterator();
     while (witherIterator.hasNext()) {
-      LivingEntity le = (LivingEntity) witherIterator.next();
+      LivingEntity le = witherIterator.next();
       if (le == null || !le.isValid() || !le.hasPotionEffect(WITHER)) {
         witherIterator.remove();
         continue;
       }
       int witherPower = le.getPotionEffect(WITHER).getAmplifier() + 1;
-      double damage = witherPower * WITHER_FLAT_DAMAGE;
-      damage *=
-          1 - plugin.getStrifeMobManager().getStatMob(le).getStat(StrifeStat.WITHER_RESIST) / 100;
+      float damage = witherPower * WITHER_FLAT_DAMAGE;
+
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
+      damage *= 1 - mob.getStat(StrifeStat.WITHER_RESIST) / 100;
       damage *= 0.25;
-      if (le.getHealth() <= damage) {
-        le.damage(damage);
-      } else {
-        le.setHealth(le.getHealth() - damage);
-      }
+      damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
+
+      dealDirectDamage(le, damage);
     }
-    Iterator fireIterator = burningMobs.iterator();
-    while (fireIterator.hasNext()) {
-      LivingEntity le = (LivingEntity) fireIterator.next();
+  }
+
+  private void dealFireDamage() {
+    Iterator<LivingEntity> iterator = burningMobs.iterator();
+    while (iterator.hasNext()) {
+      LivingEntity le = iterator.next();
       if (le == null || !le.isValid() || le.getFireTicks() < 1) {
-        fireIterator.remove();
+        iterator.remove();
         continue;
       }
       if (le.hasPotionEffect(FIRE_RESISTANCE)) {
         continue;
       }
       float damage = BURN_FLAT_DAMAGE;
-      damage *= 1 - StatUtil.getFireResist(plugin.getStrifeMobManager().getStatMob(le), false) / 100;
-      damage = plugin.getBarrierManager().damageBarrier(
-          plugin.getStrifeMobManager().getStatMob(le), damage);
-      if (le.getHealth() <= damage) {
-        le.damage(damage);
-      } else {
-        le.setHealth(le.getHealth() - damage);
+
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
+      damage *= 1 - StatUtil.getFireResist(mob, false) / 100;
+      damage = plugin.getBarrierManager().damageBarrier(plugin.getStrifeMobManager().getStatMob(le), damage);
+      if (damage < 0.05) {
+        continue;
       }
+      damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
+
+      dealDirectDamage(le, damage);
+    }
+  }
+
+  private void dealDirectDamage(LivingEntity le, float damage) {
+    if (le.getHealth() <= damage) {
+      le.damage(damage);
+    } else {
+      le.setHealth(le.getHealth() - damage);
     }
   }
 }

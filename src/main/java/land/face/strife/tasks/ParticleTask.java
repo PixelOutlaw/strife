@@ -31,8 +31,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class ParticleTask extends BukkitRunnable {
 
-  private Map<LivingEntity, Set<ContinuousParticle>> continuousParticles = new ConcurrentHashMap<>();
-  private Map<LivingEntity, StrifeParticle> boundParticles = new ConcurrentHashMap<>();
+  private final Map<LivingEntity, Set<ContinuousParticle>> continuousParticles = new ConcurrentHashMap<>();
+  private final Map<LivingEntity, StrifeParticle> boundParticles = new ConcurrentHashMap<>();
   private static int tick = 0;
 
   @Override
@@ -41,30 +41,22 @@ public class ParticleTask extends BukkitRunnable {
     if (tick > 360) {
       tick = 1;
     }
-    for (LivingEntity le : continuousParticles.keySet()) {
-      if (!le.isValid() || continuousParticles.get(le).isEmpty()) {
-        continuousParticles.remove(le);
+
+    for (LivingEntity entity : continuousParticles.keySet()) {
+      if (!entity.isValid() || continuousParticles.get(entity).isEmpty()) {
+        continuousParticles.remove(entity);
         continue;
       }
-      Iterator iterator = continuousParticles.get(le).iterator();
-      while (iterator.hasNext()) {
-        ContinuousParticle particle = (ContinuousParticle) iterator.next();
-        if (particle.getTicksRemaining() < 1) {
-          iterator.remove();
-          //continuousParticles.get(le).remove(particle);
-          continue;
-        }
-        particle.getParticle().applyAtLocation(null, TargetingUtil
-            .getOriginLocation(le, particle.getParticle().getOrigin()));
-        particle.setTicksRemaining(particle.getTicksRemaining() - 1);
-      }
+      doContinuousParticles(entity);
     }
+
     for (LivingEntity le : boundParticles.keySet()) {
       if (!le.isValid()) {
         boundParticles.remove(le);
         continue;
       }
-      boundParticles.get(le).applyAtLocation(null, le.getLocation());
+      StrifeParticle particle = boundParticles.get(le);
+      particle.applyAtLocation(null, TargetingUtil.getOriginLocation(le, particle.getOrigin()));
     }
   }
 
@@ -101,5 +93,19 @@ public class ParticleTask extends BukkitRunnable {
 
   public static int getCurrentTick() {
     return tick;
+  }
+
+  private void doContinuousParticles(LivingEntity le) {
+    Iterator<ContinuousParticle> iterator = continuousParticles.get(le).iterator();
+    while (iterator.hasNext()) {
+      ContinuousParticle cParticle = iterator.next();
+      if (cParticle.getTicksRemaining() < 1) {
+        iterator.remove();
+        continue;
+      }
+      cParticle.getParticle().applyAtLocation(null,
+          TargetingUtil.getOriginLocation(le, cParticle.getParticle().getOrigin()));
+      cParticle.setTicksRemaining(cParticle.getTicksRemaining() - 1);
+    }
   }
 }

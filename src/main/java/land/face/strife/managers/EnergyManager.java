@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
@@ -23,13 +21,12 @@ import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Player;
 
 public class EnergyManager {
 
-  private StrifePlugin plugin;
-
+  private final StrifePlugin plugin;
   private final Map<UUID, Float> energyMap = new HashMap<>();
 
   public EnergyManager(StrifePlugin plugin) {
@@ -51,16 +48,16 @@ public class EnergyManager {
     float energy = getEnergy(mob);
     energy += amount;
     setEnergy(mob, energy);
-    updateFoodBar((Player) mob.getEntity(), mob.getStat(StrifeStat.ENERGY));
+    updateFoodBar((Player) mob.getEntity(), StatUtil.getMaximumEnergy(mob));
   }
 
   public float getEnergy(StrifeMob mob) {
     return energyMap.getOrDefault(mob.getEntity().getUniqueId(),
-        (mob.getStat(StrifeStat.ENERGY) * ((Player) mob.getEntity()).getFoodLevel()) / 20);
+        StatUtil.getMaximumEnergy(mob) * (((Player) mob.getEntity()).getFoodLevel()) / 20);
   }
 
   private void setEnergy(StrifeMob mob, float newEnergy) {
-    newEnergy = Math.min(newEnergy, mob.getStat(StrifeStat.ENERGY));
+    newEnergy = Math.min(newEnergy, StatUtil.getMaximumEnergy(mob));
     newEnergy = Math.max(0, newEnergy);
     energyMap.put(mob.getEntity().getUniqueId(), newEnergy);
   }

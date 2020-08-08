@@ -57,10 +57,10 @@ import org.bukkit.inventory.ItemStack;
 public class ShootListener implements Listener {
 
   private final StrifePlugin plugin;
-  private StrifeParticle flintlockSmoke;
-  private StrifeParticle flintlockFlare;
-  private AreaEffect flintlockHitscan;
-  private Damage flintlockDamage;
+  private final StrifeParticle flintlockSmoke;
+  private final StrifeParticle flintlockFlare;
+  private final AreaEffect flintlockHitscan;
+  private final Damage flintlockDamage;
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -72,8 +72,7 @@ public class ShootListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onPlayerArrowShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof Player) ||
-        !(event.getEntity() instanceof Arrow)) {
+    if (!(event.getEntity().getShooter() instanceof Player) || !(event.getEntity() instanceof Arrow)) {
       return;
     }
 
@@ -81,6 +80,7 @@ public class ShootListener implements Listener {
         .getStatMob((LivingEntity) event.getEntity().getShooter());
 
     event.setCancelled(true);
+    ((Player) event.getEntity().getShooter()).resetCooldown();
 
     ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
         .getEquipment()).getItemInMainHand();
@@ -154,6 +154,8 @@ public class ShootListener implements Listener {
     event.setCancelled(true);
 
     Player player = (Player) event.getEntity().getShooter();
+    player.resetCooldown();
+
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
 
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
@@ -237,9 +239,9 @@ public class ShootListener implements Listener {
     particle.setStyle(ParticleStyle.LINE);
     particle.setSize(2);
     particle.setRadius(0);
-    particle.setLineIncrement(0.25);
+    particle.setLineIncrement(0.25f);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.smoke-quantity", 1));
-    particle.setLineOffset(plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));
+    particle.setLineOffset((float) plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.smoke-speed", 2f));
     particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.smoke-spread", 2f));
     return particle;
@@ -264,9 +266,9 @@ public class ShootListener implements Listener {
     particle.setStyle(ParticleStyle.LINE);
     particle.setSize(1);
     particle.setRadius(0);
-    particle.setLineIncrement(0.25);
+    particle.setLineIncrement(0.25f);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.flare-quantity", 1));
-    particle.setLineOffset(plugin.getSettings().getDouble("config.flintlock.flare-offset", 1));
+    particle.setLineOffset((float) plugin.getSettings().getDouble("config.flintlock.flare-offset", 1));
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.flare-speed", 1f));
     particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.flare-spread", 1f));
     return particle;

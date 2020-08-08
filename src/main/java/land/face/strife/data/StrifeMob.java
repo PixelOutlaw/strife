@@ -24,11 +24,10 @@ import org.bukkit.entity.Player;
 
 public class StrifeMob {
 
-  private final static int BUFF_CHECK_FREQUENCY_MS = 100;
+  private final static int CACHE_DELAY = 100;
 
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
-  private final Map<StrifeStat, Float> tempBonuses = new HashMap<>();
 
   private final WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
@@ -51,7 +50,7 @@ public class StrifeMob {
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
 
-  private long buffCacheStamp = System.currentTimeMillis();
+  private long cacheStamp = 1L;
 
   public StrifeMob(Champion champion) {
     this.livingEntity = new WeakReference<>(champion.getPlayer());
@@ -120,13 +119,10 @@ public class StrifeMob {
   }
 
   public float getStat(StrifeStat stat) {
-    if (runningBuffs.isEmpty()) {
-      return baseStats.getOrDefault(stat, 0f);
-    }
-    if (System.currentTimeMillis() - buffCacheStamp > BUFF_CHECK_FREQUENCY_MS) {
+    if (System.currentTimeMillis() >= cacheStamp) {
       statCache.clear();
       statCache.putAll(getFinalStats());
-      buffCacheStamp = System.currentTimeMillis();
+      cacheStamp = System.currentTimeMillis() + CACHE_DELAY;
     }
     return statCache.getOrDefault(stat, 0f);
   }
@@ -180,7 +176,10 @@ public class StrifeMob {
   }
 
   public Map<StrifeStat, Float> getFinalStats() {
-    return StatUpdateManager.combineMaps(baseStats, getBuffStats(), tempBonuses);
+    if (getChampion() != null) {
+      return StatUpdateManager.combineMaps(getChampion().getCombinedCache(), getBuffStats());
+    }
+    return StatUpdateManager.combineMaps(baseStats, getBuffStats());
   }
 
   public Map<StrifeStat, Float> getBaseStats() {
@@ -190,6 +189,7 @@ public class StrifeMob {
   public void setStats(Map<StrifeStat, Float> stats) {
     baseStats.clear();
     baseStats.putAll(stats);
+    cacheStamp = 1L;
   }
 
   public Buff hasBuff(String buffId, UUID source) {

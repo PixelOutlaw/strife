@@ -20,9 +20,11 @@ package land.face.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
@@ -33,14 +35,18 @@ import org.bukkit.entity.Player;
 
 public class Champion {
 
-  private final Map<StrifeStat, Float> attributeBase;
-  private final Map<StrifeStat, Float> attributeLevelPoint;
-  private final Map<StrifeStat, Float> combinedAttributeCache;
-  private final ChampionSaveData saveData;
   private final PlayerEquipmentCache equipmentCache;
+  private final ChampionSaveData saveData;
+  private final CombatDetailsContainer detailsContainer = new CombatDetailsContainer();
+
+  private final Map<StrifeStat, Float> baseStats;
+  private final Map<StrifeStat, Float> levelPointStats;
+  private final Map<StrifeStat, Float> pathStats;
+  private final Set<StrifeTrait> pathTraits;
+
+  private final Map<StrifeStat, Float> combinedStatMap;
 
   private Player player;
-  private CombatDetailsContainer detailsContainer = new CombatDetailsContainer();
 
   private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
       .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
@@ -51,44 +57,54 @@ public class Champion {
       .build();
 
   public Champion(Player player, ChampionSaveData saveData) {
-    this.attributeBase = new HashMap<>();
-    this.attributeLevelPoint = new HashMap<>();
-    this.combinedAttributeCache = new HashMap<>();
-    this.equipmentCache = new PlayerEquipmentCache();
     this.player = player;
     this.saveData = saveData;
+
+    baseStats = new HashMap<>();
+    levelPointStats = new HashMap<>();
+    combinedStatMap = new HashMap<>();
+    pathStats = new HashMap<>();
+    equipmentCache = new PlayerEquipmentCache();
+    pathTraits = new HashSet<>();
   }
 
   public Map<StrifeStat, Float> getCombinedCache() {
-    return new HashMap<>(combinedAttributeCache);
+    return new HashMap<>(combinedStatMap);
   }
 
   private void clearCombinedCache() {
-    combinedAttributeCache.clear();
-  }
-
-  private void clearAttributeCaches() {
-    attributeBase.clear();
-    attributeLevelPoint.clear();
+    combinedStatMap.clear();
   }
 
   public void recombineCache() {
     clearCombinedCache();
-    combinedAttributeCache.putAll(StatUpdateManager.combineMaps(
-        attributeBase,
-        attributeLevelPoint,
-        equipmentCache.getCombinedStats()
+    combinedStatMap.putAll(StatUpdateManager.combineMaps(
+        baseStats,
+        levelPointStats,
+        pathStats,
+        equipmentCache.getCombinedStats(),
+        StrifePlugin.getInstance().getBoostManager().getStats()
     ));
   }
 
-  public void setAttributeBaseCache(Map<StrifeStat, Float> map) {
-    attributeBase.clear();
-    attributeBase.putAll(map);
+  public void setPathStats(Map<StrifeStat, Float> map) {
+    pathStats.clear();
+    pathStats.putAll(map);
   }
 
-  public void setAttributeLevelPointCache(Map<StrifeStat, Float> map) {
-    attributeLevelPoint.clear();
-    attributeLevelPoint.putAll(map);
+  public void setPathTraits(Set<StrifeTrait> traits) {
+    pathTraits.clear();
+    pathTraits.addAll(traits);
+  }
+
+  public void setBaseStats(Map<StrifeStat, Float> map) {
+    baseStats.clear();
+    baseStats.putAll(map);
+  }
+
+  public void setLevelPointStats(Map<StrifeStat, Float> map) {
+    levelPointStats.clear();
+    levelPointStats.putAll(map);
   }
 
   public ChampionSaveData getSaveData() {
@@ -124,7 +140,7 @@ public class Champion {
       recombineCache();
     }
     return saveData.getSkillLevel(type) +
-        combinedAttributeCache.getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0f);
+        combinedStatMap.getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0f);
   }
 
   public int getUnusedStatPoints() {
@@ -187,6 +203,14 @@ public class Champion {
     return equipmentCache;
   }
 
+  public Map<StrifeStat, Float> getPathStats() {
+    return pathStats;
+  }
+
+  public Set<StrifeTrait> getPathTraits() {
+    return pathTraits;
+  }
+
   public Map<TriggerType, Set<LoreAbility>> getLoreAbilities() {
     return equipmentCache.getCombinedAbilities();
   }
@@ -196,6 +220,6 @@ public class Champion {
   }
 
   public boolean hasTrait (StrifeTrait trait) {
-    return equipmentCache.getCombinedTraits().contains(trait);
+    return equipmentCache.getCombinedTraits().contains(trait) || pathTraits.contains(trait);
   }
 }

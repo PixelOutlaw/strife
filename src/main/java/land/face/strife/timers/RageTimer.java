@@ -105,10 +105,12 @@ public class RageTimer extends BukkitRunnable {
   }
 
   public void bumpRage(float amount) {
-    ticksRemaining = Math.min(ticksRemaining + amount, mob.getStat(StrifeStat.MAXIMUM_RAGE));
+    ticksRemaining = Math.max(0, Math.min(ticksRemaining + amount, mob.getStat(StrifeStat.MAXIMUM_RAGE)));
     sendBorder(ticksRemaining / mob.getStat(StrifeStat.MAXIMUM_RAGE));
     heartbeat = 0;
-    graceTicks = MAX_GRACE_TICKS;
+    if (amount >= 0) {
+      graceTicks = MAX_GRACE_TICKS;
+    }
   }
 
   public float getRage() {

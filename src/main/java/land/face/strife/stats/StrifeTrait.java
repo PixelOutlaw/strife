@@ -11,6 +11,9 @@ public enum StrifeTrait {
   NO_CRIT_MULT("Critical Strikes Do No Extra Damage"),
   ACCURATE_CHARGED("Fully Charged Hits Cannot Miss"),
   ACCURATE_CRITS("Critical Strikes Cannot Miss"),
+  NO_ENERGY_BASICS("Basic Attacks Cost No Energy"),
+  ENERGY_ABSORB("20% Of Damage Taken From Energy"),
+  NO_ENERGY_REGEN("Energy Does Not Regenerate"),
   SOUL_FLAME("Passive Effect - Blue Flame");
 
   // TODO: We map String to StrifeStat, why not let the user

@@ -60,7 +60,7 @@ public class UniqueSplashListener implements Listener {
       }
 
       if (blockManager.rollBlock(defender, false)) {
-        blockManager.blockFatigue(defendEntity.getUniqueId(), 1.0, false);
+        blockManager.blockFatigue(defendEntity, 1.0, false);
         blockManager.bumpRunes(defender);
         DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);

@@ -44,6 +44,8 @@ import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
 import land.face.strife.commands.UniqueEntityCommand;
+import land.face.strife.data.LevelPath;
+import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
@@ -107,6 +109,7 @@ import land.face.strife.managers.LoreAbilityManager;
 import land.face.strife.managers.MinionManager;
 import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
+import land.face.strife.managers.PathManager;
 import land.face.strife.managers.RageManager;
 import land.face.strife.managers.SkillExperienceManager;
 import land.face.strife.managers.SoulManager;
@@ -122,6 +125,7 @@ import land.face.strife.menus.abilities.AbilityPickerPickerItem;
 import land.face.strife.menus.abilities.AbilityPickerPickerMenu;
 import land.face.strife.menus.levelup.ConfirmationMenu;
 import land.face.strife.menus.levelup.LevelupMenu;
+import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.menus.stats.StatsMenu;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -180,6 +184,7 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration equipmentYAML;
   private VersionedSmartYamlConfiguration conditionYAML;
   private VersionedSmartYamlConfiguration effectYAML;
+  private VersionedSmartYamlConfiguration pathYAML;
   private VersionedSmartYamlConfiguration abilityYAML;
   private VersionedSmartYamlConfiguration loreAbilityYAML;
   private VersionedSmartYamlConfiguration buffsYAML;
@@ -215,6 +220,7 @@ public class StrifePlugin extends FacePlugin {
   private LoreAbilityManager loreAbilityManager;
   private AbilityIconManager abilityIconManager;
   private BuffManager buffManager;
+  private PathManager pathManager;
   private CombatStatusManager combatStatusManager;
   private SpawnerManager spawnerManager;
   private MobModManager mobModManager;
@@ -237,6 +243,7 @@ public class StrifePlugin extends FacePlugin {
   private AbilityPickerPickerMenu abilitySubcategoryMenu;
   private Map<String, AbilityPickerMenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
+  private Map<Path, PathMenu> pathMenus = new HashMap<>();
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
 
@@ -266,6 +273,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
     configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
     configurations.add(abilityYAML = defaultSettingsLoad("abilities.yml"));
+    configurations.add(pathYAML = defaultSettingsLoad("paths.yml"));
     configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
     configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
     configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
@@ -318,6 +326,7 @@ public class StrifePlugin extends FacePlugin {
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     buffManager = new BuffManager();
+    pathManager = new PathManager();
     combatStatusManager = new CombatStatusManager(this);
 
     MenuListener.getInstance().register(this);
@@ -341,6 +350,7 @@ public class StrifePlugin extends FacePlugin {
     buildConditions();
     buildEffects();
     buildAbilities();
+    buildPaths();
     buildLoreAbilities();
 
     buildUniqueEnemies();
@@ -536,13 +546,16 @@ public class StrifePlugin extends FacePlugin {
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu();
+    for (Path path : LevelPath.PATH_VALUES) {
+      pathMenus.put(path, new PathMenu(this, path));
+    }
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      getChampionManager().updateAll(championManager.getChampion(player));
-      statUpdateManager.updateAttributes(player);
+      statUpdateManager.updateVanillaAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
     }
+    getChampionManager().updateAll();
 
     DamageUtil.refresh();
 
@@ -599,6 +612,16 @@ public class StrifePlugin extends FacePlugin {
       }
       ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
       abilityManager.loadAbility(key, cs);
+    }
+  }
+
+  private void buildPaths() {
+    for (String key : pathYAML.getKeys(false)) {
+      if (!pathYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = pathYAML.getConfigurationSection(key);
+      pathManager.loadPath(key, cs);
     }
   }
 
@@ -717,7 +740,6 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
-      uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", false));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
@@ -964,6 +986,10 @@ public class StrifePlugin extends FacePlugin {
     return buffManager;
   }
 
+  public PathManager getPathManager() {
+    return pathManager;
+  }
+
   public MobModManager getMobModManager() {
     return mobModManager;
   }
@@ -1022,6 +1048,10 @@ public class StrifePlugin extends FacePlugin {
 
   public StatsMenu getStatsMenu() {
     return statsMenu;
+  }
+
+  public PathMenu getPathMenu(Path path) {
+    return pathMenus.get(path);
   }
 
   public EnergyRegenTask getEnergyRegenTask() {

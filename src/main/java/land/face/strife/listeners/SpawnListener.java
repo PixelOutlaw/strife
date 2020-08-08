@@ -216,7 +216,7 @@ public class SpawnListener implements Listener {
   }
 
   private void setEntityAttributes(StrifeMob strifeMob, LivingEntity entity) {
-    plugin.getStatUpdateManager().updateAttributes(strifeMob);
+    plugin.getStatUpdateManager().updateVanillaAttributes(strifeMob);
     double health = entity.getAttribute(GENERIC_MAX_HEALTH).getBaseValue();
     if (entity instanceof Slime) {
       health *= 0.6 + (double) ((Slime) entity).getSize() / 3.0;

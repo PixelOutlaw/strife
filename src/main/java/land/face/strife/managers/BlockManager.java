@@ -18,18 +18,24 @@
  */
 package land.face.strife.managers;
 
-import java.util.HashMap;
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
+import java.util.Set;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BlockData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.LogUtil;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -39,7 +45,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class BlockManager {
 
-  private final Map<UUID, BlockData> blockDataMap = new HashMap<>();
+  private final Map<LivingEntity, BlockData> blockDataMap = new WeakHashMap<>();
   private final Random random = new Random();
 
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.COARSE_DIRT);
@@ -49,10 +55,69 @@ public class BlockManager {
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
   private static final double MAX_BLOCK_CHANCE = 0.6;
 
-  public boolean isAttackBlocked(StrifeMob attacker, StrifeMob defender, float attackMult,
-      AttackType attackType, boolean isBlocking) {
+  public void tickHolograms() {
+
+    Iterator<LivingEntity> iterator = blockDataMap.keySet().iterator();
+
+    while (iterator.hasNext()) {
+      LivingEntity le = iterator.next();
+
+      if (le == null) {
+        iterator.remove();
+        continue;
+      }
+
+      BlockData blockData = blockDataMap.get(le);
+
+      if (!le.isValid()) {
+        for (Hologram holo : blockData.getRuneHolograms()) {
+          holo.delete();
+        }
+        iterator.remove();
+        continue;
+      }
+
+      if (blockData.getRunes() < blockData.getRuneHolograms().size()) {
+        while (blockData.getRunes() < blockData.getRuneHolograms().size()) {
+          Hologram hologram = getRandomFromCollection(blockData.getRuneHolograms());
+          le.getWorld().playSound(hologram.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
+          le.getWorld().spawnParticle(
+              Particle.ITEM_CRACK,
+              hologram.getLocation(),
+              20, 0, 0, 0, 0.07f,
+              BLOCK_DATA
+          );
+          blockData.getRuneHolograms().remove(hologram);
+          hologram.delete();
+        }
+      } else {
+        while (blockData.getRunes() > blockData.getRuneHolograms().size() && blockData.getRuneHolograms().size() < 6) {
+          Hologram hologram = HologramsAPI.createHologram(StrifePlugin.getInstance(), le.getEyeLocation());
+          hologram.appendItemLine(new ItemStack(Material.COARSE_DIRT));
+          blockData.getRuneHolograms().add(hologram);
+        }
+      }
+      orbitRunes(le.getLocation().clone().add(0, 1, 0), blockData.getRuneHolograms());
+    }
+  }
+
+  private void orbitRunes(Location center, Set<Hologram> runeHolograms) {
+    float step = 360f / runeHolograms.size();
+    float start = ParticleTask.getCurrentTick();
+    int index = 0;
+    for (Hologram holo : runeHolograms) {
+      float radian1 = (float) Math.toRadians(start + step * index);
+      Location loc = center.clone();
+      loc.add(Math.cos(radian1), 0, Math.sin(radian1));
+      holo.teleport(loc);
+      index++;
+    }
+  }
+
+  public boolean isAttackBlocked(StrifeMob attacker, StrifeMob defender, float attackMult, AttackType attackType,
+      boolean isBlocking) {
     if (rollBlock(defender, isBlocking)) {
-      blockFatigue(defender.getEntity().getUniqueId(), attackMult, isBlocking);
+      blockFatigue(defender.getEntity(), attackMult, isBlocking);
       bumpRunes(defender);
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
       DamageUtil.doBlock(attacker, defender);
@@ -69,9 +134,8 @@ public class BlockManager {
     if (strifeMob.getStat(StrifeStat.BLOCK) < 1) {
       return false;
     }
-    UUID uuid = strifeMob.getEntity().getUniqueId();
     updateStoredBlock(strifeMob);
-    double blockChance = Math.min(blockDataMap.get(uuid).getStoredBlock() / 100, MAX_BLOCK_CHANCE);
+    double blockChance = Math.min(blockDataMap.get(strifeMob.getEntity()).getStoredBlock() / 100, MAX_BLOCK_CHANCE);
     if (isBlocking) {
       blockChance *= 2;
     }
@@ -79,87 +143,72 @@ public class BlockManager {
     return random.nextDouble() < blockChance;
   }
 
-  public long getMillisSinceBlock(UUID uuid) {
-    return System.currentTimeMillis() - blockDataMap.get(uuid).getLastHit();
+  public long getMillisSinceBlock(LivingEntity livingEntity) {
+    return System.currentTimeMillis() - blockDataMap.get(livingEntity).getLastHit();
   }
 
-  public double getSecondsSinceBlock(UUID uuid) {
-    return ((double) getMillisSinceBlock(uuid)) / 1000;
+  public double getSecondsSinceBlock(LivingEntity livingEntity) {
+    return ((double) getMillisSinceBlock(livingEntity)) / 1000;
   }
 
-  public int getEarthRunes(UUID uuid) {
-    if (!blockDataMap.containsKey(uuid)) {
+  public int getEarthRunes(LivingEntity livingEntity) {
+    if (!blockDataMap.containsKey(livingEntity)) {
       return 0;
     }
-    return blockDataMap.get(uuid).getRunes();
+    return blockDataMap.get(livingEntity).getRunes();
   }
 
   public void setEarthRunes(StrifeMob mob, int runes) {
+    if (!blockDataMap.containsKey(mob.getEntity())) {
+      BlockData data = new BlockData(0, mob.getStat(StrifeStat.BLOCK));
+      blockDataMap.put(mob.getEntity(), data);
+    }
+    BlockData data = blockDataMap.get(mob.getEntity());
     int maxRunes = Math.round(mob.getStat(StrifeStat.MAX_EARTH_RUNES));
-    if (maxRunes == 0) {
-      blockDataMap.remove(mob.getEntity().getUniqueId());
+    if (maxRunes < 1 || mob.getStat(StrifeStat.EARTH_DAMAGE) < 1) {
+      data.setRunes(0);
       return;
     }
-    UUID uuid = mob.getEntity().getUniqueId();
-    if (!blockDataMap.containsKey(uuid)) {
-      if (maxRunes < 1) {
-        return;
-      }
-      BlockData data = new BlockData(0, mob.getStat(StrifeStat.BLOCK));
-      blockDataMap.put(mob.getEntity().getUniqueId(), data);
-    }
-    blockDataMap.get(uuid).setRunes(Math.max(Math.min(runes, maxRunes), 0));
+    blockDataMap.get(mob.getEntity()).setRunes(Math.max(Math.min(runes, maxRunes), 0));
   }
 
   public void bumpRunes(StrifeMob mob) {
     if (mob.getStat(StrifeStat.EARTH_DAMAGE) < 1) {
       return;
     }
-    int runes = StrifePlugin.getInstance().getBlockManager()
-        .getEarthRunes(mob.getEntity().getUniqueId());
-    StrifePlugin.getInstance().getBlockManager().setEarthRunes(mob, runes + 1);
+    int runes = getEarthRunes(mob.getEntity());
+    setEarthRunes(mob, runes + 1);
   }
 
-  public int consumeEarthRune(StrifeMob attacker, LivingEntity defender) {
-    int runes = getEarthRunes(attacker.getEntity().getUniqueId());
-    if (runes == 0) {
-      return 0;
-    }
-    setEarthRunes(attacker, runes - 1);
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
-    defender.getWorld().spawnParticle(
-        Particle.ITEM_CRACK,
-        defender.getLocation().clone().add(0, defender.getEyeHeight() / 2, 0),
-        20 + 20 * runes, 0, 0, 0, 0.1f,
-        BLOCK_DATA
-    );
-    return runes + 1;
-  }
-
-  private void updateStoredBlock(StrifeMob strifeMob) {
-    UUID uuid = strifeMob.getEntity().getUniqueId();
-    if (blockDataMap.get(uuid) == null) {
+  private void updateStoredBlock(StrifeMob mob) {
+    if (blockDataMap.get(mob.getEntity()) == null) {
       BlockData data = new BlockData(System.currentTimeMillis() - DEFAULT_BLOCK_MILLIS, 0);
-      blockDataMap.put(uuid, data);
+      blockDataMap.put(mob.getEntity(), data);
     }
-    double maximumBlock = strifeMob.getStat(StrifeStat.BLOCK);
-    double block = blockDataMap.get(uuid).getStoredBlock();
+    double maximumBlock = mob.getStat(StrifeStat.BLOCK);
+    double block = blockDataMap.get(mob.getEntity()).getStoredBlock();
     double restoredBlock = FLAT_BLOCK_S + PERCENT_BLOCK_S * maximumBlock;
-    if (strifeMob.getStat(StrifeStat.BLOCK_RECOVERY) > 1) {
-      restoredBlock *= 1 + strifeMob.getStat(StrifeStat.BLOCK_RECOVERY) / 100;
+    if (mob.getStat(StrifeStat.BLOCK_RECOVERY) > 1) {
+      restoredBlock *= 1 + mob.getStat(StrifeStat.BLOCK_RECOVERY) / 100;
     }
 
-    block += restoredBlock * getSecondsSinceBlock(uuid);
-    blockDataMap.get(uuid).setStoredBlock(Math.min(block, maximumBlock));
-    blockDataMap.get(uuid).setLastHit(System.currentTimeMillis());
+    block += restoredBlock * getSecondsSinceBlock(mob.getEntity());
+    blockDataMap.get(mob.getEntity()).setStoredBlock(Math.min(block, maximumBlock));
+    blockDataMap.get(mob.getEntity()).setLastHit(System.currentTimeMillis());
     LogUtil.printDebug("New block before clamp: " + block);
   }
 
-  public void blockFatigue(UUID uuid, double attackMultipler, boolean isBlocking) {
-    BlockData data = blockDataMap.get(uuid);
+  public void blockFatigue(LivingEntity livingEntity, double attackMultipler, boolean isBlocking) {
+    BlockData data = blockDataMap.get(livingEntity);
     LogUtil.printDebug("Pre reduction block: " + data.getStoredBlock());
     double blockFatigue = attackMultipler * (isBlocking ? 50D : 100D);
     data.setStoredBlock(Math.max(0, data.getStoredBlock() - blockFatigue));
     LogUtil.printDebug("Post reduction block: " + data.getStoredBlock());
+  }
+
+  public static <T> T getRandomFromCollection(Collection<T> coll) {
+    int num = (int) (Math.random() * coll.size());
+    for(T t: coll) if (--num < 0) return t;
+    throw new AssertionError();
   }
 }

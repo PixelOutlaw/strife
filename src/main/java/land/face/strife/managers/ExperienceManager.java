@@ -31,6 +31,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
+import org.bukkit.EntityEffect;
 import org.bukkit.entity.Player;
 
 public class ExperienceManager implements StrifeExperienceManager {
@@ -65,6 +66,7 @@ public class ExperienceManager implements StrifeExperienceManager {
 
     double faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
 
+    boolean levelUp = false;
     while (amount > faceExpToLevel) {
       player.setExp(0);
       amount -= faceExpToLevel;
@@ -72,14 +74,14 @@ public class ExperienceManager implements StrifeExperienceManager {
       Champion champion = plugin.getChampionManager().getChampion(player);
       if (player.getLevel() < 100) {
         player.setLevel(player.getLevel() + 1);
-        pushLevelUpSpam(player, player.getLevel() % 5 == 0);
+        pushLevelUpSpam(player, player.getLevel() % 5 == 0, !levelUp);
       } else {
         champion.setBonusLevels(champion.getBonusLevels() + 1);
-        pushBonusLevelUpSpam(player, champion.getBonusLevels(),
-            champion.getBonusLevels() % 10 == 0);
+        pushBonusLevelUpSpam(player, champion.getBonusLevels(), champion.getBonusLevels() % 10 == 0);
       }
       maxFaceExp = (double) getMaxFaceExp(player.getLevel());
       faceExpToLevel = maxFaceExp;
+      levelUp = true;
     }
 
     double newExpPercent = currentExpPercent + amount / maxFaceExp;
@@ -94,23 +96,19 @@ public class ExperienceManager implements StrifeExperienceManager {
     return plugin.getLevelingRate().get(level);
   }
 
-  private void pushLevelUpSpam(Player player, boolean announce) {
+  private void pushLevelUpSpam(Player player, boolean announce, boolean showTotem) {
+    if (showTotem) {
+      player.playEffect(EntityEffect.TOTEM_RESURRECT);
+    }
     MessageUtils.sendMessage(player,
         "&a&lCongratulations! You have reached level &f" + player.getLevel() + "&a!");
     MessageUtils.sendMessage(player,
         "&6You gained a Levelpoint! Use &f/levelup &6to spend levelpoints and raise your stats!");
-    String upperTitle = TextUtils.color("&aLEVEL UP!");
-    String lowerTitle = TextUtils.color("&aYou've reached &fLevel " + player.getLevel());
-    TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
     if (announce) {
-      String discordMessage =
-          ":video_game: **" + player.getDisplayName() + " has reached level " + player.getLevel()
-              + "!**";
+      String discordMessage = ":levelup: **" + player.getDisplayName() + " has reached level " + player.getLevel() + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);
-      String chatMessage =
-          "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" + player
-              .getLevel() + "&a!";
+      String chatMessage = "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" + player.getLevel() + "&a!";
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p, chatMessage);
       }
@@ -124,7 +122,7 @@ public class ExperienceManager implements StrifeExperienceManager {
         "&eYour stats have slightly increased!");
     String upperTitle = TextUtils.color("&eBONUS LEVEL UP!");
     String lowerTitle = TextUtils.color("&eOh dang, you got stronger!");
-    TitleUtils.sendTitle(player, upperTitle, lowerTitle, 20, 2, 2);
+    TitleUtils.sendTitle(player, upperTitle, lowerTitle, 40, 2, 2);
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p,

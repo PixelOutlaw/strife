@@ -45,6 +45,7 @@ import land.face.strife.data.conditions.LoreCondition;
 import land.face.strife.data.conditions.MovingCondition;
 import land.face.strife.data.conditions.NearbyEntitiesCondition;
 import land.face.strife.data.conditions.PotionCondition;
+import land.face.strife.data.conditions.RageCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.StealthCondition;
@@ -62,6 +63,7 @@ import land.face.strife.data.effects.Bleed;
 import land.face.strife.data.effects.BuffEffect;
 import land.face.strife.data.effects.CancelEndlessEffect;
 import land.face.strife.data.effects.ChangeEnergy;
+import land.face.strife.data.effects.ChangeRage;
 import land.face.strife.data.effects.Charm;
 import land.face.strife.data.effects.ChaserEffect;
 import land.face.strife.data.effects.ConsoleCommand;
@@ -82,7 +84,6 @@ import land.face.strife.data.effects.ForceStat;
 import land.face.strife.data.effects.ForceTarget;
 import land.face.strife.data.effects.Heal;
 import land.face.strife.data.effects.Ignite;
-import land.face.strife.data.effects.IncreaseRage;
 import land.face.strife.data.effects.Lightning;
 import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.ModifyProjectile;
@@ -123,6 +124,7 @@ import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -177,8 +179,7 @@ public class EffectManager {
         executeEffectList(caster, targets, finalTaskEffects), waitTicks);
   }
 
-  private void executeEffectList(StrifeMob caster, Set<LivingEntity> targets,
-      List<Effect> effectList) {
+  private void executeEffectList(StrifeMob caster, Set<LivingEntity> targets, List<Effect> effectList) {
     LogUtil.printDebug("Effect task started - " + effectList.toString());
     if (!caster.getEntity().isValid()) {
       LogUtil.printDebug("- Task cancelled, caster is dead");
@@ -195,24 +196,35 @@ public class EffectManager {
 
   public void execute(Effect effect, StrifeMob caster, LivingEntity target) {
     if (effect instanceof LocationEffect) {
-      if (TargetingUtil.isDetectionStand(target)) {
-        if (PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions())) {
-          ((LocationEffect) effect).applyAtLocation(caster, TargetingUtil.getOriginLocation(target,
-              ((LocationEffect) effect).getOrigin()));
-        }
+      if (!PlayerDataUtil.areConditionsMet(caster, target, effect.getConditions())) {
         return;
       }
-    } else {
-      StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(target);
-      if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
-        return;
+      LocationEffect locEffect = (LocationEffect) effect;
+      LivingEntity targetEntity = effect.isForceTargetCaster() ? caster.getEntity() : target;
+      Location location = TargetingUtil.getOriginLocation(targetEntity, locEffect.getOrigin());
+      if (location != null) {
+        locEffect.applyAtLocation(caster, location);
       }
-    }
-    if (effect.isForceTargetCaster()) {
-      applyEffectIfConditionsMet(effect, caster, null);
       return;
     }
-    applyEffectIfConditionsMet(effect, caster, plugin.getStrifeMobManager().getStatMob(target));
+
+    StrifeMob targetMob;
+    if (caster.getEntity() == target) {
+      targetMob = caster;
+    } else {
+      targetMob = plugin.getStrifeMobManager().getStatMob(target);
+    }
+
+    if (effect.isForceTargetCaster()) {
+      applyEffectIfConditionsMet(effect, caster, targetMob);
+      return;
+    }
+
+    if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+      return;
+    }
+
+    applyEffectIfConditionsMet(effect, caster, targetMob);
   }
 
   private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {
@@ -267,8 +279,8 @@ public class EffectManager {
         ((ChangeEnergy) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case INCREASE_RAGE:
-        effect = new IncreaseRage();
-        ((IncreaseRage) effect).setAmount((float) cs.getDouble("amount", 1));
+        effect = new ChangeRage();
+        ((ChangeRage) effect).setAmount((float) cs.getDouble("amount", 1));
         break;
       case DAMAGE:
         effect = new Damage();
@@ -280,6 +292,7 @@ public class EffectManager {
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
         ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.7));
+        ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
         ((Damage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
@@ -725,16 +738,16 @@ public class EffectManager {
           ((StrifeParticle) effect).setArcOffset(cs.getDouble("arc-offset", 0));
         }
         if (style == ParticleStyle.ORBIT) {
-          ((StrifeParticle) effect).setOrbitSpeed(cs.getDouble("orbit-speed", 1));
+          ((StrifeParticle) effect).setOrbitSpeed((float) cs.getDouble("orbit-speed", 1));
         }
         if (style == ParticleStyle.LINE) {
-          ((StrifeParticle) effect).setOrbitSpeed(cs.getDouble("orbit-speed", 1));
-          ((StrifeParticle) effect).setEndOrbitSpeed(cs.getDouble("end-orbit-speed", 2));
-          ((StrifeParticle) effect).setRadius(cs.getDouble("radius", -1));
-          ((StrifeParticle) effect).setEndRadius(cs.getDouble("end-radius", 1));
+          ((StrifeParticle) effect).setOrbitSpeed((float) cs.getDouble("orbit-speed", 1));
+          ((StrifeParticle) effect).setRadius((float) cs.getDouble("radius", -1));
+          ((StrifeParticle) effect).setEndRadius((float) cs.getDouble("end-radius", 1));
           ((StrifeParticle) effect).setLineVertical(cs.getBoolean("vertical", false));
-          ((StrifeParticle) effect).setLineIncrement(cs.getDouble("line-increment", 0.25));
-          ((StrifeParticle) effect).setLineOffset(cs.getDouble("line-offset", 0));
+          ((StrifeParticle) effect).setLineIncrement((float) cs.getDouble("line-increment", 0.25));
+          ((StrifeParticle) effect).setLineOffset((float) cs.getDouble("line-offset", 0));
+          ((StrifeParticle) effect).setAngleRotation((float) cs.getDouble("line-angle-offset", 1));
         }
         ((StrifeParticle) effect).setQuantity(cs.getInt("quantity", 10));
         ((StrifeParticle) effect).setTickDuration(cs.getInt("duration-ticks", 0));
@@ -743,7 +756,7 @@ public class EffectManager {
         ((StrifeParticle) effect).setSpread((float) cs.getDouble("spread", 1));
         ((StrifeParticle) effect).setOrigin(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((StrifeParticle) effect).setSize(cs.getDouble("size", 1));
+        ((StrifeParticle) effect).setSize((float) cs.getDouble("size", 1));
         String materialType = cs.getString("material", "");
         if (StringUtils.isNotBlank(materialType)) {
           ((StrifeParticle) effect).setItemData(new ItemStack(Material.getMaterial(materialType)));
@@ -839,6 +852,10 @@ public class EffectManager {
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);
         condition = new BarrierCondition(percent);
+        break;
+      case RAGE:
+        boolean percent4 = cs.getBoolean("percentage", false);
+        condition = new RageCondition(percent4);
         break;
       case ENERGY:
         boolean percent2 = cs.getBoolean("percentage", false);

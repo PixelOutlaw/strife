@@ -31,6 +31,7 @@ public enum StrifeStat {
   REGENERATION("Life Regeneration"),
 
   ENERGY("Maximum Energy"),
+  ENERGY_MULT(),
   ENERGY_REGEN("Energy Regeneration"),
   ENERGY_ON_HIT("Energy On Hit"),
   ENERGY_ON_KILL("Energy On Kill"),
@@ -140,6 +141,7 @@ public enum StrifeStat {
 
   MELEE_PHYSICAL_MULT(),
   RANGED_PHYSICAL_MULT(),
+  PHYSICAL_MULT(),
   MAGIC_MULT(),
 
   DAMAGE_MULT(),
