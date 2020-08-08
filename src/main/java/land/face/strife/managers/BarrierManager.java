@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -52,8 +53,7 @@ public class BarrierManager {
       updateShieldDisplay(strifeMob);
       return;
     }
-    setEntityBarrier(strifeMob.getEntity().getUniqueId(),
-        strifeMob.getStat(StrifeStat.BARRIER));
+    setEntityBarrier(strifeMob.getEntity().getUniqueId(), StatUtil.getMaximumBarrier(strifeMob));
     updateShieldDisplay(strifeMob);
   }
 
@@ -65,7 +65,7 @@ public class BarrierManager {
 
   public float getCurrentBarrier(StrifeMob strifeMob) {
     createBarrierEntry(strifeMob);
-    return Math.min(strifeMob.getStat(StrifeStat.BARRIER),
+    return Math.min(StatUtil.getMaximumBarrier(strifeMob),
         barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0f));
   }
 
@@ -89,9 +89,9 @@ public class BarrierManager {
       setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
-    float current = Math.min(strifeMob.getStat(StrifeStat.BARRIER),
-        barrierMap.get(strifeMob.getEntity().getUniqueId()));
-    double percent = current / strifeMob.getStat(StrifeStat.BARRIER);
+    float maxBarrier = StatUtil.getMaximumBarrier(strifeMob);
+    float current = Math.min(maxBarrier, barrierMap.get(strifeMob.getEntity().getUniqueId()));
+    double percent = current / maxBarrier;
     setPlayerArmor((Player) strifeMob.getEntity(), percent);
   }
 
@@ -149,8 +149,7 @@ public class BarrierManager {
       return;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();
-    float newBarrierValue = Math.min(barrierMap.get(uuid) + amount, strifeMob.getStat(
-        StrifeStat.BARRIER));
+    float newBarrierValue = Math.min(barrierMap.get(uuid) + amount, StatUtil.getMaximumBarrier(strifeMob));
     setEntityBarrier(uuid, newBarrierValue);
     updateShieldDisplay(strifeMob);
   }

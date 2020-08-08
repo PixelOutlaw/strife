@@ -5,6 +5,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.BarrierManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
 
 public class BarrierCondition extends Condition {
 
@@ -24,13 +25,12 @@ public class BarrierCondition extends Condition {
         if (attacker.getStat(StrifeStat.BARRIER) == 0D) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
-        barrierValue = barrierManager.getCurrentBarrier(attacker) / attacker.getStat(
-            StrifeStat.BARRIER);
+        barrierValue = barrierManager.getCurrentBarrier(attacker) / StatUtil.getMaximumBarrier(attacker);
       } else {
         if (target.getStat(StrifeStat.BARRIER) == 0D) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
-        barrierValue = barrierManager.getCurrentBarrier(target) / target.getStat(StrifeStat.BARRIER);
+        barrierValue = barrierManager.getCurrentBarrier(target) / StatUtil.getMaximumBarrier(target);
       }
     } else {
       barrierValue = getCompareTarget() == CompareTarget.SELF ?

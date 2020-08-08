@@ -64,6 +64,18 @@ public class StatsMiscMenuItem extends MenuItem {
       lore.add(ChatColor.DARK_AQUA + "Energy Regeneration: " + ChatColor.WHITE + ONE_DECIMAL
           .format(pStats.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
     }
+    if (pStats.getStat(StrifeStat.ENERGY_ON_HIT) > 0) {
+      lore.add(ChatColor.DARK_AQUA + "Energy On Hit: " + ChatColor.WHITE + INT_FORMAT.format(
+          pStats.getStat(StrifeStat.ENERGY_ON_HIT)));
+    }
+    if (pStats.getStat(StrifeStat.ENERGY_ON_KILL) > 0) {
+      lore.add(ChatColor.DARK_AQUA + "Energy On Kill: " + ChatColor.WHITE + INT_FORMAT.format(
+          pStats.getStat(StrifeStat.ENERGY_ON_KILL)));
+    }
+    if (pStats.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0) {
+      lore.add(ChatColor.DARK_AQUA + "Energy When Hit: " + ChatColor.WHITE + INT_FORMAT.format(
+          pStats.getStat(StrifeStat.ENERGY_WHEN_HIT)));
+    }
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
         pStats.getStat(StrifeStat.MOVEMENT_SPEED)));

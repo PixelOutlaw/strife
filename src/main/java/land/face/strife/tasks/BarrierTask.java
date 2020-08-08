@@ -30,7 +30,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BarrierTask extends BukkitRunnable {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
   public BarrierTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -48,17 +48,17 @@ public class BarrierTask extends BukkitRunnable {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
-      StrifeMob player = plugin.getStrifeMobManager().getStatMob(entity);
-      if (player.getStat(StrifeStat.BARRIER) < 0.1) {
+      StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(entity);
+      if (playerMob.getStat(StrifeStat.BARRIER) < 0.1) {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
-      if (entry.getValue() >= player.getStat(StrifeStat.BARRIER)) {
+      if (entry.getValue() >= StatUtil.getMaximumBarrier(playerMob)) {
         continue;
       }
       // Restore this amount per barrier tick (4 MC ticks, 0.2s)
-      float barrierGain = StatUtil.getBarrierPerSecond(player) / 5;
-      plugin.getBarrierManager().restoreBarrier(player, barrierGain);
+      float barrierGain = StatUtil.getBarrierPerSecond(playerMob) / 5;
+      plugin.getBarrierManager().restoreBarrier(playerMob, barrierGain);
     }
   }
 }

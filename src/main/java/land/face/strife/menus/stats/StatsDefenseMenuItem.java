@@ -64,12 +64,11 @@ public class StatsDefenseMenuItem extends MenuItem {
 
     lore.add(breakLine);
     if (pStats.getStat(StrifeStat.BARRIER) > 0) {
-      lore.add(addStat("Maximum Barrier: ", pStats.getStat(StrifeStat.BARRIER), INT_FORMAT));
+      lore.add(addStat("Maximum Barrier: ", StatUtil.getMaximumBarrier(pStats), INT_FORMAT));
       lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats) * 10, PER_TEN,
           ONE_DECIMAL));
       if (pStats.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(addStat("Barrier Regeneration: ", StatUtil.getBarrierRegen(pStats), PER_TEN,
-            TWO_DECIMAL));
+        lore.add(addStat("Barrier Regeneration: ", StatUtil.getBarrierRegen(pStats), PER_TEN, TWO_DECIMAL));
       }
       lore.add(breakLine);
     }

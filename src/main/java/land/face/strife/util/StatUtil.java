@@ -47,11 +47,12 @@ public class StatUtil {
   }
 
   public static float getMaximumBarrier(StrifeMob ae) {
-    return ae.getStat(StrifeStat.BARRIER);
+    return ae.getStat(StrifeStat.BARRIER) * (1 + ae.getStat(StrifeStat.BARRIER_MULT) / 100);
   }
 
   public static float getBarrierPerSecond(StrifeMob ae) {
-    return (4 + (ae.getStat(StrifeStat.BARRIER) * 0.08f)) * (1 + (ae.getStat(StrifeStat.BARRIER_SPEED) / 100));
+    float baseRestoreSpeed = 4 + (getMaximumBarrier(ae) * 0.08f);
+    return baseRestoreSpeed * (1 + (ae.getStat(StrifeStat.BARRIER_SPEED) / 100));
   }
 
   public static float getDamageMult(StrifeMob ae) {

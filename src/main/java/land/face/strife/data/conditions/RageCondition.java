@@ -20,12 +20,12 @@ public class RageCondition extends Condition {
     double rageValue;
     if (percentage) {
       if (getCompareTarget() == CompareTarget.SELF) {
-        if (attacker.getStat(StrifeStat.BARRIER) == 0D) {
+        if (attacker.getStat(StrifeStat.MAXIMUM_RAGE) == 0D) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
         rageValue = rageManager.getRage(attacker.getEntity()) / attacker.getStat(StrifeStat.MAXIMUM_RAGE);
       } else {
-        if (target.getStat(StrifeStat.BARRIER) == 0D) {
+        if (target.getStat(StrifeStat.MAXIMUM_RAGE) == 0D) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
         rageValue = rageManager.getRage(target.getEntity()) / target.getStat(StrifeStat.MAXIMUM_RAGE);

@@ -38,6 +38,7 @@ public enum StrifeStat {
   ENERGY_WHEN_HIT("Energy When Hit"),
 
   BARRIER("Maximum Barrier"),
+  BARRIER_MULT(),
   BARRIER_SPEED("Barrier Recharge Rate"),
   BARRIER_REGEN("Barrier Regeneration"),
 
