@@ -73,9 +73,8 @@ public class UniqueSplashListener implements Listener {
         return;
       }
 
-      TargetResponse response = new TargetResponse();
       Set<LivingEntity> targets = new HashSet<>();
-      response.setEntities(targets);
+      TargetResponse response = new TargetResponse(targets);
 
       List<Effect> effectList = new ArrayList<>();
       for (String s : effects) {

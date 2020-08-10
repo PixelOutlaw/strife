@@ -20,8 +20,8 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ARMOR;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -160,16 +160,13 @@ public class CombatListener implements Listener {
     Projectile projectile = null;
     boolean isProjectile = false;
     boolean isMultishot = false;
-    String[] extraEffects = null;
+    List<String> extraEffects = null;
     int shotId = -1;
 
     if (event.getDamager() instanceof Projectile) {
       isProjectile = true;
       projectile = (Projectile) event.getDamager();
-      String hitEffects = ProjectileUtil.getHitEffects(projectile);
-      if (StringUtils.isNotBlank(hitEffects)) {
-        extraEffects = hitEffects.split("~");
-      }
+      extraEffects = ProjectileUtil.getHitEffects(projectile);
       shotId = ProjectileUtil.getShotId(projectile);
       if (shotId != -1) {
         String idKey = "SHOT_HIT_" + shotId;

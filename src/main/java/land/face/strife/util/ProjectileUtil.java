@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.WeakHashMap;
@@ -22,7 +23,7 @@ public class ProjectileUtil {
 
   private static final Map<Projectile, Boolean> GROUND_TRIGGER = new WeakHashMap<>();
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
-  private static final Map<Projectile, String> HIT_EFFECTS = new WeakHashMap<>();
+  private static final Map<Projectile, List<String>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
 
   private static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -67,12 +68,12 @@ public class ProjectileUtil {
     return SHOT_ID.getOrDefault(projectile, -1);
   }
 
-  public static void setHitEffects(Projectile projectile, String effectString) {
-    HIT_EFFECTS.put(projectile, effectString);
+  public static void setHitEffects(Projectile projectile, List<String> effects) {
+    HIT_EFFECTS.put(projectile, effects);
   }
 
-  public static String getHitEffects(Projectile projectile) {
-    return HIT_EFFECTS.get(projectile);
+  public static List<String> getHitEffects(Projectile projectile) {
+    return HIT_EFFECTS.getOrDefault(projectile, null);
   }
 
   public static int getTotalProjectiles(double initialProjectiles, double multiShot) {

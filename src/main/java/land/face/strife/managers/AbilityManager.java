@@ -102,7 +102,7 @@ public class AbilityManager {
       return false;
     }
     if (ability.getTargetType() == TargetType.TOGGLE) {
-      boolean toggledOn = toggleAbility(caster, response.getEntities(), ability);
+      boolean toggledOn = toggleAbility(caster, ability);
       if (!toggledOn) {
         return true;
       }
@@ -164,8 +164,7 @@ public class AbilityManager {
       coolDownAbility(mob.getEntity(), getAbility(abilityId));
       Set<LivingEntity> targets = new HashSet<>();
       targets.add(mob.getEntity());
-      TargetResponse response = new TargetResponse();
-      response.setEntities(targets);
+      TargetResponse response = new TargetResponse(targets);
       plugin.getEffectManager().processEffectList(mob, response, ability.getToggleOffEffects());
     }
   }
@@ -387,7 +386,7 @@ public class AbilityManager {
     Returns true with the toggle state of the ability afterwards.
     Illegal state if it isn't a toggle ability at all...
    */
-  private boolean toggleAbility(StrifeMob caster, Set<LivingEntity> targets, Ability ability) {
+  private boolean toggleAbility(StrifeMob caster, Ability ability) {
     if (ability.getTargetType() != TargetType.TOGGLE) {
       throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
@@ -404,9 +403,11 @@ public class AbilityManager {
     if (container.isToggledOn()) {
       container.setToggledOn(false);
       coolDownAbility(caster.getEntity(), ability);
-      TargetResponse response = new TargetResponse();
+
       Set<LivingEntity> entities = new HashSet<>();
-      response.setEntities(entities);
+      entities.add(caster.getEntity());
+      TargetResponse response = new TargetResponse(entities);
+
       plugin.getEffectManager().processEffectList(caster, response, ability.getToggleOffEffects());
       return false;
     }
@@ -430,14 +431,12 @@ public class AbilityManager {
   }
 
   private TargetResponse getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
-    TargetResponse targetResponse = new TargetResponse();
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF:
       case TOGGLE:
         targets.add(caster.getEntity());
-        targetResponse.setEntities(targets);
-        break;
+        return new TargetResponse(targets);
       case PARTY:
         if (caster.getEntity() instanceof Player) {
           targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers((Player) caster.getEntity(),
@@ -445,44 +444,37 @@ public class AbilityManager {
         } else {
           targets.add(caster.getEntity());
         }
-        targetResponse.setEntities(targets);
-        break;
+        return new TargetResponse(targets);
       case MASTER:
         if (caster.getMaster() != null) {
           targets.add(caster.getMaster());
         }
-        targetResponse.setEntities(targets);
-        break;
+        return new TargetResponse(targets);
       case MINIONS:
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
         }
-        targetResponse.setEntities(targets);
-        break;
+        return new TargetResponse(targets);
       case SINGLE_OTHER:
         if (target != null) {
           targets.add(target);
-          targetResponse.setEntities(targets);
-          break;
+          return new TargetResponse(targets);
         }
         LivingEntity newTarget = TargetingUtil.selectFirstEntityInSight(caster.getEntity(),
             ability.getRange(), ability.isFriendly());
         if (newTarget != null) {
           targets.add(newTarget);
         }
-        targetResponse.setEntities(targets);
-        break;
+        return new TargetResponse(targets);
       case TARGET_AREA:
-        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), target, ability.getRange(),
-            ability.isRaycastsTargetEntities());
-        targetResponse.setLocation(loc);
-        break;
+        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), target,
+            ability.getRange(), ability.isRaycastsTargetEntities());
+        return new TargetResponse(loc);
       case TARGET_GROUND:
         Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), target,
             ability.getRange(), ability.isRaycastsTargetEntities());
-        loc = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
-        targetResponse.setLocation(loc);
-        break;
+        loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
+        return new TargetResponse(loc2);
       case NEAREST_SOUL:
         SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), ability.getRange());
         if (soul != null) {
@@ -492,10 +484,9 @@ public class AbilityManager {
             targets.add(Bukkit.getPlayer(soul.getOwner()));
           }
         }
-        targetResponse.setEntities(targets);
-        break;
+        return new TargetResponse(targets);
     }
-    return targetResponse;
+    return new TargetResponse(new HashSet<>());
   }
 
   private boolean isAbilityCastReady(StrifeMob caster, StrifeMob target, Ability ability) {

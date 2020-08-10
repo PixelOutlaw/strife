@@ -49,9 +49,8 @@ public class EvokerFangEffectListener implements Listener {
     EvokerFangs fangs = (EvokerFangs) event.getDamager();
     StrifeMob attacker = strifeMobManager.getStatMob(Objects.requireNonNull(fangs.getOwner()));
 
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> targets = new HashSet<>();
-    response.setEntities(targets);
+    TargetResponse response = new TargetResponse(targets);
 
     List<Effect> effectList = new ArrayList<>();
     for (String s : split) {

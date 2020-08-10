@@ -1,23 +1,22 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.Objects;
@@ -55,6 +54,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class ShootListener implements Listener {
@@ -65,12 +65,18 @@ public class ShootListener implements Listener {
   private final AreaEffect flintlockHitscan;
   private final Damage flintlockDamage;
 
+  private final String quiverTip;
+  private final String pistolTip;
+
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
     flintlockDamage = buildStandardDamage();
     flintlockSmoke = buildFlintlockSmoke();
     flintlockFlare = buildFlintlockFlare();
     flintlockHitscan = buildFlintlockHitscan();
+
+    quiverTip = plugin.getSettings().getString("language.shooting.quiver-tip", "need quiver bro");
+    pistolTip = plugin.getSettings().getString("language.shooting.pistol-tip", "need quiver bro");
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -79,35 +85,43 @@ public class ShootListener implements Listener {
       return;
     }
 
-    StrifeMob mob = plugin.getStrifeMobManager()
-        .getStatMob((LivingEntity) event.getEntity().getShooter());
+    Player player = (Player) event.getEntity().getShooter();
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 
     event.setCancelled(true);
-    ((Player) event.getEntity().getShooter()).resetCooldown();
-
-    ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
-        .getEquipment()).getItemInMainHand();
-    if (weapon.getType() != Material.BOW && weapon.getType() != Material.CROSSBOW) {
-      weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
-          .getEquipment()).getItemInOffHand();
-    }
 
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
+    player.resetCooldown();
 
     if (attackMultiplier < 0.1) {
       event.setCancelled(true);
       return;
     }
 
-    if (ItemUtil.isPistol(weapon)) {
+    ItemStack mainHand = player.getEquipment().getItemInMainHand();
+    ItemStack offHand = player.getEquipment().getItemInOffHand();
+
+    EquipmentSlot slot = mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW ?
+        EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+
+    if (ItemUtil.isPistol(slot == EquipmentSlot.HAND ? mainHand : offHand)) {
+      if (!ItemUtil.isBullets(slot == EquipmentSlot.HAND ? offHand : mainHand)) {
+        MessageUtils.sendMessage(player, pistolTip);
+        event.setCancelled(true);
+        return;
+      }
       doPistolShot(mob, attackMultiplier);
       return;
     }
 
+    if (!ItemUtil.isQuiver(slot == EquipmentSlot.HAND ? offHand : mainHand)) {
+      MessageUtils.sendMessage(player, quiverTip);
+      event.setCancelled(true);
+      return;
+    }
     ProjectileUtil.shootArrow(mob, attackMultiplier);
-    mob.getEntity().getWorld()
-        .playSound(mob.getEntity().getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
+    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
   }
 
   @EventHandler
@@ -228,10 +242,9 @@ public class ShootListener implements Listener {
     }
     flintlockDamage.setAttackMultiplier(attackMultiplier);
 
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(mob.getEntity());
-    response.setEntities(entities);
+    TargetResponse response = new TargetResponse(entities);
 
     plugin.getEffectManager().execute(flintlockHitscan, mob, response);
     flintlockSmoke.apply(mob, mob);
@@ -264,6 +277,7 @@ public class ShootListener implements Listener {
     damage.setCanBeBlocked(true);
     damage.setCanBeEvaded(true);
     damage.setCanSneakAttack(true);
+    damage.setShowPopoffs(true);
     return damage;
   }
 

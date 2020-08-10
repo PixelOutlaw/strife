@@ -25,8 +25,7 @@ public class Teleport extends LocationEffect {
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
-    TargetResponse response = new TargetResponse();
-    response.setLocation(location);
+    TargetResponse response = new TargetResponse(location);
     StrifePlugin.getInstance().getEffectManager().executeEffectList(caster, response, originEffects);
     caster.getEntity().setVelocity(new Vector(0, 0, 0));
     if (targeted) {

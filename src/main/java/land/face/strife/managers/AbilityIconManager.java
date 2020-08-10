@@ -115,7 +115,7 @@ public class AbilityIconManager {
       return;
     }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(ability,
-        plugin.getStrifeMobManager().getStatMob(player), player);
+        plugin.getStrifeMobManager().getStatMob(player), null);
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       plugin.getAbilityManager().setGlobalCooldown(player, 5);

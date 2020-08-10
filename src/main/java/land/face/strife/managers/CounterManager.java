@@ -82,10 +82,9 @@ public class CounterManager {
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
-        TargetResponse response = new TargetResponse();
         Set<LivingEntity> entities = new HashSet<>();
         entities.add(attacker);
-        response.setEntities(entities);
+        TargetResponse response = new TargetResponse(entities);
         plugin.getEffectManager().processEffectList(defenderMob, response, data.getEffects());
         if (data.isRemoveOnTrigger()) {
           counterMap.get(defender).remove(data);

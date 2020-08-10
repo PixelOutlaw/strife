@@ -50,8 +50,7 @@ public class AreaEffect extends LocationEffect {
   public void applyAtLocation(StrifeMob caster, Location location) {
     Set<LivingEntity> targets = getAreaEffectTargets(caster, location);
     targets.removeIf(target -> ignoreEntity(caster, target));
-    TargetResponse response = new TargetResponse();
-    response.setEntities(targets);
+    TargetResponse response = new TargetResponse(targets);
     StrifePlugin.getInstance().getEffectManager().executeEffectList(caster, response, effects);
   }
 

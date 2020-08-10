@@ -47,10 +47,9 @@ public class EndlessEffectTimer extends BukkitRunnable {
       }
     }
 
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(mob.getEntity());
-    response.setEntities(entities);
+    TargetResponse response = new TargetResponse(entities);
 
     plugin.getEffectManager().executeEffectList(mob, response, endlessEffect.getRunEffects());
 
@@ -63,10 +62,9 @@ public class EndlessEffectTimer extends BukkitRunnable {
   private void runCancelEffects() {
     LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
 
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(mob.getEntity());
-    response.setEntities(entities);
+    TargetResponse response = new TargetResponse(entities);
 
     plugin.getEffectManager().processEffectList(mob, response, endlessEffect.getCancelEffects());
 
@@ -77,10 +75,9 @@ public class EndlessEffectTimer extends BukkitRunnable {
   public void doExpiry() {
     LogUtil.printDebug("Cancelled endless effect due to max tick duration reached");
 
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(mob.getEntity());
-    response.setEntities(entities);
+    TargetResponse response = new TargetResponse(entities);
 
     plugin.getEffectManager().processEffectList(mob, response, endlessEffect.getExpiryEffects());
 

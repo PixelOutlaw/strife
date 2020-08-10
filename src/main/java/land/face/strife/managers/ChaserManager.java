@@ -83,10 +83,9 @@ public class ChaserManager {
           chaser.getLocation().clone().subtract(chaser.getVelocity().clone().multiply(0.5)));
     }
     if (isChaserCloseEnough(chaser, data, targetLocation)) {
-      TargetResponse response = new TargetResponse();
       Set<LivingEntity> entities = new HashSet<>();
       entities.add(chaser.getTarget());
-      response.setEntities(entities);
+      TargetResponse response = new TargetResponse(entities);
       plugin.getEffectManager().processEffectList(chaser.getCaster(), response, data.getEffectList());
       return true;
     }

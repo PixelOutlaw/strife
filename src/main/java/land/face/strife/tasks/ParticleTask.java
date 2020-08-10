@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 import land.face.strife.data.ContinuousParticle;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.util.TargetingUtil;
@@ -31,8 +31,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class ParticleTask extends BukkitRunnable {
 
-  private final Map<LivingEntity, Set<ContinuousParticle>> continuousParticles = new ConcurrentHashMap<>();
-  private final Map<LivingEntity, StrifeParticle> boundParticles = new ConcurrentHashMap<>();
+  private final Map<LivingEntity, Set<ContinuousParticle>> continuousParticles = new WeakHashMap<>();
+  private final Map<LivingEntity, StrifeParticle> boundParticles = new WeakHashMap<>();
   private static int tick = 0;
 
   @Override
@@ -103,8 +103,8 @@ public class ParticleTask extends BukkitRunnable {
         iterator.remove();
         continue;
       }
-      cParticle.getParticle().applyAtLocation(null,
-          TargetingUtil.getOriginLocation(le, cParticle.getParticle().getOrigin()));
+      cParticle.getParticle().applyAtLocation(null, TargetingUtil.getOriginLocation(le,
+          cParticle.getParticle().getOrigin()));
       cParticle.setTicksRemaining(cParticle.getTicksRemaining() - 1);
     }
   }

@@ -228,10 +228,6 @@ public class PlayerDataUtil {
     return null;
   }
 
-  public static boolean areConditionsMet(StrifeMob caster, LivingEntity target, Set<Condition> conditions) {
-    return areConditionsMet(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(target), conditions);
-  }
-
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target, Set<Condition> conditions) {
     for (Condition condition : conditions) {
       EntityType casterType = caster.getEntity().getType();

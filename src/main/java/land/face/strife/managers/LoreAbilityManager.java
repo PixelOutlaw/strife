@@ -104,10 +104,11 @@ public class LoreAbilityManager {
     if (la.getAbility() != null) {
       abilityManager.execute(la.getAbility(), caster, target);
     }
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(target);
-    response.setEntities(entities);
+
+    TargetResponse response = new TargetResponse(entities);
+
     for (Effect effect : la.getEffects()) {
       effectManager.execute(effect, caster, response);
     }

@@ -125,7 +125,6 @@ import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -187,40 +186,33 @@ public class EffectManager {
   }
 
   public void execute(Effect effect, StrifeMob caster, TargetResponse response) {
-    if (effect instanceof LocationEffect) {
-      LocationEffect locEffect = (LocationEffect) effect;
-      if (response.getEntities() != null && !response.getEntities().isEmpty()) {
-        for (LivingEntity le : response.getEntities()) {
-          StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
-          if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-            continue;
-          }
-          Location location = TargetingUtil.getOriginLocation(le, locEffect.getOrigin());
-          locEffect.applyAtLocation(caster, location);
+    Set<LivingEntity> targets = new HashSet<>(response.getEntities());
+    if (effect.isForceTargetCaster()) {
+      targets.clear();
+      targets.add(caster.getEntity());
+    }
+    if (!targets.isEmpty()) {
+      for (LivingEntity le : targets) {
+        StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
+        if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+          continue;
         }
-        return;
+        if (effect instanceof LocationEffect) {
+          effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
+          continue;
+        }
+        if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+          continue;
+        }
+        applyEffectIfConditionsMet(effect, caster, effect.isForceTargetCaster() ? caster : targetMob);
       }
-      if (response.getLocation() != null) {
-        PlayerDataUtil.areConditionsMet(caster, caster, effect.getConditions());
+      return;
+    }
+    if (effect instanceof LocationEffect && response.getLocation() != null) {
+      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        LocationEffect locEffect = (LocationEffect) effect;
         locEffect.applyAtLocation(caster, response.getLocation());
-        return;
       }
-      return;
-    }
-    if (response.getEntities() == null || response.getEntities().isEmpty()) {
-      return;
-    }
-
-    for (LivingEntity le : response.getEntities()) {
-      StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
-      if (effect.isForceTargetCaster()) {
-        applyEffectIfConditionsMet(effect, caster, targetMob);
-        return;
-      }
-      if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
-        return;
-      }
-      applyEffectIfConditionsMet(effect, caster, targetMob);
     }
   }
 
@@ -498,8 +490,7 @@ public class EffectManager {
         effect = new EvokerFangEffect();
         ((EvokerFangEffect) effect).setQuantity(cs.getInt("quantity", 1));
         ((EvokerFangEffect) effect).setSpread((float) cs.getDouble("spread", 0));
-        ((EvokerFangEffect) effect)
-            .setHitEffects(String.join("~", cs.getStringList("hit-effects")));
+        ((EvokerFangEffect) effect).setHitEffects(String.join("~", cs.getStringList("hit-effects")));
         break;
       case FALLING_BLOCK:
         effect = new ShootBlock();

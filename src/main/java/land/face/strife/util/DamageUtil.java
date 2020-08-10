@@ -13,10 +13,11 @@ import static land.face.strife.util.StatUtil.getWardingMult;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -32,6 +33,7 @@ import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
@@ -87,20 +89,25 @@ public class DamageUtil {
     PVP_MULT = (float) plugin.getSettings().getDouble("config.mechanics.pvp-multiplier", 0.5);
   }
 
-  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender, String[] effects) {
+  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender, List<String> effects) {
     if (effects == null) {
       return;
     }
-    TargetResponse response = new TargetResponse();
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(defender.getEntity());
-    response.setEntities(entities);
+    TargetResponse response = new TargetResponse(entities);
+
+    List<Effect> effectList = new ArrayList<>();
     for (String s : effects) {
-      if (StringUtils.isBlank(s)) {
-        continue;
+      Effect effect = plugin.getEffectManager().getEffect(s);
+      if (effect != null) {
+        effectList.add(effect);
       }
-      plugin.getEffectManager().execute(plugin.getEffectManager().getEffect(s), attacker, response);
     }
+    if (effectList.isEmpty()) {
+      return;
+    }
+    plugin.getEffectManager().executeEffectList(attacker, response, effectList);
   }
 
   public static boolean isGuildAlly(StrifeMob attacker, Player target) {

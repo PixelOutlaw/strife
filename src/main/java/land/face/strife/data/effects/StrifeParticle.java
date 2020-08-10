@@ -57,8 +57,7 @@ public class StrifeParticle extends LocationEffect {
       if (!strictDuration) {
         duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
       }
-      StrifePlugin.getInstance().getParticleTask()
-          .addContinuousParticle(target.getEntity(), this, (int) duration);
+      StrifePlugin.getInstance().getParticleTask().addContinuousParticle(target.getEntity(), this, (int) duration);
       return;
     }
     playAtLocation(caster, getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
@@ -280,17 +279,15 @@ public class StrifeParticle extends LocationEffect {
     if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
         || particle == Particle.SPELL_INSTANT) {
       for (int i = 0; i < quantity; i++) {
-        Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2,
-            -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
+        Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2, -spread
+            + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
         location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
       }
     } else if (itemData != null) {
       if (particle == Particle.FALLING_DUST) {
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread,
-            speed, blockData);
+        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);
       } else  {
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread,
-            speed, itemData);
+        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, itemData);
       }
     } else {
       location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
