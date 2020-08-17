@@ -30,6 +30,7 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -63,7 +64,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
 
     lore.add(breakLine);
-    if (pStats.getStat(StrifeStat.BARRIER) > 0) {
+    if (!pStats.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && pStats.getStat(StrifeStat.BARRIER) > 0) {
       lore.add(addStat("Maximum Barrier: ", StatUtil.getMaximumBarrier(pStats), INT_FORMAT));
       lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats) * 10, PER_TEN,
           ONE_DECIMAL));
