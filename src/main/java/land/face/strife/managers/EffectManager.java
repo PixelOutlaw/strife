@@ -16,6 +16,7 @@ import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
+import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AttributeCondition;
 import land.face.strife.data.conditions.BarrierCondition;
@@ -87,11 +88,13 @@ import land.face.strife.data.effects.Heal;
 import land.face.strife.data.effects.Ignite;
 import land.face.strife.data.effects.Lightning;
 import land.face.strife.data.effects.LocationEffect;
+import land.face.strife.data.effects.MinionCast;
 import land.face.strife.data.effects.ModifyProjectile;
 import land.face.strife.data.effects.PlaySound;
 import land.face.strife.data.effects.PotionEffectAction;
 import land.face.strife.data.effects.Push;
 import land.face.strife.data.effects.Push.PushType;
+import land.face.strife.data.effects.RemoveEntity;
 import land.face.strife.data.effects.RestoreBarrier;
 import land.face.strife.data.effects.Revive;
 import land.face.strife.data.effects.SetFall;
@@ -174,7 +177,7 @@ public class EffectManager {
 
   public void executeEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
     LogUtil.printDebug("Effect task started - " + effectList.toString());
-    if (!caster.getEntity().isValid()) {
+    if (caster == null || caster.getEntity() == null) {
       LogUtil.printDebug("- Task cancelled, caster is dead");
       return;
     }
@@ -228,6 +231,7 @@ public class EffectManager {
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
+    Effect.setPlugin(plugin);
     String type = cs.getString("type", "NULL").toUpperCase();
     EffectType effectType;
     try {
@@ -336,6 +340,18 @@ public class EffectManager {
         String cmd = cs.getString("command", "broadcast REEE");
         ((ConsoleCommand) effect).setCommand(cmd);
         break;
+      case REMOVE_ENTITY:
+        effect = new RemoveEntity();
+        break;
+      case MINION_CAST:
+        effect = new MinionCast();
+        ((MinionCast) effect).setUniqueId(cs.getString("unique-id", null));
+        Effect finalEffect1 = effect;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          Ability ability = plugin.getAbilityManager().getAbility(cs.getString("ability-id", null));
+          ((MinionCast) finalEffect1).setAbility(ability);
+        }, 5L);
+        break;
       case COUNTER:
         effect = new Counter();
         ((Counter) effect).setDuration(cs.getInt("duration", 500));
@@ -361,8 +377,7 @@ public class EffectManager {
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
         ((AreaEffect) effect)
             .setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
-        ((AreaEffect) effect).setLineOfSight(
-            LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
+        ((AreaEffect) effect).setLineOfSight(LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
         ((AreaEffect) effect).setCanBeBlocked(canBeBlocked);
