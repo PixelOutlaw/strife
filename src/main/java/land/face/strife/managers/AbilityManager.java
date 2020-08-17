@@ -153,20 +153,36 @@ public class AbilityManager {
     }
   }
 
+  public void unToggleAll(LivingEntity livingEntity) {
+    if (!coolingDownAbilities.containsKey(livingEntity)) {
+      return;
+    }
+    for (AbilityCooldownContainer cooldownContainer : coolingDownAbilities.get(livingEntity)) {
+      doToggleOff(cooldownContainer, plugin.getStrifeMobManager().getStatMob(livingEntity));
+    }
+  }
+
   public void unToggleAbility(StrifeMob mob, String abilityId) {
     AbilityCooldownContainer container = getCooldownContainer(mob.getEntity(), abilityId);
     if (container == null) {
       return;
     }
-    if (container.isToggledOn()) {
-      container.setToggledOn(false);
-      Ability ability = getAbility(abilityId);
-      coolDownAbility(mob.getEntity(), getAbility(abilityId));
-      Set<LivingEntity> targets = new HashSet<>();
-      targets.add(mob.getEntity());
-      TargetResponse response = new TargetResponse(targets);
-      plugin.getEffectManager().processEffectList(mob, response, ability.getToggleOffEffects());
+    doToggleOff(container, mob);
+  }
+
+  private void doToggleOff(AbilityCooldownContainer container, StrifeMob mob) {
+    if (!container.isToggledOn()) {
+      return;
     }
+    container.setToggledOn(false);
+    Ability ability = getAbility(container.getAbilityId());
+    coolDownAbility(mob.getEntity(), ability);
+
+    Set<LivingEntity> targets = new HashSet<>();
+    targets.add(mob.getEntity());
+    TargetResponse response = new TargetResponse(targets);
+
+    plugin.getEffectManager().processEffectList(mob, response, ability.getToggleOffEffects());
   }
 
   public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
