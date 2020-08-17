@@ -29,10 +29,13 @@ public class StrifeMob {
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
+  private String uniqueEntityId = null;
+
   private final WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
+  private WeakReference<LivingEntity> master;
+
   private EntityAbilitySet abilitySet;
-  private String uniqueEntityId = null;
   private final Set<String> mods = new HashSet<>();
 
   private Set<String> factions = new HashSet<>();
@@ -42,8 +45,6 @@ public class StrifeMob {
 
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
-
-  private WeakReference<LivingEntity> master;
 
   private final Set<StrifeMob> minions = new HashSet<>();
   private final Set<Buff> runningBuffs = new HashSet<>();
@@ -192,7 +193,7 @@ public class StrifeMob {
     cacheStamp = 1L;
   }
 
-  public Buff hasBuff(String buffId, UUID source) {
+  public Buff getBuff(String buffId, UUID source) {
     Iterator<Buff> iterator = runningBuffs.iterator();
     while (iterator.hasNext()) {
       Buff buff = iterator.next();
@@ -200,13 +201,16 @@ public class StrifeMob {
         iterator.remove();
         continue;
       }
+      if (!buffId.equals(buff.getId())) {
+        continue;
+      }
       if (source == null) {
-        if (buffId.equals(buff.getId()) && buff.getSource() == null) {
+        if (buff.getSource() == null) {
           return buff;
         }
         continue;
       }
-      if (buffId.equals(buff.getId()) && source.equals(buff.getSource())) {
+      if (source.equals(buff.getSource())) {
         return buff;
       }
     }
@@ -214,7 +218,7 @@ public class StrifeMob {
   }
 
   public int getBuffStacks(String buffId, UUID source) {
-    Buff buff = hasBuff(buffId, source);
+    Buff buff = getBuff(buffId, source);
     if (buff == null) {
       return 0;
     }
@@ -222,13 +226,14 @@ public class StrifeMob {
   }
 
   public void addBuff(Buff buff, double duration) {
-    Buff oldBuff = hasBuff(buff.getId(), buff.getSource());
+    Buff oldBuff = getBuff(buff.getId(), buff.getSource());
+    cacheStamp = 1L;
     if (oldBuff == null) {
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.add(buff);
       return;
     }
-    buff.bumpBuff(duration);
+    oldBuff.bumpBuff(duration);
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
@@ -306,13 +311,7 @@ public class StrifeMob {
         iterator.remove();
         continue;
       }
-      for (StrifeStat stat : buff.getTotalStats().keySet()) {
-        if (stats.containsKey(stat)) {
-          stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
-        } else {
-          stats.put(stat, buff.getTotalStats().get(stat));
-        }
-      }
+      stats.putAll(StatUpdateManager.combineMaps(stats, buff.getTotalStats()));
     }
     return stats;
   }
