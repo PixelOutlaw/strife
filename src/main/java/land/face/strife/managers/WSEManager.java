@@ -19,7 +19,7 @@ import org.bukkit.util.Vector;
 
 public class WSEManager {
 
-  private Set<WorldSpaceEffect> worldSpaceEffects;
+  private final Set<WorldSpaceEffect> worldSpaceEffects;
 
   public WSEManager() {
     this.worldSpaceEffects = new HashSet<>();
@@ -66,8 +66,8 @@ public class WSEManager {
   private boolean tick(WorldSpaceEffect wse) {
 
     Location location = wse.getLocation().clone();
-
     Vector velocity = wse.getVelocity().clone();
+
     if (wse.getGravity() > 0) {
       Block blockBelow = location.clone().add(0, Math.min(-0.5, velocity.getY()), 0).getBlock();
       if (!blockBelow.getType().isSolid()) {
@@ -82,6 +82,7 @@ public class WSEManager {
         location.setY(blockBelow.getY() + 1.3);
       }
     }
+
     velocity.multiply(wse.getFriction());
     wse.setVelocity(velocity);
     location.add(velocity);
