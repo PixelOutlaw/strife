@@ -11,6 +11,7 @@ import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -47,6 +48,9 @@ public class StatUtil {
   }
 
   public static float getMaximumBarrier(StrifeMob ae) {
+    if (ae.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
+      return 0;
+    }
     return ae.getStat(StrifeStat.BARRIER) * (1 + ae.getStat(StrifeStat.BARRIER_MULT) / 100);
   }
 
@@ -60,11 +64,13 @@ public class StatUtil {
   }
 
   public static double getMeleeDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100);
+    float multiplier = ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) + ae.getStat(StrifeStat.PHYSICAL_MULT);
+    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + multiplier / 100);
   }
 
   public static double getRangedDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100);
+    float multiplier = ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) + ae.getStat(StrifeStat.PHYSICAL_MULT);
+    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + multiplier / 100);
   }
 
   public static double getMagicDamage(StrifeMob ae) {
