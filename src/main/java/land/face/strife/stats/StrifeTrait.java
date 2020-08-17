@@ -5,7 +5,7 @@ import java.util.Map;
 
 public enum StrifeTrait {
 
-  ELEMENTAL_CRITS("Elemental Damage Can Critically Strike"),
+  ELEMENTAL_CRITS("Elemental Damage Can Crit"),
   NO_HEALTH_REGEN("Health Cannot Be Regenerated"),
   NO_BARRIER_ALLOWED("Maximum Barrier Is Always Zero"),
   NO_CRIT_MULT("Critical Strikes Do No Extra Damage"),
