@@ -1,8 +1,8 @@
 package land.face.strife.util;
 
 import java.lang.reflect.Field;
-import net.minecraft.server.v1_15_R1.EntityFishingHook;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
+import net.minecraft.server.v1_16_R1.EntityFishingHook;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.FishHook;
 
 public class FishingUtil {
@@ -10,13 +10,11 @@ public class FishingUtil {
   static Field fishCatchTime = null;
 
   public static int getBiteTime(FishHook hook) {
-    net.minecraft.server.v1_15_R1.EntityFishingHook hookCopy = (EntityFishingHook) ((CraftEntity) hook)
-        .getHandle();
+    EntityFishingHook hookCopy = (EntityFishingHook) ((CraftEntity) hook).getHandle();
 
     if (fishCatchTime == null) {
       try {
-        fishCatchTime = net.minecraft.server.v1_15_R1.EntityFishingHook.class
-            .getDeclaredField("ap");
+        fishCatchTime = EntityFishingHook.class.getDeclaredField("ap");
       } catch (NoSuchFieldException | SecurityException e) {
         e.printStackTrace();
       }
@@ -36,13 +34,11 @@ public class FishingUtil {
   }
 
   public static void setBiteTime(FishHook hook, int time) {
-    net.minecraft.server.v1_15_R1.EntityFishingHook hookCopy = (EntityFishingHook) ((CraftEntity) hook)
-        .getHandle();
+    EntityFishingHook hookCopy = (EntityFishingHook) ((CraftEntity) hook).getHandle();
 
     if (fishCatchTime == null) {
       try {
-        fishCatchTime = net.minecraft.server.v1_15_R1.EntityFishingHook.class
-            .getDeclaredField("ap");
+        fishCatchTime = EntityFishingHook.class.getDeclaredField("ap");
       } catch (NoSuchFieldException | SecurityException e) {
         e.printStackTrace();
       }

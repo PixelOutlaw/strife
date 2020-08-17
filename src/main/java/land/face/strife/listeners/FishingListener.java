@@ -1,24 +1,41 @@
 package land.face.strife.listeners;
 
-import land.face.strife.data.champion.LifeSkillType;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.FishingUtil;
-import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
+import org.bukkit.util.Vector;
 
 public class FishingListener implements Listener {
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onDogeProc(PlayerFishEvent event) {
+  private final StrifePlugin plugin;
+
+  public FishingListener(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  @EventHandler
+  public void onCastFishingRod(PlayerFishEvent event) {
     if (event.getState() != State.FISHING) {
       return;
     }
-    double fishSkill = PlayerDataUtil.getEffectiveLifeSkill(event.getPlayer(), LifeSkillType.FISHING, true);
-    int fishTime = FishingUtil.getBiteTime(event.getHook());
-    fishTime = (int) ((double) fishTime * (100 / (100 + fishSkill)));
-    FishingUtil.setBiteTime(event.getHook(), Math.max(fishTime, 1));
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+
+    event.getHook().setCustomName(StringExtensionsKt.chatColorize("&b&l<><"));
+    event.getHook().setCustomNameVisible(true);
+
+    Vector bobberVelocity = event.getHook().getVelocity().clone();
+    bobberVelocity.multiply(0.7f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    event.getHook().setVelocity(bobberVelocity);
+
+    float fishSpeed = mob.getStat(StrifeStat.FISHING_SPEED);
+    float fishTime = 200 + (float) Math.random() * 300;
+    float fishMult = 100 / (100 + fishSpeed);
+    FishingUtil.setBiteTime(event.getHook(), (int) Math.max(fishTime * fishMult, 1));
   }
 }
