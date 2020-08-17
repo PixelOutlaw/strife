@@ -44,8 +44,7 @@ public class Damage extends Effect {
     mods.setCanBeBlocked(canBeBlocked);
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
-    if (canSneakAttack && StrifePlugin.getInstance().getStealthManager()
-        .isStealthed(caster.getEntity())) {
+    if (canSneakAttack && StrifePlugin.getInstance().getStealthManager().isStealthed(caster.getEntity())) {
       mods.setSneakAttack(true);
     }
     mods.setBlocking(isBlocking);
