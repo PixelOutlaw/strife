@@ -120,7 +120,7 @@ public class StatUpdateManager {
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
-    double speed = strifeMob.getFinalStats().getOrDefault(StrifeStat.MOVEMENT_SPEED, 80f) / 100f;
+    double speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
     if (entity instanceof Player) {
       ((Player) entity).setWalkSpeed(0.2f * (float) speed);
       ((Player) entity).setFlySpeed(0.2f * (float) speed);
