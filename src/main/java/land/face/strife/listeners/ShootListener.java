@@ -17,8 +17,8 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -206,16 +206,16 @@ public class ShootListener implements Listener {
     StrifeMob caster = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) Objects.requireNonNull(event.getEntity().getShooter()));
 
-    String effectString = ProjectileUtil.getHitEffects(event.getEntity());
-    if (StringUtils.isBlank(effectString)) {
-      LogUtil.printWarning(
-          "A handled GroundProjectile was missing effect meta... something's wrong");
+    List<String> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    if (hitEffects.isEmpty()) {
+      LogUtil.printWarning("A handled GroundProjectile was missing effect meta... something's wrong");
       return;
     }
-    String[] effects = effectString.split("~");
-    Location loc = event.getEntity().getLocation().clone().add(
-        event.getEntity().getLocation().getDirection().multiply(-0.25));
-    for (String s : effects) {
+
+    Location loc = event.getEntity().getLocation().clone()
+        .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
+
+    for (String s : hitEffects) {
       Effect effect = StrifePlugin.getInstance().getEffectManager().getEffect(s);
       if (effect instanceof LocationEffect) {
         ((LocationEffect) effect).applyAtLocation(caster, loc);
@@ -232,8 +232,7 @@ public class ShootListener implements Listener {
     }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
       double randomMultishot = Math.pow(Math.random(), 1.5);
-      int projectiles = ProjectileUtil.getTotalProjectiles(1,
-          mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
+      int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
       flintlockHitscan.setMaxTargets(projectiles);
       flintlockHitscan.setMaxConeRadius(0.35f * (projectiles - 1));
     } else {
@@ -241,6 +240,8 @@ public class ShootListener implements Listener {
       flintlockHitscan.setMaxConeRadius(0f);
     }
     flintlockDamage.setAttackMultiplier(attackMultiplier);
+    flintlockDamage.setApplyOnHitEffects(attackMultiplier > 0.5);
+    flintlockDamage.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
 
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(mob.getEntity());
