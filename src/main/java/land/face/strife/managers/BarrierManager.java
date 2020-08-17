@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -41,20 +42,20 @@ public class BarrierManager {
 
   private static final BlockData BLOCK_DATA = Bukkit.getServer().createBlockData(Material.WHITE_STAINED_GLASS);
 
-  public void createBarrierEntry(StrifeMob strifeMob) {
-    if (strifeMob.getEntity() == null || !strifeMob.getEntity().isValid()) {
+  public void createBarrierEntry(StrifeMob mob) {
+    if (mob.getEntity() == null || !mob.getEntity().isValid()) {
       return;
     }
-    if (strifeMob.getStat(StrifeStat.BARRIER) <= 0.1) {
-      updateShieldDisplay(strifeMob);
+    if (mob.getStat(StrifeStat.BARRIER) <= 0.1 || mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
+      updateShieldDisplay(mob);
       return;
     }
-    if (barrierMap.containsKey(strifeMob.getEntity().getUniqueId())) {
-      updateShieldDisplay(strifeMob);
+    if (barrierMap.containsKey(mob.getEntity().getUniqueId())) {
+      updateShieldDisplay(mob);
       return;
     }
-    setEntityBarrier(strifeMob.getEntity().getUniqueId(), StatUtil.getMaximumBarrier(strifeMob));
-    updateShieldDisplay(strifeMob);
+    setEntityBarrier(mob.getEntity().getUniqueId(), StatUtil.getMaximumBarrier(mob));
+    updateShieldDisplay(mob);
   }
 
   public boolean isBarrierUp(StrifeMob strifeMob) {

@@ -23,6 +23,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -49,7 +50,7 @@ public class BarrierTask extends BukkitRunnable {
         continue;
       }
       StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(entity);
-      if (playerMob.getStat(StrifeStat.BARRIER) < 0.1) {
+      if (playerMob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) || playerMob.getStat(StrifeStat.BARRIER) < 0.1) {
         plugin.getBarrierManager().removeEntity(entry.getKey());
         continue;
       }
