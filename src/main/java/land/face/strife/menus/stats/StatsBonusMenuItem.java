@@ -101,8 +101,19 @@ public class StatsBonusMenuItem extends MenuItem {
         .format(pStats.getStat(StrifeStat.ITEM_RARITY)) + "%");
     lore.add(ChatColor.GREEN + "Gold Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.GOLD_FIND)) + "%");
-    lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.HEAD_DROP)) + "%");
+
+    if (pStats.getStat(StrifeStat.FISHING_SPEED) > 0F) {
+      lore.add(ChatColor.GREEN + "Fishing Speed: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+          .format(pStats.getStat(StrifeStat.FISHING_SPEED)) + "%");
+    }
+    if (pStats.getStat(StrifeStat.FISHING_TREASURE) > 0F) {
+      lore.add(ChatColor.GREEN + "Fishing Treasures: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+          .format(pStats.getStat(StrifeStat.FISHING_TREASURE)) + "%");
+    }
+    if (pStats.getStat(StrifeStat.MINING_GEMS) > 0F) {
+      lore.add(ChatColor.GREEN + "Mining Gems: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+          .format(pStats.getStat(StrifeStat.MINING_GEMS)) + "%");
+    }
 
     lore.add(StatsMenu.breakLine);
 
