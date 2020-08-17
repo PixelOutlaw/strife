@@ -2,7 +2,6 @@ package land.face.strife.data.effects;
 
 import java.util.ArrayList;
 import java.util.List;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.util.TargetingUtil;
@@ -25,21 +24,26 @@ public class Teleport extends LocationEffect {
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
-    TargetResponse response = new TargetResponse(location);
-    StrifePlugin.getInstance().getEffectManager().executeEffectList(caster, response, originEffects);
+
+    TargetResponse response = new TargetResponse(TargetingUtil.getOriginLocation(caster.getEntity(), getOrigin()));
+    getPlugin().getEffectManager().executeEffectList(caster, response, originEffects);
+
+    Location finalLocation = location;
     caster.getEntity().setVelocity(new Vector(0, 0, 0));
     if (targeted) {
-      location.setDirection(caster.getEntity().getLocation().getDirection());
-      caster.getEntity().teleport(location, TeleportCause.PLUGIN);
+      finalLocation.setDirection(caster.getEntity().getLocation().getDirection());
+      caster.getEntity().teleport(finalLocation, TeleportCause.PLUGIN);
     } else if (relative) {
-      location.add(vector);
-      caster.getEntity().teleport(location, TeleportCause.PLUGIN);
+      finalLocation.add(vector);
+      caster.getEntity().teleport(finalLocation, TeleportCause.PLUGIN);
     } else {
-      location = new Location(caster.getEntity().getWorld(), vector.getX(), vector.getY(), vector.getZ());
-      location.setDirection(caster.getEntity().getEyeLocation().getDirection());
-      caster.getEntity().teleport(location, TeleportCause.PLUGIN);
+      finalLocation = new Location(caster.getEntity().getWorld(), vector.getX(), vector.getY(), vector.getZ());
+      finalLocation.setDirection(caster.getEntity().getEyeLocation().getDirection());
+      caster.getEntity().teleport(finalLocation, TeleportCause.PLUGIN);
     }
-    StrifePlugin.getInstance().getEffectManager().processEffectList(caster, response, destinationEffects);
+    response.setLocation(finalLocation);
+
+    getPlugin().getEffectManager().processEffectList(caster, response, destinationEffects);
   }
 
   public void setVector(Vector vector) {
