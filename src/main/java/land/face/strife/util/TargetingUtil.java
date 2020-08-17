@@ -53,8 +53,7 @@ public class TargetingUtil {
     }
   }
 
-  public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster,
-      boolean friendly) {
+  public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster, boolean friendly) {
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
     if (friendly) {
       targets.clear();
