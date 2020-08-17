@@ -1,16 +1,13 @@
 package land.face.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.managers.BlockManager;
-import land.face.strife.managers.EffectManager;
-import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
@@ -23,51 +20,43 @@ import org.bukkit.event.entity.PotionSplashEvent;
 
 public class UniqueSplashListener implements Listener {
 
-  private final StrifeMobManager strifeMobManager;
-  private final BlockManager blockManager;
-  private final EffectManager effectManager;
+  private final StrifePlugin plugin;
 
-  public UniqueSplashListener(StrifeMobManager strifeMobManager, BlockManager blockManager,
-      EffectManager effectManager) {
-    this.strifeMobManager = strifeMobManager;
-    this.blockManager = blockManager;
-    this.effectManager = effectManager;
+  public UniqueSplashListener(StrifePlugin plugin) {
+    this.plugin = plugin;
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onAbilityPotionSplash(PotionSplashEvent event) {
-    String hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
-    if (StringUtils.isBlank(hitEffects)) {
+    List<String> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    if (hitEffects.isEmpty()) {
       return;
     }
     if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
       return;
     }
-    String[] effects = hitEffects.split("~");
-    if (effects.length == 0) {
-      return;
-    }
     LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
-    StrifeMob attacker = strifeMobManager.getStatMob(attackEntity);
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
     for (Entity e : event.getAffectedEntities()) {
       if (!(e instanceof LivingEntity)) {
         continue;
       }
       LivingEntity defendEntity = (LivingEntity) e;
-      StrifeMob defender = strifeMobManager.getStatMob(defendEntity);
+      StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
-      double evasionMultiplier = StatUtil
-          .getMinimumEvasionMult(StatUtil.getEvasion(defender), StatUtil.getAccuracy(attacker));
+      double evasionMultiplier = StatUtil.getMinimumEvasionMult(StatUtil.getEvasion(defender),
+          StatUtil.getAccuracy(attacker));
       evasionMultiplier = evasionMultiplier + (DamageUtil.rollDouble() * (1 - evasionMultiplier));
+
       if (evasionMultiplier <= 0.5) {
         DamageUtil.doEvasion(attacker, defender);
         event.setCancelled(true);
         return;
       }
 
-      if (blockManager.rollBlock(defender, false)) {
-        blockManager.blockFatigue(defendEntity, 1.0, false);
-        blockManager.bumpRunes(defender);
+      if (plugin.getBlockManager().rollBlock(defender, false)) {
+        plugin.getBlockManager().blockFatigue(defendEntity, 1.0, false);
+        plugin.getBlockManager().bumpRunes(defender);
         DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);
         return;
@@ -77,14 +66,14 @@ public class UniqueSplashListener implements Listener {
       TargetResponse response = new TargetResponse(targets);
 
       List<Effect> effectList = new ArrayList<>();
-      for (String s : effects) {
-        Effect effect = effectManager.getEffect(s);
+      for (String s : hitEffects) {
+        Effect effect = plugin.getEffectManager().getEffect(s);
         if (effect != null) {
           effectList.add(effect);
         }
       }
 
-      effectManager.processEffectList(attacker, response, effectList);
+      plugin.getEffectManager().processEffectList(attacker, response, effectList);
     }
   }
 }
