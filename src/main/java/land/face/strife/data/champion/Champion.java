@@ -216,7 +216,10 @@ public class Champion {
   }
 
   public Set<StrifeTrait> getTraits() {
-    return equipmentCache.getCombinedTraits();
+    Set<StrifeTrait> traits = new HashSet<>();
+    traits.addAll(equipmentCache.getCombinedTraits());
+    traits.addAll(pathTraits);
+    return traits;
   }
 
   public boolean hasTrait (StrifeTrait trait) {
