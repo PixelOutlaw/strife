@@ -31,7 +31,6 @@ import land.face.strife.data.DamageModifiers.ElementalStatus;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
-import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.events.BlockEvent;
@@ -157,7 +156,8 @@ public class DamageUtil {
     }
 
     if (mods.isCanBeBlocked()) {
-      if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult, mods.getAttackType(), mods.isBlocking())) {
+      if (plugin.getBlockManager()
+          .isAttackBlocked(attacker, defender, attackMult, mods.getAttackType(), mods.isBlocking())) {
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
@@ -686,8 +686,7 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
-      Map<AbilityMod, Float> mods) {
+  public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> mods) {
 
     float totalEvasion = StatUtil.getEvasion(defender);
     float totalAccuracy = StatUtil.getAccuracy(attacker);
@@ -698,6 +697,11 @@ public class DamageUtil {
     evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
 
     return evasionMultiplier;
+  }
+
+  public static boolean isAttackEvaded(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> attackModifiers) {
+    float evasionMultiplier = getFullEvasionMult(attacker, defender, attackModifiers);
+    return evasionMultiplier < EVASION_THRESHOLD;
   }
 
   public static void doEvasion(StrifeMob attacker, StrifeMob defender) {
@@ -839,10 +843,6 @@ public class DamageUtil {
           0.3, 0.1);
     }
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
-  }
-
-  public static LoadedBuff getBuff(String id) {
-    return StrifePlugin.getInstance().getBuffManager().getBuffFromId(id);
   }
 
   public static void callCritEvent(StrifeMob attacker, StrifeMob victim) {
