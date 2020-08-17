@@ -10,6 +10,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.HitData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
@@ -25,21 +26,22 @@ import org.bukkit.entity.Player;
 public class AreaEffect extends LocationEffect {
 
   private final Map<UUID, List<HitData>> targetDelay = new HashMap<>();
-  private long lastApplication = System.currentTimeMillis();
-
+  private final Map<AbilityMod, Float> attackModifiers = new HashMap<>();
   private final List<Effect> effects = new ArrayList<>();
+
   private AreaType areaType;
   private TargetingPriority priority;
+  private LineOfSight lineOfSight;
   private float range;
   private float maxConeRadius;
   private int maxTargets;
   private boolean scaleTargetsWithMultishot;
-  private LineOfSight lineOfSight;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
   private boolean canBeCountered;
-  private final Map<AbilityMod, Float> attackModifiers = new HashMap<>();
   private long targetingCooldown;
+
+  private long lastApplication = System.currentTimeMillis();
 
   public void apply(StrifeMob caster, StrifeMob target) {
     applyAtLocation(caster, TargetingUtil.getOriginLocation(target.getEntity(), getOrigin()));
@@ -47,22 +49,26 @@ public class AreaEffect extends LocationEffect {
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
+
     Set<LivingEntity> targets = getAreaEffectTargets(caster, location);
-    for (LivingEntity le : targets) {
-      if (isCancelled(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le))) {
-        return;
-      }
-      if (targetingCooldown > 0) {
-        if (lastApplication < System.currentTimeMillis()) {
-          targetDelay.clear();
-        }
-        lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
-        if (!canTargetBeHit(caster.getEntity().getUniqueId(), le.getUniqueId())) {
-          return;
-        }
-      }
-      StrifePlugin.getInstance().getEffectManager().processEffectList(caster, le, effects);
+    targets.removeIf(target -> ignoreEntity(caster, target));
+
+    TargetResponse response = new TargetResponse(targets);
+    getPlugin().getEffectManager().executeEffectList(caster, response, effects);
+  }
+
+  private boolean ignoreEntity(StrifeMob caster, LivingEntity le) {
+    if (isDeflected(caster, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le))) {
+      return true;
     }
+    if (targetingCooldown > 0) {
+      if (lastApplication < System.currentTimeMillis()) {
+        targetDelay.clear();
+      }
+      lastApplication = System.currentTimeMillis() + targetingCooldown * 4L;
+      return !canTargetBeHit(caster.getEntity().getUniqueId(), le.getUniqueId());
+    }
+    return false;
   }
 
   private Set<LivingEntity> getAreaEffectTargets(StrifeMob caster, Location location) {
@@ -82,16 +88,14 @@ public class AreaEffect extends LocationEffect {
         areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, range));
         break;
       case CONE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInCone(location, location.getDirection(),
-            range, maxConeRadius));
+        areaTargets.addAll(TargetingUtil.getEntitiesInCone(location, location.getDirection(), range, maxConeRadius));
         break;
       case PARTY:
         if (caster.getEntity() instanceof Player) {
           areaTargets.addAll(StrifePlugin.getInstance().getSnazzyPartiesHook()
               .getNearbyPartyMembers((Player) caster.getEntity(), location, range));
         } else {
-          areaTargets
-              .addAll(TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), range));
+          areaTargets.addAll(TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), range));
         }
         break;
     }
@@ -101,8 +105,8 @@ public class AreaEffect extends LocationEffect {
     }
     switch (lineOfSight) {
       case CASTER:
-        areaTargets.removeIf(e -> !TargetingUtil
-            .hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
+        areaTargets.removeIf(e ->
+            !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
         break;
       case CENTER:
         areaTargets.removeIf(e -> !TargetingUtil.hasLineOfSight(location, e.getEyeLocation(), e));
@@ -114,29 +118,21 @@ public class AreaEffect extends LocationEffect {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.5);
         numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult);
       }
-      TargetingUtil.filterByTargetPriority(areaTargets, this, caster,
-          Math.min(numTargets, areaTargets.size()));
+      TargetingUtil.filterByTargetPriority(areaTargets, this, caster, Math.min(numTargets, areaTargets.size()));
     }
     return areaTargets;
   }
 
-  private boolean isCancelled(StrifeMob caster, StrifeMob target) {
-    if (canBeEvaded) {
-      float evasionMultiplier = DamageUtil.getFullEvasionMult(caster, target, attackModifiers);
-      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        DamageUtil.doEvasion(caster, target);
-        return true;
-      }
+  private boolean isDeflected(StrifeMob caster, StrifeMob target) {
+    if (canBeEvaded && DamageUtil.isAttackEvaded(caster, target, attackModifiers)) {
+      DamageUtil.doEvasion(caster, target);
+      return true;
     }
-    if (canBeCountered) {
-      if (StrifePlugin.getInstance().getCounterManager().executeCounters(caster.getEntity(),
-          target.getEntity())) {
-        return true;
-      }
+    if (canBeCountered && getPlugin().getCounterManager().executeCounters(caster.getEntity(), target.getEntity())) {
+      return true;
     }
-    if (canBeBlocked) {
-      return StrifePlugin.getInstance().getBlockManager().isAttackBlocked(caster, target,
-          1.0f, AttackType.AREA, false);
+    if (canBeBlocked && getPlugin().getBlockManager().isAttackBlocked(caster, target, 1.0f, AttackType.AREA, false)) {
+      return true;
     }
     return false;
   }

@@ -31,12 +31,14 @@ public enum StrifeStat {
   REGENERATION("Life Regeneration"),
 
   ENERGY("Maximum Energy"),
+  ENERGY_MULT(),
   ENERGY_REGEN("Energy Regeneration"),
   ENERGY_ON_HIT("Energy On Hit"),
   ENERGY_ON_KILL("Energy On Kill"),
   ENERGY_WHEN_HIT("Energy When Hit"),
 
   BARRIER("Maximum Barrier"),
+  BARRIER_MULT(),
   BARRIER_SPEED("Barrier Recharge Rate"),
   BARRIER_REGEN("Barrier Regeneration"),
 
@@ -126,7 +128,9 @@ public enum StrifeStat {
   ITEM_DISCOVERY("Loot Bonus"),
   ITEM_RARITY("Loot Rarity"),
   GOLD_FIND("Gold Bonus"),
-  HEAD_DROP("Head Drop"),
+  FISHING_SPEED("Fishing Speed"),
+  FISHING_TREASURE("Fishing Treasures"),
+  MINING_GEMS("Mining Gems"),
   MONEY_KEPT("Bits Kept On Death"),
   AIR_JUMPS("Additional Air Jumps"),
 
@@ -140,6 +144,7 @@ public enum StrifeStat {
 
   MELEE_PHYSICAL_MULT(),
   RANGED_PHYSICAL_MULT(),
+  PHYSICAL_MULT(),
   MAGIC_MULT(),
 
   DAMAGE_MULT(),

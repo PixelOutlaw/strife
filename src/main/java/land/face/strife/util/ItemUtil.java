@@ -37,8 +37,8 @@ public class ItemUtil {
 
   public static boolean isArmor(Material material) {
     String name = material.name();
-    return name.endsWith("HELMET") || name.endsWith("CHESTPLATE") || name.endsWith("LEGGINGS") ||
-        name.endsWith("BOOTS");
+    return name.endsWith("HELMET") || name.endsWith("CHESTPLATE") || name.endsWith("LEGGINGS") || name.endsWith("BOOTS")
+        || name.endsWith("SKULL") || name.endsWith("HEAD");
   }
 
   public static boolean isMeleeWeapon(Material material) {
@@ -90,7 +90,7 @@ public class ItemUtil {
     }
     if (mainItem.getType() == Material.BOW) {
       if (isPistol(mainItem)) {
-        return isAmmo(offItem);
+        return isBullets(offItem);
       }
       return offItem.getType() == Material.ARROW;
     }
@@ -110,7 +110,7 @@ public class ItemUtil {
     return stack.getType() == Material.ARROW && itemData < 10000;
   }
 
-  public static boolean isAmmo(ItemStack stack) {
+  public static boolean isBullets(ItemStack stack) {
     int itemData = getCustomData(stack);
     return stack.getType() == Material.ARROW && itemData > 9999 && itemData < 11000;
   }

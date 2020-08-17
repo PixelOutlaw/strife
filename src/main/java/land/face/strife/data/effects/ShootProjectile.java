@@ -115,11 +115,7 @@ public class ShootProjectile extends Effect {
       }
 
       if (!hitEffects.isEmpty()) {
-        StringBuilder hitString = new StringBuilder();
-        for (String s : hitEffects) {
-          hitString.append(s).append("~");
-        }
-        ProjectileUtil.setHitEffects(projectile, hitString.toString());
+        ProjectileUtil.setHitEffects(projectile, hitEffects);
       }
 
       if (disguise != null) {

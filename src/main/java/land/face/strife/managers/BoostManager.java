@@ -107,22 +107,22 @@ public class BoostManager {
     Bukkit.getLogger().info("member not a booster - no boost bonus");
   }
 
-  public Map<StrifeStat, Float> getAttributes() {
-    Map<StrifeStat, Float> attrMap = new HashMap<>();
+  public Map<StrifeStat, Float> getStats() {
+    Map<StrifeStat, Float> statMap = new HashMap<>();
     for (Boost boost : boosts) {
-      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, boost.getStats()));
+      statMap.putAll(StatUpdateManager.combineMaps(statMap, boost.getStats()));
     }
     if (dailyBoost != null) {
-      attrMap.putAll(StatUpdateManager.combineMaps(attrMap, dailyBoost.getStats()));
+      statMap.putAll(StatUpdateManager.combineMaps(statMap, dailyBoost.getStats()));
     }
     if (discordBoosters.size() > 0) {
-      attrMap.put(StrifeStat.SKILL_XP_GAIN, discordBoosters.size() *
-          2 + attrMap.getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
+      statMap.put(StrifeStat.SKILL_XP_GAIN, discordBoosters.size() *
+          2 + statMap.getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
     }
     if (contributors.size() > 0) {
-      attrMap.put(StrifeStat.XP_GAIN, contributors.size() + attrMap.getOrDefault(StrifeStat.XP_GAIN, 0f));
+      statMap.put(StrifeStat.XP_GAIN, contributors.size() + statMap.getOrDefault(StrifeStat.XP_GAIN, 0f));
     }
-    return attrMap;
+    return statMap;
   }
 
   public boolean startBoost(String name, String boostId, int seconds) {
@@ -145,11 +145,11 @@ public class BoostManager {
     for (Boost boost : boosts) {
       LoadedStatBoost loadedStatBoost = loadedBoosts.get(boost.getBoostId());
       if (boost.getSecondsRemaining() <= 0) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-          plugin.getChampionManager().updateAll(plugin.getChampionManager().getChampion(p));
-        }
         announceBoost(loadedStatBoost.getAnnounceEnd(), boost.getBoosterName(), 0);
         boosts.remove(boost);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+          plugin.getChampionManager().getChampion(p).recombineCache();
+        }
         continue;
       }
       boost.setSecondsRemaining(boost.getSecondsRemaining() - 1);

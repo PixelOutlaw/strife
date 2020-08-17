@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife;
 
@@ -44,6 +42,8 @@ import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
 import land.face.strife.commands.UniqueEntityCommand;
+import land.face.strife.data.LevelPath;
+import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
@@ -66,7 +66,7 @@ import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
 import land.face.strife.listeners.ExperienceListener;
 import land.face.strife.listeners.FallListener;
-import land.face.strife.listeners.HeadDropListener;
+import land.face.strife.listeners.FishingListener;
 import land.face.strife.listeners.HeadLoadListener;
 import land.face.strife.listeners.HealingListener;
 import land.face.strife.listeners.InventoryListener;
@@ -107,6 +107,7 @@ import land.face.strife.managers.LoreAbilityManager;
 import land.face.strife.managers.MinionManager;
 import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
+import land.face.strife.managers.PathManager;
 import land.face.strife.managers.RageManager;
 import land.face.strife.managers.SkillExperienceManager;
 import land.face.strife.managers.SoulManager;
@@ -122,6 +123,7 @@ import land.face.strife.menus.abilities.AbilityPickerPickerItem;
 import land.face.strife.menus.abilities.AbilityPickerPickerMenu;
 import land.face.strife.menus.levelup.ConfirmationMenu;
 import land.face.strife.menus.levelup.LevelupMenu;
+import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.menus.stats.StatsMenu;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -180,6 +182,7 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration equipmentYAML;
   private VersionedSmartYamlConfiguration conditionYAML;
   private VersionedSmartYamlConfiguration effectYAML;
+  private VersionedSmartYamlConfiguration pathYAML;
   private VersionedSmartYamlConfiguration abilityYAML;
   private VersionedSmartYamlConfiguration loreAbilityYAML;
   private VersionedSmartYamlConfiguration buffsYAML;
@@ -215,6 +218,7 @@ public class StrifePlugin extends FacePlugin {
   private LoreAbilityManager loreAbilityManager;
   private AbilityIconManager abilityIconManager;
   private BuffManager buffManager;
+  private PathManager pathManager;
   private CombatStatusManager combatStatusManager;
   private SpawnerManager spawnerManager;
   private MobModManager mobModManager;
@@ -237,6 +241,7 @@ public class StrifePlugin extends FacePlugin {
   private AbilityPickerPickerMenu abilitySubcategoryMenu;
   private Map<String, AbilityPickerMenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
+  private Map<Path, PathMenu> pathMenus = new HashMap<>();
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
 
@@ -266,6 +271,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
     configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
     configurations.add(abilityYAML = defaultSettingsLoad("abilities.yml"));
+    configurations.add(pathYAML = defaultSettingsLoad("paths.yml"));
     configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
     configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
     configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
@@ -318,6 +324,7 @@ public class StrifePlugin extends FacePlugin {
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     buffManager = new BuffManager();
+    pathManager = new PathManager();
     combatStatusManager = new CombatStatusManager(this);
 
     MenuListener.getInstance().register(this);
@@ -341,6 +348,7 @@ public class StrifePlugin extends FacePlugin {
     buildConditions();
     buildEffects();
     buildAbilities();
+    buildPaths();
     buildLoreAbilities();
 
     buildUniqueEnemies();
@@ -469,21 +477,17 @@ public class StrifePlugin extends FacePlugin {
     agilityManager.loadAgilityContainers();
     boostManager.loadBoosts();
 
-    Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
-    Bukkit.getPluginManager().registerEvents(
-        new UniqueSplashListener(strifeMobManager, blockManager, effectManager), this);
-    Bukkit.getPluginManager().registerEvents(
-        new EvokerFangEffectListener(strifeMobManager, effectManager), this);
+    Bukkit.getPluginManager().registerEvents(new UniqueSplashListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new EvokerFangEffectListener(strifeMobManager, effectManager), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
-    Bukkit.getPluginManager().registerEvents(new HeadDropListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new MoveListener(), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
@@ -492,15 +496,14 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager().registerEvents(new MoneyDropListener(this), this);
-    Bukkit.getPluginManager().registerEvents(
-        new MinionListener(strifeMobManager, minionManager), this);
+    Bukkit.getPluginManager().registerEvents(new MinionListener(strifeMobManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new FishingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
-    Bukkit.getPluginManager()
-        .registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
+    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
 
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
@@ -536,13 +539,16 @@ public class StrifePlugin extends FacePlugin {
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu();
+    for (Path path : LevelPath.PATH_VALUES) {
+      pathMenus.put(path, new PathMenu(this, path));
+    }
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      getChampionManager().updateAll(championManager.getChampion(player));
-      statUpdateManager.updateAttributes(player);
+      statUpdateManager.updateVanillaAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
     }
+    getChampionManager().updateAll();
 
     DamageUtil.refresh();
 
@@ -599,6 +605,16 @@ public class StrifePlugin extends FacePlugin {
       }
       ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
       abilityManager.loadAbility(key, cs);
+    }
+  }
+
+  private void buildPaths() {
+    for (String key : pathYAML.getKeys(false)) {
+      if (!pathYAML.isConfigurationSection(key)) {
+        continue;
+      }
+      ConfigurationSection cs = pathYAML.getConfigurationSection(key);
+      pathManager.loadPath(key, cs);
     }
   }
 
@@ -717,7 +733,6 @@ public class StrifePlugin extends FacePlugin {
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
-      uniqueEntity.setKnockbackImmune(cs.getBoolean("knockback-immune", false));
       uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", false));
       uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
       uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
@@ -964,6 +979,10 @@ public class StrifePlugin extends FacePlugin {
     return buffManager;
   }
 
+  public PathManager getPathManager() {
+    return pathManager;
+  }
+
   public MobModManager getMobModManager() {
     return mobModManager;
   }
@@ -1022,6 +1041,10 @@ public class StrifePlugin extends FacePlugin {
 
   public StatsMenu getStatsMenu() {
     return statsMenu;
+  }
+
+  public PathMenu getPathMenu(Path path) {
+    return pathMenus.get(path);
   }
 
   public EnergyRegenTask getEnergyRegenTask() {

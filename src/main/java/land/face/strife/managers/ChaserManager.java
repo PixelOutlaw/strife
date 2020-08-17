@@ -9,6 +9,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.ChaserEntity;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.util.DamageUtil.OriginLocation;
@@ -82,9 +83,10 @@ public class ChaserManager {
           chaser.getLocation().clone().subtract(chaser.getVelocity().clone().multiply(0.5)));
     }
     if (isChaserCloseEnough(chaser, data, targetLocation)) {
-      for (Effect effect : data.getEffectList()) {
-        plugin.getEffectManager().execute(effect, chaser.getCaster(), chaser.getTarget());
-      }
+      Set<LivingEntity> entities = new HashSet<>();
+      entities.add(chaser.getTarget());
+      TargetResponse response = new TargetResponse(entities);
+      plugin.getEffectManager().processEffectList(chaser.getCaster(), response, data.getEffectList());
       return true;
     }
     chaser.setVelocity(velocity);

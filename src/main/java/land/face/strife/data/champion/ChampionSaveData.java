@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import land.face.strife.data.LevelPath.Choice;
+import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.stats.AbilitySlot;
@@ -21,6 +23,7 @@ public class ChampionSaveData {
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
   private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
   private final Map<AbilitySlot, List<String>> castMessages = new HashMap<>();
+  private final Map<Path, Choice> pathMap = new HashMap<>();
   private final Set<LoreAbility> boundAbilities = new HashSet<>();
 
   private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;
@@ -42,6 +45,10 @@ public class ChampionSaveData {
 
   public Map<AbilitySlot, List<String>> getCastMessages() {
     return castMessages;
+  }
+
+  public Map<Path, Choice> getPathMap() {
+    return pathMap;
   }
 
   public void setAbility(AbilitySlot abilitySlot, Ability ability) {

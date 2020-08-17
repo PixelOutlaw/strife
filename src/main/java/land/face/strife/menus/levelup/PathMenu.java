@@ -19,46 +19,21 @@
 package land.face.strife.menus.levelup;
 
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.util.List;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.LevelPath;
+import land.face.strife.data.LevelPath.Choice;
 import land.face.strife.data.LevelPath.Path;
-import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
-public class LevelupMenu extends ItemMenu {
+public class PathMenu extends ItemMenu {
 
-  public LevelupMenu(StrifePlugin plugin, List<StrifeAttribute> attributes) {
-    super(StringExtensionsKt.chatColorize("&0&lLevel Up!"),
-        Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
+  public PathMenu(StrifePlugin plugin, Path path) {
+    super(StringExtensionsKt.chatColorize("&8&oChoose..."), Size.THREE_LINE, plugin);
 
-    ItemStack lockedPathIcon = new ItemStack(Material.PAPER);
-    ItemStackExtensionsKt.setDisplayName(lockedPathIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
-    ItemStackExtensionsKt.setCustomModelData(lockedPathIcon, 200);
+    setItem(11, new ChoiceButton(plugin, path, Choice.OPTION_1));
+    setItem(13, new ChoiceButton(plugin, path, Choice.OPTION_2));
+    setItem(15, new ChoiceButton(plugin, path, Choice.OPTION_3));
 
-    ItemStack unlockedPathIcon = new ItemStack(Material.PAPER);
-    ItemStackExtensionsKt.setDisplayName(unlockedPathIcon, "Click to choose your path");
-    ItemStackExtensionsKt.setCustomModelData(unlockedPathIcon, 201);
-
-    for (StrifeAttribute attribute : attributes) {
-      int slot = attribute.getSlot();
-      setItem(slot, new LevelupMenuItem(plugin, attribute));
-    }
-
-    int pathIndex = 45;
-    int requirement = 10;
-    for (Path path : LevelPath.PATH_VALUES) {
-      setItem(pathIndex, new PathItem(plugin, requirement, lockedPathIcon, unlockedPathIcon, path));
-      requirement += 10;
-      pathIndex++;
-    }
-
-    int slot = plugin.getSettings().getInt("config.menu.unused-slot");
-    setItem(slot, new LevelupPointsMenuItem(plugin));
     fillEmptySlots(new BlankIcon());
   }
 

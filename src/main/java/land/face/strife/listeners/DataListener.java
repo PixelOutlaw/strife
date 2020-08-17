@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
@@ -41,12 +39,16 @@ import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -58,7 +60,9 @@ public class DataListener implements Listener {
   private final static String UNUSED_MESSAGE_1 =
       "&6&lLevelup! You have &f&l{0} &6&lunused Levelpoints!";
   private final static String UNUSED_MESSAGE_2 =
-      "&6&lOpen your inventory or use &f&l/levelup &6&lto spend them!";
+      "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
+  private final static String UNUSED_PATH =
+      "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
 
   public DataListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -81,6 +85,13 @@ public class DataListener implements Listener {
       return;
     }
     if (SpecialStatusUtil.isBurnImmune(event.getEntity())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler
+  public void onSnowmanMelt(final EntityDamageEvent event) {
+    if (event.getCause() == DamageCause.MELTING && SpecialStatusUtil.isBurnImmune(event.getEntity())) {
       event.setCancelled(true);
     }
   }
@@ -112,23 +123,26 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
+    event.getPlayer().setHealthScaled(false);
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
+
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
     }
+    if (event.getPlayer().getLevel() / 10 > champion.getSaveData().getPathMap().size()) {
+      notifyUnusedPaths(event.getPlayer());
+    }
+
     plugin.getCounterManager().clearCounters(event.getPlayer());
     ensureAbilitiesDontInstantCast(event.getPlayer());
+
+    plugin.getChampionManager().update(event.getPlayer());
+
     Bukkit.getScheduler().runTaskLater(plugin,
         () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 2L);
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerJoinUpdateAttributes(final PlayerJoinEvent event) {
-    event.getPlayer().setHealthScaled(false);
-    plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -142,6 +156,7 @@ public class DataListener implements Listener {
   }
 
   private void doPlayerLeave(Player player) {
+    plugin.getAbilityManager().unToggleAll(player);
     plugin.getBoostManager().removeBooster(player.getUniqueId());
     plugin.getAbilityManager().savePlayerCooldowns(player);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
@@ -173,7 +188,8 @@ public class DataListener implements Listener {
         .getRightClicked() instanceof ArmorStand) {
       return;
     }
-    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked().hasMetadata("pet")) {
+    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked()
+        .hasMetadata("pet")) {
       return;
     }
     final Player player = event.getPlayer();
@@ -206,12 +222,21 @@ public class DataListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerTeleport(PlayerTeleportEvent event) {
     if (event.getTo().getWorld() != event.getTo().getWorld()) {
-      event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
-          Math.max(40, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
+      ensureAbilitiesDontInstantCast(event.getPlayer());
       return;
     }
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
-        Math.max(3, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
+        Math.max(5, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerWorldChance(PlayerChangedWorldEvent event) {
+    ensureAbilitiesDontInstantCast(event.getPlayer());
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerPortal(PlayerPortalEvent event) {
+    ensureAbilitiesDontInstantCast(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -245,7 +270,7 @@ public class DataListener implements Listener {
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {
-    plugin.getAbilityManager().setGlobalCooldown(player, 20);
+    plugin.getAbilityManager().setGlobalCooldown(player, 30);
     if (player.getInventory().getHeldItemSlot() < 3) {
       player.getInventory().setHeldItemSlot(3);
     }
@@ -256,5 +281,11 @@ public class DataListener implements Listener {
       MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
       MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
     }, 20L * 5);
+  }
+
+  private void notifyUnusedPaths(final Player player) {
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      MessageUtils.sendMessage(player, UNUSED_PATH);
+    }, 20L * 5 + 1);
   }
 }

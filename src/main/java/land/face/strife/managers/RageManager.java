@@ -38,12 +38,12 @@ public class RageManager {
     return 0;
   }
 
-  public void addRage(StrifeMob mob, float amount) {
+  public void changeRage(StrifeMob mob, float amount) {
     if (rageMap.containsKey(mob.getEntity().getUniqueId())) {
       rageMap.get(mob.getEntity().getUniqueId()).bumpRage(amount);
       return;
     }
-    amount =  Math.min(amount, mob.getStat(StrifeStat.MAXIMUM_RAGE));
+    amount = Math.max(0, Math.min(amount, mob.getStat(StrifeStat.MAXIMUM_RAGE)));
     rageMap.put(mob.getEntity().getUniqueId(), new RageTimer(mob, amount));
   }
 

@@ -13,7 +13,7 @@ import land.face.strife.util.DamageUtil.DamageType;
 
 public class DamageModifiers {
 
-  private static Map<DamageType, Float> baseDamageMults = buildBaseDamageMults();
+  private static final Map<DamageType, Float> baseDamageMults = buildBaseDamageMults();
 
   private AttackType attackType = AttackType.OTHER;
   private float attackMultiplier = 1f;
@@ -28,8 +28,9 @@ public class DamageModifiers {
   private boolean canBeBlocked = true;
   private boolean canBeEvaded = true;
   private boolean applyOnHitEffects = true;
-  private boolean consumeEarthRunes = true;
+  private boolean consumeEarthRunes = false;
   private boolean scaleChancesWithAttack = false;
+  private boolean showPopoffs = true;
 
   public AttackType getAttackType() {
     return attackType;
@@ -125,6 +126,14 @@ public class DamageModifiers {
 
   public void setScaleChancesWithAttack(boolean scaleChancesWithAttack) {
     this.scaleChancesWithAttack = scaleChancesWithAttack;
+  }
+
+  public boolean isShowPopoffs() {
+    return showPopoffs;
+  }
+
+  public void setShowPopoffs(boolean showPopoffs) {
+    this.showPopoffs = showPopoffs;
   }
 
   public boolean isConsumeEarthRunes() {

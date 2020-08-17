@@ -20,7 +20,6 @@ package land.face.strife.listeners;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -144,18 +143,14 @@ public class ExperienceListener implements Listener {
   public void onPlayerLevelChange(PlayerLevelChangeEvent event) {
     Player player = event.getPlayer();
     Champion champion = plugin.getChampionManager().getChampion(player);
-    if (event.getOldLevel() < event.getNewLevel()) {
-      MessageUtils.sendActionBar(player, LEVEL_UP);
-    } else {
-      MessageUtils.sendActionBar(player, LEVEL_DOWN);
-    }
+    plugin.getChampionManager().buildBaseStats(champion);
     if (event.getNewLevel() <= champion.getHighestReachedLevel()) {
       return;
     }
     int points = event.getNewLevel() - event.getOldLevel();
     champion.setHighestReachedLevel(event.getNewLevel());
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
-    plugin.getChampionManager().updateAll(champion);
+    plugin.getChampionManager().update(player);
 
     player.setHealth(player.getMaxHealth());
     plugin.getEnergyManager().changeEnergy(player, Integer.MAX_VALUE);

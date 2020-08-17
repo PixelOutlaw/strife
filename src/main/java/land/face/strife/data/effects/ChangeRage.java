@@ -4,7 +4,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 
-public class IncreaseRage extends Effect {
+public class ChangeRage extends Effect {
 
   private float amount;
 
@@ -17,7 +17,7 @@ public class IncreaseRage extends Effect {
     for (StrifeStat attr : getStatMults().keySet()) {
       rageAmount += getStatMults().get(attr) * caster.getStat(attr);
     }
-    StrifePlugin.getInstance().getRageManager().addRage(target, rageAmount);
+    StrifePlugin.getInstance().getRageManager().changeRage(target, rageAmount);
   }
 
   public void setAmount(float amount) {

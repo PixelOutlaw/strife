@@ -26,21 +26,18 @@ public class CreateWorldSpaceEntity extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    cacheEffects();
     apply(caster, TargetingUtil.getOriginLocation(target.getEntity(), originLocation));
   }
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
-    cacheEffects();
     apply(caster, location);
   }
 
   public void apply(StrifeMob caster, Location location) {
     cacheEffects();
-    StrifePlugin.getInstance().getWseManager().createAtTarget(caster, location, lifespan, gravity,
-        friction, maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
-        zeroVerticalAxis);
+    getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction, maxTicks, velocity,
+        maxDisplacement, cachedEffectSchedule, strictDuration, zeroVerticalAxis);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {

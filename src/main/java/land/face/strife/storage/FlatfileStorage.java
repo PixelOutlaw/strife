@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.storage;
 
@@ -26,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LevelPath.Choice;
+import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
@@ -92,6 +92,7 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
     config.set(champUuid + ".bonus-levels", champion.getBonusLevels());
     config.set(champUuid + ".pvp-score", (int) champion.getPvpScore());
+
     for (LifeSkillType type : LifeSkillType.types) {
       config.set(champUuid + "." + type.getDataName() + "-level", champion.getSkillLevel(type));
       config.set(champUuid + "." + type.getDataName() + "-exp", champion.getSkillExp(type));
@@ -113,19 +114,21 @@ public class FlatfileStorage implements DataStorage {
       }
       boundAbilityIds.add(loreAbility.getId());
     }
+
     config.set(champUuid + ".lore-abilities", boundAbilityIds);
 
     if (champion.getCastMessages().get(AbilitySlot.SLOT_A) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_A",
-          champion.getCastMessages().get(AbilitySlot.SLOT_A));
+      config.set(champUuid + ".slot-messages.SLOT_A", champion.getCastMessages().get(AbilitySlot.SLOT_A));
     }
     if (champion.getCastMessages().get(AbilitySlot.SLOT_B) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_B",
-          champion.getCastMessages().get(AbilitySlot.SLOT_B));
+      config.set(champUuid + ".slot-messages.SLOT_B", champion.getCastMessages().get(AbilitySlot.SLOT_B));
     }
     if (champion.getCastMessages().get(AbilitySlot.SLOT_C) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_C",
-          champion.getCastMessages().get(AbilitySlot.SLOT_C));
+      config.set(champUuid + ".slot-messages.SLOT_C", champion.getCastMessages().get(AbilitySlot.SLOT_C));
+    }
+
+    for (Path path : champion.getPathMap().keySet()) {
+      config.set(champUuid + ".passives." + path.toString(), champion.getPathMap().get(path).toString());
     }
 
     configMap.put(champion.getUniqueId(), config);
@@ -145,8 +148,7 @@ public class FlatfileStorage implements DataStorage {
 
       HealthDisplayType displayType;
       try {
-        displayType = HealthDisplayType
-            .valueOf(section.getString("health-display", "TEN_HEALTH_HEARTS"));
+        displayType = HealthDisplayType.valueOf(section.getString("health-display", "TEN_HEALTH_HEARTS"));
       } catch (Exception e) {
         displayType = HealthDisplayType.TEN_LIFE_PER_HEART;
       }
@@ -195,6 +197,19 @@ public class FlatfileStorage implements DataStorage {
         saveData.getCastMessages().put(AbilitySlot.SLOT_B, msg.getStringList("SLOT_B"));
         saveData.getCastMessages().put(AbilitySlot.SLOT_C, msg.getStringList("SLOT_C"));
       }
+
+      if (section.isConfigurationSection("passives")) {
+        ConfigurationSection passiveSection = section.getConfigurationSection("passives");
+        if (passiveSection != null) {
+          for (String passive : passiveSection.getKeys(false)) {
+            Path path = Path.valueOf(passive);
+            Choice choice = Choice.valueOf(passiveSection.getString(passive));
+            saveData.getPathMap().put(path, choice);
+          }
+        }
+      }
+
+      Bukkit.getLogger().info("Loaded " + saveData.getPathMap().size() + " path choices!");
 
       if (section.isConfigurationSection("stats")) {
         ConfigurationSection statsSection = section.getConfigurationSection("stats");

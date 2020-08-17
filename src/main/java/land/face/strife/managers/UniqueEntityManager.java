@@ -12,7 +12,6 @@ import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.events.UniqueSpawnEvent;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ItemPassengerTask;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
@@ -22,7 +21,6 @@ import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Ageable;
@@ -195,11 +193,6 @@ public class UniqueEntityManager {
       }
     }
 
-    if (uniqueEntity.isKnockbackImmune()
-        && le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
-      le.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(100);
-    }
-
     le.setCanPickupItems(false);
     if (le.getEquipment() != null) {
       Map<EquipmentSlot, ItemStack> equipmentMap = plugin.getEquipmentManager()
@@ -217,19 +210,18 @@ public class UniqueEntityManager {
     le.setCustomName(uniqueEntity.getName());
     le.setCustomNameVisible(uniqueEntity.isShowName());
 
+    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(le);
+
     int mobLevel = uniqueEntity.getBaseLevel();
     if (mobLevel == -1) {
       mobLevel = StatUtil.getMobLevel(le);
     }
 
-    Map<StrifeStat, Float> stats = new HashMap<>();
-    if (mobLevel != 0) {
-      stats.putAll(plugin.getMonsterManager().getBaseStats(le, mobLevel));
+    if (mobLevel == 0) {
+      strifeMob.setStats(uniqueEntity.getAttributeMap());
+    } else {
+      strifeMob.setStats(StatUpdateManager.combineMaps(strifeMob.getBaseStats(), uniqueEntity.getAttributeMap()));
     }
-
-    stats = StatUpdateManager.combineMaps(stats, uniqueEntity.getAttributeMap());
-
-    StrifeMob strifeMob = plugin.getStrifeMobManager().setEntityStats(le, stats);
 
     if (uniqueEntity.getMaxMods() > 0) {
       plugin.getMobModManager().doModApplication(strifeMob, uniqueEntity.getMaxMods());
@@ -259,7 +251,7 @@ public class UniqueEntityManager {
       }
     }
 
-    plugin.getStatUpdateManager().updateAttributes(strifeMob);
+    plugin.getStatUpdateManager().updateVanillaAttributes(strifeMob);
 
     strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
     plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);

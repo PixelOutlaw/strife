@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
@@ -49,19 +47,18 @@ import org.bukkit.inventory.ItemStack;
 
 public class ChampionManager {
 
-  private StrifePlugin plugin;
-  private String levelReqGeneric;
-  private float dualWieldAttackSpeed;
-  private Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
-  private Map<UUID, Champion> championMap = new HashMap<>();
+  private final StrifePlugin plugin;
+  private final String levelReqGeneric;
+  private final float dualWieldAttackSpeed;
+  private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
+  private final Map<UUID, Champion> championMap = new HashMap<>();
 
   private final static String RESET_MESSAGE =
       "&a&lYour Levelpoints have been automatically reset due to an update!";
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    dualWieldAttackSpeed =
-        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
+    dualWieldAttackSpeed = (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
     levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
     for (EquipmentSlot slot : EquipmentSlot.values()) {
       levelReqMap.put(slot, plugin.getSettings().getString("language.level-req." + slot, ""));
@@ -69,15 +66,26 @@ public class ChampionManager {
   }
 
   public Champion getChampion(Player player) {
+
     UUID uuid = player.getUniqueId();
+
     if (championExists(uuid)) {
       championMap.get(uuid).setPlayer(player);
       return championMap.get(uuid);
     }
+
     ChampionSaveData saveData = plugin.getStorage().load(player.getUniqueId());
     Champion champion = new Champion(player, saveData);
     championMap.put(uuid, champion);
-    return championMap.get(uuid);
+
+    buildBaseStats(champion);
+    rebuildAttributes(champion);
+    buildEquipmentAttributes(champion);
+    plugin.getPathManager().buildPathBonus(champion);
+
+    champion.recombineCache();
+
+    return champion;
   }
 
   public boolean championExists(UUID uuid) {
@@ -86,6 +94,21 @@ public class ChampionManager {
 
   public Collection<Champion> getChampions() {
     return new HashSet<>(championMap.values());
+  }
+
+  public void update(Champion champion) {
+    champion.recombineCache();
+    plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
+  }
+
+  public void update(Player player) {
+    update(getChampion(player));
+  }
+
+  public void updateAll() {
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      update(p);
+    }
   }
 
   public void tickPassiveLoreAbilities() {
@@ -121,13 +144,13 @@ public class ChampionManager {
   public void savePendingStats(Champion champion) {
     for (StrifeAttribute stat : champion.getPendingLevelMap().keySet()) {
       if (champion.getPendingLevel(stat) > champion.getAttributeLevel(stat)) {
-        sendMessage(champion.getPlayer(),
-            stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
-        champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f,
-            stat.getLevelPitch());
+        sendMessage(champion.getPlayer(), stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
+        champion.getPlayer()
+            .playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f, stat.getLevelPitch());
       }
     }
     champion.getSaveData().savePendingStats();
+    rebuildAttributes(champion);
   }
 
   public void verifyStatValues(Champion champion) {
@@ -152,11 +175,12 @@ public class ChampionManager {
     championMap.clear();
   }
 
-  private void buildBaseAttributes(Champion champion) {
-    champion.setAttributeBaseCache(plugin.getMonsterManager().getBaseStats(champion.getPlayer()));
+  public void buildBaseStats(Champion champion) {
+    champion.setBaseStats(plugin.getMonsterManager().getBaseStats(champion.getPlayer(),
+        champion.getPlayer().getLevel()));
   }
 
-  private void buildPointAttributes(Champion champion) {
+  public void rebuildAttributes(Champion champion) {
     Map<StrifeStat, Float> attributeMap = new HashMap<>();
     for (StrifeAttribute stat : champion.getLevelMap().keySet()) {
       int statLevel = champion.getLevelMap().get(stat);
@@ -171,7 +195,7 @@ public class ChampionManager {
         attributeMap.put(attr, amount);
       }
     }
-    champion.setAttributeLevelPointCache(attributeMap);
+    champion.setLevelPointStats(attributeMap);
   }
 
   private void buildEquipmentAttributes(Champion champion) {
@@ -248,37 +272,13 @@ public class ChampionManager {
     return true;
   }
 
-  public void updatePointAttributes(Champion champion) {
-    buildPointAttributes(champion);
-    pushChampionUpdate(champion);
-  }
-
-  public void updateBaseAttributes(Champion champion) {
-    buildBaseAttributes(champion);
-    pushChampionUpdate(champion);
-  }
-
   public void updateEquipmentStats(Player player) {
     updateEquipmentStats(getChampion(player));
   }
 
   public void updateEquipmentStats(Champion champion) {
     buildEquipmentAttributes(champion);
-    pushChampionUpdate(champion);
-  }
-
-  public void updateAll(Champion champion) {
-    buildPointAttributes(champion);
-    buildBaseAttributes(champion);
-    buildEquipmentAttributes(champion);
-
-    pushChampionUpdate(champion);
-  }
-
-  private void pushChampionUpdate(Champion champion) {
     champion.recombineCache();
-    plugin.getStrifeMobManager().setEntityStats(champion.getPlayer(), StatUpdateManager
-        .combineMaps(champion.getCombinedCache(), plugin.getBoostManager().getAttributes()));
   }
 
   private Set<LoreAbility> getItemAbilities(EquipmentSlot slot, EntityEquipment equipment) {

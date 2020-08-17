@@ -55,7 +55,7 @@ public class StatsBonusMenuItem extends MenuItem {
 
     int totalCombatXp = Math.round(pStats.getStat(StrifeStat.XP_GAIN));
     lore.add(ChatColor.GREEN + "Combat XP: " + ChatColor.WHITE + "+" + totalCombatXp + "%");
-    int running = Math.round(StrifePlugin.getInstance().getBoostManager().getAttributes().getOrDefault(StrifeStat.XP_GAIN, 0f));
+    int running = Math.round(StrifePlugin.getInstance().getBoostManager().getStats().getOrDefault(StrifeStat.XP_GAIN, 0f));
     int contributors = StrifePlugin.getInstance().getBoostManager().getContributorSize();
     int buffs = Math.round(pStats.getBuffStats().getOrDefault(StrifeStat.XP_GAIN, 0f));
     if (buffs > 0 || running > 0 || contributors > 0) {
@@ -76,7 +76,7 @@ public class StatsBonusMenuItem extends MenuItem {
 
     int totalSkillXp = Math.round(pStats.getStat(StrifeStat.SKILL_XP_GAIN));
     lore.add(ChatColor.GREEN + "Skill XP: " + ChatColor.WHITE + "+" + totalSkillXp + "%");
-    int running2 = Math.round(StrifePlugin.getInstance().getBoostManager().getAttributes().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
+    int running2 = Math.round(StrifePlugin.getInstance().getBoostManager().getStats().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
     int boosters = StrifePlugin.getInstance().getBoostManager().getDiscordBoostSize() * 2;
     int buffs2 = Math.round(pStats.getBuffStats().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
     if (buffs2 > 0 || running2 > 0 || boosters > 0) {
@@ -101,8 +101,19 @@ public class StatsBonusMenuItem extends MenuItem {
         .format(pStats.getStat(StrifeStat.ITEM_RARITY)) + "%");
     lore.add(ChatColor.GREEN + "Gold Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.GOLD_FIND)) + "%");
-    lore.add(ChatColor.GREEN + "Head Drop Chance: " + ChatColor.WHITE + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.HEAD_DROP)) + "%");
+
+    if (pStats.getStat(StrifeStat.FISHING_SPEED) > 0F) {
+      lore.add(ChatColor.GREEN + "Fishing Speed: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+          .format(pStats.getStat(StrifeStat.FISHING_SPEED)) + "%");
+    }
+    if (pStats.getStat(StrifeStat.FISHING_TREASURE) > 0F) {
+      lore.add(ChatColor.GREEN + "Fishing Treasures: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+          .format(pStats.getStat(StrifeStat.FISHING_TREASURE)) + "%");
+    }
+    if (pStats.getStat(StrifeStat.MINING_GEMS) > 0F) {
+      lore.add(ChatColor.GREEN + "Mining Gems: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
+          .format(pStats.getStat(StrifeStat.MINING_GEMS)) + "%");
+    }
 
     lore.add(StatsMenu.breakLine);
 

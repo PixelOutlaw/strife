@@ -24,16 +24,18 @@ import org.bukkit.entity.Player;
 
 public class StrifeMob {
 
-  private final static int BUFF_CHECK_FREQUENCY_MS = 100;
+  private final static int CACHE_DELAY = 100;
 
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
-  private final Map<StrifeStat, Float> tempBonuses = new HashMap<>();
+
+  private String uniqueEntityId = null;
 
   private final WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
+  private WeakReference<LivingEntity> master;
+
   private EntityAbilitySet abilitySet;
-  private String uniqueEntityId = null;
   private final Set<String> mods = new HashSet<>();
 
   private Set<String> factions = new HashSet<>();
@@ -44,14 +46,12 @@ public class StrifeMob {
   private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
 
-  private WeakReference<LivingEntity> master;
-
   private final Set<StrifeMob> minions = new HashSet<>();
   private final Set<Buff> runningBuffs = new HashSet<>();
 
   private final Map<UUID, Float> takenDamage = new HashMap<>();
 
-  private long buffCacheStamp = System.currentTimeMillis();
+  private long cacheStamp = 1L;
 
   public StrifeMob(Champion champion) {
     this.livingEntity = new WeakReference<>(champion.getPlayer());
@@ -120,13 +120,10 @@ public class StrifeMob {
   }
 
   public float getStat(StrifeStat stat) {
-    if (runningBuffs.isEmpty()) {
-      return baseStats.getOrDefault(stat, 0f);
-    }
-    if (System.currentTimeMillis() - buffCacheStamp > BUFF_CHECK_FREQUENCY_MS) {
+    if (System.currentTimeMillis() >= cacheStamp) {
       statCache.clear();
       statCache.putAll(getFinalStats());
-      buffCacheStamp = System.currentTimeMillis();
+      cacheStamp = System.currentTimeMillis() + CACHE_DELAY;
     }
     return statCache.getOrDefault(stat, 0f);
   }
@@ -180,7 +177,10 @@ public class StrifeMob {
   }
 
   public Map<StrifeStat, Float> getFinalStats() {
-    return StatUpdateManager.combineMaps(baseStats, getBuffStats(), tempBonuses);
+    if (getChampion() != null) {
+      return StatUpdateManager.combineMaps(getChampion().getCombinedCache(), getBuffStats());
+    }
+    return StatUpdateManager.combineMaps(baseStats, getBuffStats());
   }
 
   public Map<StrifeStat, Float> getBaseStats() {
@@ -190,9 +190,10 @@ public class StrifeMob {
   public void setStats(Map<StrifeStat, Float> stats) {
     baseStats.clear();
     baseStats.putAll(stats);
+    cacheStamp = 1L;
   }
 
-  public Buff hasBuff(String buffId, UUID source) {
+  public Buff getBuff(String buffId, UUID source) {
     Iterator<Buff> iterator = runningBuffs.iterator();
     while (iterator.hasNext()) {
       Buff buff = iterator.next();
@@ -200,13 +201,16 @@ public class StrifeMob {
         iterator.remove();
         continue;
       }
+      if (!buffId.equals(buff.getId())) {
+        continue;
+      }
       if (source == null) {
-        if (buffId.equals(buff.getId()) && buff.getSource() == null) {
+        if (buff.getSource() == null) {
           return buff;
         }
         continue;
       }
-      if (buffId.equals(buff.getId()) && source.equals(buff.getSource())) {
+      if (source.equals(buff.getSource())) {
         return buff;
       }
     }
@@ -214,7 +218,7 @@ public class StrifeMob {
   }
 
   public int getBuffStacks(String buffId, UUID source) {
-    Buff buff = hasBuff(buffId, source);
+    Buff buff = getBuff(buffId, source);
     if (buff == null) {
       return 0;
     }
@@ -222,13 +226,14 @@ public class StrifeMob {
   }
 
   public void addBuff(Buff buff, double duration) {
-    Buff oldBuff = hasBuff(buff.getId(), buff.getSource());
+    Buff oldBuff = getBuff(buff.getId(), buff.getSource());
+    cacheStamp = 1L;
     if (oldBuff == null) {
       buff.setExpireTimeFromDuration(duration);
       runningBuffs.add(buff);
       return;
     }
-    buff.bumpBuff(duration);
+    oldBuff.bumpBuff(duration);
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
@@ -306,13 +311,7 @@ public class StrifeMob {
         iterator.remove();
         continue;
       }
-      for (StrifeStat stat : buff.getTotalStats().keySet()) {
-        if (stats.containsKey(stat)) {
-          stats.put(stat, stats.get(stat) + buff.getTotalStats().get(stat));
-        } else {
-          stats.put(stat, buff.getTotalStats().get(stat));
-        }
-      }
+      stats.putAll(StatUpdateManager.combineMaps(stats, buff.getTotalStats()));
     }
     return stats;
   }

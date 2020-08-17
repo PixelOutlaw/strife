@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -52,8 +53,7 @@ public class TargetingUtil {
     }
   }
 
-  public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster,
-      boolean friendly) {
+  public static void filterFriendlyEntities(Set<LivingEntity> targets, StrifeMob caster, boolean friendly) {
     Set<LivingEntity> friendlyEntities = getFriendlyEntities(caster, targets);
     if (friendly) {
       targets.clear();
@@ -82,8 +82,7 @@ public class TargetingUtil {
       case FARTHEST:
         DISTANCE_COMPARATOR.setLoc(caster.getEntity().getLocation());
         targetList.sort(DISTANCE_COMPARATOR);
-        areaTargets.retainAll(
-            targetList.subList(targetList.size() - maxTargets, targetList.size()));
+        areaTargets.retainAll(targetList.subList(targetList.size() - maxTargets, targetList.size()));
         return;
       case LEAST_HEALTH:
         targetList.sort(HEALTH_COMPARATOR);
@@ -91,8 +90,7 @@ public class TargetingUtil {
         return;
       case MOST_HEALTH:
         targetList.sort(HEALTH_COMPARATOR);
-        areaTargets.retainAll(
-            targetList.subList(targetList.size() - maxTargets, targetList.size()));
+        areaTargets.retainAll(targetList.subList(targetList.size() - maxTargets, targetList.size()));
         return;
       case LEAST_PERCENT_HEALTH:
         targetList.sort(PERCENT_HEALTH_COMPARATOR);
@@ -100,14 +98,12 @@ public class TargetingUtil {
         return;
       case MOST_PERCENT_HEALTH:
         targetList.sort(PERCENT_HEALTH_COMPARATOR);
-        areaTargets.retainAll(
-            targetList.subList(targetList.size() - maxTargets, targetList.size()));
+        areaTargets.retainAll(targetList.subList(targetList.size() - maxTargets, targetList.size()));
     }
   }
 
   public static Set<LivingEntity> getFriendlyEntities(StrifeMob caster, Set<LivingEntity> targets) {
-    return targets.stream().filter(target -> isFriendly(caster, target))
-        .collect(Collectors.toSet());
+    return targets.stream().filter(target -> isFriendly(caster, target)).collect(Collectors.toSet());
   }
 
   public static boolean isFriendly(LivingEntity attacker, LivingEntity defender) {
@@ -116,13 +112,11 @@ public class TargetingUtil {
   }
 
   public static boolean isFriendly(StrifeMob attacker, LivingEntity defender) {
-    return isFriendly(attacker,
-        StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
+    return isFriendly(attacker, StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
   }
 
   public static boolean isFriendly(LivingEntity attacker, StrifeMob defender) {
-    return isFriendly(StrifePlugin.getInstance().getStrifeMobManager().getStatMob(attacker),
-        defender);
+    return isFriendly(StrifePlugin.getInstance().getStrifeMobManager().getStatMob(attacker), defender);
   }
 
   public static boolean isFriendly(StrifeMob attacker, StrifeMob defender) {
@@ -130,7 +124,10 @@ public class TargetingUtil {
       return true;
     }
     if (defender.getEntity() instanceof Tameable) {
-      return isFriendly(attacker, (LivingEntity) Bukkit.getEntity(((Tameable) attacker.getEntity()).getOwnerUniqueId()));
+      UUID uuid = ((Tameable) defender.getEntity()).getOwnerUniqueId();
+      if (uuid != null) {
+        return isFriendly(attacker, (LivingEntity) Bukkit.getEntity(uuid));
+      }
     }
     for (String casterFaction : attacker.getFactions()) {
       for (String targetFaction : defender.getFactions()) {
@@ -242,52 +239,24 @@ public class TargetingUtil {
   }
 
   private static boolean isInvalidTarget(Entity e) {
-    if (!e.isValid() || e.isInvulnerable() || !(e instanceof LivingEntity)
-        || e instanceof ArmorStand) {
+    if (!e.isValid() || e.isInvulnerable() || !(e instanceof LivingEntity) || e instanceof ArmorStand) {
       return true;
     }
     if (e.hasMetadata("NPC") || e.hasMetadata("pet")) {
       return true;
     }
     if (e instanceof Player) {
-      return ((Player) e).getGameMode() == GameMode.CREATIVE
-          || ((Player) e).getGameMode() == GameMode.SPECTATOR;
+      return ((Player) e).getGameMode() == GameMode.CREATIVE || ((Player) e).getGameMode() == GameMode.SPECTATOR;
     }
     return false;
   }
 
-  public static boolean isDetectionStand(LivingEntity le) {
-    return le instanceof ArmorStand && SpecialStatusUtil.isDetectionStand(le);
-  }
-
-  public static ArmorStand buildAndRemoveDetectionStand(Location location) {
-    Location spawnLoc = location.clone();
-    spawnLoc.setY(-1);
-    ArmorStand stando = location.getWorld()
-        .spawn(spawnLoc, ArmorStand.class, TargetingUtil::applyDetectionStandChanges);
-    stando.teleport(location);
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), stando::remove, 1L);
-    return stando;
-  }
-
-  private static void applyDetectionStandChanges(ArmorStand stando) {
-    stando.setVisible(false);
-    stando.setSmall(true);
-    stando.setMarker(true);
-    stando.setGravity(false);
-    stando.setCollidable(false);
-    SpecialStatusUtil.setDetectionStand(stando);
-  }
-
-  public static LivingEntity getTempStand(Location loc, float verticalRange) {
-    if (verticalRange == -1) {
-      return TargetingUtil.buildAndRemoveDetectionStand(loc);
-    }
+  public static Location modifyLocation(Location loc, float verticalRange) {
     Location detectionLocation = loc.toCenterLocation().clone();
     for (int i = 0; i < verticalRange; i++) {
       if (detectionLocation.getBlock().getRelative(BlockFace.DOWN, i).getType().isSolid()) {
         detectionLocation.add(0, -i + 0.6, 0);
-        return TargetingUtil.buildAndRemoveDetectionStand(detectionLocation);
+        return detectionLocation;
       }
     }
     return null;
@@ -310,21 +279,19 @@ public class TargetingUtil {
         && Math.abs(loc.getY() - centerPoint.getY()) < height + radius;
   }
 
-  public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range,
-      boolean friendly) {
+  public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range, boolean friendly) {
     LivingEntity mobTarget = TargetingUtil.getMobTarget(caster);
     return mobTarget != null ? mobTarget : getFirstEntityInLine(caster, range, friendly);
   }
 
-  public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
-      boolean targetEntities) {
+  public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range, boolean targetEntities) {
     return getTargetLocation(caster, target, range, OriginLocation.CENTER, targetEntities);
   }
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
       OriginLocation originLocation, boolean targetEntities) {
-    if (target != null && caster.getLocation().distance(target.getLocation()) < range && caster
-        .hasLineOfSight(target)) {
+    if (target != null && caster.getLocation().distance(target.getLocation()) < range &&
+        caster.hasLineOfSight(target)) {
       return getOriginLocation(target, originLocation);
     }
     RayTraceResult result;
@@ -338,8 +305,7 @@ public class TargetingUtil {
     }
     if (result == null) {
       LogUtil.printDebug(" - Using MAX RANGE location calculation");
-      return caster.getEyeLocation().add(
-          caster.getEyeLocation().getDirection().multiply(Math.max(0, range - 1)));
+      return caster.getEyeLocation().add(caster.getEyeLocation().getDirection().multiply(Math.max(0, range - 1)));
     }
     if (result.getHitEntity() != null) {
       LogUtil.printDebug(" - Using ENTITY location calculation");
@@ -347,12 +313,11 @@ public class TargetingUtil {
     }
     if (result.getHitBlock() != null) {
       LogUtil.printDebug(" - Using BLOCK location calculation");
-      return result.getHitBlock().getLocation().add(0.5, 0.8, 0.5)
-          .add(result.getHitBlockFace().getDirection());
+      return result.getHitBlock().getLocation().add(0.5, 0.8, 0.5).add(result.getHitBlockFace().getDirection());
     }
     LogUtil.printDebug(" - Using HIT RANGE location calculation");
-    return new Location(caster.getWorld(), result.getHitPosition().getX(),
-        result.getHitPosition().getBlockY(), result.getHitPosition().getZ());
+    return new Location(caster.getWorld(), result.getHitPosition().getX(), result.getHitPosition().getBlockY(),
+        result.getHitPosition().getZ());
   }
 
   public static LivingEntity getMobTarget(StrifeMob strifeMob) {
@@ -371,6 +336,9 @@ public class TargetingUtil {
   }
 
   public static Location getOriginLocation(LivingEntity le, OriginLocation origin) {
+    if (le == null) {
+      return null;
+    }
     switch (origin) {
       case HEAD:
         return le.getEyeLocation();

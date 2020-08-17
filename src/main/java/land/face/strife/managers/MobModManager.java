@@ -40,8 +40,7 @@ public class MobModManager {
   public void doModApplication(StrifeMob strifeMob, int max) {
     String prefix = "";
     int prefixWeight = Integer.MAX_VALUE;
-    Set<MobMod> mods = getRandomMods(strifeMob.getEntity(), strifeMob.getEntity().getLocation(),
-        getModCount(max));
+    Set<MobMod> mods = getRandomMods(strifeMob.getEntity(), strifeMob.getEntity().getLocation(), getModCount(max));
     for (MobMod mod : mods) {
       applyMobMod(strifeMob, mod);
       if (mod.getWeight() < prefixWeight && StringUtils.isNotBlank(mod.getPrefix())) {
@@ -51,8 +50,8 @@ public class MobModManager {
       strifeMob.setDespawnOnUnload(true);
       strifeMob.getMods().add(mod.getId());
     }
-    strifeMob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE +
-        strifeMob.getEntity().getCustomName());
+    strifeMob.getEntity()
+        .setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE + strifeMob.getEntity().getCustomName());
   }
 
   public void applyMobMod(StrifeMob strifeMob, MobMod mobMod) {
@@ -67,8 +66,7 @@ public class MobModManager {
       ItemUtil.delayedEquip(mobMod.getEquipment(), strifeMob.getEntity(), false);
     }
     int level = StatUtil.getMobLevel(strifeMob.getEntity());
-    Map<StrifeStat, Float> stats = StatUpdateManager
-        .combineMaps(strifeMob.getBaseStats(), mobMod.getBaseStats());
+    Map<StrifeStat, Float> stats = StatUpdateManager.combineMaps(strifeMob.getBaseStats(), mobMod.getBaseStats());
     for (StrifeStat stat : mobMod.getPerLevelStats().keySet()) {
       if (stats.containsKey(stat)) {
         stats.put(stat, stats.get(stat) + mobMod.getPerLevelStats().get(stat) * level);

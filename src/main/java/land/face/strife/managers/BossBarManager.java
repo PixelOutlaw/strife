@@ -33,6 +33,7 @@ import land.face.strife.data.StatusBar;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
@@ -211,7 +212,7 @@ public class BossBarManager {
           barOwner.getEntity().getType().toString().replaceAll("_", " "));
     }
     name += "   ";
-    if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
+    if (!barOwner.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && barOwner.getStat(StrifeStat.BARRIER) > 0) {
       name = name + ChatColor.WHITE + INT_FORMAT.format(StatUtil.getBarrier(barOwner)) + "❤ ";
     }
     name = name + ChatColor.RED + INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";

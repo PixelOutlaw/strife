@@ -1,6 +1,7 @@
 package land.face.strife.util;
 
 import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
+import static org.bukkit.potion.PotionEffectType.SLOW_DIGGING;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
@@ -10,6 +11,7 @@ import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -38,7 +40,7 @@ public class StatUtil {
   }
 
   public static float getMaximumEnergy(StrifeMob ae) {
-    return ae.getStat(StrifeStat.ENERGY);
+    return ae.getStat(StrifeStat.ENERGY) * (1 + ae.getStat(StrifeStat.ENERGY_MULT) / 100);
   }
 
   public static float getEnergy(StrifeMob ae) {
@@ -46,26 +48,29 @@ public class StatUtil {
   }
 
   public static float getMaximumBarrier(StrifeMob ae) {
-    return ae.getStat(StrifeStat.BARRIER);
+    if (ae.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
+      return 0;
+    }
+    return ae.getStat(StrifeStat.BARRIER) * (1 + ae.getStat(StrifeStat.BARRIER_MULT) / 100);
   }
 
   public static float getBarrierPerSecond(StrifeMob ae) {
-    return (4 + (ae.getStat(StrifeStat.BARRIER) * 0.08f)) * (1 + (ae.getStat(
-        StrifeStat.BARRIER_SPEED) / 100));
+    float baseRestoreSpeed = 4 + (getMaximumBarrier(ae) * 0.08f);
+    return baseRestoreSpeed * (1 + (ae.getStat(StrifeStat.BARRIER_SPEED) / 100));
   }
 
-  public static double getDamageMult(StrifeMob ae) {
+  public static float getDamageMult(StrifeMob ae) {
     return 1 + ae.getStat(StrifeStat.DAMAGE_MULT) / 100;
   }
 
   public static double getMeleeDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1
-        + ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) / 100);
+    float multiplier = ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) + ae.getStat(StrifeStat.PHYSICAL_MULT);
+    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + multiplier / 100);
   }
 
   public static double getRangedDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1
-        + ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) / 100);
+    float multiplier = ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) + ae.getStat(StrifeStat.PHYSICAL_MULT);
+    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + multiplier / 100);
   }
 
   public static double getMagicDamage(StrifeMob ae) {
@@ -78,19 +83,27 @@ public class StatUtil {
   }
 
   public static float getAttackTime(StrifeMob ae) {
+
     float attackTime = BASE_ATTACK_SECONDS;
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
+
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
       attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
     }
+
     if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
-      attackBonus += 15 * (1 + ae.getEntity().getPotionEffect(FAST_DIGGING).getAmplifier());
+      attackBonus += 10 * (1 + ae.getEntity().getPotionEffect(FAST_DIGGING).getAmplifier());
     }
+    if (ae.getEntity().hasPotionEffect(SLOW_DIGGING)) {
+      attackBonus -= 10 * (1 + ae.getEntity().getPotionEffect(SLOW_DIGGING).getAmplifier());
+    }
+
     if (attackBonus > 0) {
       attackTime /= 1 + attackBonus / 100;
     } else {
       attackTime *= 1 + Math.abs(attackBonus / 100);
     }
+
     return attackTime;
   }
 
@@ -245,12 +258,12 @@ public class StatUtil {
     int level = SpecialStatusUtil.getMobLevel(livingEntity);
     if (level == -1) {
       if (StringUtils.isBlank(livingEntity.getCustomName())) {
-        SpecialStatusUtil.setMobLevel(livingEntity, 0);
-        return 0;
+        SpecialStatusUtil.setMobLevel(livingEntity, 1);
+        return 1;
       }
       String lev = CharMatcher.digit().or(CharMatcher.is('-')).negate()
           .collapseFrom(ChatColor.stripColor(livingEntity.getCustomName()), ' ').trim();
-      level = NumberUtils.toInt(lev.split(" ")[0], 0);
+      level = NumberUtils.toInt(lev.split(" ")[0], 1);
       SpecialStatusUtil.setMobLevel(livingEntity, level);
       return level;
     }

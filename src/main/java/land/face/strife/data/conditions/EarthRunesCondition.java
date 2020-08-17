@@ -9,9 +9,9 @@ public class EarthRunesCondition extends Condition {
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     int runes;
     if (getCompareTarget() == CompareTarget.SELF) {
-      runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(attacker.getEntity().getUniqueId());
+      runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(attacker.getEntity());
     } else {
-      runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(target.getEntity().getUniqueId());
+      runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(target.getEntity());
     }
     return PlayerDataUtil.conditionCompare(getComparison(), runes, Math.round(getValue()));
   }

@@ -5,6 +5,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
+import land.face.strife.util.StatUtil;
 
 public class ChangeEnergy extends Effect {
 
@@ -31,7 +32,7 @@ public class ChangeEnergy extends Effect {
         DamageUtil.restoreEnergy(target, restoreAmount * getMissingEnergy(target));
         return;
       case TARGET_MAX_ENERGY:
-        DamageUtil.restoreEnergy(target, restoreAmount * target.getStat(StrifeStat.ENERGY));
+        DamageUtil.restoreEnergy(target, restoreAmount * StatUtil.getMaximumEnergy(target));
         return;
       case CASTER_CURRENT_ENERGY:
         DamageUtil.restoreEnergy(target, restoreAmount * getEnergy(caster));
@@ -40,7 +41,7 @@ public class ChangeEnergy extends Effect {
         DamageUtil.restoreEnergy(target, restoreAmount * getMissingEnergy(caster));
         return;
       case CASTER_MAX_ENERGY:
-        DamageUtil.restoreEnergy(target, restoreAmount * target.getStat(StrifeStat.ENERGY));
+        DamageUtil.restoreEnergy(target, restoreAmount * StatUtil.getMaximumEnergy(caster));
     }
   }
 
@@ -57,6 +58,6 @@ public class ChangeEnergy extends Effect {
   }
 
   private float getMissingEnergy(StrifeMob mob) {
-    return 1 - getEnergy(mob) / mob.getStat(StrifeStat.ENERGY);
+    return 1 - getEnergy(mob) / StatUtil.getMaximumEnergy(mob);
   }
 }

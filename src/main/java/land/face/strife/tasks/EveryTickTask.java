@@ -18,6 +18,7 @@
  */
 package land.face.strife.tasks;
 
+import land.face.strife.StrifePlugin;
 import land.face.strife.util.MoveUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -33,5 +34,6 @@ public class EveryTickTask extends BukkitRunnable {
         MoveUtil.setLastGrounded(player);
       }
     }
+    StrifePlugin.getInstance().getBlockManager().tickHolograms();
   }
 }

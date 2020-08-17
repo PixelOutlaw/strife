@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.util.ItemUtil;
@@ -103,8 +104,13 @@ public class LoreAbilityManager {
     if (la.getAbility() != null) {
       abilityManager.execute(la.getAbility(), caster, target);
     }
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(target);
+
+    TargetResponse response = new TargetResponse(entities);
+
     for (Effect effect : la.getEffects()) {
-      effectManager.execute(effect, caster, target);
+      effectManager.execute(effect, caster, response);
     }
   }
 

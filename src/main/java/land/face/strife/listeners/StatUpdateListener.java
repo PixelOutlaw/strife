@@ -27,7 +27,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -45,9 +44,8 @@ public class StatUpdateListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      plugin.getChampionManager().updateAll(
-          plugin.getChampionManager().getChampion(event.getPlayer()));
-      plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
+      plugin.getChampionManager().update(event.getPlayer());
+      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
     }, 3L);
   }
 
@@ -57,9 +55,8 @@ public class StatUpdateListener implements Listener {
       return;
     }
     InventoryView inventoryView = event.getView();
-    if (!(inventoryView.getTopInventory() instanceof PlayerInventory) && !(inventoryView
-        .getBottomInventory()
-        instanceof PlayerInventory)) {
+    if (!(inventoryView.getTopInventory() instanceof PlayerInventory) &&
+        !(inventoryView.getBottomInventory() instanceof PlayerInventory)) {
       return;
     }
     PlayerInventory playerInventory;
@@ -76,16 +73,8 @@ public class StatUpdateListener implements Listener {
     if (player.isDead() || player.getHealth() <= 0D) {
       return;
     }
-    plugin.getChampionManager().updateEquipmentStats(
-        plugin.getChampionManager().getChampion((Player) event.getPlayer()));
-    plugin.getStatUpdateManager().updateAttributes(player);
-  }
-
-  @EventHandler(priority = EventPriority.HIGHEST)
-  public void onPlayerJoin(PlayerJoinEvent event) {
-    plugin.getChampionManager().updateAll(
-        plugin.getChampionManager().getChampion(event.getPlayer()));
-    plugin.getStatUpdateManager().updateAttributes(event.getPlayer());
+    plugin.getChampionManager().updateEquipmentStats(plugin.getChampionManager().getChampion((Player) event.getPlayer()));
+    plugin.getStatUpdateManager().updateVanillaAttributes(player);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

@@ -108,8 +108,7 @@ public class LoreAbilityListener implements Listener {
       }
     }
     StrifeMob killerMob = strifeMobManager.getStatMob(killer);
-    executeBoundEffects(killerMob, event.getEntity(),
-        killerMob.getChampion().getLoreAbilities().get(ON_KILL));
+    executeBoundEffects(killerMob, event.getEntity(), killerMob.getChampion().getLoreAbilities().get(ON_KILL));
     executeFiniteEffects(killerMob, victim, ON_KILL);
   }
 
@@ -144,8 +143,7 @@ public class LoreAbilityListener implements Listener {
     executeFiniteEffects(defender, attacker, WHEN_HIT);
   }
 
-  private void executeBoundEffects(StrifeMob caster, LivingEntity target,
-      Set<LoreAbility> effects) {
+  private void executeBoundEffects(StrifeMob caster, LivingEntity target, Set<LoreAbility> effects) {
     if (effects == null || effects.isEmpty()) {
       return;
     }
@@ -161,8 +159,7 @@ public class LoreAbilityListener implements Listener {
       if (tempEffect.getLoreAbility().getTriggerType() != type) {
         continue;
       }
-      loreAbilityManager.applyLoreAbility(tempEffect.getLoreAbility(), caster,
-          target.getEntity());
+      loreAbilityManager.applyLoreAbility(tempEffect.getLoreAbility(), caster, target.getEntity());
       if (tempEffect.getUses() > 1) {
         tempEffect.setUses(tempEffect.getUses() - 1);
       } else {

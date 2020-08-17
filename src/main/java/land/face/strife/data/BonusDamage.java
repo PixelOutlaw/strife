@@ -11,8 +11,7 @@ public class BonusDamage {
   private final StrifeStat damageStat;
   private final float amount;
 
-  public BonusDamage(DamageScale damageScale, DamageType damageType,
-      StrifeStat damageStat, float amount) {
+  public BonusDamage(DamageScale damageScale, DamageType damageType, StrifeStat damageStat, float amount) {
     this.damageScale = damageScale;
     this.damageType = damageType;
     this.damageStat = damageStat;

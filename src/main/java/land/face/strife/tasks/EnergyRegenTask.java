@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.tasks;
 
@@ -28,6 +26,7 @@ import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.Bukkit;
@@ -41,12 +40,11 @@ public class EnergyRegenTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
 
-  private float walkCostFlat;
-  private float walkCostPercent;
-  private float runCostFlat;
-  private float runCostPercent;
-  private float agilityExp;
-  private Map<UUID, List<RestoreData>> energyRestore = new HashMap<>();
+  private final float walkCostFlat;
+  private final float walkCostPercent;
+  private final float runCostFlat;
+  private final float runCostPercent;
+  private final Map<UUID, List<RestoreData>> energyRestore = new HashMap<>();
 
   public EnergyRegenTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -58,8 +56,6 @@ public class EnergyRegenTask extends BukkitRunnable {
         .getDouble("config.mechanics.energy.run-cost-flat", 10) / 20;
     runCostPercent = (float) plugin.getSettings()
         .getDouble("config.mechanics.energy.run-regen-percent", 0.25);
-    agilityExp = (float) plugin.getSettings()
-        .getDouble("config.mechanics.energy.agility-xp", 10) / 20;
   }
 
   @Override
@@ -73,9 +69,12 @@ public class EnergyRegenTask extends BukkitRunnable {
       double agility = PlayerDataUtil.getLifeSkillLevel(mob.getChampion(), LifeSkillType.AGILITY);
       double agilityMult = 50.0 / (50 + agility);
 
+      boolean noRegen = mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN);
       float energy = 0;
-      energy += 0.005f * mob.getStat(StrifeStat.ENERGY_REGEN);
-      energy *= getHungerPotionMult(mob.getEntity());
+      if (!noRegen) {
+        energy += 0.005f * mob.getStat(StrifeStat.ENERGY_REGEN);
+        energy *= getHungerPotionMult(mob.getEntity());
+      }
 
       if (player.getFoodLevel() > 6 && player.isSprinting()) {
         energy *= runCostPercent;
@@ -85,7 +84,9 @@ public class EnergyRegenTask extends BukkitRunnable {
           player.setSprinting(false);
         }
         energy *= walkCostPercent;
-        energy -= walkCostFlat * agilityMult;
+        if (!noRegen) {
+          energy -= walkCostFlat * agilityMult;
+        }
       } else {
         if (player.isSprinting()) {
           player.setSprinting(false);

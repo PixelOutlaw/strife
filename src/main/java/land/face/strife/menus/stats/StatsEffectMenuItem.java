@@ -57,7 +57,7 @@ public class StatsEffectMenuItem extends MenuItem {
 
     List<String> traitLores = new ArrayList<>();
     for (StrifeTrait trait : pStats.getChampion().getTraits()) {
-      traitLores.add(ChatColor.YELLOW + trait.getName());
+      traitLores.add(ChatColor.YELLOW + "❂ " + trait.getName());
     }
 
     if (!traitLores.isEmpty()) {

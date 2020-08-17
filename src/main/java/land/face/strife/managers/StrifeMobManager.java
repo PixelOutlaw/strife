@@ -6,7 +6,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.FiniteUsesEffect;
-import land.face.strife.stats.StrifeStat;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -25,6 +24,9 @@ public class StrifeMobManager {
   }
 
   public StrifeMob getStatMob(LivingEntity entity) {
+    if (entity == null) {
+      return null;
+    }
     if (!trackedEntities.containsKey(entity)) {
       StrifeMob strifeMob;
       if (entity instanceof Player) {
@@ -56,13 +58,6 @@ public class StrifeMobManager {
     finiteUsesEffect.setExpiration(System.currentTimeMillis() + maxDuration);
     finiteUsesEffect.setUses(uses);
     mob.getTempEffects().add(finiteUsesEffect);
-  }
-
-  public StrifeMob setEntityStats(LivingEntity entity, Map<StrifeStat, Float> statMap) {
-    StrifeMob strifeMob = getStatMob(entity);
-    strifeMob.setStats(statMap);
-    trackedEntities.put(entity, strifeMob);
-    return strifeMob;
   }
 
   public void despawnAllTempEntities() {

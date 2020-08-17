@@ -5,12 +5,15 @@ import java.util.Map;
 
 public enum StrifeTrait {
 
-  ELEMENTAL_CRITS("Elemental Damage Can Critically Strike"),
+  ELEMENTAL_CRITS("Elemental Damage Can Crit"),
   NO_HEALTH_REGEN("Health Cannot Be Regenerated"),
   NO_BARRIER_ALLOWED("Maximum Barrier Is Always Zero"),
   NO_CRIT_MULT("Critical Strikes Do No Extra Damage"),
   ACCURATE_CHARGED("Fully Charged Hits Cannot Miss"),
   ACCURATE_CRITS("Critical Strikes Cannot Miss"),
+  NO_ENERGY_BASICS("Basic Attacks Cost No Energy"),
+  ENERGY_ABSORB("20% Of Damage Taken From Energy"),
+  NO_ENERGY_REGEN("Energy Does Not Regenerate"),
   SOUL_FLAME("Passive Effect - Blue Flame");
 
   // TODO: We map String to StrifeStat, why not let the user

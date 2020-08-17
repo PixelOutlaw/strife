@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
@@ -22,12 +20,11 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ARMOR;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
@@ -49,7 +46,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Shulker;
-import org.bukkit.entity.Slime;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -62,8 +58,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
-  private static HashMap<UUID, Long> SLIME_HIT_MAP = new HashMap<>();
+  private static final Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
+  private static final Map<LivingEntity, Long> MONSTER_HIT_COOLDOWN = new WeakHashMap<>();
 
   public CombatListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -107,18 +103,18 @@ public class CombatListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void handleNpcHits(EntityDamageByEntityEvent event) {
-    if (event.getDamager() instanceof Projectile) {
-      if (event.getEntity().isInvulnerable() || event.getEntity().hasMetadata("NPC") || event
-          .getEntity().hasMetadata("pet")) {
+    if (event.isCancelled() || event.getEntity().isInvulnerable() || event.getEntity().hasMetadata("NPC") || event
+        .getEntity().hasMetadata("pet")) {
+      if (event.getDamager() instanceof Projectile) {
         event.getDamager().remove();
-        event.setCancelled(true);
       }
+      event.setCancelled(true);
     }
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || event.getEntity().isInvulnerable()) {
+    if (event.isCancelled()) {
       return;
     }
     if (plugin.getDamageManager().isHandledDamage(event.getDamager())) {
@@ -139,14 +135,14 @@ public class CombatListener implements Listener {
     if (attackEntity == null) {
       return;
     }
-    if (attackEntity instanceof Slime && !canSlimeHit(attackEntity.getUniqueId())) {
+
+    if (!(attackEntity instanceof Player) && !canMonsterHit(attackEntity)) {
       event.setCancelled(true);
       return;
     }
 
-    boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) || (
-        defendEntity instanceof Shulker && event.isApplicable(ARMOR)
-            && event.getDamage(ARMOR) != 0);
+    boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) ||
+        (defendEntity instanceof Shulker && event.isApplicable(ARMOR) && event.getDamage(ARMOR) != 0);
 
     DamageUtil.removeDamageModifiers(event);
 
@@ -164,16 +160,13 @@ public class CombatListener implements Listener {
     Projectile projectile = null;
     boolean isProjectile = false;
     boolean isMultishot = false;
-    String[] extraEffects = null;
+    List<String> extraEffects = null;
     int shotId = -1;
 
     if (event.getDamager() instanceof Projectile) {
       isProjectile = true;
       projectile = (Projectile) event.getDamager();
-      String hitEffects = ProjectileUtil.getHitEffects(projectile);
-      if (StringUtils.isNotBlank(hitEffects)) {
-        extraEffects = hitEffects.split("~");
-      }
+      extraEffects = ProjectileUtil.getHitEffects(projectile);
       shotId = ProjectileUtil.getShotId(projectile);
       if (shotId != -1) {
         String idKey = "SHOT_HIT_" + shotId;
@@ -229,10 +222,9 @@ public class CombatListener implements Listener {
 
     boolean isSneakAttack = plugin.getStealthManager().isStealthed(attackEntity);
 
-    putSlimeHit(attackEntity);
+    putMonsterHit(attackEntity);
 
-    boolean mobAbility = plugin.getAbilityManager()
-        .abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+    boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
 
     if (mobAbility) {
       event.setCancelled(true);
@@ -249,6 +241,7 @@ public class CombatListener implements Listener {
     damageModifiers.setHealMultiplier(healMultiplier);
     damageModifiers.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
     damageModifiers.setScaleChancesWithAttack(true);
+    damageModifiers.setConsumeEarthRunes(!isMultishot);
     damageModifiers.setApplyOnHitEffects(attackMultiplier > Math.random());
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
@@ -264,8 +257,8 @@ public class CombatListener implements Listener {
     if (!isMultishot && shotId != -1) {
       String idKey = "SHOT_HIT_" + shotId;
       defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
-      Bukkit.getScheduler().runTaskLater(plugin,
-          () -> defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 2500L);
+      Bukkit.getScheduler().runTaskLater(plugin, () ->
+          defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 2500L);
     }
 
     DamageUtil.applyExtraEffects(attacker, defender, extraEffects);
@@ -278,8 +271,7 @@ public class CombatListener implements Listener {
     Map<DamageType, Float> damage = DamageUtil.buildDamage(attacker, defender, damageModifiers);
     DamageUtil.reduceDamage(attacker, defender, damage, damageModifiers);
 
-    float finalDamage = DamageUtil
-        .calculateFinalDamage(attacker, defender, damage, damageModifiers);
+    float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, damage, damageModifiers);
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageModifiers);
     strifeDamageEvent.setFinalDamage(finalDamage);
@@ -292,6 +284,7 @@ public class CombatListener implements Listener {
 
     float eventDamage = Math.max(0.002f, plugin.getBarrierManager()
         .damageBarrier(defender, (float) strifeDamageEvent.getFinalDamage()));
+    eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
       DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), damageModifiers, false);
@@ -323,17 +316,17 @@ public class CombatListener implements Listener {
       DamageUtil.restoreEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
-      plugin.getRageManager().addRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));
+      plugin.getRageManager().changeRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));
     }
   }
 
-  private boolean canSlimeHit(UUID uuid) {
-    return SLIME_HIT_MAP.getOrDefault(uuid, 0L) + 250 < System.currentTimeMillis();
+  private boolean canMonsterHit(LivingEntity uuid) {
+    return MONSTER_HIT_COOLDOWN.getOrDefault(uuid, 0L) < System.currentTimeMillis();
   }
 
-  public static void putSlimeHit(LivingEntity livingEntity) {
-    if (livingEntity instanceof Slime) {
-      SLIME_HIT_MAP.put(livingEntity.getUniqueId(), System.currentTimeMillis());
+  public static void putMonsterHit(LivingEntity livingEntity) {
+    if (!(livingEntity instanceof Player)) {
+      MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 400);
     }
   }
 

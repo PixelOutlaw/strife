@@ -23,7 +23,7 @@ public class StrifeParticle extends LocationEffect {
   private int quantity = 1;
   private float spread = 0;
   private float speed = 0;
-  private double size = 1;
+  private float size = 1;
 
   private double red;
   private double green;
@@ -32,14 +32,15 @@ public class StrifeParticle extends LocationEffect {
   private double arcAngle;
   private double arcOffset;
 
-  private double orbitSpeed;
-  private double endOrbitSpeed;
-  private double radius;
-  private double endRadius;
+  private float angleRotation;
+
+  private float orbitSpeed;
+  private float radius;
+  private float endRadius;
 
   private boolean lineVertical;
-  private double lineOffset;
-  private double lineIncrement;
+  private float lineOffset;
+  private float lineIncrement;
 
   private int tickDuration;
   private boolean strictDuration;
@@ -47,7 +48,7 @@ public class StrifeParticle extends LocationEffect {
   private ItemStack itemData = null;
   private BlockData blockData = null;
 
-  private static Random random = new Random();
+  private static final Random random = new Random();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -56,8 +57,7 @@ public class StrifeParticle extends LocationEffect {
       if (!strictDuration) {
         duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
       }
-      StrifePlugin.getInstance().getParticleTask()
-          .addContinuousParticle(target.getEntity(), this, (int) duration);
+      StrifePlugin.getInstance().getParticleTask().addContinuousParticle(target.getEntity(), this, (int) duration);
       return;
     }
     playAtLocation(caster, getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
@@ -127,7 +127,7 @@ public class StrifeParticle extends LocationEffect {
     return size;
   }
 
-  public void setSize(double size) {
+  public void setSize(float size) {
     this.size = size;
   }
 
@@ -155,23 +155,23 @@ public class StrifeParticle extends LocationEffect {
     this.arcOffset = arcOffset;
   }
 
-  public void setOrbitSpeed(double orbitSpeed) {
+  public void setAngleRotation(float angleRotation) {
+    this.angleRotation = angleRotation;
+  }
+
+  public void setOrbitSpeed(float orbitSpeed) {
     this.orbitSpeed = orbitSpeed;
   }
 
-  public void setEndOrbitSpeed(double endOrbitSpeed) {
-    this.endOrbitSpeed = endOrbitSpeed;
-  }
-
-  public void setRadius(double radius) {
+  public void setRadius(float radius) {
     this.radius = radius;
   }
 
-  public void setEndRadius(double endRadius) {
+  public void setEndRadius(float endRadius) {
     this.endRadius = endRadius;
   }
 
-  public void setLineOffset(double lineOffset) {
+  public void setLineOffset(float lineOffset) {
     this.lineOffset = lineOffset;
   }
 
@@ -179,7 +179,7 @@ public class StrifeParticle extends LocationEffect {
     this.lineVertical = lineVertical;
   }
 
-  public void setLineIncrement(double lineIncrement) {
+  public void setLineIncrement(float lineIncrement) {
     this.lineIncrement = lineIncrement;
   }
 
@@ -235,10 +235,14 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
-  private void spawnParticleOrbit(Particle particle, Location center, double radius, double orbitSpeed) {
-    double step = 360d / quantity;
+  private void spawnParticleOrbit(Particle particle, Location center, float radius, float orbitSpeed) {
+    spawnParticleOrbit(particle, center, radius, 0, orbitSpeed);
+  }
+
+  private void spawnParticleOrbit(Particle particle, Location center, float radius, float offset, float orbitSpeed) {
+    float step = 360f / quantity;
     for (int i = 0; i <= quantity; i++) {
-      double start = orbitSpeed * ParticleTask.getCurrentTick();
+      double start = orbitSpeed * ParticleTask.getCurrentTick() + offset;
       double radian1 = Math.toRadians(start + step * i);
       Location loc = center.clone();
       loc.add(Math.cos(radian1) * radius, 0, Math.sin(radian1) * radius);
@@ -246,16 +250,8 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
-  private void spawnParticlePillar(Location center, double size) {
-    for (double i = 0; i < size; i += 0.25) {
-      Location loc = center.clone();
-      loc.add(0, i, 0);
-      loc.getWorld().spawnParticle(particle, loc, quantity, spread, spread, spread, speed);
-    }
-  }
-
-  private void spawnParticleLine(Particle particle, Location center, Vector direction, double length) {
-    for (double dist = lineOffset; dist < length; dist += lineIncrement) {
+  private void spawnParticleLine(Particle particle, Location center, Vector direction, float length) {
+    for (float dist = lineOffset; dist < length; dist += lineIncrement) {
       Location loc = center.clone();
       if (lineVertical) {
         loc.add(new Vector(0, dist, 0));
@@ -264,7 +260,7 @@ public class StrifeParticle extends LocationEffect {
       }
 
       if (loc.getBlock().getType() != Material.AIR) {
-        if (!loc.getBlock().getType().isTransparent()) {
+        if (loc.getBlock().getType().isSolid()) {
           return;
         }
       }
@@ -272,10 +268,9 @@ public class StrifeParticle extends LocationEffect {
       if (radius <= 0) {
         spawnParticle(particle, loc);
       } else {
-        double percent = (lineOffset + dist) / length;
-        double currentOrbitSpeed = orbitSpeed + ((endOrbitSpeed - orbitSpeed) * percent);
-        double currentRadius = radius + ((endRadius - radius) * percent);
-        spawnParticleOrbit(particle, loc, currentRadius, currentOrbitSpeed);
+        float percent = dist / length;
+        float currentRadius = radius + ((endRadius - radius) * percent);
+        spawnParticleOrbit(particle, loc, currentRadius, percent * angleRotation, orbitSpeed);
       }
     }
   }
@@ -284,17 +279,15 @@ public class StrifeParticle extends LocationEffect {
     if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
         || particle == Particle.SPELL_INSTANT) {
       for (int i = 0; i < quantity; i++) {
-        Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2,
-            -spread + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
+        Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2, -spread
+            + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
         location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
       }
     } else if (itemData != null) {
       if (particle == Particle.FALLING_DUST) {
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread,
-            speed, blockData);
+        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);
       } else  {
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread,
-            speed, itemData);
+        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, itemData);
       }
     } else {
       location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);

@@ -1,6 +1,10 @@
 package land.face.strife.util;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -48,7 +52,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class PlayerDataUtil {
 
-  private static Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
+  private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
 
   public static void restoreHealth(LivingEntity le, double amount) {
     DamageUtil.restoreHealth(le, amount);
@@ -77,18 +81,28 @@ public class PlayerDataUtil {
       swing(entity, slot);
       return;
     }
-    Bukkit.getScheduler()
-        .runTaskLater(StrifePlugin.getInstance(), () -> swing(entity, slot), delay);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> swing(entity, slot), delay);
   }
 
   private static void swing(LivingEntity entity, EquipmentSlot slot) {
-    if (slot == EquipmentSlot.HAND) {
-      entity.swingMainHand();
-    } else {
-      entity.swingOffHand();
+
+    PacketContainer swingPacket = new PacketContainer(PacketType.Play.Server.ANIMATION);
+    swingPacket.getEntityModifier(entity.getWorld()).write(0, entity);
+    swingPacket.getIntegers().write(0, entity.getEntityId());
+    swingPacket.getIntegers().write(1, slot == EquipmentSlot.HAND ? 0 : 3);
+
+    ProtocolLibrary.getProtocolManager().broadcastServerPacket(swingPacket, entity, false);
+
+    if (!(entity instanceof Player)) {
+      return;
     }
-    if (entity instanceof Player) {
-      SwingListener.addFakeSwing(entity.getUniqueId());
+
+    SwingListener.addFakeSwing(entity.getUniqueId());
+
+    try {
+      ProtocolLibrary.getProtocolManager().sendServerPacket((Player) entity, swingPacket, true);
+    } catch (InvocationTargetException exception) {
+      Bukkit.getLogger().warning("Unable to send self swing packet");
     }
   }
 
@@ -131,8 +145,13 @@ public class PlayerDataUtil {
       }
       PlayerDisguise playerDisguise = new PlayerDisguise(name, disguisePlayer);
       playerDisguise.setReplaceSounds(true);
-      playerDisguise.setName("<Inherit>");
-      playerDisguise.setDynamicName(dynamic);
+      if (dynamic) {
+        playerDisguise.setName("<Inherit>");
+        playerDisguise.setDynamicName(true);
+      } else {
+        playerDisguise.setName(name);
+        playerDisguise.setDynamicName(false);
+      }
       return playerDisguise;
     }
     if (type.isMob()) {
@@ -209,8 +228,7 @@ public class PlayerDataUtil {
     return null;
   }
 
-  public static boolean areConditionsMet(StrifeMob caster, StrifeMob target,
-      Set<Condition> conditions) {
+  public static boolean areConditionsMet(StrifeMob caster, StrifeMob target, Set<Condition> conditions) {
     for (Condition condition : conditions) {
       EntityType casterType = caster.getEntity().getType();
       if (casterType == EntityType.PLAYER && condition.getConditionUser() == ConditionUser.MOB) {
@@ -342,7 +360,7 @@ public class PlayerDataUtil {
   }
 
   public static float getSkillProgress(Champion champion, LifeSkillType type) {
-    float progress =  champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
+    float progress = champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
         .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));
     return Math.max(0.0f, Math.min(1.0f, progress));
   }

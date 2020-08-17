@@ -120,7 +120,7 @@ public class StatUpdateManager {
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
-    double speed = strifeMob.getFinalStats().getOrDefault(StrifeStat.MOVEMENT_SPEED, 80f) / 100f;
+    double speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
     if (entity instanceof Player) {
       ((Player) entity).setWalkSpeed(0.2f * (float) speed);
       ((Player) entity).setFlySpeed(0.2f * (float) speed);
@@ -148,11 +148,11 @@ public class StatUpdateManager {
     StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(mob);
   }
 
-  public void updateAttributes(Player player) {
-    updateAttributes(strifeMobManager.getStatMob(player));
+  public void updateVanillaAttributes(Player player) {
+    updateVanillaAttributes(strifeMobManager.getStatMob(player));
   }
 
-  public void updateAttributes(StrifeMob strifeMob) {
+  public void updateVanillaAttributes(StrifeMob strifeMob) {
     strifeMob.getEntity().setMaximumNoDamageTicks(0);
     updateMovementSpeed(strifeMob);
     updateAttackAttrs(strifeMob);

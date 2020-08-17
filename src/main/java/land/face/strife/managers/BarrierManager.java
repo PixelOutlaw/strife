@@ -23,6 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -40,21 +42,20 @@ public class BarrierManager {
 
   private static final BlockData BLOCK_DATA = Bukkit.getServer().createBlockData(Material.WHITE_STAINED_GLASS);
 
-  public void createBarrierEntry(StrifeMob strifeMob) {
-    if (strifeMob.getEntity() == null || !strifeMob.getEntity().isValid()) {
+  public void createBarrierEntry(StrifeMob mob) {
+    if (mob.getEntity() == null || !mob.getEntity().isValid()) {
       return;
     }
-    if (strifeMob.getStat(StrifeStat.BARRIER) <= 0.1) {
-      updateShieldDisplay(strifeMob);
+    if (mob.getStat(StrifeStat.BARRIER) <= 0.1 || mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
+      updateShieldDisplay(mob);
       return;
     }
-    if (barrierMap.containsKey(strifeMob.getEntity().getUniqueId())) {
-      updateShieldDisplay(strifeMob);
+    if (barrierMap.containsKey(mob.getEntity().getUniqueId())) {
+      updateShieldDisplay(mob);
       return;
     }
-    setEntityBarrier(strifeMob.getEntity().getUniqueId(),
-        strifeMob.getStat(StrifeStat.BARRIER));
-    updateShieldDisplay(strifeMob);
+    setEntityBarrier(mob.getEntity().getUniqueId(), StatUtil.getMaximumBarrier(mob));
+    updateShieldDisplay(mob);
   }
 
   public boolean isBarrierUp(StrifeMob strifeMob) {
@@ -65,7 +66,7 @@ public class BarrierManager {
 
   public float getCurrentBarrier(StrifeMob strifeMob) {
     createBarrierEntry(strifeMob);
-    return Math.min(strifeMob.getStat(StrifeStat.BARRIER),
+    return Math.min(StatUtil.getMaximumBarrier(strifeMob),
         barrierMap.getOrDefault(strifeMob.getEntity().getUniqueId(), 0f));
   }
 
@@ -89,9 +90,9 @@ public class BarrierManager {
       setPlayerArmor((Player) strifeMob.getEntity(), 0);
       return;
     }
-    float current = Math.min(strifeMob.getStat(StrifeStat.BARRIER),
-        barrierMap.get(strifeMob.getEntity().getUniqueId()));
-    double percent = current / strifeMob.getStat(StrifeStat.BARRIER);
+    float maxBarrier = StatUtil.getMaximumBarrier(strifeMob);
+    float current = Math.min(maxBarrier, barrierMap.get(strifeMob.getEntity().getUniqueId()));
+    double percent = current / maxBarrier;
     setPlayerArmor((Player) strifeMob.getEntity(), percent);
   }
 
@@ -149,8 +150,7 @@ public class BarrierManager {
       return;
     }
     UUID uuid = strifeMob.getEntity().getUniqueId();
-    float newBarrierValue = Math.min(barrierMap.get(uuid) + amount, strifeMob.getStat(
-        StrifeStat.BARRIER));
+    float newBarrierValue = Math.min(barrierMap.get(uuid) + amount, StatUtil.getMaximumBarrier(strifeMob));
     setEntityBarrier(uuid, newBarrierValue);
     updateShieldDisplay(strifeMob);
   }

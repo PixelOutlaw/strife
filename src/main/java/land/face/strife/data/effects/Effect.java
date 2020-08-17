@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.stats.StrifeStat;
 
 public abstract class Effect {
+
+  private static StrifePlugin plugin;
 
   private String id;
   private boolean forceTargetCaster;
@@ -62,6 +65,14 @@ public abstract class Effect {
     return conditions;
   }
 
+  public static StrifePlugin getPlugin() {
+    return plugin;
+  }
+
+  public static void setPlugin(StrifePlugin plugin) {
+    Effect.plugin = plugin;
+  }
+
   public enum EffectType {
     DAMAGE,
     WORLD_SPACE_ENTITY,
@@ -109,6 +120,8 @@ public abstract class Effect {
     CHARM,
     SWING,
     UNDISGUISE,
-    STEALTH
+    STEALTH,
+    REMOVE_ENTITY,
+    MINION_CAST
   }
 }

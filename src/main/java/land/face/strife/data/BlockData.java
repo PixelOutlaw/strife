@@ -1,10 +1,15 @@
 package land.face.strife.data;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import java.util.HashSet;
+import java.util.Set;
+
 public class BlockData {
 
   private long lastHit;
   private double storedBlock;
   private int runes;
+  private final Set<Hologram> runeHolograms = new HashSet<>();
 
   public BlockData(long lastHit, double storedBlock) {
     this.lastHit = lastHit;
@@ -34,5 +39,9 @@ public class BlockData {
 
   public void setRunes(int runes) {
     this.runes = runes;
+  }
+
+  public Set<Hologram> getRuneHolograms() {
+    return runeHolograms;
   }
 }
