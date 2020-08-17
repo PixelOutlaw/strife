@@ -2,7 +2,6 @@ package land.face.strife.data.effects;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
@@ -17,13 +16,14 @@ public class EndlessEffect extends Effect {
   private final List<Effect> expiryEffects = new ArrayList<>();
   private final List<Effect> cancelEffects = new ArrayList<>();
   private final Set<Condition> cancelConditions = new HashSet<>();
+
   private StrifeStat reducerStat;
   private float reducerValue;
   private int tickRate;
   private float maxDuration;
   private boolean strictDuration;
 
-  private static Set<EndlessEffectTimer> runningEndlessEffects = new HashSet<>();
+  private static final Set<EndlessEffectTimer> runningEndlessEffects = new HashSet<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -42,9 +42,7 @@ public class EndlessEffect extends Effect {
   }
 
   public static EndlessEffectTimer getEndlessEffect(StrifeMob mob, EndlessEffect effect) {
-    Iterator<EndlessEffectTimer> it = runningEndlessEffects.iterator();
-    while (it.hasNext()) {
-      EndlessEffectTimer timer = it.next();
+    for (EndlessEffectTimer timer : runningEndlessEffects) {
       if (timer.getEndlessEffect() == effect && timer.getMob() == mob) {
         return timer;
       }
