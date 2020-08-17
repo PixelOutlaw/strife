@@ -31,8 +31,7 @@ public class Summon extends LocationEffect {
       return;
     }
 
-    StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager()
-        .spawnUnique(uniqueEntity, location);
+    StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager().spawnUnique(uniqueEntity, location);
 
     if (summonedEntity == null || summonedEntity.getEntity() == null) {
       return;
@@ -41,8 +40,7 @@ public class Summon extends LocationEffect {
     LivingEntity summon = summonedEntity.getEntity();
     caster.addMinion(summonedEntity);
 
-    StrifePlugin.getInstance().getMinionManager()
-        .addMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
+    StrifePlugin.getInstance().getMinionManager().addMinion(summon, (int) ((lifespanSeconds * 20D) / 11D));
 
     if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
       ((Mob) summon).setTarget(((Mob) caster.getEntity()).getTarget());
@@ -53,8 +51,7 @@ public class Summon extends LocationEffect {
     }
 
     if (soundEffect != null) {
-      PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager()
-          .getEffect(soundEffect);
+      PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager().getEffect(soundEffect);
       sound.applyAtLocation(caster, summon.getLocation());
     }
 
