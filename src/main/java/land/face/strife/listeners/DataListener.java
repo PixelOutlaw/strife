@@ -39,6 +39,8 @@ import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -83,6 +85,13 @@ public class DataListener implements Listener {
       return;
     }
     if (SpecialStatusUtil.isBurnImmune(event.getEntity())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler
+  public void onSnowmanMelt(final EntityDamageEvent event) {
+    if (event.getCause() == DamageCause.MELTING && SpecialStatusUtil.isBurnImmune(event.getEntity())) {
       event.setCancelled(true);
     }
   }
@@ -147,6 +156,7 @@ public class DataListener implements Listener {
   }
 
   private void doPlayerLeave(Player player) {
+    plugin.getAbilityManager().unToggleAll(player);
     plugin.getBoostManager().removeBooster(player.getUniqueId());
     plugin.getAbilityManager().savePlayerCooldowns(player);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
