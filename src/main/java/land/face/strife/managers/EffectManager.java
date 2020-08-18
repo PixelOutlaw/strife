@@ -463,6 +463,8 @@ public class EffectManager {
         ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
+        ((ShootProjectile) effect).setSilent(cs.getBoolean("silent", false));
+        ((ShootProjectile) effect).setThrowItem(cs.getBoolean("thrown-item", false));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));

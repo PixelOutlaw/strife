@@ -62,6 +62,8 @@ import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.DoubleJumpListener;
 import land.face.strife.listeners.EndermanListener;
+import land.face.strife.listeners.EntityHider;
+import land.face.strife.listeners.EntityHider.Policy;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
 import land.face.strife.listeners.ExperienceListener;
@@ -228,9 +230,11 @@ public class StrifePlugin extends FacePlugin {
   private WSEManager wseManager;
   private AgilityManager agilityManager;
 
+  private EntityHider entityHider;
+
   private DataStorage storage;
 
-  private List<BukkitTask> taskList = new ArrayList<>();
+  private final List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
   private DamageOverTimeTask damageOverTimeTask;
   private EnergyRegenTask energyRegenTask;
@@ -241,7 +245,7 @@ public class StrifePlugin extends FacePlugin {
   private AbilityPickerPickerMenu abilitySubcategoryMenu;
   private Map<String, AbilityPickerMenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
-  private Map<Path, PathMenu> pathMenus = new HashMap<>();
+  private final Map<Path, PathMenu> pathMenus = new HashMap<>();
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
 
@@ -505,6 +509,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
+    entityHider = new EntityHider(this, Policy.BLACKLIST);
 
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
@@ -564,6 +569,7 @@ public class StrifePlugin extends FacePlugin {
     boostManager.saveBoosts();
     storage.saveAll();
 
+    entityHider.close();
     HandlerList.unregisterAll(this);
     Bukkit.getScheduler().cancelTasks(this);
 
@@ -1069,6 +1075,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LogLevel getLogLevel() {
     return logLevel;
+  }
+
+  public EntityHider getEntityHider() {
+    return entityHider;
   }
 
   public void debug(Level level, String... messages) {
