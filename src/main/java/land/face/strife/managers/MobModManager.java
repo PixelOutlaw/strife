@@ -12,6 +12,7 @@ import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
@@ -37,21 +38,21 @@ public class MobModManager {
         .getInt("config.leveled-monsters.max-mob-mods", 4);
   }
 
-  public void doModApplication(StrifeMob strifeMob, int max) {
+  public void doModApplication(StrifeMob mob, int max) {
     String prefix = "";
     int prefixWeight = Integer.MAX_VALUE;
-    Set<MobMod> mods = getRandomMods(strifeMob.getEntity(), strifeMob.getEntity().getLocation(), getModCount(max));
+    Set<MobMod> mods = getRandomMods(mob.getEntity(), mob.getEntity().getLocation(), getModCount(max));
     for (MobMod mod : mods) {
-      applyMobMod(strifeMob, mod);
+      applyMobMod(mob, mod);
       if (mod.getWeight() < prefixWeight && StringUtils.isNotBlank(mod.getPrefix())) {
         prefix = mod.getPrefix() + " ";
         prefixWeight = mod.getWeight();
       }
-      strifeMob.setDespawnOnUnload(true);
-      strifeMob.getMods().add(mod.getId());
+      SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
+      mob.getMods().add(mod.getId());
     }
-    strifeMob.getEntity()
-        .setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE + strifeMob.getEntity().getCustomName());
+    mob.getEntity()
+        .setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE + mob.getEntity().getCustomName());
   }
 
   public void applyMobMod(StrifeMob strifeMob, MobMod mobMod) {

@@ -3,7 +3,6 @@ package land.face.strife.util;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Firework;
@@ -16,6 +15,7 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Boolean> SNEAK_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SPAWNER_SPAWNED = new WeakHashMap<>();
   private static final Map<Entity, Boolean> STANDODAH = new WeakHashMap<>();
+  private static final Map<Entity, Boolean> DESPAWN_ON_UNLOAD = new WeakHashMap<>();
 
   private static final Map<Entity, Boolean> NO_DAMAGE_FIREWORK = new WeakHashMap<>();
   private static final Map<Entity, String> HANDLED_BLOCK = new WeakHashMap<>();
@@ -23,12 +23,12 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Integer> MOB_LEVEL = new WeakHashMap<>();
   private static final Map<Entity, String> UNIQUE_ID = new WeakHashMap<>();
 
-  public static void setDetectionStand(ArmorStand e) {
-    STANDODAH.put(e, true);
+  public static void setDespawnOnUnload(Entity e) {
+    DESPAWN_ON_UNLOAD.put(e, true);
   }
 
-  public static boolean isDetectionStand(Entity e) {
-    return STANDODAH.getOrDefault(e, false);
+  public static boolean isDespawnOnUnload(Entity e) {
+    return DESPAWN_ON_UNLOAD.getOrDefault(e, false);
   }
 
   public static void setBurnImmune(Entity e) {

@@ -54,7 +54,7 @@ public class Spawner extends BukkitRunnable {
       if (Math.abs(xDist) + Math.abs(zDist) > leashRange) {
         despawnParticles(le);
         if (StrifePlugin.getInstance().getStrifeMobManager().isTrackedEntity(le)) {
-          StrifePlugin.getInstance().getStrifeMobManager().removeEntity(le);
+          StrifePlugin.getInstance().getStrifeMobManager().removeStrifeMob(le);
         }
         le.remove();
         LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
