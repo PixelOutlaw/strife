@@ -205,34 +205,6 @@ public class StatUtil {
     return (float) Math.min(amount, ae.getEntity() instanceof Player ? 80 : 99);
   }
 
-  public static float getLifestealPercentage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.LIFE_STEAL) / 100;
-  }
-
-  public static double getFireDamage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.FIRE_DAMAGE) * getElementalMult(attacker);
-  }
-
-  public static double getIceDamage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.ICE_DAMAGE) * getElementalMult(attacker);
-  }
-
-  public static double getLightningDamage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.LIGHTNING_DAMAGE) * getElementalMult(attacker);
-  }
-
-  public static double getEarthDamage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.EARTH_DAMAGE) * getElementalMult(attacker);
-  }
-
-  public static double getLightDamage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.LIGHT_DAMAGE) * getElementalMult(attacker);
-  }
-
-  public static double getShadowDamage(StrifeMob attacker) {
-    return attacker.getStat(StrifeStat.DARK_DAMAGE) * getElementalMult(attacker);
-  }
-
   public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {
     Map<StrifeStat, Float> statMap = new HashMap<>();
     if (statSection == null) {
