@@ -34,6 +34,7 @@ public class InspectCommand {
 
   @Command(identifier = "stats", permissions = "strife.command.stats")
   public void baseCommand(Player sender) {
+    plugin.getChampionManager().updateEquipmentStats(sender);
     plugin.getChampionManager().update(sender);
     plugin.getStatUpdateManager().updateVanillaAttributes(sender);
     plugin.getStatsMenu().setTargetPlayer(sender);
