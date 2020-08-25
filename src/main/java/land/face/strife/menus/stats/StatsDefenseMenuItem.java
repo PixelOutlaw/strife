@@ -24,6 +24,7 @@ import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,7 @@ public class StatsDefenseMenuItem extends MenuItem {
   public static final String PER_TEN = ChatColor.GRAY + "/10s";
 
   StatsDefenseMenuItem() {
-    super(TextUtils.color("&e&lDefensive Stats"), new ItemStack(Material.IRON_CHESTPLATE));
+    super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), new ItemStack(Material.IRON_CHESTPLATE));
   }
 
   @Override

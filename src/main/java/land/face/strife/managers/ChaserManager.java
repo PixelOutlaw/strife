@@ -31,11 +31,10 @@ public class ChaserManager {
     this.chasers = new HashSet<>();
   }
 
-  public void createChaser(StrifeMob caster, String id, Vector velocity, Location spawnLocation,
-      LivingEntity target) {
+  public void createChaser(StrifeMob caster, String id, Vector velocity, Location spawnLocation, LivingEntity target) {
     LoadedChaser data = chaserData.get(id);
-    ChaserEntity chaser = new ChaserEntity(caster, id, spawnLocation, target, data.getSpeed(),
-        velocity, data.getLifespan());
+    ChaserEntity chaser = new ChaserEntity(caster, id, spawnLocation, target, data.getSpeed(), velocity,
+        data.getLifespan());
     chasers.add(chaser);
   }
 
@@ -68,10 +67,9 @@ public class ChaserManager {
   }
 
   private boolean executeChaserMovement(ChaserEntity chaser, LoadedChaser data) {
-    Location targetLocation = TargetingUtil
-        .getOriginLocation(chaser.getTarget(), OriginLocation.CENTER);
-    Vector change = targetLocation.toVector()
-        .subtract(chaser.getLocation().toVector()).normalize().multiply(data.getSpeed());
+    Location targetLocation = TargetingUtil.getOriginLocation(chaser.getTarget(), OriginLocation.CENTER);
+    Vector change = targetLocation.toVector().subtract(chaser.getLocation().toVector()).normalize()
+        .multiply(data.getSpeed());
     Vector velocity = chaser.getVelocity();
     velocity.add(change);
     if (velocity.length() > data.getMaxSpeed()) {

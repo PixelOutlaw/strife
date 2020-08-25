@@ -6,6 +6,7 @@ import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.util.SpecialStatusUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -90,7 +91,7 @@ public class SpawnerManager {
           mob.getEntity().getVehicle().remove();
         }
 
-        mob.setDespawnOnUnload(true);
+        SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
         s.addEntity(mob.getEntity());
 
         // Random displacement to prevent clumping

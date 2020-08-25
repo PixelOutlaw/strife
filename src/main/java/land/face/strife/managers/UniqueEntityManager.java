@@ -210,7 +210,7 @@ public class UniqueEntityManager {
     le.setCustomName(uniqueEntity.getName());
     le.setCustomNameVisible(uniqueEntity.isShowName());
 
-    StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(le);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
 
     int mobLevel = uniqueEntity.getBaseLevel();
     if (mobLevel == -1) {
@@ -218,20 +218,20 @@ public class UniqueEntityManager {
     }
 
     if (mobLevel == 0) {
-      strifeMob.setStats(uniqueEntity.getAttributeMap());
+      mob.setStats(uniqueEntity.getAttributeMap());
     } else {
-      strifeMob.setStats(StatUpdateManager.combineMaps(strifeMob.getBaseStats(), uniqueEntity.getAttributeMap()));
+      mob.setStats(StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
     }
 
     if (uniqueEntity.getMaxMods() > 0) {
-      plugin.getMobModManager().doModApplication(strifeMob, uniqueEntity.getMaxMods());
+      plugin.getMobModManager().doModApplication(mob, uniqueEntity.getMaxMods());
     }
 
-    strifeMob.setUniqueEntityId(uniqueEntity.getId());
-    strifeMob.setFactions(uniqueEntity.getFactions());
-    strifeMob.setAlliedGuild(null);
-    strifeMob.setDespawnOnUnload(true);
-    strifeMob.setCharmImmune(uniqueEntity.isCharmImmune());
+    mob.setUniqueEntityId(uniqueEntity.getId());
+    mob.setFactions(uniqueEntity.getFactions());
+    mob.setAlliedGuild(null);
+    SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
+    mob.setCharmImmune(uniqueEntity.isCharmImmune());
 
     if (uniqueEntity.isBurnImmune()) {
       SpecialStatusUtil.setBurnImmune(le);
@@ -245,24 +245,24 @@ public class UniqueEntityManager {
     if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
       StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
       if (mountMob != null) {
-        mountMob.getEntity().addPassenger(strifeMob.getEntity());
-        strifeMob.addMinion(mountMob);
+        mountMob.getEntity().addPassenger(mob.getEntity());
+        mob.addMinion(mountMob);
         StrifePlugin.getInstance().getMinionManager().addMinion(mountMob.getEntity(), 10);
       }
     }
 
-    plugin.getStatUpdateManager().updateVanillaAttributes(strifeMob);
+    plugin.getStatUpdateManager().updateVanillaAttributes(mob);
 
-    strifeMob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
-    plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.PHASE_SHIFT);
+    mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
+    plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.PHASE_SHIFT);
     plugin.getParticleTask().addParticle(le, uniqueEntity.getStrifeParticle());
 
-    plugin.getAbilityManager().startAbilityTimerTask(strifeMob);
+    plugin.getAbilityManager().startAbilityTimerTask(mob);
 
-    UniqueSpawnEvent event = new UniqueSpawnEvent(strifeMob);
+    UniqueSpawnEvent event = new UniqueSpawnEvent(mob);
     Bukkit.getPluginManager().callEvent(event);
 
-    return strifeMob;
+    return mob;
   }
 
   private void modifyPassengerItem(LivingEntity rider, Item item) {

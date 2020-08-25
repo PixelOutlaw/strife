@@ -156,8 +156,8 @@ public class DamageUtil {
     }
 
     if (mods.isCanBeBlocked()) {
-      if (plugin.getBlockManager()
-          .isAttackBlocked(attacker, defender, attackMult, mods.getAttackType(), mods.isBlocking())) {
+      if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
+          mods.getAttackType(), mods.isBlocking())) {
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
@@ -426,16 +426,22 @@ public class DamageUtil {
 
   public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, StrifeMob target, DamageModifiers mods) {
     Map<DamageType, Float> damageMap = new HashMap<>();
+    boolean modsEnabled = mods != null;
     for (DamageType damageType : DMG_TYPES) {
       float amount = getRawDamage(attacker, damageType);
       if (amount > 0) {
-        damageMap.put(damageType, amount * mods.getDamageMultipliers().getOrDefault(damageType, 1f)
-            * mods.getAttackMultiplier());
+        if (modsEnabled) {
+          amount *= mods.getDamageMultipliers().getOrDefault(damageType, 1f);
+          amount *= mods.getAttackMultiplier();
+        }
+        damageMap.put(damageType, amount);
       }
     }
-    for (BonusDamage bd : mods.getBonusDamages()) {
-      float bonus = applyDamageScale(attacker, target, bd);
-      damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
+    if (modsEnabled) {
+      for (BonusDamage bd : mods.getBonusDamages()) {
+        float bonus = applyDamageScale(attacker, target, bd);
+        damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
+      }
     }
     return damageMap;
   }

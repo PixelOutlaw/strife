@@ -18,6 +18,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.data.conditions.AliveCondition;
 import land.face.strife.data.conditions.AttributeCondition;
 import land.face.strife.data.conditions.BarrierCondition;
 import land.face.strife.data.conditions.BleedingCondition;
@@ -178,7 +179,7 @@ public class EffectManager {
   public void executeEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
     LogUtil.printDebug("Effect task started - " + effectList.toString());
     if (caster == null || caster.getEntity() == null) {
-      LogUtil.printDebug("- Task cancelled, caster is dead");
+      LogUtil.printDebug("- Task cancelled, caster is missing");
       return;
     }
     for (Effect effect : effectList) {
@@ -190,10 +191,6 @@ public class EffectManager {
 
   public void execute(Effect effect, StrifeMob caster, TargetResponse response) {
     Set<LivingEntity> targets = new HashSet<>(response.getEntities());
-    if (effect.isForceTargetCaster()) {
-      targets.clear();
-      targets.add(caster.getEntity());
-    }
     if (!targets.isEmpty()) {
       for (LivingEntity le : targets) {
         StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
@@ -334,6 +331,7 @@ public class EffectManager {
         ((ChaserEffect) effect).setOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ChaserEffect) effect).setLoadedChaser(data);
+        ((ChaserEffect) effect).setCanLocationOverride(cs.getBoolean("location-override", false));
         break;
       case CONSOLE_COMMAND:
         effect = new ConsoleCommand();
@@ -367,7 +365,13 @@ public class EffectManager {
       case AREA_EFFECT:
         effect = new AreaEffect();
         List<String> areaEffects = cs.getStringList("effects");
+        List<String> filterConditions = cs.getStringList("filter-conditions");
         AreaEffect areaEffect = (AreaEffect) effect;
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (String s : filterConditions) {
+            areaEffect.getFilterConditions().add(getConditions().get(s));
+          }
+        }, 5L);
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
           for (String s : areaEffects) {
             areaEffect.getEffects().add(getEffect(s));
@@ -463,6 +467,8 @@ public class EffectManager {
         ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
+        ((ShootProjectile) effect).setSilent(cs.getBoolean("silent", false));
+        ((ShootProjectile) effect).setThrowItem(cs.getBoolean("thrown-item", false));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
@@ -847,6 +853,9 @@ public class EffectManager {
           return;
         }
         condition = new AttributeCondition(attribute);
+        break;
+      case ALIVE:
+        condition = new AliveCondition();
         break;
       case HEALTH:
         boolean percent3 = cs.getBoolean("percentage", false);

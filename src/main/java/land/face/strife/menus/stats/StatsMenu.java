@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
 import land.face.strife.menus.BlankIcon;
@@ -31,12 +31,12 @@ public class StatsMenu extends ItemMenu {
   static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
   static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
   static final DecimalFormat TWO_DECIMAL = new DecimalFormat("#.##");
-  static final String breakLine = TextUtils.color("&7&m-----------------------");
+  static final String breakLine = StringExtensionsKt.chatColorize("&8=========================");
 
   private Player player;
 
   public StatsMenu() {
-    super(TextUtils.color("&0&lStats!"), Size.fit(36), StrifePlugin.getInstance());
+    super(StringExtensionsKt.chatColorize("&0&lStats!"), Size.fit(36), StrifePlugin.getInstance());
     setItem(0, new StatsEquipmentItem(EquipmentSlot.HEAD, "&eNo Helmet"));
     setItem(9, new StatsEquipmentItem(EquipmentSlot.CHEST, "&eNo Chest Armor"));
     setItem(18, new StatsEquipmentItem(EquipmentSlot.LEGS, "&eNo... pants?"));

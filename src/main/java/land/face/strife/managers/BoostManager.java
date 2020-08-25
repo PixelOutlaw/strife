@@ -83,6 +83,10 @@ public class BoostManager {
     contributors.remove(uuid);
   }
 
+  public Set<String> getLoadedBoostIds() {
+    return loadedBoosts.keySet();
+  }
+
   public void updateGlobalBoostStatus(Player player) {
     if (player.hasPermission("has.donated")) {
       contributors.add(player.getUniqueId());

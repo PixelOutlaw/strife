@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Choice;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoreAbility;
@@ -127,8 +128,12 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + ".slot-messages.SLOT_C", champion.getCastMessages().get(AbilitySlot.SLOT_C));
     }
 
-    for (Path path : champion.getPathMap().keySet()) {
-      config.set(champUuid + ".passives." + path.toString(), champion.getPathMap().get(path).toString());
+    for (Path path : LevelPath.PATH_VALUES) {
+      if (champion.getPathMap().containsKey(path)) {
+        config.set(champUuid + ".passives." + path.toString(), champion.getPathMap().get(path).toString());
+      } else {
+        config.set(champUuid + ".passives." + path.toString(), null);
+      }
     }
 
     configMap.put(champion.getUniqueId(), config);
@@ -208,8 +213,6 @@ public class FlatfileStorage implements DataStorage {
           }
         }
       }
-
-      Bukkit.getLogger().info("Loaded " + saveData.getPathMap().size() + " path choices!");
 
       if (section.isConfigurationSection("stats")) {
         ConfigurationSection statsSection = section.getConfigurationSection("stats");

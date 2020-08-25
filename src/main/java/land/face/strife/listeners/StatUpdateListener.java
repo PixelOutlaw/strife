@@ -80,12 +80,12 @@ public class StatUpdateListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerQuit(PlayerQuitEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin,
-        () -> plugin.getStrifeMobManager().removeEntity(event.getPlayer()), 1L);
+        () -> plugin.getStrifeMobManager().removeStrifeMob(event.getPlayer()), 1L);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerKick(PlayerKickEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin,
-        () -> plugin.getStrifeMobManager().removeEntity(event.getPlayer()), 1L);
+        () -> plugin.getStrifeMobManager().removeStrifeMob(event.getPlayer()), 1L);
   }
 }

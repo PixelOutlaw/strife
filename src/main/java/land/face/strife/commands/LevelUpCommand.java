@@ -18,11 +18,13 @@
  */
 package land.face.strife.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
 import land.face.strife.StrifePlugin;
 import org.bukkit.entity.Player;
-import se.ranzdo.bukkit.methodcommand.Command;
 
-public class LevelUpCommand {
+@CommandAlias("levelup|lvl|lpoints")
+public class LevelUpCommand extends BaseCommand {
 
   private final StrifePlugin plugin;
 
@@ -30,8 +32,11 @@ public class LevelUpCommand {
     this.plugin = plugin;
   }
 
-  @Command(identifier = "levelup")
-  public void baseCommand(Player sender) {
+  public void baseCommand() {
+    if (!getCurrentCommandIssuer().isPlayer()) {
+      return;
+    }
+    Player sender = getCurrentCommandIssuer().getIssuer();
     plugin.getChampionManager().resetPendingStats(plugin.getChampionManager().getChampion(sender));
     plugin.getLevelupMenu().open(sender);
   }

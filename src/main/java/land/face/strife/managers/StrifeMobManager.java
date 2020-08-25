@@ -6,6 +6,8 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.FiniteUsesEffect;
+import land.face.strife.util.SpecialStatusUtil;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -62,26 +64,25 @@ public class StrifeMobManager {
 
   public void despawnAllTempEntities() {
     for (StrifeMob strifeMob : trackedEntities.values()) {
-      if (strifeMob.getEntity().isValid() && strifeMob.isDespawnOnUnload()) {
+      if (strifeMob.getEntity().isValid() && SpecialStatusUtil.isDespawnOnUnload(strifeMob.getEntity())) {
         strifeMob.getEntity().remove();
       }
     }
   }
 
-  public void removeEntity(LivingEntity entity) {
+  public void removeStrifeMob(LivingEntity entity) {
     if (entity.getPassengers().size() > 0 && entity.getPassengers().get(0) instanceof Item) {
       entity.getPassengers().get(0).remove();
     }
     trackedEntities.remove(entity);
   }
 
-  public void doChunkDespawn(LivingEntity entity) {
-    if (!isTrackedEntity(entity)) {
-      return;
+  public void doChunkDespawn(Entity entity) {
+    if (entity instanceof LivingEntity) {
+      removeStrifeMob((LivingEntity) entity);
     }
-    if (trackedEntities.get(entity).isDespawnOnUnload()) {
+    if (SpecialStatusUtil.isDespawnOnUnload(entity)) {
       entity.remove();
-      removeEntity(entity);
     }
   }
 

@@ -84,18 +84,13 @@ public class StatsMiscMenuItem extends MenuItem {
         100 + pStats.getStat(StrifeStat.EFFECT_DURATION)) + "%");
     lore.add(breakLine);
     if (pStats.getStat(StrifeStat.DOGE) > 0) {
-      lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN
-          + "many levels");
+      lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
       lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
     }
     lore.add(ChatColor.DARK_AQUA + "Crafting Skill Bonus: " + ChatColor.WHITE + "+" +
         INT_FORMAT.format(pStats.getStat(StrifeStat.CRAFT_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Enchanting Skill Bonus: " + ChatColor.WHITE + "+" +
         INT_FORMAT.format(pStats.getStat(StrifeStat.ENCHANT_SKILL)));
-    lore.add(ChatColor.DARK_AQUA + "Fishing Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getStat(StrifeStat.FISH_SKILL)));
-    lore.add(ChatColor.DARK_AQUA + "Mining Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getStat(StrifeStat.MINE_SKILL)));
 
     lore.add(breakLine);
 

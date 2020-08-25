@@ -17,6 +17,7 @@ import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -43,7 +44,6 @@ public class StrifeMob {
 
   private final Set<FiniteUsesEffect> tempEffects = new HashSet<>();
 
-  private boolean despawnOnUnload = false;
   private boolean charmImmune = false;
 
   private final Set<StrifeMob> minions = new HashSet<>();
@@ -270,7 +270,7 @@ public class StrifeMob {
     strifeMob.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
     strifeMob.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
     strifeMob.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
-    strifeMob.setDespawnOnUnload(true);
+    SpecialStatusUtil.setDespawnOnUnload(strifeMob.getEntity());
     strifeMob.setMaster(livingEntity.get());
   }
 
@@ -284,14 +284,6 @@ public class StrifeMob {
 
   public Set<FiniteUsesEffect> getTempEffects() {
     return tempEffects;
-  }
-
-  public boolean isDespawnOnUnload() {
-    return despawnOnUnload;
-  }
-
-  public void setDespawnOnUnload(boolean despawnOnUnload) {
-    this.despawnOnUnload = despawnOnUnload;
   }
 
   public boolean isCharmImmune() {

@@ -51,8 +51,6 @@ public class Champion {
   private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
       .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
       .put(LifeSkillType.ENCHANTING, StrifeStat.ENCHANT_SKILL)
-      .put(LifeSkillType.FISHING, StrifeStat.FISH_SKILL)
-      .put(LifeSkillType.MINING, StrifeStat.MINE_SKILL)
       .put(LifeSkillType.SNEAK, StrifeStat.SNEAK_SKILL)
       .build();
 

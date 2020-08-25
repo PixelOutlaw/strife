@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.ThrownItemTask;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
@@ -11,11 +12,13 @@ import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
@@ -47,6 +50,7 @@ public class ShootProjectile extends Effect {
   private Disguise disguise = null;
   private ItemStack thrownStack = null;
   private List<String> hitEffects;
+  private boolean throwItem;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -94,8 +98,7 @@ public class ShootProjectile extends Effect {
         }
         ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
         ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
-        ProjectileUtil.setPierce((Arrow) projectile,
-            caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
+        ProjectileUtil.setPierce((Arrow) projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
       } else if (projectileEntity == EntityType.FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
@@ -109,17 +112,27 @@ public class ShootProjectile extends Effect {
       }
       projectile.setBounce(bounce);
       ProjectileUtil.setAttackMult(projectile, (float) attackMultiplier);
-
       if (blockHitEffects) {
         ProjectileUtil.setGroundTrigger(projectile);
       }
-
       if (!hitEffects.isEmpty()) {
         ProjectileUtil.setHitEffects(projectile, hitEffects);
       }
-
       if (disguise != null) {
         DisguiseAPI.disguiseToPlayers(projectile, disguise, Bukkit.getOnlinePlayers());
+      }
+      if (throwItem) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+          getPlugin().getEntityHider().hideEntity(p, projectile);
+        }
+        ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
+        if (stack.getType() == Material.AIR) {
+          stack = caster.getEntity().getEquipment().getItemInOffHand();
+          if (stack.getType() == Material.AIR) {
+            stack = new ItemStack(Material.IRON_SWORD);
+          }
+        }
+        new ThrownItemTask(projectile, stack, originLocation).runTaskTimer(getPlugin(), 0L, 1L);
       }
     }
   }
@@ -174,6 +187,10 @@ public class ShootProjectile extends Effect {
 
   public void setHitEffects(List<String> hitEffects) {
     this.hitEffects = hitEffects;
+  }
+
+  public void setThrowItem(boolean throwItem) {
+    this.throwItem = throwItem;
   }
 
   public void setZeroPitch(boolean zeroPitch) {

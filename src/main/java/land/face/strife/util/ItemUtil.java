@@ -88,6 +88,9 @@ public class ItemUtil {
     if (isWandOrStaff(mainItem)) {
       return isValidMageOffhand(offItem);
     }
+    if (mainItem.getType() == Material.BOOK) {
+      return isValidMageOffhand(offItem);
+    }
     if (mainItem.getType() == Material.BOW) {
       if (isPistol(mainItem)) {
         return isBullets(offItem);

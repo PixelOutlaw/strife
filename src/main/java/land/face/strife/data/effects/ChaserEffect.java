@@ -12,6 +12,8 @@ public class ChaserEffect extends Effect {
 
   private LoadedChaser loadedChaser;
   private OriginLocation originLocation;
+  private Location overrideLocation;
+  private boolean canLocationOverride;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -21,10 +23,28 @@ public class ChaserEffect extends Effect {
         startSpeed * Math.random(),
         2 * startSpeed * (0.5 - Math.random())
     );
-    Location location = TargetingUtil.getOriginLocation(caster.getEntity(), originLocation);
+    Location location;
+    if (overrideLocation == null) {
+      location = TargetingUtil.getOriginLocation(caster.getEntity(), originLocation);
+    } else {
+      location = overrideLocation;
+      overrideLocation = null;
+    }
 
-    StrifePlugin.getInstance().getChaserManager().createChaser(caster, getId(), vector, location,
-        target.getEntity());
+    StrifePlugin.getInstance().getChaserManager().createChaser(caster, getId(), vector, location, target.getEntity());
+  }
+
+  public boolean isCanLocationOverride() {
+    return canLocationOverride;
+  }
+
+  public void setCanLocationOverride(boolean canLocationOverride) {
+    this.canLocationOverride = canLocationOverride;
+  }
+
+
+  public void setOverrideLocation(Location location) {
+    overrideLocation = location;
   }
 
   public void setLoadedChaser(LoadedChaser loadedChaser) {

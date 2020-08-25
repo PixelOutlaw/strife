@@ -1,21 +1,22 @@
-/**
- * The MIT License Copyright (c) 2015 Teal Cube Games
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+  The MIT License Copyright (c) 2015 Teal Cube Games
+  <p>
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+  documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to the following conditions:
+  <p>
+  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+  Software.
+  <p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife;
 
+import co.aikar.commands.PaperCommandManager;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
@@ -32,8 +33,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
@@ -41,13 +44,13 @@ import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
-import land.face.strife.commands.UniqueEntityCommand;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.EntityAbilitySet;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.StrifeParticle;
@@ -62,6 +65,8 @@ import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.DoubleJumpListener;
 import land.face.strife.listeners.EndermanListener;
+import land.face.strife.listeners.EntityHider;
+import land.face.strife.listeners.EntityHider.Policy;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.EvokerFangEffectListener;
 import land.face.strife.listeners.ExperienceListener;
@@ -164,7 +169,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitTask;
-import se.ranzdo.bukkit.methodcommand.CommandHandler;
 
 public class StrifePlugin extends FacePlugin {
 
@@ -172,10 +176,7 @@ public class StrifePlugin extends FacePlugin {
 
   private PluginLogger debugPrinter;
   private LogLevel logLevel;
-  private CommandHandler commandHandler;
   private MasterConfiguration settings;
-  private VersionedSmartYamlConfiguration configYAML;
-  private VersionedSmartYamlConfiguration langYAML;
   private VersionedSmartYamlConfiguration attributesYAML;
   private VersionedSmartYamlConfiguration baseStatsYAML;
   private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
@@ -189,7 +190,6 @@ public class StrifePlugin extends FacePlugin {
   private VersionedSmartYamlConfiguration modsYAML;
   private VersionedSmartYamlConfiguration globalBoostsYAML;
   private SmartYamlConfiguration spawnerYAML;
-  private SmartYamlConfiguration agilityYAML;
 
   private StrifeMobManager strifeMobManager;
   private StatUpdateManager statUpdateManager;
@@ -228,9 +228,11 @@ public class StrifePlugin extends FacePlugin {
   private WSEManager wseManager;
   private AgilityManager agilityManager;
 
+  private EntityHider entityHider;
+
   private DataStorage storage;
 
-  private List<BukkitTask> taskList = new ArrayList<>();
+  private final List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
   private DamageOverTimeTask damageOverTimeTask;
   private EnergyRegenTask energyRegenTask;
@@ -241,7 +243,7 @@ public class StrifePlugin extends FacePlugin {
   private AbilityPickerPickerMenu abilitySubcategoryMenu;
   private Map<String, AbilityPickerMenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
-  private Map<Path, PathMenu> pathMenus = new HashMap<>();
+  private final Map<Path, PathMenu> pathMenus = new HashMap<>();
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
 
@@ -262,7 +264,9 @@ public class StrifePlugin extends FacePlugin {
     debugPrinter = new PluginLogger(this);
 
     List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();
+    VersionedSmartYamlConfiguration configYAML;
     configurations.add(configYAML = defaultSettingsLoad("config.yml"));
+    VersionedSmartYamlConfiguration langYAML;
     configurations.add(langYAML = defaultSettingsLoad("language.yml"));
     configurations.add(attributesYAML = defaultSettingsLoad("attributes.yml"));
     configurations.add(baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml"));
@@ -278,7 +282,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
 
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
-    agilityYAML = new SmartYamlConfiguration(new File(getDataFolder(), "agility-locations.yml"));
+    SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(new File(getDataFolder(), "agility-locations.yml"));
 
     for (VersionedSmartYamlConfiguration config : configurations) {
       if (config.update()) {
@@ -287,8 +291,9 @@ public class StrifePlugin extends FacePlugin {
     }
 
     settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
-
     storage = new FlatfileStorage(this);
+    PaperCommandManager commandManager = new PaperCommandManager(this);
+
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     bossBarManager = new BossBarManager(this);
@@ -299,7 +304,6 @@ public class StrifePlugin extends FacePlugin {
     skillExperienceManager = new SkillExperienceManager(this);
     strifeMobManager = new StrifeMobManager(this);
     abilityManager = new AbilityManager(this);
-    commandHandler = new CommandHandler(this);
     attributeManager = new StrifeAttributeManager();
     blockManager = new BlockManager();
     counterManager = new CounterManager(this);
@@ -335,7 +339,7 @@ public class StrifePlugin extends FacePlugin {
       logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
     } catch (Exception e) {
       logLevel = LogLevel.ERROR;
-      LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + LogLevel.values());
+      LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
     }
 
     buildBuffs();
@@ -374,13 +378,23 @@ public class StrifePlugin extends FacePlugin {
     energyRegenTask = new EnergyRegenTask(this);
     regenTask = new RegenTask(this);
 
-    commandHandler.registerCommands(new InspectCommand(this));
-    commandHandler.registerCommands(new LevelUpCommand(this));
-    commandHandler.registerCommands(new StrifeCommand(this));
-    commandHandler.registerCommands(new UniqueEntityCommand(this));
-    commandHandler.registerCommands(new SpawnerCommand(this));
-    commandHandler.registerCommands(new AbilityMacroCommand(this));
-    commandHandler.registerCommands(new AgilityCommand(this));
+    commandManager.registerCommand(new InspectCommand(this));
+    commandManager.registerCommand(new LevelUpCommand(this));
+    commandManager.registerCommand(new StrifeCommand(this));
+    commandManager.registerCommand(new SpawnerCommand(this));
+    commandManager.registerCommand(new AbilityMacroCommand(this));
+    commandManager.registerCommand(new AgilityCommand(this));
+
+    commandManager.getCommandCompletions()
+        .registerCompletion("uniques", c -> uniqueEntityManager.getLoadedUniquesMap().keySet());
+    commandManager.getCommandCompletions()
+        .registerCompletion("loreabilities", c -> loreAbilityManager.getLoreAbilityIds());
+    commandManager.getCommandCompletions()
+        .registerCompletion("boosts", c -> boostManager.getLoadedBoostIds());
+    commandManager.getCommandCompletions()
+        .registerCompletion("skills", c -> Stream.of(LifeSkillType.types).map(Enum::name).collect(Collectors.toList()));
+    commandManager.getCommandCompletions()
+        .registerCompletion("spawners", c -> spawnerManager.getSpawnerMap().keySet());
 
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);
@@ -505,6 +519,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
+    entityHider = new EntityHider(this, Policy.BLACKLIST);
 
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
@@ -516,6 +531,7 @@ public class StrifePlugin extends FacePlugin {
     ConfigurationSection abilityMenus = configYAML.getConfigurationSection("ability-menus");
     abilitySubmenus = new HashMap<>();
     List<AbilityPickerPickerItem> pickerItems = new ArrayList<>();
+    assert abilityMenus != null;
     for (String menuId : abilityMenus.getKeys(false)) {
       List<String> abilities = abilityMenus.getStringList(menuId + ".abilities");
       String title = abilityMenus.getString(menuId + ".title", "CONFIG ME");
@@ -564,6 +580,7 @@ public class StrifePlugin extends FacePlugin {
     boostManager.saveBoosts();
     storage.saveAll();
 
+    entityHider.close();
     HandlerList.unregisterAll(this);
     Bukkit.getScheduler().cancelTasks(this);
 
@@ -626,6 +643,7 @@ public class StrifePlugin extends FacePlugin {
       }
       LogUtil.printDebug("Loading effect: " + key + "...");
       ConfigurationSection cs = effectYAML.getConfigurationSection(key);
+      assert cs != null;
       effectManager.loadEffect(key, cs);
     }
   }
@@ -636,6 +654,7 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = conditionYAML.getConfigurationSection(key);
+      assert cs != null;
       effectManager.loadCondition(key, cs);
     }
   }
@@ -646,6 +665,7 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = loreAbilityYAML.getConfigurationSection(key);
+      assert cs != null;
       loreAbilityManager.loadLoreAbility(key, cs);
     }
   }
@@ -656,6 +676,7 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = equipmentYAML.getConfigurationSection(itemStackKey);
+      assert cs != null;
       equipmentManager.loadEquipmentItem(itemStackKey, cs);
     }
   }
@@ -666,6 +687,7 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = buffsYAML.getConfigurationSection(buffId);
+      assert cs != null;
       buffManager.loadBuff(buffId, cs);
     }
   }
@@ -676,6 +698,7 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = attributesYAML.getConfigurationSection(key);
+      assert cs != null;
       attributeManager.loadStat(key, cs);
     }
   }
@@ -697,17 +720,20 @@ public class StrifePlugin extends FacePlugin {
         continue;
       }
       ConfigurationSection cs = modsYAML.getConfigurationSection(key);
+      assert cs != null;
       mobModManager.loadMobMod(key, cs);
     }
   }
 
   private void loadScheduledBoosts() {
     ConfigurationSection cs = globalBoostsYAML.getConfigurationSection("scheduled-boosts");
+    assert cs != null;
     boostManager.loadScheduledBoosts(cs);
   }
 
   private void loadBoosts() {
     ConfigurationSection cs = globalBoostsYAML.getConfigurationSection("boost-templates");
+    assert cs != null;
     boostManager.loadStatBoosts(cs);
   }
 
@@ -720,6 +746,7 @@ public class StrifePlugin extends FacePlugin {
 
       UniqueEntity uniqueEntity = new UniqueEntity();
 
+      assert cs != null;
       String type = cs.getString("type");
       try {
         uniqueEntity.setType(EntityType.valueOf(type));
@@ -729,7 +756,8 @@ public class StrifePlugin extends FacePlugin {
       }
 
       uniqueEntity.setId(entityNameKey);
-      uniqueEntity.setName(StringExtensionsKt.chatColorize(cs.getString("name", "&fSET &cA &9NAME")));
+      uniqueEntity.setName(StringExtensionsKt.chatColorize(
+          Objects.requireNonNull(cs.getString("name", "&fSET &cA &9NAME"))));
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
@@ -840,7 +868,8 @@ public class StrifePlugin extends FacePlugin {
     for (String spawnerId : spawnerYAML.getKeys(false)) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
       if (spawner == null) {
-        spawnerYAML.getConfigurationSection(spawnerId).getParent().set(spawnerId, null);
+        Objects.requireNonNull(Objects.requireNonNull(spawnerYAML.getConfigurationSection(spawnerId)).getParent())
+            .set(spawnerId, null);
         LogUtil.printDebug("Spawner " + spawnerId + " has been removed.");
       }
     }
@@ -1069,6 +1098,10 @@ public class StrifePlugin extends FacePlugin {
 
   public LogLevel getLogLevel() {
     return logLevel;
+  }
+
+  public EntityHider getEntityHider() {
+    return entityHider;
   }
 
   public void debug(Level level, String... messages) {
