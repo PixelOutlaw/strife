@@ -53,13 +53,11 @@ public class SkillExperienceManager {
     setupLevelingRates(plugin);
   }
 
-  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact,
-      boolean forceDisplay) {
+  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact, boolean forceDisplay) {
     addExperience(plugin.getStrifeMobManager().getStatMob(player), type, amount, exact, forceDisplay);
   }
 
-  public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact,
-      boolean forceDisplay) {
+  public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact, boolean forceDisplay) {
     Player player = (Player) mob.getEntity();
     ChampionSaveData saveData = mob.getChampion().getSaveData();
     if (amount < 0.001) {
@@ -69,8 +67,7 @@ public class SkillExperienceManager {
       return;
     }
     if (!exact) {
-      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player)
-          .getStat(StrifeStat.SKILL_XP_GAIN) / 100;
+      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player).getStat(StrifeStat.SKILL_XP_GAIN) / 100;
       amount *= 1 + skillXpMult;
     }
     if (saveData.isDisplayExp() || forceDisplay) {

@@ -18,13 +18,14 @@
  */
 package land.face.strife.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
 import org.bukkit.entity.Player;
-import se.ranzdo.bukkit.methodcommand.Arg;
-import se.ranzdo.bukkit.methodcommand.Command;
 
-public class InspectCommand {
+@CommandAlias("stats|inspect")
+public class InspectCommand extends BaseCommand {
 
   private final StrifePlugin plugin;
 
@@ -32,8 +33,11 @@ public class InspectCommand {
     this.plugin = plugin;
   }
 
-  @Command(identifier = "stats", permissions = "strife.command.stats")
-  public void baseCommand(Player sender) {
+  public void baseCommand() {
+    if (!getCurrentCommandIssuer().isPlayer()) {
+      return;
+    }
+    Player sender = getCurrentCommandIssuer().getIssuer();
     plugin.getChampionManager().updateEquipmentStats(sender);
     plugin.getChampionManager().update(sender);
     plugin.getStatUpdateManager().updateVanillaAttributes(sender);
@@ -41,8 +45,11 @@ public class InspectCommand {
     plugin.getStatsMenu().open(sender);
   }
 
-  @Command(identifier = "inspect", permissions = "strife.command.inspect")
-  public void inspectCommand(Player sender, @Arg(name = "target") Player target) {
+  public void inspectCommand(Player target) {
+    if (!getCurrentCommandIssuer().isPlayer()) {
+      return;
+    }
+    Player sender = getCurrentCommandIssuer().getIssuer();
     if (!target.isValid()) {
       MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
       return;

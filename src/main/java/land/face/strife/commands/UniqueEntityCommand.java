@@ -22,12 +22,10 @@
  */
 package land.face.strife.commands;
 
+import co.aikar.commands.BaseCommand;
 import land.face.strife.StrifePlugin;
-import org.bukkit.entity.Player;
-import se.ranzdo.bukkit.methodcommand.Arg;
-import se.ranzdo.bukkit.methodcommand.Command;
 
-public class UniqueEntityCommand {
+public class UniqueEntityCommand extends BaseCommand {
 
     private final StrifePlugin plugin;
 
@@ -35,9 +33,7 @@ public class UniqueEntityCommand {
         this.plugin = plugin;
     }
 
-    @Command(identifier = "strife unique", permissions = "strife.command.boss")
-    public void baseCommand(Player sender, @Arg(name = "spawn") String entityName) {
-        plugin.getUniqueEntityManager().spawnUnique(entityName, sender.getLocation());
-    }
+
+
 
 }

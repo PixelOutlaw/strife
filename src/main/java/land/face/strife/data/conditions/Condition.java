@@ -127,6 +127,7 @@ public abstract class Condition {
     RANGE,
     STEALTHED,
     BURNING,
-    EARTH_RUNES
+    EARTH_RUNES,
+    ALIVE
   }
 }

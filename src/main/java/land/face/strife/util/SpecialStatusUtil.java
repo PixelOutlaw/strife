@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Firework;
 
 public class SpecialStatusUtil {
 
@@ -17,7 +16,6 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Boolean> STANDODAH = new WeakHashMap<>();
   private static final Map<Entity, Boolean> DESPAWN_ON_UNLOAD = new WeakHashMap<>();
 
-  private static final Map<Entity, Boolean> NO_DAMAGE_FIREWORK = new WeakHashMap<>();
   private static final Map<Entity, String> HANDLED_BLOCK = new WeakHashMap<>();
 
   private static final Map<Entity, Integer> MOB_LEVEL = new WeakHashMap<>();
@@ -97,13 +95,5 @@ public class SpecialStatusUtil {
 
   public static int getMobLevel(Entity e) {
     return MOB_LEVEL.getOrDefault(e, -1);
-  }
-
-  public static void setNoDamage(Firework e) {
-    NO_DAMAGE_FIREWORK.put(e, true);
-  }
-
-  public static boolean isNoDamage(Firework e) {
-    return NO_DAMAGE_FIREWORK.getOrDefault(e, false);
   }
 }

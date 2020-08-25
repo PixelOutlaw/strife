@@ -53,6 +53,10 @@ public class LoreAbilityManager {
     return abilities;
   }
 
+  public Set<String> getLoreAbilityIds() {
+    return loreIdToAbilityMap.keySet();
+  }
+
   public void loadLoreAbility(String key, ConfigurationSection cs) {
     String type = cs.getString("trigger-type", "NULL").toUpperCase();
     TriggerType triggerType;

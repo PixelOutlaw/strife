@@ -11,10 +11,12 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.HitData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
+import land.face.strife.data.conditions.Condition;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -28,6 +30,7 @@ public class AreaEffect extends LocationEffect {
   private final Map<UUID, List<HitData>> targetDelay = new HashMap<>();
   private final Map<AbilityMod, Float> attackModifiers = new HashMap<>();
   private final List<Effect> effects = new ArrayList<>();
+  private final Set<Condition> filterConditions = new HashSet<>();
 
   private AreaType areaType;
   private TargetingPriority priority;
@@ -54,7 +57,12 @@ public class AreaEffect extends LocationEffect {
     targets.removeIf(target -> ignoreEntity(caster, target));
 
     TargetResponse response = new TargetResponse(targets);
-    getPlugin().getEffectManager().executeEffectList(caster, response, effects);
+    for (Effect effect : effects) {
+      if (effect instanceof ChaserEffect && ((ChaserEffect) effect).isCanLocationOverride()) {
+        ((ChaserEffect) effect).setOverrideLocation(location);
+      }
+    }
+    getPlugin().getEffectManager().processEffectList(caster, response, effects);
   }
 
   private boolean ignoreEntity(StrifeMob caster, LivingEntity le) {
@@ -100,6 +108,8 @@ public class AreaEffect extends LocationEffect {
         break;
     }
     TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
+    areaTargets.removeIf(e -> !PlayerDataUtil
+        .areConditionsMet(caster, getPlugin().getStrifeMobManager().getStatMob(e), filterConditions));
     if (areaTargets.size() == 0) {
       return areaTargets;
     }
@@ -237,6 +247,10 @@ public class AreaEffect extends LocationEffect {
 
   public Map<AbilityMod, Float> getAttackModifiers() {
     return attackModifiers;
+  }
+
+  public Set<Condition> getFilterConditions() {
+    return filterConditions;
   }
 
   public void setTargetingCooldown(long targetingCooldown) {

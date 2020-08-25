@@ -18,15 +18,17 @@
  */
 package land.face.strife.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.stats.AbilitySlot;
 import org.bukkit.entity.Player;
-import se.ranzdo.bukkit.methodcommand.Arg;
-import se.ranzdo.bukkit.methodcommand.Command;
 
-public class AbilityMacroCommand {
+@CommandAlias("ability-macro")
+public class AbilityMacroCommand extends BaseCommand {
 
   private final StrifePlugin plugin;
 
@@ -34,8 +36,8 @@ public class AbilityMacroCommand {
     this.plugin = plugin;
   }
 
-  @Command(identifier = "cast", permissions = "strife.command.cast")
-  public void baseCommand(Player sender, @Arg(name = "slot") String slot) {
+  @Subcommand("cast")
+  public void baseCommand(Player sender, String slot) {
     int slotNum = NumberUtils.toInt(slot, -1) - 1;
     if (slotNum > 2) {
       sendFailureHelp(sender);

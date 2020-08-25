@@ -119,8 +119,6 @@ public enum StrifeStat {
 
   CRAFT_SKILL("Crafting Skill"),
   ENCHANT_SKILL("Enchanting Skill"),
-  FISH_SKILL("Fishing Skill"),
-  MINE_SKILL("Mining Skill"),
   SNEAK_SKILL("Sneak Skill"),
 
   XP_GAIN("Combat XP"),

@@ -34,7 +34,7 @@ public class FishingListener implements Listener {
     event.getHook().setVelocity(bobberVelocity);
 
     float fishSpeed = mob.getStat(StrifeStat.FISHING_SPEED);
-    float fishTime = 200 + (float) Math.random() * 300;
+    float fishTime = 150 + (float) Math.random() * 150;
     float fishMult = 100 / (100 + fishSpeed);
     FishingUtil.setBiteTime(event.getHook(), (int) Math.max(fishTime * fishMult, 1));
   }

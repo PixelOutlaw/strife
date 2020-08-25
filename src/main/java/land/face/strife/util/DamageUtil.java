@@ -156,8 +156,8 @@ public class DamageUtil {
     }
 
     if (mods.isCanBeBlocked()) {
-      if (plugin.getBlockManager()
-          .isAttackBlocked(attacker, defender, attackMult, mods.getAttackType(), mods.isBlocking())) {
+      if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
+          mods.getAttackType(), mods.isBlocking())) {
         if (defender.getEntity() instanceof Player) {
           plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
         }
