@@ -16,6 +16,7 @@
  */
 package land.face.strife.tasks;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;

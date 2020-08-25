@@ -1,7 +1,7 @@
 package land.face.strife.data.conditions;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.util.MoveUtil;
 import org.bukkit.entity.Player;
 
 public class MovingCondition extends Condition {

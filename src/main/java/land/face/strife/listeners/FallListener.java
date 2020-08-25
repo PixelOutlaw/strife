@@ -6,11 +6,11 @@ import static org.bukkit.potion.PotionEffectType.SLOW;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
-import land.face.strife.util.MoveUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,8 +23,8 @@ import org.bukkit.potion.PotionEffect;
 
 public class FallListener implements Listener {
 
-  private StrifePlugin plugin;
-  private int fallMs;
+  private final StrifePlugin plugin;
+  private final int fallMs;
 
   public FallListener(StrifePlugin plugin) {
     this.plugin = plugin;

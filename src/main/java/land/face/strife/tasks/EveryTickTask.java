@@ -19,21 +19,12 @@
 package land.face.strife.tasks;
 
 import land.face.strife.StrifePlugin;
-import land.face.strife.util.MoveUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class EveryTickTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      MoveUtil.setSneak(player);
-      if (player.isOnGround()) {
-        MoveUtil.setLastGrounded(player);
-      }
-    }
     StrifePlugin.getInstance().getBlockManager().tickHolograms();
   }
 }

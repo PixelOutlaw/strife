@@ -18,13 +18,13 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
-import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
