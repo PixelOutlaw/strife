@@ -2,8 +2,10 @@ package land.face.strife.listeners;
 
 import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.event.LandEvent;
+import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,8 +13,7 @@ import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.events.LandEvent;
-import land.face.strife.util.MoveUtil;
+import land.face.strife.util.JumpUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
@@ -29,6 +30,7 @@ public class DoubleJumpListener implements Listener {
 
   private final StrifePlugin plugin;
   private final Map<Integer, Vector> cachedJumpAnimation = new HashMap<>();
+  private final String JUMP_AB_KEY = "air-jump";
 
   public DoubleJumpListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -55,12 +57,13 @@ public class DoubleJumpListener implements Listener {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     int agilityLevel = mob.getChampion().getLifeSkillLevel(AGILITY);
     if (agilityLevel > 39) {
-      int jumps = MoveUtil.getJumps(player);
-      int maxJumps = MoveUtil.getMaxJumps(mob);
+      int jumps = JumpUtil.getJumps(player);
+      int maxJumps = JumpUtil.getMaxJumps(mob);
       if (jumps != maxJumps) {
-        MessageUtils.sendActionBar(player, TextUtils.color("&bJumps Recharged!"));
+        String message = StringExtensionsKt.chatColorize("&bJumps Recharged!");
+        AdvancedActionBarUtil.addMessage(player, JUMP_AB_KEY, message, 10, 0);
       }
-      MoveUtil.setJumps(player, maxJumps);
+      JumpUtil.setJumps(player, maxJumps);
     }
   }
 
@@ -74,7 +77,7 @@ public class DoubleJumpListener implements Listener {
       return;
     }
 
-    int jumps = MoveUtil.getJumps(event.getPlayer());
+    int jumps = JumpUtil.getJumps(event.getPlayer());
     if (event.getPlayer().getFoodLevel() < 6 || jumps < 1) {
       return;
     }
@@ -105,13 +108,14 @@ public class DoubleJumpListener implements Listener {
     event.getPlayer().setVelocity(velocity.add(bonusVelocity));
 
     jumps--;
-    MoveUtil.setJumps(event.getPlayer(), jumps);
+    JumpUtil.setJumps(event.getPlayer(), jumps);
 
-    int maxJumps = MoveUtil.getMaxJumps(mob);
+    int maxJumps = JumpUtil.getMaxJumps(mob);
 
     String bars = IntStream.range(0, maxJumps).mapToObj(i -> "▌").collect(Collectors.joining(""));
     bars = insert(bars, "&0", Math.min(jumps, maxJumps));
-    MessageUtils.sendActionBar(event.getPlayer(), TextUtils.color("&3&lAir Jumps: &b" + bars));
+    String message = StringExtensionsKt.chatColorize("&3&lAir Jumps: &b" + bars);
+    AdvancedActionBarUtil.addMessage(event.getPlayer(), JUMP_AB_KEY, message, 40, 0);
 
     plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 3, false, false);
     flingParticle(event.getPlayer());

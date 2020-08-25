@@ -1,13 +1,13 @@
 package land.face.strife.data.conditions;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.util.MoveUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class GroundedCondition extends Condition {
 
-  private boolean strict;
+  private final boolean strict;
 
   public GroundedCondition(boolean strict) {
     this.strict = strict;

@@ -2,15 +2,15 @@ package land.face.strife.listeners;
 
 import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 
+import com.tealcube.minecraft.bukkit.facecore.event.LandEvent;
+import com.tealcube.minecraft.bukkit.facecore.event.LaunchEvent;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.AgilityLocationContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.events.LandEvent;
-import land.face.strife.events.LaunchEvent;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.MoveUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
@@ -22,7 +22,7 @@ import org.bukkit.util.Vector;
 
 public class LaunchAndLandListener implements Listener {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
   public LaunchAndLandListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -74,17 +74,15 @@ public class LaunchAndLandListener implements Listener {
 
   @EventHandler
   public void onLand(LandEvent event) {
-    for (AgilityLocationContainer cont : plugin.getAgilityManager().getInWorld(event.getLocation()
-        .getWorld().getName())) {
-      boolean success = AgilityLocationContainer
-          .setProgress(cont, event.getPlayer(), event.getLocation());
+    for (AgilityLocationContainer cont : plugin.getAgilityManager()
+        .getInWorld(event.getLocation().getWorld().getName())) {
+      boolean success = AgilityLocationContainer.setProgress(cont, event.getPlayer(), event.getLocation());
       if (success) {
         Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
         float xp = cont.getExp();
         xp *= PlayerDataUtil.getLifeSkillLevel(champion, AGILITY) / cont.getDifficulty();
         xp = Math.min(cont.getExp(), xp);
-        plugin.getSkillExperienceManager()
-            .addExperience(event.getPlayer(), AGILITY, xp, false, false);
+        plugin.getSkillExperienceManager().addExperience(event.getPlayer(), AGILITY, xp, false, false);
       }
     }
   }
