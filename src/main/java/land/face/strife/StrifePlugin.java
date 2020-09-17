@@ -16,10 +16,10 @@
  */
 package land.face.strife;
 
-import co.aikar.commands.PaperCommandManager;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
+import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
@@ -79,6 +79,7 @@ import land.face.strife.listeners.LaunchAndLandListener;
 import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoneyDropListener;
+import land.face.strife.listeners.ShearsEquipListener;
 import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
 import land.face.strife.listeners.SpawnListener;
@@ -122,9 +123,10 @@ import land.face.strife.managers.StrifeAttributeManager;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.managers.WSEManager;
-import land.face.strife.menus.abilities.AbilityPickerMenu;
-import land.face.strife.menus.abilities.AbilityPickerPickerItem;
-import land.face.strife.menus.abilities.AbilityPickerPickerMenu;
+import land.face.strife.menus.abilities.AbilityMenu;
+import land.face.strife.menus.abilities.AbilitySubmenu;
+import land.face.strife.menus.abilities.ReturnButton;
+import land.face.strife.menus.abilities.SubmenuSelectButton;
 import land.face.strife.menus.levelup.ConfirmationMenu;
 import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.levelup.PathMenu;
@@ -239,8 +241,8 @@ public class StrifePlugin extends FacePlugin {
 
   private LevelingRate levelingRate;
 
-  private AbilityPickerPickerMenu abilitySubcategoryMenu;
-  private Map<String, AbilityPickerMenu> abilitySubmenus;
+  private AbilityMenu abilitySubcategoryMenu;
+  private Map<String, AbilitySubmenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
   private final Map<Path, PathMenu> pathMenus = new HashMap<>();
   private ConfirmationMenu confirmMenu;
@@ -394,6 +396,8 @@ public class StrifePlugin extends FacePlugin {
         .registerCompletion("skills", c -> Stream.of(LifeSkillType.types).map(Enum::name).collect(Collectors.toList()));
     commandManager.getCommandCompletions()
         .registerCompletion("spawners", c -> spawnerManager.getSpawnerMap().keySet());
+    commandManager.getCommandCompletions()
+        .registerCompletion("abilities", c -> abilityManager.getLoadedAbilities().keySet());
 
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);
@@ -508,6 +512,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager().registerEvents(new MoneyDropListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new ShearsEquipListener(), this);
     Bukkit.getPluginManager().registerEvents(new MinionListener(strifeMobManager, minionManager), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
@@ -526,16 +531,18 @@ public class StrifePlugin extends FacePlugin {
       Bukkit.getPluginManager().registerEvents(new HeadLoadListener(this), this);
     }
 
+    ReturnButton returnButton = new ReturnButton(this, Material.ARROW,
+        StringExtensionsKt.chatColorize("&e&l<< Go Back"));
     ConfigurationSection abilityMenus = configYAML.getConfigurationSection("ability-menus");
     abilitySubmenus = new HashMap<>();
-    List<AbilityPickerPickerItem> pickerItems = new ArrayList<>();
+    List<SubmenuSelectButton> pickerItems = new ArrayList<>();
     assert abilityMenus != null;
     for (String menuId : abilityMenus.getKeys(false)) {
       List<String> abilities = abilityMenus.getStringList(menuId + ".abilities");
       String title = abilityMenus.getString(menuId + ".title", "CONFIG ME");
       List<Ability> abilityList = abilities.stream().map(a -> abilityManager.getAbility(a))
           .collect(Collectors.toList());
-      AbilityPickerMenu menu = new AbilityPickerMenu(this, title, abilityList);
+      AbilitySubmenu menu = new AbilitySubmenu(this, title, abilityList, returnButton);
       menu.setId(menuId);
       abilitySubmenus.put(menuId, menu);
 
@@ -543,13 +550,12 @@ public class StrifePlugin extends FacePlugin {
       List<String> lore = abilityMenus.getStringList(menuId + ".lore");
       Material material = Material.valueOf(abilityMenus.getString(menuId + ".material", "BARRIER"));
       int slot = abilityMenus.getInt(menuId + ".slot", 0);
-      AbilityPickerPickerItem subMenuIcon = new AbilityPickerPickerItem(menu, material, name, lore,
-          slot);
+      SubmenuSelectButton subMenuIcon = new SubmenuSelectButton(menu, material, name, lore, slot);
       pickerItems.add(subMenuIcon);
     }
 
     String pickerName = configYAML.getString("ability-menu-title", "Picker");
-    abilitySubcategoryMenu = new AbilityPickerPickerMenu(this, pickerName, pickerItems);
+    abilitySubcategoryMenu = new AbilityMenu(this, pickerName, pickerItems);
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu();
@@ -1058,11 +1064,11 @@ public class StrifePlugin extends FacePlugin {
     return confirmMenu;
   }
 
-  public AbilityPickerPickerMenu getAbilityPicker() {
+  public AbilityMenu getAbilityPicker() {
     return abilitySubcategoryMenu;
   }
 
-  public AbilityPickerMenu getSubmenu(String name) {
+  public AbilitySubmenu getSubmenu(String name) {
     return abilitySubmenus.get(name);
   }
 
