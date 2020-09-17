@@ -26,10 +26,10 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.events.UniqueKillEvent;
+import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -182,12 +182,6 @@ public class ExperienceListener implements Listener {
   }
 
   private boolean isSoulShard(ItemStack itemStack) {
-    if (itemStack.getType() != Material.QUARTZ) {
-      return false;
-    }
-    if (!itemStack.hasItemMeta() || !itemStack.getItemMeta().hasDisplayName()) {
-      return false;
-    }
-    return itemStack.getItemMeta().getDisplayName().equals(ChatColor.WHITE + "Soul Shard");
+    return itemStack.getType() == Material.QUARTZ && ItemUtil.getCustomData(itemStack) == 100;
   }
 }
