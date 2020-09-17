@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.WeakHashMap;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
@@ -23,7 +24,7 @@ public class ProjectileUtil {
 
   private static final Map<Projectile, Boolean> GROUND_TRIGGER = new WeakHashMap<>();
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
-  private static final Map<Projectile, List<String>> HIT_EFFECTS = new WeakHashMap<>();
+  private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
 
   private static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -64,15 +65,19 @@ public class ProjectileUtil {
     SHOT_ID.put(projectile, shotId);
   }
 
+  public static void bumpShotId() {
+    shotId++;
+  }
+
   public static int getShotId(Projectile projectile) {
     return SHOT_ID.getOrDefault(projectile, -1);
   }
 
-  public static void setHitEffects(Projectile projectile, List<String> effects) {
+  public static void setHitEffects(Projectile projectile, List<Effect> effects) {
     HIT_EFFECTS.put(projectile, effects);
   }
 
-  public static List<String> getHitEffects(Projectile projectile) {
+  public static List<Effect> getHitEffects(Projectile projectile) {
     return HIT_EFFECTS.getOrDefault(projectile, null);
   }
 

@@ -37,6 +37,14 @@ public class EntityAbilitySet {
     return abilityMegaMap.get(type);
   }
 
+  public static Set<Ability> getAbilities(EntityAbilitySet abilitySet, TriggerAbilityType type) {
+    Map<Phase, Set<Ability>> abilitySection = abilitySet.getAbilities(type);
+    if (abilitySection == null || !abilitySection.containsKey(abilitySet.getPhase())) {
+      return null;
+    }
+    return abilitySection.get(abilitySet.getPhase());
+  }
+
   public static void mergeAbilitySets(EntityAbilitySet appliedSet, EntityAbilitySet originSet) {
     if (appliedSet == null) {
       return;
@@ -51,12 +59,10 @@ public class EntityAbilitySet {
       }
       for (Phase phase : appliedSet.abilityMegaMap.get(type).keySet()) {
         if (originSet.abilityMegaMap.get(type).containsKey(phase)) {
-          originSet.abilityMegaMap.get(type)
-              .put(phase, appliedSet.abilityMegaMap.get(type).get(phase));
+          originSet.abilityMegaMap.get(type).put(phase, appliedSet.abilityMegaMap.get(type).get(phase));
           continue;
         }
-        originSet.abilityMegaMap.get(type).get(phase)
-            .addAll(appliedSet.abilityMegaMap.get(type).get(phase));
+        originSet.abilityMegaMap.get(type).get(phase).addAll(appliedSet.abilityMegaMap.get(type).get(phase));
       }
     }
   }
@@ -95,11 +101,14 @@ public class EntityAbilitySet {
 
   public static Phase phaseFromEntityHealth(LivingEntity le) {
     double percent = le.getHealth() / le.getMaxHealth();
-    int index = 5 - (int) Math.floor(percent * 5);
-    for (Phase phase : PHASES) {
-      if (index == phase.ordinal()) {
-        return phase;
-      }
+    if (percent >= 0.79) {
+      return Phase.PHASE_ONE;
+    } else if (percent >= 0.59) {
+      return Phase.PHASE_TWO;
+    } else if (percent >= 0.39) {
+      return Phase.PHASE_THREE;
+    } else if (percent >= 0.19) {
+      return Phase.PHASE_FOUR;
     }
     return Phase.PHASE_FIVE;
   }
