@@ -11,10 +11,8 @@ import static land.face.strife.util.StatUtil.getLightningResist;
 import static land.face.strife.util.StatUtil.getShadowResist;
 import static land.face.strife.util.StatUtil.getWardingMult;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,8 +20,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
@@ -49,6 +45,7 @@ import me.glaremasters.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
@@ -68,8 +65,8 @@ public class DamageUtil {
   private static StrifePlugin plugin;
   private static GuildsAPI guildsAPI;
 
-  private static final String ATTACK_BLOCKED = TextUtils.color("&f&lBlocked!");
-  private static final String ATTACK_DODGED = TextUtils.color("&f&lDodge!");
+  private static final String ATTACK_BLOCKED = StringExtensionsKt.chatColorize("&e&lBlocked!");
+  private static final String ATTACK_DODGED = StringExtensionsKt.chatColorize("&f&l&oDodge!");
   public static double EVASION_THRESHOLD;
 
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
@@ -88,7 +85,7 @@ public class DamageUtil {
     PVP_MULT = (float) plugin.getSettings().getDouble("config.mechanics.pvp-multiplier", 0.5);
   }
 
-  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender, List<String> effects) {
+  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender, List<Effect> effects) {
     if (effects == null) {
       return;
     }
@@ -96,17 +93,10 @@ public class DamageUtil {
     entities.add(defender.getEntity());
     TargetResponse response = new TargetResponse(entities);
 
-    List<Effect> effectList = new ArrayList<>();
-    for (String s : effects) {
-      Effect effect = plugin.getEffectManager().getEffect(s);
-      if (effect != null) {
-        effectList.add(effect);
-      }
-    }
-    if (effectList.isEmpty()) {
+    if (effects.isEmpty()) {
       return;
     }
-    plugin.getEffectManager().executeEffectList(attacker, response, effectList);
+    plugin.getEffectManager().executeEffectList(attacker, response, effects);
   }
 
   public static boolean isGuildAlly(StrifeMob attacker, Player target) {
@@ -715,29 +705,23 @@ public class DamageUtil {
     defender.getEntity().getWorld()
         .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (defender.getEntity() instanceof Player) {
-      MessageUtils.sendActionBar((Player) defender.getEntity(), ATTACK_DODGED);
+      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "combat-status", ATTACK_DODGED, 30, 100);
     }
     if (attacker.getEntity() instanceof Player) {
-      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.BOUNCE, 8, "&7&oMiss");
+      StrifePlugin.getInstance().getIndicatorManager()
+          .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 8, "&7&oMiss");
     }
   }
 
   public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
-    String defenderBar = ATTACK_BLOCKED;
-    int runes = getBlockManager().getEarthRunes(defender.getEntity());
-    if (runes > 0) {
-      defenderBar = defenderBar + StringExtensionsKt.chatColorize("&2 ")
-          + IntStream.range(0, runes).mapToObj(i -> "▼").collect(Collectors.joining(""));
-    }
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     if (defender.getEntity() instanceof Player) {
-      MessageUtils.sendActionBar((Player) defender.getEntity(), defenderBar);
+      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "combat-status", ATTACK_BLOCKED, 30, 100);
     }
     if (attacker.getEntity() instanceof Player) {
-      MessageUtils.sendActionBar((Player) attacker.getEntity(), ATTACK_BLOCKED);
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+          IndicatorStyle.BOUNCE, 8, "&e&lBlocked!");
     }
   }
 
@@ -841,8 +825,8 @@ public class DamageUtil {
     }
     double reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
     reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getLocation(), Sound.ENCHANT_THORNS_HIT, 1f, 1f);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(), Sound.BLOCK_LANTERN_STEP,
+        SoundCategory.HOSTILE, 1f, 1.5f);
     if (attacker.getEntity() instanceof Player) {
       ((Player) attacker.getEntity()).spawnParticle(Particle.DAMAGE_INDICATOR,
           TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER), (int) reflectDamage, 0.3, 0.3,

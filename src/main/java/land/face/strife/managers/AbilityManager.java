@@ -1,6 +1,6 @@
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -125,7 +125,8 @@ public class AbilityManager {
         plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
       }
       if (ability.isShowMessages()) {
-        MessageUtils.sendActionBar((Player) caster.getEntity(), CAST.replace("{n}", ability.getId()));
+        AdvancedActionBarUtil
+            .addMessage((Player) caster.getEntity(), "ability-status", CAST.replace("{n}", ability.getId()), 20, 11);
       }
     }
     playChatMessages(caster, ability);
@@ -224,7 +225,6 @@ public class AbilityManager {
         if (System.currentTimeMillis() >= container.getEndTime()) {
           if (container.getSpentCharges() <= 1) {
             iterator.remove();
-            //coolingDownAbilities.get(le).remove(container);
             LogUtil.printDebug("Final cooldown for " + container.getAbilityId() + ", removing");
             if (le instanceof Player) {
               plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
@@ -335,16 +335,12 @@ public class AbilityManager {
     if (abilitySet == null) {
       return false;
     }
-    checkPhaseChange(caster);
-    Phase phase = abilitySet.getPhase();
-    Map<Phase, Set<Ability>> abilitySection = abilitySet.getAbilities(type);
-    if (abilitySection == null) {
-      return false;
-    }
-    Set<Ability> abilities = abilitySection.get(phase);
+    determinePhase(caster);
+    Set<Ability> abilities = EntityAbilitySet.getAbilities(abilitySet, type);
     if (abilities == null || abilities.isEmpty()) {
       return false;
     }
+
     if (type == TriggerAbilityType.PHASE_SHIFT) {
       for (Ability a : abilities) {
         execute(a, caster, caster.getEntity());
@@ -431,7 +427,7 @@ public class AbilityManager {
     return true;
   }
 
-  private void checkPhaseChange(StrifeMob strifeMob) {
+  private void determinePhase(StrifeMob strifeMob) {
     if (strifeMob.getAbilitySet() == null) {
       return;
     }
@@ -518,7 +514,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_TARGET);
+    AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", NO_TARGET, 40, 11);
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
@@ -528,7 +524,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_REQUIRE);
+    AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", NO_REQUIRE, 40, 11);
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
@@ -538,7 +534,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    MessageUtils.sendActionBar((Player) caster.getEntity(), ON_COOLDOWN);
+    AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", ON_COOLDOWN, 40, 11);
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
@@ -548,9 +544,10 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    MessageUtils.sendActionBar((Player) caster.getEntity(), NO_ENERGY
+    String message = NO_ENERGY
         .replace("{n1}", Integer.toString((int) Math.floor(plugin.getEnergyManager().getEnergy(caster))))
-        .replace("{n2}", Integer.toString((int) Math.ceil(ability.getCost()))));
+        .replace("{n2}", Integer.toString((int) Math.ceil(ability.getCost())));
+    AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", message, 40, 11);
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.2f, 1.3f);
   }

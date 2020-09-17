@@ -61,7 +61,7 @@ public class DoubleJumpListener implements Listener {
       int maxJumps = JumpUtil.getMaxJumps(mob);
       if (jumps != maxJumps) {
         String message = StringExtensionsKt.chatColorize("&bJumps Recharged!");
-        AdvancedActionBarUtil.addMessage(player, JUMP_AB_KEY, message, 10, 0);
+        AdvancedActionBarUtil.addMessage(player, JUMP_AB_KEY, message, 60, 0);
       }
       JumpUtil.setJumps(player, maxJumps);
     }
@@ -115,7 +115,7 @@ public class DoubleJumpListener implements Listener {
     String bars = IntStream.range(0, maxJumps).mapToObj(i -> "▌").collect(Collectors.joining(""));
     bars = insert(bars, "&0", Math.min(jumps, maxJumps));
     String message = StringExtensionsKt.chatColorize("&3&lAir Jumps: &b" + bars);
-    AdvancedActionBarUtil.addMessage(event.getPlayer(), JUMP_AB_KEY, message, 40, 0);
+    AdvancedActionBarUtil.addMessage(event.getPlayer(), JUMP_AB_KEY, message, 70, 0);
 
     plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 3, false, false);
     flingParticle(event.getPlayer());
