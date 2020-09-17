@@ -2,7 +2,6 @@ package land.face.strife.listeners;
 
 import static com.comphenix.protocol.PacketType.Play.Server.ANIMATION;
 import static com.comphenix.protocol.PacketType.Play.Server.ATTACH_ENTITY;
-import static com.comphenix.protocol.PacketType.Play.Server.BED;
 import static com.comphenix.protocol.PacketType.Play.Server.BLOCK_BREAK_ANIMATION;
 import static com.comphenix.protocol.PacketType.Play.Server.COLLECT;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_DESTROY;
@@ -11,7 +10,6 @@ import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_EQUIPMENT;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_HEAD_ROTATION;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_LOOK;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_METADATA;
-import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_MOVE_LOOK;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_STATUS;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_TELEPORT;
 import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_VELOCITY;
@@ -35,6 +33,7 @@ import com.google.common.collect.Table;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -50,9 +49,8 @@ public class EntityHider implements Listener {
 
   // Packets that update remote player entities
   private static final PacketType[] ENTITY_PACKETS = {
-      ENTITY_EQUIPMENT, BED, ANIMATION, NAMED_ENTITY_SPAWN,
-      COLLECT, SPAWN_ENTITY, SPAWN_ENTITY_LIVING, SPAWN_ENTITY_PAINTING, SPAWN_ENTITY_EXPERIENCE_ORB,
-      ENTITY_VELOCITY, REL_ENTITY_MOVE, ENTITY_LOOK, ENTITY_MOVE_LOOK, ENTITY_MOVE_LOOK,
+      ENTITY_EQUIPMENT, ANIMATION, NAMED_ENTITY_SPAWN, COLLECT, SPAWN_ENTITY, SPAWN_ENTITY_LIVING,
+      SPAWN_ENTITY_PAINTING, SPAWN_ENTITY_EXPERIENCE_ORB, ENTITY_VELOCITY, REL_ENTITY_MOVE, ENTITY_LOOK,
       ENTITY_TELEPORT, ENTITY_HEAD_ROTATION, ENTITY_STATUS, ATTACH_ENTITY, ENTITY_METADATA,
       ENTITY_EFFECT, REMOVE_ENTITY_EFFECT, BLOCK_BREAK_ANIMATION
 
@@ -214,7 +212,14 @@ public class EntityHider implements Listener {
     return new PacketAdapter(plugin, ENTITY_PACKETS) {
       @Override
       public void onPacketSending(PacketEvent event) {
-        int entityID = event.getPacket().getIntegers().read(0);
+        int entityID;
+        try {
+          entityID = event.getPacket().getIntegers().read(0);
+        } catch (Exception e) {
+          Bukkit.getLogger().warning("Error trying to read int on " + event.getPacketType());
+          Bukkit.getLogger().warning("Exception: " + e.getMessage());
+          return;
+        }
 
         // See if this packet should be cancelled
         if (!isVisible(event.getPlayer(), entityID)) {
