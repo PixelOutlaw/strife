@@ -18,8 +18,9 @@
  */
 package land.face.strife.commands;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import land.face.strife.StrifePlugin;
 import org.bukkit.entity.Player;
 
@@ -32,6 +33,7 @@ public class LevelUpCommand extends BaseCommand {
     this.plugin = plugin;
   }
 
+  @Default
   public void baseCommand() {
     if (!getCurrentCommandIssuer().isPlayer()) {
       return;
