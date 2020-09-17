@@ -163,6 +163,7 @@ public class DataListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
     plugin.getCounterManager().clearCounters(player);
+    plugin.getBossBarManager().disableBars(player);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -184,8 +185,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onInteract(final PlayerInteractEntityEvent event) {
-    if (!(event.getRightClicked() instanceof LivingEntity) || event
-        .getRightClicked() instanceof ArmorStand) {
+    if (!(event.getRightClicked() instanceof LivingEntity) || event.getRightClicked() instanceof ArmorStand) {
       return;
     }
     if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked()

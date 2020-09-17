@@ -1,26 +1,25 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +33,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.GlowUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +43,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.inventivetalent.glow.GlowAPI.Color;
 
 public class BossBarManager {
 
@@ -59,8 +61,7 @@ public class BossBarManager {
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.deathMessages = TextUtils
-        .color(plugin.getSettings().getStringList("language.bar-title-entity-killed"));
+    this.deathMessages = TextUtils.color(plugin.getSettings().getStringList("language.bar-title-entity-killed"));
     this.healthDuration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
     this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
@@ -100,10 +101,9 @@ public class BossBarManager {
     String name = lifeSkillType.getName();
     SkillBar bar = skillBars.get(player);
     int level = bar.getOwner().getSaveData().getSkillLevel(lifeSkillType);
-    String xp = INT_FORMAT
-        .format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
-    String barName = TextUtils.color("&f" + name + " Lv" + level + " &8- " +
-        "&f(&a" + xp + "xp to " + (level + 1) + "&f)");
+    String xp = INT_FORMAT.format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
+    String barName = StringExtensionsKt
+        .chatColorize("&f" + name + " Lv" + level + " &8- " + "&f(&a" + xp + "xp to " + (level + 1) + "&f)");
     bar.getSkillBar().setTitle(barName);
     bar.setLifeTicks(skillDuration);
     bar.setLifeSkillType(lifeSkillType);
@@ -112,8 +112,17 @@ public class BossBarManager {
   }
 
   public void pushBar(Player player, StrifeMob target) {
-    createHealthBar(player, target);
     StatusBar bar = statusBars.get(player);
+    if (bar == null) {
+      createHealthBar(player, target);
+      GlowUtil.setGlow(player, target.getEntity(), Color.GOLD);
+    } else if (target != bar.getTarget()) {
+      if (bar.getTarget() != null) {
+        GlowUtil.setGlow(player, bar.getTarget().getEntity(), null);
+      }
+      GlowUtil.setGlow(player, target.getEntity(), Color.GOLD);
+    }
+    bar = statusBars.get(player);
     bar.setTarget(target);
     bar.setLifeTicks(healthDuration);
     bar.setHidden(false);
@@ -130,24 +139,65 @@ public class BossBarManager {
         bossBar.getBarrierBar().setProgress(0);
         bossBar.getHealthBar().setProgress(0);
         bossBar.setLifeTicks(25);
+        if (bossBar.getTarget() != null && bossBar.getTarget().getEntity() != null) {
+          GlowUtil.setGlow(player, bossBar.getTarget().getEntity(), Color.DARK_RED);
+        }
       }
     }
+  }
+
+  public void tickBars() {
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      StatusBar bar = statusBars.get(p);
+      if (bar != null) {
+        updateBar(bar);
+      }
+      SkillBar skillBar = skillBars.get(p);
+      if (skillBar != null) {
+        updateSkillBar(skillBar);
+      }
+    }
+  }
+
+  public LivingEntity getBarTarget(Player player) {
+    StatusBar bar = statusBars.get(player);
+    if (bar == null || bar.getTarget() == null) {
+      return null;
+    }
+    return bar.getTarget().getEntity();
+  }
+
+  public void disableBars(Player player) {
+    StatusBar bar = statusBars.get(player);
+    if (bar == null || bar.getTarget() == null) {
+      return;
+    }
+    bar.setHidden(true);
+    GlowUtil.setGlow(player, bar.getTarget().getEntity(), null);
   }
 
   private void updateBar(StatusBar bossBar) {
     if (bossBar.isHidden()) {
       return;
     }
-    bossBar.setLifeTicks(bossBar.getLifeTicks() - 1);
-    if (bossBar.getTarget() == null || bossBar.getLifeTicks() < 1) {
+    if (bossBar.getTarget() == null) {
       bossBar.setHidden(true);
+      return;
+    }
+    bossBar.setLifeTicks(bossBar.getLifeTicks() - 1);
+    if (bossBar.getLifeTicks() < 1) {
+      GlowUtil.setGlow(bossBar.getHealthBar().getPlayers().get(0), bossBar.getTarget().getEntity(), null);
+      bossBar.setHidden(true);
+      bossBar.setTarget(null);
       return;
     }
     if (bossBar.isDead()) {
       return;
     }
     if (bossBar.getTarget().getEntity() == null || !bossBar.getTarget().getEntity().isValid()) {
+      GlowUtil.setGlow(bossBar.getHealthBar().getPlayers().get(0), bossBar.getTarget().getEntity(), null);
       bossBar.setHidden(true);
+      bossBar.setTarget(null);
       return;
     }
     updateBarTitle(bossBar, createBarTitle(bossBar.getTarget()));
@@ -187,29 +237,14 @@ public class BossBarManager {
     bar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(bar.getOwner(), bar.getLifeSkillType()));
   }
 
-  public void tickBars() {
-    for (Player p : Bukkit.getOnlinePlayers()) {
-      StatusBar bar = statusBars.get(p);
-      if (bar != null) {
-        updateBar(bar);
-      }
-      SkillBar skillBar = skillBars.get(p);
-      if (skillBar != null) {
-        updateSkillBar(skillBar);
-      }
-    }
-  }
-
   private String createBarTitle(StrifeMob barOwner) {
     String name;
     if (barOwner.getEntity() instanceof Player) {
-      name = (barOwner.getEntity().getName()) + ChatColor.GRAY + " Lv"
-          + ((Player) barOwner.getEntity()).getLevel();
+      name = (barOwner.getEntity().getName()) + ChatColor.GRAY + " Lv" + ((Player) barOwner.getEntity()).getLevel();
     } else if (StringUtils.isNotBlank(barOwner.getEntity().getCustomName())) {
       name = barOwner.getEntity().getCustomName();
     } else {
-      name = WordUtils.capitalizeFully(
-          barOwner.getEntity().getType().toString().replaceAll("_", " "));
+      name = WordUtils.capitalizeFully(barOwner.getEntity().getType().toString().replaceAll("_", " "));
     }
     name += "   ";
     if (!barOwner.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && barOwner.getStat(StrifeStat.BARRIER) > 0) {

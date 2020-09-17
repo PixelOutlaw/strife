@@ -29,6 +29,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -147,7 +148,7 @@ public class CombatListener implements Listener {
     Projectile projectile = null;
     boolean isProjectile = false;
     boolean isMultishot = false;
-    List<String> extraEffects = null;
+    List<Effect> extraEffects = null;
     int shotId = -1;
 
     if (event.getDamager() instanceof Projectile) {
