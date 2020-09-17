@@ -22,7 +22,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class InventoryListener implements Listener {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
   private final String NO_MOVE_ABILITY;
 
   public InventoryListener(StrifePlugin plugin) {
@@ -34,8 +34,8 @@ public class InventoryListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerItemHeldEvent event) {
     if (isIcon(event.getPlayer().getInventory().getItem(event.getNewSlot()))) {
-      Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getAbilityIconManager()
-          .triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> plugin.getAbilityIconManager().triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
       event.setCancelled(true);
       return;
     }
@@ -73,8 +73,7 @@ public class InventoryListener implements Listener {
       return;
     }
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      plugin.getChampionManager()
-          .updateEquipmentStats(plugin.getChampionManager().getChampion(event.getPlayer()));
+      plugin.getChampionManager().updateEquipmentStats(plugin.getChampionManager().getChampion(event.getPlayer()));
       plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
     }, 1L);
   }
@@ -103,6 +102,14 @@ public class InventoryListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerDropItem(PlayerDropItemEvent event) {
     if (isIcon(event.getItemDrop().getItemStack())) {
+      event.setCancelled(true);
+      MessageUtils.sendMessage(event.getPlayer(), NO_MOVE_ABILITY);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerDropItem(PlayerSwapHandItemsEvent event) {
+    if (isIcon(event.getMainHandItem()) || isIcon(event.getOffHandItem())) {
       event.setCancelled(true);
       MessageUtils.sendMessage(event.getPlayer(), NO_MOVE_ABILITY);
     }
