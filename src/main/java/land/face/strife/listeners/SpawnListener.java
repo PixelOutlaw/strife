@@ -3,7 +3,7 @@ package land.face.strife.listeners;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Random;
 import land.face.strife.StrifePlugin;
@@ -24,6 +24,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
@@ -57,9 +58,9 @@ public class SpawnListener implements Listener {
     SKELETON_WAND = buildSkeletonWand();
     WITCH_HAT = buildWitchHat();
 
-    MOB_LEVEL_NAME = TextUtils.color(plugin.getSettings()
+    MOB_LEVEL_NAME = StringExtensionsKt.chatColorize(plugin.getSettings()
         .getString("config.leveled-monsters.name-format", "&f%ENTITY% -"));
-    MOB_LEVEL_SUFFIX = TextUtils.color(plugin.getSettings()
+    MOB_LEVEL_SUFFIX = StringExtensionsKt.chatColorize(plugin.getSettings()
         .getString("config.leveled-monsters.suffix-format", " &7%LEVEL%"));
 
     WITCH_TO_EVOKER_CHANCE = plugin.getSettings()
@@ -78,6 +79,17 @@ public class SpawnListener implements Listener {
         .getDouble("config.leveled-monsters.give-wither-skeletons-wand-chance", 0.1);
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onJockeySpawn(CreatureSpawnEvent event) {
+    if (event.getSpawnReason() != SpawnReason.JOCKEY) {
+      return;
+    }
+    String world = event.getEntity().getLocation().getWorld().getName();
+    if (plugin.getConfig().get("config.leveled-monsters.enabled-worlds." + world) == null) {
+      event.setCancelled(true);
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
     if (event.isCancelled() || event.getEntity().hasMetadata("NPC") ||
@@ -86,12 +98,6 @@ public class SpawnListener implements Listener {
     }
     if (StringUtils.isNotBlank(SpecialStatusUtil.getUniqueId(event.getEntity()))) {
       return;
-    }
-    if (event.getEntityType().equals(EntityType.CHICKEN)) {
-      if (!event.getEntity().getPassengers().isEmpty()) {
-        event.setCancelled(true);
-        return;
-      }
     }
 
     LivingEntity entity = event.getEntity();
