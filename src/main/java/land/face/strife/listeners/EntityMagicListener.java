@@ -14,6 +14,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Shulker;
 import org.bukkit.entity.ShulkerBullet;
@@ -31,11 +32,11 @@ import org.bukkit.util.Vector;
 
 public class EntityMagicListener implements Listener {
 
-  private StrifePlugin plugin;
-  private ItemStack skeletonWand;
+  private final StrifePlugin plugin;
+  private final ItemStack skeletonWand;
 
-  private StrifeParticle chaserParticle;
-  private Damage witchSpell;
+  private final StrifeParticle chaserParticle;
+  private final Damage witchSpell;
 
   private static final String WITCH_SPELL_ID = "INTERNAL-WITCH-ATTACK";
 
@@ -45,6 +46,15 @@ public class EntityMagicListener implements Listener {
     witchSpell = buildStandardDamage();
     chaserParticle = buildChaserParticle();
     StrifePlugin.getInstance().getChaserManager().loadChaser(WITCH_SPELL_ID, buildLoadedChaser());
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onHitOwnShulkerShot(EntityDamageByEntityEvent e) {
+    if (e.getEntity() instanceof ShulkerBullet && e.getDamager() instanceof Player) {
+      if (((ShulkerBullet) e.getEntity()).getShooter() == e.getDamager()) {
+        e.setCancelled(true);
+      }
+    }
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -76,7 +86,7 @@ public class EntityMagicListener implements Listener {
     }
     LivingEntity t = (LivingEntity) e.getEntity();
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
-        () -> t.removePotionEffect(PotionEffectType.LEVITATION), 1L);
+        () -> t.removePotionEffect(PotionEffectType.LEVITATION), 0L);
   }
 
   @EventHandler(priority = EventPriority.HIGH)
