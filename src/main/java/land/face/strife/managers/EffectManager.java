@@ -95,6 +95,7 @@ import land.face.strife.data.effects.PlaySound;
 import land.face.strife.data.effects.PotionEffectAction;
 import land.face.strife.data.effects.Push;
 import land.face.strife.data.effects.Push.PushType;
+import land.face.strife.data.effects.RemoveBuff;
 import land.face.strife.data.effects.RemoveEntity;
 import land.face.strife.data.effects.RestoreBarrier;
 import land.face.strife.data.effects.Revive;
@@ -575,6 +576,12 @@ public class EffectManager {
         effect = new BuffEffect();
         ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        break;
+      case REMOVE_BUFF:
+        effect = new RemoveBuff();
+        ((RemoveBuff) effect).setBuffId(cs.getString("buff-id"));
+        ((RemoveBuff) effect).setStacks(cs.getInt("stacks", Integer.MAX_VALUE));
+        ((RemoveBuff) effect).setFromCaster(cs.getBoolean("from-caster", true));
         break;
       case COOLDOWN_REDUCTION:
         effect = new CooldownReduction();

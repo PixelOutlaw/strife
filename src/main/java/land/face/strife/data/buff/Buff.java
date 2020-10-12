@@ -59,6 +59,10 @@ public class Buff {
     return stacks;
   }
 
+  public void setStacks(int stacks) {
+    this.stacks = stacks;
+  }
+
   public boolean isExpired() {
     return System.currentTimeMillis() > endingTimestamp;
   }

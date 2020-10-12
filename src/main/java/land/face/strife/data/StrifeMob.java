@@ -236,6 +236,22 @@ public class StrifeMob {
     oldBuff.bumpBuff(duration);
   }
 
+  public void removeBuff(String buffId, UUID source) {
+    removeBuff(buffId, source, Integer.MAX_VALUE);
+  }
+
+  public void removeBuff(String buffId, UUID source, int stacks) {
+    Buff buff = getBuff(buffId, source);
+    if (buff == null) {
+      return;
+    }
+    if (buff.getStacks() <= stacks) {
+      runningBuffs.remove(buff);
+      return;
+    }
+    buff.setStacks(buff.getStacks() - stacks);
+  }
+
   public boolean isMinionOf(StrifeMob strifeMob) {
     return getMaster() == strifeMob.getEntity();
   }
