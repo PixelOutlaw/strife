@@ -106,10 +106,10 @@ public class StealthManager {
     for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
       if (e instanceof Player && plugin.getBossBarManager().getBarTarget((Player) e) == player) {
         plugin.getBossBarManager().disableBars((Player) e);
-        plugin.getIndicatorManager().addIndicator(player, (LivingEntity) e, IndicatorStyle.FLOAT_UP_SLOW, 8, "&e&l???");
+        plugin.getIndicatorManager().addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
       } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
-        plugin.getIndicatorManager().addIndicator(player, (Mob) e, IndicatorStyle.FLOAT_UP_SLOW, 8, "&e&l???");
+        plugin.getIndicatorManager().addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
       }
     }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);

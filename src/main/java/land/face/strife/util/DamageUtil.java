@@ -244,11 +244,11 @@ public class DamageUtil {
     }
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 12, damageString);
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, damageString);
     }
     if (mods.isShowPopoffs() && attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster(),
-          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 12, "&7" + damageString);
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
     }
 
     defender.trackDamage(attacker, rawDamage);
@@ -303,7 +303,7 @@ public class DamageUtil {
     }
     if (mods.isShowPopoffs()) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 7, "&7Sneak Attack!");
+          defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 4, "&7Sneak Attack!");
     }
     defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
         Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
@@ -326,7 +326,7 @@ public class DamageUtil {
           Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
       if (attacker.getEntity() instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-            defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 5, "&c&lCRIT!");
+            defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 3, "&c&lCRIT!");
       }
     }
     return success;
@@ -709,7 +709,7 @@ public class DamageUtil {
     }
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager()
-          .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 8, "&7&oMiss");
+          .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 6, "&7&oMiss");
     }
   }
 
@@ -721,7 +721,7 @@ public class DamageUtil {
     }
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          IndicatorStyle.BOUNCE, 8, "&e&lBlocked!");
+          IndicatorStyle.BOUNCE, 6, "&e&lBlocked!");
     }
   }
 

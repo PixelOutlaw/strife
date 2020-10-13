@@ -44,7 +44,7 @@ public class Heal extends Effect {
     if (caster != target && caster.getEntity() instanceof Player) {
       String healText = "&a&l+" + INT_FORMAT.format(heal);
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
-          target.getEntity(), IndicatorStyle.FLOAT_UP_SLOW, 12, healText);
+          target.getEntity(), IndicatorStyle.FLOAT_UP_SLOW, 8, healText);
     }
 
     DamageUtil.restoreHealth(target.getEntity(), heal);

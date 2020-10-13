@@ -75,7 +75,7 @@ public class CounterManager {
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-            IndicatorStyle.BOUNCE, 8, "&3&o&lCounter!");
+            IndicatorStyle.BOUNCE, 6, "&3&o&lCounter!");
       }
       if (defender instanceof Player) {
         MessageUtils.sendActionBar((Player) defender, "&e&lCountered!");
