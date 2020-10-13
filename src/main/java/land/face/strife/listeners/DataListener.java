@@ -23,10 +23,10 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
@@ -91,7 +91,8 @@ public class DataListener implements Listener {
 
   @EventHandler
   public void onSnowmanMelt(final EntityDamageEvent event) {
-    if (event.getCause() == DamageCause.MELTING && SpecialStatusUtil.isBurnImmune(event.getEntity())) {
+    if ((event.getCause() == DamageCause.MELTING || event.getCause() == DamageCause.DROWNING) &&
+        SpecialStatusUtil.isBurnImmune(event.getEntity())) {
       event.setCancelled(true);
     }
   }
@@ -185,11 +186,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onInteract(final PlayerInteractEntityEvent event) {
-    if (!(event.getRightClicked() instanceof LivingEntity) || event.getRightClicked() instanceof ArmorStand) {
-      return;
-    }
-    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked()
-        .hasMetadata("pet")) {
+    if (TargetingUtil.isInvalidTarget(event.getRightClicked())) {
       return;
     }
     final Player player = event.getPlayer();
