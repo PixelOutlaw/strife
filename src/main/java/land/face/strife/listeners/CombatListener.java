@@ -23,6 +23,7 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
@@ -182,9 +183,9 @@ public class CombatListener implements Listener {
     }
 
     if (attackType == AttackType.MELEE) {
-      if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
+      if (ItemUtil.isWandOrStaff(Objects.requireNonNull(attackEntity.getEquipment()).getItemInMainHand())) {
         double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
-        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.5D));
+        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.2D));
         event.setCancelled(true);
         return;
       }
