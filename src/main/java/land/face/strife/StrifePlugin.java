@@ -49,11 +49,8 @@ import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
-import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.ShootBlock;
-import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.hooks.SnazzyPartiesHook;
 import land.face.strife.listeners.BullionListener;
 import land.face.strife.listeners.ChatListener;
@@ -132,7 +129,6 @@ import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.menus.stats.StatsMenu;
 import land.face.strife.stats.AbilitySlot;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.AbilityTickTask;
@@ -156,18 +152,13 @@ import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
-import land.face.strife.util.PlayerDataUtil;
-import land.face.strife.util.StatUtil;
-import me.libraryaddict.disguise.disguisetypes.Disguise;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -742,91 +733,7 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void buildUniqueEnemies() {
-    for (String entityNameKey : uniqueEnemiesYAML.getKeys(false)) {
-      if (!uniqueEnemiesYAML.isConfigurationSection(entityNameKey)) {
-        continue;
-      }
-      ConfigurationSection cs = uniqueEnemiesYAML.getConfigurationSection(entityNameKey);
-
-      UniqueEntity uniqueEntity = new UniqueEntity();
-
-      assert cs != null;
-      String type = cs.getString("type");
-      try {
-        uniqueEntity.setType(EntityType.valueOf(type));
-      } catch (Exception e) {
-        getLogger().severe("Failed to parse entity " + entityNameKey + ". Invalid type: " + type);
-        continue;
-      }
-
-      uniqueEntity.setId(entityNameKey);
-      uniqueEntity.setName(StringExtensionsKt.chatColorize(
-          Objects.requireNonNull(cs.getString("name", "&fSET &cA &9NAME"))));
-      uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
-      uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
-      uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
-      uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", false));
-      uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
-      uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
-      uniqueEntity.setPushImmune(cs.getBoolean("push-immune", false));
-      uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
-      uniqueEntity.setMaxMods(cs.getInt("max-mods", 3));
-      uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
-      if (uniqueEntity.getType() == EntityType.CREEPER) {
-        uniqueEntity.setPowered(cs.getBoolean("powered", false));
-      }
-      uniqueEntity.setShowName(cs.getBoolean("show-name", true));
-      uniqueEntity.setMount(cs.getString("mount-id", ""));
-      uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
-      uniqueEntity.setSize(cs.getInt("size", -1));
-      uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
-      uniqueEntity.setBaby(cs.getBoolean("baby", false));
-      uniqueEntity.setAngry(cs.getBoolean("angry", false));
-      uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
-      uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
-      if (uniqueEntity.getType() == EntityType.VILLAGER
-          || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
-        String prof = cs.getString("profession");
-        if (prof != null) {
-          uniqueEntity.setProfession(Profession.valueOf(prof.toUpperCase()));
-        }
-      }
-      uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
-
-      Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
-          uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0);
-
-      if (disguise != null) {
-        uniqueEntityManager.cacheDisguise(uniqueEntity, disguise);
-      }
-
-      ConfigurationSection statCs = cs.getConfigurationSection("stats");
-      Map<StrifeStat, Float> attributeMap = StatUtil.getStatMapFromSection(statCs);
-      uniqueEntity.setAttributeMap(attributeMap);
-
-      uniqueEntity.setEquipment(equipmentManager
-          .buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
-
-      String passengerItem = cs.getString("item-passenger", "");
-      if (StringUtils.isNotBlank(passengerItem)) {
-        uniqueEntity.setItemPassenger(equipmentManager.getItem(passengerItem));
-      }
-
-      String particle = cs.getString("particle", "");
-      if (StringUtils.isNotBlank(particle)) {
-        Effect effect = effectManager.getEffect(particle);
-        if (effect instanceof StrifeParticle) {
-          uniqueEntity.setStrifeParticle((StrifeParticle) effect);
-        }
-      }
-
-      ConfigurationSection abilityCS = cs.getConfigurationSection("abilities");
-      uniqueEntity.setAbilitySet(null);
-      if (abilityCS != null) {
-        uniqueEntity.setAbilitySet(new EntityAbilitySet(abilityCS));
-      }
-      uniqueEntityManager.addUniqueEntity(entityNameKey, uniqueEntity);
-    }
+    uniqueEntityManager.loadUniques(uniqueEnemiesYAML);
   }
 
   public void loadSpawners() {
