@@ -96,11 +96,12 @@ public class StrifeMob {
       BarrierTask.spawnBarrierParticles(getEntity(), amount);
       return 0;
     } else {
+      if (barrier > 0) {
+        BarrierTask.spawnBarrierParticles(getEntity(), barrier);
+      }
       barrier = 0;
       barrierTask.updateArmorBar(this, 0);
-      float damageAmount = -1 * diff;
-      BarrierTask.spawnBarrierParticles(getEntity(), damageAmount);
-      return damageAmount;
+      return -1 * diff;
     }
   }
 
