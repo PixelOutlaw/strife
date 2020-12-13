@@ -37,7 +37,7 @@ public class EnergyTask extends BukkitRunnable {
       return;
     }
 
-    if (mob.getEnergy() >= StatUtil.getMaximumEnergy(mob)) {
+    if (mob.getStat(StrifeStat.ENERGY) == 0 || mob.getEnergy() >= StatUtil.getMaximumEnergy(mob)) {
       return;
     }
 
