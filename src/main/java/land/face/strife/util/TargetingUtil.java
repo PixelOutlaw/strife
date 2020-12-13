@@ -228,21 +228,27 @@ public class TargetingUtil {
 
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range,
       boolean friendly) {
-    RayTraceResult result = caster.getWorld().rayTraceEntities(caster.getEyeLocation(),
-        caster.getEyeLocation().getDirection(), range, 0.9, entity ->
-            isValidRaycastTarget(caster, entity) && friendly == isFriendly(caster,
-                (LivingEntity) entity));
+    RayTraceResult result = caster.getWorld().rayTrace(caster.getEyeLocation(), caster.getEyeLocation().getDirection(),
+        range, FluidCollisionMode.NEVER, true, 0.2, entity -> isValidRaycastTarget(caster, entity)
+            && friendly == isFriendly(caster, (LivingEntity) entity));
     if (result == null || result.getHitEntity() == null) {
+      return null;
+    }
+    if (result.getHitBlock() == null) {
+      return (LivingEntity) result.getHitEntity();
+    }
+    if (result.getHitBlock().getLocation().clone().add(0.5, 0.5, 0.5).distanceSquared(caster.getEyeLocation()) < result
+        .getHitEntity().getLocation().distanceSquared(caster.getEyeLocation())) {
       return null;
     }
     return (LivingEntity) result.getHitEntity();
   }
 
-  private static boolean isInvalidTarget(Entity e) {
+  public static boolean isInvalidTarget(Entity e) {
     if (!e.isValid() || e.isInvulnerable() || !(e instanceof LivingEntity) || e instanceof ArmorStand) {
       return true;
     }
-    if (e.hasMetadata("NPC") || e.hasMetadata("pet")) {
+    if (e.hasMetadata("NPC") || e.hasMetadata("pet") || e.hasMetadata("MiniaturePet")) {
       return true;
     }
     if (e instanceof Player) {
@@ -284,7 +290,8 @@ public class TargetingUtil {
     return mobTarget != null ? mobTarget : getFirstEntityInLine(caster, range, friendly);
   }
 
-  public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range, boolean targetEntities) {
+  public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
+      boolean targetEntities) {
     return getTargetLocation(caster, target, range, OriginLocation.CENTER, targetEntities);
   }
 

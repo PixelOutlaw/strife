@@ -30,13 +30,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
-public class AbilityPickerPickerItem extends MenuItem {
+public class SubmenuSelectButton extends MenuItem {
 
-  private final AbilityPickerMenu menu;
+  private final AbilitySubmenu menu;
   private final int slot;
 
-  public AbilityPickerPickerItem(AbilityPickerMenu menu, Material material, String name,
-      List<String> lore, int slot) {
+  public SubmenuSelectButton(AbilitySubmenu menu, Material material, String name, List<String> lore, int slot) {
     super(TextUtils.color(name), setNameAndLore(new ItemStack(material), TextUtils.color(name),
         TextUtils.color(lore)));
     this.menu = menu;

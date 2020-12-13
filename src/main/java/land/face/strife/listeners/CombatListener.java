@@ -23,12 +23,14 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -36,6 +38,7 @@ import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
@@ -147,7 +150,7 @@ public class CombatListener implements Listener {
     Projectile projectile = null;
     boolean isProjectile = false;
     boolean isMultishot = false;
-    List<String> extraEffects = null;
+    List<Effect> extraEffects = null;
     int shotId = -1;
 
     if (event.getDamager() instanceof Projectile) {
@@ -181,9 +184,9 @@ public class CombatListener implements Listener {
     }
 
     if (attackType == AttackType.MELEE) {
-      if (ItemUtil.isWandOrStaff(attackEntity.getEquipment().getItemInMainHand())) {
+      if (ItemUtil.isWandOrStaff(Objects.requireNonNull(attackEntity.getEquipment()).getItemInMainHand())) {
         double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
-        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.5D));
+        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.2D));
         event.setCancelled(true);
         return;
       }
@@ -269,8 +272,9 @@ public class CombatListener implements Listener {
       return;
     }
 
-    float eventDamage = Math.max(0.002f, plugin.getBarrierManager()
-        .damageBarrier(defender, (float) strifeDamageEvent.getFinalDamage()));
+    Bukkit.getLogger().info("e1: " + strifeDamageEvent.getFinalDamage());
+    float eventDamage = Math.max(0.002f, defender.damageBarrier((float) strifeDamageEvent.getFinalDamage()));
+    Bukkit.getLogger().info("e2: " + eventDamage);
     eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
@@ -300,7 +304,7 @@ public class CombatListener implements Listener {
           StrifeStat.HP_ON_KILL));
     }
     if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
-      DamageUtil.restoreEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
+      StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
       plugin.getRageManager().changeRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));

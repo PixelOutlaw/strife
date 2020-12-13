@@ -18,10 +18,10 @@
  */
 package land.face.strife.commands;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.stats.AbilitySlot;

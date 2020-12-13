@@ -18,9 +18,12 @@
  */
 package land.face.strife.commands;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
+import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import land.face.strife.StrifePlugin;
 import org.bukkit.entity.Player;
 
@@ -33,11 +36,8 @@ public class InspectCommand extends BaseCommand {
     this.plugin = plugin;
   }
 
-  public void baseCommand() {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
+  @Default
+  public void baseCommand(Player sender) {
     plugin.getChampionManager().updateEquipmentStats(sender);
     plugin.getChampionManager().update(sender);
     plugin.getStatUpdateManager().updateVanillaAttributes(sender);
@@ -45,16 +45,14 @@ public class InspectCommand extends BaseCommand {
     plugin.getStatsMenu().open(sender);
   }
 
-  public void inspectCommand(Player target) {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
-    if (!target.isValid()) {
+  @Default
+  @CommandCompletion("@players")
+  public void inspectCommand(Player sender, OnlinePlayer target) {
+    if (!target.getPlayer().isValid()) {
       MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
       return;
     }
-    plugin.getStatsMenu().setTargetPlayer(target);
+    plugin.getStatsMenu().setTargetPlayer(target.getPlayer());
     plugin.getStatsMenu().open(sender);
   }
 

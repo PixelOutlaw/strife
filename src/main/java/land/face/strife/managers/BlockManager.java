@@ -1,40 +1,41 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BlockData;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.LogUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -121,10 +122,6 @@ public class BlockManager {
       bumpRunes(defender);
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
       DamageUtil.doBlock(attacker, defender);
-      if (attacker.getEntity() instanceof Player) {
-        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.BOUNCE, 8, "&e&lBlocked!");
-      }
       return true;
     }
     return false;
@@ -165,11 +162,14 @@ public class BlockManager {
     }
     BlockData data = blockDataMap.get(mob.getEntity());
     int maxRunes = Math.round(mob.getStat(StrifeStat.MAX_EARTH_RUNES));
-    if (maxRunes < 1 || mob.getStat(StrifeStat.EARTH_DAMAGE) < 1) {
+    if (maxRunes < 0.99 || mob.getStat(StrifeStat.EARTH_DAMAGE) < 1) {
       data.setRunes(0);
+      pushRunesBar(mob, maxRunes, 0);
       return;
     }
-    blockDataMap.get(mob.getEntity()).setRunes(Math.max(Math.min(runes, maxRunes), 0));
+    int newRunes = Math.max(Math.min(runes, maxRunes), 0);
+    data.setRunes(newRunes);
+    pushRunesBar(mob, maxRunes, newRunes);
   }
 
   public void bumpRunes(StrifeMob mob) {
@@ -206,9 +206,25 @@ public class BlockManager {
     LogUtil.printDebug("Post reduction block: " + data.getStoredBlock());
   }
 
+  private static void pushRunesBar(StrifeMob mob, int maxRunes, int runes) {
+    if (!(mob.getEntity() instanceof Player)) {
+      return;
+    }
+    String message = ChatColor.GREEN + "Runes: " + ChatColor.DARK_GREEN + IntStream.range(0, runes).mapToObj(i -> "₪")
+        .collect(Collectors.joining(""));
+    message += ChatColor.BLACK + IntStream.range(0, maxRunes - runes).mapToObj(i -> "₪")
+        .collect(Collectors.joining(""));
+
+    AdvancedActionBarUtil.addMessage((Player) mob.getEntity(), "rune-bar", message, runes == 0 ? 200 : 12000, 6);
+  }
+
   public static <T> T getRandomFromCollection(Collection<T> coll) {
     int num = (int) (Math.random() * coll.size());
-    for(T t: coll) if (--num < 0) return t;
+    for (T t : coll) {
+      if (--num < 0) {
+        return t;
+      }
+    }
     throw new AssertionError();
   }
 }

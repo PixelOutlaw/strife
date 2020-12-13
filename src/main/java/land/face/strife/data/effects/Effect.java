@@ -122,6 +122,7 @@ public abstract class Effect {
     UNDISGUISE,
     STEALTH,
     REMOVE_ENTITY,
-    MINION_CAST
+    MINION_CAST,
+    REMOVE_BUFF
   }
 }

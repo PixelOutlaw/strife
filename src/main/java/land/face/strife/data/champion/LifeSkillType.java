@@ -1,6 +1,7 @@
 package land.face.strife.data.champion;
 
-import org.bukkit.ChatColor;
+import java.awt.Color;
+import net.md_5.bungee.api.ChatColor;
 
 public enum LifeSkillType {
 
@@ -24,7 +25,7 @@ public enum LifeSkillType {
   ARCANE_MAGICS("Arcane Magics", "arcane-magic", ChatColor.BLUE),
   NATURAL_MAGICS("Natural Magics", "natural-magic", ChatColor.DARK_AQUA),
   BLACK_MAGICS("Black Magics", "dark-magics", ChatColor.DARK_PURPLE),
-  CELESTIAL_MAGICS("Celestial Magics", "light-magic", ChatColor.WHITE);
+  CELESTIAL_MAGICS("Celestial Magics", "light-magic", ChatColor.of(new Color(249, 233, 226)));
 
   public final static LifeSkillType[] types = LifeSkillType.values();
 

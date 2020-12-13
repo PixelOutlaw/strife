@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.stats.StrifeStat;
@@ -144,10 +143,6 @@ public class StatUpdateManager {
     }
   }
 
-  public void updateBarrier(StrifeMob mob) {
-    StrifePlugin.getInstance().getBarrierManager().createBarrierEntry(mob);
-  }
-
   public void updateVanillaAttributes(Player player) {
     updateVanillaAttributes(strifeMobManager.getStatMob(player));
   }
@@ -158,7 +153,6 @@ public class StatUpdateManager {
     updateAttackAttrs(strifeMob);
     updateHealth(strifeMob);
     updateWeight(strifeMob);
-    updateBarrier(strifeMob);
   }
 
   private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {

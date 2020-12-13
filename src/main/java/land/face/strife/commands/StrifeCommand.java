@@ -19,12 +19,14 @@ package land.face.strife.commands;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendActionBar;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.Subcommand;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandPermission;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
+import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -42,8 +44,8 @@ import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.EloUtil;
 import land.face.strife.util.TargetingUtil;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -82,19 +84,16 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("unique|spawn|summon")
   @CommandCompletion("@uniques")
   @CommandPermission("strife.admin")
-  public void uniqueSummonCommand(String entityId) {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
+  public void uniqueSummonCommand(Player sender, String entityId) {
     plugin.getUniqueEntityManager().spawnUnique(entityId, sender.getLocation());
   }
 
   @Subcommand("defeat")
+  @CommandCompletion("@players @players @range:1-30")
   @CommandPermission("strife.admin")
-  public void defeatCommand(Player winner, Player loser, @Default("10") double weight) {
-    ChampionSaveData winData = plugin.getChampionManager().getChampion(winner).getSaveData();
-    ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser).getSaveData();
+  public void defeatCommand(CommandSender sender, OnlinePlayer winner, OnlinePlayer loser, @Default("10") double weight) {
+    ChampionSaveData winData = plugin.getChampionManager().getChampion(winner.getPlayer()).getSaveData();
+    ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser.getPlayer()).getSaveData();
 
     EloResponse response = EloUtil
         .getEloChange(winData.getPvpScore(), loseData.getPvpScore(), (float) weight);
@@ -105,23 +104,28 @@ public class StrifeCommand extends BaseCommand {
     winData.setPvpScore(response.getNewWinnerValue());
     loseData.setPvpScore(response.getNewLoserValue());
 
-    sendActionBar(winner, PVP_WIN_MSG.replace("{0}",
+    sendActionBar(winner.getPlayer(), PVP_WIN_MSG.replace("{0}",
         String.valueOf(Math.round(response.getNewWinnerValue()))).replace("{1}", String.valueOf(Math.round(winDiff))));
-    sendActionBar(loser, PVP_LOSE_MSG.replace("{0}",
+    sendActionBar(loser.getPlayer(), PVP_LOSE_MSG.replace("{0}",
         String.valueOf(Math.round(response.getNewLoserValue()))).replace("{1}", String.valueOf(Math.round(loseDiff))));
   }
 
   @Subcommand("cd|cooldown")
-  public void cooldownCommand(Player target) {
-    target.resetCooldown();
+  @CommandCompletion("@players")
+  public void cooldownCommand(CommandSender sender, OnlinePlayer target) {
+    target.getPlayer().resetCooldown();
   }
 
   @Subcommand("reload")
   @CommandPermission("strife.admin")
-  public void reloadCommand() {
+  public void reloadCommand(CommandSender sender) {
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      MessageUtils.sendMessage(p,
+          "&a&o&lATTENTION GAMER: &a&oThe RPG plugin is being reloaded, maybe to add things, maybe because a GM is being a dingus. Please wait...");
+    }
+
     // Save player data before reload continues
     plugin.getStorage().saveAll();
-
     // Normal enable/disable
     plugin.disable();
     plugin.enable();
@@ -129,16 +133,18 @@ public class StrifeCommand extends BaseCommand {
     for (Player player : Bukkit.getOnlinePlayers()) {
       plugin.getStatUpdateManager().updateVanillaAttributes(player);
     }
-
-    sendMessage(getCurrentCommandIssuer().getIssuer(),
-        plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      MessageUtils.sendMessage(p,
+          "&a&o&lATTENTION GAMER: &a&oOkay we're back now thanks for waiting :)");
+    }
+    sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
   }
 
   @Subcommand("profile")
+  @CommandCompletion("@players")
   @CommandPermission("strife.admin")
-  public void profileCommand(Player target) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    Champion champion = plugin.getChampionManager().getChampion(target);
+  public void profileCommand(CommandSender sender, OnlinePlayer target) {
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     sendMessage(sender, "&6----------------------------------");
     sendMessage(sender, "&7Unused Stat Points: &f%amount%",
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
@@ -151,13 +157,8 @@ public class StrifeCommand extends BaseCommand {
 
   @Subcommand("mobinfo|info")
   @CommandPermission("strife.info")
-  public void infoCommand() {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    List<LivingEntity> targets = new ArrayList<>(
-        TargetingUtil.getEntitiesInLine(((Player) sender).getEyeLocation(), 30));
+  public void infoCommand(Player sender) {
+    List<LivingEntity> targets = new ArrayList<>(TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30));
     targets.remove(sender);
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
@@ -171,155 +172,154 @@ public class StrifeCommand extends BaseCommand {
   }
 
   @Subcommand("reset")
+  @CommandCompletion("@players")
   @CommandPermission("strife.admin")
-  public void resetCommand(Player target) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    Champion champion = plugin.getChampionManager().getChampion(target);
+  public void resetCommand(CommandSender sender, OnlinePlayer target) {
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     for (StrifeAttribute attribute : plugin.getAttributeManager().getAttributes()) {
       champion.setLevel(attribute, 0);
     }
-    champion.setHighestReachedLevel(target.getLevel());
-    champion.setUnusedStatPoints(target.getLevel());
+    champion.setHighestReachedLevel(target.getPlayer().getLevel());
+    champion.setUnusedStatPoints(target.getPlayer().getLevel());
     champion.getSaveData().getPathMap().clear();
     plugin.getPathManager().buildPathBonus(champion);
-    sendMessage(sender, "You reset %player%", new String[][]{{"%player%", target.getDisplayName()}});
-    sendMessage(target, "&aYour stats have been reset!");
-    sendMessage(target, "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
-    plugin.getChampionManager().update(target);
+    sendMessage(sender, "You reset %player%", new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
+    sendMessage(target.getPlayer(), "&aYour stats have been reset!");
+    sendMessage(target.getPlayer(), "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
+    plugin.getChampionManager().update(target.getPlayer());
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
   }
 
   @Subcommand("clear|wipe")
+  @CommandCompletion("@players")
   @CommandPermission("strife.admin")
-  public void clearCommand(Player target) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    target.setExp(0f);
-    target.setLevel(0);
-    Champion champion = plugin.getChampionManager().getChampion(target);
+  public void clearCommand(CommandSender sender, OnlinePlayer target) {
+    target.getPlayer().setExp(0f);
+    target.getPlayer().setLevel(0);
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
       champion.setLevel(stat, 0);
     }
     champion.setUnusedStatPoints(0);
     champion.setHighestReachedLevel(0);
-    sendMessage(sender, "You cleared <white>%player%", new String[][]{{"%player%", target.getDisplayName()}});
-    sendMessage(target, "&aYour stats have been wiped :O");
-    plugin.getChampionManager().update(target);
+    sendMessage(sender, "You cleared <white>%player%", new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
+    sendMessage(target.getPlayer(), "&aYour stats have been wiped :O");
+    plugin.getChampionManager().update(target.getPlayer());
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
   }
 
   @Subcommand("raise|levelup")
+  @CommandCompletion("@players @range:1-100")
   @CommandPermission("strife.admin")
-  public void raiseCommand(Player target, @Default("1") int newLevel) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    int oldLevel = target.getLevel();
+  public void raiseCommand(CommandSender sender, OnlinePlayer target, @Default("1") int newLevel) {
+    int oldLevel = target.getPlayer().getLevel();
     if (newLevel <= oldLevel) {
       sendMessage(sender, "&cNew level must be higher than old level.");
       return;
     }
-    target.setExp(0f);
-    target.setLevel(newLevel);
-    Champion champion = plugin.getChampionManager().getChampion(target);
-    plugin.getChampionManager().update(target);
+    target.getPlayer().setExp(0f);
+    target.getPlayer().setLevel(newLevel);
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
+    plugin.getChampionManager().update(target.getPlayer());
     sendMessage(sender, "&aYou raised &f%player% &ato level &f%level%.",
-        new String[][]{{"%player%", target.getDisplayName()}, {"%level%", "" + newLevel}});
-    sendMessage(target, "&aAn administrator has raised your level");
+        new String[][]{{"%player%", target.getPlayer().getDisplayName()}, {"%level%", "" + newLevel}});
+    sendMessage(target.getPlayer(), "&aAn administrator has raised your level");
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
   }
 
   @Subcommand("ability set")
+  @CommandCompletion("@players @abilities")
   @CommandPermission("strife.admin")
-  public void setAbilityCommand(Player target, String abilityId) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void setAbilityCommand(CommandSender sender, OnlinePlayer target, String abilityId) {
     Ability ability = plugin.getAbilityManager().getAbility(abilityId.replace("_", " "));
     if (ability == null) {
-      sendMessage(sender, "<red>Invalid ability ID: " + abilityId);
+      sendMessage(sender, "&cInvalid ability ID: " + abilityId);
       return;
     }
     if (ability.getAbilityIconData() == null) {
-      sendMessage(sender, "<red>Invalid ability - No ability icon data");
+      sendMessage(sender, "&cInvalid ability - This ability is not hotbar compatible");
       return;
     }
     if (ability.getAbilityIconData().getAbilitySlot() == null) {
-      sendMessage(sender, "<red>Invalid ability - No ability slot set");
+      sendMessage(sender, "&cInvalid ability - No ability slot set");
       return;
     }
     if (ability.getAbilityIconData().getStack() == null) {
-      sendMessage(sender, "<red>Cannot use this command for an ability without an icon!");
+      sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getChampionManager().getChampion(target).getSaveData()
-        .setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
-    plugin.getAbilityIconManager().setAllAbilityIcons(target);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(
+        ability.getAbilityIconData().getAbilitySlot(), ability);
+    plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
   @Subcommand("ability remove")
+  @CommandCompletion("@players @range:0-2")
   @CommandPermission("strife.admin")
-  public void removeAbilityCommand(Player target, int slot) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void removeAbilityCommand(CommandSender sender, OnlinePlayer target, int slot) {
     AbilitySlot abilitySlot = AbilitySlot.fromSlot(slot);
     if (abilitySlot == AbilitySlot.INVALID) {
       sendMessage(sender, "<red>Invalid slot: " + slot);
       return;
     }
-    plugin.getChampionManager().getChampion(target).getSaveData().setAbility(abilitySlot, null);
-    plugin.getAbilityIconManager().setAllAbilityIcons(target);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(abilitySlot, null);
+    plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
   @Subcommand("ability menu")
+  @CommandCompletion("@players")
   @CommandPermission("strife.admin")
-  public void menuAbilityCommand(Player target) {
-    plugin.getAbilityPicker().open(target);
+  public void menuAbilityCommand(CommandSender sender, OnlinePlayer target) {
+    plugin.getAbilityPicker().open(target.getPlayer());
   }
 
   @Subcommand("ability submenu")
+  @CommandCompletion("@players")
   @CommandPermission("strife.admin")
-  public void submenuAbilityCommand(Player target, String menu) {
-    plugin.getSubmenu(menu).open(target);
+  public void submenuAbilityCommand(CommandSender sender, OnlinePlayer target, String menu) {
+    plugin.getSubmenu(menu).open(target.getPlayer());
   }
 
   @Subcommand("bind")
-  @CommandCompletion("@loreabilities")
+  @CommandCompletion("@players @loreabilities")
   @CommandPermission("strife.admin")
-  public void bindCommand(Player target, String loreAbilityId) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void bindCommand(CommandSender sender, OnlinePlayer target, String loreAbilityId) {
     LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(loreAbilityId);
     if (ability == null) {
       sendMessage(sender, "<red>Invalid loreAbility ID: " + loreAbilityId);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target);
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
     if (success) {
-      sendMessage(sender, "&aBound loreAbility " + loreAbilityId + " to player " + target.getName());
+      sendMessage(sender, "&aBound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
     } else {
-      sendMessage(sender, "&cLoreAbility " + loreAbilityId + " already exists on " + target.getName());
+      sendMessage(sender, "&cLoreAbility " + loreAbilityId + " already exists on " + target.getPlayer().getName());
     }
   }
 
   @Subcommand("unbind")
-  @CommandCompletion("@loreabilities")
+  @CommandCompletion("@players @loreabilities")
   @CommandPermission("strife.admin")
-  public void unbindCommand(Player target, String loreAbilityId) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void unbindCommand(CommandSender sender, OnlinePlayer target, String loreAbilityId) {
     LoreAbility ability = plugin.getLoreAbilityManager().getLoreAbilityFromId(loreAbilityId);
     if (ability == null) {
       sendMessage(sender, "<red>Invalid loreAbility ID: " + loreAbilityId);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target);
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     boolean success = plugin.getChampionManager().removeBoundLoreAbility(champion, ability);
     if (success) {
-      sendMessage(sender, "&aUnbound loreAbility " + loreAbilityId + " to player " + target.getName());
+      sendMessage(sender, "&aUnbound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
     } else {
-      sendMessage(sender, "&cLoreAbility " + loreAbilityId + " doesn't exist on " + target.getName());
+      sendMessage(sender, "&cLoreAbility " + loreAbilityId + " doesn't exist on " + target.getPlayer().getName());
     }
   }
 
   @Subcommand("setskill")
-  @CommandCompletion("@skills @range:1-99")
+  @CommandCompletion("@players @skills @range:1-99")
   @CommandPermission("strife.admin")
-  public void skillCommand(Player target, String skill, int newLevel) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void skillCommand(CommandSender sender, OnlinePlayer target, String skill, int newLevel) {
     if (newLevel > 99 || newLevel < 1) {
       sendMessage(sender, "&cSkill must be between level 1 and 99.");
       return;
@@ -334,20 +334,19 @@ public class StrifeCommand extends BaseCommand {
     ChatColor color = type.getColor();
     String name = type.getName();
 
-    plugin.getChampionManager().getChampion(target).getSaveData().setSkillLevel(type, newLevel);
-    sendMessage(target, SET_LEVEL_MSG
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setSkillLevel(type, newLevel);
+    sendMessage(target.getPlayer(), SET_LEVEL_MSG
         .replace("{c}", "" + color)
         .replace("{n}", name)
         .replace("{a}", Integer.toString(newLevel))
     );
-    sendMessage(sender, "Set " + name + " level of " + target.getName() + " to " + newLevel);
+    sendMessage(sender, "Set " + name + " level of " + target.getPlayer().getName()+ " to " + newLevel);
   }
 
   @Subcommand("addskillxp|skillxp")
-  @CommandCompletion("@players @skills @range:1-100000 @nothing @nothing")
+  @CommandCompletion("@players @skills @range:1-100000 true|false true|false")
   @CommandPermission("strife.admin")
-  public void addSkillXp(Player target, String skill, int amount, boolean exact, boolean silent) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void addSkillXp(CommandSender sender, OnlinePlayer target, String skill, int amount, boolean exact, boolean silent) {
     String skillName = skill.toUpperCase();
     LifeSkillType type;
     try {
@@ -356,41 +355,42 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cUnknown skill " + skill + "???");
       return;
     }
-    plugin.getSkillExperienceManager().addExperience(target, type, amount, exact, !silent);
+    plugin.getSkillExperienceManager().addExperience(target.getPlayer(), type, amount, exact, !silent);
   }
 
   @Subcommand("addxp")
+  @CommandCompletion("@players @range:1-1000000")
   @CommandPermission("strife.admin")
-  public void addXpCommand(Player player, double amount) {
-    plugin.getExperienceManager().addExperience(player, amount, true);
-    sendMessage(player, "&aYou gained &f" + (int) amount + " &aXP!");
+  public void addXpCommand(CommandSender sender, OnlinePlayer player, double amount) {
+    plugin.getExperienceManager().addExperience(player.getPlayer(), amount, true);
+    sendMessage(player.player, "&aYou gained &f" + (int) amount + " &aXP!");
+    sendMessage(sender, "&a&oAwarded " + amount + " xp to " + player.getPlayer().getName() + " via command");
   }
 
-  @Subcommand("addxp")
+  @Subcommand("boost")
   @CommandCompletion("@boosts @players @range:1-1000000")
   @CommandPermission("strife.admin")
-  public void startBoostCommand(String boostId, String creator, int duration) {
+  public void startBoostCommand(CommandSender sender, String boostId, String creator, int duration) {
     boolean success = plugin.getBoostManager().startBoost(creator, boostId, duration);
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
     if (!success) {
       sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
     }
   }
 
   @Subcommand("reveal")
+  @CommandCompletion("@players")
   @CommandPermission("strife.admin")
-  public void reveal(Player target) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    if (target.getEquipment() == null) {
+  public void reveal(CommandSender sender, OnlinePlayer target) {
+    if (target.getPlayer().getEquipment() == null) {
       sendMessage(sender, "&cTarget's equipment is null, somehow.");
     }
-    ItemStack item = target.getEquipment().getItemInMainHand();
+    ItemStack item = target.getPlayer().getEquipment().getItemInMainHand();
     if (item.getItemMeta() == null) {
-      sendMessage(target, REVEAL_FAIL);
+      sendMessage(target.getPlayer(), REVEAL_FAIL);
       return;
     }
     if (item.getItemMeta().getLore() == null || item.getItemMeta().getLore().size() == 0) {
-      sendMessage(target, REVEAL_FAIL);
+      sendMessage(target.getPlayer(), REVEAL_FAIL);
       return;
     }
     List<String> lore = item.getItemMeta().getLore();
@@ -399,22 +399,18 @@ public class StrifeCommand extends BaseCommand {
       if (loreString.contains(REVEAL_PREFIX)) {
         lore.set(i, lore.get(i).replace(REVEAL_PREFIX, REVEAL_REPLACEMENT));
         ItemStackExtensionsKt.setLore(item, lore);
-        target.updateInventory();
-        sendMessage(target, REVEAL_SUCCESS);
+        target.getPlayer().updateInventory();
+        sendMessage(target.getPlayer(), REVEAL_SUCCESS);
         return;
       }
     }
-    sendMessage(target, REVEAL_FAIL);
+    sendMessage(target.getPlayer(), REVEAL_FAIL);
   }
 
   @Subcommand("togglexp")
-  public void toggleExp() {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
-    Champion champion = plugin.getChampionManager().getChampion((Player) sender);
+  public void toggleExp(Player player) {
+    Champion champion = plugin.getChampionManager().getChampion(player);
     champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
-    sendMessage(sender, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
+    sendMessage(player, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
   }
 }

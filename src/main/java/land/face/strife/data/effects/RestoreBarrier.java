@@ -24,7 +24,7 @@ public class RestoreBarrier extends Effect {
     }
     BonusDamage bonusDamage = new BonusDamage(damageScale, DamageType.TRUE_DAMAGE, null, restoreAmount);
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
-    DamageUtil.restoreBarrier(target, restoreAmount);
+    target.restoreBarrier(restoreAmount);
   }
 
   public void setAmount(float amount) {

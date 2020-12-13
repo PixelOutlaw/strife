@@ -1,6 +1,5 @@
 package land.face.strife.listeners;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,7 @@ public class UniqueSplashListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onAbilityPotionSplash(PotionSplashEvent event) {
-    List<String> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
     if (hitEffects.isEmpty()) {
       return;
     }
@@ -65,15 +64,7 @@ public class UniqueSplashListener implements Listener {
       Set<LivingEntity> targets = new HashSet<>();
       TargetResponse response = new TargetResponse(targets);
 
-      List<Effect> effectList = new ArrayList<>();
-      for (String s : hitEffects) {
-        Effect effect = plugin.getEffectManager().getEffect(s);
-        if (effect != null) {
-          effectList.add(effect);
-        }
-      }
-
-      plugin.getEffectManager().processEffectList(attacker, response, effectList);
+      plugin.getEffectManager().processEffectList(attacker, response, hitEffects);
     }
   }
 }

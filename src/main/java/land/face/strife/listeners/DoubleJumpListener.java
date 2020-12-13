@@ -13,8 +13,11 @@ import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.events.AirJumpEvent;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -61,7 +64,7 @@ public class DoubleJumpListener implements Listener {
       int maxJumps = JumpUtil.getMaxJumps(mob);
       if (jumps != maxJumps) {
         String message = StringExtensionsKt.chatColorize("&bJumps Recharged!");
-        AdvancedActionBarUtil.addMessage(player, JUMP_AB_KEY, message, 10, 0);
+        AdvancedActionBarUtil.addMessage(player, JUMP_AB_KEY, message, 60, 0);
       }
       JumpUtil.setJumps(player, maxJumps);
     }
@@ -91,8 +94,12 @@ public class DoubleJumpListener implements Listener {
 
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL
         || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
-      plugin.getEnergyManager().changeEnergy(mob, -20);
+      StatUtil.changeEnergy(mob, -20);
     }
+
+    AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
+    Bukkit.getPluginManager().callEvent(airJumpEvent);
+
     event.getPlayer().setFallDistance(0);
 
     Vector velocity = event.getPlayer().getVelocity().clone();
@@ -115,7 +122,7 @@ public class DoubleJumpListener implements Listener {
     String bars = IntStream.range(0, maxJumps).mapToObj(i -> "▌").collect(Collectors.joining(""));
     bars = insert(bars, "&0", Math.min(jumps, maxJumps));
     String message = StringExtensionsKt.chatColorize("&3&lAir Jumps: &b" + bars);
-    AdvancedActionBarUtil.addMessage(event.getPlayer(), JUMP_AB_KEY, message, 40, 0);
+    AdvancedActionBarUtil.addMessage(event.getPlayer(), JUMP_AB_KEY, message, 70, 0);
 
     plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 3, false, false);
     flingParticle(event.getPlayer());

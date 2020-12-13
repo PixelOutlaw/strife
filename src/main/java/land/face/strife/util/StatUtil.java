@@ -35,16 +35,16 @@ public class StatUtil {
     return ae.getStat(StrifeStat.HEALTH) * (1 + ae.getStat(StrifeStat.HEALTH_MULT) / 100);
   }
 
-  public static float getBarrier(StrifeMob ae) {
-    return StrifePlugin.getInstance().getBarrierManager().getCurrentBarrier(ae);
-  }
-
   public static float getMaximumEnergy(StrifeMob ae) {
     return ae.getStat(StrifeStat.ENERGY) * (1 + ae.getStat(StrifeStat.ENERGY_MULT) / 100);
   }
 
+  public static void changeEnergy(StrifeMob mob, float amount) {
+    mob.setEnergy(mob.getEnergy() + amount);
+  }
+
   public static float getEnergy(StrifeMob ae) {
-    return StrifePlugin.getInstance().getEnergyManager().getEnergy(ae);
+    return ae.getEnergy();
   }
 
   public static float getMaximumBarrier(StrifeMob ae) {

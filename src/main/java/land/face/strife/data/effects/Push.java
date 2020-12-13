@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.WorldSpaceEffect;
 import land.face.strife.util.LogUtil;
+import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.StringUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
@@ -21,11 +22,15 @@ public class Push extends Effect {
     if (target.getEntity().getType() == EntityType.SHULKER) {
       return;
     }
+    if (!isFriendly() && StringUtils.isNotBlank(target.getUniqueEntityId())) {
+      if (getPlugin().getUniqueEntityManager().getUnique(target.getUniqueEntityId()).isPushImmune()) {
+        return;
+      }
+    }
     Vector direction;
     switch (pushType) {
       case AWAY_FROM_CASTER:
-        direction = getEffectVelocity(caster.getEntity().getLocation().toVector(),
-            target.getEntity());
+        direction = getEffectVelocity(caster.getEntity().getLocation().toVector(), target.getEntity());
         break;
       case CASTER_DIRECTION:
         Vector casterDir = caster.getEntity().getLocation().getDirection();

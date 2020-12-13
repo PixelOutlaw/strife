@@ -23,10 +23,11 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
+import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
@@ -52,6 +53,7 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 public class DataListener implements Listener {
@@ -91,7 +93,8 @@ public class DataListener implements Listener {
 
   @EventHandler
   public void onSnowmanMelt(final EntityDamageEvent event) {
-    if (event.getCause() == DamageCause.MELTING && SpecialStatusUtil.isBurnImmune(event.getEntity())) {
+    if ((event.getCause() == DamageCause.MELTING || event.getCause() == DamageCause.DROWNING) &&
+        SpecialStatusUtil.isBurnImmune(event.getEntity())) {
       event.setCancelled(true);
     }
   }
@@ -163,20 +166,22 @@ public class DataListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
     plugin.getCounterManager().clearCounters(player);
+    plugin.getBossBarManager().disableBars(player);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     ensureAbilitiesDontInstantCast(event.getPlayer());
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+
     plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
     plugin.getCorruptionManager().clearCorrupt(event.getPlayer().getUniqueId());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
-    plugin.getBarrierManager().createBarrierEntry(
-        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     plugin.getCounterManager().clearCounters(event.getPlayer());
-    plugin.getEnergyManager().setEnergyUnsafe(event.getPlayer().getUniqueId(), 50000);
+    mob.restoreBarrier(200000);
+    StatUtil.changeEnergy(mob, 200000);
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
     Bukkit.getScheduler().runTaskLater(plugin, () ->
         event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100), 2L);
@@ -184,12 +189,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onInteract(final PlayerInteractEntityEvent event) {
-    if (!(event.getRightClicked() instanceof LivingEntity) || event
-        .getRightClicked() instanceof ArmorStand) {
-      return;
-    }
-    if (!event.getRightClicked().isValid() || event.getRightClicked().hasMetadata("NPC") || event.getRightClicked()
-        .hasMetadata("pet")) {
+    if (TargetingUtil.isInvalidTarget(event.getRightClicked())) {
       return;
     }
     final Player player = event.getPlayer();
@@ -197,6 +197,16 @@ public class DataListener implements Listener {
     plugin.getStrifeMobManager().getStatMob(entity);
     plugin.getBossBarManager()
         .pushBar(player, plugin.getStrifeMobManager().getStatMob(entity));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void chunkLoadMonitor(ChunkLoadEvent e) {
+    plugin.getSpawnerManager().stampChunk(e.getChunk());
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void chunkUnloadMonitor(ChunkUnloadEvent e) {
+    plugin.getSpawnerManager().unstampChunk(e.getChunk());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -207,6 +217,7 @@ public class DataListener implements Listener {
       }
       plugin.getStrifeMobManager().doChunkDespawn(ent);
     }
+    plugin.getSpawnerManager().unstampChunk(e.getChunk());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

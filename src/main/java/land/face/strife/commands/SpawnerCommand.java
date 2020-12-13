@@ -1,31 +1,29 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.CommandCompletion;
-import co.aikar.commands.annotation.CommandPermission;
-import co.aikar.commands.annotation.Subcommand;
-import co.aikar.commands.annotation.Values;
+import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandPermission;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -46,14 +44,11 @@ public class SpawnerCommand extends BaseCommand {
   }
 
   @Subcommand("create")
-  @CommandCompletion("@uniques")
+  @CommandCompletion("@none @uniques @range:1-20 @range:20-200 @range:5-300")
+  @Syntax("<SpawnerId> <UniqueId> <MobAmount> <LeashRange> <RespawnSeconds>")
   @CommandPermission("strife.spawners")
-  public void creationCommand(String spawnerId, @Values("@uniques") String uniqueName, int amount, double leashRange,
+  public void create(Player sender, String spawnerId, String uniqueName, int amount, double leashRange,
       int respawnSecs) {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
     if (plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerId)) {
       sendMessage(sender, "&eA spawner with the name " + spawnerId + " already exists!");
       return;
@@ -64,7 +59,8 @@ public class SpawnerCommand extends BaseCommand {
       return;
     }
 
-    Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueName, amount, sender.getLocation(), respawnSecs, leashRange);
+    Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueName, amount, sender.getLocation(), respawnSecs,
+        leashRange);
     plugin.getSpawnerManager().addSpawner(spawnerId, spawner);
     sendMessage(sender, "&aSpawner &f" + spawnerId + " &asuccessfully added!");
   }
@@ -72,11 +68,7 @@ public class SpawnerCommand extends BaseCommand {
   @Subcommand("delete|remove")
   @CommandCompletion("@spawners")
   @CommandPermission("strife.spawners")
-  public void deleteCommand(@Values("@spawners") String spawnerName) {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
+  public void deleteCommand(CommandSender sender, String spawnerName) {
     if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
       sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
       return;
@@ -87,11 +79,7 @@ public class SpawnerCommand extends BaseCommand {
 
   @Subcommand("list")
   @CommandPermission("strife.spawners")
-  public void spawnerList() {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
+  public void spawnerList(Player sender) {
     sendMessage(sender, "&2&lList of loaded spawners:");
     StringBuilder listString = new StringBuilder();
     List<Spawner> spawners = new ArrayList<>(plugin.getSpawnerManager().getSpawnerMap().values());
@@ -111,11 +99,7 @@ public class SpawnerCommand extends BaseCommand {
 
   @Subcommand("nearest")
   @CommandPermission("strife.spawners")
-  public void spawnerListNearest() {
-    if (!getCurrentCommandIssuer().isPlayer()) {
-      return;
-    }
-    Player sender = getCurrentCommandIssuer().getIssuer();
+  public void spawnerListNearest(Player sender) {
     sendMessage(sender, "&2&lList of loaded spawners:");
     StringBuilder listString = new StringBuilder();
     List<Spawner> spawners = new ArrayList<>(plugin.getSpawnerManager().getSpawnerMap().values());
@@ -140,9 +124,9 @@ public class SpawnerCommand extends BaseCommand {
 
   @Subcommand("info")
   @CommandCompletion("@spawners")
+  @Syntax("<SpawnerId> - Get info on this spawnerId")
   @CommandPermission("strife.spawners")
-  public void spawnerInfo(String spawnerName) {
-    CommandSender sender = getCurrentCommandIssuer().getIssuer();
+  public void spawnerInfo(CommandSender sender, String spawnerName) {
     if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
       sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
       return;

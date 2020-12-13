@@ -20,20 +20,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package land.face.strife.commands;
+package land.face.strife.events;
 
-import co.aikar.commands.BaseCommand;
-import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.data.ability.Ability;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-public class UniqueEntityCommand extends BaseCommand {
+public class AbilityCastEvent extends Event {
 
-    private final StrifePlugin plugin;
+  private static final HandlerList HANDLER_LIST = new HandlerList();
 
-    public UniqueEntityCommand(StrifePlugin plugin) {
-        this.plugin = plugin;
-    }
+  public static HandlerList getHandlerList() {
+    return HANDLER_LIST;
+  }
 
+  private final StrifeMob caster;
+  private final Ability ability;
 
+  public AbilityCastEvent(StrifeMob caster, Ability ability) {
+    this.caster = caster;
+    this.ability = ability;
+  }
 
+  @Override
+  public HandlerList getHandlers() {
+    return HANDLER_LIST;
+  }
+
+  public StrifeMob getCaster() {
+    return caster;
+  }
+
+  public Ability getAbility() {
+    return ability;
+  }
 
 }

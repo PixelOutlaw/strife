@@ -56,7 +56,7 @@ public class BleedManager {
     if (!mob.getEntity().isValid()) {
       return;
     }
-    if (!bypassBarrier && plugin.getBarrierManager().isBarrierUp(mob)) {
+    if (!bypassBarrier && mob.getBarrier() > 0) {
       return;
     }
     if (bleedMap.containsKey(mob.getEntity().getUniqueId())) {

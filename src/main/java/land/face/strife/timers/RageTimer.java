@@ -18,14 +18,16 @@
  */
 package land.face.strife.timers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.BorderEffectUtil;
 import land.face.strife.util.LogUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -36,23 +38,25 @@ public class RageTimer extends BukkitRunnable {
   private final StrifeMob mob;
   private final UUID mobUuid;
   private final float tintIntensity;
-  private float ticksRemaining;
+  private float rageRemaining;
   private int graceTicks;
   private int invalidTicks = 0;
   private int heartbeat = 0;
 
-  private static int MAX_GRACE_TICKS = 50;
+  private static final int MAX_GRACE_TICKS = 50;
 
-  public RageTimer(StrifeMob mob, float ticksRemaining) {
+  public RageTimer(StrifeMob mob, float rageRemaining) {
     this.mob = mob;
     this.mobUuid = mob.getEntity().getUniqueId();
-    this.ticksRemaining = ticksRemaining;
+    this.rageRemaining = rageRemaining;
     this.graceTicks = MAX_GRACE_TICKS;
     tintIntensity = (float) StrifePlugin.getInstance().getSettings()
         .getDouble("config.mechanics.rage-tint-intensity", 1);
     LogUtil.printDebug("New RageTimer created for " + mobUuid);
     runTaskTimer(StrifePlugin.getInstance(), 0L, 4L);
-    sendBorder(ticksRemaining / mob.getStat(StrifeStat.MAXIMUM_RAGE));
+    float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
+    float borderAmount = tintIntensity * (rageRemaining / maxRage);
+    sendBorder((Player) mob.getEntity(), borderAmount);
   }
 
   @Override
@@ -66,25 +70,25 @@ public class RageTimer extends BukkitRunnable {
       return;
     }
 
-    spawnRageParticles(mob.getEntity(), ticksRemaining);
+    float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
+    spawnRageParticles(mob.getEntity(), rageRemaining);
 
     graceTicks--;
     if (graceTicks > 0) {
       sendBorder();
+      pushRageActionBar(mob, maxRage, rageRemaining, 20);
       return;
     }
 
-    float lostTicks = 1 + ticksRemaining * 0.12f;
-    ticksRemaining -= lostTicks;
+    float lostTicks = 1 + rageRemaining * 0.12f;
+    rageRemaining -= lostTicks;
 
-    if (mob.getEntity() instanceof Player) {
-      MessageUtils.sendActionBar((Player) mob.getEntity(),
-          TextUtils.color("&cRage Remaining: " + (int) Math.max(ticksRemaining, 0)));
-    }
-
-    if (ticksRemaining <= 0) {
+    if (rageRemaining <= 0) {
       LogUtil.printDebug("Rage complete, removing");
       StrifePlugin.getInstance().getRageManager().clearRage(mobUuid);
+      pushRageActionBar(mob, maxRage, 0, 60);
+    } else {
+      pushRageActionBar(mob, maxRage, rageRemaining, 20);
     }
   }
 
@@ -97,32 +101,52 @@ public class RageTimer extends BukkitRunnable {
       return;
     }
     heartbeat = 1;
-    sendBorder(ticksRemaining / mob.getStat(StrifeStat.MAXIMUM_RAGE));
-  }
-
-  private void sendBorder(float percent) {
-    BorderEffectUtil.sendBorder((Player) mob.getEntity(), percent * tintIntensity, 8000);
+    float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
+    float borderAmount = tintIntensity * (rageRemaining / maxRage);
+    sendBorder((Player) mob.getEntity(), borderAmount);
   }
 
   public void bumpRage(float amount) {
-    ticksRemaining = Math.max(0, Math.min(ticksRemaining + amount, mob.getStat(StrifeStat.MAXIMUM_RAGE)));
-    sendBorder(ticksRemaining / mob.getStat(StrifeStat.MAXIMUM_RAGE));
+    float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
+    rageRemaining = Math.max(0, Math.min(rageRemaining + amount, maxRage));
+    float borderAmount = tintIntensity * (rageRemaining / maxRage);
+    sendBorder((Player) mob.getEntity(), borderAmount);
     heartbeat = 0;
     if (amount >= 0) {
       graceTicks = MAX_GRACE_TICKS;
     }
+    pushRageActionBar(mob, maxRage, rageRemaining, 60);
   }
 
   public float getRage() {
-    return ticksRemaining;
+    return rageRemaining;
   }
 
-  private void spawnRageParticles(LivingEntity entity, float rageStacks) {
+  private static void sendBorder(Player player, float amount) {
+    BorderEffectUtil.sendBorder(player, amount , 8000);
+  }
+
+  private static void spawnRageParticles(LivingEntity entity, float rageStacks) {
     entity.getWorld().spawnParticle(
         Particle.VILLAGER_ANGRY,
         entity.getEyeLocation(),
         1 + (int) (rageStacks / 20),
         0.6, 0.6, 0.6
     );
+  }
+
+  private static void pushRageActionBar(StrifeMob mob, float maxRage, float rage, int ticks) {
+    if (!(mob.getEntity() instanceof Player)) {
+      return;
+    }
+    int maxBars = 7 + (int) (maxRage / 10);
+    int rageBars = Math.round((rage / maxRage) * maxBars);
+    String message = ChatColor.RED + "RAGE! " + ChatColor.DARK_RED + IntStream.range(0, rageBars).mapToObj(i -> "▌")
+        .collect(Collectors.joining(""));
+    message += ChatColor.BLACK + IntStream.range(0, maxBars - rageBars).mapToObj(i -> "▌")
+        .collect(Collectors.joining(""));
+    message += " " + ChatColor.RED + (int) rage;
+
+    AdvancedActionBarUtil.addMessage((Player) mob.getEntity(), "rage-bar", message, ticks, 5);
   }
 }

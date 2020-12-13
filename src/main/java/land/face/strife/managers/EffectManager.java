@@ -95,6 +95,7 @@ import land.face.strife.data.effects.PlaySound;
 import land.face.strife.data.effects.PotionEffectAction;
 import land.face.strife.data.effects.Push;
 import land.face.strife.data.effects.Push.PushType;
+import land.face.strife.data.effects.RemoveBuff;
 import land.face.strife.data.effects.RemoveEntity;
 import land.face.strife.data.effects.RestoreBarrier;
 import land.face.strife.data.effects.Revive;
@@ -151,6 +152,7 @@ public class EffectManager {
     this.loadedEffects = new HashMap<>();
     this.conditions = new HashMap<>();
   }
+
   public void processEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
     List<Effect> taskEffects = new ArrayList<>();
     int waitTicks = 0;
@@ -355,12 +357,7 @@ public class EffectManager {
         ((Counter) effect).setDuration(cs.getInt("duration", 500));
         ((Counter) effect).setRemoveOnTrigger(cs.getBoolean("remove-on-trigger", false));
         List<String> counterEffects = cs.getStringList("effects");
-        Effect finalEffect = effect;
-        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-          for (String s : counterEffects) {
-            ((Counter) finalEffect).getEffects().add(getEffect(s));
-          }
-        }, 5L);
+        delayedSetEffects(((Counter) effect).getEffects(), counterEffects, key, false);
         break;
       case AREA_EFFECT:
         effect = new AreaEffect();
@@ -372,15 +369,10 @@ public class EffectManager {
             areaEffect.getFilterConditions().add(getConditions().get(s));
           }
         }, 5L);
-        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-          for (String s : areaEffects) {
-            areaEffect.getEffects().add(getEffect(s));
-          }
-        }, 5L);
+        delayedSetEffects(((AreaEffect) effect).getEffects(), areaEffects, key, false);
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
-        ((AreaEffect) effect)
-            .setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
+        ((AreaEffect) effect).setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
         ((AreaEffect) effect).setLineOfSight(LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
@@ -418,18 +410,9 @@ public class EffectManager {
         for (String s : cancelConditions) {
           ((EndlessEffect) effect).getCancelConditions().add(getConditions().get(s));
         }
-        EndlessEffect endlessEffect = (EndlessEffect) effect;
-        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-          for (String s : runEffects) {
-            endlessEffect.getRunEffects().add(getEffect(s));
-          }
-          for (String s : cancelEffects) {
-            endlessEffect.getCancelEffects().add(getEffect(s));
-          }
-          for (String s : expiryEffects) {
-            endlessEffect.getExpiryEffects().add(getEffect(s));
-          }
-        }, 5L);
+        delayedSetEffects(((EndlessEffect) effect).getRunEffects(), runEffects, key, false);
+        delayedSetEffects(((EndlessEffect) effect).getCancelEffects(), cancelEffects, key, false);
+        delayedSetEffects(((EndlessEffect) effect).getExpiryEffects(), expiryEffects, key, false);
         break;
       case CANCEL_ENDLESS_EFFECT:
         effect = new CancelEndlessEffect();
@@ -456,24 +439,24 @@ public class EffectManager {
           return;
         }
         ((ShootProjectile) effect).setProjectileEntity(projType);
-        ((ShootProjectile) effect)
-            .setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((ShootProjectile) effect).setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
         ((ShootProjectile) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
+        ((ShootProjectile) effect).setMaxDuration(cs.getInt("max-duration", -1));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
         ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
         ((ShootProjectile) effect).setSilent(cs.getBoolean("silent", false));
+        ((ShootProjectile) effect).setGravity(cs.getBoolean("gravity", true));
         ((ShootProjectile) effect).setThrowItem(cs.getBoolean("thrown-item", false));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
-        ((ShootProjectile) effect).setHitEffects(cs.getStringList("hit-effects"));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
-        ((ShootProjectile) effect).setDisguise(PlayerDataUtil.parseDisguise(
-            cs.getConfigurationSection("disguise"), key, false));
+        ((ShootProjectile) effect).setDisguise(PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
+            key, false));
         String thrownStackMaterial = cs.getString("thrown-stack-material");
         if (StringUtils.isNotBlank(thrownStackMaterial)) {
           ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
@@ -487,6 +470,8 @@ public class EffectManager {
         if (color != -1) {
           ((ShootProjectile) effect).setArrowColor(Color.fromRGB(color));
         }
+        List<String> effects = cs.getStringList("hit-effects");
+        delayedSetEffects(((ShootProjectile) effect).getHitEffects(), effects, key, false);
         break;
       case EQUIPMENT_SWAP:
         effect = new EquipmentSwap();
@@ -563,31 +548,10 @@ public class EffectManager {
         double z = cs.getDouble("z", 0);
         ((Teleport) effect).setVector(new Vector(x, y, z));
         ((Teleport) effect).setRelative(cs.getBoolean("relative", false));
-        Teleport tpEffect = (Teleport) effect;
         List<String> destEffects = cs.getStringList("destination-effects");
-        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-          for (String s : destEffects) {
-            Effect e = getEffect(s);
-            if (!(e instanceof LocationEffect)) {
-              LogUtil.printWarning("Failed to attach effect " + e.getId() + " to " + key);
-              LogUtil.printWarning("Teleport bonus effects can only be location based!");
-              continue;
-            }
-            tpEffect.getDestinationEffects().add(e);
-          }
-        }, 5L);
         List<String> originEffects = cs.getStringList("origin-effects");
-        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-          for (String s : originEffects) {
-            Effect e = getEffect(s);
-            if (!(e instanceof LocationEffect)) {
-              LogUtil.printWarning("Failed to attach effect " + e.getId() + " to " + key);
-              LogUtil.printWarning("Teleport bonus effects can only be location based!");
-              continue;
-            }
-            tpEffect.getOriginEffects().add(e);
-          }
-        }, 5L);
+        delayedSetEffects(((Teleport) effect).getDestinationEffects(), destEffects, key, true);
+        delayedSetEffects(((Teleport) effect).getOriginEffects(), originEffects, key, true);
         break;
       case TELEPORT_BEHIND:
         effect = new TeleportBehind();
@@ -612,6 +576,12 @@ public class EffectManager {
         effect = new BuffEffect();
         ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        break;
+      case REMOVE_BUFF:
+        effect = new RemoveBuff();
+        ((RemoveBuff) effect).setBuffId(cs.getString("buff-id"));
+        ((RemoveBuff) effect).setStacks(cs.getInt("stacks", Integer.MAX_VALUE));
+        ((RemoveBuff) effect).setFromCaster(cs.getBoolean("from-caster", true));
         break;
       case COOLDOWN_REDUCTION:
         effect = new CooldownReduction();
@@ -688,8 +658,7 @@ public class EffectManager {
         break;
       case MODIFY_PROJECTILE:
         effect = new ModifyProjectile();
-        ((ModifyProjectile) effect)
-            .setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
+        ((ModifyProjectile) effect).setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
         ((ModifyProjectile) effect).setRange(cs.getDouble("range", 1));
         ((ModifyProjectile) effect).setRemove(cs.getBoolean("remove", true));
         ((ModifyProjectile) effect).setSpeedMult(cs.getDouble("speed-mult", 0.5));
@@ -708,8 +677,7 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
-        ((PotionEffectAction) effect)
-            .setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
+        ((PotionEffectAction) effect).setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
         break;
       case SOUND:
         effect = new PlaySound();
@@ -736,8 +704,7 @@ public class EffectManager {
         ((StrifeParticle) effect).setParticle(particle);
         ParticleStyle style = ParticleStyle.valueOf(cs.getString("style", "NORMAL"));
         ((StrifeParticle) effect).setStyle(style);
-        if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
-            || particle == Particle.SPELL_INSTANT) {
+        if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH || particle == Particle.SPELL_INSTANT) {
           ((StrifeParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
           ((StrifeParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
           ((StrifeParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
@@ -778,8 +745,7 @@ public class EffectManager {
     if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
-      Map<StrifeStat, Float> statMults = StatUtil
-          .getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
+      Map<StrifeStat, Float> statMults = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
       effect.setStatMults(statMults);
     }
     effect.setId(key);
@@ -1074,4 +1040,22 @@ public class EffectManager {
     return conditions;
   }
 
+  private void delayedSetEffects(List<Effect> effects, List<String> effectIds, String effectId, boolean locationOnly) {
+    effects.clear();
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      for (String s : effectIds) {
+        Effect effect = getEffect(s);
+        if (effect == null) {
+          LogUtil.printWarning("Attempted to load invalid effect " + s + " for " + effectId);
+          continue;
+        }
+        if (locationOnly && !(effect instanceof LocationEffect)) {
+          LogUtil.printWarning("Non-location effect " + effect.getId() + " used for " + effectId
+              + "! This effect's sub-effects may only be location type effects");
+          continue;
+        }
+        effects.add(effect);
+      }
+    }, 5L);
+  }
 }

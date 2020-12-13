@@ -134,6 +134,10 @@ public class LoreAbilityManager {
     ON_EVADE,
     ON_SNEAK_ATTACK,
     ON_FALL,
+    ON_CAST,
+    ON_COMBAT_START,
+    ON_COMBAT_END,
+    ON_AIR_JUMP,
     TIMER,
     NONE
   }

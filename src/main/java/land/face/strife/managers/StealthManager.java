@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
@@ -37,9 +35,8 @@ import org.bukkit.entity.Player;
 
 public class StealthManager {
 
-  private StrifePlugin plugin;
-
-  private Set<UUID> stealthedPlayers = new HashSet<>();
+  private final StrifePlugin plugin;
+  private final Set<UUID> stealthedPlayers = new HashSet<>();
 
   private float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.base-sneak-exp");
@@ -106,11 +103,13 @@ public class StealthManager {
   }
 
   public void stealthPlayer(Player player) {
-    for (Entity e : player.getWorld().getNearbyEntities(
-        player.getLocation(), 60, 60, 60, e -> e instanceof Mob)) {
-      if (((Mob) e).getTarget() == player) {
+    for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
+      if (e instanceof Player && plugin.getBossBarManager().getBarTarget((Player) e) == player) {
+        plugin.getBossBarManager().disableBars((Player) e);
+        plugin.getIndicatorManager().addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
+      } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
-        plugin.getIndicatorManager().addIndicator(player, (Mob) e, IndicatorStyle.FLOAT_UP_SLOW, 8, "&e&l???");
+        plugin.getIndicatorManager().addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
       }
     }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);

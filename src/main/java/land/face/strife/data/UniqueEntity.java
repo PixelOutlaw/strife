@@ -31,7 +31,7 @@ public class UniqueEntity {
   private Profession profession;
   private int size;
   private int followRange = -1;
-  private boolean knockbackImmune;
+  private boolean pushImmune;
   private boolean charmImmune;
   private boolean burnImmune;
   private boolean fallImmune;
@@ -239,6 +239,14 @@ public class UniqueEntity {
 
   public void setFallImmune(boolean fallImmune) {
     this.fallImmune = fallImmune;
+  }
+
+  public boolean isPushImmune() {
+    return pushImmune;
+  }
+
+  public void setPushImmune(boolean pushImmune) {
+    this.pushImmune = pushImmune;
   }
 
   public boolean isCharmImmune() {

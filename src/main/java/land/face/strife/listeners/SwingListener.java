@@ -41,13 +41,11 @@ import org.bukkit.inventory.EquipmentSlot;
 public class SwingListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static String notChargedMessage;
 
-  private static Set<UUID> FAKE_SWINGS = new HashSet<>();
+  private static final Set<UUID> FAKE_SWINGS = new HashSet<>();
 
   public SwingListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    notChargedMessage = plugin.getSettings().getString("language.wand.not-charged", "");
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -76,8 +74,8 @@ public class SwingListener implements Listener {
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
       double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
       if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
-        if (attackMult > 0.15) {
-          ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.5D));
+        if (attackMult > 0.08) {
+          ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.2D));
         }
         event.setCancelled(true);
       }

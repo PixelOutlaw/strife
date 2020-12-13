@@ -17,6 +17,9 @@ import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.tasks.BarrierTask;
+import land.face.strife.tasks.EnergyTask;
+import land.face.strife.tasks.LifeTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
@@ -38,18 +41,21 @@ public class StrifeMob {
 
   private EntityAbilitySet abilitySet;
   private final Set<String> mods = new HashSet<>();
-
   private Set<String> factions = new HashSet<>();
   private UUID alliedGuild;
-
   private final Set<FiniteUsesEffect> tempEffects = new HashSet<>();
-
   private boolean charmImmune = false;
-
   private final Set<StrifeMob> minions = new HashSet<>();
   private final Set<Buff> runningBuffs = new HashSet<>();
-
   private final Map<UUID, Float> takenDamage = new HashMap<>();
+
+  private float energy = 0;
+  private float barrier = 0;
+  private boolean shielded;
+
+  private final BarrierTask barrierTask = new BarrierTask(this);
+  private final LifeTask lifeTask = new LifeTask(this);
+  private final EnergyTask energyTask = new EnergyTask(this);
 
   private long cacheStamp = 1L;
 
@@ -61,6 +67,54 @@ public class StrifeMob {
   public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = new WeakReference<>(livingEntity);
     this.champion = new WeakReference<>(null);
+  }
+
+  public float getBarrier() {
+    return barrier;
+  }
+
+  public void restoreBarrier(float amount) {
+    if (amount < 0) {
+      Bukkit.getLogger().warning("Tried to restore a negative barrier amount!");
+      return;
+    }
+    float maxBarrier = StatUtil.getMaximumBarrier(this);
+    barrier = Math.min(barrier + amount, maxBarrier);
+    barrierTask.updateArmorBar(this, barrier, maxBarrier);
+  }
+
+  public float damageBarrier(float amount) {
+    if (amount < 0) {
+      Bukkit.getLogger().warning("Tried to damage barrier by a negative amount!");
+      return amount;
+    }
+    barrierTask.bumpBarrierTime();
+    float diff = barrier - amount;
+    if (diff > 0) {
+      barrier -= amount;
+      barrierTask.updateArmorBar(this, barrier, StatUtil.getMaximumBarrier(this));
+      BarrierTask.spawnBarrierParticles(getEntity(), amount);
+      return 0;
+    } else {
+      barrier = 0;
+      barrierTask.updateArmorBar(this, 0);
+      float damageAmount = -1 * diff;
+      BarrierTask.spawnBarrierParticles(getEntity(), damageAmount);
+      return damageAmount;
+    }
+  }
+
+  public float getEnergy() {
+    return energy;
+  }
+
+  public void setEnergy(float energy) {
+    float maxEnergy =  StatUtil.getMaximumEnergy(this);
+    this.energy = Math.min(Math.max(0, energy), maxEnergy);
+    if (getEntity() instanceof Player) {
+      Player player = (Player) getEntity();
+      player.setFoodLevel((int) Math.min(20D, 20D * energy / maxEnergy));
+    }
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -236,6 +290,22 @@ public class StrifeMob {
     oldBuff.bumpBuff(duration);
   }
 
+  public void removeBuff(String buffId, UUID source) {
+    removeBuff(buffId, source, Integer.MAX_VALUE);
+  }
+
+  public void removeBuff(String buffId, UUID source, int stacks) {
+    Buff buff = getBuff(buffId, source);
+    if (buff == null) {
+      return;
+    }
+    if (buff.getStacks() <= stacks) {
+      runningBuffs.remove(buff);
+      return;
+    }
+    buff.setStacks(buff.getStacks() - stacks);
+  }
+
   public boolean isMinionOf(StrifeMob strifeMob) {
     return getMaster() == strifeMob.getEntity();
   }
@@ -280,6 +350,14 @@ public class StrifeMob {
 
   public void setMaster(LivingEntity master) {
     this.master = new WeakReference<>(master);
+  }
+
+  public void addHealingOverTime(float amount, int ticks) {
+    lifeTask.addHealingOverTime(amount, ticks);
+  }
+
+  public void addEnergyOverTime(float amount, int ticks) {
+    energyTask.addEnergyOverTime(amount, ticks);
   }
 
   public Set<FiniteUsesEffect> getTempEffects() {

@@ -18,19 +18,36 @@
  */
 package land.face.strife.menus.abilities;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.List;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.ability.Ability;
+import land.face.strife.data.effects.TargetingComparators.AbilityComparator;
+import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
-public class AbilityPickerPickerMenu extends ItemMenu {
+public class AbilitySubmenu extends ItemMenu {
 
-  public AbilityPickerPickerMenu(StrifePlugin plugin, String name, List<AbilityPickerPickerItem> subMenuIcons) {
-    super(TextUtils.color(name), Size.fit(36), plugin);
+  private String id;
 
-    for (AbilityPickerPickerItem icon : subMenuIcons) {
-      setItem(icon.getSlot(), icon);
+  public AbilitySubmenu(StrifePlugin plugin, String name, List<Ability> abilities, ReturnButton returnButton) {
+    super(StringExtensionsKt.chatColorize(name), Size.fit(abilities.size() + 1), plugin);
+    int index = 0;
+    abilities.sort(new AbilityComparator());
+    for (Ability ability : abilities) {
+      setItem(index, new AbilityButton(plugin, ability));
+      index++;
     }
+    setItem(getSize().getSize() - 1, returnButton);
+    fillEmptySlots(new BlankIcon());
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 }
 

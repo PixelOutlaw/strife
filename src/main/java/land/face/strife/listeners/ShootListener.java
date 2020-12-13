@@ -16,6 +16,7 @@
  */
 package land.face.strife.listeners;
 
+import com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,7 @@ import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ItemUtil;
@@ -46,6 +48,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
@@ -195,6 +198,52 @@ public class ShootListener implements Listener {
     player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 1f, 1f);
   }
 
+  @EventHandler
+  public void onDragonFireballHit(final EnderDragonFireballHitEvent event) {
+    event.getAreaEffectCloud().remove();
+    List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    if (hitEffects.isEmpty()) {
+      return;
+    }
+    if (event.getTargets() == null || event.getTargets().isEmpty()) {
+      return;
+    }
+
+    LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+
+    for (Entity e : event.getTargets()) {
+      if (!(e instanceof LivingEntity)) {
+        continue;
+      }
+      LivingEntity defendEntity = (LivingEntity) e;
+      StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
+
+      double evasionMultiplier = StatUtil.getMinimumEvasionMult(StatUtil.getEvasion(defender),
+          StatUtil.getAccuracy(attacker));
+      evasionMultiplier = evasionMultiplier + (DamageUtil.rollDouble() * (1 - evasionMultiplier));
+
+      if (evasionMultiplier <= 0.5) {
+        DamageUtil.doEvasion(attacker, defender);
+        event.setCancelled(true);
+        return;
+      }
+
+      if (plugin.getBlockManager().rollBlock(defender, false)) {
+        plugin.getBlockManager().blockFatigue(defendEntity, 1.0, false);
+        plugin.getBlockManager().bumpRunes(defender);
+        DamageUtil.doBlock(attacker, defender);
+        event.setCancelled(true);
+        return;
+      }
+
+      Set<LivingEntity> targets = new HashSet<>();
+      TargetResponse response = new TargetResponse(targets);
+
+      plugin.getEffectManager().processEffectList(attacker, response, hitEffects);
+    }
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
   public void onGroundEffectProjectileHit(final ProjectileHitEvent event) {
     if (event.getHitBlock() == null) {
@@ -206,7 +255,7 @@ public class ShootListener implements Listener {
     StrifeMob caster = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) Objects.requireNonNull(event.getEntity().getShooter()));
 
-    List<String> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
     if (hitEffects.isEmpty()) {
       LogUtil.printWarning("A handled GroundProjectile was missing effect meta... something's wrong");
       return;
@@ -215,8 +264,7 @@ public class ShootListener implements Listener {
     Location loc = event.getEntity().getLocation().clone()
         .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
 
-    for (String s : hitEffects) {
-      Effect effect = StrifePlugin.getInstance().getEffectManager().getEffect(s);
+    for (Effect effect : hitEffects) {
       if (effect instanceof LocationEffect) {
         ((LocationEffect) effect).applyAtLocation(caster, loc);
       }

@@ -35,12 +35,12 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class AbilityPickerItem extends MenuItem {
+public class AbilityButton extends MenuItem {
 
   private final StrifePlugin plugin;
   private final Ability ability;
 
-  AbilityPickerItem(StrifePlugin plugin, Ability ability) {
+  AbilityButton(StrifePlugin plugin, Ability ability) {
     super("", new ItemStack(Material.DIAMOND_CHESTPLATE));
     this.plugin = plugin;
     this.ability = ability;
@@ -89,8 +89,8 @@ public class AbilityPickerItem extends MenuItem {
       return;
     }
     if (oldAbility == ability) {
-      plugin.getAbilityIconManager().clearAbilityIcon(event.getPlayer(), slot);
-      event.setWillUpdate(true);
+      //plugin.getAbilityIconManager().clearAbilityIcon(event.getPlayer(), slot);
+      event.setWillUpdate(false);
       return;
     }
     champion.getSaveData().setAbility(slot, ability);

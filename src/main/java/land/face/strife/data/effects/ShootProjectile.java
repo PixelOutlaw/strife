@@ -1,11 +1,13 @@
 package land.face.strife.data.effects;
 
+import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ThrownItemTask;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.TargetingUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
@@ -46,10 +48,12 @@ public class ShootProjectile extends Effect {
   private boolean zeroPitch;
   private boolean blockHitEffects;
   private boolean silent;
+  private boolean gravity;
   private float yield;
+  private int maxDuration;
   private Disguise disguise = null;
   private ItemStack thrownStack = null;
-  private List<String> hitEffects;
+  private List<Effect> hitEffects = new ArrayList<>();
   private boolean throwItem;
 
   @Override
@@ -92,6 +96,9 @@ public class ShootProjectile extends Effect {
       if (ignite) {
         projectile.setFireTicks(200);
       }
+      if (!gravity) {
+        projectile.setGravity(false);
+      }
       if (projectileEntity == EntityType.ARROW) {
         if (arrowColor != null) {
           ((Arrow) projectile).setColor(arrowColor);
@@ -99,7 +106,7 @@ public class ShootProjectile extends Effect {
         ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
         ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
         ProjectileUtil.setPierce((Arrow) projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
-      } else if (projectileEntity == EntityType.FIREBALL) {
+      } else if (projectileEntity == EntityType.FIREBALL || projectileEntity == EntityType.DRAGON_FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
       } else if (projectileEntity == EntityType.WITHER_SKULL) {
@@ -121,6 +128,23 @@ public class ShootProjectile extends Effect {
       if (disguise != null) {
         DisguiseAPI.disguiseToPlayers(projectile, disguise, Bukkit.getOnlinePlayers());
       }
+
+      SpecialStatusUtil.setDespawnOnUnload(projectile);
+      ProjectileUtil.setShotId(projectile);
+
+      if (maxDuration != -1) {
+        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+          for (Effect effect : hitEffects) {
+            if (effect instanceof LocationEffect) {
+              ((LocationEffect) effect).applyAtLocation(caster, projectile.getLocation());
+            }
+          }
+          if (projectile.isValid()) {
+            projectile.remove();
+          }
+        }, maxDuration);
+      }
+
       if (throwItem) {
         for (Player p : Bukkit.getOnlinePlayers()) {
           getPlugin().getEntityHider().hideEntity(p, projectile);
@@ -135,6 +159,7 @@ public class ShootProjectile extends Effect {
         new ThrownItemTask(projectile, stack, originLocation).runTaskTimer(getPlugin(), 0L, 1L);
       }
     }
+    ProjectileUtil.bumpShotId();
   }
 
   public void setProjectileEntity(EntityType projectileEntity) {
@@ -177,16 +202,16 @@ public class ShootProjectile extends Effect {
     this.yield = yield;
   }
 
+  public void setMaxDuration(int maxDuration) {
+    this.maxDuration = maxDuration;
+  }
+
   public void setTargeted(boolean targeted) {
     this.targeted = targeted;
   }
 
   public void setSeeking(boolean seeking) {
     this.seeking = seeking;
-  }
-
-  public void setHitEffects(List<String> hitEffects) {
-    this.hitEffects = hitEffects;
   }
 
   public void setThrowItem(boolean throwItem) {
@@ -203,6 +228,10 @@ public class ShootProjectile extends Effect {
 
   public void setSilent(boolean silent) {
     this.silent = silent;
+  }
+
+  public void setGravity(boolean gravity) {
+    this.gravity = gravity;
   }
 
   public void setOriginType(OriginLocation originType) {
@@ -234,6 +263,10 @@ public class ShootProjectile extends Effect {
 
   public void setThrownStack(ItemStack thrownStack) {
     this.thrownStack = thrownStack;
+  }
+
+  public List<Effect> getHitEffects() {
+    return hitEffects;
   }
 
   private int getProjectileCount(StrifeMob caster) {
