@@ -272,9 +272,7 @@ public class CombatListener implements Listener {
       return;
     }
 
-    Bukkit.getLogger().info("e1: " + strifeDamageEvent.getFinalDamage());
     float eventDamage = Math.max(0.002f, defender.damageBarrier((float) strifeDamageEvent.getFinalDamage()));
-    Bukkit.getLogger().info("e2: " + eventDamage);
     eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
