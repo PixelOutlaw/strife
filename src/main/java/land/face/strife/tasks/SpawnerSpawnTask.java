@@ -23,7 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class SpawnerSpawnTask extends BukkitRunnable {
 
-  private SpawnerManager spawnerManager;
+  private final SpawnerManager spawnerManager;
 
   public SpawnerSpawnTask(SpawnerManager spawnerManager) {
     this.spawnerManager = spawnerManager;

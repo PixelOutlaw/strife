@@ -13,8 +13,8 @@ public class Spawner extends BukkitRunnable {
 
   public static int SPAWNER_OFFSET = 0;
 
-  private List<LivingEntity> entities = new CopyOnWriteArrayList<>();
-  private List<Long> respawnTimes = new CopyOnWriteArrayList<>();
+  private final List<LivingEntity> entities = new CopyOnWriteArrayList<>();
+  private final List<Long> respawnTimes = new CopyOnWriteArrayList<>();
   private final String id;
   private final String uniqueId;
   private final UniqueEntity uniqueEntity;
@@ -22,8 +22,7 @@ public class Spawner extends BukkitRunnable {
   private Location location;
   private double leashRange;
   private long respawnSeconds;
-  private int chunkX;
-  private int chunkZ;
+  private long chunkKey;
 
   public Spawner(String id, UniqueEntity uniqueEntity, String uniqueId, int amount,
       Location location, int respawnSeconds, double leashRange) {
@@ -34,8 +33,7 @@ public class Spawner extends BukkitRunnable {
     this.location = location;
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
-    this.chunkX = location.getChunk().getX();
-    this.chunkZ = location.getChunk().getZ();
+    chunkKey = location.getChunk().getChunkKey();
 
     runTaskTimer(StrifePlugin.getInstance(), SPAWNER_OFFSET, 20L);
     SPAWNER_OFFSET++;
@@ -103,8 +101,7 @@ public class Spawner extends BukkitRunnable {
 
   public void setLocation(Location location) {
     this.location = location;
-    this.chunkX = location.getChunk().getX();
-    this.chunkZ = location.getChunk().getZ();
+    chunkKey = location.getChunk().getChunkKey();
   }
 
   public double getLeashRange() {
@@ -139,11 +136,7 @@ public class Spawner extends BukkitRunnable {
     return respawnTimes;
   }
 
-  public int getChunkX() {
-    return chunkX;
-  }
-
-  public int getChunkZ() {
-    return chunkZ;
+  public long getChunkKey() {
+    return chunkKey;
   }
 }

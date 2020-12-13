@@ -13,8 +13,11 @@ import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.events.AirJumpEvent;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -91,8 +94,12 @@ public class DoubleJumpListener implements Listener {
 
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL
         || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
-      plugin.getEnergyManager().changeEnergy(mob, -20);
+      StatUtil.changeEnergy(mob, -20);
     }
+
+    AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
+    Bukkit.getPluginManager().callEvent(airJumpEvent);
+
     event.getPlayer().setFallDistance(0);
 
     Vector velocity = event.getPlayer().getVelocity().clone();

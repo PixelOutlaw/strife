@@ -24,13 +24,14 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
 public class DamageManager {
 
-  private StrifePlugin plugin;
-  private Map<UUID, Double> handledDamages = new HashMap<>();
+  private final StrifePlugin plugin;
+  private final Map<UUID, Double> handledDamages = new HashMap<>();
 
   public DamageManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -45,7 +46,7 @@ public class DamageManager {
   }
 
   public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage) {
-    damage = Math.max(0.002f, plugin.getBarrierManager().damageBarrier(defender, damage));
+    damage = Math.max(0.002f, defender.damageBarrier(damage));
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {
       if (damage > defender.getEntity().getHealth()) {
@@ -74,8 +75,8 @@ public class DamageManager {
       return damage;
     }
     float maxAbsorb = damage * 0.2f;
-    float energy = plugin.getEnergyManager().getEnergy(defender);
-    plugin.getEnergyManager().changeEnergy(defender, -maxAbsorb);
+    float energy = defender.getEnergy();
+    StatUtil.changeEnergy(defender, -maxAbsorb);
     if (energy > maxAbsorb) {
       return damage - maxAbsorb;
     }

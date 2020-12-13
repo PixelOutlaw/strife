@@ -43,6 +43,7 @@ import me.glaremasters.guilds.Guilds;
 import me.glaremasters.guilds.api.GuildsAPI;
 import me.glaremasters.guilds.guild.Guild;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -230,8 +231,7 @@ public class DamageUtil {
 
     if (mods.isSneakAttack() && !SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
       rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
-      boolean finishingBlow = rawDamage > defender.getEntity().getHealth() +
-          plugin.getBarrierManager().getCurrentBarrier(defender);
+      boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
       float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
           attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
       plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
@@ -239,12 +239,9 @@ public class DamageUtil {
     }
 
     String damageString = String.valueOf((int) Math.ceil(rawDamage));
-    if (criticalHit && (standardDamage > 1 || attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS))) {
-      damageString = "&l" + damageString;
-    }
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, damageString);
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.BOLD + damageString);
     }
     if (mods.isShowPopoffs() && attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster(),
@@ -276,7 +273,7 @@ public class DamageUtil {
       plugin.getRageManager().changeRage(defender, defender.getStat(StrifeStat.RAGE_WHEN_HIT));
     }
     if (defender.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0.1) {
-      DamageUtil.restoreEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
+      StatUtil.changeEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
     }
 
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
@@ -311,14 +308,13 @@ public class DamageUtil {
     return sneakEvent.getSneakAttackDamage();
   }
 
-  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender,
-      DamageModifiers mods) {
+  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
     float attackPenalty = 1f;
     if (mods.isScaleChancesWithAttack()) {
       attackPenalty = mods.getAttackMultiplier();
     }
-    float critChance = StatUtil.getCriticalChance(attacker, attackPenalty,
-        mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f));
+    float critChance = StatUtil.getCriticalChance(attacker, attackPenalty, mods.getAbilityMods()
+        .getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f));
     boolean success = critChance >= rollDouble(hasLuck(attacker.getEntity()));
     if (success) {
       DamageUtil.callCritEvent(attacker, attacker);
@@ -383,13 +379,13 @@ public class DamageUtil {
       case CASTER_MAX_HEALTH:
         return amount * (float) caster.getEntity().getMaxHealth();
       case TARGET_CURRENT_BARRIER:
-        return amount * StatUtil.getBarrier(target);
+        return amount * target.getBarrier();
       case CASTER_CURRENT_BARRIER:
-        return amount * StatUtil.getBarrier(caster);
+        return amount * caster.getBarrier();
       case TARGET_MISSING_BARRIER:
-        return amount * (StatUtil.getMaximumBarrier(target) - StatUtil.getBarrier(target));
+        return amount * (StatUtil.getMaximumBarrier(target) - target.getBarrier());
       case CASTER_MISSING_BARRIER:
-        return amount * (StatUtil.getMaximumBarrier(caster) - StatUtil.getBarrier(caster));
+        return amount * (StatUtil.getMaximumBarrier(caster) - caster.getBarrier());
       case TARGET_MAX_BARRIER:
         return amount * StatUtil.getMaximumBarrier(target);
       case CASTER_MAX_BARRIER:
@@ -777,12 +773,12 @@ public class DamageUtil {
 
   public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier, float healMultiplier) {
     float energy = attacker.getStat(StrifeStat.ENERGY_ON_HIT) * attackMultiplier * healMultiplier;
-    restoreEnergy(attacker, energy);
+    StatUtil.changeEnergy(attacker, energy);
   }
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
       DamageModifiers mods, boolean bypassBarrier) {
-    if (StrifePlugin.getInstance().getBarrierManager().isBarrierUp(defender)) {
+    if (defender.getBarrier() > 0) {
       return false;
     }
     if (defender.getStat(StrifeStat.BLEED_RESIST) > 99) {
@@ -885,14 +881,6 @@ public class DamageUtil {
     }
     livingEntity.setHealth(Math.min(livingEntity.getHealth() + amount,
         livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
-  }
-
-  public static void restoreBarrier(StrifeMob strifeMob, float amount) {
-    StrifePlugin.getInstance().getBarrierManager().restoreBarrier(strifeMob, amount);
-  }
-
-  public static void restoreEnergy(StrifeMob strifeMob, float amount) {
-    StrifePlugin.getInstance().getEnergyManager().changeEnergy(strifeMob, amount);
   }
 
   public static AttackType getAttackType(EntityDamageByEntityEvent event) {

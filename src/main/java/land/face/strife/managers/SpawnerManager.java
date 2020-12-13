@@ -9,6 +9,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.util.SpecialStatusUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
@@ -17,13 +18,12 @@ import org.bukkit.util.Vector;
 
 public class SpawnerManager {
 
-  private StrifePlugin plugin;
-
-  private final Map<String, Spawner> spawnerMap;
+  private final StrifePlugin plugin;
+  private final Map<String, Spawner> spawnerMap = new HashMap<>();
+  private final Map<String, Long> chunkActiveStamp = new HashMap<>();
 
   public SpawnerManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    spawnerMap = new HashMap<>();
   }
 
   public Map<String, Spawner> getSpawnerMap() {
@@ -114,7 +114,7 @@ public class SpawnerManager {
       }
       Vector diff = location.toVector().subtract(p.getLocation().toVector());
       if (diff.lengthSquared() < 6400) {
-        p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.5F);
+        p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.8F);
         MessageUtils.sendMessage(p,
             "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!");
       }
@@ -127,7 +127,19 @@ public class SpawnerManager {
     }
   }
 
+  public void stampChunk(Chunk chunk) {
+    chunkActiveStamp.put(chunk.getWorld().getName() + chunk.getChunkKey(), System.currentTimeMillis() + 1200);
+  }
+
+  public void unstampChunk(Chunk chunk) {
+    chunkActiveStamp.remove(chunk.getWorld().getName() + chunk.getChunkKey());
+  }
+
   private boolean isChuckLoaded(Spawner spawner) {
-    return spawner.getLocation().getWorld().isChunkLoaded(spawner.getChunkX(), spawner.getChunkZ());
+    String chunkId = spawner.getLocation().getWorld().getName() + spawner.getChunkKey();
+    if (chunkActiveStamp.containsKey(chunkId)) {
+      return chunkActiveStamp.get(chunkId) < System.currentTimeMillis();
+    }
+    return false;
   }
 }

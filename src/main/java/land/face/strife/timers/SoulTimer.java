@@ -64,19 +64,32 @@ public class SoulTimer extends BukkitRunnable {
         return;
       }
     }
+
     Set<Player> oldViewers = new HashSet<>(viewers);
-    Set<Player> playerSet = new HashSet<>();
-    for (Entity e : location.getWorld()
-        .getNearbyEntities(location, 24, 24, 24, this::canSeeSouls)) {
-      playerSet.add((Player) e);
-      ((Player) e).spawnParticle(Particle.END_ROD, location, 6, 0.4, 0.4, 0.4, 0);
+    Set<Player> currentViewers = new HashSet<>();
+
+    for (Entity e : location.getWorld().getNearbyEntities(location, 24, 24, 24, this::canSeeSouls)) {
+      ((Player) e).spawnParticle(Particle.SOUL, location, 4, 0.3, 0.3, 0.3, 0);
+      ((Player) e).spawnParticle(Particle.END_ROD, location, 4, 0.6, 0.6, 0.6, 0);
+      currentViewers.add((Player) e);
     }
-    viewers.clear();
-    viewers.addAll(playerSet);
-    playerSet.removeAll(oldViewers);
-    for (Player player : playerSet) {
+
+    for (Player player : oldViewers) {
+      if (currentViewers.contains(player)) {
+        continue;
+      }
+      soulHead.getVisibilityManager().hideTo(player);
+    }
+
+    for (Player player : currentViewers) {
+      if (oldViewers.contains(player)) {
+        continue;
+      }
       soulHead.getVisibilityManager().showTo(player);
     }
+
+    viewers.clear();
+    viewers.addAll(currentViewers);
   }
 
   public UUID getOwner() {

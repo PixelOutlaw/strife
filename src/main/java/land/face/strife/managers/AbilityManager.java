@@ -30,6 +30,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.timers.SoulTimer;
@@ -114,8 +115,13 @@ public class AbilityManager {
     }
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
-        plugin.getEnergyManager().changeEnergy(caster, -ability.getCost());
+        caster.setEnergy(caster.getEnergy() - ability.getCost());
       }
+    }
+
+    if (ability.getAbilityIconData() != null) {
+      AbilityCastEvent abilityCastEvent = new AbilityCastEvent(caster, ability);
+      Bukkit.getPluginManager().callEvent(abilityCastEvent);
     }
 
     plugin.getEffectManager().processEffectList(caster, response, ability.getEffects());
@@ -278,7 +284,7 @@ public class AbilityManager {
       if (((Player) caster.getEntity()).getGameMode() == GameMode.CREATIVE) {
         return true;
       }
-      return plugin.getEnergyManager().getEnergy(caster) >= ability.getCost();
+      return caster.getEnergy() >= ability.getCost();
     }
     return true;
   }
@@ -507,16 +513,13 @@ public class AbilityManager {
   }
 
   private void doTargetNotFoundPrompt(StrifeMob caster, Ability ability) {
-    if (ability.isShowMessages()) {
-      return;
-    }
     LogUtil.printDebug("Failed. No target found for ability " + ability.getId());
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
     AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", NO_TARGET, 40, 11);
     ((Player) caster.getEntity())
-        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
+        .playSound(caster.getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
   }
 
   private void doRequirementNotMetPrompt(StrifeMob caster, Ability ability) {
@@ -535,8 +538,9 @@ public class AbilityManager {
       return;
     }
     AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", ON_COOLDOWN, 40, 11);
-    ((Player) caster.getEntity())
-        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
+    ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.6f);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> ((Player) caster.getEntity())
+        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.6f), 2L);
   }
 
   private void doNoEnergyPrompt(StrifeMob caster, Ability ability) {
@@ -545,11 +549,11 @@ public class AbilityManager {
       return;
     }
     String message = NO_ENERGY
-        .replace("{n1}", Integer.toString((int) Math.floor(plugin.getEnergyManager().getEnergy(caster))))
+        .replace("{n1}", Integer.toString((int) Math.floor(caster.getEnergy())))
         .replace("{n2}", Integer.toString((int) Math.ceil(ability.getCost())));
     AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status", message, 40, 11);
     ((Player) caster.getEntity())
-        .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.2f, 1.3f);
+        .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
   }
 
   public void loadAbility(String key, ConfigurationSection cs) {
@@ -583,7 +587,7 @@ public class AbilityManager {
 
     int cooldown = cs.getInt("cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
-    int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
+    int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 2);
     float range = (float) cs.getDouble("range", 0);
     float cost = (float) cs.getDouble("cost", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);

@@ -88,7 +88,6 @@ import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
 import land.face.strife.managers.AgilityManager;
 import land.face.strife.managers.AttackSpeedManager;
-import land.face.strife.managers.BarrierManager;
 import land.face.strife.managers.BleedManager;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.BoostManager;
@@ -101,7 +100,6 @@ import land.face.strife.managers.CorruptionManager;
 import land.face.strife.managers.CounterManager;
 import land.face.strife.managers.DamageManager;
 import land.face.strife.managers.EffectManager;
-import land.face.strife.managers.EnergyManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
 import land.face.strife.managers.IndicatorManager;
@@ -132,18 +130,15 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.AbilityTickTask;
-import land.face.strife.tasks.BarrierTask;
 import land.face.strife.tasks.BoostTickTask;
 import land.face.strife.tasks.BossBarsTask;
 import land.face.strife.tasks.CombatStatusTask;
 import land.face.strife.tasks.DamageOverTimeTask;
-import land.face.strife.tasks.EnergyRegenTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.ForceAttackSpeed;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.MinionDecayTask;
 import land.face.strife.tasks.ParticleTask;
-import land.face.strife.tasks.RegenTask;
 import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.SpawnerSpawnTask;
 import land.face.strife.tasks.StealthParticleTask;
@@ -155,8 +150,10 @@ import land.face.strife.util.LogUtil.LogLevel;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -193,7 +190,6 @@ public class StrifePlugin extends FacePlugin {
   private AttackSpeedManager attackSpeedManager;
   private BlockManager blockManager;
   private CounterManager counterManager;
-  private BarrierManager barrierManager;
   private BleedManager bleedManager;
   private CorruptionManager corruptionManager;
   private RageManager rageManager;
@@ -216,7 +212,6 @@ public class StrifePlugin extends FacePlugin {
   private MobModManager mobModManager;
   private BoostManager boostManager;
   private SoulManager soulManager;
-  private EnergyManager energyManager;
   private WSEManager wseManager;
   private AgilityManager agilityManager;
 
@@ -227,8 +222,6 @@ public class StrifePlugin extends FacePlugin {
   private final List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
   private DamageOverTimeTask damageOverTimeTask;
-  private EnergyRegenTask energyRegenTask;
-  private RegenTask regenTask;
 
   private LevelingRate levelingRate;
 
@@ -242,6 +235,11 @@ public class StrifePlugin extends FacePlugin {
   private int maxSkillLevel;
 
   public SnazzyPartiesHook snazzyPartiesHook;
+
+  public static float WALK_COST;
+  public static float WALK_COST_PERCENT;
+  public static float RUN_COST;
+  public static float RUN_COST_PERCENT;
 
   public static StrifePlugin getInstance() {
     return instance;
@@ -306,8 +304,6 @@ public class StrifePlugin extends FacePlugin {
     equipmentManager = new EntityEquipmentManager();
     boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
-    energyManager = new EnergyManager(this);
-    barrierManager = new BarrierManager();
     statUpdateManager = new StatUpdateManager(strifeMobManager);
     rageManager = new RageManager();
     monsterManager = new MonsterManager(championManager);
@@ -334,6 +330,11 @@ public class StrifePlugin extends FacePlugin {
       LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
     }
 
+    WALK_COST = (float) settings.getDouble("config.mechanics.energy.walk-cost-flat", 3) / 20;
+    WALK_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.walk-regen-percent", 0.75);
+    RUN_COST = (float) settings.getDouble("config.mechanics.energy.run-cost-flat", 10) / 20;
+    RUN_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.run-regen-percent", 0.25);
+
     buildBuffs();
     buildEquipment();
     buildLevelpointStats();
@@ -355,7 +356,6 @@ public class StrifePlugin extends FacePlugin {
     StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
     StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
-    BarrierTask barrierTask = new BarrierTask(this);
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     MinionDecayTask minionDecayTask = new MinionDecayTask(minionManager);
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
@@ -367,8 +367,7 @@ public class StrifePlugin extends FacePlugin {
     IndicatorTask indicatorTask = new IndicatorTask(this);
     damageOverTimeTask = new DamageOverTimeTask(this);
     particleTask = new ParticleTask();
-    energyRegenTask = new EnergyRegenTask(this);
-    regenTask = new RegenTask(this);
+    //regenTask = new RegenTask(this);
 
     commandManager.registerCommand(new InspectCommand(this));
     commandManager.registerCommand(new LevelUpCommand(this));
@@ -416,21 +415,9 @@ public class StrifePlugin extends FacePlugin {
         20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
         20L * 600 // Run every 10 minutes after that
     ));
-    taskList.add(energyRegenTask.runTaskTimer(this,
-        20L, // Start timer after 1s
-        1L
-    ));
-    taskList.add(regenTask.runTaskTimer(this,
-        20L * 9, // Start timer after 9s
-        RegenTask.REGEN_TICK_RATE
-    ));
     taskList.add(stealthParticleTask.runTaskTimer(this,
         20L * 3, // Start timer after 10s
         3L
-    ));
-    taskList.add(barrierTask.runTaskTimer(this,
-        11 * 20L, // Start timer after 11s
-        2L
     ));
     taskList.add(damageOverTimeTask.runTaskTimer(this,
         20L, // Start timer after 11s
@@ -560,6 +547,12 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.setAllAbilityIcons(player);
     }
     getChampionManager().updateAll();
+
+    for (World world : Bukkit.getWorlds()) {
+      for (Chunk chunk : world.getLoadedChunks()) {
+        spawnerManager.stampChunk(chunk);
+      }
+    }
 
     DamageUtil.refresh();
 
@@ -828,10 +821,6 @@ public class StrifePlugin extends FacePlugin {
     return counterManager;
   }
 
-  public BarrierManager getBarrierManager() {
-    return barrierManager;
-  }
-
   public BleedManager getBleedManager() {
     return bleedManager;
   }
@@ -894,10 +883,6 @@ public class StrifePlugin extends FacePlugin {
 
   public SoulManager getSoulManager() {
     return soulManager;
-  }
-
-  public EnergyManager getEnergyManager() {
-    return energyManager;
   }
 
   public SkillExperienceManager getSkillExperienceManager() {
@@ -988,16 +973,8 @@ public class StrifePlugin extends FacePlugin {
     return pathMenus.get(path);
   }
 
-  public EnergyRegenTask getEnergyRegenTask() {
-    return energyRegenTask;
-  }
-
   public DamageOverTimeTask getDamageOverTimeTask() {
     return damageOverTimeTask;
-  }
-
-  public RegenTask getRegenTask() {
-    return regenTask;
   }
 
   public LevelingRate getLevelingRate() {

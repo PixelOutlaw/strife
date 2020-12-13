@@ -59,20 +59,23 @@ public class PlayerDataUtil {
   }
 
   public static void restoreEnergy(LivingEntity le, float amount) {
-    if (le instanceof Player) {
-      StrifePlugin.getInstance().getEnergyManager().changeEnergy((Player) le, amount);
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+    if (mob != null) {
+      StatUtil.changeEnergy(mob, amount);
     }
   }
 
   public static void restoreHealthOverTime(LivingEntity le, float amount, int ticks) {
-    if (le instanceof Player) {
-      StrifePlugin.getInstance().getRegenTask().addHealing(le.getUniqueId(), amount, ticks);
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+    if (mob != null) {
+      mob.addHealingOverTime(amount, ticks);
     }
   }
 
   public static void restoreEnergyOverTime(LivingEntity le, float amount, int ticks) {
-    if (le instanceof Player) {
-      StrifePlugin.getInstance().getEnergyRegenTask().addEnergy(le.getUniqueId(), amount, ticks);
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+    if (mob != null) {
+      mob.addEnergyOverTime(amount, ticks);
     }
   }
 

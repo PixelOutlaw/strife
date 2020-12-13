@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -10,9 +11,8 @@ import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.timers.SoulTimer;
-import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.SoulUtil;
-import land.face.strife.util.TargetingUtil;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -24,6 +24,7 @@ public class SoulManager {
   private final Set<String> deathWorlds = new HashSet<>();
   private final String reviveMessage;
   private final String soulName;
+  private final ChatColor soulColor = ChatColor.of(new Color(72, 144, 198));
 
   public SoulManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -57,10 +58,10 @@ public class SoulManager {
     if (oldSoul != null) {
       removeSoul(oldSoul);
     }
-    Location location = TargetingUtil.getOriginLocation(player, OriginLocation.CENTER);
+    Location location = player.getLocation().clone().add(0, 1, 0);
 
-    String text = soulName.replace("{n}", player.getName());
-    Hologram soulHead = SoulUtil.createSoul(player, text, location);
+    String text = soulColor + "" + ChatColor.ITALIC + soulName.replace("{n}", player.getName());
+    Hologram soulHead = SoulUtil.createSoul(player, text, location.clone().add(0, 0.75, 0));
     souls.add(new SoulTimer(player.getUniqueId(), soulHead, location));
   }
 

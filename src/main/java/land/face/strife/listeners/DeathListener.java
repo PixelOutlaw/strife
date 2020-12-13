@@ -99,7 +99,6 @@ public class DeathListener implements Listener {
     if (event.getEntity().getKiller() != null) {
       plugin.getBossBarManager().doBarDeath(event.getEntity().getKiller());
     }
-    plugin.getBarrierManager().removeEntity(event.getEntity());
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     plugin.getSpawnerManager().addRespawnTime(event.getEntity());

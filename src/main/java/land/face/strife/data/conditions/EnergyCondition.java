@@ -1,6 +1,5 @@
 package land.face.strife.data.conditions;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -20,10 +19,10 @@ public class EnergyCondition extends Condition {
       return false;
     }
     if (percentage) {
-      float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(trueTarget) / StatUtil.getMaximumEnergy(trueTarget);
+      float energy = trueTarget.getEnergy() / StatUtil.getMaximumEnergy(trueTarget);
       return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
     } else {
-      float energy = StrifePlugin.getInstance().getEnergyManager().getEnergy(target);
+      float energy = target.getEnergy();
       return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
     }
   }

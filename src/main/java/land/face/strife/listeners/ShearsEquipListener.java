@@ -16,7 +16,8 @@ public class ShearsEquipListener implements Listener {
     if (e.isCancelled()) {
       return;
     }
-    if (Objects.requireNonNull(e.getPlayer().getInventory().getHelmet()).getType() != Material.AIR) {
+    if (!(e.getPlayer().getInventory().getHelmet() == null
+        || e.getPlayer().getInventory().getHelmet().getType() != Material.AIR)) {
       return;
     }
     if (e.useItemInHand().equals(Event.Result.DENY) || e.getAction() == Action.PHYSICAL

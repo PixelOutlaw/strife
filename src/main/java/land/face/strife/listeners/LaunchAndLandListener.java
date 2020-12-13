@@ -12,6 +12,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -49,9 +50,8 @@ public class LaunchAndLandListener implements Listener {
     if (mob.getChampion().getLifeSkillLevel(AGILITY) < 20) {
       return;
     }
-    if (event.getPlayer().getGameMode() == GameMode.SURVIVAL
-        || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
-      plugin.getEnergyManager().changeEnergy(mob, -12);
+    if (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
+      StatUtil.changeEnergy(mob, -12);
     }
     Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
     bonusVelocity.setY(Math.max(0.06, bonusVelocity.getY()));

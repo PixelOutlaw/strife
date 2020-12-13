@@ -74,7 +74,7 @@ public class AttackSpeedManager {
     }
 
     float energyCost = 0.35f * attackCost + 0.65f * attackMult * attackCost;
-    float energyMult = Math.min(1, plugin.getEnergyManager().getEnergy(attacker) / energyCost);
+    float energyMult = Math.min(1, attacker.getEnergy() / energyCost);
 
     if (resetTime && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < warnLevel) {
       TitleUtils.sendTitle((Player) attacker.getEntity(), "", ChatColor.RED + "Low Energy!", 10, 0, 8);
@@ -82,7 +82,7 @@ public class AttackSpeedManager {
           "&e[!] Your energy is low! Try &fattacking slower &eor &fdrinking an energy potion&e! Your energy is shown where your hunger bar normally would be!");
     }
 
-    plugin.getEnergyManager().changeEnergy((Player) attacker.getEntity(), -energyCost);
+    StatUtil.changeEnergy(attacker, -energyCost);
 
     return attackMult * energyMult;
   }

@@ -48,11 +48,15 @@ public class MinionManager {
         continue;
       }
       int ticks = minionDecayMap.get(le);
+      minionDecayMap.put(le, ticks - 1);
       if (ticks > 0) {
-        minionDecayMap.put(le, ticks - 1);
         continue;
       }
-      le.damage(le.getMaxHealth() / 10);
+      if (ticks <= -15) {
+        le.damage(le.getMaxHealth() * 10);
+      } else  {
+        le.damage(le.getMaxHealth() / 10);
+      }
     }
   }
 }

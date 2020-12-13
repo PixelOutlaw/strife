@@ -38,6 +38,7 @@ import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
@@ -271,8 +272,9 @@ public class CombatListener implements Listener {
       return;
     }
 
-    float eventDamage = Math.max(0.002f, plugin.getBarrierManager()
-        .damageBarrier(defender, (float) strifeDamageEvent.getFinalDamage()));
+    Bukkit.getLogger().info("e1: " + strifeDamageEvent.getFinalDamage());
+    float eventDamage = Math.max(0.002f, defender.damageBarrier((float) strifeDamageEvent.getFinalDamage()));
+    Bukkit.getLogger().info("e2: " + eventDamage);
     eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
@@ -302,7 +304,7 @@ public class CombatListener implements Listener {
           StrifeStat.HP_ON_KILL));
     }
     if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
-      DamageUtil.restoreEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
+      StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
       plugin.getRageManager().changeRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));

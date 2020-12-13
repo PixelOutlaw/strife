@@ -1,6 +1,10 @@
 package land.face.strife.listeners;
 
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_AIR_JUMP;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_BLOCK;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_CAST;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_COMBAT_END;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_COMBAT_START;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_CRIT;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_EVADE;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_FALL;
@@ -15,7 +19,11 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.effects.FiniteUsesEffect;
+import land.face.strife.events.AbilityCastEvent;
+import land.face.strife.events.AirJumpEvent;
 import land.face.strife.events.BlockEvent;
+import land.face.strife.events.CombatChangeEvent;
+import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
@@ -37,10 +45,37 @@ public class LoreAbilityListener implements Listener {
   private final StrifeMobManager strifeMobManager;
   private final LoreAbilityManager loreAbilityManager;
 
-  public LoreAbilityListener(StrifeMobManager strifeMobManager,
-      LoreAbilityManager loreAbilityManager) {
+  public LoreAbilityListener(StrifeMobManager strifeMobManager, LoreAbilityManager loreAbilityManager) {
     this.strifeMobManager = strifeMobManager;
     this.loreAbilityManager = loreAbilityManager;
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onAbilityCast(AbilityCastEvent event) {
+    Champion champion = event.getCaster().getChampion();
+    if (champion != null) {
+      executeBoundEffects(event.getCaster(), event.getCaster().getEntity(), champion.getLoreAbilities().get(ON_CAST));
+    }
+    executeFiniteEffects(event.getCaster(), event.getCaster(), ON_CAST);
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onAirJump(AirJumpEvent event) {
+    Champion champion = event.getJumper().getChampion();
+    if (champion != null) {
+      executeBoundEffects(event.getJumper(), event.getJumper().getEntity(), champion.getLoreAbilities().get(ON_AIR_JUMP));
+    }
+    executeFiniteEffects(event.getJumper(), event.getJumper(), ON_AIR_JUMP);
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onCombatChange(CombatChangeEvent event) {
+    Champion champion = event.getTarget().getChampion();
+    TriggerType type = event.getNewState() == NewCombatState.ENTER ? ON_COMBAT_START : ON_COMBAT_END;
+    if (champion != null) {
+      executeBoundEffects(event.getTarget(), event.getTarget().getEntity(), champion.getLoreAbilities().get(type));
+    }
+    executeFiniteEffects(event.getTarget(), event.getTarget(), type);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -62,8 +97,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     StrifeMob mob = getAttrEntity((Player) event.getEntity());
-    executeBoundEffects(mob, (LivingEntity) event.getEntity(),
-        mob.getChampion().getLoreAbilities().get(ON_FALL));
+    executeBoundEffects(mob, (LivingEntity) event.getEntity(), mob.getChampion().getLoreAbilities().get(ON_FALL));
     executeFiniteEffects(mob, mob, ON_FALL);
   }
 
@@ -123,13 +157,11 @@ public class LoreAbilityListener implements Listener {
     }
     StrifeMob defender = event.getDefender();
 
-    if (attacker.getEntity() instanceof Player &&
-        event.getDamageModifiers().getAttackMultiplier() > Math.random()) {
+    if (attacker.getEntity() instanceof Player && event.getDamageModifiers().getAttackMultiplier() > Math.random()) {
       if (attacker.isMasterOf(defender)) {
         return;
       }
-      executeBoundEffects(attacker, defender.getEntity(),
-          attacker.getChampion().getLoreAbilities().get(ON_HIT));
+      executeBoundEffects(attacker, defender.getEntity(), attacker.getChampion().getLoreAbilities().get(ON_HIT));
     }
     executeFiniteEffects(attacker, defender, ON_HIT);
 

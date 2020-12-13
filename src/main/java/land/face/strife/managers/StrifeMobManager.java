@@ -7,6 +7,7 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.util.SpecialStatusUtil;
+import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
@@ -37,11 +38,12 @@ public class StrifeMobManager {
         strifeMob = new StrifeMob(entity);
       }
       strifeMob.setStats(plugin.getMonsterManager().getBaseStats(entity));
+      strifeMob.restoreBarrier(200000);
+      strifeMob.setEnergy(entity instanceof Player ?
+          StatUtil.getMaximumEnergy(strifeMob) * ((Player) entity).getFoodLevel() / 20 : 200000);
       trackedEntities.put(entity, strifeMob);
     }
-    StrifeMob strifeMob = trackedEntities.get(entity);
-    plugin.getBarrierManager().createBarrierEntry(strifeMob);
-    return strifeMob;
+    return trackedEntities.get(entity);
   }
 
   public void addFiniteEffect(StrifeMob mob, LoreAbility loreAbility, int uses, int maxDuration) {

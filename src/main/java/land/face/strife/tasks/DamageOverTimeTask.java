@@ -132,7 +132,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
       damage *= 1 - StatUtil.getFireResist(mob, false) / 100;
-      damage = plugin.getBarrierManager().damageBarrier(plugin.getStrifeMobManager().getStatMob(le), damage);
+      damage = mob.damageBarrier(damage);
       if (damage < 0.05) {
         continue;
       }

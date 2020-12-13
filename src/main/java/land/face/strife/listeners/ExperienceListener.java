@@ -153,7 +153,7 @@ public class ExperienceListener implements Listener {
     plugin.getChampionManager().update(player);
 
     player.setHealth(player.getMaxHealth());
-    plugin.getEnergyManager().changeEnergy(player, Integer.MAX_VALUE);
+    StatUtil.changeEnergy(plugin.getStrifeMobManager().getStatMob(player), 200000);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
