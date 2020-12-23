@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
@@ -45,8 +46,10 @@ public class DamageManager {
     return handledDamages.getOrDefault(entity.getUniqueId(), 0D);
   }
 
-  public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage) {
-    damage = Math.max(0.002f, defender.damageBarrier(damage));
+  public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage, DamageModifiers modifiers) {
+    if (!modifiers.isBypassBarrier()) {
+      damage = Math.max(0.002f, defender.damageBarrier(damage));
+    }
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {
       if (damage > defender.getEntity().getHealth()) {

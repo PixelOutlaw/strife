@@ -10,8 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.events.PropertyUpdateEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -32,11 +34,17 @@ public class StatUtil {
   }
 
   public static float getHealth(StrifeMob ae) {
-    return ae.getStat(StrifeStat.HEALTH) * (1 + ae.getStat(StrifeStat.HEALTH_MULT) / 100);
+    float amount = ae.getStat(StrifeStat.HEALTH) * (1 + ae.getStat(StrifeStat.HEALTH_MULT) / 100);
+    PropertyUpdateEvent event = new PropertyUpdateEvent("life", amount);
+    Bukkit.getPluginManager().callEvent(event);
+    return event.getAppliedValue();
   }
 
   public static float getMaximumEnergy(StrifeMob ae) {
-    return ae.getStat(StrifeStat.ENERGY) * (1 + ae.getStat(StrifeStat.ENERGY_MULT) / 100);
+    float amount = ae.getStat(StrifeStat.ENERGY) * (1 + ae.getStat(StrifeStat.ENERGY_MULT) / 100);
+    PropertyUpdateEvent event = new PropertyUpdateEvent("energy", amount);
+    Bukkit.getPluginManager().callEvent(event);
+    return event.getAppliedValue();
   }
 
   public static void changeEnergy(StrifeMob mob, float amount) {

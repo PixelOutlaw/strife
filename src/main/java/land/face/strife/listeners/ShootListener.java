@@ -95,7 +95,6 @@ public class ShootListener implements Listener {
 
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
-    player.resetCooldown();
 
     if (attackMultiplier < 0.1) {
       event.setCancelled(true);

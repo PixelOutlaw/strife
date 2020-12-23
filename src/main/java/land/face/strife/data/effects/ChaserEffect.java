@@ -1,6 +1,5 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.DamageUtil.OriginLocation;
@@ -14,6 +13,7 @@ public class ChaserEffect extends Effect {
   private OriginLocation originLocation;
   private Location overrideLocation;
   private boolean canLocationOverride;
+  private boolean chaseCaster;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -25,13 +25,21 @@ public class ChaserEffect extends Effect {
     );
     Location location;
     if (overrideLocation == null) {
-      location = TargetingUtil.getOriginLocation(caster.getEntity(), originLocation);
+      if (canLocationOverride) {
+        location = TargetingUtil.getOriginLocation(target.getEntity(), originLocation);
+      } else {
+        location = TargetingUtil.getOriginLocation(caster.getEntity(), originLocation);
+      }
     } else {
       location = overrideLocation;
       overrideLocation = null;
     }
 
-    StrifePlugin.getInstance().getChaserManager().createChaser(caster, getId(), vector, location, target.getEntity());
+    if (chaseCaster) {
+      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, caster.getEntity());
+    } else {
+      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, target.getEntity());
+    }
   }
 
   public boolean isCanLocationOverride() {
@@ -42,6 +50,9 @@ public class ChaserEffect extends Effect {
     this.canLocationOverride = canLocationOverride;
   }
 
+  public void setChaseCaster(boolean chaseCaster) {
+    this.chaseCaster = chaseCaster;
+  }
 
   public void setOverrideLocation(Location location) {
     overrideLocation = location;

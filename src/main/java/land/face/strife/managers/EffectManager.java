@@ -285,6 +285,11 @@ public class EffectManager {
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
         ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.7));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
+        ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
+        List<String> hitEffects = cs.getStringList("hit-effects");
+        delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
+        List<String> killEffects = cs.getStringList("kill-effects");
+        delayedSetEffects(((Damage) effect).getKillEffects(), killEffects, key, false);
         ((Damage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
@@ -334,6 +339,7 @@ public class EffectManager {
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ChaserEffect) effect).setLoadedChaser(data);
         ((ChaserEffect) effect).setCanLocationOverride(cs.getBoolean("location-override", false));
+        ((ChaserEffect) effect).setChaseCaster(cs.getBoolean("chase-caster", false));
         break;
       case CONSOLE_COMMAND:
         effect = new ConsoleCommand();

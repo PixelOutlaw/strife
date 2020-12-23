@@ -31,6 +31,7 @@ public class DamageModifiers {
   private boolean consumeEarthRunes = false;
   private boolean scaleChancesWithAttack = false;
   private boolean showPopoffs = true;
+  private boolean bypassBarrier = false;
 
   public AttackType getAttackType() {
     return attackType;
@@ -134,6 +135,14 @@ public class DamageModifiers {
 
   public void setShowPopoffs(boolean showPopoffs) {
     this.showPopoffs = showPopoffs;
+  }
+
+  public boolean isBypassBarrier() {
+    return bypassBarrier;
+  }
+
+  public void setBypassBarrier(boolean bypassBarrier) {
+    this.bypassBarrier = bypassBarrier;
   }
 
   public boolean isConsumeEarthRunes() {

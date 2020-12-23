@@ -272,9 +272,7 @@ public class CombatListener implements Listener {
       return;
     }
 
-    Bukkit.getLogger().info("e1: " + strifeDamageEvent.getFinalDamage());
     float eventDamage = Math.max(0.002f, defender.damageBarrier((float) strifeDamageEvent.getFinalDamage()));
-    Bukkit.getLogger().info("e2: " + eventDamage);
     eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
@@ -285,7 +283,8 @@ public class CombatListener implements Listener {
         () -> DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
 
     if (attackEntity instanceof Bee) {
-      plugin.getDamageManager().dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage());
+      plugin.getDamageManager().dealDamage(attacker, defender,
+          (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
       event.setCancelled(true);
       return;
     }
