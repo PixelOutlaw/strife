@@ -283,7 +283,8 @@ public class CombatListener implements Listener {
         () -> DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
 
     if (attackEntity instanceof Bee) {
-      plugin.getDamageManager().dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage());
+      plugin.getDamageManager().dealDamage(attacker, defender,
+          (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
       event.setCancelled(true);
       return;
     }
