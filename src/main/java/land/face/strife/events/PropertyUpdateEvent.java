@@ -22,6 +22,7 @@
  */
 package land.face.strife.events;
 
+import land.face.strife.data.StrifeMob;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -33,18 +34,24 @@ public class PropertyUpdateEvent extends Event {
     return HANDLER_LIST;
   }
 
-  private final String id;
+  private final StrifeMob mob;
+  private final String propertyId;
   private final float baseValue;
   private float appliedValue;
 
-  public PropertyUpdateEvent(String id, float baseValue) {
-    this.id = id;
+  public PropertyUpdateEvent(StrifeMob mob, String propertyId, float baseValue) {
+    this.mob = mob;
+    this.propertyId = propertyId;
     this.baseValue = baseValue;
     appliedValue = baseValue;
   }
 
-  public String getId() {
-    return id;
+  public StrifeMob getMob() {
+    return mob;
+  }
+
+  public String getPropertyId() {
+    return propertyId;
   }
 
   public float getBaseValue() {
