@@ -2,12 +2,15 @@ package land.face.strife.data.effects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -15,6 +18,7 @@ import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
 
 public class Damage extends Effect {
 
@@ -31,6 +35,9 @@ public class Damage extends Effect {
   private boolean isBlocking;
   private boolean applyOnHitEffects;
   private boolean showPopoffs;
+  private boolean bypassBarrier;
+  private List<Effect> hitEffects = new ArrayList<>();
+  private List<Effect> killEffects = new ArrayList<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -44,6 +51,7 @@ public class Damage extends Effect {
     mods.setCanBeBlocked(canBeBlocked);
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
+    mods.setBypassBarrier(bypassBarrier);
     if (canSneakAttack && StrifePlugin.getInstance().getStealthManager().isStealthed(caster.getEntity())) {
       mods.setSneakAttack(true);
     }
@@ -78,7 +86,16 @@ public class Damage extends Effect {
     }
 
     StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
-        (float) strifeDamageEvent.getFinalDamage());
+        (float) strifeDamageEvent.getFinalDamage(), mods);
+
+    Set<LivingEntity> entities = new HashSet<>();
+    entities.add(target.getEntity());
+    TargetResponse response = new TargetResponse(entities);
+
+    getPlugin().getEffectManager().executeEffectList(caster, response, hitEffects);
+    if (target.getEntity().isDead()) {
+      getPlugin().getEffectManager().executeEffectList(caster, response, killEffects);
+    }
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
@@ -166,6 +183,22 @@ public class Damage extends Effect {
 
   public void setShowPopoffs(boolean showPopoffs) {
     this.showPopoffs = showPopoffs;
+  }
+
+  public boolean isBypassBarrier() {
+    return bypassBarrier;
+  }
+
+  public void setBypassBarrier(boolean bypassBarrier) {
+    this.bypassBarrier = bypassBarrier;
+  }
+
+  public List<Effect> getHitEffects() {
+    return hitEffects;
+  }
+
+  public List<Effect> getKillEffects() {
+    return killEffects;
   }
 
   public boolean isBlocking() {
