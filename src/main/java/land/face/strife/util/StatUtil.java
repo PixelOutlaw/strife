@@ -35,14 +35,14 @@ public class StatUtil {
 
   public static float getHealth(StrifeMob ae) {
     float amount = ae.getStat(StrifeStat.HEALTH) * (1 + ae.getStat(StrifeStat.HEALTH_MULT) / 100);
-    PropertyUpdateEvent event = new PropertyUpdateEvent("life", amount);
+    PropertyUpdateEvent event = new PropertyUpdateEvent(ae, "life", amount);
     Bukkit.getPluginManager().callEvent(event);
     return event.getAppliedValue();
   }
 
   public static float getMaximumEnergy(StrifeMob ae) {
     float amount = ae.getStat(StrifeStat.ENERGY) * (1 + ae.getStat(StrifeStat.ENERGY_MULT) / 100);
-    PropertyUpdateEvent event = new PropertyUpdateEvent("energy", amount);
+    PropertyUpdateEvent event = new PropertyUpdateEvent(ae, "energy", amount);
     Bukkit.getPluginManager().callEvent(event);
     return event.getAppliedValue();
   }
