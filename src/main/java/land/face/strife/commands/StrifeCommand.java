@@ -41,6 +41,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.EloUtil;
 import land.face.strife.util.TargetingUtil;
@@ -114,6 +115,12 @@ public class StrifeCommand extends BaseCommand {
   @CommandCompletion("@players")
   public void cooldownCommand(CommandSender sender, OnlinePlayer target) {
     target.getPlayer().resetCooldown();
+  }
+
+  @Subcommand("swing")
+  @CommandCompletion("@players")
+  public void swinfCommand(CommandSender sender, OnlinePlayer target) {
+    target.getPlayer().swingMainHand();
   }
 
   @Subcommand("reload")
@@ -270,6 +277,7 @@ public class StrifeCommand extends BaseCommand {
   @CommandCompletion("@players")
   @CommandPermission("strife.admin")
   public void menuAbilityCommand(CommandSender sender, OnlinePlayer target) {
+    ReturnButton.setBackButtonEnabled(target.getPlayer(), true);
     plugin.getAbilityPicker().open(target.getPlayer());
   }
 
@@ -277,6 +285,7 @@ public class StrifeCommand extends BaseCommand {
   @CommandCompletion("@players")
   @CommandPermission("strife.admin")
   public void submenuAbilityCommand(CommandSender sender, OnlinePlayer target, String menu) {
+    ReturnButton.setBackButtonEnabled(target.getPlayer(), false);
     plugin.getSubmenu(menu).open(target.getPlayer());
   }
 
@@ -359,7 +368,7 @@ public class StrifeCommand extends BaseCommand {
   }
 
   @Subcommand("addxp")
-  @CommandCompletion("@players @range:1-1000000")
+  @CommandCompletion("@players @range:1-10")
   @CommandPermission("strife.admin")
   public void addXpCommand(CommandSender sender, OnlinePlayer player, double amount) {
     plugin.getExperienceManager().addExperience(player.getPlayer(), amount, true);
