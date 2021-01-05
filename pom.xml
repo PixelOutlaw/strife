@@ -85,7 +85,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
-      <version>1.16.4.0</version>
+      <version>1.16.4.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
