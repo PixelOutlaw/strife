@@ -36,7 +36,6 @@ import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ItemUtil;
@@ -48,7 +47,6 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
@@ -200,46 +198,25 @@ public class ShootListener implements Listener {
   @EventHandler
   public void onDragonFireballHit(final EnderDragonFireballHitEvent event) {
     event.getAreaEffectCloud().remove();
+    event.setCancelled(true);
+
+    if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
+      return;
+    }
+
     List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
     if (hitEffects.isEmpty()) {
       return;
     }
-    if (event.getTargets() == null || event.getTargets().isEmpty()) {
-      return;
-    }
 
-    LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
-    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+    StrifeMob caster = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity().getShooter());
+    Location loc = event.getEntity().getLocation().clone()
+        .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
 
-    for (Entity e : event.getTargets()) {
-      if (!(e instanceof LivingEntity)) {
-        continue;
+    for (Effect effect : hitEffects) {
+      if (effect instanceof LocationEffect) {
+        ((LocationEffect) effect).applyAtLocation(caster, loc);
       }
-      LivingEntity defendEntity = (LivingEntity) e;
-      StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
-
-      double evasionMultiplier = StatUtil.getMinimumEvasionMult(StatUtil.getEvasion(defender),
-          StatUtil.getAccuracy(attacker));
-      evasionMultiplier = evasionMultiplier + (DamageUtil.rollDouble() * (1 - evasionMultiplier));
-
-      if (evasionMultiplier <= 0.5) {
-        DamageUtil.doEvasion(attacker, defender);
-        event.setCancelled(true);
-        return;
-      }
-
-      if (plugin.getBlockManager().rollBlock(defender, false)) {
-        plugin.getBlockManager().blockFatigue(defendEntity, 1.0, false);
-        plugin.getBlockManager().bumpRunes(defender);
-        DamageUtil.doBlock(attacker, defender);
-        event.setCancelled(true);
-        return;
-      }
-
-      Set<LivingEntity> targets = new HashSet<>();
-      TargetResponse response = new TargetResponse(targets);
-
-      plugin.getEffectManager().processEffectList(attacker, response, hitEffects);
     }
   }
 
@@ -281,10 +258,10 @@ public class ShootListener implements Listener {
       double randomMultishot = Math.pow(Math.random(), 1.5);
       int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
       flintlockHitscan.setMaxTargets(projectiles);
-      flintlockHitscan.setMaxConeRadius(0.35f * (projectiles - 1));
+      flintlockHitscan.setRadius(0.35f * (projectiles - 1));
     } else {
       flintlockHitscan.setMaxTargets(1);
-      flintlockHitscan.setMaxConeRadius(0f);
+      flintlockHitscan.setRadius(0f);
     }
     flintlockDamage.setAttackMultiplier(attackMultiplier);
     flintlockDamage.setApplyOnHitEffects(attackMultiplier > 0.5);

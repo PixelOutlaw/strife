@@ -18,7 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BarrierTask extends BukkitRunnable {
 
-  private static final long TICK_RATE = 2L;
+  private static final long TICK_RATE = 3L;
   private static final int DELAY_TICKS = (int) ((float) 120 / TICK_RATE);
   private static final BlockData BLOCK_DATA = Bukkit.getServer().createBlockData(Material.WHITE_STAINED_GLASS);
 

@@ -16,6 +16,7 @@ public enum LifeSkillType {
   AGILITY("Agility", "agility", ChatColor.DARK_AQUA),
   TRADING("Trading", "trading", ChatColor.DARK_GREEN),
   SWORDSMANSHIP("Swordsmanship", "sword", ChatColor.RED),
+  DAGGER_MASTERY("Dagger Mastery", "dagger", ChatColor.YELLOW),
   AXE_MASTERY("Axe Mastery", "axe", ChatColor.RED),
   BLUNT_WEAPONS("Blunt Weapons", "blunt", ChatColor.RED),
   DUAL_WIELDING("Dual Wielding", "dual", ChatColor.GREEN),

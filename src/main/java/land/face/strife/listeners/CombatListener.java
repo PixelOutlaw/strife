@@ -36,6 +36,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
+import land.face.strife.util.FangUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
@@ -43,6 +44,7 @@ import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Bee;
+import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -116,6 +118,10 @@ public class CombatListener implements Listener {
       return;
     }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
+      return;
+    }
+    if (event.getDamager() instanceof EvokerFangs && FangUtil.isNoDamageFang((EvokerFangs) event.getDamager())) {
+      event.setCancelled(true);
       return;
     }
 

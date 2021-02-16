@@ -9,6 +9,7 @@ public class TargetResponse {
 
   private final Set<LivingEntity> entities = new HashSet<>();
   private Location location = null;
+  private boolean cancelOnCasterDeath = false;
 
   public TargetResponse(Set<LivingEntity> entities, Location location) {
     this.entities.addAll(entities);
@@ -17,6 +18,19 @@ public class TargetResponse {
 
   public TargetResponse(Set<LivingEntity> entities) {
     this.entities.addAll(entities);
+  }
+
+  public TargetResponse(Set<LivingEntity> entities, boolean cancelOnCasterDeath) {
+    this.entities.addAll(entities);
+    this.cancelOnCasterDeath = cancelOnCasterDeath;
+  }
+
+  public boolean isCancelOnCasterDeath() {
+    return cancelOnCasterDeath;
+  }
+
+  public void setCancelOnCasterDeath(boolean cancelOnCasterDeath) {
+    this.cancelOnCasterDeath = cancelOnCasterDeath;
   }
 
   public TargetResponse(Location location) {

@@ -6,12 +6,14 @@ import com.comphenix.protocol.events.PacketContainer;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,6 +29,22 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
+
+  // This is for integrations with Loot. It assumes default
+  // settings for enchantments, and is kinda shitty
+  public static Map<StrifeStat, Float> getEnchantmentStats(Player player) {
+    Map<StrifeStat, Float> total = new HashMap<>();
+    return total;
+  }
+
+  private static Map<StrifeStat, Float> getStats(ItemStack stack) {
+    Map<StrifeStat, Float> total = new HashMap<>();
+    List<String> lore = ItemStackExtensionsKt.getLore(stack);
+    for (String s : lore) {
+
+    }
+    return null;
+  }
 
   public static ItemStack withBase64(ItemStack item, String base64) {
     UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());

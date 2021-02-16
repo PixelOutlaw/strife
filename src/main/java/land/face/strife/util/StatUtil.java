@@ -40,9 +40,17 @@ public class StatUtil {
     return event.getAppliedValue();
   }
 
-  public static float getMaximumEnergy(StrifeMob ae) {
+  public static float updateMaxEnergy(StrifeMob ae) {
     float amount = ae.getStat(StrifeStat.ENERGY) * (1 + ae.getStat(StrifeStat.ENERGY_MULT) / 100);
     PropertyUpdateEvent event = new PropertyUpdateEvent(ae, "energy", amount);
+    Bukkit.getPluginManager().callEvent(event);
+    ae.setMaxEnergy(event.getAppliedValue());
+    return event.getAppliedValue();
+  }
+
+  public static float getMaximumRage(StrifeMob ae) {
+    float amount = ae.getStat(StrifeStat.MAXIMUM_RAGE);
+    PropertyUpdateEvent event = new PropertyUpdateEvent(ae, "rage", amount);
     Bukkit.getPluginManager().callEvent(event);
     return event.getAppliedValue();
   }
@@ -59,7 +67,9 @@ public class StatUtil {
     if (ae.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
       return 0;
     }
-    return ae.getStat(StrifeStat.BARRIER) * (1 + ae.getStat(StrifeStat.BARRIER_MULT) / 100);
+    float amount = ae.getStat(StrifeStat.BARRIER) * (1 + ae.getStat(StrifeStat.BARRIER_MULT) / 100);
+    ae.setMaxBarrier(amount);
+    return amount;
   }
 
   public static float getBarrierPerSecond(StrifeMob ae) {

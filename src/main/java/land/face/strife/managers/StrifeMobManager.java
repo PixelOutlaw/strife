@@ -40,7 +40,7 @@ public class StrifeMobManager {
       strifeMob.setStats(plugin.getMonsterManager().getBaseStats(entity));
       strifeMob.restoreBarrier(200000);
       strifeMob.setEnergy(entity instanceof Player ?
-          StatUtil.getMaximumEnergy(strifeMob) * ((Player) entity).getFoodLevel() / 20 : 200000);
+          StatUtil.updateMaxEnergy(strifeMob) * ((Player) entity).getFoodLevel() / 20 : 200000);
       trackedEntities.put(entity, strifeMob);
     }
     return trackedEntities.get(entity);

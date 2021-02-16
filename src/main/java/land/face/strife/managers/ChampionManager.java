@@ -203,7 +203,7 @@ public class ChampionManager {
     PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
 
     Set<EquipmentSlot> updatedSlots = new HashSet<>();
-    for (EquipmentSlot slot : PlayerEquipmentCache.itemSlots) {
+    for (EquipmentSlot slot : PlayerEquipmentCache.ITEM_SLOTS) {
       ItemStack item = ItemUtil.getItem(equipment, slot);
       if (!ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
         updatedSlots.add(slot);

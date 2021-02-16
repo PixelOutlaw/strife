@@ -8,7 +8,6 @@ import land.face.strife.data.HoverData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -57,12 +56,10 @@ public class JumpUtil {
       HoverData data = new HoverData((int) player.getLocation().getX(), (int) player.getLocation().getZ(),
           checkerLocation.getY());
       HOVER_MAP.put(player, data);
-      Bukkit.getLogger().info("New hover entry created");
       return 20 - Math.min(distanceFromHoverGround(player, data), 20);
     }
     HoverData data = HOVER_MAP.get(player);
     if ((int) checkerLocation.getX() == data.getBlockX() && (int) checkerLocation.getZ() == data.getBlockZ()) {
-      Bukkit.getLogger().info("Using previous hover entry");
       return 20 - Math.min(distanceFromHoverGround(player, data), 20);
     }
     data.setBlockX(player.getLocation().getBlockX());
@@ -71,7 +68,6 @@ public class JumpUtil {
       checkerLocation.setY(checkerLocation.getY() - 0.5);
     }
     data.setGroundBlockY(checkerLocation.getY());
-    Bukkit.getLogger().info("Updated hover entry");
     return 20 - Math.min(distanceFromHoverGround(player, data), 20);
   }
 

@@ -46,7 +46,7 @@ public class SpawnListener implements Listener {
 
   private final ItemStack SKELETON_SWORD;
   private final ItemStack WITHER_SKELETON_SWORD;
-  private final ItemStack SKELETON_WAND;
+  public static ItemStack SKELETON_WAND;
   private final ItemStack WITCH_HAT;
 
   public SpawnListener(StrifePlugin plugin) {
@@ -85,7 +85,8 @@ public class SpawnListener implements Listener {
       return;
     }
     String world = event.getEntity().getLocation().getWorld().getName();
-    if (plugin.getConfig().get("config.leveled-monsters.enabled-worlds." + world) == null) {
+    if (plugin.getSettings().getStringList("config.leveled-monsters.enabled-worlds")
+        .contains(world)) {
       event.setCancelled(true);
     }
   }
@@ -93,7 +94,8 @@ public class SpawnListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
     if (event.isCancelled() || event.getEntity().hasMetadata("NPC") ||
-        event.getEntity().hasMetadata("pet") || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
+        event.getEntity().hasMetadata("pet")
+        || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
       return;
     }
     if (StringUtils.isNotBlank(SpecialStatusUtil.getUniqueId(event.getEntity()))) {

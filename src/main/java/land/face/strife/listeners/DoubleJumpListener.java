@@ -14,6 +14,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.AirJumpEvent;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -110,6 +111,7 @@ public class DoubleJumpListener implements Listener {
 
     double bonusY = Math.max(bonusVelocity.getY(), velocity.getY());
     bonusVelocity.setY(bonusY);
+    bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
 
     velocity.setY(0);
     event.getPlayer().setVelocity(velocity.add(bonusVelocity));

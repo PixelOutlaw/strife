@@ -98,7 +98,7 @@ public class UniqueEntityManager {
     }
   }
 
-  StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
+  public StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
       LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
@@ -117,6 +117,10 @@ public class UniqueEntityManager {
 
     LivingEntity le = (LivingEntity) entity;
     le.setRemoveWhenFarAway(true);
+
+    if (!uniqueEntity.isGravity()) {
+      le.setGravity(false);
+    }
 
     if (le instanceof Zombie) {
       ((Zombie) le).setBaby(uniqueEntity.isBaby());
@@ -255,8 +259,7 @@ public class UniqueEntityManager {
       StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
       if (mountMob != null) {
         mountMob.getEntity().addPassenger(mob.getEntity());
-        mob.addMinion(mountMob);
-        StrifePlugin.getInstance().getMinionManager().addMinion(mountMob.getEntity(), 10);
+        mob.addMinion(mountMob, 0);
       }
     }
 
@@ -329,6 +332,7 @@ public class UniqueEntityManager {
       uniqueEntity.setAngry(cs.getBoolean("angry", false));
       uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
       uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
+      uniqueEntity.setGravity(cs.getBoolean("gravity", true));
       if (uniqueEntity.getType() == EntityType.VILLAGER || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
         String prof = cs.getString("profession");
         if (prof != null) {

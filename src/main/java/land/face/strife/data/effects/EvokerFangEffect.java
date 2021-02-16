@@ -1,22 +1,21 @@
 package land.face.strife.data.effects;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.WeakHashMap;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.util.FangUtil;
 import org.bukkit.Location;
-import org.bukkit.entity.EvokerFangs;
 
 public class EvokerFangEffect extends LocationEffect {
 
   private int quantity;
   private float spread;
-  private String hitEffects;
+
+  private final List<Effect> hitEffects = new ArrayList<>();
 
   private static final int MAX_GROUND_CHECK = 9;
   private static final Random RANDOM = new Random();
-
-  public static final Map<EvokerFangs, String> FANG_EFFECT_MAP = new WeakHashMap<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -45,9 +44,7 @@ public class EvokerFangEffect extends LocationEffect {
       if (!groundFound) {
         continue;
       }
-      EvokerFangs fangs = fangLoc.getWorld().spawn(fangLoc, EvokerFangs.class);
-      fangs.setOwner(caster.getEntity());
-      FANG_EFFECT_MAP.put(fangs, hitEffects);
+      FangUtil.createFang(caster, fangLoc, hitEffects, getId());
     }
   }
 
@@ -59,7 +56,7 @@ public class EvokerFangEffect extends LocationEffect {
     this.spread = spread;
   }
 
-  public void setHitEffects(String hitEffects) {
-    this.hitEffects = hitEffects;
+  public List<Effect> getHitEffects() {
+    return hitEffects;
   }
 }

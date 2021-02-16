@@ -59,7 +59,7 @@ public class StatsMiscMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Maximum Energy: " + ChatColor.WHITE + INT_FORMAT
-        .format(StatUtil.getMaximumEnergy(pStats)));
+        .format(StatUtil.updateMaxEnergy(pStats)));
     if (!pStats.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
       lore.add(ChatColor.DARK_AQUA + "Energy Regeneration: " + ChatColor.WHITE + ONE_DECIMAL
           .format(pStats.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);

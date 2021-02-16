@@ -40,10 +40,11 @@ public class Charm extends Effect {
 
     ((Mob) target.getEntity()).setTarget(null);
 
-    caster.addMinion(target);
+    float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
+
+    caster.addMinion(target, (int) lifespan);
     target.getFactions().clear();
 
-    getPlugin().getMinionManager().addMinion(target.getEntity(), (int) ((lifespanSeconds * 20D) / 11D));
     getPlugin().getSpawnerManager().addRespawnTime(target.getEntity());
   }
 

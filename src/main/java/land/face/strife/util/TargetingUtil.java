@@ -5,8 +5,11 @@ import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -30,6 +33,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -171,7 +175,7 @@ public class TargetingUtil {
         .getNearbyEntities(origin, length, length, length);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
     Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange <= length + 0.01; incRange += 0.8) {
+    for (float incRange = 0; incRange < length; incRange += 0.6) {
       Location loc = origin.clone().add(direction.clone().multiply(incRange));
       for (Entity entity : targetList) {
         if (entityWithinRadius(entity, loc, maxConeRadius * (incRange / length))) {
@@ -182,16 +186,29 @@ public class TargetingUtil {
     return validTargets;
   }
 
-  public static Set<LivingEntity> getEntitiesInLine(Location location, float range) {
+  public static Set<LivingEntity> getEntitiesInLine(Location location, float range, float radius) {
     Collection<Entity> targetList = Objects.requireNonNull(location.getWorld())
         .getNearbyEntities(location, range, range, range);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
+
+    Map<BoundingBox, Entity> boundingBoxes = new HashMap<>();
+    for (Entity entity : targetList) {
+      boundingBoxes.put(entity.getBoundingBox().clone().expand(radius), entity);
+    }
+
+    float increment = radius * 1.9f;
+    Location checkLocation = location.clone();
+    Vector incrementVector = location.getDirection().clone().multiply(increment);
+
     Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange <= range + 0.01; incRange += 0.8) {
-      Location loc = location.clone().add(location.getDirection().multiply(incRange));
-      for (Entity entity : targetList) {
-        if (entityWithinRadius(entity, loc, 0.2f)) {
-          validTargets.add((LivingEntity) entity);
+    for (float incRange = 0; incRange <= range + 0.01; incRange += increment) {
+      checkLocation.add(incrementVector);
+      Iterator<BoundingBox> iterator = boundingBoxes.keySet().iterator();
+      while (iterator.hasNext()) {
+        BoundingBox box = iterator.next();
+        if (box.contains(checkLocation.toVector())) {
+          validTargets.add((LivingEntity) boundingBoxes.get(box));
+          iterator.remove();
         }
       }
     }
@@ -276,13 +293,8 @@ public class TargetingUtil {
   }
 
   private static boolean entityWithinRadius(Entity e, Location loc, float radius) {
-    Vector centerPoint = e.getLocation().toVector();
-    centerPoint.setY(centerPoint.getY() + e.getHeight() / 2);
-    double width = e.getWidth() * 0.55 + 0.2;
-    double height = e.getHeight() * 0.55 + 0.2;
-    return Math.abs(loc.getX() - centerPoint.getX()) < width + radius
-        && Math.abs(loc.getZ() - centerPoint.getZ()) < width + radius
-        && Math.abs(loc.getY() - centerPoint.getY()) < height + radius;
+    BoundingBox box = e.getBoundingBox().clone().expand(radius);
+    return box.contains(loc.toVector());
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range, boolean friendly) {

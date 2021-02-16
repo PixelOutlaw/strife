@@ -20,7 +20,6 @@ import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
 import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +55,6 @@ public class BossBarManager {
   private final int healthDuration;
   private final int skillDuration;
   private final Random random = new Random();
-
-  private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###,###");
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -101,7 +98,7 @@ public class BossBarManager {
     String name = lifeSkillType.getName();
     SkillBar bar = skillBars.get(player);
     int level = bar.getOwner().getSaveData().getSkillLevel(lifeSkillType);
-    String xp = INT_FORMAT.format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
+    String xp = StrifePlugin.INT_FORMAT.format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
     String barName = StringExtensionsKt
         .chatColorize("&f" + name + " Lv" + level + " &8- " + "&f(&a" + xp + "xp to " + (level + 1) + "&f)");
     bar.getSkillBar().setTitle(barName);
@@ -247,9 +244,9 @@ public class BossBarManager {
     }
     name += "   ";
     if (!barOwner.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && barOwner.getStat(StrifeStat.BARRIER) > 0) {
-      name = name + ChatColor.WHITE + INT_FORMAT.format(barOwner.getBarrier()) + "❤ ";
+      name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(barOwner.getBarrier()) + "❤ ";
     }
-    name = name + ChatColor.RED + INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";
+    name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";
     return name;
   }
 

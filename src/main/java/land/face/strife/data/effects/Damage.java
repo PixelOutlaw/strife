@@ -36,11 +36,15 @@ public class Damage extends Effect {
   private boolean applyOnHitEffects;
   private boolean showPopoffs;
   private boolean bypassBarrier;
-  private List<Effect> hitEffects = new ArrayList<>();
-  private List<Effect> killEffects = new ArrayList<>();
+  private final List<Effect> hitEffects = new ArrayList<>();
+  private final List<Effect> killEffects = new ArrayList<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+
+    if (!target.getEntity().isValid()) {
+      return;
+    }
 
     DamageModifiers mods = new DamageModifiers();
     mods.setAttackType(attackType);

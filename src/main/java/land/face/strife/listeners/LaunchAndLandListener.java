@@ -59,6 +59,7 @@ public class LaunchAndLandListener implements Listener {
     bonusVelocity.normalize().multiply(0.28);
     bonusVelocity.setX(bonusVelocity.getX() * moveMult);
     bonusVelocity.setZ(bonusVelocity.getZ() * moveMult);
+    bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
 
     Vector oldVelocity = event.getPlayer().getVelocity().clone()
         .setY(Math.max(0, event.getPlayer().getVelocity().getY()));

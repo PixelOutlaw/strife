@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 import land.face.SnazzyPartiesPlugin;
 import land.face.data.Party;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
@@ -18,8 +19,10 @@ import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.tasks.BarrierTask;
+import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.LifeTask;
+import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
@@ -37,7 +40,6 @@ public class StrifeMob {
 
   private final WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
-  private WeakReference<LivingEntity> master;
 
   private EntityAbilitySet abilitySet;
   private final Set<String> mods = new HashSet<>();
@@ -45,17 +47,23 @@ public class StrifeMob {
   private UUID alliedGuild;
   private final Set<FiniteUsesEffect> tempEffects = new HashSet<>();
   private boolean charmImmune = false;
-  private final Set<StrifeMob> minions = new HashSet<>();
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
 
   private float energy = 0;
+  private float maxEnergy = 0;
   private float barrier = 0;
+  private float maxBarrier = 0;
   private boolean shielded;
+
+  private CombatCountdownTask combatCountdownTask = null;
 
   private final BarrierTask barrierTask = new BarrierTask(this);
   private final LifeTask lifeTask = new LifeTask(this);
   private final EnergyTask energyTask = new EnergyTask(this);
+  private MinionTask minionTask = null;
+
+  private final Set<StrifeMob> minions = new HashSet<>();
 
   private long cacheStamp = 1L;
 
@@ -71,6 +79,14 @@ public class StrifeMob {
 
   public float getBarrier() {
     return barrier;
+  }
+
+  public float getMaxBarrier() {
+    return maxBarrier;
+  }
+
+  public void setMaxBarrier(float maxBarrier) {
+    this.maxBarrier = maxBarrier;
   }
 
   public void restoreBarrier(float amount) {
@@ -110,12 +126,19 @@ public class StrifeMob {
   }
 
   public void setEnergy(float energy) {
-    float maxEnergy =  StatUtil.getMaximumEnergy(this);
     this.energy = Math.min(Math.max(0, energy), maxEnergy);
     if (getEntity() instanceof Player) {
       Player player = (Player) getEntity();
       player.setFoodLevel((int) Math.min(20D, 20D * energy / maxEnergy));
     }
+  }
+
+  public float getMaxEnergy() {
+    return maxEnergy;
+  }
+
+  public void setMaxEnergy(float maxEnergy) {
+    this.maxEnergy = maxEnergy;
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -312,7 +335,7 @@ public class StrifeMob {
   }
 
   public boolean isMasterOf(StrifeMob strifeMob) {
-    return strifeMob.getMaster() == livingEntity;
+    return strifeMob.getMaster() == this;
   }
 
   public boolean isMasterOf(LivingEntity entity) {
@@ -331,26 +354,30 @@ public class StrifeMob {
     return Objects.requireNonNull(champion.get()).hasTrait(trait);
   }
 
+  public void removeMinion(StrifeMob minion) {
+    minions.remove(minion);
+  }
+
   public Set<StrifeMob> getMinions() {
     minions.removeIf(minion -> minion == null || minion.getEntity() == null || !minion.getEntity().isValid());
     return new HashSet<>(minions);
   }
 
-  public void addMinion(StrifeMob strifeMob) {
-    minions.add(strifeMob);
-    strifeMob.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
-    strifeMob.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
-    strifeMob.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
-    SpecialStatusUtil.setDespawnOnUnload(strifeMob.getEntity());
-    strifeMob.setMaster(livingEntity.get());
+  public void addMinion(StrifeMob minion, int lifespan) {
+    minions.add(minion);
+    minion.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
+    minion.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
+    minion.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
+    SpecialStatusUtil.setDespawnOnUnload(minion.getEntity());
+    minion.setMaster(this, lifespan);
   }
 
-  public LivingEntity getMaster() {
-    return master == null ? null : master.get();
+  public StrifeMob getMaster() {
+    return minionTask == null ? null : minionTask.getMaster();
   }
 
-  public void setMaster(LivingEntity master) {
-    this.master = new WeakReference<>(master);
+  public void setMaster(StrifeMob master, int lifespan) {
+    minionTask = new MinionTask(this, master, lifespan);
   }
 
   public void addHealingOverTime(float amount, int ticks) {
@@ -371,6 +398,26 @@ public class StrifeMob {
 
   public void setCharmImmune(boolean charmImmune) {
     this.charmImmune = charmImmune;
+  }
+
+  public void bumpCombat() {
+    if (isInCombat()) {
+      combatCountdownTask.bump();
+      return;
+    }
+    combatCountdownTask = new CombatCountdownTask(this);
+    combatCountdownTask.runTaskTimer(StrifePlugin.getInstance(), 0L, 10L);
+  }
+
+  public void endCombat() {
+    if (!combatCountdownTask.isCancelled()) {
+      combatCountdownTask.cancel();
+    }
+    combatCountdownTask = null;
+  }
+
+  public boolean isInCombat() {
+    return combatCountdownTask != null;
   }
 
   public Map<StrifeStat, Float> getBuffStats() {

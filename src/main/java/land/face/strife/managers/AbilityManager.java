@@ -454,7 +454,7 @@ public class AbilityManager {
       case SELF:
       case TOGGLE:
         targets.add(caster.getEntity());
-        return new TargetResponse(targets);
+        return new TargetResponse(targets, true);
       case PARTY:
         if (caster.getEntity() instanceof Player) {
           targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers((Player) caster.getEntity(),
@@ -462,17 +462,17 @@ public class AbilityManager {
         } else {
           targets.add(caster.getEntity());
         }
-        return new TargetResponse(targets);
+        return new TargetResponse(targets, true);
       case MASTER:
         if (caster.getMaster() != null) {
-          targets.add(caster.getMaster());
+          targets.add(caster.getMaster().getEntity());
         }
-        return new TargetResponse(targets);
+        return new TargetResponse(targets, true);
       case MINIONS:
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
         }
-        return new TargetResponse(targets);
+        return new TargetResponse(targets, true);
       case SINGLE_OTHER:
         if (target != null) {
           targets.add(target);
@@ -483,7 +483,7 @@ public class AbilityManager {
         if (newTarget != null) {
           targets.add(newTarget);
         }
-        return new TargetResponse(targets);
+        return new TargetResponse(targets, true);
       case TARGET_AREA:
         Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), target,
             ability.getRange(), ability.isRaycastsTargetEntities());
@@ -502,7 +502,7 @@ public class AbilityManager {
             targets.add(Bukkit.getPlayer(soul.getOwner()));
           }
         }
-        return new TargetResponse(targets);
+        return new TargetResponse(targets, true);
     }
     return new TargetResponse(new HashSet<>());
   }

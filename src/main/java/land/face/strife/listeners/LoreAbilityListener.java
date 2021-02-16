@@ -15,6 +15,7 @@ import static land.face.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
 
 import java.util.Iterator;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -175,23 +176,23 @@ public class LoreAbilityListener implements Listener {
     executeFiniteEffects(defender, attacker, WHEN_HIT);
   }
 
-  private void executeBoundEffects(StrifeMob caster, LivingEntity target, Set<LoreAbility> effects) {
+  public static void executeBoundEffects(StrifeMob caster, LivingEntity target, Set<LoreAbility> effects) {
     if (effects == null || effects.isEmpty()) {
       return;
     }
     for (LoreAbility la : effects) {
-      loreAbilityManager.applyLoreAbility(la, caster, target);
+      StrifePlugin.getInstance().getLoreAbilityManager().applyLoreAbility(la, caster, target);
     }
   }
 
-  private void executeFiniteEffects(StrifeMob caster, StrifeMob target, TriggerType type) {
+  public static void executeFiniteEffects(StrifeMob caster, StrifeMob target, TriggerType type) {
     Iterator<FiniteUsesEffect> it = caster.getTempEffects().iterator();
     while (it.hasNext()) {
       FiniteUsesEffect tempEffect = it.next();
       if (tempEffect.getLoreAbility().getTriggerType() != type) {
         continue;
       }
-      loreAbilityManager.applyLoreAbility(tempEffect.getLoreAbility(), caster, target.getEntity());
+      StrifePlugin.getInstance().getLoreAbilityManager().applyLoreAbility(tempEffect.getLoreAbility(), caster, target.getEntity());
       if (tempEffect.getUses() > 1) {
         tempEffect.setUses(tempEffect.getUses() - 1);
       } else {
