@@ -127,6 +127,11 @@ public class DamageUtil {
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
     }
 
+    if (attacker != defender){
+      attacker.bumpCombat();
+      defender.bumpCombat();
+    }
+
     if (plugin.getCounterManager().executeCounters(attacker.getEntity(), defender.getEntity())) {
       return false;
     }
@@ -136,9 +141,6 @@ public class DamageUtil {
     if (mods.isCanBeEvaded()) {
       float evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, mods.getAbilityMods());
       if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        if (defender.getEntity() instanceof Player) {
-          plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
-        }
         DamageUtil.doEvasion(attacker, defender);
         TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
         return false;
@@ -149,9 +151,6 @@ public class DamageUtil {
     if (mods.isCanBeBlocked()) {
       if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
           mods.getAttackType(), mods.isBlocking())) {
-        if (defender.getEntity() instanceof Player) {
-          plugin.getCombatStatusManager().addPlayer((Player) defender.getEntity());
-        }
         TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
         DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
         return false;
@@ -244,7 +243,7 @@ public class DamageUtil {
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.BOLD + damageString);
     }
     if (mods.isShowPopoffs() && attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
-      plugin.getIndicatorManager().addIndicator(attacker.getMaster(),
+      plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
     }
 
@@ -395,17 +394,21 @@ public class DamageUtil {
       case CASTER_CURRENT_ENERGY:
         return amount * StatUtil.getEnergy(caster);
       case TARGET_MISSING_ENERGY:
-        return amount * (StatUtil.getMaximumEnergy(target) - StatUtil.getEnergy(target));
+        return amount * (StatUtil.updateMaxEnergy(target) - StatUtil.getEnergy(target));
       case CASTER_MISSING_ENERGY:
-        return amount * (StatUtil.getMaximumEnergy(caster) - StatUtil.getEnergy(caster));
+        return amount * (StatUtil.updateMaxEnergy(caster) - StatUtil.getEnergy(caster));
       case TARGET_MAX_ENERGY:
-        return amount * StatUtil.getMaximumEnergy(target);
+        return amount * StatUtil.updateMaxEnergy(target);
       case CASTER_MAX_ENERGY:
-        return amount * StatUtil.getMaximumEnergy(caster);
+        return amount * StatUtil.updateMaxEnergy(caster);
       case TARGET_CURRENT_RAGE:
         return amount * StrifePlugin.getInstance().getRageManager().getRage(target.getEntity());
       case CASTER_CURRENT_RAGE:
         return amount * StrifePlugin.getInstance().getRageManager().getRage(caster.getEntity());
+      case TARGET_MAX_RAGE:
+        return amount * StatUtil.getMaximumRage(target);
+      case CASTER_MAX_RAGE:
+        return amount * StatUtil.getMaximumRage(caster);
     }
     return amount;
   }
@@ -884,7 +887,7 @@ public class DamageUtil {
   }
 
   public static AttackType getAttackType(EntityDamageByEntityEvent event) {
-    if (event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+    if (event.getCause() == DamageCause.ENTITY_EXPLOSION || event.getDamager() instanceof EvokerFangs) {
       return AttackType.AREA;
     } else if (event.getDamager() instanceof Projectile) {
       return AttackType.PROJECTILE;
@@ -950,6 +953,8 @@ public class DamageUtil {
     CASTER_MAX_ENERGY,
     TARGET_CURRENT_RAGE,
     CASTER_CURRENT_RAGE,
+    TARGET_MAX_RAGE,
+    CASTER_MAX_RAGE
   }
 
   public enum OriginLocation {

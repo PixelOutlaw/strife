@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -7,6 +8,7 @@ import java.util.WeakHashMap;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
@@ -14,8 +16,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
-import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Trident;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class ProjectileUtil {
@@ -26,6 +29,8 @@ public class ProjectileUtil {
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
+
+  private static final ItemStack wandProjectile = buildWandProjectile();
 
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
@@ -148,9 +153,11 @@ public class ProjectileUtil {
   public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,
       double spread, double vertBonus, boolean gravity) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
-    ShulkerBullet bullet = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
-            ShulkerBullet.class, e -> e.setVelocity(velocity));
+    Snowball bullet = shooter.getWorld()
+        .spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
+          e.setVelocity(velocity);
+          e.setItem(wandProjectile);
+        });
     bullet.setShooter(shooter);
     bullet.setGravity(gravity);
 
@@ -218,5 +225,11 @@ public class ProjectileUtil {
 
   private static double randomWandOffset(double magnitude) {
     return 0.12 + magnitude * 0.005;
+  }
+
+  private static ItemStack buildWandProjectile() {
+    ItemStack stack = new ItemStack(Material.NETHER_STAR);
+    ItemStackExtensionsKt.setCustomModelData(stack, 100);
+    return stack;
   }
 }

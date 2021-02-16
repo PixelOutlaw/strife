@@ -7,6 +7,7 @@ import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,28 +155,33 @@ public class EffectManager {
   }
 
   public void processEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
-    List<Effect> taskEffects = new ArrayList<>();
-    int waitTicks = 0;
-    for (Effect effect : effectList) {
+    if (!caster.getEntity().isValid() && response.isCancelOnCasterDeath()) {
+      return;
+    }
+    List<Effect> taskEffects = new ArrayList<>(effectList);
+    List<Effect> taskChunk = new ArrayList<>();
+    Iterator<Effect> runEffects = taskEffects.listIterator();
+    while (runEffects.hasNext()) {
+      Effect effect = runEffects.next();
       if (effect == null) {
         LogUtil.printWarning("Effect is null! Skipping...");
         continue;
       }
       if (effect instanceof Wait) {
-        LogUtil.printDebug("Effects in this chunk: " + taskEffects.toString());
-        List<Effect> finalTaskEffects1 = taskEffects;
+        LogUtil.printDebug("Effects in this chunk: " + taskChunk.toString());
+        executeEffectList(caster, response, taskChunk);
+        runEffects.remove();
+        List<Effect> newEffectList = new ArrayList<>();
+        runEffects.forEachRemaining(newEffectList::add);
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-            executeEffectList(caster, response, finalTaskEffects1), waitTicks);
-        waitTicks += ((Wait) effect).getTickDelay();
-        taskEffects = new ArrayList<>();
-        continue;
+            processEffectList(caster, response, newEffectList), ((Wait) effect).getTickDelay());
+        return;
       }
-      taskEffects.add(effect);
+      taskChunk.add(effect);
+      runEffects.remove();
       LogUtil.printDebug("Added effect " + effect.getId() + " to task list");
     }
-    List<Effect> finalTaskEffects = taskEffects;
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        executeEffectList(caster, response, finalTaskEffects), waitTicks);
+    executeEffectList(caster, response, taskChunk);
   }
 
   public void executeEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
@@ -192,29 +198,35 @@ public class EffectManager {
   }
 
   public void execute(Effect effect, StrifeMob caster, TargetResponse response) {
-    Set<LivingEntity> targets = new HashSet<>(response.getEntities());
-    if (!targets.isEmpty()) {
-      for (LivingEntity le : targets) {
-        StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
-        if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-          continue;
-        }
-        if (effect instanceof LocationEffect) {
-          effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
-          continue;
-        }
-        if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
-          continue;
-        }
-        applyEffectIfConditionsMet(effect, caster, effect.isForceTargetCaster() ? caster : targetMob);
+    if (response.getLocation() != null) {
+      if (!(effect instanceof LocationEffect) && !effect.isForceTargetCaster()) {
+        return;
       }
+      if (!PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
+        return;
+      }
+      if (effect.isForceTargetCaster()) {
+        effect.apply(caster, caster);
+        return;
+      }
+      assert effect instanceof LocationEffect;
+      LocationEffect locEffect = (LocationEffect) effect;
+      locEffect.applyAtLocation(caster, response.getLocation());
       return;
     }
-    if (effect instanceof LocationEffect && response.getLocation() != null) {
-      if (PlayerDataUtil.areConditionsMet(caster, null, effect.getConditions())) {
-        LocationEffect locEffect = (LocationEffect) effect;
-        locEffect.applyAtLocation(caster, response.getLocation());
+    for (LivingEntity le : response.getEntities()) {
+      StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
+      if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+        continue;
       }
+      if (effect instanceof LocationEffect) {
+        effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
+        continue;
+      }
+      if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+        continue;
+      }
+      applyEffectIfConditionsMet(effect, caster, effect.isForceTargetCaster() ? caster : targetMob);
     }
   }
 
@@ -273,6 +285,7 @@ public class EffectManager {
       case INCREASE_RAGE:
         effect = new ChangeRage();
         ((ChangeRage) effect).setAmount((float) cs.getDouble("amount", 1));
+        ((ChangeRage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         break;
       case DAMAGE:
         effect = new Damage();
@@ -386,9 +399,7 @@ public class EffectManager {
         ((AreaEffect) effect).setCanBeCountered(cs.getBoolean("can-be-countered", canBeBlocked));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
-        if (((AreaEffect) effect).getAreaType() == AreaType.CONE) {
-          ((AreaEffect) effect).setMaxConeRadius((float) cs.getDouble("max-cone-radius", 3));
-        }
+        ((AreaEffect) effect).setRadius((float) cs.getDouble("radius", 0.4));
         if (((AreaEffect) effect).getMaxTargets() != -1) {
           ((AreaEffect) effect).setPriority(
               TargetingPriority.valueOf(cs.getString("priority", "RANDOM")));
@@ -459,6 +470,7 @@ public class EffectManager {
         ((ShootProjectile) effect).setSilent(cs.getBoolean("silent", false));
         ((ShootProjectile) effect).setGravity(cs.getBoolean("gravity", true));
         ((ShootProjectile) effect).setThrowItem(cs.getBoolean("thrown-item", false));
+        ((ShootProjectile) effect).setThrowSpin(cs.getBoolean("throw-spin", true));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setDisguise(PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
@@ -502,7 +514,7 @@ public class EffectManager {
         effect = new EvokerFangEffect();
         ((EvokerFangEffect) effect).setQuantity(cs.getInt("quantity", 1));
         ((EvokerFangEffect) effect).setSpread((float) cs.getDouble("spread", 0));
-        ((EvokerFangEffect) effect).setHitEffects(String.join("~", cs.getStringList("hit-effects")));
+        delayedSetEffects(((EvokerFangEffect) effect).getHitEffects(), cs.getStringList("hit-effects"), key, false);
         break;
       case FALLING_BLOCK:
         effect = new ShootBlock();
@@ -625,8 +637,10 @@ public class EffectManager {
         ((Summon) effect).setAmount(cs.getInt("amount", 1));
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
         ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
+        ((Summon) effect).setLifeMult((float) cs.getDouble("life-multiplier", 1.0));
         ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
         ((Summon) effect).setMount(cs.getBoolean("mount", false));
+        ((Summon) effect).setClone(cs.getBoolean("clone", false));
         break;
       case CHARM:
         effect = new Charm();

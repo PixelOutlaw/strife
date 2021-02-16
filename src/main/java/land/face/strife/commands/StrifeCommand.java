@@ -165,13 +165,13 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("mobinfo|info")
   @CommandPermission("strife.info")
   public void infoCommand(Player sender) {
-    List<LivingEntity> targets = new ArrayList<>(TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30));
+    List<LivingEntity> targets = new ArrayList<>(TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
     targets.remove(sender);
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
       return;
     }
-    TargetingUtil.DISTANCE_COMPARATOR.setLoc(((Player) sender).getLocation());
+    TargetingUtil.DISTANCE_COMPARATOR.setLoc((sender).getLocation());
     targets.sort(TargetingUtil.DISTANCE_COMPARATOR);
     StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.get(0));
     sendMessage(sender, "&aUniqueID: " + targetMob.getUniqueEntityId());
@@ -287,6 +287,13 @@ public class StrifeCommand extends BaseCommand {
   public void submenuAbilityCommand(CommandSender sender, OnlinePlayer target, String menu) {
     ReturnButton.setBackButtonEnabled(target.getPlayer(), false);
     plugin.getSubmenu(menu).open(target.getPlayer());
+  }
+
+  @Subcommand("ability refresh")
+  @CommandCompletion("@players")
+  @CommandPermission("strife.admin")
+  public void submenuAbilityCommand(CommandSender sender, OnlinePlayer target) {
+    plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
   @Subcommand("bind")

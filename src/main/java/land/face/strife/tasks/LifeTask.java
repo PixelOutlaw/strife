@@ -18,7 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class LifeTask extends BukkitRunnable {
 
-  private static final long REGEN_TICK_RATE = 4L;
+  private static final long REGEN_TICK_RATE = 3L;
   private static final float REGEN_PERCENT_PER_SECOND = 0.1F;
   private static final float POTION_REGEN_FLAT_PER_LEVEL = 2f;
   private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
@@ -39,23 +39,26 @@ public class LifeTask extends BukkitRunnable {
       return;
     }
     if (!mob.getEntity().isValid() || mob.getEntity().getHealth() <= 0) {
+      lifeRestore.clear();
       return;
     }
-    double playerMaxHealth = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+    double maxLife = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+
+    if (mob.getEntity().getHealth() >= maxLife) {
+      getBonusHealth();
+      return;
+    }
+
     float tickMultiplier = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
 
     PlayerDataUtil.restoreHealth(mob.getEntity(), getBonusHealth());
-
-    if (mob.getEntity().getHealth() >= playerMaxHealth) {
-      return;
-    }
 
     float lifeAmount = StatUtil.getRegen(mob);
 
     if (mob.getEntity().hasPotionEffect(REGENERATION)) {
       int potionIntensity = mob.getEntity().getPotionEffect(REGENERATION).getAmplifier() + 1;
       lifeAmount += potionIntensity * POTION_REGEN_FLAT_PER_LEVEL;
-      lifeAmount += potionIntensity * playerMaxHealth * POTION_REGEN_PERCENT_PER_LEVEL;
+      lifeAmount += potionIntensity * maxLife * POTION_REGEN_PERCENT_PER_LEVEL;
     }
     if (mob.getEntity().hasPotionEffect(WITHER)) {
       lifeAmount *= 0.33f;
@@ -68,7 +71,7 @@ public class LifeTask extends BukkitRunnable {
     }
     lifeAmount *= tickMultiplier;
 
-    mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, playerMaxHealth));
+    mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));
   }
 
   public void addHealingOverTime(float amount, int ticks) {

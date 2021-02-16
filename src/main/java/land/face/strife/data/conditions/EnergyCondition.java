@@ -19,7 +19,7 @@ public class EnergyCondition extends Condition {
       return false;
     }
     if (percentage) {
-      float energy = trueTarget.getEnergy() / StatUtil.getMaximumEnergy(trueTarget);
+      float energy = trueTarget.getEnergy() / StatUtil.updateMaxEnergy(trueTarget);
       return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
     } else {
       float energy = target.getEnergy();

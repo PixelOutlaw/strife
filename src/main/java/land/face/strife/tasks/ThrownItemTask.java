@@ -14,12 +14,15 @@ public class ThrownItemTask extends BukkitRunnable {
 
   private final Projectile projectile;
   private final ArmorStand stand;
-  private static final EulerAngle startAngle = new EulerAngle(0, 0, 0);
+  private final boolean spin;
+  private static final EulerAngle spin_angle = new EulerAngle(0, 0, 0);
+  private static final EulerAngle point_angle = new EulerAngle(0, 5, 272);
 
-  public ThrownItemTask(Projectile projectile, ItemStack stack, Location location) {
+  public ThrownItemTask(Projectile projectile, ItemStack stack, Location location, boolean spin) {
     this.projectile = projectile;
+    this.spin = spin;
     stand = location.getWorld().spawn(location, ArmorStand.class);
-    stand.setRightArmPose(startAngle);
+    stand.setRightArmPose(spin ? spin_angle : point_angle);
     stand.setVisible(false);
     stand.setGravity(false);
     stand.setMarker(true);
@@ -43,9 +46,11 @@ public class ThrownItemTask extends BukkitRunnable {
     Location loc = projectile.getLocation().clone();
     loc.add(0, -0.9, 0);
     loc.setDirection(projectile.getVelocity());
+    if (spin) {
+      stand.setRightArmPose(stand.getRightArmPose().add(0.82, 0.0, 0.0));
+    }
     loc.add(projectile.getVelocity());
     stand.teleport(loc);
-    stand.setRightArmPose(stand.getRightArmPose().add(0.82, 0.0, 0.0));
   }
 }
 

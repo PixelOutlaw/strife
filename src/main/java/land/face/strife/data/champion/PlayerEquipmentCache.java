@@ -26,10 +26,10 @@ public class PlayerEquipmentCache {
   private final Map<StrifeStat, Float> combinedStats = new HashMap<>();
   private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
-  public final static EquipmentSlot[] itemSlots = EquipmentSlot.values();
+  public final static EquipmentSlot[] ITEM_SLOTS = EquipmentSlot.values();
 
   PlayerEquipmentCache() {
-    for (EquipmentSlot slot : itemSlots) {
+    for (EquipmentSlot slot : ITEM_SLOTS) {
       slotHashCodeMap.put(slot, -1);
       slotStatMap.put(slot, new HashMap<>());
       slotAbilityMap.put(slot, new ArrayList<>());
@@ -110,7 +110,7 @@ public class PlayerEquipmentCache {
       loreAbilities.get(triggerType).clear();
     }
     Set<LoreAbility> newAbilities = new HashSet<>(champion.getSaveData().getBoundAbilities());
-    for (EquipmentSlot slot : itemSlots) {
+    for (EquipmentSlot slot : ITEM_SLOTS) {
       newAbilities.addAll(slotAbilityMap.get(slot));
     }
     for (LoreAbility la : newAbilities) {

@@ -28,6 +28,7 @@ public class UniqueEntity {
   private boolean angry;
   private boolean zombificationImmune;
   private boolean armsRaised;
+  private boolean gravity;
   private Profession profession;
   private int size;
   private int followRange = -1;
@@ -151,6 +152,14 @@ public class UniqueEntity {
 
   public void setArmsRaised(boolean armsRaised) {
     this.armsRaised = armsRaised;
+  }
+
+  public boolean isGravity() {
+    return gravity;
+  }
+
+  public void setGravity(boolean gravity) {
+    this.gravity = gravity;
   }
 
   public Profession getProfession() {

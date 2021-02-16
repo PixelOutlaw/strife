@@ -55,6 +55,7 @@ public class ShootProjectile extends Effect {
   private ItemStack thrownStack = null;
   private List<Effect> hitEffects = new ArrayList<>();
   private boolean throwItem;
+  private boolean throwSpin;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -156,7 +157,7 @@ public class ShootProjectile extends Effect {
             stack = new ItemStack(Material.IRON_SWORD);
           }
         }
-        new ThrownItemTask(projectile, stack, originLocation).runTaskTimer(getPlugin(), 0L, 1L);
+        new ThrownItemTask(projectile, stack, originLocation, throwSpin).runTaskTimer(getPlugin(), 0L, 1L);
       }
     }
     ProjectileUtil.bumpShotId();
@@ -244,6 +245,10 @@ public class ShootProjectile extends Effect {
 
   public void setAttackMultiplier(double attackMultiplier) {
     this.attackMultiplier = attackMultiplier;
+  }
+
+  public void setThrowSpin(boolean throwSpin) {
+    this.throwSpin = throwSpin;
   }
 
   private Vector getCastDirection(LivingEntity caster, LivingEntity target) {

@@ -21,12 +21,14 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.util.ChunkUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
@@ -114,13 +116,7 @@ public class DataListener implements Listener {
     }
     LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
     if (attacker instanceof Player) {
-      plugin.getCombatStatusManager().addPlayer((Player) attacker);
-      plugin.getBossBarManager().pushBar((Player) attacker,
-          plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()));
-      return;
-    }
-    if (event.getEntity() instanceof Player) {
-      plugin.getCombatStatusManager().addPlayer((Player) event.getEntity());
+      plugin.getBossBarManager().pushBar((Player) attacker, plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()));
     }
   }
 
@@ -129,8 +125,8 @@ public class DataListener implements Listener {
     event.getPlayer().setHealthScaled(false);
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
-    plugin.getChampionManager().verifyStatValues(champion);
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
+    plugin.getChampionManager().verifyStatValues(champion);
 
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
@@ -144,8 +140,10 @@ public class DataListener implements Listener {
 
     plugin.getChampionManager().update(event.getPlayer());
 
-    Bukkit.getScheduler().runTaskLater(plugin,
-        () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 2L);
+    if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 2L);
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -201,12 +199,12 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void chunkLoadMonitor(ChunkLoadEvent e) {
-    plugin.getSpawnerManager().stampChunk(e.getChunk());
+    ChunkUtil.stampChunk(e.getChunk());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void chunkUnloadMonitor(ChunkUnloadEvent e) {
-    plugin.getSpawnerManager().unstampChunk(e.getChunk());
+    ChunkUtil.unstampChunk(e.getChunk());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -217,7 +215,7 @@ public class DataListener implements Listener {
       }
       plugin.getStrifeMobManager().doChunkDespawn(ent);
     }
-    plugin.getSpawnerManager().unstampChunk(e.getChunk());
+    ChunkUtil.unstampChunk(e.getChunk());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

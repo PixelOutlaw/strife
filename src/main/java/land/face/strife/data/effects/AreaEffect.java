@@ -36,7 +36,7 @@ public class AreaEffect extends LocationEffect {
   private TargetingPriority priority;
   private LineOfSight lineOfSight;
   private float range;
-  private float maxConeRadius;
+  private float radius;
   private int maxTargets;
   private boolean scaleTargetsWithMultishot;
   private boolean canBeEvaded;
@@ -93,10 +93,11 @@ public class AreaEffect extends LocationEffect {
         areaTargets.addAll(TargetingUtil.getEntitiesInArea(location, range));
         break;
       case LINE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, range));
+        areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, range, radius));
         break;
       case CONE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInCone(location, location.getDirection(), range, maxConeRadius));
+        areaTargets.addAll(TargetingUtil.getEntitiesInCone(location, location.getDirection(), range,
+            radius));
         break;
       case PARTY:
         if (caster.getEntity() instanceof Player) {
@@ -218,15 +219,8 @@ public class AreaEffect extends LocationEffect {
     this.range = (float) range;
   }
 
-  public float getMaxConeRadius() {
-    if (areaType != AreaType.CONE) {
-      throw new IllegalStateException("You cannot get cone radius on non-cone aoes dingus");
-    }
-    return maxConeRadius;
-  }
-
-  public void setMaxConeRadius(float maxConeRadius) {
-    this.maxConeRadius = maxConeRadius;
+  public void setRadius(float radius) {
+    this.radius = radius;
   }
 
   public int getMaxTargets() {

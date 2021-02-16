@@ -133,7 +133,7 @@ public class ExperienceListener implements Listener {
     } else {
       double xpToLevel = plugin.getLevelingRate().get(p.getLevel());
       lostXP = Math.min(xpToLevel * 0.025, p.getExp() * xpToLevel);
-      sendMessage(p, "&cAlas! You lost &f" + (int) lostXP + " XP &cfrom dying!");
+      sendMessage(p, "&cAlas! You lost &f" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP &cfrom dying!");
       p.setExp(Math.max(p.getExp() - 0.025f, 0.00001f));
     }
     plugin.getSoulManager().setLostExp(p, lostXP);

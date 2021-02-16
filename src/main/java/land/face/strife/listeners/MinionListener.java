@@ -19,7 +19,6 @@
 package land.face.strife.listeners;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.MinionManager;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
@@ -38,11 +37,9 @@ import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 public class MinionListener implements Listener {
 
   private final StrifeMobManager entityManager;
-  private final MinionManager minionManager;
 
-  public MinionListener(StrifeMobManager entityManager, MinionManager minionManager) {
+  public MinionListener(StrifeMobManager entityManager) {
     this.entityManager = entityManager;
-    this.minionManager = minionManager;
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -51,7 +48,7 @@ public class MinionListener implements Listener {
       return;
     }
     if (event.getEntity() instanceof LivingEntity) {
-      if (minionManager.isMinion((LivingEntity) event.getEntity())) {
+      if (entityManager.getStatMob((LivingEntity) event.getEntity()).getMaster() != null) {
         event.setCancelled(true);
       }
     }

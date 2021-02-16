@@ -11,7 +11,7 @@ import org.bukkit.inventory.EquipmentSlot;
 
 public class EquipmentSwap extends Effect {
 
-  private Map<EquipmentSlot, String> itemMap = new HashMap<>();
+  private final Map<EquipmentSlot, String> itemMap = new HashMap<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {

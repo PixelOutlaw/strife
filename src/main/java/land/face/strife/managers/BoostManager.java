@@ -91,24 +91,28 @@ public class BoostManager {
     if (player.hasPermission("has.donated")) {
       contributors.add(player.getUniqueId());
     }
-    String id = DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(player.getUniqueId());
-    if (StringUtils.isBlank(id)) {
-      Bukkit.getLogger().info("No discord linked id found for user - no boost bonus");
-      return;
-    }
-    Member member = DiscordUtil.getMemberById(id);
-    if (member == null) {
-      Bukkit.getLogger().info("No discord member found for id - no boost bonus");
-      return;
-    }
-    for (Role role : member.getRoles()) {
-      Bukkit.getLogger().info(role.getName());
-      if (role.getName().equals("Boosty Bois")) {
-        discordBoosters.add(player.getUniqueId());
+    try {
+      String id = DiscordSRV.getPlugin().getAccountLinkManager().getDiscordId(player.getUniqueId());
+      if (StringUtils.isBlank(id)) {
+        Bukkit.getLogger().info("No discord linked id found for user - no boost bonus");
         return;
       }
+      Member member = DiscordUtil.getMemberById(id);
+      if (member == null) {
+        Bukkit.getLogger().info("No discord member found for id - no boost bonus");
+        return;
+      }
+      for (Role role : member.getRoles()) {
+        Bukkit.getLogger().info(role.getName());
+        if (role.getName().equals("Boosty Bois")) {
+          discordBoosters.add(player.getUniqueId());
+          return;
+        }
+      }
+      Bukkit.getLogger().info("member not a booster - no boost bonus");
+    } catch (Exception e) {
+      Bukkit.getLogger().warning("Error setting up boost data! " + e.getMessage());
     }
-    Bukkit.getLogger().info("member not a booster - no boost bonus");
   }
 
   public Map<StrifeStat, Float> getStats() {
