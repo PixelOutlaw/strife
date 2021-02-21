@@ -81,6 +81,7 @@ public class Summon extends LocationEffect {
           }
         }
       }, 2L);
+      summonedEntity.setStats(caster.getBaseStats());
     }
 
     if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
