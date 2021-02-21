@@ -120,9 +120,8 @@ public class StatsOffenseMenuItem extends MenuItem {
       } else {
         critDamage = total - trueDmg;
       }
-      criticalMult =
-          (1 + (Math.min(mob.getStat(StrifeStat.CRITICAL_RATE), 100) / 100)) * StatUtil.getCriticalMultiplier(mob);
-      total += critDamage * criticalMult;
+      float critChance = Math.max(mob.getStat(StrifeStat.CRITICAL_RATE), 0) / 100;
+      total += critChance * critDamage * StatUtil.getCriticalMultiplier(mob);
     }
     if (mob.getStat(StrifeStat.BLEED_CHANCE) > 0) {
       float bleedBonus = 0.5f * (1 + mob.getStat(StrifeStat.BLEED_DAMAGE) / 100);
