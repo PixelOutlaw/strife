@@ -242,7 +242,8 @@ public class DamageUtil {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.BOLD + damageString);
     }
-    if (mods.isShowPopoffs() && attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
+    if (mods.isShowPopoffs() && attacker.getMaster() != null &&
+        attacker.getMaster().getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
     }
