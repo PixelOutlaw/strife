@@ -13,6 +13,7 @@ import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_KILL;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK_ATTACK;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -46,7 +47,8 @@ public class LoreAbilityListener implements Listener {
   private final StrifeMobManager strifeMobManager;
   private final LoreAbilityManager loreAbilityManager;
 
-  public LoreAbilityListener(StrifeMobManager strifeMobManager, LoreAbilityManager loreAbilityManager) {
+  public LoreAbilityListener(StrifeMobManager strifeMobManager,
+      LoreAbilityManager loreAbilityManager) {
     this.strifeMobManager = strifeMobManager;
     this.loreAbilityManager = loreAbilityManager;
   }
@@ -55,7 +57,8 @@ public class LoreAbilityListener implements Listener {
   public void onAbilityCast(AbilityCastEvent event) {
     Champion champion = event.getCaster().getChampion();
     if (champion != null) {
-      executeBoundEffects(event.getCaster(), event.getCaster().getEntity(), champion.getLoreAbilities().get(ON_CAST));
+      executeBoundEffects(event.getCaster(), event.getCaster().getEntity(),
+          champion.getLoreAbilities().get(ON_CAST));
     }
     executeFiniteEffects(event.getCaster(), event.getCaster(), ON_CAST);
   }
@@ -64,7 +67,8 @@ public class LoreAbilityListener implements Listener {
   public void onAirJump(AirJumpEvent event) {
     Champion champion = event.getJumper().getChampion();
     if (champion != null) {
-      executeBoundEffects(event.getJumper(), event.getJumper().getEntity(), champion.getLoreAbilities().get(ON_AIR_JUMP));
+      executeBoundEffects(event.getJumper(), event.getJumper().getEntity(),
+          champion.getLoreAbilities().get(ON_AIR_JUMP));
     }
     executeFiniteEffects(event.getJumper(), event.getJumper(), ON_AIR_JUMP);
   }
@@ -72,9 +76,11 @@ public class LoreAbilityListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onCombatChange(CombatChangeEvent event) {
     Champion champion = event.getTarget().getChampion();
-    TriggerType type = event.getNewState() == NewCombatState.ENTER ? ON_COMBAT_START : ON_COMBAT_END;
+    TriggerType type =
+        event.getNewState() == NewCombatState.ENTER ? ON_COMBAT_START : ON_COMBAT_END;
     if (champion != null) {
-      executeBoundEffects(event.getTarget(), event.getTarget().getEntity(), champion.getLoreAbilities().get(type));
+      executeBoundEffects(event.getTarget(), event.getTarget().getEntity(),
+          champion.getLoreAbilities().get(type));
     }
     executeFiniteEffects(event.getTarget(), event.getTarget(), type);
   }
@@ -98,7 +104,8 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     StrifeMob mob = getAttrEntity((Player) event.getEntity());
-    executeBoundEffects(mob, (LivingEntity) event.getEntity(), mob.getChampion().getLoreAbilities().get(ON_FALL));
+    executeBoundEffects(mob, (LivingEntity) event.getEntity(),
+        mob.getChampion().getLoreAbilities().get(ON_FALL));
     executeFiniteEffects(mob, mob, ON_FALL);
   }
 
@@ -143,7 +150,8 @@ public class LoreAbilityListener implements Listener {
       }
     }
     StrifeMob killerMob = strifeMobManager.getStatMob(killer);
-    executeBoundEffects(killerMob, event.getEntity(), killerMob.getChampion().getLoreAbilities().get(ON_KILL));
+    executeBoundEffects(killerMob, event.getEntity(),
+        killerMob.getChampion().getLoreAbilities().get(ON_KILL));
     executeFiniteEffects(killerMob, victim, ON_KILL);
   }
 
@@ -158,29 +166,35 @@ public class LoreAbilityListener implements Listener {
     }
     StrifeMob defender = event.getDefender();
 
-    if (attacker.getEntity() instanceof Player && event.getDamageModifiers().getAttackMultiplier() > Math.random()) {
-      if (attacker.isMasterOf(defender)) {
-        return;
+    if (attacker.isMasterOf(defender)) {
+      return;
+    }
+
+    if (attacker.getEntity() instanceof Player) {
+      boolean trigger = event.getDamageModifiers().isApplyOnHitEffects() || (Math.random() < Math
+          .max(event.getDamageModifiers().getAttackMultiplier(),
+              event.getDamageModifiers().getDamageReductionRatio()));
+      if (trigger) {
+        HashSet<LoreAbility> abilitySet = new HashSet<>(
+            attacker.getChampion().getLoreAbilities().get(ON_HIT));
+        executeBoundEffects(attacker, defender.getEntity(), abilitySet);
       }
-      executeBoundEffects(attacker, defender.getEntity(), attacker.getChampion().getLoreAbilities().get(ON_HIT));
     }
     executeFiniteEffects(attacker, defender, ON_HIT);
 
     if (defender.getEntity() instanceof Player) {
-      if (attacker.isMasterOf(defender)) {
-        return;
-      }
       executeBoundEffects(defender, attacker.getEntity(),
           event.getDefender().getChampion().getLoreAbilities().get(WHEN_HIT));
     }
     executeFiniteEffects(defender, attacker, WHEN_HIT);
   }
 
-  public static void executeBoundEffects(StrifeMob caster, LivingEntity target, Set<LoreAbility> effects) {
-    if (effects == null || effects.isEmpty()) {
+  public static void executeBoundEffects(StrifeMob caster, LivingEntity target,
+      Set<LoreAbility> loreAbilities) {
+    if (loreAbilities == null || loreAbilities.isEmpty()) {
       return;
     }
-    for (LoreAbility la : effects) {
+    for (LoreAbility la : loreAbilities) {
       StrifePlugin.getInstance().getLoreAbilityManager().applyLoreAbility(la, caster, target);
     }
   }
@@ -192,7 +206,8 @@ public class LoreAbilityListener implements Listener {
       if (tempEffect.getLoreAbility().getTriggerType() != type) {
         continue;
       }
-      StrifePlugin.getInstance().getLoreAbilityManager().applyLoreAbility(tempEffect.getLoreAbility(), caster, target.getEntity());
+      StrifePlugin.getInstance().getLoreAbilityManager()
+          .applyLoreAbility(tempEffect.getLoreAbility(), caster, target.getEntity());
       if (tempEffect.getUses() > 1) {
         tempEffect.setUses(tempEffect.getUses() - 1);
       } else {

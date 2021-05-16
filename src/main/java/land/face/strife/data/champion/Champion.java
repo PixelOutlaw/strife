@@ -223,4 +223,8 @@ public class Champion {
   public boolean hasTrait (StrifeTrait trait) {
     return equipmentCache.getCombinedTraits().contains(trait) || pathTraits.contains(trait);
   }
+
+  public int getUnchosenPaths() {
+    return getHighestReachedLevel() / 10 - saveData.getPathMap().size();
+  }
 }

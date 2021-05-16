@@ -1,24 +1,26 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.LifeSkillType;
@@ -36,26 +38,28 @@ import org.bukkit.entity.Player;
 public class StealthManager {
 
   private final StrifePlugin plugin;
-  private final Set<UUID> stealthedPlayers = new HashSet<>();
+  private final Map<UUID, Long> stealthedPlayers = new HashMap<>();
 
-  private float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
+  private final int DISABLE_MS = StrifePlugin.getInstance().getSettings()
+      .getInt("config.mechanics.sneak.disable-duration");
+  private final float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.base-sneak-exp");
-  private float SNEAK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
+  private final float SNEAK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.sneak-exp-per-level");
-  private float BASE_SNEAK_ATTACK_EXP = (float) StrifePlugin.getInstance().getSettings()
+  private final float BASE_SNEAK_ATTACK_EXP = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.base-sneak-attack-exp");
-  private float SNEAK_ATTACK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
+  private final float SNEAK_ATTACK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.sneak-attack-exp-per-level");
-  private float BASE_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
+  private final float BASE_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.base-particles", 2);
-  private float MOVEMENT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
+  private final float MOVEMENT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.movement-particle-penalty", 2);
-  private float SPRINT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
+  private final float SPRINT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.mechanics.sneak.sprint-particle-penalty", 2);
-  private float MAX_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
+  private final float MAX_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
       .getInt("config.mechanics.sneak.max-stealth-particles", 2);
-  private float SNEAK_SKILL_PARTICLE_REDUCTION = (float) StrifePlugin.getInstance().getSettings()
-      .getInt("config.mechanics.sneak.stealth-levels-per-removed-particle", 25);
+  private final float SNEAK_SKILL_PARTICLE_REDUCTION = (float) StrifePlugin.getInstance()
+      .getSettings().getInt("config.mechanics.sneak.stealth-levels-per-removed-particle", 25);
 
   public StealthManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -91,36 +95,36 @@ public class StealthManager {
     return gainedXp * levelPenaltyMult;
   }
 
-  public boolean isStealthed(LivingEntity livingEntity) {
-    if (!(livingEntity instanceof Player)) {
-      return false;
-    }
-    return isStealthed((Player) livingEntity);
+  public boolean isStealthed(Player player) {
+    return stealthedPlayers.containsKey(player.getUniqueId());
   }
 
-  public boolean isStealthed(Player player) {
-    return stealthedPlayers.contains(player.getUniqueId());
+  public boolean canSneakAttack(Player player) {
+    return stealthedPlayers.containsKey(player.getUniqueId())
+        && stealthedPlayers.get(player.getUniqueId()) < System.currentTimeMillis();
   }
 
   public void stealthPlayer(Player player) {
     for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
       if (e instanceof Player && plugin.getBossBarManager().getBarTarget((Player) e) == player) {
         plugin.getBossBarManager().disableBars((Player) e);
-        plugin.getIndicatorManager().addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
+        plugin.getIndicatorManager()
+            .addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
       } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
-        plugin.getIndicatorManager().addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
+        plugin.getIndicatorManager()
+            .addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
       }
     }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
-    stealthedPlayers.add(player.getUniqueId());
+    stealthedPlayers.put(player.getUniqueId(), System.currentTimeMillis() + DISABLE_MS);
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.hidePlayer(plugin, player);
     }
   }
 
   public void unstealthPlayer(Player player) {
-    if (!stealthedPlayers.contains(player.getUniqueId())) {
+    if (!stealthedPlayers.containsKey(player.getUniqueId())) {
       return;
     }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
@@ -134,7 +138,8 @@ public class StealthManager {
     if (!isStealthed(player)) {
       return;
     }
-    player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation(), 60, 12, 12, 12, 0);
+    player.spawnParticle(Particle.ASH, player.getEyeLocation(), 60, 12, 12, 12, 0);
+    player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation(), 40, 7, 7, 7, 0);
     double particles = Math.random() * BASE_STEALTH_PARTICLES;
     if (MoveUtil.hasMoved(player)) {
       if (!player.isSneaking()) {

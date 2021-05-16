@@ -214,4 +214,30 @@ public class SpawnerCommand extends BaseCommand {
     sendMessage(sender, "&aUpdated respawn time range of &f" + spawnerName + " &ato &f" + seconds);
   }
 
+  @Subcommand("update startTime")
+  @CommandCompletion("@spawners @range:1-200")
+  @CommandPermission("strife.spawners")
+  public void updateStartTime(String spawnerName, int time) {
+    Player sender = getCurrentCommandIssuer().getIssuer();
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setStartTime(time);
+    sendMessage(sender, "&aUpdated start time of &f" + spawnerName + " &ato &f" + time);
+  }
+
+  @Subcommand("update endTime")
+  @CommandCompletion("@spawners @range:1-200")
+  @CommandPermission("strife.spawners")
+  public void updateEndTime(String spawnerName, int time) {
+    Player sender = getCurrentCommandIssuer().getIssuer();
+    if (!plugin.getSpawnerManager().getSpawnerMap().containsKey(spawnerName)) {
+      sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
+      return;
+    }
+    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setEndTime(time);
+    sendMessage(sender, "&aUpdated end time of &f" + spawnerName + " &ato &f" + time);
+  }
+
 }

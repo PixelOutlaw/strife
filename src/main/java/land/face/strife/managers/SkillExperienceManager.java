@@ -43,7 +43,7 @@ public class SkillExperienceManager {
   private final String XP_MSG;
   private final int MAX_SKILL_LEVEL;
 
-  private Map<LifeSkillType, LevelingRate> levelingRates = new HashMap<>();
+  private final Map<LifeSkillType, LevelingRate> levelingRates = new HashMap<>();
 
   public SkillExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -115,17 +115,7 @@ public class SkillExperienceManager {
       combatRate.put(i, i, (int) Math.round(expression.setVariable("LEVEL", i).evaluate()));
     }
     for (LifeSkillType type : LifeSkillType.values()) {
-      switch (type) {
-        case ARCHERY:
-        case AXE_MASTERY:
-        case BLUNT_WEAPONS:
-        case BLACK_MAGICS:
-        case DUAL_WIELDING:
-        case ARCANE_MAGICS:
-        case SWORDSMANSHIP:
-        case NATURAL_MAGICS:
-        case SHIELD_MASTERY:
-        case CELESTIAL_MAGICS:
+      if (type.isComnbat()) {
           levelingRates.put(type, combatRate);
           continue;
       }

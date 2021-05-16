@@ -45,15 +45,17 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsDefenseMenuItem extends MenuItem {
 
+  private final StatsMenu statsMenu;
   public static final String PER_TEN = ChatColor.GRAY + "/10s";
 
-  StatsDefenseMenuItem() {
+  StatsDefenseMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), new ItemStack(Material.IRON_CHESTPLATE));
+    this.statsMenu = statsMenu;
   }
 
   @Override
   public ItemStack getFinalIcon(Player commandSender) {
-    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    Player player = statsMenu.getInspectionTargetMap().get(commandSender);
     if (!player.isValid()) {
       return getIcon();
     }

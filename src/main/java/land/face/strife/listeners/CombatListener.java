@@ -154,15 +154,12 @@ public class CombatListener implements Listener {
     }
 
     Projectile projectile = null;
-    boolean isProjectile = false;
     boolean isMultishot = false;
     List<Effect> extraEffects = null;
     int shotId = -1;
 
     if (event.getDamager() instanceof Projectile) {
-      isProjectile = true;
       projectile = (Projectile) event.getDamager();
-      extraEffects = ProjectileUtil.getHitEffects(projectile);
       shotId = ProjectileUtil.getShotId(projectile);
       if (shotId != -1) {
         String idKey = "SHOT_HIT_" + shotId;
@@ -184,11 +181,6 @@ public class CombatListener implements Listener {
     float healMultiplier = 1f;
 
     AttackType attackType = DamageUtil.getAttackType(event);
-
-    if (isProjectile) {
-      attackMultiplier = ProjectileUtil.getAttackMult(projectile);
-    }
-
     if (attackType == AttackType.MELEE) {
       if (ItemUtil.isWandOrStaff(Objects.requireNonNull(attackEntity.getEquipment()).getItemInMainHand())) {
         double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
@@ -198,6 +190,8 @@ public class CombatListener implements Listener {
       }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
       attackMultiplier = (float) Math.pow(attackMultiplier, 1.1);
+    } else if (attackType == AttackType.PROJECTILE) {
+      attackMultiplier = ProjectileUtil.getAttackMult(projectile);
     } else if (attackType == AttackType.AREA) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
@@ -208,7 +202,7 @@ public class CombatListener implements Listener {
       attackMultiplier *= 0.25;
     }
 
-    if (attackMultiplier < 0.05 && extraEffects == null) {
+    if (attackMultiplier < 0.05) {
       event.setCancelled(true);
       removeIfExisting(projectile);
       return;
@@ -216,7 +210,8 @@ public class CombatListener implements Listener {
 
     Bukkit.getScheduler().runTaskLater(plugin, () -> defendEntity.setNoDamageTicks(0), 0L);
 
-    boolean isSneakAttack = plugin.getStealthManager().isStealthed(attackEntity);
+    boolean isSneakAttack = attackEntity instanceof Player && plugin.getStealthManager()
+        .canSneakAttack((Player) attackEntity);
 
     putMonsterHit(attackEntity);
 

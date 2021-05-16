@@ -38,7 +38,7 @@ public class EnergyTask extends BukkitRunnable {
       return;
     }
 
-    if (mob.getStat(StrifeStat.ENERGY) < 0.1 || mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
+    if (mob.getStat(StrifeStat.ENERGY) < 0.1) {
       return;
     }
 

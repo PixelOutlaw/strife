@@ -18,6 +18,7 @@ package land.face.strife.listeners;
 
 import com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -220,31 +221,35 @@ public class ShootListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onGroundEffectProjectileHit(final ProjectileHitEvent event) {
-    if (event.getHitBlock() == null) {
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onEffectProjectileHit(final ProjectileHitEvent event) {
+    if (ProjectileUtil.getHitEffects(event.getEntity()) == null) {
       return;
     }
-    if (!ProjectileUtil.isGroundTrigger(event.getEntity())) {
-      return;
+    boolean contactTrigger = ProjectileUtil.isContactTrigger(event.getEntity());
+
+    TargetResponse response;
+    if (contactTrigger) {
+      Location loc = event.getEntity().getLocation().clone().add(event.getEntity().getLocation()
+          .getDirection().multiply(-0.2));
+      response = new TargetResponse(loc);
+    } else {
+      if (!(event.getHitEntity() instanceof LivingEntity)) {
+        return;
+      }
+      response = new TargetResponse(Collections.singleton((LivingEntity) event.getHitEntity()));
     }
+
     StrifeMob caster = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) Objects.requireNonNull(event.getEntity().getShooter()));
 
     List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
     if (hitEffects.isEmpty()) {
-      LogUtil.printWarning("A handled GroundProjectile was missing effect meta... something's wrong");
+      LogUtil.printWarning("A handled effectProjectile was missing effect meta... something's wrong");
       return;
     }
 
-    Location loc = event.getEntity().getLocation().clone()
-        .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
-
-    for (Effect effect : hitEffects) {
-      if (effect instanceof LocationEffect) {
-        ((LocationEffect) effect).applyAtLocation(caster, loc);
-      }
-    }
+    plugin.getEffectManager().processEffectList(caster, response, hitEffects);
   }
 
   private void doPistolShot(StrifeMob mob, float attackMultiplier) {
@@ -255,13 +260,13 @@ public class ShootListener implements Listener {
       ((Player) mob.getEntity()).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
     }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
-      double randomMultishot = Math.pow(Math.random(), 1.5);
+      double randomMultishot = 0.15 + Math.random() * 0.85;
       int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
       flintlockHitscan.setMaxTargets(projectiles);
-      flintlockHitscan.setRadius(0.35f * (projectiles - 1));
+      flintlockHitscan.setRadius(0.4f * projectiles);
     } else {
       flintlockHitscan.setMaxTargets(1);
-      flintlockHitscan.setRadius(0f);
+      flintlockHitscan.setRadius(0.4f);
     }
     flintlockDamage.setAttackMultiplier(attackMultiplier);
     flintlockDamage.setApplyOnHitEffects(attackMultiplier > 0.5);
@@ -332,7 +337,7 @@ public class ShootListener implements Listener {
     hitscan.setMaxTargets(1);
     hitscan.setCanBeBlocked(false);
     hitscan.setCanBeEvaded(false);
-    hitscan.setOrigin(OriginLocation.HEAD);
+    hitscan.setOrigin(OriginLocation.BELOW_HEAD);
 
     hitscan.getEffects().add(flintlockDamage);
 

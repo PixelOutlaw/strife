@@ -25,24 +25,22 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class StatsChangeHealthDisplay extends MenuItem {
+public class StatsVerboseXP extends MenuItem {
 
   private final StrifePlugin plugin;
   private final Map<Player, Boolean> selfInspectMap = new WeakHashMap<>();
 
-  StatsChangeHealthDisplay(StrifePlugin plugin) {
-    super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
+  StatsVerboseXP(StrifePlugin plugin) {
+    super(TextUtils.color("&2&lShow XP In Chat"), new ItemStack(Material.EXPERIENCE_BOTTLE));
     this.plugin = plugin;
   }
 
@@ -54,17 +52,18 @@ public class StatsChangeHealthDisplay extends MenuItem {
       return BlankIcon.getBlankStack();
     }
     selfInspectMap.put(commandSender, true);
-    ItemStack itemStack = new ItemStack(Material.APPLE);
+    ItemStack itemStack = new ItemStack(Material.EXPERIENCE_BOTTLE);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
     List<String> lore = new ArrayList<>();
 
     Champion champion = plugin.getChampionManager().getChampion(player);
 
-    lore.add(TextUtils.color("&7Click this icon to change how your"));
-    lore.add(TextUtils.color("&7hearts are displayed!"));
-    lore.add(TextUtils.color("&fSetting: " + WordUtils.capitalizeFully(
-        champion.getSaveData().getHealthDisplayType().toString().replaceAll("_", " "))));
+    lore.add(TextUtils.color("&7Click this icon to toggle"));
+    lore.add(TextUtils.color("&7normal xp gain being shown"));
+    lore.add(TextUtils.color("&7in chat!"));
+
+    lore.add(TextUtils.color("&fXP Display: " + (champion.getSaveData().isDisplayExp() ? "&a&lENABLED" : "&e&lDISABLED")));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
@@ -78,13 +77,7 @@ public class StatsChangeHealthDisplay extends MenuItem {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
-    int ordinal = champion.getSaveData().getHealthDisplayType().ordinal();
-    ordinal++;
-    if (ordinal == ChampionSaveData.DISPLAY_OPTIONS.length) {
-      ordinal = 0;
-    }
-    champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
-    plugin.getStatUpdateManager().updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
     event.setWillUpdate(true);
     event.setWillClose(false);
   }

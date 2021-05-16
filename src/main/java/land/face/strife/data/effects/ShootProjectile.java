@@ -53,7 +53,7 @@ public class ShootProjectile extends Effect {
   private int maxDuration;
   private Disguise disguise = null;
   private ItemStack thrownStack = null;
-  private List<Effect> hitEffects = new ArrayList<>();
+  private final List<Effect> hitEffects = new ArrayList<>();
   private boolean throwItem;
   private boolean throwSpin;
 
@@ -121,7 +121,7 @@ public class ShootProjectile extends Effect {
       projectile.setBounce(bounce);
       ProjectileUtil.setAttackMult(projectile, (float) attackMultiplier);
       if (blockHitEffects) {
-        ProjectileUtil.setGroundTrigger(projectile);
+        ProjectileUtil.setContactTrigger(projectile);
       }
       if (!hitEffects.isEmpty()) {
         ProjectileUtil.setHitEffects(projectile, hitEffects);

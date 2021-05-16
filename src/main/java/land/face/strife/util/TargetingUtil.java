@@ -175,10 +175,10 @@ public class TargetingUtil {
         .getNearbyEntities(origin, length, length, length);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
     Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange < length; incRange += 0.6) {
+    for (float incRange = 0; incRange < length; incRange += 0.4) {
       Location loc = origin.clone().add(direction.clone().multiply(incRange));
       for (Entity entity : targetList) {
-        if (entityWithinRadius(entity, loc, maxConeRadius * (incRange / length))) {
+        if (entityWithinRadius(entity, loc, 0.2f + (maxConeRadius * (incRange / length)))) {
           validTargets.add((LivingEntity) entity);
         }
       }
@@ -193,15 +193,14 @@ public class TargetingUtil {
 
     Map<BoundingBox, Entity> boundingBoxes = new HashMap<>();
     for (Entity entity : targetList) {
-      boundingBoxes.put(entity.getBoundingBox().clone().expand(radius), entity);
+      boundingBoxes.put(entity.getBoundingBox().clone().expand(0.1 + radius), entity);
     }
 
-    float increment = radius * 1.9f;
     Location checkLocation = location.clone();
-    Vector incrementVector = location.getDirection().clone().multiply(increment);
+    Vector incrementVector = location.getDirection().clone().multiply(0.3);
 
     Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange <= range + 0.01; incRange += increment) {
+    for (float incRange = 0; incRange <= range; incRange += 0.3) {
       checkLocation.add(incrementVector);
       Iterator<BoundingBox> iterator = boundingBoxes.keySet().iterator();
       while (iterator.hasNext()) {

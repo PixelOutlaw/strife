@@ -45,13 +45,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsOffenseMenuItem extends MenuItem {
 
-  StatsOffenseMenuItem() {
+  private final StatsMenu statsMenu;
+
+  StatsOffenseMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&6&lDamage Stats"), new ItemStack(Material.IRON_SWORD));
+    this.statsMenu = statsMenu;
   }
 
   @Override
   public ItemStack getFinalIcon(Player commandSender) {
-    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    Player player = statsMenu.getInspectionTargetMap().get(commandSender);
     if (!player.isValid()) {
       return getIcon();
     }
@@ -136,38 +139,47 @@ public class StatsOffenseMenuItem extends MenuItem {
     double acc = 100 + mob.getStat(StrifeStat.ACCURACY) - bases.getOrDefault(StrifeStat.ACCURACY, 0f);
     lore.add(addStat("Accuracy Rating: ", acc, INT_FORMAT));
     lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(mob), "s", TWO_DECIMAL));
-    lore.add(breakLine);
+
+    List<String> loreSection = new ArrayList<>();
+    loreSection.add(breakLine);
     if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
       if (mob.getStat(StrifeStat.DOGE) > 0) {
-        lore.add(addStat("MultiTHOT: ", mob.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
+        loreSection.add(addStat("MultiTHOT: ", mob.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
       } else {
-        lore.add(addStat("Multishot: ", mob.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
+        loreSection.add(addStat("Multishot: ", mob.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
       }
     }
-    lore.add(addStat("Critical Chance: ", mob.getStat(StrifeStat.CRITICAL_RATE), "%", INT_FORMAT));
-    lore.add(addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(mob), "x", TWO_DECIMAL));
+    if (mob.getStat(StrifeStat.CRITICAL_RATE) > 0) {
+      loreSection.add(
+          addStat("Critical Chance: ", mob.getStat(StrifeStat.CRITICAL_RATE), "%", INT_FORMAT));
+      loreSection.add(
+          addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(mob), "x", TWO_DECIMAL));
+    }
     double aPen = mob.getStat(StrifeStat.ARMOR_PENETRATION) - bases.getOrDefault(StrifeStat.ARMOR_PENETRATION, 0f);
     if (aPen != 0) {
-      lore.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
+      loreSection.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
     }
     double wPen = mob.getStat(StrifeStat.WARD_PENETRATION) - bases.getOrDefault(StrifeStat.WARD_PENETRATION, 0f);
     if (wPen != 0) {
-      lore.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
+      loreSection.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
     }
     if (mob.getStat(StrifeStat.BLEED_CHANCE) > 0) {
-      lore.add(addStat("Bleed Chance: ", mob.getStat(StrifeStat.BLEED_CHANCE), "%", INT_FORMAT));
+      loreSection.add(addStat("Bleed Chance: ", mob.getStat(StrifeStat.BLEED_CHANCE), "%", INT_FORMAT));
     }
     if (mob.getStat(StrifeStat.BLEED_DAMAGE) > 0) {
-      lore.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+",
+      loreSection.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+",
           mob.getStat(StrifeStat.BLEED_DAMAGE), "%", INT_FORMAT));
     }
     if (mob.getStat(StrifeStat.RAGE_ON_HIT) > 0 || mob.getStat(StrifeStat.RAGE_ON_KILL) > 0
         || mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
-      lore.add(breakLine);
-      lore.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
-      lore.add(addStat("Rage On Hit: ", mob.getStat(StrifeStat.RAGE_ON_HIT), INT_FORMAT));
-      lore.add(addStat("Rage On Kill: ", mob.getStat(StrifeStat.RAGE_ON_KILL), INT_FORMAT));
-      lore.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), INT_FORMAT));
+      loreSection.add(breakLine);
+      loreSection.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
+      loreSection.add(addStat("Rage On Hit: ", mob.getStat(StrifeStat.RAGE_ON_HIT), INT_FORMAT));
+      loreSection.add(addStat("Rage On Kill: ", mob.getStat(StrifeStat.RAGE_ON_KILL), INT_FORMAT));
+      loreSection.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), INT_FORMAT));
+    }
+    if (loreSection.size() > 1) {
+      lore.addAll(loreSection);
     }
     if (mob.getStat(StrifeStat.HP_ON_HIT) > 0 || mob.getStat(StrifeStat.LIFE_STEAL) > 0
         || mob.getStat(StrifeStat.HP_ON_KILL) > 0) {

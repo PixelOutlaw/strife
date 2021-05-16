@@ -362,7 +362,8 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("addskillxp|skillxp")
   @CommandCompletion("@players @skills @range:1-100000 true|false true|false")
   @CommandPermission("strife.admin")
-  public void addSkillXp(CommandSender sender, OnlinePlayer target, String skill, int amount, boolean exact, boolean silent) {
+  public void addSkillXp(CommandSender sender, OnlinePlayer target, String skill, int amount,
+      @Default("true") boolean exact, @Default("false") boolean silent) {
     String skillName = skill.toUpperCase();
     LifeSkillType type;
     try {

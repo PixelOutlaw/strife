@@ -20,24 +20,27 @@ public class ChampionSaveData {
 
   private final UUID uniqueId;
   private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
-  private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
+  private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
+  private final Map<LifeSkillType, Float> skillExpMap = new HashMap<>();
   private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
   private final Map<AbilitySlot, List<String>> castMessages = new HashMap<>();
   private final Map<Path, Choice> pathMap = new HashMap<>();
   private final Set<LoreAbility> boundAbilities = new HashSet<>();
 
-  private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;
-  private boolean displayExp;
+  private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
 
   private int unusedStatPoints;
   private int pendingUnusedStatPoints;
   private int highestReachedLevel;
   private int bonusLevels;
 
-  private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
-  private final Map<LifeSkillType, Float> skillExpMap = new HashMap<>();
-
   private float pvpScore = 700;
+
+  // Player preferences
+  private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;
+
+  private boolean glowEnabled;
+  private boolean displayExp;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
@@ -169,6 +172,14 @@ public class ChampionSaveData {
 
   public void setPvpScore(float pvpScore) {
     this.pvpScore = pvpScore;
+  }
+
+  public boolean isGlowEnabled() {
+    return glowEnabled;
+  }
+
+  public void setGlowEnabled(boolean glowEnabled) {
+    this.glowEnabled = glowEnabled;
   }
 
   public enum HealthDisplayType {

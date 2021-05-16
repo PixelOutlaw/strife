@@ -87,8 +87,11 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + ".stats." + entry.getKey().getKey(), entry.getValue());
     }
 
+    // Preferences
     config.set(champUuid + ".display-exp", champion.isDisplayExp());
+    config.set(champUuid + ".glow-enabled", champion.isGlowEnabled());
     config.set(champUuid + ".health-display", champion.getHealthDisplayType().toString());
+
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
     config.set(champUuid + ".bonus-levels", champion.getBonusLevels());
@@ -159,6 +162,8 @@ public class FlatfileStorage implements DataStorage {
       }
       saveData.setHealthDisplayType(displayType);
       saveData.setDisplayExp(section.getBoolean("display-exp", false));
+      saveData.setGlowEnabled(section.getBoolean("glow-enabled", true));
+
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
       saveData.setBonusLevels(section.getInt("bonus-levels"));
       for (LifeSkillType type : LifeSkillType.types) {

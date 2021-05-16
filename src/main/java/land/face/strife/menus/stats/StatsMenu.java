@@ -20,6 +20,8 @@ package land.face.strife.menus.stats;
 
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
+import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
@@ -33,34 +35,33 @@ public class StatsMenu extends ItemMenu {
   static final DecimalFormat TWO_DECIMAL = new DecimalFormat("#.##");
   static final String breakLine = StringExtensionsKt.chatColorize("&8=========================");
 
-  private Player player;
+  private final Map<Player, Player> inspectionTargetMap = new WeakHashMap<>();
 
-  public StatsMenu() {
-    super(StringExtensionsKt.chatColorize("&0&lStats!"), Size.fit(36), StrifePlugin.getInstance());
-    setItem(0, new StatsEquipmentItem(EquipmentSlot.HEAD, "&eNo Helmet"));
-    setItem(9, new StatsEquipmentItem(EquipmentSlot.CHEST, "&eNo Chest Armor"));
-    setItem(18, new StatsEquipmentItem(EquipmentSlot.LEGS, "&eNo... pants?"));
-    setItem(27, new StatsEquipmentItem(EquipmentSlot.FEET, "&eNo Boots"));
-    setItem(1, new StatsEquipmentItem(EquipmentSlot.HAND, "&eNo Weapon"));
-    setItem(10, new StatsEquipmentItem(EquipmentSlot.OFF_HAND, "&eNo Offhand Item"));
+  public StatsMenu(StrifePlugin plugin) {
+    super(StringExtensionsKt.chatColorize("&0&lStats!"), Size.fit(45), plugin);
+    setItem(0, new StatsEquipmentItem(this, EquipmentSlot.HEAD, "&eNo Helmet"));
+    setItem(9, new StatsEquipmentItem(this, EquipmentSlot.CHEST, "&eNo Chest Armor"));
+    setItem(18, new StatsEquipmentItem(this, EquipmentSlot.LEGS, "&eNo... pants?"));
+    setItem(27, new StatsEquipmentItem(this, EquipmentSlot.FEET, "&eNo Boots"));
+    setItem(1, new StatsEquipmentItem(this, EquipmentSlot.HAND, "&eNo Weapon"));
+    setItem(10, new StatsEquipmentItem(this, EquipmentSlot.OFF_HAND, "&eNo Offhand Item"));
 
-    setItem(12, new StatsOffenseMenuItem());
-    setItem(14, new StatsDefenseMenuItem());
-    setItem(16, new StatsMiscMenuItem());
-    setItem(22, new StatsBonusMenuItem());
-    setItem(24, new StatsEffectMenuItem());
+    setItem(12, new StatsOffenseMenuItem(this));
+    setItem(14, new StatsDefenseMenuItem(this));
+    setItem(16, new StatsMiscMenuItem(this));
+    setItem(22, new StatsBonusMenuItem(this));
+    setItem(24, new StatsEffectMenuItem(this));
 
-    setItem(35, new StatsChangeHealthDisplay(StrifePlugin.getInstance()));
+    setItem(41, new StatsOpenLevelupMenu(plugin));
+    setItem(42, new StatsToggleGlow(plugin));
+    setItem(43, new StatsVerboseXP(plugin));
+    setItem(44, new StatsChangeHealthDisplay(plugin));
 
     fillEmptySlots(new BlankIcon());
   }
 
-  public void setTargetPlayer(Player player) {
-    this.player = player;
-  }
-
-  public Player getTargetPlayer() {
-    return player;
+  public Map<Player, Player> getInspectionTargetMap() {
+    return inspectionTargetMap;
   }
 }
 
