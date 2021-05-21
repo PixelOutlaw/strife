@@ -18,10 +18,11 @@
  */
 package land.face.strife.listeners;
 
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -36,10 +37,10 @@ import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 
 public class MinionListener implements Listener {
 
-  private final StrifeMobManager entityManager;
+  private final StrifePlugin plugin;
 
-  public MinionListener(StrifeMobManager entityManager) {
-    this.entityManager = entityManager;
+  public MinionListener(StrifePlugin plugin) {
+    this.plugin = plugin;
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -48,7 +49,7 @@ public class MinionListener implements Listener {
       return;
     }
     if (event.getEntity() instanceof LivingEntity) {
-      if (entityManager.getStatMob((LivingEntity) event.getEntity()).getMaster() != null) {
+      if (plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()).getMaster() != null) {
         event.setCancelled(true);
       }
     }
@@ -62,10 +63,10 @@ public class MinionListener implements Listener {
     if (!(event.getEntity() instanceof Mob) || !(event.getTarget() instanceof LivingEntity)) {
       return;
     }
-    if (!entityManager.isTrackedEntity((LivingEntity) event.getEntity())) {
+    if (!plugin.getStrifeMobManager().isTrackedEntity((LivingEntity) event.getEntity())) {
       return;
     }
-    StrifeMob attrEnt = entityManager.getStatMob((LivingEntity) event.getEntity());
+    StrifeMob attrEnt = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
     if (attrEnt.isMasterOf((LivingEntity) event.getEntity())) {
       LogUtil.printDebug("Ignoring targeting of minion for " + attrEnt.getEntity().getCustomName());
       event.setCancelled(true);
@@ -86,10 +87,10 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    if (!entityManager.isTrackedEntity((LivingEntity) attacker)) {
+    if (!plugin.getStrifeMobManager().isTrackedEntity((LivingEntity) attacker)) {
       return;
     }
-    StrifeMob attackMob = entityManager.getStatMob((LivingEntity) attacker);
+    StrifeMob attackMob = plugin.getStrifeMobManager().getStatMob((LivingEntity) attacker);
     if (event.getEntity() instanceof Player && attackMob.getMaster() != null && attackMob
         .getMaster() instanceof Player) {
       if (!DamageUtil.canAttack((Player) attackMob.getMaster(), (Player) event.getEntity())) {
@@ -97,7 +98,7 @@ public class MinionListener implements Listener {
         return;
       }
     }
-    if (event.getEntity() == attackMob.getMaster()) {
+    if (attackMob.getMaster() != null && attackMob.getMaster().getEntity() == event.getEntity()) {
       LogUtil.printDebug("Ignoring attacking of master for " + attacker.getCustomName());
       event.setCancelled(true);
     }
@@ -108,20 +109,25 @@ public class MinionListener implements Listener {
     if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
       return;
     }
-    Entity attacker = getDamagingEntity(event.getDamager());
-    if (!(attacker instanceof LivingEntity)) {
-      return;
-    }
-    StrifeMob attackEntity = entityManager.getStatMob((LivingEntity) attacker);
-    if (attackEntity.getMinions()
-        .contains(entityManager.getStatMob((LivingEntity) event.getEntity()))) {
-      return;
-    }
-    for (StrifeMob minion : attackEntity.getMinions()) {
-      if (minion.getEntity() instanceof Mob) {
-        ((Mob) minion.getEntity()).setTarget((LivingEntity) event.getEntity());
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      if (event.getEntity().isDead()) {
+        return;
       }
-    }
+      Entity attacker = getDamagingEntity(event.getDamager());
+      if (!(attacker instanceof LivingEntity)) {
+        return;
+      }
+      StrifeMob attackEntity = plugin.getStrifeMobManager().getStatMob((LivingEntity) attacker);
+      if (attackEntity.getMinions()
+          .contains(plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()))) {
+        return;
+      }
+      for (StrifeMob minion : attackEntity.getMinions()) {
+        if (minion.getEntity() instanceof Mob) {
+          ((Mob) minion.getEntity()).setTarget((LivingEntity) event.getEntity());
+        }
+      }
+    }, 1L);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -133,7 +139,7 @@ public class MinionListener implements Listener {
     if (!(attacker instanceof LivingEntity)) {
       return;
     }
-    StrifeMob hitEnt = entityManager.getStatMob((LivingEntity) event.getEntity());
+    StrifeMob hitEnt = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
     for (StrifeMob minion : hitEnt.getMinions()) {
       if (!(minion.getEntity() instanceof Mob)) {
         continue;

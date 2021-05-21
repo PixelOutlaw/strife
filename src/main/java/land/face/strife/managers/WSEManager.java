@@ -11,6 +11,7 @@ import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.Push;
+import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
@@ -135,7 +136,13 @@ public class WSEManager {
     }
     for (Effect areaEffect : ((AreaEffect) effect).getEffects()) {
       if (areaEffect instanceof Push) {
-        ((Push) areaEffect).setTempVectorFromWSE(wse);
+        Vector wseVec;
+        if (((Push) areaEffect).getPushType() == PushType.WSE_DIRECTION) {
+          wseVec = wse.getLocation().getDirection().clone().normalize();
+        } else {
+          wseVec = wse.getLocation().toVector();
+        }
+        ((Push) areaEffect).setTempVector(wseVec);
       }
     }
   }

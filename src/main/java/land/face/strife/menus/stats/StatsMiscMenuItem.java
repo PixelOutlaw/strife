@@ -41,13 +41,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsMiscMenuItem extends MenuItem {
 
-  StatsMiscMenuItem() {
+  private final StatsMenu statsMenu;
+
+  StatsMiscMenuItem(StatsMenu statsMenu) {
     super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
+    this.statsMenu = statsMenu;
   }
 
   @Override
   public ItemStack getFinalIcon(Player commandSender) {
-    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    Player player = statsMenu.getInspectionTargetMap().get(commandSender);
     if (!player.isValid()) {
       return getIcon();
     }
@@ -80,6 +83,8 @@ public class StatsMiscMenuItem extends MenuItem {
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
         pStats.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);
+    lore.add(ChatColor.DARK_AQUA + "Healing Power: " + ChatColor.WHITE + INT_FORMAT.format(
+        100 + pStats.getStat(StrifeStat.HEALING_POWER)) + "%");
     lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
         100 + pStats.getStat(StrifeStat.EFFECT_DURATION)) + "%");
     lore.add(breakLine);

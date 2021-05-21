@@ -35,13 +35,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsBonusMenuItem extends MenuItem {
 
-  StatsBonusMenuItem() {
+  private final StatsMenu statsMenu;
+
+  StatsBonusMenuItem(StatsMenu statsMenu) {
     super(TextUtils.color("&a&lDrop Modifiers"), new ItemStack(Material.GOLD_INGOT));
+    this.statsMenu = statsMenu;
   }
 
   @Override
   public ItemStack getFinalIcon(Player commandSender) {
-    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    Player player = statsMenu.getInspectionTargetMap().get(commandSender);
     if (!player.isValid()) {
       return getIcon();
     }

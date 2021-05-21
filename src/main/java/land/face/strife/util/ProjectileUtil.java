@@ -25,7 +25,7 @@ public class ProjectileUtil {
 
   private static int shotId = 1;
 
-  private static final Map<Projectile, Boolean> GROUND_TRIGGER = new WeakHashMap<>();
+  private static final Map<Projectile, Boolean> CONTACT_TRIGGER = new WeakHashMap<>();
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
@@ -34,12 +34,12 @@ public class ProjectileUtil {
 
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
-  public static void setGroundTrigger(Projectile projectile) {
-    GROUND_TRIGGER.put(projectile, true);
+  public static void setContactTrigger(Projectile projectile) {
+    CONTACT_TRIGGER.put(projectile, true);
   }
 
-  public static boolean isGroundTrigger(Projectile projectile) {
-    return GROUND_TRIGGER.containsKey(projectile);
+  public static boolean isContactTrigger(Projectile projectile) {
+    return CONTACT_TRIGGER.containsKey(projectile);
   }
 
   public static void setAttackMult(Projectile projectile, float mult) {
@@ -99,7 +99,7 @@ public class ProjectileUtil {
   }
 
   public static void shootWand(StrifeMob mob, double attackMult) {
-    float projectileSpeed = 1.0f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100);
+    float projectileSpeed = 1f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
     ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.19, true);

@@ -117,7 +117,8 @@ public class TargetingListener implements Listener {
         || event.getReason() != CLOSEST_PLAYER) {
       return;
     }
-    if (plugin.getStealthManager().isStealthed(event.getTarget())) {
+    if (event.getTarget() instanceof Player && plugin.getStealthManager()
+        .isStealthed((Player) event.getTarget())) {
       return;
     }
     int playerLevel = StatUtil.getMobLevel(event.getTarget());
@@ -156,9 +157,9 @@ public class TargetingListener implements Listener {
     }
 
     Mob creature = (Mob) event.getEntity();
-    float level = StatUtil.getMobLevel(creature);
+    float mobLevel = StatUtil.getMobLevel(creature);
 
-    LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + level + " " +
+    LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + mobLevel + " " +
         creature.getType());
 
     Location playerLoc = player.getLocation();
@@ -189,9 +190,9 @@ public class TargetingListener implements Listener {
 
     float awareness;
     if (angle > SEEN_MAX_ANGLE || creature.hasPotionEffect(BLINDNESS)) {
-      awareness = BASE_AWARENESS_UNSEEN + level * AWARENESS_PER_LV_UNSEEN;
+      awareness = BASE_AWARENESS_UNSEEN + mobLevel * AWARENESS_PER_LV_UNSEEN;
     } else {
-      awareness = BASE_AWARENESS_SEEN + level * AWARENESS_PER_LV_SEEN;
+      awareness = BASE_AWARENESS_SEEN + mobLevel * AWARENESS_PER_LV_SEEN;
     }
     awareness *= distanceMult;
     awareness *= lightMult;
@@ -206,9 +207,11 @@ public class TargetingListener implements Listener {
       event.setCancelled(true);
       LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
       if (distSquared <= MAX_EXP_RANGE_SQUARED) {
-        float xp = plugin.getStealthManager().getSneakActionExp(level, stealthLevel);
+        float difficultyLevel = Math.min(stealthLevel + 10, mobLevel);
+        float xp = plugin.getStealthManager().getSneakActionExp(difficultyLevel, stealthLevel);
         xp *= distanceMult;
-        plugin.getSkillExperienceManager().addExperience(player, LifeSkillType.SNEAK, xp, false, false);
+        plugin.getSkillExperienceManager()
+            .addExperience(player, LifeSkillType.SNEAK, xp, false, false);
         LogUtil.printDebug(" XP-AWARDED: " + xp);
       }
     } else {

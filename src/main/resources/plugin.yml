@@ -22,23 +22,23 @@ commands:
     aliases: [agi]
 
 permissions:
-  strife.command.stats:
+  strife.stats:
     default: true
-  strife.command.cast:
+  strife.cast:
     default: true
-  strife.command.levelup:
+  strife.levelup:
     default: true
-  strife.command.strife.reset:
+  strife.reset:
     default: op
-  strife.command.strife.clear:
+  strife.clear:
     default: op
-  strife.command.strife.raise:
+  strife.raise:
     default: op
-  strife.command.strife.addxp:
+  strife.addxp:
     default: op
-  strife.command.spawner:
+  strife.spawner:
     default: op
-  strife.command.reload:
+  strife.reload:
     default: op
   strife.xp:
     default: false

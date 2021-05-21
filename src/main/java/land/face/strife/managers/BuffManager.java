@@ -20,6 +20,7 @@ package land.face.strife.managers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.stats.StrifeStat;
@@ -40,6 +41,10 @@ public class BuffManager {
 
   public Buff buildFromLoadedBuff(LoadedBuff loadedBuff) {
     return new Buff(loadedBuff.getId(), loadedBuff.getStats(), loadedBuff.getMaxStacks());
+  }
+
+  public Set<String> getLoadedBuffIds() {
+    return buffList.keySet();
   }
 
   public void loadBuff(String key, ConfigurationSection cs) {

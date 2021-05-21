@@ -1,18 +1,20 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.commands;
 
@@ -37,6 +39,7 @@ import land.face.strife.data.EloResponse;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
@@ -92,9 +95,12 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("defeat")
   @CommandCompletion("@players @players @range:1-30")
   @CommandPermission("strife.admin")
-  public void defeatCommand(CommandSender sender, OnlinePlayer winner, OnlinePlayer loser, @Default("10") double weight) {
-    ChampionSaveData winData = plugin.getChampionManager().getChampion(winner.getPlayer()).getSaveData();
-    ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser.getPlayer()).getSaveData();
+  public void defeatCommand(CommandSender sender, OnlinePlayer winner, OnlinePlayer loser,
+      @Default("10") double weight) {
+    ChampionSaveData winData = plugin.getChampionManager().getChampion(winner.getPlayer())
+        .getSaveData();
+    ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser.getPlayer())
+        .getSaveData();
 
     EloResponse response = EloUtil
         .getEloChange(winData.getPvpScore(), loseData.getPvpScore(), (float) weight);
@@ -106,9 +112,11 @@ public class StrifeCommand extends BaseCommand {
     loseData.setPvpScore(response.getNewLoserValue());
 
     sendActionBar(winner.getPlayer(), PVP_WIN_MSG.replace("{0}",
-        String.valueOf(Math.round(response.getNewWinnerValue()))).replace("{1}", String.valueOf(Math.round(winDiff))));
+        String.valueOf(Math.round(response.getNewWinnerValue())))
+        .replace("{1}", String.valueOf(Math.round(winDiff))));
     sendActionBar(loser.getPlayer(), PVP_LOSE_MSG.replace("{0}",
-        String.valueOf(Math.round(response.getNewLoserValue()))).replace("{1}", String.valueOf(Math.round(loseDiff))));
+        String.valueOf(Math.round(response.getNewLoserValue())))
+        .replace("{1}", String.valueOf(Math.round(loseDiff))));
   }
 
   @Subcommand("cd|cooldown")
@@ -144,7 +152,8 @@ public class StrifeCommand extends BaseCommand {
       MessageUtils.sendMessage(p,
           "&a&o&lATTENTION GAMER: &a&oOkay we're back now thanks for waiting :)");
     }
-    sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
+    sendMessage(sender,
+        plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
   }
 
   @Subcommand("profile")
@@ -157,7 +166,8 @@ public class StrifeCommand extends BaseCommand {
         new String[][]{{"%amount%", "" + champion.getUnusedStatPoints()}});
     sendMessage(sender, "&6----------------------------------");
     for (StrifeAttribute stat : plugin.getAttributeManager().getAttributes()) {
-      sendMessage(sender, ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
+      sendMessage(sender,
+          ChatColor.GRAY + stat.getKey() + " - " + champion.getAttributeLevel(stat));
     }
     sendMessage(sender, "&6----------------------------------");
   }
@@ -165,7 +175,8 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("mobinfo|info")
   @CommandPermission("strife.info")
   public void infoCommand(Player sender) {
-    List<LivingEntity> targets = new ArrayList<>(TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
+    List<LivingEntity> targets = new ArrayList<>(
+        TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
     targets.remove(sender);
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
@@ -190,9 +201,11 @@ public class StrifeCommand extends BaseCommand {
     champion.setUnusedStatPoints(target.getPlayer().getLevel());
     champion.getSaveData().getPathMap().clear();
     plugin.getPathManager().buildPathBonus(champion);
-    sendMessage(sender, "You reset %player%", new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
+    sendMessage(sender, "You reset %player%",
+        new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
     sendMessage(target.getPlayer(), "&aYour stats have been reset!");
-    sendMessage(target.getPlayer(), "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
+    sendMessage(target.getPlayer(),
+        "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
     plugin.getChampionManager().update(target.getPlayer());
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
   }
@@ -209,7 +222,8 @@ public class StrifeCommand extends BaseCommand {
     }
     champion.setUnusedStatPoints(0);
     champion.setHighestReachedLevel(0);
-    sendMessage(sender, "You cleared <white>%player%", new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
+    sendMessage(sender, "You cleared <white>%player%",
+        new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
     sendMessage(target.getPlayer(), "&aYour stats have been wiped :O");
     plugin.getChampionManager().update(target.getPlayer());
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
@@ -229,7 +243,8 @@ public class StrifeCommand extends BaseCommand {
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     plugin.getChampionManager().update(target.getPlayer());
     sendMessage(sender, "&aYou raised &f%player% &ato level &f%level%.",
-        new String[][]{{"%player%", target.getPlayer().getDisplayName()}, {"%level%", "" + newLevel}});
+        new String[][]{{"%player%", target.getPlayer().getDisplayName()},
+            {"%level%", "" + newLevel}});
     sendMessage(target.getPlayer(), "&aAn administrator has raised your level");
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
   }
@@ -269,7 +284,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "<red>Invalid slot: " + slot);
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(abilitySlot, null);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
+        .setAbility(abilitySlot, null);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
@@ -308,9 +324,11 @@ public class StrifeCommand extends BaseCommand {
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
     if (success) {
-      sendMessage(sender, "&aBound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
+      sendMessage(sender,
+          "&aBound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
     } else {
-      sendMessage(sender, "&cLoreAbility " + loreAbilityId + " already exists on " + target.getPlayer().getName());
+      sendMessage(sender,
+          "&cLoreAbility " + loreAbilityId + " already exists on " + target.getPlayer().getName());
     }
   }
 
@@ -326,9 +344,11 @@ public class StrifeCommand extends BaseCommand {
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     boolean success = plugin.getChampionManager().removeBoundLoreAbility(champion, ability);
     if (success) {
-      sendMessage(sender, "&aUnbound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
+      sendMessage(sender,
+          "&aUnbound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
     } else {
-      sendMessage(sender, "&cLoreAbility " + loreAbilityId + " doesn't exist on " + target.getPlayer().getName());
+      sendMessage(sender,
+          "&cLoreAbility " + loreAbilityId + " doesn't exist on " + target.getPlayer().getName());
     }
   }
 
@@ -350,19 +370,22 @@ public class StrifeCommand extends BaseCommand {
     ChatColor color = type.getColor();
     String name = type.getName();
 
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setSkillLevel(type, newLevel);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
+        .setSkillLevel(type, newLevel);
     sendMessage(target.getPlayer(), SET_LEVEL_MSG
         .replace("{c}", "" + color)
         .replace("{n}", name)
         .replace("{a}", Integer.toString(newLevel))
     );
-    sendMessage(sender, "Set " + name + " level of " + target.getPlayer().getName()+ " to " + newLevel);
+    sendMessage(sender,
+        "Set " + name + " level of " + target.getPlayer().getName() + " to " + newLevel);
   }
 
   @Subcommand("addskillxp|skillxp")
   @CommandCompletion("@players @skills @range:1-100000 true|false true|false")
   @CommandPermission("strife.admin")
-  public void addSkillXp(CommandSender sender, OnlinePlayer target, String skill, int amount, boolean exact, boolean silent) {
+  public void addSkillXp(CommandSender sender, OnlinePlayer target, String skill, int amount,
+      @Default("true") boolean exact, @Default("false") boolean silent) {
     String skillName = skill.toUpperCase();
     LifeSkillType type;
     try {
@@ -371,7 +394,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cUnknown skill " + skill + "???");
       return;
     }
-    plugin.getSkillExperienceManager().addExperience(target.getPlayer(), type, amount, exact, !silent);
+    plugin.getSkillExperienceManager()
+        .addExperience(target.getPlayer(), type, amount, exact, !silent);
   }
 
   @Subcommand("addxp")
@@ -380,17 +404,32 @@ public class StrifeCommand extends BaseCommand {
   public void addXpCommand(CommandSender sender, OnlinePlayer player, double amount) {
     plugin.getExperienceManager().addExperience(player.getPlayer(), amount, true);
     sendMessage(player.player, "&aYou gained &f" + (int) amount + " &aXP!");
-    sendMessage(sender, "&a&oAwarded " + amount + " xp to " + player.getPlayer().getName() + " via command");
+    sendMessage(sender,
+        "&a&oAwarded " + amount + " xp to " + player.getPlayer().getName() + " via command");
   }
 
   @Subcommand("boost")
-  @CommandCompletion("@boosts @players @range:1-1000000")
+  @CommandCompletion("@boosts @players @range:1-10")
   @CommandPermission("strife.admin")
-  public void startBoostCommand(CommandSender sender, String boostId, String creator, int duration) {
+  public void startBoostCommand(CommandSender sender, String boostId, String creator,
+      int duration) {
     boolean success = plugin.getBoostManager().startBoost(creator, boostId, duration);
     if (!success) {
       sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
     }
+  }
+
+  @Subcommand("applybuff")
+  @CommandCompletion("@players @buffs @range:1-10")
+  @CommandPermission("strife.admin")
+  public void applyBuff(CommandSender sender, OnlinePlayer player, String buffId, int seconds) {
+    LoadedBuff buff = plugin.getBuffManager().getBuffFromId(buffId);
+    if (buff == null) {
+      sendMessage(sender, "&cBuff with that ID doesn't exist: " + buffId);
+      return;
+    }
+    plugin.getStrifeMobManager().getStatMob(player.getPlayer())
+        .addBuff(LoadedBuff.toRunningBuff(buff), seconds);
   }
 
   @Subcommand("reveal")

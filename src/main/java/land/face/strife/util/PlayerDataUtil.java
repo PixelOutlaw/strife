@@ -54,6 +54,18 @@ public class PlayerDataUtil {
 
   private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
 
+  public static boolean isGlowEnabled(Player player) {
+    return StrifePlugin.getInstance().getChampionManager().getChampion(player).getSaveData().isGlowEnabled();
+  }
+
+  public static boolean isGlowEnabled(StrifeMob mob) {
+    return mob.getChampion() != null && mob.getChampion().getSaveData().isGlowEnabled();
+  }
+
+  public static boolean isGlowEnabled(Champion champion) {
+    return champion.getSaveData().isGlowEnabled();
+  }
+
   public static void restoreHealth(LivingEntity le, double amount) {
     DamageUtil.restoreHealth(le, amount);
   }

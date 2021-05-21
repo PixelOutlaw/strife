@@ -30,6 +30,7 @@ public class Teleport extends LocationEffect {
 
     Location finalLocation = location;
     caster.getEntity().setVelocity(new Vector(0, 0, 0));
+    caster.getEntity().setFallDistance(0);
     if (targeted) {
       finalLocation.setDirection(caster.getEntity().getLocation().getDirection());
       caster.getEntity().teleport(finalLocation, TeleportCause.PLUGIN);

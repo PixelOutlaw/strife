@@ -41,7 +41,7 @@ public class InspectCommand extends BaseCommand {
     plugin.getChampionManager().updateEquipmentStats(sender);
     plugin.getChampionManager().update(sender);
     plugin.getStatUpdateManager().updateVanillaAttributes(sender);
-    plugin.getStatsMenu().setTargetPlayer(sender);
+    plugin.getStatsMenu().getInspectionTargetMap().put(sender, sender);
     plugin.getStatsMenu().open(sender);
   }
 
@@ -52,7 +52,7 @@ public class InspectCommand extends BaseCommand {
       MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
       return;
     }
-    plugin.getStatsMenu().setTargetPlayer(target.getPlayer());
+    plugin.getStatsMenu().getInspectionTargetMap().put(sender, target.getPlayer());
     plugin.getStatsMenu().open(sender);
   }
 

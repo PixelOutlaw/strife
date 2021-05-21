@@ -125,6 +125,7 @@ public class DamageUtil {
     if (defender.getEntity() instanceof Player) {
       plugin.getChampionManager().updateEquipmentStats(
           plugin.getChampionManager().getChampion((Player) defender.getEntity()));
+      plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
     }
 
     if (attacker != defender){
@@ -219,8 +220,6 @@ public class DamageUtil {
     float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio() * pvpMult;
     float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
 
-    rawDamage *= DamageUtil.getRageMult(defender);
-
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
     }
@@ -242,7 +241,8 @@ public class DamageUtil {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.BOLD + damageString);
     }
-    if (mods.isShowPopoffs() && attacker.getMaster() != null && attacker.getMaster() instanceof Player) {
+    if (mods.isShowPopoffs() && attacker.getMaster() != null &&
+        attacker.getMaster().getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
     }
@@ -252,11 +252,6 @@ public class DamageUtil {
   }
 
   public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
-
-    if (defender.getEntity() instanceof Player) {
-      plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
-    }
-
     float ratio = mods.getDamageReductionRatio();
 
     DamageUtil.applyHealthOnHit(attacker, ratio, mods.getHealMultiplier(),
@@ -600,10 +595,6 @@ public class DamageUtil {
     return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
   }
 
-  public static float getRageMult(StrifeMob defender) {
-    return 200 / (200 + StrifePlugin.getInstance().getRageManager().getRage(defender.getEntity()));
-  }
-
   public static LivingEntity getAttacker(Entity entity) {
     if (!entity.getPassengers().isEmpty()) {
       if (entity.getPassengers().get(0) instanceof LivingEntity) {
@@ -900,6 +891,14 @@ public class DamageUtil {
       if (event.isApplicable(modifier)) {
         event.setDamage(modifier, 0D);
       }
+    }
+  }
+
+  public static void dealRawDamage(LivingEntity le, float damage) {
+    if (le.getHealth() <= damage) {
+      le.damage(damage);
+    } else {
+      le.setHealth(le.getHealth() - damage);
     }
   }
 

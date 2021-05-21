@@ -113,9 +113,7 @@ public class LoreAbilityManager {
 
     TargetResponse response = new TargetResponse(entities);
 
-    for (Effect effect : la.getEffects()) {
-      effectManager.execute(effect, caster, response);
-    }
+    effectManager.processEffectList(caster, response, la.getEffects());
   }
 
   private LoreAbility getLoreAbilityFromString(String loreString) {

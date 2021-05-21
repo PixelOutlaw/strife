@@ -382,6 +382,8 @@ public class StrifePlugin extends FacePlugin {
         .registerCompletion("spawners", c -> spawnerManager.getSpawnerMap().keySet());
     commandManager.getCommandCompletions()
         .registerCompletion("abilities", c -> abilityManager.getLoadedAbilities().keySet());
+    commandManager.getCommandCompletions()
+        .registerCompletion("buffs", c -> buffManager.getLoadedBuffIds());
 
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);
@@ -472,7 +474,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
     Bukkit.getPluginManager().registerEvents(new MoneyDropListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShearsEquipListener(), this);
-    Bukkit.getPluginManager().registerEvents(new MinionListener(strifeMobManager), this);
+    Bukkit.getPluginManager().registerEvents(new MinionListener(this), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
@@ -517,7 +519,7 @@ public class StrifePlugin extends FacePlugin {
     abilitySubcategoryMenu = new AbilityMenu(this, pickerName, pickerItems);
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
-    statsMenu = new StatsMenu();
+    statsMenu = new StatsMenu(this);
     for (Path path : LevelPath.PATH_VALUES) {
       pathMenus.put(path, new PathMenu(this, path));
     }
@@ -753,6 +755,10 @@ public class StrifePlugin extends FacePlugin {
 
       Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueId, amount, loc,
           respawnSeconds, leashRange);
+
+      spawner.setStartTime(cs.getInt("start-time", -1));
+      spawner.setEndTime(cs.getInt("end-time", -1));
+
       spawners.put(spawnerId, spawner);
       spawnerManager.setSpawnerMap(spawners);
     }
@@ -781,6 +787,8 @@ public class StrifePlugin extends FacePlugin {
       spawnerYAML.set(spawnerId + ".location.x", spawner.getLocation().getX());
       spawnerYAML.set(spawnerId + ".location.y", spawner.getLocation().getY());
       spawnerYAML.set(spawnerId + ".location.z", spawner.getLocation().getZ());
+      spawnerYAML.set(spawnerId + ".start-time", spawner.getStartTime());
+      spawnerYAML.set(spawnerId + ".end-time", spawner.getEndTime());
       LogUtil.printDebug("Saved spawner " + spawnerId + ".");
     }
     spawnerYAML.save();

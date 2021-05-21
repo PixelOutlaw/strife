@@ -25,24 +25,22 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class StatsChangeHealthDisplay extends MenuItem {
+public class StatsOpenLevelupMenu extends MenuItem {
 
   private final StrifePlugin plugin;
   private final Map<Player, Boolean> selfInspectMap = new WeakHashMap<>();
 
-  StatsChangeHealthDisplay(StrifePlugin plugin) {
-    super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
+  StatsOpenLevelupMenu(StrifePlugin plugin) {
+    super(TextUtils.color("&f&lLevelup!"), new ItemStack(Material.NETHER_STAR));
     this.plugin = plugin;
   }
 
@@ -54,17 +52,21 @@ public class StatsChangeHealthDisplay extends MenuItem {
       return BlankIcon.getBlankStack();
     }
     selfInspectMap.put(commandSender, true);
-    ItemStack itemStack = new ItemStack(Material.APPLE);
+    ItemStack itemStack = new ItemStack(Material.NETHER_STAR);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
     List<String> lore = new ArrayList<>();
 
     Champion champion = plugin.getChampionManager().getChampion(player);
 
-    lore.add(TextUtils.color("&7Click this icon to change how your"));
-    lore.add(TextUtils.color("&7hearts are displayed!"));
-    lore.add(TextUtils.color("&fSetting: " + WordUtils.capitalizeFully(
-        champion.getSaveData().getHealthDisplayType().toString().replaceAll("_", " "))));
+    if (champion.getUnusedStatPoints() < 1 && champion.getUnchosenPaths() < 1) {
+      selfInspectMap.put(commandSender, false);
+      return BlankIcon.getBlankStack();
+    }
+
+    lore.add(TextUtils.color("&7You have unspent &flevelpoints&7 or"));
+    lore.add(TextUtils.color("&7a &epath &7to choose! Click here to"));
+    lore.add(TextUtils.color("&7open the &b/levelup &7menu!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
@@ -77,16 +79,10 @@ public class StatsChangeHealthDisplay extends MenuItem {
     if (!selfInspectMap.getOrDefault(event.getPlayer(), false)) {
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
-    int ordinal = champion.getSaveData().getHealthDisplayType().ordinal();
-    ordinal++;
-    if (ordinal == ChampionSaveData.DISPLAY_OPTIONS.length) {
-      ordinal = 0;
-    }
-    champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
-    plugin.getStatUpdateManager().updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-    event.setWillUpdate(true);
-    event.setWillClose(false);
+    event.setWillClose(true);
+    event.setWillUpdate(false);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        plugin.getLevelupMenu().open(event.getPlayer()), 2L);
   }
 
 }

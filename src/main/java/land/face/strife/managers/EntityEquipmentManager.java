@@ -73,7 +73,7 @@ public class EntityEquipmentManager {
       } else if (StringUtils.isNotBlank(hdbId) && headDatabaseAPI != null) {
         try {
           stack = headDatabaseAPI.getItemHead(hdbId);
-          Bukkit.getLogger().info("Loaded HDB Head " + hdbId + " successfully!");
+          LogUtil.printDebug("Loaded HDB Head " + hdbId + " successfully!");
         } catch (NullPointerException e) {
           stack = null;
         }

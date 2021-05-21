@@ -20,6 +20,7 @@ import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -81,8 +82,12 @@ public class DoubleJumpListener implements Listener {
       return;
     }
 
+    boolean waterHop = event.getPlayer().getLocation().getBlock().getType() == Material.WATER &&
+        event.getPlayer().getVelocity().getY() < -0.4 &&
+        event.getPlayer().getLocation().clone().add(0, 1, 0).getBlock().getType().isAir();
+
     int jumps = JumpUtil.getJumps(event.getPlayer());
-    if (event.getPlayer().getFoodLevel() < 6 || jumps < 1) {
+    if (event.getPlayer().getFoodLevel() < 6 || (jumps < 1 && !waterHop)) {
       return;
     }
 
@@ -93,19 +98,26 @@ public class DoubleJumpListener implements Listener {
       return;
     }
 
-    if (event.getPlayer().getGameMode() == GameMode.SURVIVAL
-        || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
+    if (waterHop) {
+      doWaterSkip(mob, event.getPlayer());
+    } else {
+      doAirJump(mob, event.getPlayer(), jumps);
+    }
+  }
+
+  private void doAirJump(StrifeMob mob, Player player, int jumps) {
+    if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
       StatUtil.changeEnergy(mob, -20);
     }
 
     AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
     Bukkit.getPluginManager().callEvent(airJumpEvent);
 
-    event.getPlayer().setFallDistance(0);
+    player.setFallDistance(0);
 
-    Vector velocity = event.getPlayer().getVelocity().clone();
+    Vector velocity = player.getVelocity().clone();
 
-    Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
+    Vector bonusVelocity = player.getLocation().getDirection();
     bonusVelocity.setY(Math.max(2, bonusVelocity.getY()));
     bonusVelocity.normalize().multiply(0.55);
 
@@ -114,22 +126,48 @@ public class DoubleJumpListener implements Listener {
     bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
 
     velocity.setY(0);
-    event.getPlayer().setVelocity(velocity.add(bonusVelocity));
+    player.setVelocity(velocity.add(bonusVelocity));
 
     jumps--;
-    JumpUtil.setJumps(event.getPlayer(), jumps);
+    JumpUtil.setJumps(player, jumps);
 
     int maxJumps = JumpUtil.getMaxJumps(mob);
 
     String bars = IntStream.range(0, maxJumps).mapToObj(i -> "▌").collect(Collectors.joining(""));
     bars = insert(bars, "&0", Math.min(jumps, maxJumps));
     String message = StringExtensionsKt.chatColorize("&3&lAir Jumps: &b" + bars);
-    AdvancedActionBarUtil.addMessage(event.getPlayer(), JUMP_AB_KEY, message, 70, 0);
+    AdvancedActionBarUtil.addMessage(player, JUMP_AB_KEY, message, 70, 0);
 
     plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 3, false, false);
-    flingParticle(event.getPlayer());
-    event.getPlayer().getWorld()
-        .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    flingParticle(player);
+    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+  }
+
+  private void doWaterSkip(StrifeMob mob, Player player) {
+    if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
+      StatUtil.changeEnergy(mob, -8);
+    }
+
+    AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
+    Bukkit.getPluginManager().callEvent(airJumpEvent);
+
+    player.setFallDistance(0);
+
+    Vector velocity = player.getVelocity().clone();
+
+    Vector bonusVelocity = player.getLocation().getDirection();
+    bonusVelocity.setY(Math.max(1, bonusVelocity.getY()));
+    bonusVelocity.normalize().multiply(0.65);
+
+    double bonusY = Math.max(bonusVelocity.getY(), velocity.getY());
+    bonusVelocity.setY(bonusY);
+    bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
+
+    velocity.setY(0);
+    player.setVelocity(velocity.add(bonusVelocity));
+
+    plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 2, false, false);
+    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
   }
 
   public static String insert(String str, String insert, int position) {
@@ -138,8 +176,8 @@ public class DoubleJumpListener implements Listener {
 
   private void flingParticle(Player player) {
     for (Integer step : cachedJumpAnimation.keySet()) {
-      player.getWorld().spawnParticle(Particle.CRIT_MAGIC, player.getLocation(), 0,
-          cachedJumpAnimation.get(step).getX(), 0, cachedJumpAnimation.get(step).getZ(), 0.35);
+      player.getWorld().spawnParticle(Particle.SPIT, player.getLocation(), 0,
+          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), 0.11);
     }
   }
 }

@@ -19,12 +19,14 @@ import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 public class Damage extends Effect {
 
   private float attackMultiplier;
   private float healMultiplier;
   private float damageReductionRatio;
+  private float maxDamage;
   private final Map<DamageType, Float> damageMultipliers = new HashMap<>();
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
@@ -56,7 +58,8 @@ public class Damage extends Effect {
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
     mods.setBypassBarrier(bypassBarrier);
-    if (canSneakAttack && StrifePlugin.getInstance().getStealthManager().isStealthed(caster.getEntity())) {
+    if (canSneakAttack && caster.getEntity() instanceof Player && getPlugin().getStealthManager()
+        .canSneakAttack((Player) caster.getEntity())) {
       mods.setSneakAttack(true);
     }
     mods.setBlocking(isBlocking);
@@ -87,6 +90,10 @@ public class Damage extends Effect {
 
     if (strifeDamageEvent.isCancelled()) {
       return;
+    }
+
+    if (maxDamage > 0) {
+      strifeDamageEvent.setFinalDamage(Math.min(maxDamage, strifeDamageEvent.getFinalDamage()));
     }
 
     StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
@@ -211,5 +218,9 @@ public class Damage extends Effect {
 
   public void setBlocking(boolean blocking) {
     isBlocking = blocking;
+  }
+
+  public void setMaxDamage(float maxDamage) {
+    this.maxDamage = maxDamage;
   }
 }

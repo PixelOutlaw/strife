@@ -59,15 +59,12 @@ public class DamageManager {
       defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
       return damage;
     }
-    int noDamageTicks = defender.getEntity().getNoDamageTicks();
     Vector velocity = defender.getEntity().getVelocity();
-    defender.getEntity().setNoDamageTicks(0);
 
     handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);
     defender.getEntity().damage(damage, attacker.getEntity());
     handledDamages.remove(attacker.getEntity().getUniqueId());
 
-    defender.getEntity().setNoDamageTicks(noDamageTicks);
     defender.getEntity().setVelocity(velocity);
 
     return damage;

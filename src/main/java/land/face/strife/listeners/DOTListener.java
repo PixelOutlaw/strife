@@ -22,6 +22,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -34,7 +35,7 @@ public class DOTListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void onEntityDOTEvent(EntityDamageEvent event) {
     if (event.isCancelled()) {
       return;
@@ -47,37 +48,36 @@ public class DOTListener implements Listener {
       return;
     }
     LivingEntity le = (LivingEntity) event.getEntity();
-    if (event.getCause() == DamageCause.LAVA || event.getCause() == DamageCause.FIRE) {
-      DamageUtil.removeDamageModifiers(event);
-      event.setDamage(1);
-      le.setFireTicks(Math.max(le.getFireTicks(), 40));
-      plugin.getDamageOverTimeTask().trackBurning(le);
-      return;
-    }
-    if (event.getCause() == DamageCause.HOT_FLOOR) {
-      le.setFireTicks(40);
-      plugin.getDamageOverTimeTask().trackBurning(le);
-      event.setCancelled(true);
-      return;
-    }
-    if (event.getCause() == DamageCause.FIRE_TICK) {
-      plugin.getDamageOverTimeTask().trackBurning(le);
-      event.setCancelled(true);
-      return;
-    }
-    if (event.getCause() == DamageCause.POISON) {
-      plugin.getDamageOverTimeTask().trackPoison(le);
-      event.setCancelled(true);
-      return;
-    }
-    if (event.getCause() == DamageCause.WITHER) {
-      plugin.getDamageOverTimeTask().trackWither(le);
-      event.setCancelled(true);
-      return;
-    }
-    if (event.getCause() == DamageCause.SUFFOCATION || event.getCause() == DamageCause.DROWNING) {
-      DamageUtil.removeDamageModifiers(event);
-      event.setDamage(le.getMaxHealth() / 10);
+    switch (event.getCause()) {
+      case LAVA:
+      case FIRE:
+        le.setFireTicks(Math.max(le.getFireTicks(), 80));
+        event.setCancelled(true);
+        plugin.getDamageOverTimeTask().trackBurning(le);
+        return;
+      case HOT_FLOOR:
+        le.setFireTicks(40);
+        plugin.getDamageOverTimeTask().trackBurning(le);
+        event.setCancelled(true);
+        return;
+      case FIRE_TICK:
+        plugin.getDamageOverTimeTask().trackBurning(le);
+        event.setCancelled(true);
+        return;
+      case POISON:
+        plugin.getDamageOverTimeTask().trackPoison(le);
+        event.setCancelled(true);
+        return;
+      case WITHER:
+        plugin.getDamageOverTimeTask().trackWither(le);
+        event.setCancelled(true);
+        return;
+      case CONTACT:
+        event.setCancelled(true);
+        return;
+      case SUFFOCATION:
+      case DROWNING:
+        DamageUtil.dealRawDamage(le, (float) le.getMaxHealth() * 0.005f);
     }
   }
 }

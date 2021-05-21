@@ -33,4 +33,8 @@ public class LoadedBuff {
     return seconds;
   }
 
+  public static Buff toRunningBuff(LoadedBuff buff) {
+    return new Buff(buff.id, buff.stats, buff.maxStacks);
+  }
+
 }

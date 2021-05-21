@@ -68,7 +68,7 @@ public class PathManager {
     pathMegaMap.get(path).put(Choice.OPTION_1, buildChoiceSection(cs.getConfigurationSection("option-one")));
     pathMegaMap.get(path).put(Choice.OPTION_2, buildChoiceSection(cs.getConfigurationSection("option-two")));
     pathMegaMap.get(path).put(Choice.OPTION_3, buildChoiceSection(cs.getConfigurationSection("option-three")));
-    Bukkit.getLogger().info("Loaded path " + key);
+    LogUtil.printDebug("Loaded path " + key);
   }
 
   private LevelPath buildChoiceSection(ConfigurationSection choiceSection) {

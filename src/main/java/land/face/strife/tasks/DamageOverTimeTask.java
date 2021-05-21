@@ -29,6 +29,7 @@ import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -93,7 +94,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
 
-      dealDirectDamage(le, damage);
+      DamageUtil.dealRawDamage(le, damage);
     }
   }
 
@@ -113,7 +114,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
 
-      dealDirectDamage(le, damage);
+      DamageUtil.dealRawDamage(le, damage);
     }
   }
 
@@ -138,15 +139,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
       }
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
 
-      dealDirectDamage(le, damage);
-    }
-  }
-
-  private void dealDirectDamage(LivingEntity le, float damage) {
-    if (le.getHealth() <= damage) {
-      le.damage(damage);
-    } else {
-      le.setHealth(le.getHealth() - damage);
+      DamageUtil.dealRawDamage(le, damage);
     }
   }
 }

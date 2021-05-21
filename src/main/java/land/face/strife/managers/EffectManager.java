@@ -155,7 +155,8 @@ public class EffectManager {
   }
 
   public void processEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
-    if (!caster.getEntity().isValid() && response.isCancelOnCasterDeath()) {
+    if (caster == null || caster.getEntity() == null ||
+        (!caster.getEntity().isValid() && response.isCancelOnCasterDeath())) {
       return;
     }
     List<Effect> taskEffects = new ArrayList<>(effectList);
@@ -263,6 +264,7 @@ public class EffectManager {
         ((Heal) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Heal) effect).setUseHealingPower(cs.getBoolean("use-healing-power", false));
+        ((Heal) effect).setHealCaster(cs.getBoolean("heal-caster", false));
         break;
       case FOOD:
         effect = new Food();
@@ -291,12 +293,14 @@ public class EffectManager {
         effect = new Damage();
         float attackMult = (float) cs.getDouble("attack-multiplier", 1D);
         ((Damage) effect).setAttackMultiplier(attackMult);
-        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", 0.3D));
-        ((Damage) effect).setDamageReductionRatio((float) cs.getDouble("damage-reduction-ratio", 1D));
+        float damageReductionRatio = (float) cs.getDouble("damage-reduction-ratio", 1D);
+        ((Damage) effect).setDamageReductionRatio(damageReductionRatio);
+        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
+        ((Damage) effect).setMaxDamage((float) cs.getDouble("max-damage", -1D));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
-        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.7));
+        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.6 || damageReductionRatio >= 0.6));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         List<String> hitEffects = cs.getStringList("hit-effects");

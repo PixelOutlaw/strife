@@ -19,7 +19,6 @@
 package land.face.strife.menus.stats;
 
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import land.face.strife.StrifePlugin;
 import land.face.strife.util.ItemUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -31,16 +30,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class StatsEquipmentItem extends MenuItem {
 
+  private final StatsMenu statsMenu;
   private EquipmentSlot slot;
 
-  public StatsEquipmentItem(EquipmentSlot slot, String invalidText) {
+  public StatsEquipmentItem(StatsMenu statsMenu, EquipmentSlot slot, String invalidText) {
     super(StringExtensionsKt.chatColorize(invalidText), new ItemStack(Material.BARRIER));
     this.slot = slot;
+    this.statsMenu = statsMenu;
   }
 
   @Override
   public ItemStack getFinalIcon(Player commandSender) {
-    Player player = StrifePlugin.getInstance().getStatsMenu().getTargetPlayer();
+    Player player = statsMenu.getInspectionTargetMap().get(commandSender);
     if (!player.isValid()) {
       return getIcon();
     }

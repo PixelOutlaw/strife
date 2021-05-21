@@ -43,6 +43,7 @@ public class StrifeMobManager {
           StatUtil.updateMaxEnergy(strifeMob) * ((Player) entity).getFoodLevel() / 20 : 200000);
       trackedEntities.put(entity, strifeMob);
     }
+    entity.setMaximumNoDamageTicks(0);
     return trackedEntities.get(entity);
   }
 

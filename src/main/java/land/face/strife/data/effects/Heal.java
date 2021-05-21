@@ -18,12 +18,15 @@ public class Heal extends Effect {
   private DamageScale damageScale;
   private float flatBonus;
   private boolean useHealingPower;
+  private boolean healCaster;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (target.getEntity().isDead()) {
+
+    if (healCaster ? caster.getEntity().isDead() : target.getEntity().isDead()) {
       return;
     }
+
     float heal = amount;
     for (StrifeStat attr : getStatMults().keySet()) {
       heal += getStatMults().get(attr) * caster.getStat(attr);
@@ -41,13 +44,13 @@ public class Heal extends Effect {
       heal *= 1 + getStatMults().get(attr) * caster.getStat(attr);
     }
 
-    if (caster != target && caster.getEntity() instanceof Player) {
+    if (!healCaster && caster != target && caster.getEntity() instanceof Player) {
       String healText = "&a&l+" + INT_FORMAT.format(heal);
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
           target.getEntity(), IndicatorStyle.FLOAT_UP_SLOW, 8, healText);
     }
 
-    DamageUtil.restoreHealth(target.getEntity(), heal);
+    DamageUtil.restoreHealth(healCaster ? caster.getEntity() : target.getEntity(), heal);
   }
 
   public void setAmount(float amount) {
@@ -64,5 +67,9 @@ public class Heal extends Effect {
 
   public void setUseHealingPower(boolean useHealingPower) {
     this.useHealingPower = useHealingPower;
+  }
+
+  public void setHealCaster(boolean healCaster) {
+    this.healCaster = healCaster;
   }
 }
