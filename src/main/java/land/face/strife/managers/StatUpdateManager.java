@@ -148,7 +148,6 @@ public class StatUpdateManager {
   }
 
   public void updateVanillaAttributes(StrifeMob strifeMob) {
-    strifeMob.getEntity().setMaximumNoDamageTicks(0);
     updateMovementSpeed(strifeMob);
     updateAttackAttrs(strifeMob);
     updateHealth(strifeMob);

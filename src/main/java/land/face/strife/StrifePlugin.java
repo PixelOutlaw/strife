@@ -382,6 +382,8 @@ public class StrifePlugin extends FacePlugin {
         .registerCompletion("spawners", c -> spawnerManager.getSpawnerMap().keySet());
     commandManager.getCommandCompletions()
         .registerCompletion("abilities", c -> abilityManager.getLoadedAbilities().keySet());
+    commandManager.getCommandCompletions()
+        .registerCompletion("buffs", c -> buffManager.getLoadedBuffIds());
 
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);

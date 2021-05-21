@@ -28,7 +28,7 @@ public class UniqueSplashListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onAbilityPotionSplash(PotionSplashEvent event) {
     List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
-    if (hitEffects.isEmpty()) {
+    if (hitEffects == null || hitEffects.isEmpty()) {
       return;
     }
     if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
