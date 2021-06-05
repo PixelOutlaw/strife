@@ -1,7 +1,10 @@
 package land.face.strife.data.effects;
 
-import static land.face.strife.data.champion.PlayerEquipmentCache.ITEM_SLOTS;
+import static land.face.strife.data.champion.EquipmentCache.ITEM_SLOTS;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.listeners.SpawnListener;
@@ -32,78 +35,90 @@ public class Summon extends LocationEffect {
   private boolean mount;
   private boolean clone;
 
+
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    for (int i = 0; i < amount; i++) {
-      Location loc = target.getEntity().getLocation();
-      applyAtLocation(caster, loc);
-    }
+    Location loc = target.getEntity().getLocation();
+    applyAtLocation(caster, loc);
   }
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
-    if (caster.getMinions().size() >= caster.getStat(StrifeStat.MAX_MINIONS)) {
-      return;
-    }
 
-    StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager()
-        .spawnUnique(uniqueEntity, location);
-
-    if (summonedEntity == null || summonedEntity.getEntity() == null) {
-      return;
-    }
-
-    LivingEntity summon = summonedEntity.getEntity();
     double lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
-    caster.addMinion(summonedEntity, (int) lifespan);
 
-    if (clone) {
-      Disguise disguise;
-      if (caster.getEntity().getType() == EntityType.PLAYER) {
-        disguise = new PlayerDisguise((Player) caster.getEntity());
-        ((PlayerDisguise) disguise).setName("<Inherit>");
-      } else {
-        disguise = new MobDisguise(DisguiseType.getType(caster.getEntity().getType()));
+    for (int i = 0; i < amount; i++) {
+      StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager()
+          .spawnUnique(uniqueEntity, location);
+
+      if (summonedEntity == null || summonedEntity.getEntity() == null) {
+        return;
       }
-      disguise.setReplaceSounds(true);
-      disguise.setDynamicName(true);
 
-      DisguiseAPI.disguiseToAll(summonedEntity.getEntity(), disguise);
+      LivingEntity summon = summonedEntity.getEntity();
+      caster.addMinion(summonedEntity, (int) lifespan);
 
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-        for (EquipmentSlot slot : ITEM_SLOTS) {
-          if (slot == EquipmentSlot.HAND && ItemUtil
-              .isWandOrStaff(caster.getEntity().getEquipment().getItem(EquipmentSlot.HAND))) {
-            summonedEntity.getEntity().getEquipment().setItem(slot, SpawnListener.SKELETON_WAND);
-          } else {
-            summonedEntity.getEntity().getEquipment()
-                .setItem(slot, caster.getEntity().getEquipment().getItem(slot));
-          }
+      if (clone) {
+        Disguise disguise;
+        if (caster.getEntity().getType() == EntityType.PLAYER) {
+          disguise = new PlayerDisguise((Player) caster.getEntity());
+          ((PlayerDisguise) disguise).setName("<Inherit>");
+        } else {
+          disguise = new MobDisguise(DisguiseType.getType(caster.getEntity().getType()));
         }
-      }, 2L);
-      summonedEntity.setStats(caster.getBaseStats());
+        disguise.setReplaceSounds(true);
+        disguise.setDynamicName(true);
+
+        DisguiseAPI.disguiseToAll(summonedEntity.getEntity(), disguise);
+
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          for (EquipmentSlot slot : ITEM_SLOTS) {
+            if (slot == EquipmentSlot.HAND && ItemUtil
+                .isWandOrStaff(caster.getEntity().getEquipment().getItem(EquipmentSlot.HAND))) {
+              summonedEntity.getEntity().getEquipment().setItem(slot, SpawnListener.SKELETON_WAND);
+            } else {
+              summonedEntity.getEntity().getEquipment()
+                  .setItem(slot, caster.getEntity().getEquipment().getItem(slot));
+            }
+          }
+        }, 2L);
+        summonedEntity.setStats(caster.getBaseStats());
+      }
+
+      if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
+        ((Mob) summon).setTarget(((Mob) caster.getEntity()).getTarget());
+      }
+
+      if (summon instanceof Tameable && caster.getEntity() instanceof Player) {
+        ((Tameable) summon).setOwner((Player) caster.getEntity());
+      }
+
+      if (soundEffect != null) {
+        PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager()
+            .getEffect(soundEffect);
+        sound.applyAtLocation(caster, summon.getLocation());
+      }
+
+      if (mount) {
+        summon.addPassenger(caster.getEntity());
+      }
+      double maxHealth = summon.getMaxHealth() *
+          (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
+      summon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
+      summon.setHealth(maxHealth);
     }
 
-    if (caster.getEntity() instanceof Mob && summon instanceof Mob) {
-      ((Mob) summon).setTarget(((Mob) caster.getEntity()).getTarget());
-    }
+    List<StrifeMob> minionList = new ArrayList<>(caster.getMinions());
 
-    if (summon instanceof Tameable && caster.getEntity() instanceof Player) {
-      ((Tameable) summon).setOwner((Player) caster.getEntity());
+    int excessMinions = minionList.size() - (int) caster.getStat(StrifeStat.MAX_MINIONS);
+    if (excessMinions > 0) {
+      minionList.sort(Comparator.comparingDouble(StrifeMob::getMinionRating));
+      while (excessMinions > 0) {
+        minionList.get(excessMinions - 1).minionDeath();
+        //Bukkit.getLogger().info("commit die: " + minionList.get(excessMinions - 1).getEntity().getName());
+        excessMinions--;
+      }
     }
-
-    if (soundEffect != null) {
-      PlaySound sound = (PlaySound) StrifePlugin.getInstance().getEffectManager()
-          .getEffect(soundEffect);
-      sound.applyAtLocation(caster, summon.getLocation());
-    }
-
-    if (mount) {
-      summon.addPassenger(caster.getEntity());
-    }
-    double maxHealth = summon.getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
-    summon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-    summon.setHealth(maxHealth);
   }
 
   public void setUniqueEntity(String uniqueEntity) {

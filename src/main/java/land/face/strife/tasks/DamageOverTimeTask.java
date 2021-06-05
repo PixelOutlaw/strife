@@ -22,15 +22,19 @@ import static org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE;
 import static org.bukkit.potion.PotionEffectType.POISON;
 import static org.bukkit.potion.PotionEffectType.WITHER;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
+import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -47,6 +51,8 @@ public class DamageOverTimeTask extends BukkitRunnable {
   private final Set<LivingEntity> burningMobs = new HashSet<>();
   private final Set<LivingEntity> witheredMobs = new HashSet<>();
 
+  private final LoadedBuff lavaDebuff;
+
   public DamageOverTimeTask(StrifePlugin plugin) {
     this.plugin = plugin;
     BURN_FLAT_DAMAGE = (float) plugin.getSettings()
@@ -57,6 +63,10 @@ public class DamageOverTimeTask extends BukkitRunnable {
         .getDouble("config.mechanics.poison-flat-damage");
     POISON_PERCENT_MAX_HEALTH_DAMAGE = (float) plugin.getSettings()
         .getDouble("config.mechanics.poison-percent-damage");
+
+    Map<StrifeStat, Float> debuffMap = new HashMap<>();
+    debuffMap.put(StrifeStat.BURNING_RESIST, -12.5f);
+    lavaDebuff = new LoadedBuff("BUILT-IN-LAVA-DEBUFF", debuffMap, 200, 10);
   }
 
   public void trackPoison(LivingEntity livingEntity) {
@@ -133,12 +143,15 @@ public class DamageOverTimeTask extends BukkitRunnable {
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
       damage *= 1 - StatUtil.getFireResist(mob, false) / 100;
+      damage *= 1 - mob.getStat(StrifeStat.BURNING_RESIST) / 100;
       damage = mob.damageBarrier(damage);
       if (damage < 0.05) {
         continue;
       }
+      if (le.getWorld().getBlockAt(le.getLocation()).getType() == Material.LAVA) {
+        mob.addBuff(LoadedBuff.toRunningBuff(lavaDebuff), 10);
+      }
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
-
       DamageUtil.dealRawDamage(le, damage);
     }
   }

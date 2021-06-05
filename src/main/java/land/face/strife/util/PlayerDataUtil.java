@@ -267,8 +267,8 @@ public class PlayerDataUtil {
   }
 
   public static void updatePlayerEquipment(Player player) {
-    StrifePlugin.getInstance().getChampionManager().updateEquipmentStats(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player));
+    StrifePlugin.getInstance().getStrifeMobManager().updateEquipmentStats(StrifePlugin
+        .getInstance().getStrifeMobManager().getStatMob(player));
   }
 
   public static void playExpSound(Player player) {

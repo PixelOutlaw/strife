@@ -278,6 +278,12 @@ public class DataListener implements Listener {
         plugin.getConfirmationMenu().open((Player) event.getPlayer()), 1L);
   }
 
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onRespawn(PlayerRespawnEvent event) {
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    mob.restartTimers();
+  }
+
   private void ensureAbilitiesDontInstantCast(Player player) {
     plugin.getAbilityManager().setGlobalCooldown(player, 30);
     if (player.getInventory().getHeldItemSlot() < 3) {

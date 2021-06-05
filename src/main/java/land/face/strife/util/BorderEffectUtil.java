@@ -88,6 +88,7 @@ public class BorderEffectUtil {
   }
 
   public static void sendBorder(Player p, double percentage, int fadeTime) {
+    percentage = Math.max(0, Math.min(0.95, percentage));
     setBorder(p, percentage);
     fadeBorder(p, percentage, fadeTime);
   }

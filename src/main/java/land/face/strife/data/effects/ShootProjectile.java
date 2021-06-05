@@ -135,12 +135,12 @@ public class ShootProjectile extends Effect {
 
       if (maxDuration != -1) {
         Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-          for (Effect effect : hitEffects) {
-            if (effect instanceof LocationEffect) {
-              ((LocationEffect) effect).applyAtLocation(caster, projectile.getLocation());
-            }
-          }
           if (projectile.isValid()) {
+            for (Effect effect : hitEffects) {
+              if (effect instanceof LocationEffect) {
+                ((LocationEffect) effect).applyAtLocation(caster, projectile.getLocation());
+              }
+            }
             projectile.remove();
           }
         }, maxDuration);

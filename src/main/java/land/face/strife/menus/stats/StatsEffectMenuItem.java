@@ -59,7 +59,7 @@ public class StatsEffectMenuItem extends MenuItem {
     lore.add(StatsMenu.breakLine);
 
     List<String> traitLores = new ArrayList<>();
-    for (StrifeTrait trait : pStats.getChampion().getTraits()) {
+    for (StrifeTrait trait : pStats.getTraits()) {
       traitLores.add(ChatColor.YELLOW + "❂ " + trait.getName());
     }
 
@@ -69,8 +69,8 @@ public class StatsEffectMenuItem extends MenuItem {
     }
 
     List<String> abilityLores = new ArrayList<>();
-    for (TriggerType triggerType : pStats.getChampion().getLoreAbilities().keySet()) {
-      for (LoreAbility la : pStats.getChampion().getLoreAbilities().get(triggerType)) {
+    for (TriggerType triggerType : pStats.getLoreAbilities().keySet()) {
+      for (LoreAbility la : pStats.getLoreAbilities().get(triggerType)) {
         abilityLores.add(la.getTriggerText());
         abilityLores.addAll(la.getDescription());
       }

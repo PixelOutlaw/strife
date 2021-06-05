@@ -166,6 +166,7 @@ public class DamageModifiers {
     FREEZE,
     SHOCK,
     CORRUPT,
+    CRUNCH
   }
 
 }

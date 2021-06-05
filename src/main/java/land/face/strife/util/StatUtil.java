@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.events.PropertyUpdateEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -239,6 +241,41 @@ public class StatUtil {
       statMap.put(strifeStat, (float) statSection.getDouble(statString));
     }
     return statMap;
+  }
+
+  public static Map<LifeSkillType, Float> getSkillMapFromSection(ConfigurationSection skillSection) {
+    Map<LifeSkillType, Float> skillMap = new HashMap<>();
+    if (skillSection == null) {
+      return skillMap;
+    }
+    for (String skillString : skillSection.getKeys(false)) {
+      LifeSkillType strifeStat;
+      try {
+        strifeStat = LifeSkillType.valueOf(skillString);
+      } catch (Exception e) {
+        LogUtil.printWarning("Invalid skill " + skillString + ". Skipping...");
+        continue;
+      }
+      skillMap.put(strifeStat, (float) skillSection.getDouble(skillString));
+    }
+    return skillMap;
+  }
+
+  public static Map<StrifeAttribute, Float> getAttributeMapFromSection(ConfigurationSection attrSection) {
+    Map<StrifeAttribute, Float> attributeMap = new HashMap<>();
+    if (attrSection == null) {
+      return attributeMap;
+    }
+    for (String attrString : attrSection.getKeys(false)) {
+      StrifeAttribute strifeAttr = StrifePlugin.getInstance()
+          .getAttributeManager().getAttribute(attrString);
+      if (strifeAttr == null) {
+        LogUtil.printWarning("Invalid attribute " + attrString + ". Skipping...");
+      } else {
+        attributeMap.put(strifeAttr, (float) attrSection.getDouble(attrString));
+      }
+    }
+    return attributeMap;
   }
 
   public static int getMobLevel(LivingEntity livingEntity) {

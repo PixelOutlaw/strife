@@ -18,12 +18,9 @@ public class ChangeEnergy extends Effect {
       return;
     }
     float restoreAmount = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      restoreAmount += getStatMults().get(attr) * caster.getStat(attr);
-    }
     BonusDamage bonusDamage = new BonusDamage(damageScale, null, null, restoreAmount);
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
-    StatUtil.changeEnergy(target, restoreAmount);
+    StatUtil.changeEnergy(target, applyMultipliers(caster, restoreAmount));
   }
 
   public void setAmount(float amount) {

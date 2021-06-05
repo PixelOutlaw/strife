@@ -103,6 +103,7 @@ public abstract class Condition {
     ENDLESS_EFFECT,
     BLOCKING,
     MOVING,
+    MINION,
     NEARBY_ENTITIES,
     IN_COMBAT,
     CHANCE,

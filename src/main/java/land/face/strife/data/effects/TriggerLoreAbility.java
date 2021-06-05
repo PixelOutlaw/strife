@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
 import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 
@@ -15,12 +14,8 @@ public class TriggerLoreAbility extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    Champion champion = caster.getChampion();
-    if (champion != null) {
-      LoreAbilityListener.executeBoundEffects(caster, target.getEntity(), champion.getLoreAbilities().get(triggerType));
-    }
+    LoreAbilityListener.executeBoundEffects(caster, target.getEntity(), caster.getLoreAbilities().get(triggerType));
     LoreAbilityListener.executeFiniteEffects(caster, target, triggerType);
   }
-
 
 }

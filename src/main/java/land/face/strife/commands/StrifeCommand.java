@@ -321,8 +321,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "<red>Invalid loreAbility ID: " + loreAbilityId);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
-    boolean success = plugin.getChampionManager().addBoundLoreAbility(champion, ability);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
+    boolean success = plugin.getChampionManager().addBoundLoreAbility(mob, ability);
     if (success) {
       sendMessage(sender,
           "&aBound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());
@@ -341,8 +341,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "<red>Invalid loreAbility ID: " + loreAbilityId);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
-    boolean success = plugin.getChampionManager().removeBoundLoreAbility(champion, ability);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
+    boolean success = plugin.getChampionManager().removeBoundLoreAbility(mob, ability);
     if (success) {
       sendMessage(sender,
           "&aUnbound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());

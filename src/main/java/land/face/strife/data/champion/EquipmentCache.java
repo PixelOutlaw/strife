@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.LoreAbility;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.LoreAbilityManager;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
@@ -14,7 +15,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.inventory.EquipmentSlot;
 
-public class PlayerEquipmentCache {
+public class EquipmentCache {
 
   private final Map<EquipmentSlot, Integer> slotHashCodeMap = new HashMap<>();
 
@@ -28,7 +29,7 @@ public class PlayerEquipmentCache {
 
   public final static EquipmentSlot[] ITEM_SLOTS = EquipmentSlot.values();
 
-  PlayerEquipmentCache() {
+  public EquipmentCache() {
     for (EquipmentSlot slot : ITEM_SLOTS) {
       slotHashCodeMap.put(slot, -1);
       slotStatMap.put(slot, new HashMap<>());
@@ -105,11 +106,14 @@ public class PlayerEquipmentCache {
     ));
   }
 
-  public void recombineAbilities(Champion champion) {
+  public void recombineAbilities(StrifeMob mob) {
     for (TriggerType triggerType : LoreAbilityManager.triggerTypes) {
       loreAbilities.get(triggerType).clear();
     }
-    Set<LoreAbility> newAbilities = new HashSet<>(champion.getSaveData().getBoundAbilities());
+    Set<LoreAbility> newAbilities = new HashSet<>();
+    if (mob.getChampion() != null) {
+      newAbilities.addAll(mob.getChampion().getSaveData().getBoundAbilities());
+    }
     for (EquipmentSlot slot : ITEM_SLOTS) {
       newAbilities.addAll(slotAbilityMap.get(slot));
     }
@@ -125,9 +129,9 @@ public class PlayerEquipmentCache {
     }
   }
 
-  public void recombine(Champion champion) {
+  public void recombine(StrifeMob mob) {
     recombineStats();
-    recombineAbilities(champion);
+    recombineAbilities(mob);
     recombineTraits();
   }
 }

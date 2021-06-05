@@ -18,9 +18,6 @@ public class Bleed extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     float bleedAmount = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      bleedAmount += getStatMults().get(attr) * caster.getStat(attr);
-    }
     BonusDamage container = new BonusDamage(damageScale, null, null, bleedAmount);
     bleedAmount = DamageUtil.applyDamageScale(caster, target, container);
     if (applyBleedMods) {
@@ -30,7 +27,7 @@ public class Bleed extends Effect {
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
     }
-    DamageUtil.applyBleed(target, bleedAmount, bypassBarrier);
+    DamageUtil.applyBleed(target, applyMultipliers(caster, bleedAmount), bypassBarrier);
   }
 
   public void setDamageScale(DamageScale damageScale) {

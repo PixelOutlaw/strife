@@ -14,7 +14,9 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.effects.FiniteUsesEffect;
+import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -33,6 +35,7 @@ public class StrifeMob {
 
   private final static int CACHE_DELAY = 100;
 
+  private final EquipmentCache equipmentCache = new EquipmentCache();
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
@@ -56,11 +59,13 @@ public class StrifeMob {
   private float maxBarrier = 0;
   private boolean shielded;
 
+  private boolean useEquipment;
+
   private CombatCountdownTask combatCountdownTask = null;
 
-  private final BarrierTask barrierTask = new BarrierTask(this);
-  private final LifeTask lifeTask = new LifeTask(this);
-  private final EnergyTask energyTask = new EnergyTask(this);
+  private BarrierTask barrierTask = new BarrierTask(this);
+  private LifeTask lifeTask = new LifeTask(this);
+  private EnergyTask energyTask = new EnergyTask(this);
   private MinionTask minionTask = null;
 
   private final Set<StrifeMob> minions = new HashSet<>();
@@ -70,11 +75,13 @@ public class StrifeMob {
   public StrifeMob(Champion champion) {
     this.livingEntity = new WeakReference<>(champion.getPlayer());
     this.champion = new WeakReference<>(champion);
+    useEquipment = true;
   }
 
   public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = new WeakReference<>(livingEntity);
     this.champion = new WeakReference<>(null);
+    useEquipment = livingEntity instanceof Player;
   }
 
   public float getBarrier() {
@@ -218,6 +225,14 @@ public class StrifeMob {
     return abilitySet;
   }
 
+  public boolean isUseEquipment() {
+    return useEquipment;
+  }
+
+  public void setUseEquipment(boolean useEquipment) {
+    this.useEquipment = useEquipment;
+  }
+
   public void setAbilitySet(EntityAbilitySet abilitySet) {
     this.abilitySet = abilitySet;
   }
@@ -258,7 +273,7 @@ public class StrifeMob {
     if (getChampion() != null) {
       return StatUpdateManager.combineMaps(getChampion().getCombinedCache(), getBuffStats());
     }
-    return StatUpdateManager.combineMaps(baseStats, getBuffStats());
+    return StatUpdateManager.combineMaps(baseStats, getBuffStats(), equipmentCache.getCombinedStats());
   }
 
   public Map<StrifeStat, Float> getBaseStats() {
@@ -347,11 +362,28 @@ public class StrifeMob {
     return false;
   }
 
-  public boolean hasTrait(StrifeTrait trait) {
-    if (getChampion() == null) {
-      return false;
+  public EquipmentCache getEquipmentCache() {
+    return equipmentCache;
+  }
+
+  public Map<TriggerType, Set<LoreAbility>> getLoreAbilities() {
+    return equipmentCache.getCombinedAbilities();
+  }
+
+  public Set<StrifeTrait> getTraits() {
+    Set<StrifeTrait> traits = new HashSet<>(equipmentCache.getCombinedTraits());
+    if (champion.get() == null) {
+      traits.addAll(Objects.requireNonNull(champion.get()).getPathTraits());
     }
-    return Objects.requireNonNull(champion.get()).hasTrait(trait);
+    return traits;
+  }
+
+  public boolean hasTrait (StrifeTrait trait) {
+    if (champion.get() == null) {
+      return equipmentCache.getCombinedTraits().contains(trait);
+    }
+    return equipmentCache.getCombinedTraits().contains(trait) ||
+        Objects.requireNonNull(champion.get()).getPathTraits().contains(trait);
   }
 
   public void removeMinion(StrifeMob minion) {
@@ -398,6 +430,39 @@ public class StrifeMob {
 
   public void setCharmImmune(boolean charmImmune) {
     this.charmImmune = charmImmune;
+  }
+
+  public void minionDeath() {
+    if (minionTask == null) {
+      return;
+    }
+    minionTask.forceStartDeath();
+  }
+
+  public double getMinionRating() {
+    if (minionTask == null) {
+      // Arbitrary High Number
+      return 10000000;
+    }
+    if (minionTask.getLifespan() < 1) {
+      return 0;
+    }
+    return livingEntity.get().getHealth() * (1 + (double) minionTask.getLifespan() / 10D);
+  }
+
+  public void restartTimers() {
+    if (lifeTask != null && !lifeTask.isCancelled()) {
+      lifeTask.cancel();
+    }
+    lifeTask = new LifeTask(this);
+    if (barrierTask != null && !barrierTask.isCancelled()) {
+      barrierTask.cancel();
+    }
+    barrierTask = new BarrierTask(this);
+    if (energyTask != null && !energyTask.isCancelled()) {
+      energyTask.cancel();
+    }
+    energyTask = new EnergyTask(this);
   }
 
   public void bumpCombat() {

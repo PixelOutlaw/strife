@@ -35,13 +35,13 @@ public class MinionTask extends BukkitRunnable {
     if (!mob.getEntity().getPassengers().isEmpty()) {
       return;
     }
+    lifespan--;
     if (lifespan > 0) {
-      lifespan--;
       return;
     }
     if (lifespan <= -15) {
       minionMob.getEntity().damage(minionMob.getEntity().getMaxHealth() * 10);
-    } else  {
+    } else {
       minionMob.getEntity().damage(minionMob.getEntity().getMaxHealth() / 10);
     }
   }
@@ -50,4 +50,11 @@ public class MinionTask extends BukkitRunnable {
     return master.get();
   }
 
+  public int getLifespan() {
+    return lifespan;
+  }
+
+  public void forceStartDeath() {
+    lifespan = Math.min(0, lifespan);
+  }
 }

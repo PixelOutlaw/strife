@@ -57,7 +57,7 @@ public class Spawner extends BukkitRunnable {
     this.leashRange = leashRange;
     chunkKey = location.getChunk().getChunkKey();
 
-    runTaskTimer(StrifePlugin.getInstance(), SPAWNER_OFFSET, 40L);
+    runTaskTimer(StrifePlugin.getInstance(), SPAWNER_OFFSET % 20, 40L);
     SPAWNER_OFFSET++;
     LogUtil.printDebug("Created Spawner with taskId " + getTaskId());
   }

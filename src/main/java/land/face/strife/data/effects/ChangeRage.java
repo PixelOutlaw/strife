@@ -17,12 +17,9 @@ public class ChangeRage extends Effect {
       return;
     }
     float restoreAmount = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      restoreAmount += getStatMults().get(attr) * caster.getStat(attr);
-    }
     BonusDamage bonusDamage = new BonusDamage(damageScale, null, null, restoreAmount);
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
-    getPlugin().getRageManager().changeRage(target, restoreAmount);
+    getPlugin().getRageManager().changeRage(target, applyMultipliers(caster, restoreAmount));
   }
 
   public void setAmount(float amount) {

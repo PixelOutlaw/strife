@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.stats.StrifeStat;
-import org.bukkit.Bukkit;
 
 public class Buff {
 
@@ -52,7 +51,7 @@ public class Buff {
   public void bumpBuff(double duration) {
     setExpireTimeFromDuration(duration);
     stacks = Math.min(stacks + 1, maxStacks);
-    Bukkit.getLogger().warning(" Stacks: " + stacks + "/" + maxStacks);
+    //Bukkit.getLogger().warning(" Stacks: " + stacks + "/" + maxStacks);
   }
 
   public int getStacks() {

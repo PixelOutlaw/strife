@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 
 public class Corrupt extends Effect {
@@ -10,11 +9,7 @@ public class Corrupt extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    float corruptionStacks = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      corruptionStacks += getStatMults().get(attr) * caster.getStat(attr);
-    }
-    DamageUtil.applyCorrupt(target.getEntity(), corruptionStacks);
+    DamageUtil.applyCorrupt(target.getEntity(), applyMultipliers(caster, amount));
   }
 
   public void setAmount(float amount) {

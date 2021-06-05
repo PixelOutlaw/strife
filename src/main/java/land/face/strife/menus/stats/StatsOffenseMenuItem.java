@@ -116,9 +116,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     addIfApplicable(damageDisplay, trueDmg, ChatColor.GRAY, "Ω");
     lore.add(damageDisplay.toString());
     double criticalMult = 1;
-    if (!mob.getChampion().getTraits().contains(StrifeTrait.NO_CRIT_MULT)) {
+    if (!mob.getTraits().contains(StrifeTrait.NO_CRIT_MULT)) {
       float critDamage;
-      if (mob.getChampion().getTraits().contains(StrifeTrait.ELEMENTAL_CRITS)) {
+      if (mob.getTraits().contains(StrifeTrait.ELEMENTAL_CRITS)) {
         critDamage = physical + magical;
       } else {
         critDamage = total - trueDmg;

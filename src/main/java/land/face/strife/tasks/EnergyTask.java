@@ -33,17 +33,12 @@ public class EnergyTask extends BukkitRunnable {
   @Override
   public void run() {
     StrifeMob mob = parentMob.get();
-    if (mob == null || mob.getEntity() == null) {
+    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
       cancel();
       return;
     }
 
     if (mob.getStat(StrifeStat.ENERGY) < 0.1) {
-      return;
-    }
-
-    if (!mob.getEntity().isValid()) {
-      energyRestore.clear();
       return;
     }
 

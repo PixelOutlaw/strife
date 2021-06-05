@@ -73,7 +73,7 @@ public class StatUpdateListener implements Listener {
     if (player.isDead() || player.getHealth() <= 0D) {
       return;
     }
-    plugin.getChampionManager().updateEquipmentStats(plugin.getChampionManager().getChampion((Player) event.getPlayer()));
+    plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateVanillaAttributes(player);
   }
 

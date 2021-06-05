@@ -42,6 +42,7 @@ public class ShootBlock extends LocationEffect {
 
     for (int i = 0; i < quantity; i++) {
       FallingBlock block = location.getWorld().spawnFallingBlock(location, blockData);
+      SpecialStatusUtil.setDespawnOnUnload(block);
       Vector newDirection = castDirection.clone();
       applySpread(newDirection, spread);
       block.setVelocity(newDirection);
