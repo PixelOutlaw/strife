@@ -18,6 +18,7 @@ import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.AliveCondition;
 import land.face.strife.data.conditions.AttributeCondition;
@@ -46,6 +47,7 @@ import land.face.strife.data.conditions.InCombatCondition;
 import land.face.strife.data.conditions.LevelCondition;
 import land.face.strife.data.conditions.LightCondition;
 import land.face.strife.data.conditions.LoreCondition;
+import land.face.strife.data.conditions.MinionCondition;
 import land.face.strife.data.conditions.MovingCondition;
 import land.face.strife.data.conditions.NearbyEntitiesCondition;
 import land.face.strife.data.conditions.PotionCondition;
@@ -303,6 +305,7 @@ public class EffectManager {
         ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.6 || damageReductionRatio >= 0.6));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
+        ((Damage) effect).setSelfInflict(cs.getBoolean("self-inflict", false));
         List<String> hitEffects = cs.getStringList("hit-effects");
         delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
         List<String> killEffects = cs.getStringList("kill-effects");
@@ -733,7 +736,7 @@ public class EffectManager {
           ((StrifeParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
           ((StrifeParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
         }
-        if (style == ParticleStyle.ARC) {
+        if (style == ParticleStyle.ARC || style == ParticleStyle.CLAW) {
           ((StrifeParticle) effect).setArcAngle(cs.getDouble("arc-angle", 30));
           ((StrifeParticle) effect).setArcOffset(cs.getDouble("arc-offset", 0));
         }
@@ -769,8 +772,15 @@ public class EffectManager {
     if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
-      Map<StrifeStat, Float> statMults = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
+      Map<StrifeStat, Float> statMults = StatUtil
+          .getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
       effect.setStatMults(statMults);
+      Map<LifeSkillType, Float> skillMults = StatUtil
+          .getSkillMapFromSection(cs.getConfigurationSection("skill-multipliers"));
+      effect.setSkillMults(skillMults);
+      Map<StrifeAttribute, Float> attributeMults = StatUtil
+          .getAttributeMapFromSection(cs.getConfigurationSection("attribute-multipliers"));
+      effect.setAttributeMults(attributeMults);
     }
     effect.setId(key);
     List<String> conditionStrings = cs.getStringList("conditions");
@@ -920,6 +930,9 @@ public class EffectManager {
         break;
       case MOVING:
         condition = new MovingCondition(cs.getBoolean("state", true));
+        break;
+      case MINION:
+        condition = new MinionCondition(cs.getBoolean("is-owner", false));
         break;
       case NEARBY_ENTITIES:
         int range = cs.getInt("range", 1);

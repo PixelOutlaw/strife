@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.stats.StrifeStat;
 import org.bukkit.entity.Player;
 
 public class Food extends Effect {
@@ -10,13 +9,10 @@ public class Food extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double food = amount;
     if (!(target.getEntity() instanceof Player)) {
       return;
     }
-    for (StrifeStat attr : getStatMults().keySet()) {
-      food += getStatMults().get(attr) * caster.getStat(attr);
-    }
+    float food = applyMultipliers(caster, (float) amount);
     ((Player) target.getEntity())
         .setFoodLevel((int) Math.min(20, ((Player) target.getEntity()).getFoodLevel() + food));
   }

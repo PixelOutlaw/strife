@@ -258,6 +258,7 @@ public class CombatListener implements Listener {
     }
 
     Map<DamageType, Float> damage = DamageUtil.buildDamage(attacker, defender, damageModifiers);
+    DamageUtil.applyElementalEffects(attacker, defender, damage, damageModifiers);
     DamageUtil.reduceDamage(attacker, defender, damage, damageModifiers);
 
     float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, damage, damageModifiers);

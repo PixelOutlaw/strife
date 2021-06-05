@@ -118,13 +118,11 @@ public class DamageUtil {
 
   public static boolean preDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
 
-    if (attacker.getEntity() instanceof Player) {
-      plugin.getChampionManager().updateEquipmentStats(
-          plugin.getChampionManager().getChampion((Player) attacker.getEntity()));
+    if (attacker.isUseEquipment()) {
+      plugin.getStrifeMobManager().updateEquipmentStats(attacker);
     }
-    if (defender.getEntity() instanceof Player) {
-      plugin.getChampionManager().updateEquipmentStats(
-          plugin.getChampionManager().getChampion((Player) defender.getEntity()));
+    if (defender.isUseEquipment()) {
+      plugin.getStrifeMobManager().updateEquipmentStats(defender);
       plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
     }
 
@@ -164,10 +162,8 @@ public class DamageUtil {
   public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
     Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, defender, mods);
     applyAttackTypeMods(attacker, mods.getAttackType(), damageMap);
-    applyElementalEffects(attacker, defender, damageMap, mods);
     return damageMap;
   }
-
 
   public static void reduceDamage(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
@@ -252,6 +248,9 @@ public class DamageUtil {
   }
 
   public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
+    if (mods.getAttackType() == AttackType.BONUS) {
+      return;
+    }
     float ratio = mods.getDamageReductionRatio();
 
     DamageUtil.applyHealthOnHit(attacker, ratio, mods.getHealMultiplier(),
@@ -436,6 +435,9 @@ public class DamageUtil {
   }
 
   public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType, Map<DamageType, Float> damageMap) {
+    if (attackType == AttackType.BONUS) {
+      return;
+    }
     if (damageMap.containsKey(DamageType.PHYSICAL)) {
       float physicalDamage = damageMap.get(DamageType.PHYSICAL);
       float physicalMult = attacker.getStat(StrifeStat.PHYSICAL_MULT);
@@ -472,28 +474,18 @@ public class DamageUtil {
     }
   }
 
-  private static void applyElementalEffects(StrifeMob attacker, StrifeMob defender, Map<DamageType, Float> damageMap,
+  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender, Map<DamageType, Float> damageMap,
       DamageModifiers mods) {
-    int runes = plugin.getBlockManager().getEarthRunes(attacker.getEntity());
-    if (damageMap.containsKey(DamageType.EARTH) && runes > 0) {
-      damageMap.put(DamageType.EARTH, damageMap.get(DamageType.EARTH) * (1 + runes * 0.08f));
-      if (mods.isConsumeEarthRunes()) {
-        damageMap.put(DamageType.EARTH, damageMap.get(DamageType.EARTH) + StatUtil.getHealth(attacker) * 0.1f);
-        plugin.getBlockManager().setEarthRunes(attacker, runes - 1);
-      }
-    }
-    if (damageMap.containsKey(DamageType.FIRE) && defender.getEntity().getFireTicks() > 0) {
-      damageMap.put(DamageType.FIRE, damageMap.get(DamageType.FIRE) * 1.5f);
-    }
     float darkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
     if (darkDamage != 0) {
       damageMap.put(DamageType.DARK, darkDamage * getDarknessManager().getCorruptionMult(defender.getEntity()));
     }
-    float chance = attacker.getStat(StrifeStat.ELEMENTAL_STATUS) / 100;
+    float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
+        attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
     if (mods.isScaleChancesWithAttack()) {
-      chance *= mods.getAttackMultiplier();
+      chance *= Math.min(1.0, mods.getAttackMultiplier());
     }
-    if (!DamageUtil.rollBool(chance, true)) {
+    if (mods.getAttackType() == AttackType.BONUS || !DamageUtil.rollBool(chance, true)) {
       return;
     }
     float totalElementalDamage = 0;
@@ -541,6 +533,13 @@ public class DamageUtil {
       case DARK:
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
         applyCorrupt(defender.getEntity(), 5 + darkDamage / 3);
+        break;
+      case EARTH:
+        mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
+        int runes = plugin.getBlockManager().getEarthRunes(attacker.getEntity());
+        float maxLife = (float) attacker.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        float newDamage = damageMap.get(DamageType.EARTH) * 1.1f + (runes * 0.02f * maxLife);
+        damageMap.put(DamageType.EARTH, newDamage);
         break;
       case LIGHT:
         bonus = getLightBonus(damageMap.get(finalElementType), attacker, defender.getEntity());
@@ -772,7 +771,7 @@ public class DamageUtil {
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
       DamageModifiers mods, boolean bypassBarrier) {
-    if (defender.getBarrier() > 0) {
+    if (defender.getBarrier() > 0 || mods.getAttackType() == AttackType.BONUS) {
       return false;
     }
     if (defender.getStat(StrifeStat.BLEED_RESIST) > 99) {
@@ -988,10 +987,11 @@ public class DamageUtil {
     LIFE_STEAL,
     HEALTH_ON_HIT,
     BLEED_CHANCE,
-    BLEED_DAMAGE
+    BLEED_DAMAGE,
+    STATUS_CHANCE
   }
 
   public enum AttackType {
-    MELEE, PROJECTILE, AREA, OTHER
+    MELEE, PROJECTILE, AREA, OTHER, BONUS
   }
 }

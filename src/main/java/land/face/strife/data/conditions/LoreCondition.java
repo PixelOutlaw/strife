@@ -15,7 +15,7 @@ public class LoreCondition extends Condition {
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     StrifeMob actualTarget = getCompareTarget() == CompareTarget.SELF ? attacker : target;
     if (actualTarget.getChampion() != null) {
-      for (Set<LoreAbility> las : actualTarget.getChampion().getLoreAbilities().values()) {
+      for (Set<LoreAbility> las : actualTarget.getLoreAbilities().values()) {
         for (LoreAbility la : las) {
           if (loreId.equals(la.getId())) {
             return true;

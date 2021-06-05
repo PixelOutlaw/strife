@@ -38,7 +38,7 @@ public class InspectCommand extends BaseCommand {
 
   @Default
   public void baseCommand(Player sender) {
-    plugin.getChampionManager().updateEquipmentStats(sender);
+    plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(sender));
     plugin.getChampionManager().update(sender);
     plugin.getStatUpdateManager().updateVanillaAttributes(sender);
     plugin.getStatsMenu().getInspectionTargetMap().put(sender, sender);

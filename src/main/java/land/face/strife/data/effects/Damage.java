@@ -12,7 +12,6 @@ import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.events.StrifeDamageEvent;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -38,6 +37,7 @@ public class Damage extends Effect {
   private boolean applyOnHitEffects;
   private boolean showPopoffs;
   private boolean bypassBarrier;
+  private boolean selfInflict;
   private final List<Effect> hitEffects = new ArrayList<>();
   private final List<Effect> killEffects = new ArrayList<>();
 
@@ -58,6 +58,7 @@ public class Damage extends Effect {
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
     mods.setBypassBarrier(bypassBarrier);
+    mods.setScaleChancesWithAttack(true);
     if (canSneakAttack && caster.getEntity() instanceof Player && getPlugin().getStealthManager()
         .canSneakAttack((Player) caster.getEntity())) {
       mods.setSneakAttack(true);
@@ -67,19 +68,19 @@ public class Damage extends Effect {
     mods.getDamageMultipliers().putAll(damageMultipliers);
     mods.getAbilityMods().putAll(abilityMods);
 
+
     boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);
 
     if (!attackSuccess) {
       return;
     }
-
-    float statMultiplier = 1;
-    for (StrifeStat s : getStatMults().keySet()) {
-      statMultiplier += caster.getStat(s) * getStatMults().get(s);
-    }
-    mods.setAttackMultiplier(mods.getAttackMultiplier() * statMultiplier);
+    mods.setAttackMultiplier(applyMultipliers(caster, mods.getAttackMultiplier()));
 
     Map<DamageType, Float> damage = DamageUtil.buildDamage(caster, target, mods);
+    if (selfInflict) {
+      target = caster;
+    }
+    DamageUtil.applyElementalEffects(caster, target, damage, mods);
     DamageUtil.reduceDamage(caster, target, damage, mods);
     float finalDamage = DamageUtil.calculateFinalDamage(caster, target, damage, mods);
 
@@ -112,8 +113,9 @@ public class Damage extends Effect {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
     }
 
+    StrifeMob finalTarget = target;
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
-        () -> DamageUtil.postDamage(caster, target, mods), 0L);
+        () -> DamageUtil.postDamage(caster, finalTarget, mods), 0L);
   }
 
   public float getDamageReductionRatio() {
@@ -202,6 +204,10 @@ public class Damage extends Effect {
 
   public void setBypassBarrier(boolean bypassBarrier) {
     this.bypassBarrier = bypassBarrier;
+  }
+
+  public void setSelfInflict(boolean selfInflict) {
+    this.selfInflict = selfInflict;
   }
 
   public List<Effect> getHitEffects() {

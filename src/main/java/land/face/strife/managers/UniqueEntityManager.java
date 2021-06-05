@@ -121,6 +121,9 @@ public class UniqueEntityManager {
     if (!uniqueEntity.isGravity()) {
       le.setGravity(false);
     }
+    if (!uniqueEntity.isHasAI()) {
+      le.setAI(false);
+    }
 
     if (le instanceof Zombie) {
       ((Zombie) le).setBaby(uniqueEntity.isBaby());
@@ -333,6 +336,7 @@ public class UniqueEntityManager {
       uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
       uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
+      uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
       if (uniqueEntity.getType() == EntityType.VILLAGER || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
         String prof = cs.getString("profession");
         if (prof != null) {

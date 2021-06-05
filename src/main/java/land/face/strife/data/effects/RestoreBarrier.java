@@ -19,12 +19,9 @@ public class RestoreBarrier extends Effect {
       return;
     }
     float restoreAmount = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      restoreAmount += getStatMults().get(attr) * caster.getStat(attr);
-    }
     BonusDamage bonusDamage = new BonusDamage(damageScale, DamageType.TRUE_DAMAGE, null, restoreAmount);
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
-    target.restoreBarrier(restoreAmount);
+    target.restoreBarrier(applyMultipliers(caster, restoreAmount));
   }
 
   public void setAmount(float amount) {

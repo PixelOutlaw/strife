@@ -28,6 +28,7 @@ public class UniqueEntity {
   private boolean angry;
   private boolean zombificationImmune;
   private boolean armsRaised;
+  private boolean hasAI;
   private boolean gravity;
   private Profession profession;
   private int size;
@@ -153,6 +154,15 @@ public class UniqueEntity {
   public void setArmsRaised(boolean armsRaised) {
     this.armsRaised = armsRaised;
   }
+
+  public boolean isHasAI() {
+    return hasAI;
+  }
+
+  public void setHasAI(boolean hasAI) {
+    this.hasAI = hasAI;
+  }
+
 
   public boolean isGravity() {
     return gravity;

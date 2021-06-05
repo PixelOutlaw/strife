@@ -26,8 +26,6 @@ import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
-import land.face.strife.data.LoreAbility;
-import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -35,7 +33,6 @@ import org.bukkit.entity.Player;
 
 public class Champion {
 
-  private final PlayerEquipmentCache equipmentCache;
   private final ChampionSaveData saveData;
   private final CombatDetailsContainer detailsContainer = new CombatDetailsContainer();
 
@@ -62,7 +59,6 @@ public class Champion {
     levelPointStats = new HashMap<>();
     combinedStatMap = new HashMap<>();
     pathStats = new HashMap<>();
-    equipmentCache = new PlayerEquipmentCache();
     pathTraits = new HashSet<>();
   }
 
@@ -80,7 +76,6 @@ public class Champion {
         baseStats,
         levelPointStats,
         pathStats,
-        equipmentCache.getCombinedStats(),
         StrifePlugin.getInstance().getBoostManager().getStats()
     ));
   }
@@ -197,31 +192,12 @@ public class Champion {
     return detailsContainer;
   }
 
-  public PlayerEquipmentCache getEquipmentCache() {
-    return equipmentCache;
-  }
-
   public Map<StrifeStat, Float> getPathStats() {
     return pathStats;
   }
 
   public Set<StrifeTrait> getPathTraits() {
     return pathTraits;
-  }
-
-  public Map<TriggerType, Set<LoreAbility>> getLoreAbilities() {
-    return equipmentCache.getCombinedAbilities();
-  }
-
-  public Set<StrifeTrait> getTraits() {
-    Set<StrifeTrait> traits = new HashSet<>();
-    traits.addAll(equipmentCache.getCombinedTraits());
-    traits.addAll(pathTraits);
-    return traits;
-  }
-
-  public boolean hasTrait (StrifeTrait trait) {
-    return equipmentCache.getCombinedTraits().contains(trait) || pathTraits.contains(trait);
   }
 
   public int getUnchosenPaths() {

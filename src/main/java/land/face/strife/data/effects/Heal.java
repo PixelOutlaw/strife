@@ -28,9 +28,6 @@ public class Heal extends Effect {
     }
 
     float heal = amount;
-    for (StrifeStat attr : getStatMults().keySet()) {
-      heal += getStatMults().get(attr) * caster.getStat(attr);
-    }
 
     BonusDamage container = new BonusDamage(damageScale, null, null, heal);
     heal = DamageUtil.applyDamageScale(caster, target, container);
@@ -40,17 +37,13 @@ public class Heal extends Effect {
       heal *= 1 + caster.getStat(StrifeStat.HEALING_POWER) / 100;
     }
 
-    for (StrifeStat attr : getStatMults().keySet()) {
-      heal *= 1 + getStatMults().get(attr) * caster.getStat(attr);
-    }
-
     if (!healCaster && caster != target && caster.getEntity() instanceof Player) {
       String healText = "&a&l+" + INT_FORMAT.format(heal);
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
           target.getEntity(), IndicatorStyle.FLOAT_UP_SLOW, 8, healText);
     }
 
-    DamageUtil.restoreHealth(healCaster ? caster.getEntity() : target.getEntity(), heal);
+    DamageUtil.restoreHealth(healCaster ? caster.getEntity() : target.getEntity(), applyMultipliers(caster, heal));
   }
 
   public void setAmount(float amount) {

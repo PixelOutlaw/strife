@@ -250,6 +250,7 @@ public class ShootListener implements Listener {
     }
 
     plugin.getEffectManager().processEffectList(caster, response, hitEffects);
+    event.getEntity().remove();
   }
 
   private void doPistolShot(StrifeMob mob, float attackMultiplier) {

@@ -89,6 +89,9 @@ public class StrifeParticle extends LocationEffect {
       case ARC:
         spawnParticleArc(particleInUse, direction, location, size, arcAngle, arcOffset);
         return;
+      case CLAW:
+        spawnParticleClaw(particleInUse, direction, location, size, arcAngle, arcOffset);
+        return;
       case NORMAL:
       default:
         spawnParticle(particleInUse, location);
@@ -219,6 +222,33 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
+  private void spawnParticleClaw(Particle particle, Vector direction, Location center,
+      double radius, double angle, double offset) {
+    int segments = (int) (6 * (angle / 90) * (1 + radius / 3));
+    double startAngle = -angle * 0.5;
+    double segmentAngle = angle / segments;
+    double verticalDirection = random.nextDouble() < 0.5 ? 1 : -1;
+    double startVerticalOffset = verticalDirection * offset * random.nextDouble() * 0.5;
+    double segmentOffset = (2 * startVerticalOffset) / segments;
+    double segmentChunk = ((double) segments) * 0.25D;
+    for (int i = 0; i <= segments; i++) {
+      Vector newDirection = direction.clone();
+      newDirection.setX(newDirection.getX() + 0.001);
+      newDirection.setY(0.001);
+      newDirection.setZ(newDirection.getZ() + 0.001);
+      newDirection.normalize().multiply(size);
+      double radialAngle = Math.toRadians(startAngle + i * segmentAngle);
+      applyRadialAngles(newDirection, radialAngle);
+      newDirection.setY(startVerticalOffset - segmentOffset * i);
+      Location newLoc = center.clone().add(newDirection);
+      spawnParticle(particle, newLoc);
+      if (i > segmentChunk && i < segments - segmentChunk) {
+        spawnParticle(particle, newLoc.add(0, 0.4, 0));
+        spawnParticle(particle, newLoc.add(0, -0.8, 0));
+      }
+    }
+  }
+
   private void applyRadialAngles(Vector direction, double angle) {
     double x = direction.getX();
     double z = direction.getZ();
@@ -299,6 +329,7 @@ public class StrifeParticle extends LocationEffect {
     CIRCLE,
     ORBIT,
     LINE,
-    ARC
+    ARC,
+    CLAW
   }
 }

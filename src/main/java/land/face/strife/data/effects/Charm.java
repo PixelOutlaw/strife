@@ -1,9 +1,13 @@
 package land.face.strife.data.effects;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
@@ -25,27 +29,40 @@ public class Charm extends Effect {
     if (!overrideMaster && target.getMaster() != null) {
       return;
     }
-    if (caster.getMinions().size() >= caster.getStat(StrifeStat.MAX_MINIONS)) {
+
+    if (!rollCharmChance(caster, target)) {
       return;
     }
+
     if (target.getEntity() instanceof Wolf) {
       if (((Wolf) target.getEntity()).getOwner() != null) {
         return;
       }
       ((Wolf) target.getEntity()).setAngry(true);
     }
-    if (!rollCharmChance(caster, target)) {
-      return;
-    }
 
     ((Mob) target.getEntity()).setTarget(null);
-
-    float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
-
-    caster.addMinion(target, (int) lifespan);
     target.getFactions().clear();
 
+    float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
+    caster.addMinion(target, (int) lifespan);
+
+    double maxHealth = target.getEntity().getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
+    target.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
+    target.getEntity().setHealth(maxHealth);
+
     getPlugin().getSpawnerManager().addRespawnTime(target.getEntity());
+
+    List<StrifeMob> minionList = new ArrayList<>(caster.getMinions());
+
+    int excessMinions = minionList.size() - (int) caster.getStat(StrifeStat.MAX_MINIONS);
+    if (excessMinions > 0) {
+      minionList.sort(Comparator.comparingDouble(StrifeMob::getMinionRating));
+      while (excessMinions > 0) {
+        minionList.get(excessMinions - 1).minionDeath();
+        excessMinions--;
+      }
+    }
   }
 
   private boolean rollCharmChance(StrifeMob caster, StrifeMob target) {

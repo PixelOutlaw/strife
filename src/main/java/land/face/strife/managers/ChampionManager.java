@@ -17,8 +17,6 @@
 package land.face.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
-import static org.bukkit.inventory.EquipmentSlot.HAND;
-import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.Collection;
@@ -33,36 +31,21 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
-import land.face.strife.data.champion.PlayerEquipmentCache;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 
 public class ChampionManager {
 
   private final StrifePlugin plugin;
-  private final String levelReqGeneric;
-  private final float dualWieldAttackSpeed;
-  private final Map<EquipmentSlot, String> levelReqMap = new HashMap<>();
   private final Map<UUID, Champion> championMap = new HashMap<>();
-
   private final static String RESET_MESSAGE =
       "&a&lYour Levelpoints have been automatically reset due to an update!";
 
   public ChampionManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    dualWieldAttackSpeed = (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
-    levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
-    for (EquipmentSlot slot : EquipmentSlot.values()) {
-      levelReqMap.put(slot, plugin.getSettings().getString("language.level-req." + slot, ""));
-    }
   }
 
   public Champion getChampion(Player player) {
@@ -80,7 +63,6 @@ public class ChampionManager {
 
     buildBaseStats(champion);
     rebuildAttributes(champion);
-    buildEquipmentAttributes(champion);
     plugin.getPathManager().buildPathBonus(champion);
 
     champion.recombineCache();
@@ -116,13 +98,12 @@ public class ChampionManager {
       if (!p.isValid()) {
         continue;
       }
-      Champion champion = getChampion(p);
-      Set<LoreAbility> abilities = champion.getEquipmentCache().getCombinedAbilities().get(
-          TriggerType.TIMER);
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
+      Set<LoreAbility> abilities = mob.getEquipmentCache().getCombinedAbilities()
+          .get(TriggerType.TIMER);
       if (abilities == null || abilities.isEmpty()) {
         continue;
       }
-      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
       for (LoreAbility ability : abilities) {
         plugin.getLoreAbilityManager().applyLoreAbility(ability, mob, mob.getEntity());
       }
@@ -198,169 +179,30 @@ public class ChampionManager {
     champion.setLevelPointStats(attributeMap);
   }
 
-  private void buildEquipmentAttributes(Champion champion) {
-    EntityEquipment equipment = champion.getPlayer().getEquipment();
-    PlayerEquipmentCache equipmentCache = champion.getEquipmentCache();
-
-    Set<EquipmentSlot> updatedSlots = new HashSet<>();
-    for (EquipmentSlot slot : PlayerEquipmentCache.ITEM_SLOTS) {
-      ItemStack item = ItemUtil.getItem(equipment, slot);
-      if (!ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot))) {
-        updatedSlots.add(slot);
-      }
+  public boolean addBoundLoreAbility(StrifeMob mob, LoreAbility loreAbility) {
+    Champion champion = mob.getChampion();
+    if (champion == null) {
+      return false;
     }
-
-    if (updatedSlots.contains(HAND)) {
-      updatedSlots.add(OFF_HAND);
-    } else if (updatedSlots.contains(OFF_HAND)) {
-      updatedSlots.add(HAND);
-    }
-
-    for (EquipmentSlot slot : updatedSlots) {
-      ItemStack item = ItemUtil.getItem(equipment, slot);
-      equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
-
-      equipmentCache.setSlotStats(slot, getItemStats(slot, equipment));
-      if (clearStatsIfReqNotMet(champion.getPlayer(), slot, equipmentCache)) {
-        continue;
-      }
-      equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
-      equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
-    }
-
-    if (updatedSlots.contains(HAND) && ItemUtil.isDualWield(equipment)) {
-      applyDualWieldStatChanges(equipmentCache, HAND);
-      applyDualWieldStatChanges(equipmentCache, OFF_HAND);
-    }
-
-    equipmentCache.recombine(champion);
-  }
-
-  private void applyDualWieldStatChanges(PlayerEquipmentCache cache, EquipmentSlot slot) {
-    for (StrifeStat attribute : cache.getSlotStats(slot).keySet()) {
-      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7f);
-    }
-    cache.getSlotStats(slot).put(StrifeStat.ATTACK_SPEED,
-        cache.getSlotStats(slot).getOrDefault(StrifeStat.ATTACK_SPEED, 0f) + dualWieldAttackSpeed);
-  }
-
-  private boolean clearStatsIfReqNotMet(Player p, EquipmentSlot slot, PlayerEquipmentCache cache) {
-    if (!meetsLevelRequirement(p, cache.getSlotStats(slot))) {
-      sendMessage(p, levelReqMap.get(slot));
-      sendMessage(p, levelReqGeneric);
-      cache.clearSlot(slot);
-      return true;
-    }
-    return false;
-  }
-
-  public boolean addBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
     if (champion.getSaveData().getBoundAbilities().contains(loreAbility)) {
       return false;
     }
     champion.getSaveData().getBoundAbilities().add(loreAbility);
-    champion.getEquipmentCache().recombineAbilities(champion);
+    mob.getEquipmentCache().recombineAbilities(mob);
     return true;
   }
 
-  public boolean removeBoundLoreAbility(Champion champion, LoreAbility loreAbility) {
+  public boolean removeBoundLoreAbility(StrifeMob mob, LoreAbility loreAbility) {
+    Champion champion = mob.getChampion();
+    if (champion == null) {
+      return false;
+    }
     if (!champion.getSaveData().getBoundAbilities().contains(loreAbility)) {
       return false;
     }
     champion.getSaveData().getBoundAbilities().remove(loreAbility);
-    champion.getEquipmentCache().recombineAbilities(champion);
+    mob.getEquipmentCache().recombineAbilities(mob);
     return true;
-  }
-
-  public void updateEquipmentStats(Player player) {
-    updateEquipmentStats(getChampion(player));
-  }
-
-  public void updateEquipmentStats(Champion champion) {
-    buildEquipmentAttributes(champion);
-    champion.recombineCache();
-  }
-
-  private Set<LoreAbility> getItemAbilities(EquipmentSlot slot, EntityEquipment equipment) {
-    switch (slot) {
-      case HAND:
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashSet<>();
-        }
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand());
-      case OFF_HAND:
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashSet<>();
-        }
-        if (!ItemUtil.isValidOffhand(equipment)) {
-          return new HashSet<>();
-        }
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInOffHand());
-      case HEAD:
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getHelmet());
-      case CHEST:
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getChestplate());
-      case LEGS:
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getLeggings());
-      case FEET:
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getBoots());
-      default:
-        return new HashSet<>();
-    }
-  }
-
-  private Map<StrifeStat, Float> getItemStats(EquipmentSlot slot, EntityEquipment equipment) {
-    switch (slot) {
-      case HAND:
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashMap<>();
-        }
-        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
-      case OFF_HAND:
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashMap<>();
-        }
-        if (!ItemUtil.isValidOffhand(equipment)) {
-          return new HashMap<>();
-        }
-        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInOffHand());
-      case HEAD:
-        return plugin.getStatUpdateManager().getItemStats(equipment.getHelmet());
-      case CHEST:
-        return plugin.getStatUpdateManager().getItemStats(equipment.getChestplate());
-      case LEGS:
-        return plugin.getStatUpdateManager().getItemStats(equipment.getLeggings());
-      case FEET:
-        return plugin.getStatUpdateManager().getItemStats(equipment.getBoots());
-      default:
-        return new HashMap<>();
-    }
-  }
-
-  private Set<StrifeTrait> getItemTraits(EquipmentSlot slot, EntityEquipment equipment) {
-    switch (slot) {
-      case HAND:
-        return ItemUtil.getTraits(equipment.getItemInMainHand());
-      case OFF_HAND:
-        if (!ItemUtil.isValidOffhand(equipment)) {
-          return new HashSet<>();
-        }
-        return ItemUtil.getTraits(equipment.getItemInOffHand());
-      case HEAD:
-        return ItemUtil.getTraits(equipment.getHelmet());
-      case CHEST:
-        return ItemUtil.getTraits(equipment.getChestplate());
-      case LEGS:
-        return ItemUtil.getTraits(equipment.getLeggings());
-      case FEET:
-        return ItemUtil.getTraits(equipment.getBoots());
-      default:
-        return new HashSet<>();
-    }
-  }
-
-  private boolean meetsLevelRequirement(Player player, Map<StrifeStat, Float> statMap) {
-    return Math.round(statMap.getOrDefault(StrifeStat.LEVEL_REQUIREMENT, 0f)) <= player.getLevel();
   }
 
   private int getTotalChampionStats(Champion champion) {

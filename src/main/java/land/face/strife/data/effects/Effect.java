@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.stats.StrifeStat;
 
@@ -18,6 +21,8 @@ public abstract class Effect {
   private boolean friendly;
 
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
+  private final Map<LifeSkillType, Float> skillMults = new HashMap<>();
+  private final Map<StrifeAttribute, Float> attributeMults = new HashMap<>();
   private final Set<Condition> conditions = new HashSet<>();
 
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -48,13 +53,36 @@ public abstract class Effect {
     this.friendly = friendly;
   }
 
-  public Map<StrifeStat, Float> getStatMults() {
-    return statMults;
-  }
-
   public void setStatMults(Map<StrifeStat, Float> statMults) {
     this.statMults.clear();
     this.statMults.putAll(statMults);
+  }
+
+  public void setSkillMults(Map<LifeSkillType, Float> skillMults) {
+    this.skillMults.clear();
+    this.skillMults.putAll(skillMults);
+  }
+
+  public void setAttributeMults(Map<StrifeAttribute, Float> attributeMults) {
+    this.attributeMults.clear();
+    this.attributeMults.putAll(attributeMults);
+  }
+
+  public float applyMultipliers(StrifeMob caster, float amount) {
+    float multiplier = 1f;
+    for (StrifeStat attr : statMults.keySet()) {
+      multiplier += statMults.get(attr) * caster.getStat(attr);
+    }
+    if (caster.getChampion() != null) {
+      Champion champion = caster.getChampion();
+      for (LifeSkillType attr : skillMults.keySet()) {
+        multiplier += skillMults.get(attr) * champion.getLifeSkillLevel(attr);
+      }
+      for (StrifeAttribute attr : attributeMults.keySet()) {
+        multiplier += attributeMults.get(attr) * (float) champion.getAttributeLevel(attr);
+      }
+    }
+    return amount * multiplier;
   }
 
   public void addCondition(Condition condition) {
