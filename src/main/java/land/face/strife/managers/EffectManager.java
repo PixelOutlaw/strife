@@ -114,6 +114,7 @@ import land.face.strife.data.effects.Summon;
 import land.face.strife.data.effects.SwingArm;
 import land.face.strife.data.effects.Teleport;
 import land.face.strife.data.effects.TeleportBehind;
+import land.face.strife.data.effects.Thrall;
 import land.face.strife.data.effects.Title;
 import land.face.strife.data.effects.Undisguise;
 import land.face.strife.data.effects.UntoggleAbility;
@@ -226,22 +227,14 @@ public class EffectManager {
         effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
         continue;
       }
-      if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
-        continue;
+      if (!response.isForce()) {
+        if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+          continue;
+        }
       }
-      applyEffectIfConditionsMet(effect, caster, effect.isForceTargetCaster() ? caster : targetMob);
+      LogUtil.printDebug("-- Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
+      effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
     }
-  }
-
-  private void applyEffectIfConditionsMet(Effect effect, StrifeMob caster, StrifeMob targetMob) {
-    if (targetMob == null) {
-      targetMob = caster;
-    }
-    if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-      return;
-    }
-    LogUtil.printDebug("-- Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
-    effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
@@ -581,6 +574,11 @@ public class EffectManager {
       case TELEPORT_BEHIND:
         effect = new TeleportBehind();
         break;
+      case THRALL:
+        effect = new Thrall();
+        ((Thrall) effect).setName(cs.getString("name", "&8«&7Thrall&8»"));
+        ((Thrall) effect).setLifeSeconds(cs.getInt("lifespan-seconds", 20));
+        break;
       case TITLE:
         effect = new Title();
         ((Title) effect).setTopTitle(cs.getString("upper", ""));
@@ -653,8 +651,7 @@ public class EffectManager {
         effect = new Charm();
         ((Charm) effect).setChance((float) cs.getDouble("success-chance", 1));
         ((Charm) effect).setChancePerLevel((float) cs.getDouble("chance-per-level", 0));
-        ((Charm) effect)
-            .setLifespanSeconds((float) cs.getDouble("lifespan-seconds", 30));
+        ((Charm) effect).setLifespanSeconds((float) cs.getDouble("lifespan-seconds", 30));
         ((Charm) effect).setOverrideMaster(cs.getBoolean("override", false));
         break;
       case SWING:

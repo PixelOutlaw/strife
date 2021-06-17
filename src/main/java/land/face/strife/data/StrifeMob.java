@@ -269,11 +269,18 @@ public class StrifeMob {
     return champion == null ? null : champion.get();
   }
 
+  public void clearBuffs() {
+    runningBuffs.clear();
+    cacheStamp = 1L;
+  }
+
   public Map<StrifeStat, Float> getFinalStats() {
     if (getChampion() != null) {
-      return StatUpdateManager.combineMaps(getChampion().getCombinedCache(), getBuffStats());
+      return StatUpdateManager.combineMaps(getChampion().getCombinedCache(),
+          getBuffStats(), equipmentCache.getCombinedStats());
     }
-    return StatUpdateManager.combineMaps(baseStats, getBuffStats(), equipmentCache.getCombinedStats());
+    return StatUpdateManager.combineMaps(baseStats, getBuffStats(),
+        equipmentCache.getCombinedStats());
   }
 
   public Map<StrifeStat, Float> getBaseStats() {
@@ -466,12 +473,28 @@ public class StrifeMob {
   }
 
   public void bumpCombat() {
+    bumpCombat(false);
+  }
+
+  public void bumpCombat(boolean pvp) {
     if (isInCombat()) {
       combatCountdownTask.bump();
+      if (pvp) {
+        combatCountdownTask.setPvp();
+      }
       return;
     }
     combatCountdownTask = new CombatCountdownTask(this);
+    if (pvp) {
+      combatCountdownTask.setPvp();
+    }
     combatCountdownTask.runTaskTimer(StrifePlugin.getInstance(), 0L, 10L);
+  }
+
+  public void flagPvp() {
+    if (livingEntity.get() instanceof Player && isInCombat()) {
+      combatCountdownTask.setPvp();
+    }
   }
 
   public void endCombat() {
@@ -483,6 +506,14 @@ public class StrifeMob {
 
   public boolean isInCombat() {
     return combatCountdownTask != null;
+  }
+
+  public boolean isInPvp() {
+    return combatCountdownTask.isPvp();
+  }
+
+  public boolean diedFromPvp() {
+    return getEntity() != null || isInPvp();
   }
 
   public Map<StrifeStat, Float> getBuffStats() {

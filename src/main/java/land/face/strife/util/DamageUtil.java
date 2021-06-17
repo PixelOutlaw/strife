@@ -234,6 +234,9 @@ public class DamageUtil {
 
     String damageString = String.valueOf((int) Math.ceil(rawDamage));
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
+      if (criticalHit) {
+        damageString = damageString + ChatColor.RED + "✸";
+      }
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.BOLD + damageString);
     }
@@ -310,13 +313,12 @@ public class DamageUtil {
         .getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f));
     boolean success = critChance >= rollDouble(hasLuck(attacker.getEntity()));
     if (success) {
-      DamageUtil.callCritEvent(attacker, attacker);
-      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
-          Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.8f);
-      if (attacker.getEntity() instanceof Player) {
-        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-            defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 3, "&c&lCRIT!");
-      }
+      DamageUtil.callCritEvent(attacker, defender);
+      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.75f);
+      //if (attacker.getEntity() instanceof Player) {
+      //  StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+      //      defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 3, "&c&lCRIT!");
+      //}
     }
     return success;
   }
@@ -812,14 +814,17 @@ public class DamageUtil {
     if (defender.getStat(StrifeStat.DAMAGE_REFLECT) < 0.1) {
       return;
     }
-    double reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
-    reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6D;
+    float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
+    reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6f;
     defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(), Sound.BLOCK_LANTERN_STEP,
         SoundCategory.HOSTILE, 1f, 1.5f);
     if (attacker.getEntity() instanceof Player) {
       ((Player) attacker.getEntity()).spawnParticle(Particle.DAMAGE_INDICATOR,
           TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER), (int) reflectDamage, 0.3, 0.3,
           0.3, 0.1);
+    }
+    if (defender.getEntity() instanceof Player) {
+      attacker.flagPvp();
     }
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }

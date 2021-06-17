@@ -137,11 +137,12 @@ public class TargetingListener implements Listener {
     if (!(event.getEntity() instanceof Mob)) {
       return;
     }
-    if (event.getReason() == TargetReason.TARGET_ATTACKED_NEARBY_ENTITY
-        || event.getReason() == TargetReason.FOLLOW_LEADER
-        || event.getReason() == TargetReason.PIG_ZOMBIE_TARGET
-        || event.getReason() == TargetReason.REINFORCEMENT_TARGET) {
-      if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
+    if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
+      if (event.getReason() == TargetReason.TARGET_ATTACKED_NEARBY_ENTITY
+          || event.getReason() == TargetReason.FOLLOW_LEADER
+          || event.getReason() == TargetReason.PIG_ZOMBIE_TARGET
+          || event.getReason() == TargetReason.REINFORCEMENT_TARGET
+          || event.getReason() == TargetReason.DEFEND_VILLAGE) {
         event.setCancelled(true);
         return;
       }

@@ -95,8 +95,9 @@ public class CombatListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void handleNpcHits(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || event.getEntity().isInvulnerable() || event.getEntity().hasMetadata("NPC") || event
-        .getEntity().hasMetadata("pet")) {
+    if (event.isCancelled() || event.getEntity().isInvulnerable() ||
+        event.getEntity().hasMetadata("NPC") ||
+        event.getEntity().hasMetadata("MiniaturePet")) {
       if (event.getDamager() instanceof Projectile) {
         event.getDamager().remove();
       }
@@ -109,18 +110,20 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
+    if (event.getCause() == DamageCause.THORNS) {
+      event.setCancelled(true);
+      return;
+    }
     if (plugin.getDamageManager().isHandledDamage(event.getDamager())) {
       DamageUtil.removeDamageModifiers(event);
       event.setDamage(BASE, plugin.getDamageManager().getHandledDamage(event.getDamager()));
       return;
     }
-    if (event.getCause() == DamageCause.CUSTOM) {
-      return;
-    }
     if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
       return;
     }
-    if (event.getDamager() instanceof EvokerFangs && FangUtil.isNoDamageFang((EvokerFangs) event.getDamager())) {
+    if (event.getDamager() instanceof EvokerFangs && FangUtil
+        .isNoDamageFang((EvokerFangs) event.getDamager())) {
       event.setCancelled(true);
       return;
     }
@@ -231,7 +234,7 @@ public class CombatListener implements Listener {
     damageModifiers.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
     damageModifiers.setScaleChancesWithAttack(true);
     damageModifiers.setConsumeEarthRunes(!isMultishot);
-    damageModifiers.setApplyOnHitEffects(attackMultiplier > Math.random());
+    damageModifiers.setApplyOnHitEffects(!isMultishot && attackMultiplier > Math.random());
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
 

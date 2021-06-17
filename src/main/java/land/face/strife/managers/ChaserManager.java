@@ -2,7 +2,6 @@ package land.face.strife.managers;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -22,9 +21,9 @@ import org.bukkit.util.Vector;
 
 public class ChaserManager {
 
-  private StrifePlugin plugin;
-  private HashMap<String, LoadedChaser> chaserData = new HashMap<>();
-  private Set<ChaserEntity> chasers;
+  private final StrifePlugin plugin;
+  private final HashMap<String, LoadedChaser> chaserData = new HashMap<>();
+  private final Set<ChaserEntity> chasers;
 
   public ChaserManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -39,29 +38,29 @@ public class ChaserManager {
   }
 
   public void tickChasers() {
-    Iterator<ChaserEntity> iterator = chasers.iterator();
-    while (iterator.hasNext()) {
-      ChaserEntity chaser = iterator.next();
+    HashSet<ChaserEntity> loopChasers = new HashSet<>(chasers);
+
+    for (ChaserEntity chaser : loopChasers) {
       if (chaser.getCurrentTick() > chaser.getLifespan()) {
-        iterator.remove();
+        chasers.remove(chaser);
         continue;
       }
       chaser.setCurrentTick(chaser.getCurrentTick() + 1);
 
       if (chaser.getTarget() == null || !chaser.getTarget().isValid() ||
           !chaser.getLocation().getWorld().equals(chaser.getTarget().getWorld())) {
-        iterator.remove();
+        chasers.remove(chaser);
         continue;
       }
 
       LoadedChaser data = chaserData.get(chaser.getChaserId());
       if (data.isRemoveAtSolids() && chaser.getLocation().getBlock().getType().isSolid()) {
-        iterator.remove();
+        chasers.remove(chaser);
         continue;
       }
       boolean hitTarget = executeChaserMovement(chaser, data);
       if (hitTarget) {
-        iterator.remove();
+        chasers.remove(chaser);
       }
     }
   }

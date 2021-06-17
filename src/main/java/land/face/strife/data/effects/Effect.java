@@ -127,6 +127,7 @@ public abstract class Effect {
     BLEED,
     TELEPORT,
     TELEPORT_BEHIND,
+    THRALL,
     TITLE,
     CORRUPT,
     ADD_EARTH_RUNES,

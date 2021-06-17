@@ -511,16 +511,14 @@ public class AbilityManager {
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);
       case NEAREST_SOUL:
-        SoulTimer soul = plugin.getSoulManager()
-            .getNearestSoul(caster.getEntity(), ability.getRange());
+        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(),
+            ability.getRange());
         if (soul != null) {
-          Player playerTarget = Bukkit.getPlayer(soul.getOwner());
-          boolean friendlyTarget = TargetingUtil.isFriendly(caster, playerTarget);
-          if (ability.isFriendly() == friendlyTarget) {
-            targets.add(Bukkit.getPlayer(soul.getOwner()));
-          }
+          targets.add(soul.getOwner());
         }
-        return new TargetResponse(targets, true);
+        TargetResponse response = new TargetResponse(targets, true);
+        response.setForce(true);
+        return response;
     }
     return new TargetResponse(new HashSet<>());
   }

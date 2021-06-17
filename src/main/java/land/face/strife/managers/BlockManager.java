@@ -51,10 +51,10 @@ public class BlockManager {
 
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.COARSE_DIRT);
 
-  private static final double FLAT_BLOCK_S = 10;
-  private static final double PERCENT_BLOCK_S = 0.05;
+  private static final double FLAT_BLOCK_S = 8;
+  private static final double PERCENT_BLOCK_S = 0.03;
   private static final long DEFAULT_BLOCK_MILLIS = 10000;
-  private static final double MAX_BLOCK_CHANCE = 0.6;
+  private static final double MAX_BLOCK_CHANCE = 0.5;
 
   public void tickHolograms() {
 
@@ -75,6 +75,14 @@ public class BlockManager {
           holo.delete();
         }
         iterator.remove();
+        continue;
+      }
+
+      if (System.currentTimeMillis() > blockData.getRuneFalloff()) {
+        blockData.setRunes(0);
+      }
+
+      if (blockData.getRunes() == 0 && blockData.getRuneHolograms().size() == 0) {
         continue;
       }
 

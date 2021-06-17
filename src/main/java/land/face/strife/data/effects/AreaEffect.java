@@ -126,7 +126,7 @@ public class AreaEffect extends LocationEffect {
     if (maxTargets > 0) {
       int numTargets = maxTargets;
       if (scaleTargetsWithMultishot) {
-        float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.5);
+        float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.15);
         numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult);
       }
       TargetingUtil.filterByTargetPriority(areaTargets, this, caster, Math.min(numTargets, areaTargets.size()));

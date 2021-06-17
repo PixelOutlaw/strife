@@ -18,7 +18,7 @@ public class Push extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (target.getEntity().getType() == EntityType.SHULKER) {
+    if (target.getEntity().getType() == EntityType.SHULKER || !target.getEntity().hasGravity()) {
       return;
     }
     if (!isFriendly() && StringUtils.isNotBlank(target.getUniqueEntityId())) {

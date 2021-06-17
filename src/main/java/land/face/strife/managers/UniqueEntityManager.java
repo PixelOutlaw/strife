@@ -6,6 +6,7 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import land.face.strife.StrifePlugin;
@@ -86,19 +87,11 @@ public class UniqueEntityManager {
       plugin.getLogger().warning("Attempted to spawn non-existing unique: " + unique);
       return null;
     }
-    return spawnUnique(uniqueEntity, location);
+    return plugin.getStrifeMobManager()
+        .getStatMob((LivingEntity) spawnUnique(uniqueEntity, location));
   }
 
-  private void lambdaSetup(Entity e, UniqueEntity uniqueEntity) {
-    SpecialStatusUtil.setUniqueId(e, uniqueEntity.getId());
-    if (cachedDisguises.containsKey(uniqueEntity)) {
-      //System.out.println(DisguiseParser.parseToString(cachedDisguises.get(uniqueEntity)));
-      DisguiseAPI.disguiseToAll(e, cachedDisguises.get(uniqueEntity));
-      //System.out.println(DisguiseParser.parseToString(DisguiseAPI.getDisguise(e)));
-    }
-  }
-
-  public StrifeMob spawnUnique(UniqueEntity uniqueEntity, Location location) {
+  public Entity spawnUnique(UniqueEntity uniqueEntity, Location location) {
     if (uniqueEntity.getType() == null) {
       LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
@@ -106,13 +99,16 @@ public class UniqueEntityManager {
     LogUtil.printDebug("Spawning unique entity " + uniqueEntity.getId());
 
     assert uniqueEntity.getType().getEntityClass() != null;
-    Entity entity = Objects.requireNonNull(location.getWorld()).spawn(location,
-        uniqueEntity.getType().getEntityClass(), e -> lambdaSetup(e, uniqueEntity));
+    return Objects.requireNonNull(location.getWorld()).spawn(location,
+        uniqueEntity.getType().getEntityClass(), e -> lambdaSetup(e, uniqueEntity, location));
+  }
 
-    if (!entity.isValid()) {
-      LogUtil.printWarning(
-          "Attempted to spawn unique " + uniqueEntity.getName() + " but entity is invalid?");
-      return null;
+  private void lambdaSetup(Entity entity, UniqueEntity uniqueEntity, Location location) {
+    SpecialStatusUtil.setUniqueId(entity, uniqueEntity.getId());
+    if (cachedDisguises.containsKey(uniqueEntity)) {
+      //System.out.println(DisguiseParser.parseToString(cachedDisguises.get(uniqueEntity)));
+      DisguiseAPI.disguiseToAll(entity, cachedDisguises.get(uniqueEntity));
+      //System.out.println(DisguiseParser.parseToString(DisguiseAPI.getDisguise(e)));
     }
 
     LivingEntity le = (LivingEntity) entity;
@@ -244,7 +240,7 @@ public class UniqueEntityManager {
     }
 
     mob.setUniqueEntityId(uniqueEntity.getId());
-    mob.setFactions(uniqueEntity.getFactions());
+    mob.setFactions(new HashSet<>(uniqueEntity.getFactions()));
     mob.setAlliedGuild(null);
     SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
     mob.setCharmImmune(uniqueEntity.isCharmImmune());
@@ -276,8 +272,6 @@ public class UniqueEntityManager {
 
     UniqueSpawnEvent event = new UniqueSpawnEvent(mob);
     Bukkit.getPluginManager().callEvent(event);
-
-    return mob;
   }
 
   private void modifyPassengerItem(LivingEntity rider, Item item) {

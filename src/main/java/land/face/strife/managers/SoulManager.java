@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.champion.ChampionSaveData;
@@ -47,10 +48,11 @@ public class SoulManager {
     return false;
   }
 
-  public void createSoul(Player player) {
+  public void createSoul(StrifeMob mob) {
     SoulTimer oldSoul = null;
+    Player player = (Player) mob.getEntity();
     for (SoulTimer soulTimer : souls) {
-      if (soulTimer.getOwner() == player.getUniqueId()) {
+      if (soulTimer.getOwner() == player) {
         oldSoul = soulTimer;
         break;
       }
@@ -62,7 +64,7 @@ public class SoulManager {
 
     String text = soulColor + "" + ChatColor.ITALIC + soulName.replace("{n}", player.getName());
     Hologram soulHead = SoulUtil.createSoul(player, text, location.clone().add(0, 0.75, 0));
-    souls.add(new SoulTimer(player.getUniqueId(), soulHead, location));
+    souls.add(new SoulTimer(mob, soulHead, location));
   }
 
   public void removeSoul(SoulTimer soulTimer) {
@@ -89,7 +91,7 @@ public class SoulManager {
 
   public SoulTimer getSoul(Player player) {
     for (SoulTimer soulTimer : souls) {
-      if (soulTimer.getOwner().equals(player.getUniqueId())) {
+      if (soulTimer.getOwner() == player) {
         return soulTimer;
       }
     }

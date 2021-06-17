@@ -4,6 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import org.bukkit.entity.Mob;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class MinionTask extends BukkitRunnable {
@@ -34,6 +35,9 @@ public class MinionTask extends BukkitRunnable {
     }
     if (!mob.getEntity().getPassengers().isEmpty()) {
       return;
+    }
+    if (((Mob) minionMob.getEntity()).getTarget() == mob.getEntity()) {
+      ((Mob) minionMob.getEntity()).setTarget(null);
     }
     lifespan--;
     if (lifespan > 0) {

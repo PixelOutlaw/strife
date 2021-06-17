@@ -146,13 +146,11 @@ public class TargetingUtil {
     if (defender.getMaster() != null) {
       return isFriendly(attacker, defender.getMaster());
     }
+    if (attacker.getMaster() == defender || attacker.getMinions().contains(defender)) {
+      return true;
+    }
     if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
       return !DamageUtil.canAttack((Player) attacker.getEntity(), (Player) defender.getEntity());
-    }
-    for (StrifeMob mob : attacker.getMinions()) {
-      if (defender.getEntity() == mob.getEntity()) {
-        return true;
-      }
     }
     return false;
   }

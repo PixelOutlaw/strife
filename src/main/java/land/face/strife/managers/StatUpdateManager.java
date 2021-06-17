@@ -98,18 +98,18 @@ public class StatUpdateManager {
   public void updateHealth(StrifeMob mob) {
     double health = mob.getEntity().getHealth();
     double oldMaxHealth = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+    mob.getEntity().setHealth(oldMaxHealth);
     double maxHealth = Math.max(StatUtil.getHealth(mob), 1);
+    if (mob.getChampion() != null) {
+      ((Player) mob.getEntity()).setHealthScaled(false);
+      HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
+      ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
+      if (displayType != HealthDisplayType.VANILLA_TWO_LIFE_PER_HEART) {
+        ((Player) mob.getEntity()).setHealthScaled(true);
+      }
+    }
     mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
-    if (mob.getChampion() != null) {
-      HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
-      if (displayType == HealthDisplayType.VANILLA_TWO_LIFE_PER_HEART) {
-        ((Player) mob.getEntity()).setHealthScaled(false);
-        return;
-      }
-      ((Player) mob.getEntity()).setHealthScaled(true);
-      ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
-    }
   }
 
   public void updateWeight(StrifeMob mob) {

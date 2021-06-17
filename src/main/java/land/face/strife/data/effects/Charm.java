@@ -23,14 +23,11 @@ public class Charm extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (target.isCharmImmune() || !(target.getEntity() instanceof Mob) || target.getEntity() instanceof Player) {
+    if (target.isCharmImmune() || !(target.getEntity() instanceof Mob)
+        || target.getEntity() instanceof Player) {
       return;
     }
-    if (!overrideMaster && target.getMaster() != null) {
-      return;
-    }
-
-    if (!rollCharmChance(caster, target)) {
+    if (!overrideMaster && target.getMaster() != null || !rollCharmChance(caster, target)) {
       return;
     }
 
@@ -41,13 +38,14 @@ public class Charm extends Effect {
       ((Wolf) target.getEntity()).setAngry(true);
     }
 
-    ((Mob) target.getEntity()).setTarget(null);
     target.getFactions().clear();
 
     float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
     caster.addMinion(target, (int) lifespan);
+    ((Mob) target.getEntity()).setTarget(null);
 
-    double maxHealth = target.getEntity().getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
+    target.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, caster.getStat(StrifeStat.MINION_DAMAGE) / 1000);
+    double maxHealth = target.getEntity().getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 1000));
     target.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     target.getEntity().setHealth(maxHealth);
 
@@ -88,4 +86,5 @@ public class Charm extends Effect {
   public void setChancePerLevel(float chancePerLevel) {
     this.chancePerLevel = chancePerLevel;
   }
+
 }
