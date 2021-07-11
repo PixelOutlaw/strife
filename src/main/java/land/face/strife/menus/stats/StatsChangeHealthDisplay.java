@@ -24,9 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
+import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
+import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.menus.BlankIcon;
+import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.apache.commons.lang.WordUtils;
@@ -77,14 +81,23 @@ public class StatsChangeHealthDisplay extends MenuItem {
     if (!selfInspectMap.getOrDefault(event.getPlayer(), false)) {
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    Champion champion = playerMob.getChampion();
     int ordinal = champion.getSaveData().getHealthDisplayType().ordinal();
     ordinal++;
     if (ordinal == ChampionSaveData.DISPLAY_OPTIONS.length) {
       ordinal = 0;
     }
     champion.getSaveData().setHealthDisplayType(ChampionSaveData.DISPLAY_OPTIONS[ordinal]);
-    plugin.getStatUpdateManager().updateHealth(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    event.getPlayer().setHealthScaled(true);
+    HealthDisplayType displayType = champion.getSaveData().getHealthDisplayType();
+    float maxHealth = Math.max(StatUtil.getHealth(playerMob), 1);
+    event.getPlayer().setInvulnerable(true);
+    event.getPlayer().setHealthScale(StatUpdateManager.getHealthScale(displayType, maxHealth));
+    event.getPlayer().setInvulnerable(false);
+
+    playerMob.updateBarrierScale();
+
     event.setWillUpdate(true);
     event.setWillClose(false);
   }

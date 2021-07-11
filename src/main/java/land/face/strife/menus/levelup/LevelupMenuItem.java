@@ -27,9 +27,12 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.StrifeAttribute;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,7 +53,8 @@ public class LevelupMenuItem extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     Champion champion = plugin.getChampionManager().getChampion(player);
-    int currentPoints = champion.getPendingLevel(attribute);
+    int pendingPoints = champion.getPendingLevel(attribute);
+    int actualPoints = champion.getAttributeLevel(attribute);
     int statCap = plugin.getAttributeManager().getPendingStatCap(attribute, champion);
 
     ItemStack icon = getIcon().clone();
@@ -59,15 +63,15 @@ public class LevelupMenuItem extends MenuItem {
       if (champion.getAttributeLevel(attribute) == attribute.getMaxCap()) {
         ItemStackExtensionsKt.setCustomModelData(icon, attribute.getCustomData() + 1);
         icon.setAmount(attribute.getMaxCap());
-      } else if (currentPoints == 0) {
+      } else if (pendingPoints == 0) {
         ItemStackExtensionsKt.setCustomModelData(icon, 99);
       } else {
         ItemStackExtensionsKt.setCustomModelData(icon, attribute.getCustomData());
-        icon.setAmount(currentPoints);
+        icon.setAmount(pendingPoints);
       }
     }
     ItemMeta itemMeta = icon.getItemMeta();
-    if (currentPoints != statCap && champion.getPendingUnusedStatPoints() > 0) {
+    if (pendingPoints != statCap && champion.getPendingUnusedStatPoints() > 0) {
       itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
       itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
     }
@@ -86,8 +90,13 @@ public class LevelupMenuItem extends MenuItem {
     }
     lore.add(breakLine);
 
-    ItemStackExtensionsKt
-        .setDisplayName(icon, getDisplayName() + " [" + currentPoints + "/" + statCap + "]");
+    if (pendingPoints > actualPoints) {
+      String pendingPlus = ChatColor.WHITE + "(+" + (pendingPoints - actualPoints) + " Pending)";
+      ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + pendingPoints + "/" + statCap + "]" + pendingPlus);
+    } else {
+      ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + actualPoints + "/" + statCap + "]");
+    }
+
     ItemStackExtensionsKt.setLore(icon, lore);
 
     return icon;
@@ -98,16 +107,28 @@ public class LevelupMenuItem extends MenuItem {
     super.onItemClick(event);
     Player p = event.getPlayer();
     Champion champion = plugin.getChampionManager().getChampion(p);
-    if (champion.getPendingUnusedStatPoints() < 1) {
-      return;
+    event.setWillUpdate(false);
+    if (event.getClickType() == ClickType.LEFT) {
+      if (champion.getPendingUnusedStatPoints() < 1) {
+        return;
+      }
+      int currentLevel = champion.getPendingLevel(attribute);
+      if (currentLevel + 1 > plugin.getAttributeManager().getPendingStatCap(attribute, champion)) {
+        return;
+      }
+      p.playSound(p.getLocation(), attribute.getClickSound(), 1f, attribute.getClickPitch());
+      champion.setPendingLevel(attribute, currentLevel + 1);
+      champion.setPendingUnusedStatPoints(champion.getPendingUnusedStatPoints() - 1);
+      event.setWillUpdate(true);
+    } else if (event.getClickType() == ClickType.RIGHT) {
+      int currentLevel = champion.getPendingLevel(attribute);
+      if (currentLevel == 0 || currentLevel == champion.getAttributeLevel(attribute)) {
+        return;
+      }
+      p.playSound(p.getLocation(), Sound.UI_LOOM_TAKE_RESULT, 1f, 0.5f);
+      champion.setPendingLevel(attribute, currentLevel - 1);
+      plugin.getChampionManager().verifyPendingStats(champion);
+      event.setWillUpdate(true);
     }
-    int currentLevel = champion.getPendingLevel(attribute);
-    if (currentLevel + 1 > plugin.getAttributeManager().getPendingStatCap(attribute, champion)) {
-      return;
-    }
-    p.playSound(p.getLocation(), attribute.getClickSound(), 1f, attribute.getClickPitch());
-    champion.setPendingLevel(attribute, currentLevel + 1);
-    champion.setPendingUnusedStatPoints(champion.getPendingUnusedStatPoints() - 1);
-    event.setWillUpdate(true);
   }
 }

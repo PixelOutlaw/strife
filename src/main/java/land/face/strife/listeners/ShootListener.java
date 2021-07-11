@@ -43,12 +43,14 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
@@ -134,6 +136,17 @@ public class ShootListener implements Listener {
 
     StrifeMob mob = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) event.getEntity().getShooter());
+
+    if (event.getEntity().getShooter() instanceof Mob && ((Mob) event.getEntity().getShooter()).getTarget() != null) {
+      StrifeMob target = plugin.getStrifeMobManager()
+          .getStatMob(((Mob) event.getEntity().getShooter()).getTarget());
+
+      if (TargetingUtil.isFriendly(mob, target)) {
+        event.setCancelled(true);
+        ((Mob) event.getEntity().getShooter()).setTarget(null);
+        return;
+      }
+    }
 
     if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
       event.setCancelled(true);

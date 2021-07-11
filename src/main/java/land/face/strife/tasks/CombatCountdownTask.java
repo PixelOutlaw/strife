@@ -15,6 +15,7 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   private static final int BUMP_TIME_HALF_SECONDS = 20;
   private final WeakReference<StrifeMob> parentMob;
+  private boolean pvp = false;
 
   private int halfSecondsRemaining;
 
@@ -44,6 +45,14 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   public void bump() {
     halfSecondsRemaining = BUMP_TIME_HALF_SECONDS;
+  }
+
+  public void setPvp() {
+    pvp = true;
+  }
+
+  public boolean isPvp() {
+    return pvp;
   }
 
   public static void awardSkillExp(StrifeMob mob) {

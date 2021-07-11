@@ -74,10 +74,8 @@ public class LoreAbilityListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onCriticalHit(CriticalEvent event) {
-    Champion champion = event.getAttacker().getChampion();
-    if (champion != null) {
-      executeBoundEffects(event.getAttacker(), event.getVictim().getEntity(), event.getAttacker().getLoreAbilities().get(ON_CRIT));
-    }
+    HashSet<LoreAbility> abilitySet = new HashSet<>(event.getAttacker().getLoreAbilities().get(ON_CRIT));
+    executeBoundEffects(event.getAttacker(), event.getVictim().getEntity(), abilitySet);
     executeFiniteEffects(event.getAttacker(), event.getVictim(), ON_CRIT);
   }
 
@@ -124,21 +122,22 @@ public class LoreAbilityListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeath(EntityDeathEvent event) {
     StrifeMob victim = strifeMobManager.getStatMob(event.getEntity());
-    Player killer = event.getEntity().getKiller();
+    LivingEntity killer = victim.getTopDamager();
     if (killer == null) {
-      killer = victim.getTopDamager();
-      if (killer == null) {
-        return;
-      }
+      killer = event.getEntity().getKiller();
     }
     StrifeMob killerMob = strifeMobManager.getStatMob(killer);
-    executeBoundEffects(killerMob, event.getEntity(), killerMob.getLoreAbilities().get(ON_KILL));
+    if (killerMob == null || killerMob.getLoreAbilities() == null) {
+      return;
+    }
+    HashSet<LoreAbility> abilitySet = new HashSet<>(killerMob.getLoreAbilities().get(ON_KILL));
+    executeBoundEffects(killerMob, event.getEntity(), abilitySet);
     executeFiniteEffects(killerMob, victim, ON_KILL);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onStrifeDamage(StrifeDamageEvent event) {
-    if (event.isCancelled()) {
+    if (event.isCancelled() || !event.getDamageModifiers().isApplyOnHitEffects()) {
       return;
     }
     StrifeMob attacker = event.getAttacker();

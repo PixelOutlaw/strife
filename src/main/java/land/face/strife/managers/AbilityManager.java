@@ -92,7 +92,7 @@ public class AbilityManager {
   public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
       boolean ignoreReqs) {
     if (!ignoreReqs) {
-      if (ability.getCooldown() != 0 && !canBeCast(caster.getEntity(), ability)) {
+      if (ability.getCooldown() != 0 && !canBeCast(caster, ability)) {
         doOnCooldownPrompt(caster, ability);
         return false;
       }
@@ -117,7 +117,7 @@ public class AbilityManager {
         return true;
       }
     } else {
-      coolDownAbility(caster.getEntity(), ability);
+      coolDownAbility(caster, ability);
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
@@ -140,9 +140,8 @@ public class AbilityManager {
         plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
       }
       if (ability.isShowMessages()) {
-        AdvancedActionBarUtil
-            .addMessage((Player) caster.getEntity(), "ability-status",
-                CAST.replace("{n}", ability.getId()), 20, 11);
+        AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status",
+            CAST.replace("{n}", ability.getId()), 20, 11);
       }
     }
     playChatMessages(caster, ability);
@@ -193,7 +192,7 @@ public class AbilityManager {
     }
     container.setToggledOn(false);
     Ability ability = getAbility(container.getAbilityId());
-    coolDownAbility(mob.getEntity(), ability);
+    coolDownAbility(mob, ability);
 
     Set<LivingEntity> targets = new HashSet<>();
     targets.add(mob.getEntity());
@@ -299,15 +298,15 @@ public class AbilityManager {
     return true;
   }
 
-  private boolean canBeCast(LivingEntity entity, Ability ability) {
-    if (entity == null || !entity.isValid()) {
+  private boolean canBeCast(StrifeMob caster, Ability ability) {
+    if (caster.getEntity() == null || !caster.getEntity().isValid()) {
       return false;
     }
     if (ability == null) {
-      Bukkit.getLogger().warning("[Strife] " + entity.getName() + " tried to cast null ability");
+      Bukkit.getLogger().warning("[Strife] " + caster.getEntity().getName() + " tried to cast null ability");
       return false;
     }
-    AbilityCooldownContainer container = getCooldownContainer(entity, ability.getId());
+    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
     if (container == null || container.getSpentCharges() < ability.getMaxCharges()) {
       return true;
     }
@@ -369,6 +368,10 @@ public class AbilityManager {
       return true;
     }
 
+    if (!caster.isGlobalCooldownReady()) {
+      return false;
+    }
+
     LivingEntity targetEntity;
     if (target == null) {
       targetEntity = TargetingUtil.getMobTarget(caster);
@@ -398,15 +401,18 @@ public class AbilityManager {
         Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
   }
 
-  private void coolDownAbility(LivingEntity livingEntity, Ability ability) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
-      coolingDownAbilities.put(livingEntity, new HashSet<>());
+  private void coolDownAbility(StrifeMob caster, Ability ability) {
+    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
+      coolingDownAbilities.put(caster.getEntity(), new HashSet<>());
     }
-    AbilityCooldownContainer container = getCooldownContainer(livingEntity, ability.getId());
+    if (ability.getGlobalCooldownTicks() > 0) {
+      caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 500);
+    }
+    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
     if (container == null) {
       container = new AbilityCooldownContainer(ability.getId(),
           System.currentTimeMillis() + (int) (ability.getCooldown() * 1000f));
-      coolingDownAbilities.get(livingEntity).add(container);
+      coolingDownAbilities.get(caster.getEntity()).add(container);
     }
     if (container.getSpentCharges() == 0) {
       container.setStartTime(System.currentTimeMillis());
@@ -436,7 +442,7 @@ public class AbilityManager {
     }
     if (container.isToggledOn()) {
       container.setToggledOn(false);
-      coolDownAbility(caster.getEntity(), ability);
+      coolDownAbility(caster, ability);
 
       Set<LivingEntity> entities = new HashSet<>();
       entities.add(caster.getEntity());
@@ -511,22 +517,20 @@ public class AbilityManager {
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);
       case NEAREST_SOUL:
-        SoulTimer soul = plugin.getSoulManager()
-            .getNearestSoul(caster.getEntity(), ability.getRange());
+        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(),
+            ability.getRange());
         if (soul != null) {
-          Player playerTarget = Bukkit.getPlayer(soul.getOwner());
-          boolean friendlyTarget = TargetingUtil.isFriendly(caster, playerTarget);
-          if (ability.isFriendly() == friendlyTarget) {
-            targets.add(Bukkit.getPlayer(soul.getOwner()));
-          }
+          targets.add(soul.getOwner());
         }
-        return new TargetResponse(targets, true);
+        TargetResponse response = new TargetResponse(targets, true);
+        response.setForce(true);
+        return response;
     }
     return new TargetResponse(new HashSet<>());
   }
 
   private boolean isAbilityCastReady(StrifeMob caster, StrifeMob target, Ability ability) {
-    return canBeCast(caster.getEntity(), ability) && PlayerDataUtil
+    return canBeCast(caster, ability) && PlayerDataUtil
         .areConditionsMet(caster, target, ability.getConditions());
   }
 

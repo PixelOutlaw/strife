@@ -6,6 +6,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
@@ -69,8 +70,9 @@ public class EntityMagicListener implements Listener {
     e.setCancelled(true);
     witch.getWorld().playSound(witch.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.9f, 2f);
     StrifeMob witchMob = plugin.getStrifeMobManager().getStatMob(witch);
+    float speedMult = 1 + witchMob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
     plugin.getChaserManager().createChaser(witchMob, WITCH_SPELL_ID, new Vector(0,0,0),
-        TargetingUtil.getOriginLocation(witch, OriginLocation.BELOW_HEAD), witch.getTarget());
+        TargetingUtil.getOriginLocation(witch, OriginLocation.BELOW_HEAD), witch.getTarget(), speedMult);
   }
 
   @EventHandler

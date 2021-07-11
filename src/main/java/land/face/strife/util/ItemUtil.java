@@ -86,6 +86,17 @@ public class ItemUtil {
     }
   }
 
+  public static boolean isTool(ItemStack stack) {
+    String material = stack.getType().toString();
+    if (stack.getType() == Material.FISHING_ROD || stack.getType() == Material.SHEARS
+        || material.endsWith("_PICKAXE") || material.endsWith("_HOE") || material.endsWith("_AXE")
+        || material.endsWith("_SHOVEL")) {
+      int modelData = getCustomData(stack);
+      return modelData < 8000;
+    }
+    return false;
+  }
+
   public static boolean isDualWield(EntityEquipment equipment) {
     return isMeleeWeapon(equipment.getItemInMainHand().getType()) && isMeleeWeapon(
         equipment.getItemInOffHand().getType());
@@ -96,6 +107,9 @@ public class ItemUtil {
     ItemStack offItem = entityEquipment.getItemInOffHand();
     if (mainItem.getType() == Material.AIR || offItem.getType() == Material.AIR) {
       return true;
+    }
+    if (isTool(mainItem)) {
+      return false;
     }
     if (isMeleeWeapon(mainItem.getType())) {
       if (isMeleeWeapon(offItem.getType())) {

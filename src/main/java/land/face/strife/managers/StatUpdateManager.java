@@ -101,15 +101,6 @@ public class StatUpdateManager {
     double maxHealth = Math.max(StatUtil.getHealth(mob), 1);
     mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
-    if (mob.getChampion() != null) {
-      HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
-      if (displayType == HealthDisplayType.VANILLA_TWO_LIFE_PER_HEART) {
-        ((Player) mob.getEntity()).setHealthScaled(false);
-        return;
-      }
-      ((Player) mob.getEntity()).setHealthScaled(true);
-      ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
-    }
   }
 
   public void updateWeight(StrifeMob mob) {
@@ -154,19 +145,45 @@ public class StatUpdateManager {
     updateWeight(strifeMob);
   }
 
-  private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {
+  public static float getHealthScale(HealthDisplayType healthDisplayType, float maxHealth) {
     switch (healthDisplayType) {
-      case FIVE_LIFE_PER_HEART:
-        return 2 * Math.ceil(maxHealth / 5);
+      case TWENTY_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxHealth / 20f);
       case TEN_LIFE_PER_HEART:
-        return 2 * Math.ceil(maxHealth / 10);
+        return 2f * (float) Math.ceil(maxHealth / 10f);
+      case FIVE_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxHealth / 5f);
+      case VANILLA_TWO_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxHealth / 2f);
       case TWO_ROWS_OF_LIFE:
-        return 40;
+        return 40f;
       case THREE_ROWS_OF_LIFE:
-        return 60;
+        return 60f;
       case ONE_ROW_OF_LIFE:
       default:
-        return 20;
+        return 20f;
+    }
+  }
+
+  public static float getBarrierScale(HealthDisplayType healthDisplayType, float maxHealth,
+      float maxBarrier) {
+    switch (healthDisplayType) {
+      case VANILLA_TWO_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 2f);
+      case FIVE_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 5f);
+      case TEN_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 10f);
+      case TWENTY_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 20f);
+      case TWO_ROWS_OF_LIFE:
+        return 20f * (float) Math.max(Math.floor(2 * maxBarrier / maxHealth), 1);
+      case THREE_ROWS_OF_LIFE:
+        return 20f * (float) Math.max(Math.floor(3 * maxBarrier / maxHealth), 1);
+      case ONE_ROW_OF_LIFE:
+        return 20f * (float) Math.max(Math.floor(maxBarrier / maxHealth), 1);
+      default:
+        return 20f;
     }
   }
 

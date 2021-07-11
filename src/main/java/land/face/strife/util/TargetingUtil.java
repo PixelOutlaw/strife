@@ -48,7 +48,7 @@ public class TargetingUtil {
       return;
     }
     AttributeInstance attr = victim.getAttribute(GENERIC_FOLLOW_RANGE);
-    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
+    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 80);
     victim.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
 
     LivingEntity target = ((Mob) victim).getTarget();
@@ -146,13 +146,11 @@ public class TargetingUtil {
     if (defender.getMaster() != null) {
       return isFriendly(attacker, defender.getMaster());
     }
+    if (attacker.getMaster() == defender || attacker.getMinions().contains(defender)) {
+      return true;
+    }
     if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
       return !DamageUtil.canAttack((Player) attacker.getEntity(), (Player) defender.getEntity());
-    }
-    for (StrifeMob mob : attacker.getMinions()) {
-      if (defender.getEntity() == mob.getEntity()) {
-        return true;
-      }
     }
     return false;
   }

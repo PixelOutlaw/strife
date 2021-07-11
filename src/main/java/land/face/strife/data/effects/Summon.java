@@ -2,14 +2,13 @@ package land.face.strife.data.effects;
 
 import static land.face.strife.data.champion.EquipmentCache.ITEM_SLOTS;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.ItemUtil;
+import land.face.strife.util.TargetingUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
@@ -35,10 +34,9 @@ public class Summon extends LocationEffect {
   private boolean mount;
   private boolean clone;
 
-
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    Location loc = target.getEntity().getLocation();
+    Location loc = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
     applyAtLocation(caster, loc);
   }
 
@@ -108,17 +106,7 @@ public class Summon extends LocationEffect {
       summon.setHealth(maxHealth);
     }
 
-    List<StrifeMob> minionList = new ArrayList<>(caster.getMinions());
-
-    int excessMinions = minionList.size() - (int) caster.getStat(StrifeStat.MAX_MINIONS);
-    if (excessMinions > 0) {
-      minionList.sort(Comparator.comparingDouble(StrifeMob::getMinionRating));
-      while (excessMinions > 0) {
-        minionList.get(excessMinions - 1).minionDeath();
-        //Bukkit.getLogger().info("commit die: " + minionList.get(excessMinions - 1).getEntity().getName());
-        excessMinions--;
-      }
-    }
+    MinionTask.expireMinions(caster);
   }
 
   public void setUniqueEntity(String uniqueEntity) {

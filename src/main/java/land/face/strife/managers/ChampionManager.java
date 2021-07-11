@@ -118,6 +118,21 @@ public class ChampionManager {
     return !champion.getLevelMap().equals(champion.getPendingLevelMap());
   }
 
+  public void verifyPendingStats(Champion champion) {
+    for (StrifeAttribute attr : new HashSet<>(champion.getPendingLevelMap().keySet())) {
+      int statCap = plugin.getAttributeManager().getPendingStatCap(attr, champion);
+      int diff = champion.getPendingLevelMap().get(attr) - statCap;
+      if (diff > 0) {
+        champion.getPendingLevelMap().put(attr, statCap);
+      }
+    }
+    int pendingTotal = 0;
+    for (StrifeAttribute stat : champion.getPendingLevelMap().keySet()) {
+      pendingTotal += champion.getPendingLevelMap().getOrDefault(stat, 0);
+    }
+    champion.setPendingUnusedStatPoints(champion.getPlayer().getLevel() - pendingTotal);
+  }
+
   public void resetPendingStats(Champion champion) {
     champion.getSaveData().resetPendingStats();
   }
@@ -126,8 +141,7 @@ public class ChampionManager {
     for (StrifeAttribute stat : champion.getPendingLevelMap().keySet()) {
       if (champion.getPendingLevel(stat) > champion.getAttributeLevel(stat)) {
         sendMessage(champion.getPlayer(), stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
-        champion.getPlayer()
-            .playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f, stat.getLevelPitch());
+        champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f, stat.getLevelPitch());
       }
     }
     champion.getSaveData().savePendingStats();

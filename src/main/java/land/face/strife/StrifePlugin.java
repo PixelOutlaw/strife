@@ -54,7 +54,6 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.TriggerLoreAbility;
 import land.face.strife.hooks.SnazzyPartiesHook;
-import land.face.strife.listeners.BullionListener;
 import land.face.strife.listeners.ChatListener;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.listeners.CreeperExplodeListener;
@@ -472,7 +471,6 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new MoneyDropListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShearsEquipListener(), this);
     Bukkit.getPluginManager().registerEvents(new MinionListener(this), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
@@ -486,7 +484,7 @@ public class StrifePlugin extends FacePlugin {
     entityHider = new EntityHider(this, Policy.BLACKLIST);
 
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
-      Bukkit.getPluginManager().registerEvents(new BullionListener(this), this);
+      Bukkit.getPluginManager().registerEvents(new MoneyDropListener(this), this);
     }
     if (Bukkit.getPluginManager().getPlugin("HeadDatabase") != null) {
       Bukkit.getPluginManager().registerEvents(new HeadLoadListener(this), this);

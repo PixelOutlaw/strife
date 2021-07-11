@@ -1,11 +1,9 @@
 package land.face.strife.data.effects;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Random;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.StatUtil;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Mob;
@@ -23,14 +21,11 @@ public class Charm extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (target.isCharmImmune() || !(target.getEntity() instanceof Mob) || target.getEntity() instanceof Player) {
+    if (target.isCharmImmune() || !(target.getEntity() instanceof Mob)
+        || target.getEntity() instanceof Player) {
       return;
     }
-    if (!overrideMaster && target.getMaster() != null) {
-      return;
-    }
-
-    if (!rollCharmChance(caster, target)) {
+    if (!overrideMaster && target.getMaster() != null || !rollCharmChance(caster, target)) {
       return;
     }
 
@@ -41,28 +36,20 @@ public class Charm extends Effect {
       ((Wolf) target.getEntity()).setAngry(true);
     }
 
-    ((Mob) target.getEntity()).setTarget(null);
     target.getFactions().clear();
 
     float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
     caster.addMinion(target, (int) lifespan);
+    ((Mob) target.getEntity()).setTarget(null);
 
-    double maxHealth = target.getEntity().getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
+    target.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, caster.getStat(StrifeStat.MINION_DAMAGE) / 1000);
+    double maxHealth = target.getEntity().getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 1000));
     target.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     target.getEntity().setHealth(maxHealth);
 
     getPlugin().getSpawnerManager().addRespawnTime(target.getEntity());
 
-    List<StrifeMob> minionList = new ArrayList<>(caster.getMinions());
-
-    int excessMinions = minionList.size() - (int) caster.getStat(StrifeStat.MAX_MINIONS);
-    if (excessMinions > 0) {
-      minionList.sort(Comparator.comparingDouble(StrifeMob::getMinionRating));
-      while (excessMinions > 0) {
-        minionList.get(excessMinions - 1).minionDeath();
-        excessMinions--;
-      }
-    }
+    MinionTask.expireMinions(caster);
   }
 
   private boolean rollCharmChance(StrifeMob caster, StrifeMob target) {
@@ -88,4 +75,5 @@ public class Charm extends Effect {
   public void setChancePerLevel(float chancePerLevel) {
     this.chancePerLevel = chancePerLevel;
   }
+
 }

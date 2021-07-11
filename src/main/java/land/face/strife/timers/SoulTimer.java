@@ -19,16 +19,21 @@
 package land.face.strife.timers;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class SoulTimer extends BukkitRunnable {
@@ -39,14 +44,30 @@ public class SoulTimer extends BukkitRunnable {
   private final Hologram soulHead;
   private final long creationTime = System.currentTimeMillis();
 
+  private final ItemStack head;
+  private final ItemStack body;
+  private final ItemStack legs;
+  private final ItemStack boots;
+  private final ItemStack mainHand;
+  private final ItemStack offHand;
+
+  private final Map<StrifeStat, Float> statMap = new HashMap<>();
+
   private static int MAX_SOUL_LIFESPAN = 300000;
 
   private double lostExp = 0;
 
-  public SoulTimer(UUID owner, Hologram soulHead, Location location) {
-    this.owner = owner;
+  public SoulTimer(StrifeMob mob, Hologram soulHead, Location location) {
+    this.owner = mob.getEntity().getUniqueId();
     this.location = location;
     this.soulHead = soulHead;
+    this.statMap.putAll(mob.getFinalStats());
+    this.head = mob.getEntity().getEquipment().getHelmet();
+    this.body = mob.getEntity().getEquipment().getChestplate();
+    this.legs = mob.getEntity().getEquipment().getLeggings();
+    this.boots = mob.getEntity().getEquipment().getBoots();
+    this.mainHand = mob.getEntity().getEquipment().getItemInMainHand();
+    this.offHand = mob.getEntity().getEquipment().getItemInOffHand();
     LogUtil.printDebug("New SoulTimer created for " + owner);
     runTaskTimer(StrifePlugin.getInstance(), 0L, 20L);
   }
@@ -57,7 +78,7 @@ public class SoulTimer extends BukkitRunnable {
       StrifePlugin.getInstance().getSoulManager().removeSoul(this);
       return;
     }
-    Player p = Bukkit.getPlayer(owner);
+    Player p = getOwner();
     if (p != null && !p.isDead()) {
       if (!StrifePlugin.getInstance().getSoulManager().isDeathWorld(p.getWorld().getName())) {
         StrifePlugin.getInstance().getSoulManager().removeSoul(this);
@@ -92,8 +113,8 @@ public class SoulTimer extends BukkitRunnable {
     viewers.addAll(currentViewers);
   }
 
-  public UUID getOwner() {
-    return owner;
+  public Player getOwner() {
+    return Bukkit.getPlayer(owner);
   }
 
   public Location getLocation() {
@@ -121,5 +142,33 @@ public class SoulTimer extends BukkitRunnable {
       return StrifePlugin.getInstance().getSoulManager().canSeeSouls((Player) entity);
     }
     return false;
+  }
+
+  public ItemStack getHead() {
+    return head;
+  }
+
+  public ItemStack getBody() {
+    return body;
+  }
+
+  public ItemStack getLegs() {
+    return legs;
+  }
+
+  public ItemStack getBoots() {
+    return boots;
+  }
+
+  public ItemStack getMainHand() {
+    return mainHand;
+  }
+
+  public ItemStack getOffHand() {
+    return offHand;
+  }
+
+  public Map<StrifeStat, Float> getStatMap() {
+    return statMap;
   }
 }

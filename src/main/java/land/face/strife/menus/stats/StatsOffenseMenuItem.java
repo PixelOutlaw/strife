@@ -115,21 +115,20 @@ public class StatsOffenseMenuItem extends MenuItem {
     addIfApplicable(damageDisplay, shadow, ChatColor.DARK_PURPLE, "☠");
     addIfApplicable(damageDisplay, trueDmg, ChatColor.GRAY, "Ω");
     lore.add(damageDisplay.toString());
-    double criticalMult = 1;
-    if (!mob.getTraits().contains(StrifeTrait.NO_CRIT_MULT)) {
+    float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
+    if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
       float critDamage;
-      if (mob.getTraits().contains(StrifeTrait.ELEMENTAL_CRITS)) {
-        critDamage = physical + magical;
-      } else {
-        critDamage = total - trueDmg;
+      critDamage = physical + magical;
+      if (mob.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
+        critDamage += fire + ice + lightning + earth + light + shadow;
       }
-      float critChance = Math.max(mob.getStat(StrifeStat.CRITICAL_RATE), 0) / 100;
-      total += critChance * critDamage * StatUtil.getCriticalMultiplier(mob);
+      float critChance = Math.min(1, Math.max(mob.getStat(StrifeStat.CRITICAL_RATE), 0) / 100);
+      total += critChance * critDamage * critMult;
     }
     if (mob.getStat(StrifeStat.BLEED_CHANCE) > 0) {
       float bleedBonus = 0.5f * (1 + mob.getStat(StrifeStat.BLEED_DAMAGE) / 100);
       bleedBonus *= mob.getStat(StrifeStat.BLEED_CHANCE) / 100;
-      total += (physical + physical * criticalMult) * bleedBonus;
+      total += (physical + physical * (1 + critMult)) * bleedBonus;
     }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
       total *= 1 + (0.3 * (mob.getStat(StrifeStat.MULTISHOT) / 100));
@@ -149,9 +148,9 @@ public class StatsOffenseMenuItem extends MenuItem {
         loreSection.add(addStat("Multishot: ", mob.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
       }
     }
-    if (mob.getStat(StrifeStat.CRITICAL_RATE) > 0) {
+    if (mob.getStat(StrifeStat.CRITICAL_RATE) > 0 || !mob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
       loreSection.add(
-          addStat("Critical Chance: ", mob.getStat(StrifeStat.CRITICAL_RATE), "%", INT_FORMAT));
+          addStat("Critical Chance: ", Math.min(100, mob.getStat(StrifeStat.CRITICAL_RATE)), "%", INT_FORMAT));
       loreSection.add(
           addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(mob), "x", TWO_DECIMAL));
     }

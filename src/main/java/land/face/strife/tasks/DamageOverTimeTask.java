@@ -81,6 +81,12 @@ public class DamageOverTimeTask extends BukkitRunnable {
     witheredMobs.add(livingEntity);
   }
 
+  public void clearAllDoT(LivingEntity livingEntity) {
+    poisonedMobs.remove(livingEntity);
+    witheredMobs.remove(livingEntity);
+    burningMobs.remove(livingEntity);
+  }
+
   @Override
   public void run() {
     dealPoisonDamage();

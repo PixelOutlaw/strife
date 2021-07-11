@@ -18,6 +18,7 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.bullion.GoldDropEvent;
 import com.tealcube.minecraft.bukkit.bullion.PlayerDeathDropEvent;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -36,11 +37,25 @@ public class MoneyDropListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathEvent(PlayerDeathDropEvent event) {
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getVictim());
+    if (mob.diedFromPvp()) {
+      event.setCancelled(true);
+    }
     if (event.getAmountProtected() <= 0) {
       return;
     }
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getVictim());
     double multiplier = 1 + mob.getStat(StrifeStat.MONEY_KEPT) / 100;
     event.setAmountProtected(event.getAmountProtected() * multiplier);
+  }
+
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onGoldDrop(GoldDropEvent event) {
+    if (event.getKiller() == null) {
+      return;
+    }
+    StrifeMob killerMob = plugin.getStrifeMobManager().getStatMob(event.getKiller());
+    StrifeMob victimMob = plugin.getStrifeMobManager().getStatMob(event.getLivingEntity());
+    float bonus = victimMob.getStat(StrifeStat.GOLD_FIND) + killerMob.getStat(StrifeStat.GOLD_FIND);
+    event.setAmount(event.getAmount() * (1 + bonus / 100));
   }
 }

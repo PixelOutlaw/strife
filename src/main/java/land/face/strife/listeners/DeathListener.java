@@ -44,7 +44,9 @@ public class DeathListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onEntityDeathEvent(EntityDeathEvent event) {
     if (event instanceof PlayerDeathEvent) {
-      plugin.getSoulManager().createSoul((Player) event.getEntity());
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
+      mob.clearBuffs();
+      plugin.getSoulManager().createSoul(mob);
       EndlessEffect.cancelEffects(event.getEntity());
       return;
     }
@@ -83,6 +85,7 @@ public class DeathListener implements Listener {
   @EventHandler(priority = EventPriority.LOW)
   public void onEntityDeathClearIconsAndStrifeMobs(final EntityDeathEvent event) {
     plugin.getAbilityManager().unToggleAll(event.getEntity());
+    plugin.getDamageOverTimeTask().clearAllDoT(event.getEntity());
     if (event.getEntity() instanceof Player) {
       plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);

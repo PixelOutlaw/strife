@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
 import land.face.strife.managers.StatUpdateManager;
@@ -42,6 +43,7 @@ public class Champion {
   private final Set<StrifeTrait> pathTraits;
 
   private final Map<StrifeStat, Float> combinedStatMap;
+  private String attributeHeatmap = "";
 
   private Player player;
 
@@ -60,6 +62,7 @@ public class Champion {
     combinedStatMap = new HashMap<>();
     pathStats = new HashMap<>();
     pathTraits = new HashSet<>();
+    buildAttributeHeatmap();
   }
 
   public Map<StrifeStat, Float> getCombinedCache() {
@@ -112,6 +115,42 @@ public class Champion {
     return saveData.getPendingLevelMap().getOrDefault(stat, 0);
   }
 
+  public void buildAttributeHeatmap() {
+    float red = 0;
+    float yellow = 0;
+    float green = 0;
+    float blue = 0;
+    for (StrifeAttribute attribute : getLevelMap().keySet()) {
+      switch (attribute.getKey()) {
+        case "str":
+          red = getLevelMap().get(attribute);
+          break;
+        case "con":
+          yellow = getLevelMap().get(attribute);
+          break;
+        case "dex":
+          green = getLevelMap().get(attribute);
+          break;
+        case "int":
+          blue = getLevelMap().get(attribute);
+          break;
+      }
+    }
+    float total = red + yellow + green + blue;
+    red = red / total;
+    yellow = yellow / total;
+    green = green / total;
+    blue = blue / total;
+    attributeHeatmap = IntStream.range(0, (int) (red * 8)).mapToObj(i -> "⬤").toString() +
+        IntStream.range(0, (int) (yellow * 8)).mapToObj(i -> "⬤") +
+        IntStream.range(0, (int) (green * 8)).mapToObj(i -> "⬤") +
+        IntStream.range(0, (int) (blue * 8)).mapToObj(i -> "⬤");
+  }
+
+  public String getAttributeHeatmap() {
+    return attributeHeatmap;
+  }
+
   public void setBonusLevels(int bonusLevels) {
     saveData.setBonusLevels(bonusLevels);
   }
@@ -142,6 +181,7 @@ public class Champion {
 
   public void setUnusedStatPoints(int unusedStatPoints) {
     saveData.setUnusedStatPoints(unusedStatPoints);
+    buildAttributeHeatmap();
   }
 
   public int getPendingUnusedStatPoints() {

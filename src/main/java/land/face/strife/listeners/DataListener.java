@@ -20,6 +20,9 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
+import land.face.strife.managers.StatUpdateManager;
+import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.ChunkUtil;
 import land.face.strife.util.DamageUtil;
@@ -30,6 +33,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
@@ -45,6 +50,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -122,8 +128,8 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
-    event.getPlayer().setHealthScaled(false);
-    Champion champion = plugin.getChampionManager().getChampion(event.getPlayer());
+    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    Champion champion = playerMob.getChampion();
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
@@ -139,6 +145,20 @@ public class DataListener implements Listener {
     ensureAbilitiesDontInstantCast(event.getPlayer());
 
     plugin.getChampionManager().update(event.getPlayer());
+
+    event.getPlayer().setHealthScaled(true);
+    HealthDisplayType displayType = champion.getSaveData().getHealthDisplayType();
+    float maxHealth = Math.max(StatUtil.getHealth(playerMob), 1);
+    event.getPlayer().setInvulnerable(true);
+    event.getPlayer().setHealthScale(StatUpdateManager.getHealthScale(displayType, maxHealth));
+    event.getPlayer().setInvulnerable(false);
+
+    playerMob.updateBarrierScale();
+
+    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+      event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
+    }
+    event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
 
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
       Bukkit.getScheduler().runTaskLater(plugin,
@@ -165,6 +185,10 @@ public class DataListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
     plugin.getCounterManager().clearCounters(player);
     plugin.getBossBarManager().disableBars(player);
+    for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+      player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
+    }
+    player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -282,6 +306,20 @@ public class DataListener implements Listener {
   public void onRespawn(PlayerRespawnEvent event) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     mob.restartTimers();
+    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+      event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
+    }
+    event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
+  }
+
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onSaddleDrop(ItemSpawnEvent event) {
+    if (event.getEntity().getItemStack().getType() == Material.SADDLE) {
+      if (event.getEntity().getItemStack().isSimilar(UniqueEntityManager.DEV_SADDLE)) {
+        event.getEntity().remove();
+        event.setCancelled(true);
+      }
+    }
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

@@ -115,7 +115,7 @@ public class ExperienceListener implements Listener {
     if (penaltyFreeWorlds.contains(p.getWorld().getName())) {
       return;
     }
-    if (p.getKiller() != null) {
+    if (plugin.getStrifeMobManager().getStatMob(p).diedFromPvp()) {
       return;
     }
     if (p.getLevel() >= 100) {

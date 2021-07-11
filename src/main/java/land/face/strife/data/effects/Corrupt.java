@@ -9,7 +9,7 @@ public class Corrupt extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    DamageUtil.applyCorrupt(target.getEntity(), applyMultipliers(caster, amount));
+    DamageUtil.applyCorrupt(target.getEntity(), applyMultipliers(caster, amount), true);
   }
 
   public void setAmount(float amount) {

@@ -122,8 +122,9 @@ public class Spawner extends BukkitRunnable {
     if (maxMobs - existingMobs < 1) {
       return;
     }
-    StrifeMob mob = StrifePlugin.getInstance().getUniqueEntityManager()
-        .spawnUnique(s.getUniqueEntity(), s.getLocation());
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
+        (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
+            .spawnUnique(s.getUniqueEntity(), s.getLocation()));
 
     if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
       Bukkit.getLogger().warning("Spawner failed to spawn unique! " + s.getId());

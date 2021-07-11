@@ -16,7 +16,8 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ public class CounterManager {
   private final Map<LivingEntity, Set<CounterData>> counterMap = new WeakHashMap<>();
   private StrifePlugin plugin;
   private Sound counterSound;
+  private String COUNTER_MESSAGE;
   private float pitch;
 
   public CounterManager(StrifePlugin plugin) {
@@ -45,6 +47,8 @@ public class CounterManager {
     counterSound = Sound.valueOf(plugin.getSettings()
         .getString("config.mechanics.counter.sound", "ENCHANT_THORNS_HIT"));
     pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
+    COUNTER_MESSAGE = StringExtensionsKt.chatColorize(
+        plugin.getSettings().getString("language.status.counter-message", "&3&lCountered!"));
   }
 
   public void clearCounters(LivingEntity livingEntity) {
@@ -75,10 +79,10 @@ public class CounterManager {
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-            IndicatorStyle.BOUNCE, 6, "&3&o&lCounter!");
+            IndicatorStyle.BOUNCE, 7, "&3⛨&lCounter");
       }
       if (defender instanceof Player) {
-        MessageUtils.sendActionBar((Player) defender, "&e&lCountered!");
+        AdvancedActionBarUtil.addMessage((Player) defender, "COMBAT-EVENT", COUNTER_MESSAGE, 10, 100);
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
