@@ -145,6 +145,7 @@ public class ChampionManager {
       }
     }
     champion.getSaveData().savePendingStats();
+    champion.buildAttributeHeatmap();
     rebuildAttributes(champion);
   }
 
