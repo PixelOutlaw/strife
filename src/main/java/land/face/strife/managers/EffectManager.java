@@ -85,6 +85,7 @@ import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.data.effects.EquipmentSwap;
 import land.face.strife.data.effects.EvokerFangEffect;
+import land.face.strife.data.effects.FireworkBurst;
 import land.face.strife.data.effects.Food;
 import land.face.strife.data.effects.ForceStat;
 import land.face.strife.data.effects.ForceTarget;
@@ -134,6 +135,7 @@ import land.face.strife.util.TargetingUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -566,6 +568,7 @@ public class EffectManager {
         double z = cs.getDouble("z", 0);
         ((Teleport) effect).setVector(new Vector(x, y, z));
         ((Teleport) effect).setRelative(cs.getBoolean("relative", false));
+        ((Teleport) effect).getWorldSwapWhitelist().addAll(cs.getStringList("world-swap-whitelist"));
         List<String> destEffects = cs.getStringList("destination-effects");
         List<String> originEffects = cs.getStringList("origin-effects");
         delayedSetEffects(((Teleport) effect).getDestinationEffects(), destEffects, key, true);
@@ -715,6 +718,21 @@ public class EffectManager {
         ((PlaySound) effect).setSound(sound);
         ((PlaySound) effect).setVolume((float) cs.getDouble("volume", 1));
         ((PlaySound) effect).setPitch((float) cs.getDouble("pitch", 1));
+        break;
+      case FIREWORK:
+        effect = new FireworkBurst();
+        try {
+          ((FireworkBurst) effect).setEffectType(Type.valueOf((cs.getString("effect-type"))));
+        } catch (Exception e) {
+          LogUtil.printWarning("Invalid firework effect type in effect " + key + ". Skipping.");
+          return;
+        }
+        int colorOne = Integer.parseInt(cs.getString("color-one", "0xFFFFFF"));
+        ((FireworkBurst) effect).setColorOne(Color.fromRGB(colorOne));
+        int colorTwo = Integer.parseInt(cs.getString("color-two", "0xFFFFFF"));
+        ((FireworkBurst) effect).setColorTwo(Color.fromRGB(colorTwo));
+        ((FireworkBurst) effect).setFlicker(cs.getBoolean("flicker", false));
+        ((FireworkBurst) effect).setTrail(cs.getBoolean("trail", false));
         break;
       case PARTICLE:
         effect = new StrifeParticle();

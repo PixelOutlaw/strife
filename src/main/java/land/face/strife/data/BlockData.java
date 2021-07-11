@@ -6,32 +6,12 @@ import java.util.Set;
 
 public class BlockData {
 
-  private long lastHit;
   private long runeFalloff;
-  private double storedBlock;
   private int runes;
   private final Set<Hologram> runeHolograms = new HashSet<>();
 
-  public BlockData(long lastHit, double storedBlock) {
-    this.lastHit = lastHit;
-    this.storedBlock = storedBlock;
+  public BlockData() {
     this.runes = 0;
-  }
-
-  public long getLastHit() {
-    return lastHit;
-  }
-
-  public void setLastHit(long lastHit) {
-    this.lastHit = lastHit;
-  }
-
-  public double getStoredBlock() {
-    return storedBlock;
-  }
-
-  public void setStoredBlock(double storedBlock) {
-    this.storedBlock = storedBlock;
   }
 
   public int getRunes() {

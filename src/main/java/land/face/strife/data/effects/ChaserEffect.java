@@ -2,6 +2,7 @@ package land.face.strife.data.effects;
 
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -35,10 +36,11 @@ public class ChaserEffect extends Effect {
       overrideLocation = null;
     }
 
+    float speedMult = 1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
     if (chaseCaster) {
-      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, caster.getEntity());
+      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, caster.getEntity(), speedMult);
     } else {
-      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, target.getEntity());
+      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, target.getEntity(), speedMult);
     }
   }
 

@@ -1,11 +1,9 @@
 package land.face.strife.data.effects;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Random;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.StatUtil;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Mob;
@@ -51,16 +49,7 @@ public class Charm extends Effect {
 
     getPlugin().getSpawnerManager().addRespawnTime(target.getEntity());
 
-    List<StrifeMob> minionList = new ArrayList<>(caster.getMinions());
-
-    int excessMinions = minionList.size() - (int) caster.getStat(StrifeStat.MAX_MINIONS);
-    if (excessMinions > 0) {
-      minionList.sort(Comparator.comparingDouble(StrifeMob::getMinionRating));
-      while (excessMinions > 0) {
-        minionList.get(excessMinions - 1).minionDeath();
-        excessMinions--;
-      }
-    }
+    MinionTask.expireMinions(caster);
   }
 
   private boolean rollCharmChance(StrifeMob caster, StrifeMob target) {

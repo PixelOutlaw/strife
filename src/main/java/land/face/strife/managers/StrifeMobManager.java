@@ -40,7 +40,7 @@ public class StrifeMobManager {
     this.plugin = plugin;
     dualWieldAttackSpeed = (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
     levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
-    for (EquipmentSlot slot : EquipmentSlot.values()) {
+    for (EquipmentSlot slot : EquipmentCache.ITEM_SLOTS) {
       levelReqMap.put(slot, plugin.getSettings().getString("language.level-req." + slot, ""));
     }
   }
@@ -245,6 +245,7 @@ public class StrifeMobManager {
     if (mob.getChampion() != null) {
       mob.getChampion().recombineCache();
     }
+    mob.updateBarrierScale();
   }
 
   private void applyDualWieldStatChanges(EquipmentCache cache, EquipmentSlot slot) {

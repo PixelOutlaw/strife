@@ -98,16 +98,7 @@ public class StatUpdateManager {
   public void updateHealth(StrifeMob mob) {
     double health = mob.getEntity().getHealth();
     double oldMaxHealth = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
-    mob.getEntity().setHealth(oldMaxHealth);
     double maxHealth = Math.max(StatUtil.getHealth(mob), 1);
-    if (mob.getChampion() != null) {
-      ((Player) mob.getEntity()).setHealthScaled(false);
-      HealthDisplayType displayType = mob.getChampion().getSaveData().getHealthDisplayType();
-      ((Player) mob.getEntity()).setHealthScale(getHealthScale(displayType, maxHealth));
-      if (displayType != HealthDisplayType.VANILLA_TWO_LIFE_PER_HEART) {
-        ((Player) mob.getEntity()).setHealthScaled(true);
-      }
-    }
     mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
   }
@@ -154,19 +145,45 @@ public class StatUpdateManager {
     updateWeight(strifeMob);
   }
 
-  private double getHealthScale(HealthDisplayType healthDisplayType, double maxHealth) {
+  public static float getHealthScale(HealthDisplayType healthDisplayType, float maxHealth) {
     switch (healthDisplayType) {
-      case FIVE_LIFE_PER_HEART:
-        return 2 * Math.ceil(maxHealth / 5);
+      case TWENTY_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxHealth / 20f);
       case TEN_LIFE_PER_HEART:
-        return 2 * Math.ceil(maxHealth / 10);
+        return 2f * (float) Math.ceil(maxHealth / 10f);
+      case FIVE_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxHealth / 5f);
+      case VANILLA_TWO_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxHealth / 2f);
       case TWO_ROWS_OF_LIFE:
-        return 40;
+        return 40f;
       case THREE_ROWS_OF_LIFE:
-        return 60;
+        return 60f;
       case ONE_ROW_OF_LIFE:
       default:
-        return 20;
+        return 20f;
+    }
+  }
+
+  public static float getBarrierScale(HealthDisplayType healthDisplayType, float maxHealth,
+      float maxBarrier) {
+    switch (healthDisplayType) {
+      case VANILLA_TWO_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 2f);
+      case FIVE_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 5f);
+      case TEN_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 10f);
+      case TWENTY_LIFE_PER_HEART:
+        return 2f * (float) Math.ceil(maxBarrier / 20f);
+      case TWO_ROWS_OF_LIFE:
+        return 20f * (float) Math.max(Math.floor(2 * maxBarrier / maxHealth), 1);
+      case THREE_ROWS_OF_LIFE:
+        return 20f * (float) Math.max(Math.floor(3 * maxBarrier / maxHealth), 1);
+      case ONE_ROW_OF_LIFE:
+        return 20f * (float) Math.max(Math.floor(maxBarrier / maxHealth), 1);
+      default:
+        return 20f;
     }
   }
 

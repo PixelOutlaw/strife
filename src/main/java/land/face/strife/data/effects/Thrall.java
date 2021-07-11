@@ -2,13 +2,11 @@ package land.face.strife.data.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.MinionTask;
 import land.face.strife.timers.SoulTimer;
 import land.face.strife.util.ItemUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
@@ -110,17 +108,7 @@ public class Thrall extends Effect {
       }
     }.runTaskTimer(getPlugin(), 0, 20);
 
-    List<StrifeMob> minionList = new ArrayList<>(caster.getMinions());
-
-    int excessMinions = minionList.size() - (int) caster.getStat(StrifeStat.MAX_MINIONS);
-    if (excessMinions > 0) {
-      minionList.sort(Comparator.comparingDouble(StrifeMob::getMinionRating));
-      while (excessMinions > 0) {
-        minionList.get(excessMinions - 1).minionDeath();
-        //Bukkit.getLogger().info("commit die: " + minionList.get(excessMinions - 1).getEntity().getName());
-        excessMinions--;
-      }
-    }
+    MinionTask.expireMinions(caster);
   }
 
   public void setLifeSeconds(int lifeSeconds) {

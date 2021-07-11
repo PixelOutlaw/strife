@@ -104,7 +104,7 @@ public class ShootProjectile extends Effect {
         if (arrowColor != null) {
           ((Arrow) projectile).setColor(arrowColor);
         }
-        ((Arrow) projectile).setCritical(attackMultiplier > 0.95);
+        //((Arrow) projectile).setCritical(attackMultiplier > 0.95);
         ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
         ProjectileUtil.setPierce((Arrow) projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
       } else if (projectileEntity == EntityType.FIREBALL || projectileEntity == EntityType.DRAGON_FIREBALL) {

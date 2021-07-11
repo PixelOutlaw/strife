@@ -142,12 +142,6 @@ public class ProjectileUtil {
     setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
     setShotId(arrow);
-
-    if (shooter instanceof Player) {
-      if (attackMult > 0.95) {
-        arrow.setCritical(true);
-      }
-    }
   }
 
   public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,

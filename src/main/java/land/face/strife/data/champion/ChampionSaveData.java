@@ -183,9 +183,10 @@ public class ChampionSaveData {
   }
 
   public enum HealthDisplayType {
-    VANILLA_TWO_LIFE_PER_HEART,
-    FIVE_LIFE_PER_HEART,
+    TWENTY_LIFE_PER_HEART,
     TEN_LIFE_PER_HEART,
+    FIVE_LIFE_PER_HEART,
+    VANILLA_TWO_LIFE_PER_HEART,
     ONE_ROW_OF_LIFE,
     TWO_ROWS_OF_LIFE,
     THREE_ROWS_OF_LIFE

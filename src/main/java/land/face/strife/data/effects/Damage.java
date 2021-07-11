@@ -113,6 +113,7 @@ public class Damage extends Effect {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
     }
 
+
     StrifeMob finalTarget = target;
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
         () -> DamageUtil.postDamage(caster, finalTarget, mods), 0L);

@@ -81,8 +81,11 @@ public class StatsOpenLevelupMenu extends MenuItem {
     }
     event.setWillClose(true);
     event.setWillUpdate(false);
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        plugin.getLevelupMenu().open(event.getPlayer()), 2L);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      plugin.getChampionManager().resetPendingStats(
+          plugin.getChampionManager().getChampion(event.getPlayer()));
+      plugin.getLevelupMenu().open(event.getPlayer());
+    }, 2L);
   }
 
 }

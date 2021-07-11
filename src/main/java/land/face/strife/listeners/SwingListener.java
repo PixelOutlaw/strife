@@ -72,6 +72,9 @@ public class SwingListener implements Listener {
     }
     if (event.getAction() == LEFT_CLICK_AIR || event.getAction() == LEFT_CLICK_BLOCK) {
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+      if (ItemUtil.isTool(event.getPlayer().getEquipment().getItemInMainHand())) {
+        return;
+      }
       double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
       if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
         if (attackMult > 0.08) {

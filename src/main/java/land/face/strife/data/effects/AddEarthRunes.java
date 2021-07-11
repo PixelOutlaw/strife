@@ -9,7 +9,7 @@ public class AddEarthRunes extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    int runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(target.getEntity());
+    int runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(target);
     StrifePlugin.getInstance().getBlockManager().setEarthRunes(target,runes + amount);
   }
 

@@ -31,6 +31,7 @@ public class UniqueEntity {
   private boolean hasAI;
   private boolean gravity;
   private Profession profession;
+  private boolean invisible;
   private int size;
   private int followRange = -1;
   private boolean pushImmune;
@@ -38,6 +39,7 @@ public class UniqueEntity {
   private boolean burnImmune;
   private boolean fallImmune;
   private boolean ignoreSneak;
+  private boolean saddled;
   private int maxMods;
   private boolean removeFollowMods;
   private boolean powered;
@@ -180,6 +182,14 @@ public class UniqueEntity {
     this.profession = profession;
   }
 
+  public boolean isInvisible() {
+    return invisible;
+  }
+
+  public void setInvisible(boolean invisible) {
+    this.invisible = invisible;
+  }
+
   public int getSize() {
     return size;
   }
@@ -202,6 +212,14 @@ public class UniqueEntity {
 
   public void setIgnoreSneak(boolean ignoreSneak) {
     this.ignoreSneak = ignoreSneak;
+  }
+
+  public boolean isSaddled() {
+    return saddled;
+  }
+
+  public void setSaddled(boolean saddled) {
+    this.saddled = saddled;
   }
 
   public int getMaxMods() {

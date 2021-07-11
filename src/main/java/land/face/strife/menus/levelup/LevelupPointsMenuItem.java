@@ -37,9 +37,11 @@ public class LevelupPointsMenuItem extends MenuItem {
   private static final String DISPLAY_NAME = "&f&nUnused Levelpoints";
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.NETHER_STAR);
   private static final String[] DISPLAY_LORE = {
-      ChatColor.GRAY + "Click an attribute to upgrade!"
+      ChatColor.GRAY + "Click attributes to upgrade them!",
+      ChatColor.GRAY + "Once you're done, click this icon",
+      ChatColor.GRAY + "to confirm changes!"
   };
-  private static final String CLICK_TO_SAVE_TEXT = TextUtils.color("&e&lClick to apply changes!");
+  private static final String CLICK_TO_SAVE_TEXT = TextUtils.color("&a&lClick to confirm changes!");
 
   private final StrifePlugin plugin;
 
@@ -57,7 +59,8 @@ public class LevelupPointsMenuItem extends MenuItem {
     int stacks = champion.getPendingUnusedStatPoints();
     String name = TextUtils.color("&f&nUnused Levelpoints (" + stacks + ")");
 
-    if (champion.getPendingLevelMap().size() > 0) {
+    if (champion.getPendingUnusedStatPoints() != champion.getUnusedStatPoints()) {
+      lore.add("");
       lore.add(CLICK_TO_SAVE_TEXT);
     }
 

@@ -52,13 +52,15 @@ public class StrifeParticle extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (tickDuration > 0 && isFriendly() == TargetingUtil.isFriendly(caster, target)) {
-      double duration = tickDuration;
-      if (!strictDuration) {
-        duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+    if (tickDuration > 0) {
+      if (isFriendly() == TargetingUtil.isFriendly(caster, target)) {
+        double duration = tickDuration;
+        if (!strictDuration) {
+          duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+        }
+        StrifePlugin.getInstance().getParticleTask()
+            .addContinuousParticle(target.getEntity(), this, (int) duration);
       }
-      StrifePlugin.getInstance().getParticleTask()
-          .addContinuousParticle(target.getEntity(), this, (int) duration);
     } else {
       playAtLocation(caster, getLoc(target.getEntity()),
           target.getEntity().getEyeLocation().getDirection());
@@ -324,6 +326,10 @@ public class StrifeParticle extends LocationEffect {
     } else {
       location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
     }
+  }
+
+  public int getTickDuration() {
+    return tickDuration;
   }
 
   public enum ParticleStyle {

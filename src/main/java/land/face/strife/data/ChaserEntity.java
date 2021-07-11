@@ -10,6 +10,7 @@ public class ChaserEntity {
   private final String chaserId;
   private final int lifespan;
   private final float speed;
+  private final float maxSpeed;
 
   private Vector velocity;
   private Location location;
@@ -17,10 +18,11 @@ public class ChaserEntity {
   private int currentTick;
 
   public ChaserEntity(final StrifeMob caster, String chaserId, Location location,
-      LivingEntity target, float speed, Vector velocity, int lifespan) {
+      LivingEntity target, float speed, float maxSpeed, Vector velocity, int lifespan) {
     this.caster = caster;
     this.chaserId = chaserId;
     this.speed = speed;
+    this.maxSpeed = maxSpeed;
     this.velocity = velocity;
     this.lifespan = lifespan;
     this.location = location;
@@ -42,6 +44,10 @@ public class ChaserEntity {
 
   public float getSpeed() {
     return speed;
+  }
+
+  public float getMaxSpeed() {
+    return maxSpeed;
   }
 
   public Vector getVelocity() {

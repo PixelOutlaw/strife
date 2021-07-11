@@ -48,7 +48,7 @@ public class TargetingUtil {
       return;
     }
     AttributeInstance attr = victim.getAttribute(GENERIC_FOLLOW_RANGE);
-    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 32);
+    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 80);
     victim.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
 
     LivingEntity target = ((Mob) victim).getTarget();

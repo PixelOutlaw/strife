@@ -28,6 +28,8 @@ import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -57,6 +59,7 @@ public class StrifeMob {
   private float maxEnergy = 0;
   private float barrier = 0;
   private float maxBarrier = 0;
+  private float block = 0;
   private boolean shielded;
 
   private boolean useEquipment;
@@ -71,6 +74,7 @@ public class StrifeMob {
   private final Set<StrifeMob> minions = new HashSet<>();
 
   private long cacheStamp = 1L;
+  private long globalCooldownStamp = 1L;
 
   public StrifeMob(Champion champion) {
     this.livingEntity = new WeakReference<>(champion.getPlayer());
@@ -84,12 +88,45 @@ public class StrifeMob {
     useEquipment = livingEntity instanceof Player;
   }
 
+  public void bumpGlobalCooldown(int millis) {
+    globalCooldownStamp = System.currentTimeMillis() + millis;
+  }
+
+  public boolean isGlobalCooldownReady() {
+    return globalCooldownStamp < System.currentTimeMillis();
+  }
+
   public float getBarrier() {
     return barrier;
   }
 
   public float getMaxBarrier() {
     return maxBarrier;
+  }
+
+  public float getBlock() {
+    return block;
+  }
+
+  public void setBlock(float block) {
+    this.block = block;
+    if (getEntity() instanceof Player) {
+      Player player = (Player) getEntity();
+      for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+        player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
+      }
+      float maxBlock = getMaxBlock();
+      float percent = maxBlock > 0 ? block / maxBlock : 1;
+      if (percent > 0.99) {
+        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
+      } else {
+        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(Math.max(1, 20 * percent));
+      }
+    }
+  }
+
+  public float getMaxBlock() {
+    return statCache.getOrDefault(StrifeStat.BLOCK, 0f);
   }
 
   public void setMaxBarrier(float maxBarrier) {
@@ -103,7 +140,9 @@ public class StrifeMob {
     }
     float maxBarrier = StatUtil.getMaximumBarrier(this);
     barrier = Math.min(barrier + amount, maxBarrier);
-    barrierTask.updateArmorBar(this, barrier, maxBarrier);
+    if (barrierTask != null) {
+      barrierTask.forceAbsorbHearts();
+    }
   }
 
   public float damageBarrier(float amount) {
@@ -115,7 +154,9 @@ public class StrifeMob {
     float diff = barrier - amount;
     if (diff > 0) {
       barrier -= amount;
-      barrierTask.updateArmorBar(this, barrier, StatUtil.getMaximumBarrier(this));
+      if (barrierTask != null) {
+        barrierTask.forceAbsorbHearts();
+      }
       BarrierTask.spawnBarrierParticles(getEntity(), amount);
       return 0;
     } else {
@@ -123,8 +164,16 @@ public class StrifeMob {
         BarrierTask.spawnBarrierParticles(getEntity(), barrier);
       }
       barrier = 0;
-      barrierTask.updateArmorBar(this, 0);
+      if (barrierTask != null) {
+        barrierTask.forceAbsorbHearts();
+      }
       return -1 * diff;
+    }
+  }
+
+  public void updateBarrierScale() {
+    if (getEntity() instanceof Player && barrierTask != null) {
+      barrierTask.updateBarrierScale();
     }
   }
 
@@ -379,13 +428,13 @@ public class StrifeMob {
 
   public Set<StrifeTrait> getTraits() {
     Set<StrifeTrait> traits = new HashSet<>(equipmentCache.getCombinedTraits());
-    if (champion.get() == null) {
+    if (champion.get() != null) {
       traits.addAll(Objects.requireNonNull(champion.get()).getPathTraits());
     }
     return traits;
   }
 
-  public boolean hasTrait (StrifeTrait trait) {
+  public boolean hasTrait(StrifeTrait trait) {
     if (champion.get() == null) {
       return equipmentCache.getCombinedTraits().contains(trait);
     }
@@ -447,7 +496,7 @@ public class StrifeMob {
   }
 
   public double getMinionRating() {
-    if (minionTask == null) {
+    if (minionTask == null || !getEntity().getPassengers().isEmpty()) {
       // Arbitrary High Number
       return 10000000;
     }
@@ -509,11 +558,11 @@ public class StrifeMob {
   }
 
   public boolean isInPvp() {
-    return combatCountdownTask.isPvp();
+    return combatCountdownTask != null && combatCountdownTask.isPvp();
   }
 
   public boolean diedFromPvp() {
-    return getEntity() != null || isInPvp();
+    return getEntity() instanceof Player && getEntity().getKiller() != null || isInPvp();
   }
 
   public Map<StrifeStat, Float> getBuffStats() {

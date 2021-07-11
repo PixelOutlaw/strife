@@ -16,6 +16,7 @@ public class Teleport extends LocationEffect {
   private boolean relative;
   private final List<Effect> destinationEffects = new ArrayList<>();
   private final List<Effect> originEffects = new ArrayList<>();
+  private final List<String> worldSwapWhitelist = new ArrayList<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -24,6 +25,12 @@ public class Teleport extends LocationEffect {
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
+
+    if (caster.getEntity().getLocation().getWorld() != location.getWorld()) {
+      if (!worldSwapWhitelist.contains(location.getWorld().getName())) {
+        return;
+      }
+    }
 
     TargetResponse response = new TargetResponse(TargetingUtil.getOriginLocation(caster.getEntity(), getOrigin()));
     getPlugin().getEffectManager().executeEffectList(caster, response, originEffects);
@@ -65,6 +72,10 @@ public class Teleport extends LocationEffect {
 
   public List<Effect> getOriginEffects() {
     return originEffects;
+  }
+
+  public List<String> getWorldSwapWhitelist() {
+    return worldSwapWhitelist;
   }
 
 }

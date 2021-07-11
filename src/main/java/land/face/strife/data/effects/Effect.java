@@ -137,6 +137,7 @@ public abstract class Effect {
     SET_FALL,
     WAIT,
     SOUND,
+    FIREWORK,
     PARTICLE,
     SPEAK,
     PUSH,

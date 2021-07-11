@@ -5,6 +5,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,6 +29,7 @@ import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
@@ -37,6 +39,7 @@ import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Hoglin;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Phantom;
@@ -52,6 +55,8 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.entity.ZombieVillager;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class UniqueEntityManager {
 
@@ -59,10 +64,14 @@ public class UniqueEntityManager {
   private final Map<String, UniqueEntity> loadedUniquesMap;
   private final Map<UniqueEntity, Disguise> cachedDisguises;
 
+  public static ItemStack DEV_SADDLE;
+
   public UniqueEntityManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.loadedUniquesMap = new HashMap<>();
     this.cachedDisguises = new HashMap<>();
+    DEV_SADDLE = new ItemStack(Material.SADDLE);
+    ItemStackExtensionsKt.setCustomModelData(DEV_SADDLE, 3000);
   }
 
   public UniqueEntity getUnique(String uniqueId) {
@@ -205,11 +214,21 @@ public class UniqueEntityManager {
       }
     }
 
+    if (uniqueEntity.isInvisible()) {
+      le.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999999, 10));
+    }
+
     le.setCanPickupItems(false);
     if (le.getEquipment() != null) {
       Map<EquipmentSlot, ItemStack> equipmentMap = plugin.getEquipmentManager()
           .getEquipmentMap(uniqueEntity.getEquipment());
       ItemUtil.delayedEquip(equipmentMap, le, true);
+    }
+
+    if (uniqueEntity.isSaddled() && le.getType() == EntityType.HORSE) {
+      assert le instanceof Horse;
+      Horse horse = (Horse) le;
+      horse.getInventory().setSaddle(DEV_SADDLE);
     }
 
     if (uniqueEntity.getItemPassenger() != null) {
@@ -232,7 +251,8 @@ public class UniqueEntityManager {
     if (mobLevel == 0) {
       mob.setStats(uniqueEntity.getAttributeMap());
     } else {
-      mob.setStats(StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
+      mob.setStats(
+          StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
     }
 
     if (uniqueEntity.getMaxMods() > 0) {
@@ -255,20 +275,24 @@ public class UniqueEntityManager {
       SpecialStatusUtil.setSneakImmune(le);
     }
     if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
-      StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
-      if (mountMob != null) {
-        mountMob.getEntity().addPassenger(mob.getEntity());
-        mob.addMinion(mountMob, 0);
-      }
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+        StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
+        if (mountMob != null) {
+          mountMob.getEntity().addPassenger(mob.getEntity());
+          mob.addMinion(mountMob, 0);
+        }
+      }, 2L);
     }
 
     plugin.getStatUpdateManager().updateVanillaAttributes(mob);
 
     mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
-    plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.PHASE_SHIFT);
-    plugin.getParticleTask().addParticle(le, uniqueEntity.getStrifeParticle());
 
-    plugin.getAbilityManager().startAbilityTimerTask(mob);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.PHASE_SHIFT);
+      plugin.getParticleTask().addParticle(le, uniqueEntity.getStrifeParticle());
+      plugin.getAbilityManager().startAbilityTimerTask(mob);
+    }, 0L);
 
     UniqueSpawnEvent event = new UniqueSpawnEvent(mob);
     Bukkit.getPluginManager().callEvent(event);
@@ -300,13 +324,15 @@ public class UniqueEntityManager {
       try {
         uniqueEntity.setType(EntityType.valueOf(type));
       } catch (Exception e) {
-        Bukkit.getLogger().severe("Failed to parse entity " + entityNameKey + ". Invalid type: " + type);
+        Bukkit.getLogger()
+            .severe("Failed to parse entity " + entityNameKey + ". Invalid type: " + type);
         continue;
       }
 
       uniqueEntity.setId(entityNameKey);
       uniqueEntity.setName(
-          StringExtensionsKt.chatColorize(Objects.requireNonNull(cs.getString("name", "&fSET &cA &9NAME"))));
+          StringExtensionsKt
+              .chatColorize(Objects.requireNonNull(cs.getString("name", "&fSET &cA &9NAME"))));
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
@@ -315,6 +341,7 @@ public class UniqueEntityManager {
       uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
       uniqueEntity.setPushImmune(cs.getBoolean("push-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
+      uniqueEntity.setSaddled(cs.getBoolean("saddled", false));
       uniqueEntity.setMaxMods(cs.getInt("max-mods", 3));
       uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
       if (uniqueEntity.getType() == EntityType.CREEPER) {
@@ -331,7 +358,9 @@ public class UniqueEntityManager {
       uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
       uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
-      if (uniqueEntity.getType() == EntityType.VILLAGER || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
+      uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
+      if (uniqueEntity.getType() == EntityType.VILLAGER
+          || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
         String prof = cs.getString("profession");
         if (prof != null) {
           uniqueEntity.setProfession(Profession.valueOf(prof.toUpperCase()));
@@ -340,7 +369,8 @@ public class UniqueEntityManager {
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
       Disguise disguise = PlayerDataUtil
-          .parseDisguise(cs.getConfigurationSection("disguise"), uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0);
+          .parseDisguise(cs.getConfigurationSection("disguise"), uniqueEntity.getName(),
+              uniqueEntity.getMaxMods() > 0);
 
       if (disguise != null) {
         cacheDisguise(uniqueEntity, disguise);
@@ -351,7 +381,8 @@ public class UniqueEntityManager {
       uniqueEntity.setAttributeMap(attributeMap);
 
       uniqueEntity.setEquipment(
-          plugin.getEquipmentManager().buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
+          plugin.getEquipmentManager()
+              .buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
 
       String passengerItem = cs.getString("item-passenger", "");
       if (org.apache.commons.lang.StringUtils.isNotBlank(passengerItem)) {

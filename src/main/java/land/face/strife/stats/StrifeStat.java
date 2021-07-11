@@ -109,6 +109,7 @@ public enum StrifeStat {
 
   MINION_DAMAGE("Minion Damage"),
   MINION_LIFE("Minion Max Life"),
+  MINION_SPEED("Minion Move Speed"),
   MAX_MINIONS("Maximum Minions"),
 
   MOVEMENT_SPEED("Movement Speed"),

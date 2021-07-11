@@ -54,7 +54,7 @@ public class UniqueSplashListener implements Listener {
       }
 
       if (plugin.getBlockManager().rollBlock(defender, false)) {
-        plugin.getBlockManager().blockFatigue(defendEntity, 1.0, false);
+        plugin.getBlockManager().blockFatigue(defender, 1.0, false, false);
         plugin.getBlockManager().bumpRunes(defender);
         DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);

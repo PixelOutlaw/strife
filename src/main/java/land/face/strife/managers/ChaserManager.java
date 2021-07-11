@@ -30,10 +30,16 @@ public class ChaserManager {
     this.chasers = new HashSet<>();
   }
 
-  public void createChaser(StrifeMob caster, String id, Vector velocity, Location spawnLocation, LivingEntity target) {
+  public void createChaser(StrifeMob caster, String id, Vector velocity, Location spawnLocation,
+      LivingEntity target, float speedMult) {
     LoadedChaser data = chaserData.get(id);
-    ChaserEntity chaser = new ChaserEntity(caster, id, spawnLocation, target, data.getSpeed(), velocity,
-        data.getLifespan());
+    ChaserEntity chaser = new ChaserEntity(
+        caster, id, spawnLocation, target,
+        data.getSpeed() * speedMult,
+        data.getMaxSpeed() * speedMult,
+        velocity,
+        data.getLifespan()
+    );
     chasers.add(chaser);
   }
 
@@ -68,18 +74,18 @@ public class ChaserManager {
   private boolean executeChaserMovement(ChaserEntity chaser, LoadedChaser data) {
     Location targetLocation = TargetingUtil.getOriginLocation(chaser.getTarget(), OriginLocation.CENTER);
     Vector change = targetLocation.toVector().subtract(chaser.getLocation().toVector()).normalize()
-        .multiply(data.getSpeed());
+        .multiply(chaser.getSpeed());
     Vector velocity = chaser.getVelocity();
     velocity.add(change);
-    if (velocity.length() > data.getMaxSpeed()) {
-      velocity.normalize().multiply(data.getMaxSpeed());
+    if (velocity.length() > chaser.getMaxSpeed()) {
+      velocity.normalize().multiply(chaser.getMaxSpeed());
     }
     chaser.getLocation().add(velocity);
     for (StrifeParticle particle : data.getParticles()) {
       particle.applyAtLocation(chaser.getCaster(),
           chaser.getLocation().clone().subtract(chaser.getVelocity().clone().multiply(0.5)));
     }
-    if (isChaserCloseEnough(chaser, data, targetLocation)) {
+    if (isChaserCloseEnough(chaser, targetLocation)) {
       Set<LivingEntity> entities = new HashSet<>();
       entities.add(chaser.getTarget());
       TargetResponse response = new TargetResponse(entities);
@@ -90,8 +96,8 @@ public class ChaserManager {
     return false;
   }
 
-  private boolean isChaserCloseEnough(ChaserEntity chaser, LoadedChaser data, Location targetLoc) {
-    float hitRange = data.getMaxSpeed() + (float) chaser.getTarget().getWidth() / 2;
+  private boolean isChaserCloseEnough(ChaserEntity chaser, Location targetLoc) {
+    float hitRange = chaser.getMaxSpeed() + (float) chaser.getTarget().getWidth() / 2;
     return Math.abs(chaser.getLocation().getX() - targetLoc.getX()) < hitRange &&
         Math.abs(chaser.getLocation().getY() - targetLoc.getY()) < hitRange &&
         Math.abs(chaser.getLocation().getZ() - targetLoc.getZ()) < hitRange;
