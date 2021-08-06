@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.timers.RageTimer;
 import land.face.strife.util.LogUtil;
 import org.bukkit.entity.LivingEntity;
@@ -37,6 +38,9 @@ public class RageManager {
   }
 
   public void changeRage(StrifeMob mob, float amount) {
+    if (amount > 0 && mob.hasTrait(StrifeTrait.BLOOD_BOIL)) {
+      amount *= 1.3;
+    }
     if (rageMap.containsKey(mob.getEntity().getUniqueId())) {
       rageMap.get(mob.getEntity().getUniqueId()).bumpRage(amount);
       return;

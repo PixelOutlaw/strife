@@ -15,6 +15,7 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Biome;
@@ -64,7 +65,9 @@ public class MobModManager {
       }
     }
     if (!mobMod.getEquipment().isEmpty()) {
-      ItemUtil.delayedEquip(mobMod.getEquipment(), strifeMob.getEntity(), false);
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+        ItemUtil.equipMob(mobMod.getEquipment(), strifeMob.getEntity(), false);
+      }, 6L);
     }
     int level = StatUtil.getMobLevel(strifeMob.getEntity());
     Map<StrifeStat, Float> stats = StatUpdateManager.combineMaps(strifeMob.getBaseStats(), mobMod.getBaseStats());

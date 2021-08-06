@@ -1,18 +1,20 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
@@ -85,7 +87,8 @@ public class ShootListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onPlayerArrowShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof Player) || !(event.getEntity() instanceof Arrow)) {
+    if (!(event.getEntity().getShooter() instanceof Player)
+        || !(event.getEntity() instanceof Arrow)) {
       return;
     }
 
@@ -105,8 +108,9 @@ public class ShootListener implements Listener {
     ItemStack mainHand = player.getEquipment().getItemInMainHand();
     ItemStack offHand = player.getEquipment().getItemInOffHand();
 
-    EquipmentSlot slot = mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW ?
-        EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+    EquipmentSlot slot =
+        mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW ?
+            EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
 
     if (ItemUtil.isPistol(slot == EquipmentSlot.HAND ? mainHand : offHand)) {
       if (!ItemUtil.isBullets(slot == EquipmentSlot.HAND ? offHand : mainHand)) {
@@ -137,7 +141,8 @@ public class ShootListener implements Listener {
     StrifeMob mob = plugin.getStrifeMobManager()
         .getStatMob((LivingEntity) event.getEntity().getShooter());
 
-    if (event.getEntity().getShooter() instanceof Mob && ((Mob) event.getEntity().getShooter()).getTarget() != null) {
+    if (event.getEntity().getShooter() instanceof Mob
+        && ((Mob) event.getEntity().getShooter()).getTarget() != null) {
       StrifeMob target = plugin.getStrifeMobManager()
           .getStatMob(((Mob) event.getEntity().getShooter()).getTarget());
 
@@ -162,13 +167,13 @@ public class ShootListener implements Listener {
     }
 
     if (ItemUtil.isPistol(weapon)) {
-      doPistolShot(mob, 1);
+      doPistolShot(mob, 1f);
       event.setCancelled(true);
       return;
     }
 
     if (event.getEntity() instanceof Arrow) {
-      ProjectileUtil.shootArrow(mob, 1.0f);
+      ProjectileUtil.shootArrow(mob, 1f);
       event.setCancelled(true);
     }
   }
@@ -223,7 +228,8 @@ public class ShootListener implements Listener {
       return;
     }
 
-    StrifeMob caster = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity().getShooter());
+    StrifeMob caster = plugin.getStrifeMobManager()
+        .getStatMob((LivingEntity) event.getEntity().getShooter());
     Location loc = event.getEntity().getLocation().clone()
         .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
 
@@ -258,7 +264,8 @@ public class ShootListener implements Listener {
 
     List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
     if (hitEffects.isEmpty()) {
-      LogUtil.printWarning("A handled effectProjectile was missing effect meta... something's wrong");
+      LogUtil.printWarning(
+          "A handled effectProjectile was missing effect meta... something's wrong");
       return;
     }
 
@@ -271,11 +278,13 @@ public class ShootListener implements Listener {
       if (((Player) mob.getEntity()).getCooldown(Material.BOW) > 0) {
         return;
       }
-      ((Player) mob.getEntity()).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
+      ((Player) mob.getEntity()).setCooldown(Material.BOW,
+          (int) (StatUtil.getAttackTime(mob) * 20));
     }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
       double randomMultishot = 0.15 + Math.random() * 0.85;
-      int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
+      int projectiles = ProjectileUtil.getTotalProjectiles(1,
+          mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
       flintlockHitscan.setMaxTargets(projectiles);
       flintlockHitscan.setRadius(0.4f * projectiles);
     } else {
@@ -307,7 +316,8 @@ public class ShootListener implements Listener {
     particle.setRadius(0);
     particle.setLineIncrement(0.25f);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.smoke-quantity", 1));
-    particle.setLineOffset((float) plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));
+    particle.setLineOffset(
+        (float) plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.smoke-speed", 2f));
     particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.smoke-spread", 2f));
     return particle;
@@ -335,7 +345,8 @@ public class ShootListener implements Listener {
     particle.setRadius(0);
     particle.setLineIncrement(0.25f);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.flare-quantity", 1));
-    particle.setLineOffset((float) plugin.getSettings().getDouble("config.flintlock.flare-offset", 1));
+    particle.setLineOffset(
+        (float) plugin.getSettings().getDouble("config.flintlock.flare-offset", 1));
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.flare-speed", 1f));
     particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.flare-spread", 1f));
     return particle;

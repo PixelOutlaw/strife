@@ -119,6 +119,7 @@ public abstract class Effect {
     RESTORE_ENERGY,
     INCREASE_RAGE,
     PROJECTILE,
+    RIPTIDE,
     EQUIPMENT_SWAP,
     EVOKER_FANGS,
     FALLING_BLOCK,

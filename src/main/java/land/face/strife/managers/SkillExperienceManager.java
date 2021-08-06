@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.ability.Ability;
+import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.SkillExpGainEvent;
@@ -53,11 +55,14 @@ public class SkillExperienceManager {
     setupLevelingRates(plugin);
   }
 
-  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact, boolean forceDisplay) {
-    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, amount, exact, forceDisplay);
+  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact,
+      boolean forceDisplay) {
+    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, amount, exact,
+        forceDisplay);
   }
 
-  public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact, boolean forceDisplay) {
+  public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact,
+      boolean forceDisplay) {
     Player player = (Player) mob.getEntity();
     ChampionSaveData saveData = mob.getChampion().getSaveData();
     if (amount < 0.001) {
@@ -67,7 +72,8 @@ public class SkillExperienceManager {
       return;
     }
     if (!exact) {
-      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player).getStat(StrifeStat.SKILL_XP_GAIN) / 100;
+      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player)
+          .getStat(StrifeStat.SKILL_XP_GAIN) / 100;
       amount *= 1 + skillXpMult;
     }
     if (saveData.isDisplayExp() || forceDisplay) {
@@ -97,6 +103,7 @@ public class SkillExperienceManager {
         break;
       }
       maxExp = (double) getMaxExp(type, saveData.getSkillLevel(type));
+      checkSkillUnlock(player, type);
     }
     saveData.setSkillExp(type, (float) currentExp);
     plugin.getBossBarManager().pushSkillBar(player, type);
@@ -104,6 +111,23 @@ public class SkillExperienceManager {
 
   public Integer getMaxExp(LifeSkillType type, int level) {
     return levelingRates.get(type).get(level);
+  }
+
+  public void checkSkillUnlock(Player player, LifeSkillType skill) {
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    for (Ability ability : plugin.getAbilityManager().getLoadedAbilities().values()) {
+      if (ability.getAbilityIconData() != null) {
+        int reqLv = ability.getAbilityIconData().getLifeSkillRequirements().getOrDefault(skill, -1);
+        if (reqLv == champion.getLifeSkillLevel(skill)) {
+          if (ability.getAbilityIconData().isRequirementMet(champion)) {
+            MessageUtils.sendMessage(player,
+                "&b❖ Neato! You've unlocked the " + skill.getColor() + skill.getName()
+                    + "&b ability, " + skill.getColor() + ability.getName()
+                    + "&b! Visit an ability trainer to try it out!");
+          }
+        }
+      }
+    }
   }
 
   private void setupLevelingRates(StrifePlugin plugin) {
@@ -115,9 +139,9 @@ public class SkillExperienceManager {
       combatRate.put(i, i, (int) Math.round(expression.setVariable("LEVEL", i).evaluate()));
     }
     for (LifeSkillType type : LifeSkillType.values()) {
-      if (type.isComnbat()) {
-          levelingRates.put(type, combatRate);
-          continue;
+      if (type.isCombat()) {
+        levelingRates.put(type, combatRate);
+        continue;
       }
       LevelingRate skillRate = new LevelingRate();
       Expression rateExpr = new ExpressionBuilder(plugin.getSettings()

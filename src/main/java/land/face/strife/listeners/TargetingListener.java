@@ -18,7 +18,9 @@
  */
 package land.face.strife.listeners;
 
+import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_ENTITY;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
+import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.RANDOM_TARGET;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
@@ -40,7 +42,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -138,11 +139,8 @@ public class TargetingListener implements Listener {
       return;
     }
     if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
-      if (event.getReason() == TargetReason.TARGET_ATTACKED_NEARBY_ENTITY
-          || event.getReason() == TargetReason.FOLLOW_LEADER
-          || event.getReason() == TargetReason.PIG_ZOMBIE_TARGET
-          || event.getReason() == TargetReason.REINFORCEMENT_TARGET
-          || event.getReason() == TargetReason.DEFEND_VILLAGE) {
+      if (!(event.getReason() == CLOSEST_PLAYER || event.getReason() == RANDOM_TARGET ||
+          event.getReason() == CLOSEST_ENTITY)) {
         event.setCancelled(true);
         return;
       }

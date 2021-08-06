@@ -24,12 +24,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class Champion {
@@ -116,10 +118,10 @@ public class Champion {
   }
 
   public void buildAttributeHeatmap() {
-    float red = 0;
-    float yellow = 0;
-    float green = 0;
-    float blue = 0;
+    int red = 0;
+    int yellow = 0;
+    int green = 0;
+    int blue = 0;
     for (StrifeAttribute attribute : getLevelMap().keySet()) {
       switch (attribute.getKey()) {
         case "str":
@@ -136,15 +138,27 @@ public class Champion {
           break;
       }
     }
-    float total = red + yellow + green + blue;
-    red = red / total;
-    yellow = yellow / total;
-    green = green / total;
-    blue = blue / total;
-    attributeHeatmap = IntStream.range(0, (int) (red * 8)).mapToObj(i -> "⬤").toString() +
-        IntStream.range(0, (int) (yellow * 8)).mapToObj(i -> "⬤") +
-        IntStream.range(0, (int) (green * 8)).mapToObj(i -> "⬤") +
-        IntStream.range(0, (int) (blue * 8)).mapToObj(i -> "⬤");
+    float total = Math.max(1, red + yellow + green + blue);
+    int segments =  40 - player.getName().length();
+
+    int redSegments = (int) Math.ceil((float) segments * (float) red / total);
+    total -= red;
+    segments -= redSegments;
+
+    int yellowSegments = (int) Math.floor((float) segments * (float) yellow / total);
+    total -= yellow;
+    segments -= yellowSegments;
+
+    int greenSegments = (int) Math.ceil((float) segments * (float) green / total);
+    segments -= greenSegments;
+
+    int blueSegments = segments;
+
+    attributeHeatmap =
+        ChatColor.RED + IntStream.range(0, redSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
+            ChatColor.YELLOW + IntStream.range(0, yellowSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
+            ChatColor.GREEN + IntStream.range(0, greenSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
+            ChatColor.BLUE + IntStream.range(0, blueSegments).mapToObj(i -> "▌").collect(Collectors.joining());
   }
 
   public String getAttributeHeatmap() {
@@ -181,7 +195,6 @@ public class Champion {
 
   public void setUnusedStatPoints(int unusedStatPoints) {
     saveData.setUnusedStatPoints(unusedStatPoints);
-    buildAttributeHeatmap();
   }
 
   public int getPendingUnusedStatPoints() {

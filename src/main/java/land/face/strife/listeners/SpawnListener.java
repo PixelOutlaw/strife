@@ -84,9 +84,9 @@ public class SpawnListener implements Listener {
     if (event.getSpawnReason() != SpawnReason.JOCKEY) {
       return;
     }
-    String world = event.getEntity().getLocation().getWorld().getName();
-    if (plugin.getSettings().getStringList("config.leveled-monsters.enabled-worlds")
-        .contains(world)) {
+    if (event.getEntity().getVehicle() instanceof LivingEntity && StringUtils.isNotBlank(
+        plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity().getVehicle())
+            .getUniqueEntityId())) {
       event.setCancelled(true);
     }
   }

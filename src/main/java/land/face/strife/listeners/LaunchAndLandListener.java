@@ -10,6 +10,7 @@ import land.face.strife.data.AgilityLocationContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.effects.Riptide;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -75,6 +76,7 @@ public class LaunchAndLandListener implements Listener {
 
   @EventHandler
   public void onLand(LandEvent event) {
+    Riptide.sendCancelPacket(event.getPlayer());
     for (AgilityLocationContainer cont : plugin.getAgilityManager()
         .getInWorld(event.getLocation().getWorld().getName())) {
       boolean success = AgilityLocationContainer.setProgress(cont, event.getPlayer(), event.getLocation());

@@ -33,6 +33,7 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -295,6 +296,15 @@ public class CombatListener implements Listener {
         DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL),
             damageModifiers, false);
       }
+    }
+
+    if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
+      finalDamage *= 0.5;
+      float bleed = finalDamage;
+      if (defender.getStat(StrifeStat.BLEED_RESIST) > 0) {
+        bleed *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
+      }
+      DamageUtil.applyBleed(defender, bleed, true);
     }
 
     Bukkit.getScheduler().runTaskLater(plugin,

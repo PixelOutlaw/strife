@@ -24,10 +24,11 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.Vector;
 
 public class DamageManager {
 
@@ -48,7 +49,7 @@ public class DamageManager {
 
   public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage, DamageModifiers modifiers) {
     if (!modifiers.isBypassBarrier()) {
-      damage = Math.max(0.002f, defender.damageBarrier(damage));
+      damage = defender.damageBarrier(damage);
     }
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {
@@ -59,13 +60,19 @@ public class DamageManager {
       defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
       return damage;
     }
-    Vector velocity = defender.getEntity().getVelocity();
+
+    if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
+      damage *= 0.5;
+      float bleed = damage;
+      if (defender.getStat(StrifeStat.BLEED_RESIST) > 0) {
+        bleed *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
+      }
+      DamageUtil.applyBleed(defender, bleed, true);
+    }
 
     handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);
     defender.getEntity().damage(damage, attacker.getEntity());
     handledDamages.remove(attacker.getEntity().getUniqueId());
-
-    defender.getEntity().setVelocity(velocity);
 
     return damage;
   }

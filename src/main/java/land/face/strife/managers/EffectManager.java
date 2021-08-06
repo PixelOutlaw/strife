@@ -40,6 +40,7 @@ import land.face.strife.data.conditions.EndlessEffectCondition;
 import land.face.strife.data.conditions.EnergyCondition;
 import land.face.strife.data.conditions.EntityTypeCondition;
 import land.face.strife.data.conditions.FactionCondition;
+import land.face.strife.data.conditions.FlyingCondition;
 import land.face.strife.data.conditions.GroundedCondition;
 import land.face.strife.data.conditions.HealthCondition;
 import land.face.strife.data.conditions.HeightCondition;
@@ -103,6 +104,7 @@ import land.face.strife.data.effects.RemoveBuff;
 import land.face.strife.data.effects.RemoveEntity;
 import land.face.strife.data.effects.RestoreBarrier;
 import land.face.strife.data.effects.Revive;
+import land.face.strife.data.effects.Riptide;
 import land.face.strife.data.effects.SetFall;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.ShootProjectile;
@@ -443,6 +445,10 @@ public class EffectManager {
           }
         }, 5L);
         break;
+      case RIPTIDE:
+        effect = new Riptide();
+        ((Riptide) effect).setTicks(cs.getInt("ticks", 40) / 2);
+        break;
       case PROJECTILE:
         effect = new ShootProjectile();
         ((ShootProjectile) effect).setQuantity(cs.getInt("quantity", 1));
@@ -549,7 +555,7 @@ public class EffectManager {
         ((Bleed) effect).setAmount((float) cs.getDouble("amount", 10));
         ((Bleed) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
-        ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", true));
+        ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
         break;
       case CORRUPT:
@@ -637,6 +643,7 @@ public class EffectManager {
         ((Push) effect).setHeight(cs.getDouble("height", 10));
         ((Push) effect).setCancelFall(cs.getBoolean("cancel-fall", false));
         ((Push) effect).setClamp(cs.getBoolean("clamp", true));
+        ((Push) effect).setUncheckedHeight(cs.getBoolean("unchecked-height", false));
         ((Push) effect).setPushType(
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
         break;
@@ -1017,6 +1024,9 @@ public class EffectManager {
       case FACTION_MEMBER:
         String factionId = cs.getString("faction-id");
         condition = new FactionCondition(factionId);
+        break;
+      case FLYING:
+        condition = new FlyingCondition();
         break;
       case VELOCITY:
         VelocityType velocityType = VelocityType.valueOf(cs.getString("type", "TOTAL"));

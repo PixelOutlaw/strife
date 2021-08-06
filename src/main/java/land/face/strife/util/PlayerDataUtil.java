@@ -35,6 +35,7 @@ import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.WolfWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -153,6 +154,7 @@ public class PlayerDataUtil {
       Bukkit.getLogger().warning("Invalid disguise type " + disguiseType + " for " + name);
       return null;
     }
+    Disguise disguise = null;
     if (type == DisguiseType.PLAYER) {
       String disguisePlayer = section.getString("disguise-player");
       if (StringUtils.isBlank(disguisePlayer)) {
@@ -167,7 +169,7 @@ public class PlayerDataUtil {
         playerDisguise.setName(name);
         playerDisguise.setDynamicName(false);
       }
-      return playerDisguise;
+      disguise = playerDisguise;
     }
     if (type.isMob()) {
       String typeData = section.getString("disguise-type-data", "");
@@ -194,6 +196,9 @@ public class PlayerDataUtil {
               Fox.Type foxType = Fox.Type.valueOf(typeData);
               ((FoxWatcher) watcher).setType(foxType);
               break;
+            case WOLF:
+              ((WolfWatcher) watcher).setAngry(Boolean.parseBoolean(typeData));
+              break;
             case PARROT:
               Parrot.Variant parrotType = Parrot.Variant.valueOf(typeData);
               ((ParrotWatcher) watcher).setVariant(parrotType);
@@ -218,7 +223,7 @@ public class PlayerDataUtil {
         }
       }
       mobDisguise.setReplaceSounds(true);
-      return mobDisguise;
+      disguise = mobDisguise;
     }
     if (type.isMisc()) {
       MiscDisguise miscDisguise = new MiscDisguise(type);
@@ -238,9 +243,12 @@ public class PlayerDataUtil {
       } catch (Exception e) {
         LogUtil.printWarning("Cannot load data for " + name);
       }
-      return miscDisguise;
+      disguise = miscDisguise;
     }
-    return null;
+    if (disguise != null) {
+      disguise.setSoundGroup(section.getString("sound-group", null));
+    }
+    return disguise;
   }
 
   public static boolean areConditionsMet(StrifeMob caster, StrifeMob target, Set<Condition> conditions) {

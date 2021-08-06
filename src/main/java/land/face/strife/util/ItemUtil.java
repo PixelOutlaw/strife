@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import land.face.strife.StrifePlugin;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
@@ -55,7 +54,8 @@ public class ItemUtil {
 
   public static boolean isArmor(Material material) {
     String name = material.name();
-    return name.endsWith("HELMET") || name.endsWith("CHESTPLATE") || name.endsWith("LEGGINGS") || name.endsWith("BOOTS")
+    return name.endsWith("HELMET") || name.endsWith("CHESTPLATE") || name.endsWith("LEGGINGS")
+        || name.endsWith("BOOTS")
         || name.endsWith("SKULL") || name.endsWith("HEAD");
   }
 
@@ -208,24 +208,23 @@ public class ItemUtil {
     return traits;
   }
 
-  public static void delayedEquip(Map<EquipmentSlot, ItemStack> items, LivingEntity entity, boolean overwrite) {
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      if (overwrite) {
-        entity.getEquipment().clear();
-      }
-      entity.getEquipment().setHelmetDropChance(0f);
-      entity.getEquipment().setChestplateDropChance(0f);
-      entity.getEquipment().setLeggingsDropChance(0f);
-      entity.getEquipment().setBootsDropChance(0f);
-      entity.getEquipment().setItemInMainHandDropChance(0f);
-      entity.getEquipment().setItemInOffHandDropChance(0f);
-      entity.getEquipment().setHelmet(items.getOrDefault(EquipmentSlot.HEAD, null));
-      entity.getEquipment().setChestplate(items.getOrDefault(EquipmentSlot.CHEST, null));
-      entity.getEquipment().setLeggings(items.getOrDefault(EquipmentSlot.LEGS, null));
-      entity.getEquipment().setBoots(items.getOrDefault(EquipmentSlot.FEET, null));
-      entity.getEquipment().setItemInMainHand(items.getOrDefault(EquipmentSlot.HAND, null));
-      entity.getEquipment().setItemInOffHand(items.getOrDefault(EquipmentSlot.OFF_HAND, null));
-    }, 2L);
+  public static void equipMob(Map<EquipmentSlot, ItemStack> items, LivingEntity entity,
+      boolean overwrite) {
+    if (overwrite) {
+      entity.getEquipment().clear();
+    }
+    entity.getEquipment().setHelmetDropChance(0f);
+    entity.getEquipment().setChestplateDropChance(0f);
+    entity.getEquipment().setLeggingsDropChance(0f);
+    entity.getEquipment().setBootsDropChance(0f);
+    entity.getEquipment().setItemInMainHandDropChance(0f);
+    entity.getEquipment().setItemInOffHandDropChance(0f);
+    entity.getEquipment().setHelmet(items.getOrDefault(EquipmentSlot.HEAD, null));
+    entity.getEquipment().setChestplate(items.getOrDefault(EquipmentSlot.CHEST, null));
+    entity.getEquipment().setLeggings(items.getOrDefault(EquipmentSlot.LEGS, null));
+    entity.getEquipment().setBoots(items.getOrDefault(EquipmentSlot.FEET, null));
+    entity.getEquipment().setItemInMainHand(items.getOrDefault(EquipmentSlot.HAND, null));
+    entity.getEquipment().setItemInOffHand(items.getOrDefault(EquipmentSlot.OFF_HAND, null));
   }
 
   public static int getCustomData(ItemStack stack) {
