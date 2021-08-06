@@ -21,6 +21,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
+import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.AbilitySlot;
@@ -254,6 +255,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerTeleport(PlayerTeleportEvent event) {
+    Riptide.sendCancelPacket(event.getPlayer());
     if (event.getTo().getWorld() != event.getTo().getWorld()) {
       ensureAbilitiesDontInstantCast(event.getPlayer());
       return;
@@ -304,6 +306,7 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onRespawn(PlayerRespawnEvent event) {
+    Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     mob.restartTimers();
     for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {

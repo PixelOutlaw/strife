@@ -588,7 +588,7 @@ public class AbilityManager {
       return;
     }
     String name = StringExtensionsKt
-        .chatColorize(Objects.requireNonNull(cs.getString("name", "ABILITY NOT NAMED")));
+        .chatColorize(Objects.requireNonNull(cs.getString("name", key)));
     TargetType targetType;
     try {
       targetType = TargetType.valueOf(cs.getString("target-type"));

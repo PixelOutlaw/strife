@@ -58,7 +58,7 @@ public class Damage extends Effect {
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
     mods.setBypassBarrier(bypassBarrier);
-    mods.setScaleChancesWithAttack(true);
+    mods.setScaleChancesWithAttack(false);
     if (canSneakAttack && caster.getEntity() instanceof Player && getPlugin().getStealthManager()
         .canSneakAttack((Player) caster.getEntity())) {
       mods.setSneakAttack(true);

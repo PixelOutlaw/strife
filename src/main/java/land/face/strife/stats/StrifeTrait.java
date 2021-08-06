@@ -1,7 +1,14 @@
 package land.face.strife.stats;
 
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import net.md_5.bungee.api.ChatColor;
 
 public enum StrifeTrait {
 
@@ -14,6 +21,8 @@ public enum StrifeTrait {
   NO_ENERGY_BASICS("Basic Attacks Cost No Energy"),
   ENERGY_ABSORB("20% Of Damage Taken From Energy"),
   NO_ENERGY_REGEN("Energy Does Not Regenerate"),
+  BLEEDING_EDGE("&6&nPassive Effect - Bleeding Edge", " &eHalf of attack damage taken from", " &elife is instead added as &4Bleeding"),
+  BLOOD_BOIL("&6&nPassive Effect - Blood Boil", " &eWhen &4Bleeding&e, &eall &cRage &egained", " &eis increased by &f30%"),
   SOUL_FLAME("Passive Effect - Blue Flame");
 
   // TODO: We map String to StrifeStat, why not let the user
@@ -26,27 +35,23 @@ public enum StrifeTrait {
       if (trait.getName() == null) {
         continue;
       }
-      values.put(trait.getName(), trait);
+      values.put(ChatColor.stripColor(trait.getName()), trait);
     }
     return values;
   }
 
-  public static StrifeTrait fromName(String name) {
-    return copyOfValues.getOrDefault(name, null);
+  public static StrifeTrait fromName(String trigger) {
+    return copyOfValues.getOrDefault(trigger, null);
   }
 
+  @Getter
   private final String name;
+  @Getter
+  private final List<String> additionalText = new ArrayList<>();
 
-  StrifeTrait(String name) {
-    this.name = name;
-  }
-
-  StrifeTrait() {
-    this.name = null;
-  }
-
-  public String getName() {
-    return name;
+  StrifeTrait(String trigger, String... additionalText) {
+    this.name = StringExtensionsKt.chatColorize(trigger);
+    this.additionalText.addAll(ListExtensionsKt.chatColorize(Arrays.asList(additionalText)));
   }
 
 }

@@ -32,7 +32,7 @@
   </parent>
 
   <artifactId>strife</artifactId>
-  <version>3.4.4</version>
+  <version>3.4.5</version>
   <packaging>jar</packaging>
 
   <name>strife</name>
@@ -109,7 +109,7 @@
     <dependency>
       <groupId>LibsDisguises</groupId>
       <artifactId>LibsDisguises</artifactId>
-      <version>10.0.16-SNAPSHOT</version>
+      <version>10.0.26-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

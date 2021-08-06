@@ -587,17 +587,23 @@ public class DamageUtil {
         }
         return getWardingMult(warding);
       case FIRE:
-        return 1 - getFireResist(defend, attack.hasTrait(StrifeTrait.SOUL_FLAME)) / 100;
+        float fireResist = getFireResist(defend, attack.hasTrait(StrifeTrait.SOUL_FLAME)) / 100;
+        return fireResist >= 0 ? (1 - fireResist) : 1 + Math.abs(fireResist);
       case ICE:
-        return 1 - getIceResist(defend) / 100;
+        float iceResist = getIceResist(defend) / 100;
+        return iceResist >= 0 ? (1 - iceResist) : 1 + Math.abs(iceResist);
       case LIGHTNING:
-        return 1 - getLightningResist(defend) / 100;
+        float lightningResist = getLightningResist(defend) / 100;
+        return lightningResist >= 0 ? (1 - lightningResist) : 1 + Math.abs(lightningResist);
       case DARK:
-        return 1 - getShadowResist(defend) / 100;
+        float darkResist = getShadowResist(defend) / 100;
+        return darkResist >= 0 ? (1 - darkResist) : 1 + Math.abs(darkResist);
       case EARTH:
-        return 1 - getEarthResist(defend) / 100;
+        float earthResist = getEarthResist(defend) / 100;
+        return earthResist >= 0 ? (1 - earthResist) : 1 + Math.abs(earthResist);
       case LIGHT:
-        return 1 - getLightResist(defend) / 100;
+        float lightResist = getLightResist(defend) / 100;
+        return lightResist >= 0 ? (1 - lightResist) : 1 + Math.abs(lightResist);
       case TRUE_DAMAGE:
       default:
         return 1;
@@ -807,8 +813,10 @@ public class DamageUtil {
     float chance = (attacker.getStat(StrifeStat.BLEED_CHANCE) +
         mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_CHANCE, 0f)) / 100;
     if (chance >= rollDouble()) {
-      float multiplier = mods.isScaleChancesWithAttack() ? mods.getAttackMultiplier() : 1f;
-      float damage = rawPhysical * multiplier * BLEED_PERCENT;
+      float damage = rawPhysical  * BLEED_PERCENT;
+      if (mods.isScaleChancesWithAttack()) {
+        damage *= Math.min(1f, mods.getAttackMultiplier());
+      }
       float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) + mods.getAbilityMods()
           .getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
       damage *= 1 + (bleedDamage / 100);
@@ -822,9 +830,11 @@ public class DamageUtil {
     if (amount < 0.1) {
       return;
     }
-    StrifePlugin.getInstance().getBleedManager().addBleed(defender, amount, bypassBarrier);
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 1f);
+    boolean bleedSuccess = plugin.getBleedManager().addBleed(defender, amount, bypassBarrier);
+    if (bleedSuccess) {
+      defender.getEntity().getWorld()
+          .playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 0.7f);
+    }
   }
 
   public static void applyCorrupt(LivingEntity defender, float amount, boolean silent) {

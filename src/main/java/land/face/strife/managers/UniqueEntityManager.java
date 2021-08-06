@@ -222,7 +222,9 @@ public class UniqueEntityManager {
     if (le.getEquipment() != null) {
       Map<EquipmentSlot, ItemStack> equipmentMap = plugin.getEquipmentManager()
           .getEquipmentMap(uniqueEntity.getEquipment());
-      ItemUtil.delayedEquip(equipmentMap, le, true);
+      ItemUtil.equipMob(equipmentMap, le, true);
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          ItemUtil.equipMob(equipmentMap, le, true), 5L);
     }
 
     if (uniqueEntity.isSaddled() && le.getType() == EntityType.HORSE) {
@@ -368,9 +370,8 @@ public class UniqueEntityManager {
       }
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
-      Disguise disguise = PlayerDataUtil
-          .parseDisguise(cs.getConfigurationSection("disguise"), uniqueEntity.getName(),
-              uniqueEntity.getMaxMods() > 0);
+      Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
+          uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0);
 
       if (disguise != null) {
         cacheDisguise(uniqueEntity, disguise);

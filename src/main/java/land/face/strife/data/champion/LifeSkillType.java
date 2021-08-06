@@ -6,7 +6,7 @@ import net.md_5.bungee.api.ChatColor;
 public enum LifeSkillType {
 
   CRAFTING("Crafting", "crafting", ChatColor.YELLOW),
-  ENCHANTING("Enchanting", "enchant", ChatColor.of(new Color(128, 93, 255))),
+  ENCHANTING("Enchanting", "enchant", ChatColor.of(new Color(113, 79, 236))),
   FISHING("Fishing", "fishing", ChatColor.AQUA),
   MINING("Mining", "mining", ChatColor.DARK_GREEN),
   FARMING("Gathering", "farming", ChatColor.of(new Color(255, 192, 87))),
@@ -15,6 +15,7 @@ public enum LifeSkillType {
   SNEAK("Sneak", "sneak", ChatColor.GRAY),
   AGILITY("Agility", "agility", ChatColor.DARK_AQUA),
   TRADING("Trading", "trading", ChatColor.DARK_GREEN),
+  FLYING("Flying", "flying", ChatColor.of(new Color(114, 187, 255))),
   SWORDSMANSHIP("Swordsmanship", "sword", ChatColor.RED, true),
   DAGGER_MASTERY("Dagger Mastery", "dagger", ChatColor.of(new Color(204, 246, 102)), true),
   AXE_MASTERY("Axe Mastery", "axe", ChatColor.RED, true),
@@ -61,7 +62,7 @@ public enum LifeSkillType {
     return color;
   }
 
-  public boolean isComnbat() {
+  public boolean isCombat() {
     return combat;
   }
 }

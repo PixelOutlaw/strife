@@ -16,6 +16,13 @@
  */
 package land.face.strife;
 
+import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_METADATA;
+
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
@@ -51,6 +58,7 @@ import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.effects.Riptide;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.TriggerLoreAbility;
 import land.face.strife.hooks.SnazzyPartiesHook;
@@ -153,8 +161,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 public class StrifePlugin extends FacePlugin {
@@ -537,6 +548,37 @@ public class StrifePlugin extends FacePlugin {
 
     DamageUtil.refresh();
 
+    Riptide.buildNMSEnum(this);
+    Riptide.startTask(this);
+
+    ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, ENTITY_METADATA) {
+      public void onPacketSending(PacketEvent event) {
+        try {
+          int entityId = event.getPacket().getIntegers().read(0);
+          if (entityId < 0) {
+            return;
+          }
+          Entity entity = event.getPacket()
+              .getEntityModifier(event.getPlayer().getWorld()).read(0);
+          if (entity instanceof LivingEntity && Riptide
+              .isRiptideAnimationPlaying((LivingEntity) entity)) {
+            StructureModifier<List<WrappedWatchableObject>> watcher = event.getPacket()
+                .getWatchableCollectionModifier();
+            for (WrappedWatchableObject watch : watcher.read(0)) {
+              if (watch.getIndex() == 6) {
+                watch.setValue(Riptide.RIPTIDE_POSE_ENUM);
+              }
+              if (watch.getIndex() == 7) {
+                watch.setValue((byte) 4);
+              }
+            }
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    });
+
     LogUtil.printInfo("Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
     LogUtil.printInfo("Loaded " + effectManager.getLoadedEffects().size() + " effects");
     LogUtil.printInfo("Loaded " + abilityManager.getLoadedAbilities().size() + " abilities");
@@ -552,6 +594,7 @@ public class StrifePlugin extends FacePlugin {
     entityHider.close();
     HandlerList.unregisterAll(this);
     Bukkit.getScheduler().cancelTasks(this);
+    ProtocolLibrary.getProtocolManager().removePacketListeners(this);
 
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.clearBars();
@@ -577,6 +620,18 @@ public class StrifePlugin extends FacePlugin {
     }
 
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
+  }
+
+  public static Class<?> getNMSClass(String name, Plugin plugin) {
+    String version = plugin.getServer().getClass().getPackage().getName().split("\\.")[3];
+    try {
+      return Class.forName("net.minecraft.server." + version + "." + name);
+    }
+
+    catch (ClassNotFoundException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private VersionedSmartYamlConfiguration defaultSettingsLoad(String name) {

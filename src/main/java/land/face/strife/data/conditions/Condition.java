@@ -121,6 +121,7 @@ public abstract class Condition {
     ENTITY_TYPE,
     UNIQUE_ID,
     FACTION_MEMBER,
+    FLYING,
     VELOCITY,
     GROUNDED,
     BLEEDING,

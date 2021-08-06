@@ -1,8 +1,9 @@
 package land.face.strife.data.effects;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.LogUtil;
-import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.StringUtils;
+import lombok.Setter;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
@@ -13,6 +14,8 @@ public class Push extends Effect {
   private double height;
   private boolean cancelFall;
   private boolean clamp;
+  @Setter
+  private boolean uncheckedHeight;
   private PushType pushType;
   private Vector tempVector;
 
@@ -32,19 +35,22 @@ public class Push extends Effect {
         direction = getEffectVelocity(caster.getEntity().getLocation().toVector(), target.getEntity());
         break;
       case CASTER_DIRECTION:
-        Vector casterDir = caster.getEntity().getLocation().getDirection();
-        if (casterDir.getX() == 0 && casterDir.getZ() == 0) {
-          direction = new Vector(power / 10, 0, 0);
-        } else {
-          direction = casterDir.setY(0).normalize().multiply(power / 10);
+        direction = caster.getEntity().getLocation().getDirection();
+        if (!uncheckedHeight) {
+          direction.setY(0.001);
         }
+        direction.normalize().multiply(power / 10);
         break;
       case TEMP_DIRECTION:
         LogUtil.printDebug(tempVector.getX() + " " + tempVector.getY() + " " + tempVector.getZ());
         direction = getEffectVelocity(tempVector, target.getEntity());
         break;
       case WSE_DIRECTION:
-        direction = tempVector.clone().setY(0.001).normalize().multiply(power / 10);
+        direction = tempVector.clone();
+        if (!uncheckedHeight) {
+          direction.setY(0.001);
+        }
+        direction.normalize().multiply(power / 10);
         break;
       default:
         return;
@@ -57,13 +63,23 @@ public class Push extends Effect {
       }
       target.getEntity().setFallDistance(0);
     }
-    if (clamp) {
-      newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
-      newVelocity.setY(clampRay(oldVelocity.getY(), height / 10));
-      newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
+    if (uncheckedHeight) {
+      if (clamp) {
+        newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
+        newVelocity.setY(clampRay(oldVelocity.getY(), direction.getY()));
+        newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
+      } else {
+        newVelocity.add(direction);
+      }
     } else {
-      newVelocity.add(direction);
-      newVelocity.add(new Vector(0, height / 10, 0));
+      if (clamp) {
+        newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
+        newVelocity.setY(clampRay(oldVelocity.getY(), height / 10));
+        newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
+      } else {
+        newVelocity.add(direction);
+        newVelocity.add(new Vector(0, height / 10, 0));
+      }
     }
     target.getEntity().setVelocity(newVelocity);
   }
@@ -91,8 +107,11 @@ public class Push extends Effect {
     if (originLocation.equals(to.getLocation().toVector())) {
       return new Vector(0, power / 10, 0);
     }
-    return to.getLocation().toVector().subtract(originLocation).setY(0.001).normalize()
-        .multiply(power / 10);
+    Vector velocity = to.getLocation().toVector().subtract(originLocation);
+    if (!uncheckedHeight) {
+      velocity.setY(0.001);
+    }
+    return velocity.normalize().multiply(power / 10);
   }
 
   public void setPower(double power) {
