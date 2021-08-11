@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class StatsToggleGlow extends MenuItem {
   private final Map<Player, Boolean> selfInspectMap = new WeakHashMap<>();
 
   StatsToggleGlow(StrifePlugin plugin) {
-    super(TextUtils.color("&6&lUse Glow Effects"), new ItemStack(Material.SPECTRAL_ARROW));
+    super(StringExtensionsKt.chatColorize("&6&lUse Glow Effects"), new ItemStack(Material.SPECTRAL_ARROW));
     this.plugin = plugin;
   }
 
@@ -59,11 +59,12 @@ public class StatsToggleGlow extends MenuItem {
 
     Champion champion = plugin.getChampionManager().getChampion(player);
 
-    lore.add(TextUtils.color("&7Click this icon to toggle"));
-    lore.add(TextUtils.color("&7glow effects for combat"));
-    lore.add(TextUtils.color("&7and dropped items!"));
+    lore.add(StringExtensionsKt.chatColorize("&7Click this icon to toggle"));
+    lore.add(StringExtensionsKt.chatColorize("&7glow effects for combat"));
+    lore.add(StringExtensionsKt.chatColorize("&7and dropped items!"));
 
-    lore.add(TextUtils.color("&fGlow Effects: " + (champion.getSaveData().isGlowEnabled() ? "&a&lENABLED" : "&e&lDISABLED")));
+    lore.add(StringExtensionsKt.chatColorize("&fGlow Effects: " +
+        (champion.getSaveData().isGlowEnabled() ? "&a&lENABLED" : "&e&lDISABLED")));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

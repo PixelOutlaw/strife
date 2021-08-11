@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.revive;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
@@ -26,7 +26,7 @@ import ninja.amp.ampmenus.menus.ItemMenu;
 public class ReviveMenu extends ItemMenu {
 
   public ReviveMenu(String reviverName, double restoreXp) {
-    super(TextUtils.color(StrifePlugin.getInstance().getSettings()
+    super(StringExtensionsKt.chatColorize(StrifePlugin.getInstance().getSettings()
             .getString("language.revive.menu-name", "NAME MENU LOL")), Size.fit(27),
         StrifePlugin.getInstance());
 

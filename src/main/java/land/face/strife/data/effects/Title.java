@@ -1,7 +1,7 @@
 package land.face.strife.data.effects;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -22,11 +22,11 @@ public class Title extends Effect {
 	}
 
 	public void setTopTitle(String topTitle) {
-		this.topTitle = TextUtils.color(topTitle);
+		this.topTitle = StringExtensionsKt.chatColorize(topTitle);
 	}
 
 	public void setLowerTitle(String lowerTitle) {
-		this.lowerTitle = TextUtils.color(lowerTitle);
+		this.lowerTitle = StringExtensionsKt.chatColorize(lowerTitle);
 	}
 
 	public void setRange(double range) {

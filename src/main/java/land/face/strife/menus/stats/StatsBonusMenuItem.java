@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -38,7 +38,7 @@ public class StatsBonusMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   StatsBonusMenuItem(StatsMenu statsMenu) {
-    super(TextUtils.color("&a&lDrop Modifiers"), new ItemStack(Material.GOLD_INGOT));
+    super(StringExtensionsKt.chatColorize("&a&lDrop Modifiers"), new ItemStack(Material.GOLD_INGOT));
     this.statsMenu = statsMenu;
   }
 
@@ -120,7 +120,7 @@ public class StatsBonusMenuItem extends MenuItem {
 
     lore.add(StatsMenu.breakLine);
 
-    lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,23 +41,24 @@ public class LevelupPointsMenuItem extends MenuItem {
       ChatColor.GRAY + "Once you're done, click this icon",
       ChatColor.GRAY + "to confirm changes!"
   };
-  private static final String CLICK_TO_SAVE_TEXT = TextUtils.color("&a&lClick to confirm changes!");
+  private static final String CLICK_TO_SAVE_TEXT = StringExtensionsKt.chatColorize(
+      "&a&lClick to confirm changes!");
 
   private final StrifePlugin plugin;
 
   LevelupPointsMenuItem(StrifePlugin plugin) {
-    super(TextUtils.color(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
+    super(StringExtensionsKt.chatColorize(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
     this.plugin = plugin;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack itemStack = super.getFinalIcon(player);
-    List<String> lore = new ArrayList<>(ItemStackExtensionsKt.getLore(itemStack));
+    List<String> lore = new ArrayList<>(itemStack.getLore());
 
     Champion champion = plugin.getChampionManager().getChampion(player);
     int stacks = champion.getPendingUnusedStatPoints();
-    String name = TextUtils.color("&f&nUnused Levelpoints (" + stacks + ")");
+    String name = StringExtensionsKt.chatColorize("&f&nUnused Levelpoints (" + stacks + ")");
 
     if (champion.getPendingUnusedStatPoints() != champion.getUnusedStatPoints()) {
       lore.add("");
@@ -65,7 +66,7 @@ public class LevelupPointsMenuItem extends MenuItem {
     }
 
     ItemStackExtensionsKt.setDisplayName(itemStack, name);
-    ItemStackExtensionsKt.setLore(itemStack, lore);
+    itemStack.setLore(lore);
 
     stacks = Math.min(stacks, 64);
     itemStack.setAmount(Math.max(1, stacks));

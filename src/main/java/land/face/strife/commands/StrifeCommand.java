@@ -30,7 +30,6 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -453,7 +452,7 @@ public class StrifeCommand extends BaseCommand {
       String loreString = lore.get(i);
       if (loreString.contains(REVEAL_PREFIX)) {
         lore.set(i, lore.get(i).replace(REVEAL_PREFIX, REVEAL_REPLACEMENT));
-        ItemStackExtensionsKt.setLore(item, lore);
+        item.setLore(lore);
         target.getPlayer().updateInventory();
         sendMessage(target.getPlayer(), REVEAL_SUCCESS);
         return;

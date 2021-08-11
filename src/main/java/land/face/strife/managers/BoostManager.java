@@ -18,7 +18,6 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
 import com.tealcube.minecraft.bukkit.shade.google.gson.JsonArray;
@@ -27,6 +26,7 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -175,9 +175,12 @@ public class BoostManager {
       String creator = boost.getString("creator", "SERVER");
       int announceInterval = boost.getInt("announcement-interval", 10);
       int duration = boost.getInt("duration", 60);
-      List<String> announceStart = TextUtils.color(boost.getStringList("announcement-start"));
-      List<String> announceRun = TextUtils.color(boost.getStringList("announcement-running"));
-      List<String> announceEnd = TextUtils.color(boost.getStringList("announcement-end"));
+      List<String> announceStart = ListExtensionsKt.chatColorize(
+          boost.getStringList("announcement-start"));
+      List<String> announceRun = ListExtensionsKt.chatColorize(
+          boost.getStringList("announcement-running"));
+      List<String> announceEnd = ListExtensionsKt.chatColorize(
+          boost.getStringList("announcement-end"));
 
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");
       Map<StrifeStat, Float> attrMap = StatUtil.getStatMapFromSection(attrSection);

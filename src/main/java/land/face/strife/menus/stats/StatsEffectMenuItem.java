@@ -18,7 +18,8 @@
  */
 package land.face.strife.menus.stats;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -40,7 +41,7 @@ public class StatsEffectMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   StatsEffectMenuItem(StatsMenu statsMenu) {
-    super(TextUtils.color("&6&lAdditional Effects"), new ItemStack(Material.EMERALD));
+    super(StringExtensionsKt.chatColorize("&6&lAdditional Effects"), new ItemStack(Material.EMERALD));
     this.statsMenu = statsMenu;
   }
 
@@ -66,7 +67,7 @@ public class StatsEffectMenuItem extends MenuItem {
     }
 
     if (!traitLores.isEmpty()) {
-      lore.addAll(TextUtils.color(traitLores));
+      lore.addAll(ListExtensionsKt.chatColorize(traitLores));
       lore.add(StatsMenu.breakLine);
     }
 
@@ -88,9 +89,9 @@ public class StatsEffectMenuItem extends MenuItem {
     }
 
     lore.add(StatsMenu.breakLine);
-    lore.add(TextUtils.color("&8&oTraits and effects appear here!"));
-    lore.add(TextUtils.color("&8&oThey usually come from unique"));
-    lore.add(TextUtils.color("&8&oitems and socket gems!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oTraits and effects appear here!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oThey usually come from unique"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oitems and socket gems!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

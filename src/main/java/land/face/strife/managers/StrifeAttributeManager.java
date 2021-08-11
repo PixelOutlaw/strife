@@ -18,7 +18,7 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,9 +35,12 @@ import org.bukkit.configuration.ConfigurationSection;
 public class StrifeAttributeManager {
 
   private static Map<String, StrifeAttribute> attributeMap;
-  private static final String upgradeAvailable = TextUtils.color("&a&lCLICK TO UPGRADE!");
-  private static final String pointCapReached = TextUtils.color("&f&lMaxed Out!");
-  private static final String noUnspentPoints = TextUtils.color("&f&lNo Unspent Points");
+  private static final String upgradeAvailable = StringExtensionsKt.chatColorize(
+      "&a&lCLICK TO UPGRADE!");
+  private static final String pointCapReached = StringExtensionsKt.chatColorize(
+      "&f&lMaxed Out!");
+  private static final String noUnspentPoints = StringExtensionsKt.chatColorize(
+      "&f&lNo Unspent Points");
 
   public StrifeAttributeManager() {
     attributeMap = new LinkedHashMap<>();
@@ -107,7 +110,7 @@ public class StrifeAttributeManager {
   }
 
   private String increaseString(String name, int value) {
-    return TextUtils.color("&f&lRequires: " + name + " " + value);
+    return StringExtensionsKt.chatColorize("&f&lRequires: " + name + " " + value);
   }
 
   private int getLevelRequirement(StrifeAttribute attr, Champion champion) {

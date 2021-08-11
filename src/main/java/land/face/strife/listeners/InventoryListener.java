@@ -1,7 +1,7 @@
 package land.face.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import ninja.amp.ampmenus.menus.MenuHolder;
@@ -27,7 +27,7 @@ public class InventoryListener implements Listener {
 
   public InventoryListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    NO_MOVE_ABILITY = TextUtils.color(
+    NO_MOVE_ABILITY = StringExtensionsKt.chatColorize(
         plugin.getSettings().getString("language.abilities.cant-move-ability", ""));
   }
 

@@ -23,7 +23,6 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +57,11 @@ public class StatUpdateManager {
     }
     Map<StrifeStat, Float> itemStats = new HashMap<>();
 
-    List<String> lore = ItemStackExtensionsKt.getLore(stack);
+    if (stack.getLore() == null) {
+      return itemStats;
+    }
+
+    List<String> lore = new ArrayList<>(stack.getLore());
     if (lore.isEmpty()) {
       return itemStats;
     }

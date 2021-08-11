@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.revive;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -28,7 +28,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ReviveRejectItem extends MenuItem {
 
-  private static final String DISPLAY_NAME = TextUtils.color("&c&nReject Revive");
+  private static final String DISPLAY_NAME = StringExtensionsKt.chatColorize("&c&nReject Revive");
 
   ReviveRejectItem() {
     super("", new ItemStack(Material.BARRIER));

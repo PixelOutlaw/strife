@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class StatsChangeHealthDisplay extends MenuItem {
   private final Map<Player, Boolean> selfInspectMap = new WeakHashMap<>();
 
   StatsChangeHealthDisplay(StrifePlugin plugin) {
-    super(TextUtils.color("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
+    super(StringExtensionsKt.chatColorize("&c&lHealth Display Options"), new ItemStack(Material.APPLE));
     this.plugin = plugin;
   }
 
@@ -65,9 +65,9 @@ public class StatsChangeHealthDisplay extends MenuItem {
 
     Champion champion = plugin.getChampionManager().getChampion(player);
 
-    lore.add(TextUtils.color("&7Click this icon to change how your"));
-    lore.add(TextUtils.color("&7hearts are displayed!"));
-    lore.add(TextUtils.color("&fSetting: " + WordUtils.capitalizeFully(
+    lore.add(StringExtensionsKt.chatColorize("&7Click this icon to change how your"));
+    lore.add(StringExtensionsKt.chatColorize("&7hearts are displayed!"));
+    lore.add(StringExtensionsKt.chatColorize("&fSetting: " + WordUtils.capitalizeFully(
         champion.getSaveData().getHealthDisplayType().toString().replaceAll("_", " "))));
 
     itemMeta.setLore(lore);

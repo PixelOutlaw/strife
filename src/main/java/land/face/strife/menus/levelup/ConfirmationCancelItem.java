@@ -49,7 +49,7 @@ public class ConfirmationCancelItem extends MenuItem {
   public ItemStack getFinalIcon(Player player) {
     ItemStack stack = this.getIcon().clone();
     ItemStackExtensionsKt.setDisplayName(stack, DISPLAY_NAME);
-    ItemStackExtensionsKt.setLore(stack, new ArrayList<>(Arrays.asList(DISPLAY_LORE)));
+    stack.setLore(new ArrayList<>(Arrays.asList(DISPLAY_LORE)));
     return stack;
   }
 

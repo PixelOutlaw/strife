@@ -38,7 +38,10 @@ public class ItemUtil {
 
   private static Map<StrifeStat, Float> getStats(ItemStack stack) {
     Map<StrifeStat, Float> total = new HashMap<>();
-    List<String> lore = ItemStackExtensionsKt.getLore(stack);
+    if (stack.getLore() == null) {
+      return total;
+    }
+    List<String> lore = stack.getLore();
     for (String s : lore) {
 
     }
