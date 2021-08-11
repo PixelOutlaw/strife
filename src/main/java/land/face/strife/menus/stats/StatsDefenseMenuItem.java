@@ -23,7 +23,6 @@ import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -104,7 +103,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     lore.add(addStat("Light Resistance: ", StatUtil.getLightResist(pStats), "%", INT_FORMAT));
     lore.add(addStat("Shadow Resistance: ", StatUtil.getShadowResist(pStats), "%", INT_FORMAT));
     lore.add(breakLine);
-    lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

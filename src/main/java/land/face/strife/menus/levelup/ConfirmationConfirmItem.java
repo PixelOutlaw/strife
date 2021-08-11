@@ -63,7 +63,7 @@ public class ConfirmationConfirmItem extends MenuItem {
     }
     ItemStack stack = this.getIcon().clone();
     ItemStackExtensionsKt.setDisplayName(stack, StringExtensionsKt.chatColorize(DISPLAY_NAME));
-    ItemStackExtensionsKt.setLore(stack, ListExtensionsKt.chatColorize(changesLore));
+    stack.setLore(ListExtensionsKt.chatColorize(changesLore));
     return stack;
   }
 

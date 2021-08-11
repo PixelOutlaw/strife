@@ -18,12 +18,12 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import land.face.strife.StrifePlugin;
 import land.face.strife.api.StrifeExperienceManager;
@@ -120,8 +120,8 @@ public class ExperienceManager implements StrifeExperienceManager {
         "&a&lCongratulations! You have reached bonus level &f" + bonusLevel + "&e!");
     MessageUtils.sendMessage(player,
         "&eYour stats have slightly increased!");
-    String upperTitle = TextUtils.color("&eBONUS LEVEL UP!");
-    String lowerTitle = TextUtils.color("&eOh dang, you got stronger!");
+    String upperTitle = StringExtensionsKt.chatColorize("&eBONUS LEVEL UP!");
+    String lowerTitle = StringExtensionsKt.chatColorize("&eOh dang, you got stronger!");
     TitleUtils.sendTitle(player, upperTitle, lowerTitle, 40, 2, 2);
     if (announce) {
       for (Player p : Bukkit.getOnlinePlayers()) {

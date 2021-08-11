@@ -18,7 +18,8 @@
  */
 package land.face.strife.menus.abilities;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -36,8 +37,8 @@ public class SubmenuSelectButton extends MenuItem {
   private final int slot;
 
   public SubmenuSelectButton(AbilitySubmenu menu, Material material, String name, List<String> lore, int slot) {
-    super(TextUtils.color(name), setNameAndLore(new ItemStack(material), TextUtils.color(name),
-        TextUtils.color(lore)));
+    super(StringExtensionsKt.chatColorize(name), setNameAndLore(new ItemStack(material),
+        StringExtensionsKt.chatColorize(name), ListExtensionsKt.chatColorize(lore)));
     this.menu = menu;
     this.slot = slot;
   }
@@ -45,7 +46,7 @@ public class SubmenuSelectButton extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     ItemStack stack = getIcon().clone();
-    ItemStackExtensionsKt.addItemFlags(stack, ItemFlag.HIDE_ATTRIBUTES);
+    stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     ItemStackExtensionsKt.setDisplayName(stack, getDisplayName());
     return stack;
   }

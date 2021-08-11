@@ -20,16 +20,19 @@ package land.face.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandPermission;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
+import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import java.util.ArrayList;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import se.ranzdo.bukkit.methodcommand.Arg;
-import se.ranzdo.bukkit.methodcommand.Command;
 
-public class StyleCommand {
+@CommandAlias("style")
+public class StyleCommand extends BaseCommand {
 
   private final StrifePlugin plugin;
 
@@ -37,41 +40,42 @@ public class StyleCommand {
     this.plugin = plugin;
   }
 
-  @Command(identifier = "strife style add", permissions = "strife.command.ability-style", onlyPlayers = true)
-  public void addStyleCommand(CommandSender sender, @Arg(name = "slot") String slot,
-      @Arg(name = "text") String text) {
+  @Subcommand("style add")
+  @CommandPermission("strife.command.ability-style")
+  public void addStyleCommand(OnlinePlayer player, String slot, String text) {
     AbilitySlot abilitySlot;
     try {
       abilitySlot = AbilitySlot.valueOf(slot);
     } catch (Exception e) {
-      sendMessage(sender, "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
+      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
       return;
     }
     if (abilitySlot != AbilitySlot.SLOT_A && abilitySlot != AbilitySlot.SLOT_B
         && abilitySlot != AbilitySlot.SLOT_C) {
-      sendMessage(sender, "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
+      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion((Player) sender);
+    Champion champion = plugin.getChampionManager().getChampion((Player) player.getPlayer());
     champion.getSaveData().getCastMessages().computeIfAbsent(abilitySlot, k -> new ArrayList<>());
     champion.getSaveData().getCastMessages().get(abilitySlot).add(text);
   }
 
-  @Command(identifier = "strife style clear", permissions = "strife.command.ability-style", onlyPlayers = true)
-  public void clearStyleCommand(CommandSender sender, @Arg(name = "slot") String slot) {
+  @Subcommand("style clear")
+  @CommandPermission("strife.command.ability-style")
+  public void clearStyleCommand(OnlinePlayer player, String slot) {
     AbilitySlot abilitySlot;
     try {
       abilitySlot = AbilitySlot.valueOf(slot);
     } catch (Exception e) {
-      sendMessage(sender, "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
+      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
       return;
     }
     if (abilitySlot != AbilitySlot.SLOT_A && abilitySlot != AbilitySlot.SLOT_B
         && abilitySlot != AbilitySlot.SLOT_C) {
-      sendMessage(sender, "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
+      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion((Player) sender);
+    Champion champion = plugin.getChampionManager().getChampion(player.getPlayer());
     champion.getSaveData().getCastMessages().computeIfAbsent(abilitySlot, k -> new ArrayList<>());
     champion.getSaveData().getCastMessages().get(abilitySlot).clear();
   }

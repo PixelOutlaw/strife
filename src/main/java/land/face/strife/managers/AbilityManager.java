@@ -651,11 +651,10 @@ public class AbilityManager {
     List<String> lore = ListExtensionsKt.chatColorize(iconSection.getStringList("lore"));
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
-    ItemStackExtensionsKt.setLore(icon, lore);
+    icon.setLore(lore);
     ItemStackExtensionsKt.setUnbreakable(icon, true);
     ItemStackExtensionsKt.setCustomModelData(icon, iconSection.getInt("custom-model-data", 7999));
-    ItemStackExtensionsKt.addItemFlags(icon, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ENCHANTS,
-        ItemFlag.HIDE_ATTRIBUTES);
+    icon.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
 
     AbilityIconData data = new AbilityIconData(icon);
 

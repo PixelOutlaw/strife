@@ -2,7 +2,7 @@ package land.face.strife.managers;
 
 import static land.face.strife.util.PlayerDataUtil.getName;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -635,7 +635,7 @@ public class EffectManager {
       case SPEAK:
         effect = new Speak();
         ((Speak) effect).setMessages(
-            TextUtils.color(cs.getStringList("messages")));
+            ListExtensionsKt.chatColorize(cs.getStringList("messages")));
         break;
       case PUSH:
         effect = new Push();

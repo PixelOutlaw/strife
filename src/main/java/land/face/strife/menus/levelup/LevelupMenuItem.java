@@ -97,7 +97,7 @@ public class LevelupMenuItem extends MenuItem {
       ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + actualPoints + "/" + statCap + "]");
     }
 
-    ItemStackExtensionsKt.setLore(icon, lore);
+    icon.setLore(lore);
 
     return icon;
   }

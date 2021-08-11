@@ -1,18 +1,9 @@
 package land.face.strife.util;
 
-import land.face.strife.StrifePlugin;
-import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.Disguise;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
-import me.libraryaddict.disguise.disguisetypes.watchers.PlayerWatcher;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.inventivetalent.glow.GlowAPI;
-
 public class GlowUtil {
 
-  public static void setGlow(Player viewer, Entity target, GlowAPI.Color color) {
+  /*
+  public static void setGlow(Player viewer, Entity target, ChatColor color) {
     if (target == null) {
       return;
     }
@@ -32,5 +23,6 @@ public class GlowUtil {
     }
     GlowAPI.setGlowing(target, color, viewer);
   }
+  */
 
 }

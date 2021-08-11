@@ -4,9 +4,9 @@ import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 import static org.bukkit.potion.PotionEffectType.SLOW;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
@@ -25,6 +25,7 @@ public class FallListener implements Listener {
 
   private final StrifePlugin plugin;
   private final int fallMs;
+  private final static String ROLL_TEXT = StringExtensionsKt.chatColorize("&3&l- Roll -");
 
   public FallListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -55,10 +56,10 @@ public class FallListener implements Listener {
     Champion champion = plugin.getChampionManager().getChampion((Player) event.getEntity());
     if (rollBonus) {
       damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
-      MessageUtils.sendActionBar((Player) event.getEntity(), TextUtils.color("&3&l- Roll -"));
+      MessageUtils.sendActionBar((Player) event.getEntity(), ROLL_TEXT);
     } else {
       damage *= 50.0 / (50 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
-      ((Player) event.getEntity()).addPotionEffect(new PotionEffect(SLOW, 100, 0, true), false);
+      ((Player) event.getEntity()).addPotionEffect(new PotionEffect(SLOW, 100, 0, true));
     }
 
     if (((Player) event.getEntity()).hasPotionEffect(DAMAGE_RESISTANCE)) {

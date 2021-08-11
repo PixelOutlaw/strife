@@ -1,7 +1,8 @@
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,10 +41,10 @@ public class AbilityIconManager {
     this.plugin = plugin;
     REQ_STR = plugin.getSettings().getString("language.abilities.picker-requirement-tag");
     PASS_STR = plugin.getSettings().getString("language.abilities.picker-requirement-met-tag");
-    ABILITY_REQ_NOT_MET = TextUtils
-        .color(plugin.getSettings().getString("language.abilities.picker-requirement-message", ""));
-    ABILITY_ON_COOLDOWN = TextUtils
-        .color(plugin.getSettings().getString("language.abilities.picker-on-cooldown", ""));
+    ABILITY_REQ_NOT_MET = StringExtensionsKt.chatColorize(
+        plugin.getSettings().getString("language.abilities.picker-requirement-message", ""));
+    ABILITY_ON_COOLDOWN = StringExtensionsKt.chatColorize(
+        plugin.getSettings().getString("language.abilities.picker-on-cooldown", ""));
   }
 
   public void removeIconItem(Player player, AbilitySlot slot) {
@@ -196,6 +197,6 @@ public class AbilityIconManager {
       strings.add(str.replace("{REQ}",
           ChatColor.stripColor(attr.getName() + " " + data.getAttributeRequirement().get(attr))));
     }
-    return TextUtils.color(strings);
+    return ListExtensionsKt.chatColorize(strings);
   }
 }

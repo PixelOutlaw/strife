@@ -18,13 +18,14 @@ package land.face.strife.managers;
 
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.WeakHashMap;
+import land.face.SnazzyPartiesPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.SkillBar;
 import land.face.strife.data.StatusBar;
@@ -32,7 +33,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.GlowUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
@@ -44,7 +44,6 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.inventivetalent.glow.GlowAPI.Color;
 
 public class BossBarManager {
 
@@ -58,14 +57,15 @@ public class BossBarManager {
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.deathMessages = TextUtils.color(plugin.getSettings().getStringList("language.bar-title-entity-killed"));
+    this.deathMessages = ListExtensionsKt.chatColorize(
+        plugin.getSettings().getStringList("language.bar-title-entity-killed"));
     this.healthDuration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
     this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
 
-  private void createHealthBar(Player player, StrifeMob target) {
+  private StatusBar createHealthBar(Player player, StrifeMob target) {
     if (statusBars.containsKey(player)) {
-      return;
+      return statusBars.get(player);
     }
     BossBar barrierBar = makeBarrierBar();
     barrierBar.addPlayer(player);
@@ -78,6 +78,7 @@ public class BossBarManager {
     bar.setDead(false);
 
     statusBars.put(player, bar);
+    return bar;
   }
 
   private void createSkillBar(Player player) {
@@ -112,18 +113,21 @@ public class BossBarManager {
     StatusBar bar = statusBars.get(player);
     if (bar == null) {
       createHealthBar(player, target);
-      GlowUtil.setGlow(player, target.getEntity(), Color.GOLD);
-    } else if (target != bar.getTarget()) {
-      if (bar.getTarget() != null) {
-        GlowUtil.setGlow(player, bar.getTarget().getEntity(), null);
-      }
-      GlowUtil.setGlow(player, target.getEntity(), Color.GOLD);
     }
     bar = statusBars.get(player);
     bar.setTarget(target);
     bar.setLifeTicks(healthDuration);
     bar.setHidden(false);
     bar.setDead(false);
+    if (plugin.getChampionManager().getChampion(player).getSaveData().isGlowEnabled()) {
+      if (target.getEntity() instanceof Player && SnazzyPartiesPlugin.getInstance()
+          .getPartyManager()
+          .areInSameParty(player, (Player) target.getEntity())) {
+        bar.refreshGlow(player, ChatColor.AQUA);
+      } else {
+        bar.refreshGlow(player, ChatColor.GOLD);
+      }
+    }
     updateBar(bar);
   }
 
@@ -136,8 +140,10 @@ public class BossBarManager {
         bossBar.getBarrierBar().setProgress(0);
         bossBar.getHealthBar().setProgress(0);
         bossBar.setLifeTicks(25);
-        if (bossBar.getTarget() != null && bossBar.getTarget().getEntity() != null) {
-          GlowUtil.setGlow(player, bossBar.getTarget().getEntity(), Color.DARK_RED);
+        if (plugin.getChampionManager().getChampion(player).getSaveData().isGlowEnabled()) {
+          if (bossBar.getTarget() != null && bossBar.getTarget().getEntity() != null) {
+            bossBar.refreshGlow(player, ChatColor.DARK_RED);
+          }
         }
       }
     }
@@ -170,7 +176,7 @@ public class BossBarManager {
       return;
     }
     bar.setHidden(true);
-    GlowUtil.setGlow(player, bar.getTarget().getEntity(), null);
+    bar.clearGlow(player);
   }
 
   private void updateBar(StatusBar bossBar) {
@@ -183,7 +189,7 @@ public class BossBarManager {
     }
     bossBar.setLifeTicks(bossBar.getLifeTicks() - 1);
     if (bossBar.getLifeTicks() < 1) {
-      GlowUtil.setGlow(bossBar.getHealthBar().getPlayers().get(0), bossBar.getTarget().getEntity(), null);
+      bossBar.clearGlow(bossBar.getHealthBar().getPlayers().get(0));
       bossBar.setHidden(true);
       bossBar.setTarget(null);
       return;
@@ -192,7 +198,7 @@ public class BossBarManager {
       return;
     }
     if (bossBar.getTarget().getEntity() == null || !bossBar.getTarget().getEntity().isValid()) {
-      GlowUtil.setGlow(bossBar.getHealthBar().getPlayers().get(0), bossBar.getTarget().getEntity(), null);
+      bossBar.clearGlow(bossBar.getHealthBar().getPlayers().get(0));
       bossBar.setHidden(true);
       bossBar.setTarget(null);
       return;

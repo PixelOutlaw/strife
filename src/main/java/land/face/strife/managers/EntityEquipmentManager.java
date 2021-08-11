@@ -1,7 +1,7 @@
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,17 +98,17 @@ public class EntityEquipmentManager {
 
     String name = cs.getString("name", "");
     if (StringUtils.isNotBlank(name)) {
-      ItemStackExtensionsKt.setDisplayName(stack, TextUtils.color(name));
+      ItemStackExtensionsKt.setDisplayName(stack, StringExtensionsKt.chatColorize(name));
     }
     List<String> lore = new ArrayList<>();
     for (String line : cs.getStringList("lore")) {
-      lore.add(TextUtils.color(line));
+      lore.add(StringExtensionsKt.chatColorize(line));
     }
     int data = cs.getInt("custom-model-data", -1);
     if (data != -1) {
       ItemStackExtensionsKt.setCustomModelData(stack, data);
     }
-    ItemStackExtensionsKt.setLore(stack, lore);
+    stack.setLore(lore);
     ItemStackExtensionsKt.setUnbreakable(stack, true);
     itemMap.put(key, stack);
   }

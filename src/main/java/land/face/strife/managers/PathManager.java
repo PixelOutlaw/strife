@@ -93,7 +93,7 @@ public class PathManager {
     ItemStack stack = new ItemStack(material);
 
     ItemStackExtensionsKt.setDisplayName(stack,  StringExtensionsKt.chatColorize(itemName));
-    ItemStackExtensionsKt.setLore(stack, ListExtensionsKt.chatColorize(itemLore));
+    stack.setLore(ListExtensionsKt.chatColorize(itemLore));
     ItemStackExtensionsKt.setCustomModelData(stack, choiceSection.getInt("model-data", 0));
 
     Map<StrifeStat, Float> statMap = StatUtil.getStatMapFromSection(choiceSection.getConfigurationSection("stats"));

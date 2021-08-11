@@ -21,7 +21,7 @@ import static land.face.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
-import com.tealcube.minecraft.bukkit.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -44,7 +44,7 @@ public class StatsMiscMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   StatsMiscMenuItem(StatsMenu statsMenu) {
-    super(TextUtils.color("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
+    super(StringExtensionsKt.chatColorize("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
     this.statsMenu = statsMenu;
   }
 
@@ -99,7 +99,7 @@ public class StatsMiscMenuItem extends MenuItem {
 
     lore.add(breakLine);
 
-    lore.add(TextUtils.color("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
