@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -108,7 +109,7 @@ public class EntityEquipmentManager {
     if (data != -1) {
       ItemStackExtensionsKt.setCustomModelData(stack, data);
     }
-    stack.setLore(lore);
+    TextUtils.setLore(stack, lore);
     ItemStackExtensionsKt.setUnbreakable(stack, true);
     itemMap.put(key, stack);
   }

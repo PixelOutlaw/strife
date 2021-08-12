@@ -20,6 +20,7 @@ package land.face.strife.menus.abilities;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class AbilityButton extends MenuItem {
     Champion champ = plugin.getChampionManager().getChampion(player);
     List<String> stackLore = plugin.getAbilityIconManager().buildRequirementsLore(champ, ability.getAbilityIconData());
     stackLore.addAll(stack.getLore() == null ? new ArrayList<>() : stack.getLore());
-    stack.setLore(stackLore);
+    TextUtils.setLore(stack, stackLore);
 
     if (ability.getAbilityIconData().isRequirementMet(champ)) {
       ItemStackExtensionsKt.setCustomModelData(stack, ItemUtil.getCustomData(stack));

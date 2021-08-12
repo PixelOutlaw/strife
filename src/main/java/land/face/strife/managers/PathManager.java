@@ -1,6 +1,6 @@
 package land.face.strife.managers;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
@@ -93,7 +93,7 @@ public class PathManager {
     ItemStack stack = new ItemStack(material);
 
     ItemStackExtensionsKt.setDisplayName(stack,  StringExtensionsKt.chatColorize(itemName));
-    stack.setLore(ListExtensionsKt.chatColorize(itemLore));
+    TextUtils.setLore(stack, itemLore, true);
     ItemStackExtensionsKt.setCustomModelData(stack, choiceSection.getInt("model-data", 0));
 
     Map<StrifeStat, Float> statMap = StatUtil.getStatMapFromSection(choiceSection.getConfigurationSection("stats"));

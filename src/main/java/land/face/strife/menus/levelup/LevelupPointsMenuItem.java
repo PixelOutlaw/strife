@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class LevelupPointsMenuItem extends MenuItem {
     }
 
     ItemStackExtensionsKt.setDisplayName(itemStack, name);
-    itemStack.setLore(lore);
+    TextUtils.setLore(itemStack, lore);
 
     stacks = Math.min(stacks, 64);
     itemStack.setAmount(Math.max(1, stacks));

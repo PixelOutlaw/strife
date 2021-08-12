@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class ConfirmationConfirmItem extends MenuItem {
     }
     ItemStack stack = this.getIcon().clone();
     ItemStackExtensionsKt.setDisplayName(stack, StringExtensionsKt.chatColorize(DISPLAY_NAME));
-    stack.setLore(ListExtensionsKt.chatColorize(changesLore));
+    TextUtils.setLore(stack, changesLore, true);
     return stack;
   }
 
