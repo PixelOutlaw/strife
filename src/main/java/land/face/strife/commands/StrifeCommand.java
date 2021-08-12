@@ -22,6 +22,7 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
@@ -452,7 +453,7 @@ public class StrifeCommand extends BaseCommand {
       String loreString = lore.get(i);
       if (loreString.contains(REVEAL_PREFIX)) {
         lore.set(i, lore.get(i).replace(REVEAL_PREFIX, REVEAL_REPLACEMENT));
-        item.setLore(lore);
+        TextUtils.setLore(item, lore);
         target.getPlayer().updateInventory();
         sendMessage(target.getPlayer(), REVEAL_SUCCESS);
         return;
