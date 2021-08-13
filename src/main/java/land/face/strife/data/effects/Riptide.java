@@ -36,7 +36,7 @@ public class Riptide extends Effect {
 
       WrappedDataWatcher w = WrappedDataWatcher.getEntityWatcher(target.getEntity());
       w.setObject(6, RIPTIDE_POSE_ENUM);
-      w.setObject(7, (byte) 4);
+      w.setObject(8, (byte) 4);
 
       fakeSpin.getWatchableCollectionModifier().write(0, w.getWatchableObjects());
 
@@ -54,15 +54,18 @@ public class Riptide extends Effect {
       if (!le.isValid()) {
         Bukkit.getLogger().info("CANCELED INVALID");
         sendCancelPacket(le);
+        iterator.remove();
         continue;
       }
       if (le.getVelocity().getY() < 0.1 && le.isOnGround()) {
         Bukkit.getLogger().info("CANCELED GROUND");
+        iterator.remove();
         continue;
       }
       if (RIPTIDE_MAP.get(le) < 1) {
         Bukkit.getLogger().info("CANCELED TIMEOUT");
         sendCancelPacket(le);
+        iterator.remove();
         continue;
       }
       RIPTIDE_MAP.put(le, RIPTIDE_MAP.get(le) - 1);
@@ -81,7 +84,7 @@ public class Riptide extends Effect {
 
       WrappedDataWatcher w = WrappedDataWatcher.getEntityWatcher(target);
       w.setObject(6, STANDING_POSE_ENUM);
-      w.setObject(7, (byte) 0);
+      w.setObject(8, (byte) 0);
 
       restoreStanding.getWatchableCollectionModifier().write(0, w.getWatchableObjects());
 
