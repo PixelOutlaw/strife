@@ -18,9 +18,8 @@
  */
 package land.face.strife.listeners;
 
-import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_ENTITY;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
-import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.RANDOM_TARGET;
+import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
@@ -46,7 +45,6 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
 public class TargetingListener implements Listener {
-
   private final StrifePlugin plugin;
   private final Random random;
 
@@ -93,6 +91,12 @@ public class TargetingListener implements Listener {
     }
     LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
     TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
+    if (event.getDamager() instanceof LivingEntity) {
+      LivingEntity le = ((Mob) event.getEntity()).getTarget();
+      if (le == null || !le.isValid()) {
+        ((Mob) event.getEntity()).setTarget((LivingEntity) event.getDamager());
+      }
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -132,30 +136,25 @@ public class TargetingListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onNormalTarget(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled()) {
+    if (event.isCancelled() || event.getTarget() == null) {
       return;
     }
-    if (!(event.getEntity() instanceof Mob)) {
+    if (!(event.getEntity() instanceof Mob creature)) {
       return;
     }
-    if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
-      if (!(event.getReason() == CLOSEST_PLAYER || event.getReason() == RANDOM_TARGET ||
-          event.getReason() == CLOSEST_ENTITY)) {
+    if (SpecialStatusUtil.isWeakAggro(event.getTarget())) {
+      if (!(event.getReason() == CLOSEST_PLAYER || event.getReason() == CUSTOM)) {
         event.setCancelled(true);
         return;
       }
     }
-
     if (event.getReason() != CLOSEST_PLAYER || SpecialStatusUtil.isSneakImmune(event.getEntity())) {
       return;
     }
-
     Player player = (Player) event.getTarget();
     if (!plugin.getStealthManager().isStealthed(player)) {
       return;
     }
-
-    Mob creature = (Mob) event.getEntity();
     float mobLevel = StatUtil.getMobLevel(creature);
 
     LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + mobLevel + " " +

@@ -24,6 +24,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
+import com.github.yannicklamprecht.worldborder.api.WorldBorderApi;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
@@ -149,23 +150,22 @@ import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.StealthParticleTask;
 import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
-import land.face.strife.util.ChunkUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
+import lombok.Getter;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitTask;
 
 public class StrifePlugin extends FacePlugin {
@@ -238,6 +238,10 @@ public class StrifePlugin extends FacePlugin {
   private final Map<Path, PathMenu> pathMenus = new HashMap<>();
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
+  private PaperCommandManager commandManager;
+
+  @Getter
+  private WorldBorderApi worldBorderApi;
 
   private int maxSkillLevel;
 
@@ -291,7 +295,7 @@ public class StrifePlugin extends FacePlugin {
 
     settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
     storage = new FlatfileStorage(this);
-    PaperCommandManager commandManager = new PaperCommandManager(this);
+    commandManager = new PaperCommandManager(this);
 
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
@@ -540,16 +544,18 @@ public class StrifePlugin extends FacePlugin {
     }
     getChampionManager().updateAll();
 
-    for (World world : Bukkit.getWorlds()) {
-      for (Chunk chunk : world.getLoadedChunks()) {
-        ChunkUtil.stampChunk(chunk);
-      }
-    }
-
     DamageUtil.refresh();
 
     Riptide.buildNMSEnum(this);
     Riptide.startTask(this);
+
+    RegisteredServiceProvider<WorldBorderApi> worldBorderApiRegisteredServiceProvider = getServer()
+        .getServicesManager().getRegistration(WorldBorderApi.class);
+
+    if (worldBorderApiRegisteredServiceProvider != null) {
+      worldBorderApi = worldBorderApiRegisteredServiceProvider.getProvider();
+      return;
+    }
 
     ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, ENTITY_METADATA) {
       public void onPacketSending(PacketEvent event) {
@@ -587,6 +593,7 @@ public class StrifePlugin extends FacePlugin {
 
   @Override
   public void disable() {
+    commandManager.unregisterCommands();
     saveSpawners();
     boostManager.saveBoosts();
     storage.saveAll();
@@ -626,6 +633,17 @@ public class StrifePlugin extends FacePlugin {
     String version = plugin.getServer().getClass().getPackage().getName().split("\\.")[3];
     try {
       return Class.forName("net.minecraft.server." + version + "." + name);
+    }
+
+    catch (ClassNotFoundException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  public static Class<?> getPoseClass() {
+    try {
+      return Class.forName("net.minecraft.world.entity.EntityPose");
     }
 
     catch (ClassNotFoundException e) {

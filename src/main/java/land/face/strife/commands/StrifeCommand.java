@@ -23,12 +23,15 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandPermission;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
+import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
@@ -50,6 +53,7 @@ import land.face.strife.util.EloUtil;
 import land.face.strife.util.TargetingUtil;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -92,6 +96,32 @@ public class StrifeCommand extends BaseCommand {
     plugin.getUniqueEntityManager().spawnUnique(entityId, sender.getLocation());
   }
 
+  @Subcommand("toast")
+  @CommandCompletion("INFO|GOAL|CHALLENGE APPLE @players SNEED")
+  @Syntax("<MATERIAL> <player> <message>")
+  @CommandPermission("strife.admin")
+  public void sendToast(CommandSender sender, @Default("GOAL") String type,
+      @Default("APPLE") String material,
+      OnlinePlayer target, @Default("sneed") String message) {
+    ToastStyle style;
+    try {
+      style = ToastStyle.valueOf(type.toUpperCase());
+    } catch (Exception e) {
+      MessageUtils.sendMessage(sender,
+          "&eInvalid toast style. Defaulted to GOAL. Use INFO, GOAL, or CHALLENGE next time, dum dum!");
+      style = ToastStyle.GOAL;
+    }
+    Material mat;
+    try {
+      mat = Material.valueOf(material.toUpperCase());
+    } catch (Exception e) {
+      MessageUtils.sendMessage(sender,
+          "&eInvalid material type. Try being less stupid. I sent type APPLE as a backup plan because I love you &f♥");
+      mat = Material.APPLE;
+    }
+    ToastUtils.sendToast(target.getPlayer(), message, new ItemStack(mat), style);
+  }
+
   @Subcommand("defeat")
   @CommandCompletion("@players @players @range:1-30")
   @CommandPermission("strife.admin")
@@ -112,10 +142,10 @@ public class StrifeCommand extends BaseCommand {
     loseData.setPvpScore(response.getNewLoserValue());
 
     sendActionBar(winner.getPlayer(), PVP_WIN_MSG.replace("{0}",
-        String.valueOf(Math.round(response.getNewWinnerValue())))
+            String.valueOf(Math.round(response.getNewWinnerValue())))
         .replace("{1}", String.valueOf(Math.round(winDiff))));
     sendActionBar(loser.getPlayer(), PVP_LOSE_MSG.replace("{0}",
-        String.valueOf(Math.round(response.getNewLoserValue())))
+            String.valueOf(Math.round(response.getNewLoserValue())))
         .replace("{1}", String.valueOf(Math.round(loseDiff))));
   }
 
@@ -138,22 +168,23 @@ public class StrifeCommand extends BaseCommand {
       MessageUtils.sendMessage(p,
           "&a&o&lATTENTION GAMER: &a&oThe RPG plugin is being reloaded, maybe to add things, maybe because a GM is being a dingus. Please wait...");
     }
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      // Save player data before reload continues
+      plugin.getStorage().saveAll();
+      // Normal enable/disable
+      plugin.disable();
+      plugin.enable();
 
-    // Save player data before reload continues
-    plugin.getStorage().saveAll();
-    // Normal enable/disable
-    plugin.disable();
-    plugin.enable();
-
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      plugin.getStatUpdateManager().updateVanillaAttributes(player);
-    }
-    for (Player p : Bukkit.getOnlinePlayers()) {
-      MessageUtils.sendMessage(p,
-          "&a&o&lATTENTION GAMER: &a&oOkay we're back now thanks for waiting :)");
-    }
-    sendMessage(sender,
-        plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
+      for (Player player : Bukkit.getOnlinePlayers()) {
+        plugin.getStatUpdateManager().updateVanillaAttributes(player);
+      }
+      for (Player p : Bukkit.getOnlinePlayers()) {
+        MessageUtils.sendMessage(p,
+            "&a&o&lATTENTION GAMER: &a&oOkay we're back now thanks for waiting :)");
+      }
+      sendMessage(sender,
+          plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
+    }, 1L);
   }
 
   @Subcommand("profile")

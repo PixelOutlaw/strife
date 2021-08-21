@@ -28,6 +28,7 @@ import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
@@ -46,6 +47,7 @@ import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Piglin;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Raider;
+import org.bukkit.entity.Shulker;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
@@ -196,6 +198,10 @@ public class UniqueEntityManager {
       } else if (le instanceof Villager) {
         ((Villager) le).setProfession(uniqueEntity.getProfession());
       }
+    }
+
+    if (uniqueEntity.getColor() != null && le instanceof Shulker) {
+      ((Shulker) le).setColor(uniqueEntity.getColor());
     }
 
     if (uniqueEntity.isRemoveFollowMods()) {
@@ -357,6 +363,10 @@ public class UniqueEntityManager {
       uniqueEntity.setBaby(cs.getBoolean("baby", false));
       uniqueEntity.setAngry(cs.getBoolean("angry", false));
       uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
+      String color = cs.getString("color", null);
+      if (color != null) {
+        uniqueEntity.setColor(DyeColor.valueOf(color));
+      }
       uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
       uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));

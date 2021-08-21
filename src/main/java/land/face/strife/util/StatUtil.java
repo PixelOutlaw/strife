@@ -117,6 +117,9 @@ public class StatUtil {
     if (ae.getEntity().hasPotionEffect(SLOW_DIGGING)) {
       attackBonus -= 10 * (1 + ae.getEntity().getPotionEffect(SLOW_DIGGING).getAmplifier());
     }
+    if (ae.getEntity().getFreezeTicks() > 0) {
+      attackBonus *= 1 - 0.5 * ((float) ae.getEntity().getFreezeTicks() / ae.getEntity().getMaxFreezeTicks());
+    }
 
     if (attackBonus > 0) {
       attackTime /= 1 + attackBonus / 100;

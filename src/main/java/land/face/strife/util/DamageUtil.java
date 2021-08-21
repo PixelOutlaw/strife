@@ -225,6 +225,9 @@ public class DamageUtil {
     }
     rawDamage *= DamageUtil.getTenacityMult(defender);
     rawDamage *= DamageUtil.getMinionMult(attacker);
+    if (attacker.getEntity().getFreezeTicks() > 0 && attacker.getEntity() instanceof Player) {
+      rawDamage *= 1 - 0.3 * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+    }
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
     if (mods.isSneakAttack() && !SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
@@ -260,8 +263,6 @@ public class DamageUtil {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
     }
-
-    defender.trackDamage(attacker, rawDamage);
     return rawDamage;
   }
 
@@ -533,37 +534,38 @@ public class DamageUtil {
     }
     float bonus;
     switch (finalElementType) {
-      case FIRE:
+      case FIRE -> {
         mods.getElementalStatuses().add(ElementalStatus.IGNITE);
         doIgnite(defender.getEntity(), damageMap.get(DamageType.FIRE));
-        break;
-      case ICE:
+      }
+      case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
-        bonus = attemptFreeze(damageMap.get(finalElementType), attacker, defender.getEntity());
-        damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
-        break;
-      case LIGHTNING:
+        attemptFreeze(damageMap.get(finalElementType), attacker, defender.getEntity());
+        damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.2f);
+      }
+      case LIGHTNING -> {
         mods.getElementalStatuses().add(ElementalStatus.SHOCK);
         bonus = attemptShock(damageMap.get(finalElementType), defender.getEntity());
         damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
-        break;
-      case DARK:
+      }
+      case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
         applyCorrupt(defender.getEntity(), 5 + darkDamage / 3, true);
-        break;
-      case EARTH:
+      }
+      case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
         int runes = plugin.getBlockManager().getEarthRunes(attacker);
-        float maxLife = (float) attacker.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        float maxLife = (float) attacker.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH)
+            .getValue();
         float newDamage = damageMap.get(DamageType.EARTH) * 1.1f + (runes * 0.02f * maxLife);
         damageMap.put(DamageType.EARTH, newDamage);
-        break;
-      case LIGHT:
+      }
+      case LIGHT -> {
         bonus = getLightBonus(damageMap.get(finalElementType), attacker, defender.getEntity());
         if (bonus > damageMap.get(finalElementType) / 2) {
           damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
         }
-        break;
+      }
     }
   }
 
@@ -665,7 +667,7 @@ public class DamageUtil {
     defender.getWorld()
         .playSound(defender.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.7f, 2f);
     defender.getWorld()
-        .spawnParticle(Particle.CRIT_MAGIC, defender.getEyeLocation(), 10 + (int) particles,
+        .spawnParticle(Particle.ELECTRIC_SPARK, defender.getEyeLocation(), 10 + (int) particles,
             particleRange, particleRange, particleRange, 0.12);
     if (defender instanceof Creeper) {
       ((Creeper) defender).setPowered(true);
@@ -673,15 +675,12 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static float attemptFreeze(float damage, StrifeMob attacker, LivingEntity defender) {
-    float multiplier = 0.25f + 0.25f * (StatUtil.getHealth(attacker) / 100);
-    if (!defender.hasPotionEffect(PotionEffectType.SLOW)) {
-      defender.getActivePotionEffects().add(new PotionEffect(PotionEffectType.SLOW, 30, 1));
-    }
+  public static void attemptFreeze(float damage, StrifeMob attacker, LivingEntity defender) {
     defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.0f);
-    defender.getWorld().spawnParticle(Particle.SNOWBALL,
-        defender.getEyeLocation(), 4 + (int) damage / 2, 0.3, 0.3, 0.2, 0.0);
-    return damage * multiplier;
+    defender.getWorld().spawnParticle(Particle.SNOWFLAKE, defender.getEyeLocation(), 10,
+            0.8, 0.8, 0.8, 0);
+    int ticks = 60 + (int) (100f * (damage / defender.getMaxHealth()));
+    defender.setFreezeTicks(Math.min(defender.getFreezeTicks() + ticks, defender.getMaxFreezeTicks() - 1));
   }
 
   public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {

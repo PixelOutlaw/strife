@@ -109,7 +109,9 @@ public class DamageOverTimeTask extends BukkitRunnable {
       damage *= 1 - mob.getStat(StrifeStat.POISON_RESIST) / 100;
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
-
+      if (damage >= le .getHealth()) {
+        poisonIterator.remove();
+      }
       DamageUtil.dealRawDamage(le, damage);
     }
   }
@@ -129,7 +131,9 @@ public class DamageOverTimeTask extends BukkitRunnable {
       damage *= 1 - mob.getStat(StrifeStat.WITHER_RESIST) / 100;
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
-
+      if (damage >= le .getHealth()) {
+        witherIterator.remove();
+      }
       DamageUtil.dealRawDamage(le, damage);
     }
   }
@@ -158,6 +162,9 @@ public class DamageOverTimeTask extends BukkitRunnable {
         mob.addBuff(LoadedBuff.toRunningBuff(lavaDebuff), 10);
       }
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
+      if (damage >= le .getHealth()) {
+        iterator.remove();
+      }
       DamageUtil.dealRawDamage(le, damage);
     }
   }

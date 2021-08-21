@@ -287,6 +287,7 @@ public class CombatListener implements Listener {
       return;
     }
 
+    defender.trackDamage(attacker, (float) strifeDamageEvent.getFinalDamage());
     float eventDamage = defender.damageBarrier((float) strifeDamageEvent.getFinalDamage());
 
     if (finalDamage > 0) {

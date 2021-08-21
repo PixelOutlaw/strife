@@ -403,11 +403,14 @@ public class AbilityManager {
   }
 
   private void coolDownAbility(StrifeMob caster, Ability ability) {
-    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
-      coolingDownAbilities.put(caster.getEntity(), new HashSet<>());
-    }
     if (ability.getGlobalCooldownTicks() > 0) {
       caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 500);
+    }
+    if (ability.getCooldown() < 1) {
+      return;
+    }
+    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
+      coolingDownAbilities.put(caster.getEntity(), new HashSet<>());
     }
     AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
     if (container == null) {

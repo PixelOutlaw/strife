@@ -42,6 +42,8 @@ public class RageTimer extends BukkitRunnable {
   private int graceTicks;
   private int invalidTicks = 0;
   private int heartbeat = 0;
+  private double maxTintPercentPerRage = 0.005;
+  private double baseTint = 0.2;
 
   private static final int MAX_GRACE_TICKS = 50;
 
@@ -55,8 +57,8 @@ public class RageTimer extends BukkitRunnable {
     LogUtil.printDebug("New RageTimer created for " + mobUuid);
     runTaskTimer(StrifePlugin.getInstance(), 0L, 4L);
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
-    float borderAmount = tintIntensity * (rageRemaining / maxRage);
-    sendBorder((Player) mob.getEntity(), borderAmount);
+    double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
+    sendBorder((Player) mob.getEntity(), percent, 5000);
   }
 
   @Override
@@ -78,6 +80,9 @@ public class RageTimer extends BukkitRunnable {
       sendBorder();
       pushRageActionBar(mob, maxRage, rageRemaining, 20);
       return;
+    } else if (graceTicks == 0) {
+      double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
+      sendBorder((Player) mob.getEntity(), percent, 6000);
     }
 
     float lostTicks = 1 + rageRemaining * 0.12f;
@@ -102,15 +107,15 @@ public class RageTimer extends BukkitRunnable {
     }
     heartbeat = 1;
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
-    float borderAmount = tintIntensity * (rageRemaining / maxRage);
-    sendBorder((Player) mob.getEntity(), borderAmount);
+    double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
+    sendBorder((Player) mob.getEntity(), percent, 2000);
   }
 
   public void bumpRage(float amount) {
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
     rageRemaining = Math.max(0, Math.min(rageRemaining + amount, maxRage));
-    float borderAmount = tintIntensity * (rageRemaining / maxRage);
-    sendBorder((Player) mob.getEntity(), borderAmount);
+    double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
+    sendBorder((Player) mob.getEntity(), percent, 4000);
     heartbeat = 0;
     if (amount >= 0) {
       graceTicks = MAX_GRACE_TICKS;
@@ -122,8 +127,8 @@ public class RageTimer extends BukkitRunnable {
     return rageRemaining;
   }
 
-  private static void sendBorder(Player player, float amount) {
-    BorderEffectUtil.sendBorder(player, amount , 8000);
+  private static void sendBorder(Player player, double percentage, int delay) {
+    BorderEffectUtil.sendBorder(player, percentage , delay);
   }
 
   private static void spawnRageParticles(LivingEntity entity, float rageStacks) {

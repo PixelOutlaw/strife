@@ -111,6 +111,7 @@ import land.face.strife.data.effects.ShootProjectile;
 import land.face.strife.data.effects.Silence;
 import land.face.strife.data.effects.Speak;
 import land.face.strife.data.effects.Stealth;
+import land.face.strife.data.effects.Stinger;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.data.effects.Summon;
@@ -253,53 +254,56 @@ public class EffectManager {
     }
     Effect effect = null;
     switch (effectType) {
-      case REVIVE:
+      case REVIVE -> {
         effect = new Revive();
         ((Revive) effect).setPercentLostExpRestored(cs.getDouble("percent-exp-restored", 1));
-        break;
-      case HEAL:
+      }
+      case HEAL -> {
         effect = new Heal();
         ((Heal) effect).setAmount((float) cs.getDouble("amount", 1));
         ((Heal) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Heal) effect).setUseHealingPower(cs.getBoolean("use-healing-power", false));
         ((Heal) effect).setHealCaster(cs.getBoolean("heal-caster", false));
-        break;
-      case FOOD:
+      }
+      case FOOD -> {
         effect = new Food();
         ((Food) effect).setAmount(cs.getDouble("amount", 1));
-        break;
-      case SET_FALL:
+      }
+      case SET_FALL -> {
         effect = new SetFall();
         ((SetFall) effect).setAmount((float) cs.getDouble("amount", 0));
-        break;
-      case RESTORE_BARRIER:
+      }
+      case RESTORE_BARRIER -> {
         effect = new RestoreBarrier();
         ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
-        ((RestoreBarrier) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
-        break;
-      case RESTORE_ENERGY:
+        ((RestoreBarrier) effect).setDamageScale(
+            DamageScale.valueOf(cs.getString("scale", "FLAT")));
+      }
+      case RESTORE_ENERGY -> {
         effect = new ChangeEnergy();
         ((ChangeEnergy) effect).setAmount((float) cs.getDouble("amount", 1));
         ((ChangeEnergy) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
-        break;
-      case INCREASE_RAGE:
+      }
+      case INCREASE_RAGE -> {
         effect = new ChangeRage();
         ((ChangeRage) effect).setAmount((float) cs.getDouble("amount", 1));
         ((ChangeRage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
-        break;
-      case DAMAGE:
+      }
+      case DAMAGE -> {
         effect = new Damage();
         float attackMult = (float) cs.getDouble("attack-multiplier", 1D);
         ((Damage) effect).setAttackMultiplier(attackMult);
         float damageReductionRatio = (float) cs.getDouble("damage-reduction-ratio", 1D);
         ((Damage) effect).setDamageReductionRatio(damageReductionRatio);
-        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
+        ((Damage) effect).setHealMultiplier(
+            (float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
         ((Damage) effect).setMaxDamage((float) cs.getDouble("max-damage", -1D));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
-        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", attackMult >= 0.6 || damageReductionRatio >= 0.6));
+        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects",
+            attackMult >= 0.6 || damageReductionRatio >= 0.6));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Damage) effect).setSelfInflict(cs.getBoolean("self-inflict", false));
@@ -329,8 +333,8 @@ public class EffectManager {
         ((Damage) effect).getDamageMultipliers().putAll(multMap);
         ((Damage) effect).getBonusDamages().addAll(bonusDamages);
         ((Damage) effect).getAbilityMods().putAll(attackModMap);
-        break;
-      case WORLD_SPACE_ENTITY:
+      }
+      case WORLD_SPACE_ENTITY -> {
         effect = new CreateWorldSpaceEntity();
         Map<Integer, List<String>> effectSchedule = new HashMap<>();
         ConfigurationSection scheduleSection = cs.getConfigurationSection("schedule");
@@ -341,15 +345,17 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
-        ((CreateWorldSpaceEntity) effect).setMaxDisplacement((float) cs.getDouble("max-displacement", 0));
-        ((CreateWorldSpaceEntity) effect).setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((CreateWorldSpaceEntity) effect).setMaxDisplacement(
+            (float) cs.getDouble("max-displacement", 0));
+        ((CreateWorldSpaceEntity) effect).setOriginLocation(
+            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
-        break;
-      case CHASER:
+      }
+      case CHASER -> {
         effect = new ChaserEffect();
         LoadedChaser data = plugin.getChaserManager().loadChaser(key, cs);
         ((ChaserEffect) effect).setOriginLocation(
@@ -357,16 +363,14 @@ public class EffectManager {
         ((ChaserEffect) effect).setLoadedChaser(data);
         ((ChaserEffect) effect).setCanLocationOverride(cs.getBoolean("location-override", false));
         ((ChaserEffect) effect).setChaseCaster(cs.getBoolean("chase-caster", false));
-        break;
-      case CONSOLE_COMMAND:
+      }
+      case CONSOLE_COMMAND -> {
         effect = new ConsoleCommand();
         String cmd = cs.getString("command", "broadcast REEE");
         ((ConsoleCommand) effect).setCommand(cmd);
-        break;
-      case REMOVE_ENTITY:
-        effect = new RemoveEntity();
-        break;
-      case MINION_CAST:
+      }
+      case REMOVE_ENTITY -> effect = new RemoveEntity();
+      case MINION_CAST -> {
         effect = new MinionCast();
         ((MinionCast) effect).setUniqueId(cs.getString("unique-id", null));
         Effect finalEffect1 = effect;
@@ -374,15 +378,15 @@ public class EffectManager {
           Ability ability = plugin.getAbilityManager().getAbility(cs.getString("ability-id", null));
           ((MinionCast) finalEffect1).setAbility(ability);
         }, 5L);
-        break;
-      case COUNTER:
+      }
+      case COUNTER -> {
         effect = new Counter();
         ((Counter) effect).setDuration(cs.getInt("duration", 500));
         ((Counter) effect).setRemoveOnTrigger(cs.getBoolean("remove-on-trigger", false));
         List<String> counterEffects = cs.getStringList("effects");
         delayedSetEffects(((Counter) effect).getEffects(), counterEffects, key, false);
-        break;
-      case AREA_EFFECT:
+      }
+      case AREA_EFFECT -> {
         effect = new AreaEffect();
         List<String> areaEffects = cs.getStringList("effects");
         List<String> filterConditions = cs.getStringList("filter-conditions");
@@ -395,21 +399,23 @@ public class EffectManager {
         delayedSetEffects(((AreaEffect) effect).getEffects(), areaEffects, key, false);
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
-        ((AreaEffect) effect).setScaleTargetsWithMultishot(cs.getBoolean("scale-targets-with-multishot", false));
-        ((AreaEffect) effect).setLineOfSight(LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
+        ((AreaEffect) effect).setScaleTargetsWithMultishot(
+            cs.getBoolean("scale-targets-with-multishot", false));
+        ((AreaEffect) effect).setLineOfSight(
+            LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
         ((AreaEffect) effect).setCanBeBlocked(canBeBlocked);
         ((AreaEffect) effect).setCanBeCountered(cs.getBoolean("can-be-countered", canBeBlocked));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
-        ((AreaEffect) effect).setRadius((float) cs.getDouble("radius", 0.4));
+        ((AreaEffect) effect).setRadius((float) cs.getDouble("radius", 0.55));
         if (((AreaEffect) effect).getMaxTargets() != -1) {
           ((AreaEffect) effect).setPriority(
               TargetingPriority.valueOf(cs.getString("priority", "RANDOM")));
         }
-        break;
-      case ENDLESS_EFFECT:
+      }
+      case ENDLESS_EFFECT -> {
         effect = new EndlessEffect();
         List<String> cancelConditions = cs.getStringList("cancel-conditions");
         ((EndlessEffect) effect).setMaxDuration((float) cs.getDouble("max-duration-seconds", 30));
@@ -434,8 +440,8 @@ public class EffectManager {
         delayedSetEffects(((EndlessEffect) effect).getRunEffects(), runEffects, key, false);
         delayedSetEffects(((EndlessEffect) effect).getCancelEffects(), cancelEffects, key, false);
         delayedSetEffects(((EndlessEffect) effect).getExpiryEffects(), expiryEffects, key, false);
-        break;
-      case CANCEL_ENDLESS_EFFECT:
+      }
+      case CANCEL_ENDLESS_EFFECT -> {
         effect = new CancelEndlessEffect();
         CancelEndlessEffect cancelEndlessEffect = (CancelEndlessEffect) effect;
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
@@ -444,12 +450,12 @@ public class EffectManager {
             cancelEndlessEffect.setEndlessEffect((EndlessEffect) newEffect);
           }
         }, 5L);
-        break;
-      case RIPTIDE:
+      }
+      case RIPTIDE -> {
         effect = new Riptide();
         ((Riptide) effect).setTicks(cs.getInt("ticks", 40) / 2);
-        break;
-      case PROJECTILE:
+      }
+      case PROJECTILE -> {
         effect = new ShootProjectile();
         ((ShootProjectile) effect).setQuantity(cs.getInt("quantity", 1));
         EntityType projType;
@@ -464,7 +470,8 @@ public class EffectManager {
           return;
         }
         ((ShootProjectile) effect).setProjectileEntity(projType);
-        ((ShootProjectile) effect).setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((ShootProjectile) effect).setOriginType(
+            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
@@ -481,8 +488,9 @@ public class EffectManager {
         ((ShootProjectile) effect).setThrowSpin(cs.getBoolean("throw-spin", true));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
-        ((ShootProjectile) effect).setDisguise(PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
-            key, false));
+        ((ShootProjectile) effect).setDisguise(
+            PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
+                key, false));
         String thrownStackMaterial = cs.getString("thrown-stack-material");
         if (StringUtils.isNotBlank(thrownStackMaterial)) {
           ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
@@ -498,8 +506,8 @@ public class EffectManager {
         }
         List<String> effects = cs.getStringList("hit-effects");
         delayedSetEffects(((ShootProjectile) effect).getHitEffects(), effects, key, false);
-        break;
-      case EQUIPMENT_SWAP:
+      }
+      case EQUIPMENT_SWAP -> {
         effect = new EquipmentSwap();
         List<String> items = cs.getStringList("items");
         for (String s : items) {
@@ -517,14 +525,15 @@ public class EffectManager {
           }
           ((EquipmentSwap) effect).addItem(slot, parts[1]);
         }
-        break;
-      case EVOKER_FANGS:
+      }
+      case EVOKER_FANGS -> {
         effect = new EvokerFangEffect();
         ((EvokerFangEffect) effect).setQuantity(cs.getInt("quantity", 1));
         ((EvokerFangEffect) effect).setSpread((float) cs.getDouble("spread", 0));
-        delayedSetEffects(((EvokerFangEffect) effect).getHitEffects(), cs.getStringList("hit-effects"), key, false);
-        break;
-      case FALLING_BLOCK:
+        delayedSetEffects(((EvokerFangEffect) effect).getHitEffects(),
+            cs.getStringList("hit-effects"), key, false);
+      }
+      case FALLING_BLOCK -> {
         effect = new ShootBlock();
         ((ShootBlock) effect).setQuantity(cs.getInt("quantity", 1));
         Material material;
@@ -540,33 +549,33 @@ public class EffectManager {
         ((ShootBlock) effect).setSpeed(cs.getDouble("speed", 1));
         ((ShootBlock) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
         ((ShootBlock) effect).setHitEffects(cs.getStringList("hit-effects"));
-        break;
-      case IGNITE:
+      }
+      case IGNITE -> {
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
         ((Ignite) effect).setForceDuration(cs.getBoolean("force-duration", false));
-        break;
-      case SILENCE:
+      }
+      case SILENCE -> {
         effect = new Silence();
         ((Silence) effect).setDuration(cs.getInt("duration", 20));
-        break;
-      case BLEED:
+      }
+      case BLEED -> {
         effect = new Bleed();
         ((Bleed) effect).setAmount((float) cs.getDouble("amount", 10));
         ((Bleed) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
         ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
-        break;
-      case CORRUPT:
+      }
+      case CORRUPT -> {
         effect = new Corrupt();
         ((Corrupt) effect).setAmount((float) cs.getDouble("amount", 10));
-        break;
-      case ADD_EARTH_RUNES:
+      }
+      case ADD_EARTH_RUNES -> {
         effect = new AddEarthRunes();
         ((AddEarthRunes) effect).setAmount(cs.getInt("amount", 1));
-        break;
-      case TELEPORT:
+      }
+      case TELEPORT -> {
         effect = new Teleport();
         ((Teleport) effect).setTargeted(cs.getBoolean("targeted", true));
         double x = cs.getDouble("x", 0);
@@ -574,48 +583,47 @@ public class EffectManager {
         double z = cs.getDouble("z", 0);
         ((Teleport) effect).setVector(new Vector(x, y, z));
         ((Teleport) effect).setRelative(cs.getBoolean("relative", false));
-        ((Teleport) effect).getWorldSwapWhitelist().addAll(cs.getStringList("world-swap-whitelist"));
+        ((Teleport) effect).getWorldSwapWhitelist()
+            .addAll(cs.getStringList("world-swap-whitelist"));
         List<String> destEffects = cs.getStringList("destination-effects");
         List<String> originEffects = cs.getStringList("origin-effects");
         delayedSetEffects(((Teleport) effect).getDestinationEffects(), destEffects, key, true);
         delayedSetEffects(((Teleport) effect).getOriginEffects(), originEffects, key, true);
-        break;
-      case TELEPORT_BEHIND:
-        effect = new TeleportBehind();
-        break;
-      case THRALL:
+      }
+      case TELEPORT_BEHIND -> effect = new TeleportBehind();
+      case THRALL -> {
         effect = new Thrall();
         ((Thrall) effect).setName(cs.getString("name", "&8«&7Thrall&8»"));
         ((Thrall) effect).setLifeSeconds(cs.getInt("lifespan-seconds", 20));
-        break;
-      case TITLE:
+      }
+      case TITLE -> {
         effect = new Title();
         ((Title) effect).setTopTitle(cs.getString("upper", ""));
         ((Title) effect).setLowerTitle(cs.getString("lower", ""));
         ((Title) effect).setRange(cs.getDouble("range", 8));
-        break;
-      case CONSUME_BLEED:
+      }
+      case CONSUME_BLEED -> {
         effect = new ConsumeBleed();
         ((ConsumeBleed) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
         ((ConsumeBleed) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
-        break;
-      case CONSUME_CORRUPT:
+      }
+      case CONSUME_CORRUPT -> {
         effect = new ConsumeCorrupt();
         ((ConsumeCorrupt) effect).setDamageRatio(cs.getDouble("damage-ratio", 1));
         ((ConsumeCorrupt) effect).setHealRatio(cs.getDouble("heal-ratio", 1));
-        break;
-      case BUFF_EFFECT:
+      }
+      case BUFF_EFFECT -> {
         effect = new BuffEffect();
         ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
-        break;
-      case REMOVE_BUFF:
+      }
+      case REMOVE_BUFF -> {
         effect = new RemoveBuff();
         ((RemoveBuff) effect).setBuffId(cs.getString("buff-id"));
         ((RemoveBuff) effect).setStacks(cs.getInt("stacks", Integer.MAX_VALUE));
         ((RemoveBuff) effect).setFromCaster(cs.getBoolean("from-caster", true));
-        break;
-      case COOLDOWN_REDUCTION:
+      }
+      case COOLDOWN_REDUCTION -> {
         effect = new CooldownReduction();
         ((CooldownReduction) effect).setAbilityString(cs.getString("ability-id"));
         ((CooldownReduction) effect).setSeconds(cs.getDouble("seconds"));
@@ -623,21 +631,21 @@ public class EffectManager {
         if (StringUtils.isNotBlank(slot)) {
           ((CooldownReduction) effect).setSlot(AbilitySlot.valueOf(slot));
         }
-        break;
-      case UNTOGGLE:
+      }
+      case UNTOGGLE -> {
         effect = new UntoggleAbility();
         ((UntoggleAbility) effect).setAbilityString(cs.getString("ability-id"));
-        break;
-      case WAIT:
+      }
+      case WAIT -> {
         effect = new Wait();
         ((Wait) effect).setTickDelay(cs.getInt("duration", 20));
-        break;
-      case SPEAK:
+      }
+      case SPEAK -> {
         effect = new Speak();
         ((Speak) effect).setMessages(
             ListExtensionsKt.chatColorize(cs.getStringList("messages")));
-        break;
-      case PUSH:
+      }
+      case PUSH -> {
         effect = new Push();
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
@@ -646,8 +654,8 @@ public class EffectManager {
         ((Push) effect).setUncheckedHeight(cs.getBoolean("unchecked-height", false));
         ((Push) effect).setPushType(
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
-        break;
-      case SUMMON:
+      }
+      case SUMMON -> {
         effect = new Summon();
         ((Summon) effect).setAmount(cs.getInt("amount", 1));
         ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
@@ -656,48 +664,49 @@ public class EffectManager {
         ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
         ((Summon) effect).setMount(cs.getBoolean("mount", false));
         ((Summon) effect).setClone(cs.getBoolean("clone", false));
-        break;
-      case CHARM:
+      }
+      case CHARM -> {
         effect = new Charm();
         ((Charm) effect).setChance((float) cs.getDouble("success-chance", 1));
         ((Charm) effect).setChancePerLevel((float) cs.getDouble("chance-per-level", 0));
         ((Charm) effect).setLifespanSeconds((float) cs.getDouble("lifespan-seconds", 30));
         ((Charm) effect).setOverrideMaster(cs.getBoolean("override", false));
-        break;
-      case SWING:
+      }
+      case SWING -> {
         effect = new SwingArm();
         ((SwingArm) effect).setDelay(cs.getInt("delay", 0));
         ((SwingArm) effect).setRandom(cs.getBoolean("random", false));
         ((SwingArm) effect).setSlot(EquipmentSlot.valueOf(cs.getString("hand", "HAND")));
-        break;
-      case UNDISGUISE:
-        effect = new Undisguise();
-        break;
-      case TARGET:
+      }
+      case UNDISGUISE -> effect = new Undisguise();
+      case TARGET -> {
         effect = new ForceTarget();
         ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite", true));
         ((ForceTarget) effect).setCasterTargetsTarget(cs.getBoolean("caster-targets-target", true));
-        break;
-      case FORCE_STAT:
+      }
+      case FORCE_STAT -> {
         effect = new ForceStat();
         ((ForceStat) effect)
             .setStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("stats")));
-        break;
-      case LIGHTNING:
-        effect = new Lightning();
-        break;
-      case STEALTH:
+      }
+      case LIGHTNING -> effect = new Lightning();
+      case STEALTH -> {
         effect = new Stealth();
         ((Stealth) effect).setRemoveStealth(cs.getBoolean("remove", false));
-        break;
-      case MODIFY_PROJECTILE:
+      }
+      case STINGER -> {
+        effect = new Stinger();
+        ((Stinger) effect).setAmount(cs.getInt("amount", 1));
+      }
+      case MODIFY_PROJECTILE -> {
         effect = new ModifyProjectile();
-        ((ModifyProjectile) effect).setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
+        ((ModifyProjectile) effect).setFriendlyProjectiles(
+            cs.getBoolean("friendly-projectiles", false));
         ((ModifyProjectile) effect).setRange(cs.getDouble("range", 1));
         ((ModifyProjectile) effect).setRemove(cs.getBoolean("remove", true));
         ((ModifyProjectile) effect).setSpeedMult(cs.getDouble("speed-mult", 0.5));
-        break;
-      case POTION:
+      }
+      case POTION -> {
         effect = new PotionEffectAction();
         PotionEffectType potionType;
         try {
@@ -711,9 +720,10 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
-        ((PotionEffectAction) effect).setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
-        break;
-      case SOUND:
+        ((PotionEffectAction) effect).setBumpUpToIntensity(
+            cs.getBoolean("bump-up-to-intensity", false));
+      }
+      case SOUND -> {
         effect = new PlaySound();
         Sound sound;
         try {
@@ -725,8 +735,8 @@ public class EffectManager {
         ((PlaySound) effect).setSound(sound);
         ((PlaySound) effect).setVolume((float) cs.getDouble("volume", 1));
         ((PlaySound) effect).setPitch((float) cs.getDouble("pitch", 1));
-        break;
-      case FIREWORK:
+      }
+      case FIREWORK -> {
         effect = new FireworkBurst();
         try {
           ((FireworkBurst) effect).setEffectType(Type.valueOf((cs.getString("effect-type"))));
@@ -740,8 +750,8 @@ public class EffectManager {
         ((FireworkBurst) effect).setColorTwo(Color.fromRGB(colorTwo));
         ((FireworkBurst) effect).setFlicker(cs.getBoolean("flicker", false));
         ((FireworkBurst) effect).setTrail(cs.getBoolean("trail", false));
-        break;
-      case PARTICLE:
+      }
+      case PARTICLE -> {
         effect = new StrifeParticle();
         Particle particle;
         try {
@@ -753,7 +763,8 @@ public class EffectManager {
         ((StrifeParticle) effect).setParticle(particle);
         ParticleStyle style = ParticleStyle.valueOf(cs.getString("style", "NORMAL"));
         ((StrifeParticle) effect).setStyle(style);
-        if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH || particle == Particle.SPELL_INSTANT) {
+        if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
+            || particle == Particle.SPELL_INSTANT) {
           ((StrifeParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
           ((StrifeParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
           ((StrifeParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
@@ -786,7 +797,7 @@ public class EffectManager {
         if (StringUtils.isNotBlank(materialType)) {
           ((StrifeParticle) effect).setItemData(new ItemStack(Material.getMaterial(materialType)));
         }
-        break;
+      }
     }
     if (effect instanceof LocationEffect) {
       ((LocationEffect) effect).setOrigin(OriginLocation.valueOf(cs.getString("origin", "HEAD")));

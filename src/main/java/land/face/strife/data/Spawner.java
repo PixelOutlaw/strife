@@ -1,5 +1,6 @@
 package land.face.strife.data;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashSet;
 import java.util.List;
@@ -7,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import land.face.strife.StrifePlugin;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
-import land.face.strife.util.ChunkUtil;
 import land.face.strife.util.DateTimeUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;

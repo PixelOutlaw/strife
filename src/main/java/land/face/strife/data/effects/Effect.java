@@ -152,6 +152,7 @@ public abstract class Effect {
     SWING,
     UNDISGUISE,
     STEALTH,
+    STINGER,
     REMOVE_ENTITY,
     MINION_CAST,
     REMOVE_BUFF

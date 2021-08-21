@@ -18,7 +18,7 @@ public class Riptide extends Effect {
 
   public static Object RIPTIDE_POSE_ENUM = null;
   public static Object STANDING_POSE_ENUM = null;
-  private static Map<LivingEntity, Integer> RIPTIDE_MAP = new WeakHashMap<>();
+  private static final Map<LivingEntity, Integer> RIPTIDE_MAP = new WeakHashMap<>();
   private static BukkitTask TASK = null;
 
   @Setter
@@ -105,10 +105,8 @@ public class Riptide extends Effect {
 
   public static void buildNMSEnum(StrifePlugin plugin) {
     try {
-      RIPTIDE_POSE_ENUM = StrifePlugin.getNMSClass("EntityPose", plugin)
-          .getField("SPIN_ATTACK").get(null);
-      STANDING_POSE_ENUM = StrifePlugin.getNMSClass("EntityPose", plugin)
-          .getField("STANDING").get(null);
+      RIPTIDE_POSE_ENUM = StrifePlugin.getPoseClass().getField("e").get(null);
+      STANDING_POSE_ENUM = StrifePlugin.getPoseClass().getField("a").get(null);
     } catch (Exception e) {
       e.printStackTrace();
     }

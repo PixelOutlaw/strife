@@ -22,7 +22,9 @@
     THE SOFTWARE.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -41,16 +43,16 @@
 
   <repositories>
     <repository>
+      <id>space-faceland-maven</id>
+      <url>https://maven.pkg.jetbrains.space/faceland/p/fl/faceland-maven</url>
+    </repository>
+    <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
     <repository>
-      <id>papermc</id>
-      <url>https://papermc.io/repo/repository/maven-public/</url>
-    </repository>
-    <repository>
       <id>dmulloy2-repo</id>
-      <url>http://repo.dmulloy2.net/nexus/repository/public/</url>
+      <url>http:s//repo.dmulloy2.net/nexus/repository/public/</url>
     </repository>
     <repository>
       <id>Scarsz-Nexus</id>
@@ -63,6 +65,10 @@
     <repository>
       <id>inventive-repo</id>
       <url>https://repo.inventivetalent.org/content/groups/public/</url>
+    </repository>
+    <repository>
+      <id>eldonexus</id>
+      <url>https://eldonexus.de/repository/maven-releases/</url>
     </repository>
   </repositories>
 
@@ -92,7 +98,7 @@
     <dependency>
       <groupId>com.comphenix.protocol</groupId>
       <artifactId>ProtocolLib</artifactId>
-      <version>4.5.0</version>
+      <version>4.7.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -129,6 +135,11 @@
       <artifactId>XGlow</artifactId>
       <version>1.0.5</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.yannicklamprecht.worldborderapi</groupId>
+      <artifactId>api</artifactId>
+      <version>1.170.0</version>
     </dependency>
   </dependencies>
 

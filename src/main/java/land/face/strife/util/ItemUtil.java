@@ -285,7 +285,7 @@ public class ItemUtil {
     }
     PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.SET_SLOT);
     packetContainer.getIntegers().write(0, 0);
-    packetContainer.getIntegers().write(1, slot);
+    packetContainer.getIntegers().write(2, slot);
     packetContainer.getItemModifier().write(0, sentStack);
     return packetContainer;
   }

@@ -7,6 +7,9 @@ import java.util.Set;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.DyeColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.EquipmentSlot;
@@ -34,6 +37,8 @@ public class UniqueEntity {
   private boolean invisible;
   private int size;
   private int followRange = -1;
+  @Getter @Setter
+  private DyeColor color;
   private boolean pushImmune;
   private boolean charmImmune;
   private boolean burnImmune;

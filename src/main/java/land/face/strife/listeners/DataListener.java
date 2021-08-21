@@ -25,7 +25,6 @@ import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.AbilitySlot;
-import land.face.strife.util.ChunkUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
@@ -62,7 +61,6 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 public class DataListener implements Listener {
@@ -221,16 +219,6 @@ public class DataListener implements Listener {
     plugin.getBossBarManager().pushBar(player, plugin.getStrifeMobManager().getStatMob(entity));
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void chunkLoadMonitor(ChunkLoadEvent e) {
-    ChunkUtil.stampChunk(e.getChunk());
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void chunkUnloadMonitor(ChunkUnloadEvent e) {
-    ChunkUtil.unstampChunk(e.getChunk());
-  }
-
   @EventHandler(priority = EventPriority.NORMAL)
   public void onChunkUnload(ChunkUnloadEvent e) {
     for (Entity ent : e.getChunk().getEntities()) {
@@ -239,7 +227,6 @@ public class DataListener implements Listener {
       }
       plugin.getStrifeMobManager().doChunkDespawn(ent);
     }
-    ChunkUtil.unstampChunk(e.getChunk());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

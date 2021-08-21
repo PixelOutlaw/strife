@@ -68,7 +68,6 @@ public class Damage extends Effect {
     mods.getDamageMultipliers().putAll(damageMultipliers);
     mods.getAbilityMods().putAll(abilityMods);
 
-
     boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);
 
     if (!attackSuccess) {
@@ -97,6 +96,8 @@ public class Damage extends Effect {
       strifeDamageEvent.setFinalDamage(Math.min(maxDamage, strifeDamageEvent.getFinalDamage()));
     }
 
+    target.trackDamage(caster, (float) strifeDamageEvent.getFinalDamage());
+
     StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
         (float) strifeDamageEvent.getFinalDamage(), mods);
 
@@ -112,7 +113,6 @@ public class Damage extends Effect {
     if (damage.containsKey(DamageType.PHYSICAL)) {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
     }
-
 
     StrifeMob finalTarget = target;
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
