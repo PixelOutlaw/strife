@@ -5,10 +5,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.MobMod;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet;
+import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
@@ -22,9 +25,12 @@ import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 public class MobModManager {
 
+  private final EntityEquipmentManager equipmentManager;
   private final Map<String, MobMod> loadedMods = new HashMap<>();
 
   private double MOB_MOD_UP_CHANCE;
@@ -32,11 +38,10 @@ public class MobModManager {
 
   private static Random random = new Random();
 
-  public MobModManager(StrifePlugin plugin) {
-    MOB_MOD_UP_CHANCE = plugin.getSettings()
-        .getDouble("config.leveled-monsters.add-mod-chance", 0.1);
-    MOB_MOD_MAX_MODS = plugin.getSettings()
-        .getInt("config.leveled-monsters.max-mob-mods", 4);
+  public MobModManager(MasterConfiguration settings, EntityEquipmentManager equipmentManager) {
+    this.equipmentManager = equipmentManager;
+    MOB_MOD_UP_CHANCE = settings.getDouble("config.leveled-monsters.add-mod-chance", 0.1);
+    MOB_MOD_MAX_MODS = settings.getInt("config.leveled-monsters.max-mob-mods", 4);
   }
 
   public void doModApplication(StrifeMob mob, int max) {
@@ -65,9 +70,8 @@ public class MobModManager {
       }
     }
     if (!mobMod.getEquipment().isEmpty()) {
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-        ItemUtil.equipMob(mobMod.getEquipment(), strifeMob.getEntity(), false);
-      }, 6L);
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+              ItemUtil.equipMob(mobMod.getEquipment(), strifeMob.getEntity(), false, true), 5L);
     }
     int level = StatUtil.getMobLevel(strifeMob.getEntity());
     Map<StrifeStat, Float> stats = StatUpdateManager.combineMaps(strifeMob.getBaseStats(), mobMod.getBaseStats());
@@ -159,6 +163,16 @@ public class MobModManager {
     mod.setBaseStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("base-stats")));
     mod.setPerLevelStats(
         StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));
+    for (EquipmentSlot slot : EquipmentCache.ITEM_SLOTS) {
+      String equipmentId = cs.getString("equipment." + slot, null);
+      if (equipmentId != null) {
+        ItemStack stack = equipmentManager.getItem(equipmentId);
+        if (stack == null) {
+          continue;
+        }
+        mod.getEquipment().put(slot, stack);
+      }
+    }
     mod.setAbilitySet(new EntityAbilitySet(cs.getConfigurationSection("abilities")));
     for (String s : cs.getStringList("required-biome")) {
       mod.addValidBiome(Biome.valueOf(s));

@@ -27,10 +27,7 @@ import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
@@ -228,9 +225,9 @@ public class UniqueEntityManager {
     if (le.getEquipment() != null) {
       Map<EquipmentSlot, ItemStack> equipmentMap = plugin.getEquipmentManager()
           .getEquipmentMap(uniqueEntity.getEquipment());
-      ItemUtil.equipMob(equipmentMap, le, true);
+      ItemUtil.equipMob(equipmentMap, le, true, true);
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-          ItemUtil.equipMob(equipmentMap, le, true), 5L);
+          ItemUtil.equipMob(equipmentMap, le, true, true), 4L);
     }
 
     if (uniqueEntity.isSaddled() && le.getType() == EntityType.HORSE) {

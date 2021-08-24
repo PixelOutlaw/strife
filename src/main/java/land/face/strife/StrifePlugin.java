@@ -314,6 +314,7 @@ public class StrifePlugin extends FacePlugin {
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager(this);
     equipmentManager = new EntityEquipmentManager();
+    buildEquipment();
     boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
     statUpdateManager = new StatUpdateManager(strifeMobManager);
@@ -324,7 +325,7 @@ public class StrifePlugin extends FacePlugin {
     wseManager = new WSEManager();
     agilityManager = new AgilityManager(this, agilityYAML);
     spawnerManager = new SpawnerManager(this);
-    mobModManager = new MobModManager(this);
+    mobModManager = new MobModManager(settings, equipmentManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     buffManager = new BuffManager();
@@ -764,7 +765,7 @@ public class StrifePlugin extends FacePlugin {
     }
   }
 
-  private void buildMobMods() {
+  public void buildMobMods() {
     for (String key : modsYAML.getKeys(false)) {
       if (!modsYAML.isConfigurationSection(key)) {
         continue;

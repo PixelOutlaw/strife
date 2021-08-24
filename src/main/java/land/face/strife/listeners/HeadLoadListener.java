@@ -36,5 +36,6 @@ public class HeadLoadListener implements Listener {
   public void onDatabaseLoad(DatabaseLoadEvent e) {
     plugin.getEquipmentManager().setHeadDatabaseAPI(new HeadDatabaseAPI());
     plugin.buildEquipment();
+    plugin.buildMobMods();
   }
 }

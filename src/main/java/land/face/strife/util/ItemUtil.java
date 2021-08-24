@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import land.face.strife.data.champion.EquipmentCache;
+import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
@@ -212,8 +215,8 @@ public class ItemUtil {
   }
 
   public static void equipMob(Map<EquipmentSlot, ItemStack> items, LivingEntity entity,
-      boolean overwrite) {
-    if (overwrite) {
+      boolean clear, boolean overwrite) {
+    if (clear) {
       entity.getEquipment().clear();
     }
     entity.getEquipment().setHelmetDropChance(0f);
@@ -222,12 +225,18 @@ public class ItemUtil {
     entity.getEquipment().setBootsDropChance(0f);
     entity.getEquipment().setItemInMainHandDropChance(0f);
     entity.getEquipment().setItemInOffHandDropChance(0f);
-    entity.getEquipment().setHelmet(items.getOrDefault(EquipmentSlot.HEAD, null));
-    entity.getEquipment().setChestplate(items.getOrDefault(EquipmentSlot.CHEST, null));
-    entity.getEquipment().setLeggings(items.getOrDefault(EquipmentSlot.LEGS, null));
-    entity.getEquipment().setBoots(items.getOrDefault(EquipmentSlot.FEET, null));
-    entity.getEquipment().setItemInMainHand(items.getOrDefault(EquipmentSlot.HAND, null));
-    entity.getEquipment().setItemInOffHand(items.getOrDefault(EquipmentSlot.OFF_HAND, null));
+    for (EquipmentSlot slot : EquipmentCache.ITEM_SLOTS) {
+      if (!items.containsKey(slot)) {
+        continue;
+      }
+      if (!overwrite) {
+        ItemStack currentItem = entity.getEquipment().getItem(slot);
+        if (currentItem.getType() != Material.AIR) {
+          continue;
+        }
+      }
+      entity.getEquipment().setItem(slot, items.get(slot));
+    }
   }
 
   public static int getCustomData(ItemStack stack) {

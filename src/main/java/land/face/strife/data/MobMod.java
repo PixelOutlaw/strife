@@ -17,13 +17,13 @@ public class MobMod {
   private String prefix;
   private int weight;
   private EntityAbilitySet abilitySet;
-  private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
+  private final Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
   private Map<StrifeStat, Float> baseStats = new HashMap<>();
   private Map<StrifeStat, Float> perLevelStats = new HashMap<>();
 
-  private Set<EntityType> validEntities = new HashSet<>();
-  private Set<String> validRegionIds = new HashSet<>();
-  private Set<Biome> validBiomes = new HashSet<>();
+  private final Set<EntityType> validEntities = new HashSet<>();
+  private final Set<String> validRegionIds = new HashSet<>();
+  private final Set<Biome> validBiomes = new HashSet<>();
 
   public String getId() {
     return id;
@@ -79,10 +79,6 @@ public class MobMod {
 
   public ItemStack getEquipmentItem(EquipmentSlot slot) {
     return equipment.get(slot);
-  }
-
-  public void setEquipment(Map<EquipmentSlot, ItemStack> equipment) {
-    this.equipment = equipment;
   }
 
   public void addValidEntity(EntityType entityType) {
