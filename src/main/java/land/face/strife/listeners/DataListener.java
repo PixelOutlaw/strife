@@ -17,6 +17,8 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import info.faceland.mint.util.MintUtil;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -25,14 +27,8 @@ import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.AbilitySlot;
-import land.face.strife.util.DamageUtil;
-import land.face.strife.util.SpecialStatusUtil;
-import land.face.strife.util.StatUtil;
-import land.face.strife.util.TargetingUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import land.face.strife.util.*;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
@@ -42,15 +38,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityCombustByBlockEvent;
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -62,6 +51,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class DataListener implements Listener {
 
@@ -82,6 +73,23 @@ public class DataListener implements Listener {
     if (event.getDamage() == 0 || event.isCancelled()) {
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getAbilityIconManager().updateAllIconProgress(event.getPlayer()), 1L);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onItemPickupEvent(EntityPickupItemEvent event) {
+    if (event.getItem().getItemStack().getType() == Material.SUNFLOWER && event.getEntity() instanceof Player) {
+      if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
+        event.setCancelled(true);
+        event.getItem().remove();
+        MessageUtils.sendMessage(event.getEntity(), "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
+        ((Player) event.getEntity()).playSound(event.getEntity().getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
+        event.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 240, 1, false));
+        StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
+        mob.setEnergy(mob.getEnergy() + 0.1f * (mob.getMaxEnergy() - mob.getEnergy()));
+        event.getEntity().setHealth(event.getEntity().getHealth() +
+                0.1f * (event.getEntity().getMaxHealth() - event.getEntity().getHealth()));
+      }
     }
   }
 
