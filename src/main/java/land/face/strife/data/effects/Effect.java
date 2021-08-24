@@ -140,6 +140,7 @@ public abstract class Effect {
     SOUND,
     FIREWORK,
     PARTICLE,
+    SPAWN_ITEM,
     SPEAK,
     PUSH,
     LIGHTNING,
