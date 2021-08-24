@@ -124,22 +124,14 @@ public class Champion {
     int blue = 0;
     for (StrifeAttribute attribute : getLevelMap().keySet()) {
       switch (attribute.getKey()) {
-        case "str":
-          red = getLevelMap().get(attribute);
-          break;
-        case "con":
-          yellow = getLevelMap().get(attribute);
-          break;
-        case "dex":
-          green = getLevelMap().get(attribute);
-          break;
-        case "int":
-          blue = getLevelMap().get(attribute);
-          break;
+        case "str" -> red = getLevelMap().get(attribute);
+        case "con" -> yellow = getLevelMap().get(attribute);
+        case "dex" -> green = getLevelMap().get(attribute);
+        case "int" -> blue = getLevelMap().get(attribute);
       }
     }
     float total = Math.max(1, red + yellow + green + blue);
-    int segments =  40 - player.getName().length();
+    int segments =  22 + player.getName().length();
 
     int redSegments = (int) Math.ceil((float) segments * (float) red / total);
     total -= red;
