@@ -151,6 +151,7 @@ import land.face.strife.tasks.StealthParticleTask;
 import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import lombok.Getter;
@@ -372,7 +373,7 @@ public class StrifePlugin extends FacePlugin {
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
-    EveryTickTask everyTickTask = new EveryTickTask();
+    EveryTickTask everyTickTask = new EveryTickTask(this);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     damageOverTimeTask = new DamageOverTimeTask(this);
     particleTask = new ParticleTask();
@@ -546,6 +547,14 @@ public class StrifePlugin extends FacePlugin {
     getChampionManager().updateAll();
 
     DamageUtil.refresh();
+    ItemUtil.pickDestroyKeys.clear();
+    ItemUtil.hoeDestroyKeys.clear();
+    ItemUtil.axeDestroyKeys.clear();
+    ItemUtil.shearsDestroyKeys.clear();
+    ItemUtil.pickDestroyKeys.addAll(configYAML.getStringList("pick-destroy-keys"));
+    ItemUtil.hoeDestroyKeys.addAll(configYAML.getStringList("hoe-destroy-keys"));
+    ItemUtil.axeDestroyKeys.addAll(configYAML.getStringList("axe-destroy-keys"));
+    ItemUtil.shearsDestroyKeys.addAll(configYAML.getStringList("shears-destroy-keys"));
 
     Riptide.buildNMSEnum(this);
     Riptide.startTask(this);
@@ -605,6 +614,7 @@ public class StrifePlugin extends FacePlugin {
     ProtocolLibrary.getProtocolManager().removePacketListeners(this);
 
     strifeMobManager.despawnAllTempEntities();
+    blockManager.clearAllEarthRunes();
     bossBarManager.clearBars();
     agilityManager.saveLocations();
     spawnerManager.cancelAll();

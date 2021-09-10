@@ -44,20 +44,17 @@ public class CreeperExplodeListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void creeperExplosionAdditionalEffects(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || !(event.getDamager() instanceof Creeper)) {
+    if (event.isCancelled() || !(event.getDamager() instanceof Creeper creeper)) {
       return;
     }
-    if (!(event.getEntity() instanceof LivingEntity)) {
+    if (!(event.getEntity() instanceof LivingEntity target)) {
       return;
     }
-
-    Creeper creeper = (Creeper) event.getDamager();
-    LivingEntity target = (LivingEntity) event.getEntity();
 
     if (plugin.getBleedManager().isBleeding(creeper)) {
       float amount = plugin.getBleedManager().getBleedOnEntity(creeper);
-      plugin.getBleedManager()
-          .addBleed(plugin.getStrifeMobManager().getStatMob(target), amount + 5, false);
+      plugin.getBleedManager().addBleed(
+          plugin.getStrifeMobManager().getStatMob(target), amount + 5, false);
     }
     if (plugin.getCorruptionManager().isCorrupted((LivingEntity) event.getDamager())) {
       float amount = plugin.getCorruptionManager().getCorruption((LivingEntity) event.getDamager());
@@ -65,6 +62,7 @@ public class CreeperExplodeListener implements Listener {
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();
+      plugin.getStrifeMobManager().getStatMob(target).setFrost(0);
       event.getEntity().setFireTicks(Math.max(event.getEntity().getFireTicks(), ticks + 40));
     }
   }

@@ -1,15 +1,15 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
  * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -20,6 +20,7 @@ package land.face.strife.listeners;
 
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
+import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
@@ -34,6 +35,7 @@ import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -41,10 +43,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
 public class TargetingListener implements Listener {
+
   private final StrifePlugin plugin;
   private final Random random;
 
@@ -86,134 +90,126 @@ public class TargetingListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    if (!(event.getEntity() instanceof Mob)) {
-      return;
-    }
-    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
-    TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
-    if (event.getDamager() instanceof LivingEntity) {
-      LivingEntity le = ((Mob) event.getEntity()).getTarget();
-      if (le == null || !le.isValid()) {
-        ((Mob) event.getEntity()).setTarget((LivingEntity) event.getDamager());
+    if (event.getEntity() instanceof Mob) {
+      LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
+      TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
+      if (event.getDamager() instanceof LivingEntity) {
+        ((Mob) event.getEntity()).setTarget(attacker);
       }
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.LOW)
+  public void onWeakAggro(EntityTargetLivingEntityEvent event) {
+    if (event.isCancelled() || event.getTarget() == null) {
+      return;
+    }
+    if (event.getReason() == CLOSEST_PLAYER || event.getReason() == CUSTOM) {
+      return;
+    }
+    if (SpecialStatusUtil.isWeakAggro(event.getEntity())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.NORMAL)
   public void ignoreGuildAllies(EntityTargetLivingEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
     if (!(event.getEntity() instanceof LivingEntity) || !(event.getTarget() instanceof Player)) {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
-    if (mob == null || mob.getAlliedGuild() == null) {
-      return;
-    }
     if (DamageUtil.isGuildAlly(mob, (Player) event.getTarget())) {
       event.setCancelled(true);
     }
   }
 
-  @EventHandler(priority = EventPriority.LOW)
-  public void onIgnoreHighLevelPlayers(EntityTargetLivingEntityEvent event) {
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onTargetHighLevel(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled()) {
       return;
     }
-    if (!(event.getTarget() instanceof Player) || !(event.getEntity() instanceof Mob)
-        || event.getReason() != CLOSEST_PLAYER) {
-      return;
-    }
-    if (event.getTarget() instanceof Player && plugin.getStealthManager()
-        .isStealthed((Player) event.getTarget())) {
-      return;
-    }
-    int playerLevel = StatUtil.getMobLevel(event.getTarget());
-    int mobLevel = StatUtil.getMobLevel((Mob) event.getEntity());
-
-    if (playerLevel - mobLevel > 20) {
-      event.setCancelled(true);
+    if (event.getTarget() instanceof Player && event.getReason() == CLOSEST_PLAYER) {
+      if (SpecialStatusUtil.isGuildMob(event.getEntity())) {
+        return;
+      }
+      if (plugin.getStealthManager().isStealthed((Player) event.getTarget())) {
+        return;
+      }
+      int playerLevel = StatUtil.getMobLevel(event.getTarget());
+      int mobLevel = StatUtil.getMobLevel((Mob) event.getEntity());
+      if (playerLevel - mobLevel > 20) {
+        event.setCancelled(true);
+      }
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
-  public void onNormalTarget(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled() || event.getTarget() == null) {
+  @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+  public void onSneakTarget(EntityTargetLivingEntityEvent event) {
+    if (event.getTarget() == null || event.getTarget().getType() != EntityType.PLAYER) {
       return;
     }
-    if (!(event.getEntity() instanceof Mob creature)) {
-      return;
-    }
-    if (SpecialStatusUtil.isWeakAggro(event.getTarget())) {
-      if (!(event.getReason() == CLOSEST_PLAYER || event.getReason() == CUSTOM)) {
-        event.setCancelled(true);
+    if (event.getReason() == CLOSEST_PLAYER && event.getEntity() instanceof LivingEntity mob) {
+      Player player = (Player) event.getTarget();
+      if (!plugin.getStealthManager().isStealthed(player)) {
         return;
       }
-    }
-    if (event.getReason() != CLOSEST_PLAYER || SpecialStatusUtil.isSneakImmune(event.getEntity())) {
-      return;
-    }
-    Player player = (Player) event.getTarget();
-    if (!plugin.getStealthManager().isStealthed(player)) {
-      return;
-    }
-    float mobLevel = StatUtil.getMobLevel(creature);
+      float mobLevel = StatUtil.getMobLevel(mob);
 
-    LogUtil.printDebug("Sneak calc for " + player.getName() + " from lvl " + mobLevel + " " +
-        creature.getType());
+      LogUtil.printDebug(
+          "Sneak calc for " + player.getName() + " from lvl " + mobLevel + " " + mob.getType());
 
-    Location playerLoc = player.getLocation();
-    Location entityLoc = creature.getLocation();
-    Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
-    Vector entitySightVector = entityLoc.getDirection();
+      Location playerLoc = player.getLocation();
+      Location entityLoc = mob.getLocation();
+      Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
+      Vector entitySightVector = entityLoc.getDirection();
 
-    Champion champion = plugin.getChampionManager().getChampion(player);
-    float angle = entitySightVector.angle(playerDifferenceVector);
-    float stealthLevel = champion.getLifeSkillLevel(LifeSkillType.SNEAK);
-    float stealthSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
-    double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
-    float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
-    float lightMult = (float) Math.max(0.15,
-        (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock().getLightLevel())));
+      Champion champion = plugin.getChampionManager().getChampion(player);
+      float angle = entitySightVector.angle(playerDifferenceVector);
+      float stealthLevel = champion.getLifeSkillLevel(LifeSkillType.SNEAK);
+      float stealthSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
+      double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
+      float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
+      float lightMult = (float) Math.max(0.15,
+          (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock()
+              .getLightLevel())));
 
-    stealthSkill = Math.max(stealthSkill, 10);
+      stealthSkill = Math.max(stealthSkill, 10);
 
-    if (player.hasPotionEffect(INVISIBILITY)) {
-      stealthSkill += 5 + stealthSkill * 0.1;
-    }
-    if (!player.isSneaking()) {
-      stealthSkill *= 0.75;
-    }
-    if (player.isSprinting()) {
-      stealthSkill *= 0.5;
-    }
-
-    float awareness;
-    if (angle > SEEN_MAX_ANGLE || creature.hasPotionEffect(BLINDNESS)) {
-      awareness = BASE_AWARENESS_UNSEEN + mobLevel * AWARENESS_PER_LV_UNSEEN;
-    } else {
-      awareness = BASE_AWARENESS_SEEN + mobLevel * AWARENESS_PER_LV_SEEN;
-    }
-    awareness *= distanceMult;
-    awareness *= lightMult;
-    awareness -= stealthSkill * SNEAK_EFFECTIVENESS;
-
-    LogUtil.printDebug(" DIST MULT: " + distanceMult);
-    LogUtil.printDebug(" LIGHT MULT: " + lightMult);
-    LogUtil.printDebug(" ANGLE: " + angle);
-    LogUtil.printDebug(" AWARENESS: " + awareness);
-
-    if (random.nextDouble() > awareness / DETECTION_THRESHOLD) {
-      event.setCancelled(true);
-      LogUtil.printDebug(" SNEAK-SUCCESS: TRUE");
-      if (distSquared <= MAX_EXP_RANGE_SQUARED) {
-        float difficultyLevel = Math.min(stealthLevel + 10, mobLevel);
-        float xp = plugin.getStealthManager().getSneakActionExp(difficultyLevel, stealthLevel);
-        xp *= distanceMult;
-        plugin.getSkillExperienceManager()
-            .addExperience(player, LifeSkillType.SNEAK, xp, false, false);
-        LogUtil.printDebug(" XP-AWARDED: " + xp);
+      if (player.hasPotionEffect(INVISIBILITY)) {
+        stealthSkill += 5 + stealthSkill * 0.1;
       }
-    } else {
-      LogUtil.printDebug(" SNEAK-SUCCESS: FALSE");
+      if (!player.isSneaking()) {
+        stealthSkill *= 0.75;
+      }
+      if (player.isSprinting()) {
+        stealthSkill *= 0.5;
+      }
+
+      float awareness;
+      if (angle > SEEN_MAX_ANGLE || mob.hasPotionEffect(BLINDNESS)) {
+        awareness = BASE_AWARENESS_UNSEEN + mobLevel * AWARENESS_PER_LV_UNSEEN;
+      } else {
+        awareness = BASE_AWARENESS_SEEN + mobLevel * AWARENESS_PER_LV_SEEN;
+      }
+      awareness *= distanceMult;
+      awareness *= lightMult;
+      awareness -= stealthSkill * SNEAK_EFFECTIVENESS;
+
+      if (random.nextDouble() > awareness / DETECTION_THRESHOLD) {
+        event.setCancelled(true);
+        if (distSquared <= MAX_EXP_RANGE_SQUARED) {
+          float difficultyLevel = Math.min(stealthLevel + 10, mobLevel);
+          float xp = plugin.getStealthManager().getSneakActionExp(difficultyLevel, stealthLevel);
+          xp *= distanceMult;
+          plugin.getSkillExperienceManager().addExperience(player,
+              LifeSkillType.SNEAK, xp, false, false);
+        }
+      } else {
+        event.setCancelled(false);
+      }
     }
   }
 }

@@ -3,62 +3,59 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
-import land.face.strife.StrifePlugin;
-import land.face.strife.events.UniqueKillEvent;
-import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Block;
-import org.bukkit.entity.*;
-import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
+import land.face.strife.StrifePlugin;
+import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Fish;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.jetbrains.annotations.NotNull;
 
-public class RabbitPatcher {
+public class FishPatcher {
 
   // in EntityAddToWorldEvent and EntitySpawnEvent i call this for change the rabbit Goals
-  public static void patchRabbit(Rabbit rabbit) {
-    rabbit.setSilent(true);
-    AttackEntityGoal goalAttack = new AttackEntityGoal(rabbit);
-    // Remove vanilla goals in weaks rabbits
-    Bukkit.getMobGoals().getAllGoals(rabbit).forEach(rabbitGoal -> {
-      String nameGoalRabbit = rabbitGoal.getKey().getNamespacedKey().toString();
-      if (nameGoalRabbit.contains("look_at_player") || nameGoalRabbit.contains(
-          "rabbit_avoid_target") || nameGoalRabbit.contains("rabbit_panic")
-          || nameGoalRabbit.contains("tempt") || nameGoalRabbit.contains("bred")) {
-        Bukkit.getMobGoals().removeGoal(rabbit, rabbitGoal);
+  public static void patchFish(Fish fish) {
+    fish.setSilent(true);
+    AttackEntityGoal goalAttack = new AttackEntityGoal(fish);
+    Bukkit.getMobGoals().getAllGoals(fish).forEach(goal -> {
+      String goalName = goal.getKey().getNamespacedKey().toString();
+      if (goalName.equals("minecraft:avoid_target") ||
+          goalName.equals("minecraft:panic")) {
+        Bukkit.getMobGoals().removeGoal(fish, goal);
       }
     });
-    if (!Bukkit.getMobGoals().hasGoal(rabbit, goalAttack.getKey())) {
-      Bukkit.getMobGoals().addGoal(rabbit, 3, goalAttack);
+    if (!Bukkit.getMobGoals().hasGoal(fish, goalAttack.getKey())) {
+      Bukkit.getMobGoals().addGoal(fish, 3, goalAttack);
     } else {
       // If i use PlugMan for reload the Goal still alive but cant cast because "AttackEntityGoal != AttackEntityGoal" (Better restart the server)
-      Goal<Rabbit> goalRabbit = Bukkit.getMobGoals().getGoal(rabbit, goalAttack.getKey());
+      Goal<Fish> goal = Bukkit.getMobGoals().getGoal(fish, goalAttack.getKey());
       try {
-        AttackEntityGoal goalRabbitLocal = (AttackEntityGoal) goalRabbit;
+        AttackEntityGoal goalRabbitLocal = (AttackEntityGoal) goal;
       } catch (ClassCastException ignored) {
-        Bukkit.getMobGoals().addGoal(rabbit, 3, goalAttack);
+        Bukkit.getMobGoals().addGoal(fish, 3, goalAttack);
       }
     }
   }
 
-  public static class AttackEntityGoal implements Goal<Rabbit> {
+  public static class AttackEntityGoal implements Goal<Fish> {
 
-    private static final NamespacedKey key_hostile_rabbits = new NamespacedKey(StrifePlugin.getInstance(), "hostile_rabbit");
+    private static final NamespacedKey key_hostile_fish = new NamespacedKey(StrifePlugin.getInstance(), "hostile_fish");
 
     @Getter
-    private static final GoalKey<Rabbit> goalKey = GoalKey.of(Rabbit.class, key_hostile_rabbits);
-    private final Predicate<LivingEntity> targetPredicate;
+    private static final GoalKey<Fish> goalKey = GoalKey.of(Fish.class, key_hostile_fish);
     private final Mob mob;
     private LivingEntity currentTarget;
     private LivingEntity currentAttacker = null;
@@ -70,8 +67,7 @@ public class RabbitPatcher {
       this.mob = mob;
       this.mob.getPathfinder().setCanPassDoors(true);
       this.mob.getPathfinder().setCanOpenDoors(true);
-      this.mob.getPathfinder().setCanFloat(true);
-      this.targetPredicate = generatePredicateForTarget();
+      this.mob.getPathfinder().setCanFloat(false);
     }
 
     @Override
@@ -84,7 +80,9 @@ public class RabbitPatcher {
       // Check if currentAttacker is still on range
       if (currentAttacker != null) {
         double distanceFollowAttacker = 200;
-        if (currentAttacker.getLocation().distanceSquared(mob.getLocation())
+        if (currentAttacker.getLocation().getBlock().getType() != Material.WATER) {
+          currentAttacker = null;
+        } else if (currentAttacker.getLocation().distanceSquared(mob.getLocation())
             > distanceFollowAttacker) {
           currentAttacker = null;
         }
@@ -121,7 +119,7 @@ public class RabbitPatcher {
         attack(currentTarget, distanceSquared);
         mob.getPathfinder().stopPathfinding();
       } else {
-        mob.getPathfinder().moveTo(currentTarget, 1.0D);
+        mob.getPathfinder().moveTo(currentTarget, 2.0D);
       }
       mob.lookAt(currentTarget);
     }
@@ -136,22 +134,17 @@ public class RabbitPatcher {
         }
         mob.lookAt(entity);
         this.resetCooldownAttack();
-        mob.getWorld().playSound(mob.getLocation(), org.bukkit.Sound.ENTITY_RABBIT_ATTACK, 5.0F,
+        mob.getWorld().playSound(mob.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, 5.0F,
             (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
         mob.swingMainHand();
         mob.swingOffHand();
-        getRabbit().setJumping(true);
         double baseDamage = 8;
         entity.damage(baseDamage, mob);
       }
     }
 
-    private Rabbit getRabbit() {
-      return ((Rabbit) this.mob);
-    }
-
     @Override
-    public GoalKey<Rabbit> getKey() {
+    public GoalKey<Fish> getKey() {
       return goalKey;
     }
 
@@ -170,8 +163,10 @@ public class RabbitPatcher {
 
     private LivingEntity getClosestTarget() {
       double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
+
       Collection<LivingEntity> nearbyTargets = mob.getWorld().getNearbyEntitiesByType(
-          LivingEntity.class, mob.getLocation(), range, this.targetPredicate);
+          LivingEntity.class, mob.getLocation(), range, filterTargets(mob));
+
       double closestDistance = -1.0;
       LivingEntity closestTarget = null;
       for (LivingEntity target : nearbyTargets) {
@@ -191,17 +186,10 @@ public class RabbitPatcher {
       return closestTarget;
     }
 
-    private Predicate<LivingEntity> generatePredicateForTarget() {
-      Predicate<Player> playerPredicate = player -> (player.getGameMode().equals(GameMode.SURVIVAL)
-          || player.getGameMode().equals(GameMode.ADVENTURE));
-      Predicate<EntityType> blackListTargets = entityType ->
-          entityType.equals(EntityType.ARMOR_STAND) || entityType.equals(EntityType.BAT)
-              || entityType.equals(EntityType.RABBIT) || entityType.equals(EntityType.ENDER_DRAGON);
-      return entity -> !entity.getUniqueId().equals(this.mob.getUniqueId())
-          && !entity.hasPotionEffect(PotionEffectType.INVISIBILITY) && !entity.isInvisible()
-          && !entity.isInvulnerable() && !entity.isDead() && !blackListTargets.test(
-          entity.getType()) && (!entity.getType().equals(EntityType.PLAYER) || playerPredicate.test(
-          ((Player) entity))) && entity.isValid();
+    private static Predicate<LivingEntity> filterTargets(Mob mob) {
+      return entity -> entity != null && entity.isValid() && mob != entity &&
+          entity.getType() == EntityType.PLAYER &&
+          entity.getLocation().getBlock().getType() == Material.WATER;
     }
   }
 }

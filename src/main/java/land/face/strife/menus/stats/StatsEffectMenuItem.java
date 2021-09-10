@@ -1,15 +1,15 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
  * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -41,7 +41,8 @@ public class StatsEffectMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   StatsEffectMenuItem(StatsMenu statsMenu) {
-    super(StringExtensionsKt.chatColorize("&6&lAdditional Effects"), new ItemStack(Material.EMERALD));
+    super(StringExtensionsKt.chatColorize("&6&lAdditional Effects"),
+        new ItemStack(Material.EMERALD));
     this.statsMenu = statsMenu;
   }
 
@@ -78,12 +79,11 @@ public class StatsEffectMenuItem extends MenuItem {
         abilityLores.addAll(trait.getAdditionalText());
       }
     }
-    for (TriggerType triggerType : pStats.getLoreAbilities().keySet()) {
-      for (LoreAbility la : pStats.getLoreAbilities().get(triggerType)) {
-        abilityLores.add(la.getTriggerText());
-        abilityLores.addAll(la.getDescription());
-      }
+    for (LoreAbility la : pStats.getLoreAbilities()) {
+      abilityLores.add(la.getTriggerText());
+      abilityLores.addAll(la.getDescription());
     }
+
     if (!abilityLores.isEmpty()) {
       lore.addAll(abilityLores);
     }

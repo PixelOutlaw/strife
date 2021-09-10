@@ -66,7 +66,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
 
     Map<StrifeStat, Float> debuffMap = new HashMap<>();
     debuffMap.put(StrifeStat.BURNING_RESIST, -12.5f);
-    lavaDebuff = new LoadedBuff("BUILT-IN-LAVA-DEBUFF", debuffMap, 200, 10);
+    lavaDebuff = new LoadedBuff("BUILT-IN-LAVA-DEBUFF", debuffMap, "", 200, 10);
   }
 
   public void trackPoison(LivingEntity livingEntity) {
@@ -159,7 +159,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
         continue;
       }
       if (le.getWorld().getBlockAt(le.getLocation()).getType() == Material.LAVA) {
-        mob.addBuff(LoadedBuff.toRunningBuff(lavaDebuff), 10);
+        mob.addBuff(lavaDebuff, null, 10);
       }
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
       if (damage >= le .getHealth()) {

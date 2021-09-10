@@ -3,19 +3,19 @@ package land.face.strife.data;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import land.face.SnazzyPartiesPlugin;
 import land.face.data.Party;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.buff.Buff;
+import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
-import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
@@ -27,6 +27,8 @@ import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -34,8 +36,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class StrifeMob {
-
-  private final static int CACHE_DELAY = 100;
 
   private final EquipmentCache equipmentCache = new EquipmentCache();
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
@@ -49,8 +49,8 @@ public class StrifeMob {
   private EntityAbilitySet abilitySet;
   private final Set<String> mods = new HashSet<>();
   private Set<String> factions = new HashSet<>();
+  @Getter @Setter
   private UUID alliedGuild;
-  private final Set<FiniteUsesEffect> tempEffects = new HashSet<>();
   private boolean charmImmune = false;
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
@@ -60,6 +60,8 @@ public class StrifeMob {
   private float barrier = 0;
   private float maxBarrier = 0;
   private float block = 0;
+  @Getter
+  private int frost;
   private boolean shielded;
 
   private boolean useEquipment;
@@ -73,7 +75,10 @@ public class StrifeMob {
 
   private final Set<StrifeMob> minions = new HashSet<>();
 
-  private long cacheStamp = 1L;
+  private boolean buffsChanged = false;
+  private long lastEquipmentUpdate = 100L;
+  private long lastChampionUpdate = 100L;
+
   private long globalCooldownStamp = 1L;
 
   public StrifeMob(Champion champion) {
@@ -110,8 +115,7 @@ public class StrifeMob {
 
   public void setBlock(float block) {
     this.block = block;
-    if (getEntity() instanceof Player) {
-      Player player = (Player) getEntity();
+    if (getEntity() instanceof Player player) {
       for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
         player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
       }
@@ -125,12 +129,28 @@ public class StrifeMob {
     }
   }
 
+  public void setFrost(float frost) {
+    this.frost = Math.min((int) frost, 400);
+    int fireTicks = getEntity().getFireTicks();
+    if (fireTicks > 0) {
+      if (fireTicks >= frost) {
+        getEntity().setFireTicks(fireTicks - (int) frost);
+        return;
+      } else {
+        this.frost -= fireTicks;
+        getEntity().setFireTicks(0);
+      }
+    }
+    getEntity().setFreezeTicks((int) Math.min(this.frost / 2.8f, 139f));
+  }
+
   public float getMaxBlock() {
     return statCache.getOrDefault(StrifeStat.BLOCK, 0f);
   }
 
   public void setMaxBarrier(float maxBarrier) {
     this.maxBarrier = maxBarrier;
+    barrier = Math.min(barrier, maxBarrier);
   }
 
   public void restoreBarrier(float amount) {
@@ -183,8 +203,7 @@ public class StrifeMob {
 
   public void setEnergy(float energy) {
     this.energy = Math.min(Math.max(0, energy), maxEnergy);
-    if (getEntity() instanceof Player) {
-      Player player = (Player) getEntity();
+    if (getEntity() instanceof Player player) {
       player.setFoodLevel((int) Math.min(20D, 20D * energy / maxEnergy));
     }
   }
@@ -253,11 +272,20 @@ public class StrifeMob {
     return killers;
   }
 
+  public boolean cacheUpdateRequired() {
+    return buffsChanged || lastEquipmentUpdate != equipmentCache.getLastUpdate() ||
+        (getChampion() != null && getChampion().getLastChanged() != lastChampionUpdate);
+  }
+
   public float getStat(StrifeStat stat) {
-    if (System.currentTimeMillis() >= cacheStamp) {
+    if (cacheUpdateRequired()) {
       statCache.clear();
       statCache.putAll(getFinalStats());
-      cacheStamp = System.currentTimeMillis() + CACHE_DELAY;
+      buffsChanged = false;
+      lastEquipmentUpdate = equipmentCache.getLastUpdate();
+      if (getChampion() != null) {
+        lastChampionUpdate = getChampion().getLastChanged();
+      }
     }
     return statCache.getOrDefault(stat, 0f);
   }
@@ -298,14 +326,6 @@ public class StrifeMob {
     return mods;
   }
 
-  public UUID getAlliedGuild() {
-    return alliedGuild;
-  }
-
-  public void setAlliedGuild(UUID alliedGuild) {
-    this.alliedGuild = alliedGuild;
-  }
-
   public Set<String> getFactions() {
     return factions;
   }
@@ -318,9 +338,16 @@ public class StrifeMob {
     return champion == null ? null : champion.get();
   }
 
+  public Set<Buff> getBuffs() {
+    return new HashSet<>(runningBuffs);
+  }
+
   public void clearBuffs() {
+    for (Buff buff : runningBuffs) {
+      buff.cancel();
+    }
     runningBuffs.clear();
-    cacheStamp = 1L;
+    buffsChanged = true;
   }
 
   public Map<StrifeStat, Float> getFinalStats() {
@@ -339,27 +366,13 @@ public class StrifeMob {
   public void setStats(Map<StrifeStat, Float> stats) {
     baseStats.clear();
     baseStats.putAll(stats);
-    cacheStamp = 1L;
+    statCache.clear();
+    statCache.putAll(getFinalStats());
   }
 
   public Buff getBuff(String buffId, UUID source) {
-    Iterator<Buff> iterator = runningBuffs.iterator();
-    while (iterator.hasNext()) {
-      Buff buff = iterator.next();
-      if (buff == null || buff.isExpired()) {
-        iterator.remove();
-        continue;
-      }
-      if (!buffId.equals(buff.getId())) {
-        continue;
-      }
-      if (source == null) {
-        if (buff.getSource() == null) {
-          return buff;
-        }
-        continue;
-      }
-      if (source.equals(buff.getSource())) {
+    for (Buff buff : runningBuffs) {
+      if (buff.getId().equals(buffId) && buff.getSource().equals(source)) {
         return buff;
       }
     }
@@ -374,11 +387,12 @@ public class StrifeMob {
     return buff.getStacks();
   }
 
-  public void addBuff(Buff buff, double duration) {
+  public void addBuff(LoadedBuff loadedBuff, UUID source, float duration) {
+    Buff buff = LoadedBuff.toRunningBuff(this, source, duration, loadedBuff);
     Buff oldBuff = getBuff(buff.getId(), buff.getSource());
-    cacheStamp = 1L;
+    buffsChanged = true;
     if (oldBuff == null) {
-      buff.setExpireTimeFromDuration(duration);
+      buff.refreshBuff(duration);
       runningBuffs.add(buff);
       return;
     }
@@ -386,7 +400,11 @@ public class StrifeMob {
   }
 
   public void removeBuff(String buffId, UUID source) {
-    removeBuff(buffId, source, Integer.MAX_VALUE);
+    Buff buff = getBuff(buffId, source);
+    if (buff == null) {
+      return;
+    }
+    removeBuff(buff);
   }
 
   public void removeBuff(String buffId, UUID source, int stacks) {
@@ -394,11 +412,24 @@ public class StrifeMob {
     if (buff == null) {
       return;
     }
+    removeBuff(buff, stacks);
+  }
+
+  public void removeBuff(Buff buff) {
+    buff.cancel();
+    runningBuffs.remove(buff);
+    buffsChanged = true;
+  }
+
+  public void removeBuff(Buff buff, int stacks) {
     if (buff.getStacks() <= stacks) {
+      buff.cancel();
       runningBuffs.remove(buff);
+      buffsChanged = true;
       return;
     }
     buff.setStacks(buff.getStacks() - stacks);
+    buffsChanged = true;
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
@@ -422,8 +453,18 @@ public class StrifeMob {
     return equipmentCache;
   }
 
-  public Map<TriggerType, Set<LoreAbility>> getLoreAbilities() {
-    return equipmentCache.getCombinedAbilities();
+  public Set<LoreAbility> getLoreAbilities() {
+    Set<LoreAbility> abilities = new HashSet<>();
+    for (Buff buff : runningBuffs) {
+      abilities.addAll(buff.getAbilities());
+    }
+    abilities.addAll(equipmentCache.getCombinedAbilities());
+    return abilities;
+  }
+
+  public Set<LoreAbility> getLoreAbilities(TriggerType triggerType) {
+    return getLoreAbilities().stream().filter(loreAbility ->
+        loreAbility.getTriggerType() == triggerType).collect(Collectors.toSet());
   }
 
   public Set<StrifeTrait> getTraits() {
@@ -435,6 +476,11 @@ public class StrifeMob {
   }
 
   public boolean hasTrait(StrifeTrait trait) {
+    for (Buff buff : runningBuffs) {
+      if (buff.getTraits().contains(trait)) {
+        return true;
+      }
+    }
     if (champion.get() == null) {
       return equipmentCache.getCombinedTraits().contains(trait);
     }
@@ -474,10 +520,6 @@ public class StrifeMob {
 
   public void addEnergyOverTime(float amount, int ticks) {
     energyTask.addEnergyOverTime(amount, ticks);
-  }
-
-  public Set<FiniteUsesEffect> getTempEffects() {
-    return tempEffects;
   }
 
   public boolean isCharmImmune() {
@@ -567,13 +609,7 @@ public class StrifeMob {
 
   public Map<StrifeStat, Float> getBuffStats() {
     Map<StrifeStat, Float> stats = new HashMap<>();
-    Iterator<Buff> iterator = runningBuffs.iterator();
-    while (iterator.hasNext()) {
-      Buff buff = iterator.next();
-      if (buff == null || buff.isExpired()) {
-        iterator.remove();
-        continue;
-      }
+    for (Buff buff : runningBuffs) {
       stats.putAll(StatUpdateManager.combineMaps(stats, buff.getTotalStats()));
     }
     return stats;

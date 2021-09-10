@@ -27,10 +27,17 @@ import org.bukkit.util.Vector;
 
 public class EveryTickTask extends BukkitRunnable {
 
+  private final StrifePlugin plugin;
+
+  public EveryTickTask(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
+
   @Override
   public void run() {
-    StrifePlugin.getInstance().getBlockManager().tickHolograms();
-    StrifePlugin.getInstance().getBlockManager().tickBlock();
+    plugin.getBlockManager().tickHolograms();
+    plugin.getBlockManager().tickBlock();
+    plugin.getStrifeMobManager().tickFrost();
     for (Player p : Bukkit.getOnlinePlayers()) {
       double hoverPower = JumpUtil.determineHoverPower(p);
       if (hoverPower > 0) {

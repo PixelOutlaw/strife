@@ -27,57 +27,54 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-public class DOTListener implements Listener {
-
-  private final StrifePlugin plugin;
-
-  public DOTListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
+public record DOTListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onEntityDOTEvent(EntityDamageEvent event) {
     if (event.isCancelled()) {
       return;
     }
-    if (!(event.getEntity() instanceof LivingEntity)) {
+    if (!(event.getEntity() instanceof LivingEntity le)) {
       return;
     }
     if (event.getCause() == DamageCause.STARVATION) {
       event.setCancelled(true);
       return;
     }
-    LivingEntity le = (LivingEntity) event.getEntity();
     switch (event.getCause()) {
-      case LAVA:
-      case FIRE:
+      case LAVA, FIRE -> {
+        if (le.getFireTicks() == 0) {
+          plugin.getStrifeMobManager().getStatMob(le).setFrost(0);
+        }
         le.setFireTicks(Math.max(le.getFireTicks(), 80));
         event.setCancelled(true);
         plugin.getDamageOverTimeTask().trackBurning(le);
-        return;
-      case HOT_FLOOR:
+      }
+      case HOT_FLOOR -> {
+        if (le.getFireTicks() == 0) {
+          plugin.getStrifeMobManager().getStatMob(le).setFrost(0);
+        }
         le.setFireTicks(40);
         plugin.getDamageOverTimeTask().trackBurning(le);
         event.setCancelled(true);
-        return;
-      case FIRE_TICK:
+      }
+      case FIRE_TICK -> {
         plugin.getDamageOverTimeTask().trackBurning(le);
         event.setCancelled(true);
-        return;
-      case POISON:
+      }
+      case POISON -> {
         plugin.getDamageOverTimeTask().trackPoison(le);
         event.setCancelled(true);
-        return;
-      case WITHER:
+      }
+      case WITHER -> {
         plugin.getDamageOverTimeTask().trackWither(le);
         event.setCancelled(true);
-        return;
-      case CONTACT:
+      }
+      case CONTACT -> {
         event.setCancelled(true);
-        return;
-      case SUFFOCATION:
-      case DROWNING:
-        DamageUtil.dealRawDamage(le, (float) le.getMaxHealth() * 0.005f);
+      }
+      case SUFFOCATION, DROWNING -> DamageUtil.dealRawDamage(le,
+          (float) le.getMaxHealth() * 0.005f);
     }
   }
 }

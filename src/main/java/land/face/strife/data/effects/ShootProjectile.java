@@ -1,7 +1,13 @@
 package land.face.strife.data.effects;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ThrownItemTask;
@@ -9,6 +15,7 @@ import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.TargetingUtil;
+import land.face.strife.util.WrapperPlayServerEntityDestroy;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
@@ -147,9 +154,15 @@ public class ShootProjectile extends Effect {
       }
 
       if (throwItem) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-          getPlugin().getEntityHider().hideEntity(p, projectile);
-        }
+        WrapperPlayServerEntityDestroy sneed = new WrapperPlayServerEntityDestroy();
+        sneed.setEntityIds(new int[]{projectile.getEntityId()});
+        Bukkit.getOnlinePlayers().forEach(p -> {
+          try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(p, sneed.getHandle());
+          } catch (InvocationTargetException e) {
+            e.printStackTrace();
+          }
+        });
         ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
         if (stack.getType() == Material.AIR) {
           stack = caster.getEntity().getEquipment().getItemInOffHand();

@@ -498,7 +498,16 @@ public class EffectManager {
       case IGNITE -> {
         effect = new Ignite();
         ((Ignite) effect).setDuration(cs.getInt("duration", 20));
-        ((Ignite) effect).setForceDuration(cs.getBoolean("force-duration", false));
+        ((Ignite) effect).setOverride(cs.getBoolean("override", false));
+        ((Ignite) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((Ignite) effect).setAddDuration(cs.getBoolean("add-duration", false));
+      }
+      case FROST -> {
+        effect = new Frost();
+        ((Frost) effect).setDuration(cs.getInt("duration", 20));
+        ((Frost) effect).setOverride(cs.getBoolean("override", false));
+        ((Frost) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((Frost) effect).setAddDuration(cs.getBoolean("add-duration", true));
       }
       case SILENCE -> {
         effect = new Silence();
@@ -559,7 +568,11 @@ public class EffectManager {
       }
       case BUFF_EFFECT -> {
         effect = new BuffEffect();
-        ((BuffEffect) effect).setLoadedBuff(cs.getString("buff-id"));
+        Effect finalEffect = effect;
+        String buffId = cs.getString("buff-id");
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+            ((BuffEffect) finalEffect).setLoadedBuff(plugin.getBuffManager()
+                .getBuffFromId(buffId)), 10L);
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
       }
       case REMOVE_BUFF -> {

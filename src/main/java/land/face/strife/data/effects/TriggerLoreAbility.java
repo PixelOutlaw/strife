@@ -14,7 +14,8 @@ public class TriggerLoreAbility extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    LoreAbilityListener.executeBoundEffects(caster, target.getEntity(), caster.getLoreAbilities().get(triggerType));
+    LoreAbilityListener.executeBoundEffects(caster, target.getEntity(),
+        caster.getLoreAbilities(triggerType));
     LoreAbilityListener.executeFiniteEffects(caster, target, triggerType);
   }
 

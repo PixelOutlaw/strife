@@ -31,6 +31,8 @@ import land.face.strife.data.CombatDetailsContainer;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -48,6 +50,8 @@ public class Champion {
   private String attributeHeatmap = "";
 
   private Player player;
+  @Getter @Setter
+  private long lastChanged = System.currentTimeMillis();
 
   private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
       .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
@@ -83,6 +87,7 @@ public class Champion {
         pathStats,
         StrifePlugin.getInstance().getBoostManager().getStats()
     ));
+    lastChanged = System.currentTimeMillis();
   }
 
   public void setPathStats(Map<StrifeStat, Float> map) {

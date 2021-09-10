@@ -17,8 +17,6 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import info.faceland.mint.util.MintUtil;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -54,19 +52,14 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class DataListener implements Listener {
+public record DataListener(StrifePlugin plugin) implements Listener {
 
-  private final StrifePlugin plugin;
   private final static String UNUSED_MESSAGE_1 =
       "&6&lLevelup! You have &f&l{0} &6&lunused Levelpoints!";
   private final static String UNUSED_MESSAGE_2 =
       "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
   private final static String UNUSED_PATH =
       "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
-
-  public DataListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerItemDamage(final PlayerItemDamageEvent event) {
@@ -78,17 +71,20 @@ public class DataListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onItemPickupEvent(EntityPickupItemEvent event) {
-    if (event.getItem().getItemStack().getType() == Material.SUNFLOWER && event.getEntity() instanceof Player) {
+    if (event.getItem().getItemStack().getType() == Material.SUNFLOWER
+        && event.getEntity() instanceof Player) {
       if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
         event.setCancelled(true);
         event.getItem().remove();
-        MessageUtils.sendMessage(event.getEntity(), "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
-        ((Player) event.getEntity()).playSound(event.getEntity().getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
+        MessageUtils.sendMessage(event.getEntity(),
+            "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
+        ((Player) event.getEntity()).playSound(event.getEntity().getLocation(),
+            Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
         event.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 240, 1, false));
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
         mob.setEnergy(mob.getEnergy() + 0.1f * (mob.getMaxEnergy() - mob.getEnergy()));
         event.getEntity().setHealth(event.getEntity().getHealth() +
-                0.1f * (event.getEntity().getMaxHealth() - event.getEntity().getHealth()));
+            0.1f * (event.getEntity().getMaxHealth() - event.getEntity().getHealth()));
       }
     }
   }
@@ -129,7 +125,8 @@ public class DataListener implements Listener {
     }
     LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
     if (attacker instanceof Player) {
-      plugin.getBossBarManager().pushBar((Player) attacker, plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()));
+      plugin.getBossBarManager().pushBar((Player) attacker,
+          plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()));
     }
   }
 
@@ -162,7 +159,8 @@ public class DataListener implements Listener {
 
     playerMob.updateBarrierScale();
 
-    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR)
+        .getModifiers()) {
       event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
     }
     event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
@@ -303,7 +301,8 @@ public class DataListener implements Listener {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     mob.restartTimers();
-    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
+    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR)
+        .getModifiers()) {
       event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
     }
     event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);

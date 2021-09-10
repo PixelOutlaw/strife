@@ -29,6 +29,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -40,8 +41,8 @@ import org.bukkit.util.Vector;
 public class TargetingUtil {
 
   public static DistanceComparator DISTANCE_COMPARATOR = new DistanceComparator();
-  private static FlatHealthComparator HEALTH_COMPARATOR = new FlatHealthComparator();
-  private static PercentHealthComparator PERCENT_HEALTH_COMPARATOR = new PercentHealthComparator();
+  private static final FlatHealthComparator HEALTH_COMPARATOR = new FlatHealthComparator();
+  private static final PercentHealthComparator PERCENT_HEALTH_COMPARATOR = new PercentHealthComparator();
 
   public static void expandMobRange(LivingEntity attacker, LivingEntity victim) {
     if (!(victim instanceof Mob)) {
@@ -147,6 +148,9 @@ public class TargetingUtil {
       return isFriendly(attacker, defender.getMaster());
     }
     if (attacker.getMaster() == defender || attacker.getMinions().contains(defender)) {
+      return true;
+    }
+    if (DamageUtil.isGuildAlly(attacker, defender)) {
       return true;
     }
     if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {

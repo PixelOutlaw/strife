@@ -24,6 +24,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -112,6 +113,23 @@ public class BlockManager {
         }
       }
       orbitRunes(mob.getEntity().getLocation().clone().add(0, 1, 0), blockData.getRuneHolograms());
+    }
+  }
+
+  public void clearAllEarthRunes() {
+    for (Entry<StrifeMob, BlockData> entry : blockDataMap.entrySet()) {
+      if (entry.getValue().getRunes() > 0) {
+        for (Hologram holo : entry.getValue().getRuneHolograms()) {
+          holo.delete();
+          holo.getWorld().playSound(holo.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
+          holo.getWorld().spawnParticle(
+              Particle.ITEM_CRACK,
+              holo.getLocation(),
+              20, 0, 0, 0, 0.07f,
+              BLOCK_DATA
+          );
+        }
+      }
     }
   }
 

@@ -146,9 +146,9 @@ public class RageTimer extends BukkitRunnable {
     }
     int maxBars = 7 + (int) (maxRage / 10);
     int rageBars = Math.round((rage / maxRage) * maxBars);
-    String message = ChatColor.RED + "RAGE! " + ChatColor.DARK_RED + IntStream.range(0, rageBars).mapToObj(i -> "▌")
+    String message = ChatColor.RED + "RAGE! " + ChatColor.DARK_RED + IntStream.range(0, rageBars).mapToObj(i -> "▌\uF801")
         .collect(Collectors.joining(""));
-    message += ChatColor.BLACK + IntStream.range(0, maxBars - rageBars).mapToObj(i -> "▌")
+    message += ChatColor.BLACK + IntStream.range(0, maxBars - rageBars).mapToObj(i -> "▌\uF801")
         .collect(Collectors.joining(""));
     message += " " + ChatColor.RED + (int) rage;
 

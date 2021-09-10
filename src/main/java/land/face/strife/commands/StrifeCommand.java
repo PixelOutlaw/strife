@@ -21,6 +21,7 @@ package land.face.strife.commands;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendActionBar;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.destroystokyo.paper.entity.ai.Goal;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
@@ -55,7 +56,9 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -218,6 +221,12 @@ public class StrifeCommand extends BaseCommand {
     StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.get(0));
     sendMessage(sender, "&aUniqueID: " + targetMob.getUniqueEntityId());
     sendMessage(sender, "&aGroups: " + Arrays.toString(targetMob.getFactions().toArray()));
+    if (targetMob.getEntity() instanceof Mob) {
+      sendMessage(sender, "&eAI Goals:");
+      Bukkit.getMobGoals().getAllGoals((Mob) targetMob.getEntity()).forEach(goal ->
+          sendMessage(sender, " " + goal.getKey().getNamespacedKey()));
+    }
+    sendMessage(sender, "Guild: " + targetMob.getAlliedGuild());
   }
 
   @Subcommand("reset")
@@ -459,8 +468,7 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cBuff with that ID doesn't exist: " + buffId);
       return;
     }
-    plugin.getStrifeMobManager().getStatMob(player.getPlayer())
-        .addBuff(LoadedBuff.toRunningBuff(buff), seconds);
+    plugin.getStrifeMobManager().getStatMob(player.getPlayer()).addBuff(buff, null, seconds);
   }
 
   @Subcommand("reveal")

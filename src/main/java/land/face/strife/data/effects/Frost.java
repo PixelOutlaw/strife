@@ -1,11 +1,10 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import lombok.Setter;
 
-public class Ignite extends Effect {
+public class Frost extends Effect {
 
   @Setter
   private int duration = 0;
@@ -23,32 +22,12 @@ public class Ignite extends Effect {
     if (!strictDuration) {
       trueDuration *= 1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
     }
-    boolean trackBurning;
     if (override) {
-      trackBurning = setFlames(target, (int) trueDuration);
+      target.setFrost((int) trueDuration);
     } else if (addDuration) {
-      trackBurning = setFlames(target, target.getEntity().getFireTicks() + (int) trueDuration);
+      target.setFrost(target.getFrost() + (int) trueDuration);
     } else {
-      trackBurning = setFlames(target, Math.max(target.getEntity().getFireTicks(), (int) trueDuration));
-    }
-    if (trackBurning) {
-      StrifePlugin.getInstance().getDamageOverTimeTask().trackBurning(target.getEntity());
+      target.setFrost(Math.max(target.getFrost(), (int) trueDuration));
     }
   }
-
-  public static boolean setFlames(StrifeMob mob, int ticks) {
-    int frost = mob.getFrost();
-    if (frost == 0) {
-      mob.getEntity().setFireTicks(ticks);
-      return true;
-    }
-    if (frost >= ticks) {
-      mob.setFrost(frost - ticks);
-      return false;
-    }
-    mob.setFrost(0);
-    mob.getEntity().setFireTicks(ticks - frost);
-    return true;
-  }
-
 }

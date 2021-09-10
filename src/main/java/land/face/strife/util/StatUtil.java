@@ -104,7 +104,7 @@ public class StatUtil {
 
   public static float getAttackTime(StrifeMob ae) {
 
-    float attackTime = BASE_ATTACK_SECONDS;
+    float attackTime = BASE_ATTACK_SECONDS * (1f + ae.getFrost() / 400f);
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
@@ -116,9 +116,6 @@ public class StatUtil {
     }
     if (ae.getEntity().hasPotionEffect(SLOW_DIGGING)) {
       attackBonus -= 10 * (1 + ae.getEntity().getPotionEffect(SLOW_DIGGING).getAmplifier());
-    }
-    if (ae.getEntity().getFreezeTicks() > 0) {
-      attackBonus *= 1 - 0.5 * ((float) ae.getEntity().getFreezeTicks() / ae.getEntity().getMaxFreezeTicks());
     }
 
     if (attackBonus > 0) {

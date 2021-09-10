@@ -38,15 +38,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
-public class SwingListener implements Listener {
-
-  private final StrifePlugin plugin;
+public record SwingListener(StrifePlugin plugin) implements Listener {
 
   private static final Set<UUID> FAKE_SWINGS = new HashSet<>();
-
-  public SwingListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onSwingLowest(PlayerInteractEvent event) {
@@ -82,7 +76,8 @@ public class SwingListener implements Listener {
         }
         event.setCancelled(true);
       }
-      plugin.getStatUpdateManager().updateAttackAttrs(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+      plugin.getStatUpdateManager()
+          .updateAttackAttrs(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     }
   }
 

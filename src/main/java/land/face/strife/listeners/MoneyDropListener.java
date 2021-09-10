@@ -20,20 +20,16 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.bullion.GoldDropEvent;
 import com.tealcube.minecraft.bukkit.bullion.PlayerDeathDropEvent;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-public class MoneyDropListener implements Listener {
-
-  private final StrifePlugin plugin;
-
-  public MoneyDropListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
+public record MoneyDropListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathEvent(PlayerDeathDropEvent event) {
@@ -50,6 +46,15 @@ public class MoneyDropListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onGoldDrop(GoldDropEvent event) {
+    // Do not drop for non-uniques
+    if (StringUtils.isBlank(SpecialStatusUtil.getUniqueId(event.getLivingEntity()))) {
+      event.setCancelled(true);
+      return;
+    }
+    if (SpecialStatusUtil.isGuildMob(event.getLivingEntity())) {
+      event.setCancelled(true);
+      return;
+    }
     if (event.getKiller() == null) {
       return;
     }

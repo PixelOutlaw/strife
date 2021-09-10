@@ -3,6 +3,7 @@ package land.face.strife.util;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
+import com.destroystokyo.paper.Namespaced;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -14,12 +15,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import land.face.strife.data.champion.EquipmentCache;
-import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -31,6 +32,11 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
+
+  public static Set<String> pickDestroyKeys = new HashSet<>();
+  public static Set<String> hoeDestroyKeys = new HashSet<>();
+  public static Set<String> axeDestroyKeys = new HashSet<>();
+  public static Set<String> shearsDestroyKeys = new HashSet<>();
 
   // This is for integrations with Loot. It assumes default
   // settings for enchantments, and is kinda shitty
@@ -94,11 +100,33 @@ public class ItemUtil {
 
   public static boolean isTool(ItemStack stack) {
     String material = stack.getType().toString();
-    if (stack.getType() == Material.FISHING_ROD || stack.getType() == Material.SHEARS
-        || material.endsWith("_PICKAXE") || material.endsWith("_HOE") || material.endsWith("_AXE")
-        || material.endsWith("_SHOVEL")) {
+    if (material.endsWith("_PICKAXE")) {
+      return verifyAndApplyDestroyKeys(stack, pickDestroyKeys);
+    } else if (material.endsWith("_HOE")) {
+      return verifyAndApplyDestroyKeys(stack, hoeDestroyKeys);
+    } else if (material.endsWith("_AXE")) {
+      return verifyAndApplyDestroyKeys(stack, axeDestroyKeys);
+    } else if (stack.getType() == Material.SHEARS) {
+      return verifyAndApplyDestroyKeys(stack, shearsDestroyKeys);
+    } else if (stack.getType() == Material.FISHING_ROD || material.endsWith("_SHOVEL")) {
       int modelData = getCustomData(stack);
       return modelData < 8000;
+    }
+    return false;
+  }
+
+  private static boolean verifyAndApplyDestroyKeys(ItemStack stack, Set<String> keys) {
+    int modelData = getCustomData(stack);
+    if (modelData < 8000) {
+      ItemMeta iMeta = stack.getItemMeta();
+      iMeta.addItemFlags(ItemFlag.HIDE_DESTROYS);
+      Set<Namespaced> breakSpaces = new HashSet<>();
+      for (String s : keys) {
+        breakSpaces.add(NamespacedKey.minecraft(s));
+      }
+      iMeta.setDestroyableKeys(breakSpaces);
+      stack.setItemMeta(iMeta);
+      return true;
     }
     return false;
   }

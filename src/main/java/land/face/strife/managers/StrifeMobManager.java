@@ -7,18 +7,19 @@ import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.EquipmentCache;
-import land.face.strife.data.effects.FiniteUsesEffect;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
+import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
@@ -70,22 +71,24 @@ public class StrifeMobManager {
     return trackedEntities.get(entity);
   }
 
-  public void addFiniteEffect(StrifeMob mob, LoreAbility loreAbility, int uses, int maxDuration) {
-    for (FiniteUsesEffect finiteUsesEffect : mob.getTempEffects()) {
-      if (finiteUsesEffect.getExpiration() > System.currentTimeMillis()) {
-        mob.getTempEffects().remove(finiteUsesEffect);
+  public void tickFrost() {
+    for (StrifeMob mob : trackedEntities.values()) {
+      LivingEntity le = mob.getEntity();
+      if (le == null || !le.isValid()) {
         continue;
       }
-      if (finiteUsesEffect.getLoreAbility() == loreAbility) {
-        finiteUsesEffect.setExpiration(System.currentTimeMillis() + maxDuration);
-        finiteUsesEffect.setUses(Math.max(finiteUsesEffect.getUses(), uses));
-        return;
+      int frostLevel = mob.getFrost();
+      if (frostLevel > 0) {
+        mob.setFrost(frostLevel - 1);
+        if (frostLevel % 5 == 0) {
+          le.getWorld().spawnParticle(Particle.SNOWFLAKE,
+              le.getEyeLocation(),
+              Math.min(4, (int) Math.ceil((float) frostLevel / 120)),
+              0.5, 0.5, 0.5,
+              0);
+        }
       }
     }
-    FiniteUsesEffect finiteUsesEffect = new FiniteUsesEffect();
-    finiteUsesEffect.setExpiration(System.currentTimeMillis() + maxDuration);
-    finiteUsesEffect.setUses(uses);
-    mob.getTempEffects().add(finiteUsesEffect);
   }
 
   public void despawnAllTempEntities() {
@@ -128,6 +131,11 @@ public class StrifeMobManager {
       }
     }
 
+    if (updatedSlots.isEmpty()) {
+      return;
+    }
+    equipmentCache.setLastUpdate(System.currentTimeMillis());
+
     if (updatedSlots.contains(HAND)) {
       updatedSlots.add(OFF_HAND);
     } else if (updatedSlots.contains(OFF_HAND)) {
@@ -144,6 +152,7 @@ public class StrifeMobManager {
       }
       equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment));
       equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment));
+      ItemUtil.isTool(item);
     }
 
     if (updatedSlots.contains(HAND) && ItemUtil.isDualWield(equipment)) {

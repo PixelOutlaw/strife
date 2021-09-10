@@ -33,13 +33,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.PlayerInventory;
 
-public class StatUpdateListener implements Listener {
-
-  private final StrifePlugin plugin;
-
-  public StatUpdateListener(StrifePlugin plugin) {
-    this.plugin = plugin;
-  }
+public record StatUpdateListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
@@ -66,14 +60,14 @@ public class StatUpdateListener implements Listener {
       playerInventory = (PlayerInventory) inventoryView.getBottomInventory();
     }
     HumanEntity humanEntity = playerInventory.getHolder();
-    if (!(humanEntity instanceof Player)) {
+    if (!(humanEntity instanceof Player player)) {
       return;
     }
-    Player player = (Player) humanEntity;
     if (player.isDead() || player.getHealth() <= 0D) {
       return;
     }
-    plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getStrifeMobManager()
+        .updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateVanillaAttributes(player);
   }
 

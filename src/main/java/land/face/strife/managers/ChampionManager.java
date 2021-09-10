@@ -99,8 +99,7 @@ public class ChampionManager {
         continue;
       }
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
-      Set<LoreAbility> abilities = mob.getEquipmentCache().getCombinedAbilities()
-          .get(TriggerType.TIMER);
+      Set<LoreAbility> abilities = mob.getLoreAbilities(TriggerType.TIMER);
       if (abilities == null || abilities.isEmpty()) {
         continue;
       }

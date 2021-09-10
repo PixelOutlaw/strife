@@ -29,6 +29,7 @@ import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
@@ -50,6 +51,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -104,16 +106,31 @@ public class DamageUtil {
     plugin.getEffectManager().executeEffectList(attacker, response, effects);
   }
 
-  public static boolean isGuildAlly(StrifeMob attacker, Player target) {
-    Guild guild = guildsAPI.getGuildHandler().getGuild(target);
+  public static boolean isGuildAlly(StrifeMob attacker, StrifeMob defender) {
+    if (attacker.getEntity().getType() == EntityType.PLAYER) {
+      return isGuildAlly(defender, (Player) attacker.getEntity());
+    } else if (defender.getEntity().getType() == EntityType.PLAYER) {
+      return isGuildAlly(attacker, (Player) defender.getEntity());
+    } else {
+      // Return true if they're the same - but also not null
+      return attacker.getAlliedGuild() != null && attacker.getAlliedGuild()
+          .equals(defender.getAlliedGuild());
+    }
+  }
+
+  public static boolean isGuildAlly(StrifeMob mob, Player player) {
+    if (mob.getAlliedGuild() == null) {
+      return false;
+    }
+    Guild guild = guildsAPI.getGuildHandler().getGuild(player);
     if (guild == null) {
       return false;
     }
-    if (attacker.getAlliedGuild().equals(guild.getId())) {
+    if (mob.getAlliedGuild().equals(guild.getId())) {
       return true;
     }
     for (UUID uuid : guild.getAllies()) {
-      if (attacker.getAlliedGuild().equals(uuid)) {
+      if (mob.getAlliedGuild().equals(uuid)) {
         return true;
       }
     }
@@ -142,13 +159,11 @@ public class DamageUtil {
     float attackMult = mods.getAttackMultiplier();
 
     if (mods.isCanBeEvaded()) {
-      float evasionMultiplier = DamageUtil.getFullEvasionMult(attacker, defender, mods.getAbilityMods());
-      if (evasionMultiplier < DamageUtil.EVASION_THRESHOLD) {
-        DamageUtil.doEvasion(attacker, defender);
-        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+      float evadeMult = DamageUtil.determineEvasion(attacker, defender, mods.getAbilityMods());
+      if (evadeMult == -1) {
         return false;
       }
-      mods.setAttackMultiplier(attackMult * evasionMultiplier);
+      mods.setAttackMultiplier(attackMult * evadeMult);
     }
 
     if (mods.isCanBeBlocked()) {
@@ -536,11 +551,11 @@ public class DamageUtil {
     switch (finalElementType) {
       case FIRE -> {
         mods.getElementalStatuses().add(ElementalStatus.IGNITE);
-        doIgnite(defender.getEntity(), damageMap.get(DamageType.FIRE));
+        doIgnite(defender, damageMap.get(DamageType.FIRE));
       }
       case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
-        attemptFreeze(damageMap.get(finalElementType), attacker, defender.getEntity());
+        attemptFreeze(damageMap.get(finalElementType), attacker, defender);
         damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.2f);
       }
       case LIGHTNING -> {
@@ -643,16 +658,21 @@ public class DamageUtil {
     return null;
   }
 
-  private static void doIgnite(LivingEntity defender, float damage) {
-    defender.setFireTicks(Math.max(25 + (int) damage, defender.getFireTicks()));
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f);
-    defender.getWorld().spawnParticle(
+  private static void doIgnite(StrifeMob defender, float damage) {
+    LivingEntity defendEntity = defender.getEntity();
+    defendEntity.getWorld().playSound(defendEntity.getEyeLocation(),
+        Sound.ITEM_FLINTANDSTEEL_USE, 1f, 0.8f);
+    defendEntity.getWorld().spawnParticle(
         Particle.FLAME,
-        defender.getEyeLocation(),
+        defendEntity.getEyeLocation(),
         6 + (int) damage / 2,
         0.3, 0.3, 0.3, 0.03
     );
-    StrifePlugin.getInstance().getDamageOverTimeTask().trackBurning(defender);
+    boolean igniteSuccess = Ignite.setFlames(defender,
+        Math.max(25 + (int) damage, defender.getEntity().getFireTicks()));
+    if (igniteSuccess) {
+      StrifePlugin.getInstance().getDamageOverTimeTask().trackBurning(defendEntity);
+    }
   }
 
   public static float attemptShock(float damage, LivingEntity defender) {
@@ -675,12 +695,11 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static void attemptFreeze(float damage, StrifeMob attacker, LivingEntity defender) {
-    defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.0f);
-    defender.getWorld().spawnParticle(Particle.SNOWFLAKE, defender.getEyeLocation(), 10,
-            0.8, 0.8, 0.8, 0);
-    int ticks = 60 + (int) (100f * (damage / defender.getMaxHealth()));
-    defender.setFreezeTicks(Math.min(defender.getFreezeTicks() + ticks, defender.getMaxFreezeTicks() - 1));
+  public static void attemptFreeze(float damage, StrifeMob attacker, StrifeMob defender) {
+    LivingEntity defendEntity = defender.getEntity();
+    defendEntity.getWorld().playSound(defendEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
+    int ticks = 50 + (int) (80f * (damage / defendEntity.getMaxHealth()));
+    defender.setFrost(defender.getFrost() + ticks);
   }
 
   public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {
@@ -716,9 +735,21 @@ public class DamageUtil {
     return evasionMultiplier;
   }
 
-  public static boolean isAttackEvaded(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> attackModifiers) {
+  // returns -1 for true, and an evasion multiplier above 0 if false.
+  public static float determineEvasion(StrifeMob attacker, StrifeMob defender,
+      Map<AbilityMod, Float> attackModifiers) {
+    if (Math.random() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
+      DamageUtil.doEvasion(attacker, defender);
+      TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+      return -1;
+    }
     float evasionMultiplier = getFullEvasionMult(attacker, defender, attackModifiers);
-    return evasionMultiplier < EVASION_THRESHOLD;
+    if (evasionMultiplier < EVASION_THRESHOLD) {
+      DamageUtil.doEvasion(attacker, defender);
+      TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+      return -1;
+    }
+    return evasionMultiplier;
   }
 
   public static void doEvasion(StrifeMob attacker, StrifeMob defender) {

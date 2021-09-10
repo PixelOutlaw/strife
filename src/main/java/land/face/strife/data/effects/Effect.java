@@ -124,6 +124,7 @@ public abstract class Effect {
     EVOKER_FANGS,
     FALLING_BLOCK,
     IGNITE,
+    FROST,
     SILENCE,
     BLEED,
     TELEPORT,

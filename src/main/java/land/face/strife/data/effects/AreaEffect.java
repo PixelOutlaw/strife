@@ -115,13 +115,11 @@ public class AreaEffect extends LocationEffect {
       return areaTargets;
     }
     switch (lineOfSight) {
-      case CASTER:
-        areaTargets.removeIf(e ->
-            !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
-        break;
-      case CENTER:
-        areaTargets.removeIf(e -> !TargetingUtil.hasLineOfSight(location, e.getEyeLocation(), e));
-        break;
+      case CASTER -> areaTargets.removeIf(e ->
+          !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(),
+              e.getEyeLocation(), e));
+      case CENTER -> areaTargets.removeIf(
+          e -> !TargetingUtil.hasLineOfSight(location, e.getEyeLocation(), e));
     }
     if (maxTargets > 0) {
       int numTargets = maxTargets;
@@ -135,17 +133,14 @@ public class AreaEffect extends LocationEffect {
   }
 
   private boolean isDeflected(StrifeMob caster, StrifeMob target) {
-    if (canBeEvaded && DamageUtil.isAttackEvaded(caster, target, attackModifiers)) {
-      DamageUtil.doEvasion(caster, target);
+    if (canBeEvaded && DamageUtil.determineEvasion(caster, target, attackModifiers) == -1) {
       return true;
     }
     if (canBeCountered && getPlugin().getCounterManager().executeCounters(caster.getEntity(), target.getEntity())) {
       return true;
     }
-    if (canBeBlocked && getPlugin().getBlockManager().isAttackBlocked(caster, target, 1.0f, AttackType.AREA, false)) {
-      return true;
-    }
-    return false;
+    return canBeBlocked && getPlugin().getBlockManager()
+        .isAttackBlocked(caster, target, 1.0f, AttackType.AREA, false);
   }
 
   private boolean canTargetBeHit(UUID caster, UUID target) {

@@ -48,6 +48,7 @@ public enum StrifeStat {
   ARMOR("Armor"),
   WARDING("Warding"),
   EVASION("Evasion"),
+  DODGE_CHANCE("Dodge Chance"),
 
   FIRE_RESIST("Fire Resistance"),
   ICE_RESIST("Ice Resistance"),

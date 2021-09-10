@@ -13,9 +13,15 @@ import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.inventory.EquipmentSlot;
 
 public class EquipmentCache {
+
+  @Getter
+  @Setter
+  private long lastUpdate;
 
   private final Map<EquipmentSlot, Integer> slotHashCodeMap = new HashMap<>();
 
@@ -23,7 +29,7 @@ public class EquipmentCache {
   private final Map<EquipmentSlot, List<LoreAbility>> slotAbilityMap = new HashMap<>();
   private final Map<EquipmentSlot, List<StrifeTrait>> slotTraitMap = new HashMap<>();
 
-  private final Map<TriggerType, Set<LoreAbility>> loreAbilities = new HashMap<>();
+  private final Set<LoreAbility> loreAbilities = new HashSet<>();
   private final Map<StrifeStat, Float> combinedStats = new HashMap<>();
   private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
@@ -36,9 +42,7 @@ public class EquipmentCache {
       slotAbilityMap.put(slot, new ArrayList<>());
       slotTraitMap.put(slot, new ArrayList<>());
     }
-    for (TriggerType triggerType : LoreAbilityManager.triggerTypes) {
-      loreAbilities.put(triggerType, new HashSet<>());
-    }
+    lastUpdate = System.currentTimeMillis();
   }
 
   public void setSlotStats(EquipmentSlot slot, Map<StrifeStat, Float> stats) {
@@ -86,7 +90,7 @@ public class EquipmentCache {
     return combinedStats;
   }
 
-  public Map<TriggerType, Set<LoreAbility>> getCombinedAbilities() {
+  public Set<LoreAbility> getCombinedAbilities() {
     return loreAbilities;
   }
 
@@ -107,18 +111,12 @@ public class EquipmentCache {
   }
 
   public void recombineAbilities(StrifeMob mob) {
-    for (TriggerType triggerType : LoreAbilityManager.triggerTypes) {
-      loreAbilities.get(triggerType).clear();
-    }
-    Set<LoreAbility> newAbilities = new HashSet<>();
+    loreAbilities.clear();
     if (mob.getChampion() != null) {
-      newAbilities.addAll(mob.getChampion().getSaveData().getBoundAbilities());
+      loreAbilities.addAll(mob.getChampion().getSaveData().getBoundAbilities());
     }
     for (EquipmentSlot slot : ITEM_SLOTS) {
-      newAbilities.addAll(slotAbilityMap.get(slot));
-    }
-    for (LoreAbility la : newAbilities) {
-      loreAbilities.get(la.getTriggerType()).add(la);
+      loreAbilities.addAll(slotAbilityMap.get(slot));
     }
   }
 

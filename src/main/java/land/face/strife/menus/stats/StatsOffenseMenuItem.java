@@ -107,7 +107,7 @@ public class StatsOffenseMenuItem extends MenuItem {
       addIfApplicable(damageDisplay, magical, ChatColor.BLUE, "☄");
       addIfApplicable(damageDisplay, physical, ChatColor.RED, "⚔");
     }
-    addIfApplicable(damageDisplay, fire, ChatColor.GOLD, "☀");
+    addIfApplicable(damageDisplay, fire, ChatColor.GOLD, "\uD83D\uDD25");
     addIfApplicable(damageDisplay, ice, ChatColor.AQUA, "❄");
     addIfApplicable(damageDisplay, lightning, ChatColor.YELLOW, "⚡");
     addIfApplicable(damageDisplay, earth, ChatColor.DARK_GREEN, "₪");

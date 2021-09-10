@@ -2,6 +2,7 @@ package land.face.strife.data;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.ability.EntityAbilitySet;
@@ -10,6 +11,7 @@ import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.DyeColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.EquipmentSlot;
@@ -33,8 +35,12 @@ public class UniqueEntity {
   private boolean armsRaised;
   private boolean hasAI;
   private boolean gravity;
+  @Getter @Setter
+  private boolean guildMob;
   private Profession profession;
   private boolean invisible;
+  @Getter @Setter
+  private boolean silent;
   private int size;
   private int followRange = -1;
   @Getter @Setter
@@ -53,6 +59,16 @@ public class UniqueEntity {
   private Map<EquipmentSlot, String> equipment = new HashMap<>();
   private ItemStack itemPassenger = null;
   private StrifeParticle strifeParticle;
+  @Getter @Setter
+  private boolean customAi;
+  @Getter @Setter
+  private boolean aggressiveAi;
+  @Getter @Setter
+  private Sound attackSound;
+  @Getter @Setter
+  private List<String> removeGoals;
+  @Getter @Setter
+  private List<String> addGoals;
 
   public String getId() {
     return id;

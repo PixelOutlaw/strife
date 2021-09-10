@@ -117,7 +117,7 @@ public class SpawnListener implements Listener {
     entity.setRemoveWhenFarAway(true);
 
     switch (entity.getType()) {
-      case WITCH:
+      case WITCH -> {
         if (random.nextDouble() < WITCH_TO_EVOKER_CHANCE) {
           entity.getWorld().spawnEntity(event.getLocation(), EntityType.EVOKER);
           event.setCancelled(true);
@@ -128,14 +128,15 @@ public class SpawnListener implements Listener {
           event.setCancelled(true);
           return;
         }
-        break;
-      case RABBIT:
+      }
+      case RABBIT -> {
         if (random.nextDouble() > KILLER_BUNNY_CHANCE) {
           return;
         }
         Rabbit rabbit = (Rabbit) entity;
         rabbit.setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
         rabbit.setAdult();
+      }
     }
 
     int level = getLevelFromWorldLocation(event, startingLevel);
@@ -166,7 +167,7 @@ public class SpawnListener implements Listener {
       return;
     }
     switch (livingEntity.getType()) {
-      case ZOMBIFIED_PIGLIN:
+      case ZOMBIFIED_PIGLIN -> {
         entityEquipment.setHelmet(new ItemStack(Material.GOLDEN_HELMET));
         if (random.nextDouble() < 0.5) {
           entityEquipment.setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
@@ -175,8 +176,8 @@ public class SpawnListener implements Listener {
         }
         entityEquipment.setItemInMainHandDropChance(0f);
         entityEquipment.setHelmetDropChance(0f);
-        break;
-      case SKELETON:
+      }
+      case SKELETON -> {
         entityEquipment.setItemInMainHandDropChance(0f);
         if (random.nextDouble() < SKELETON_SWORD_CHANCE) {
           entityEquipment.setItemInMainHand(SKELETON_SWORD);
@@ -193,8 +194,8 @@ public class SpawnListener implements Listener {
           break;
         }
         entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
-        break;
-      case WITHER_SKELETON:
+      }
+      case WITHER_SKELETON -> {
         entityEquipment.setItemInMainHandDropChance(0f);
         if (random.nextDouble() < WITHER_SKELETON_SWORD_CHANCE) {
           entityEquipment.setItemInMainHand(WITHER_SKELETON_SWORD);
@@ -211,15 +212,15 @@ public class SpawnListener implements Listener {
           break;
         }
         entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
-        break;
-      case VINDICATOR:
+      }
+      case VINDICATOR -> {
         entityEquipment.setItemInMainHand(new ItemStack(Material.IRON_AXE));
         entityEquipment.setItemInMainHandDropChance(0f);
-        break;
-      case ILLUSIONER:
+      }
+      case ILLUSIONER -> {
         entityEquipment.setItemInMainHand(new ItemStack(Material.BOW));
         entityEquipment.setItemInMainHandDropChance(0f);
-        break;
+      }
     }
   }
 

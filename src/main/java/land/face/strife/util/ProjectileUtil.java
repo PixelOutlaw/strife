@@ -99,15 +99,15 @@ public class ProjectileUtil {
   }
 
   public static void shootWand(StrifeMob mob, double attackMult) {
-    float projectileSpeed = 1f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
+    float projectileSpeed = 0.85f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0, 0.19, true);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0.03, 0.22, true);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
       ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed,
-          randomWandOffset(projectiles), 0.24, true);
+          randomWandOffset(projectiles), 0.22, true);
     }
 
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
@@ -115,17 +115,17 @@ public class ProjectileUtil {
   }
 
   public static void shootArrow(StrifeMob mob, float attackMult) {
-    float projectileSpeed = 1.75f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    float projectileSpeed = 1.65f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
 
-    ProjectileUtil
-        .createArrow(mob.getEntity(), attackMult, projectileSpeed, pierceChance, 0, 0.165);
+    ProjectileUtil.createArrow(mob.getEntity(),
+        attackMult, projectileSpeed, pierceChance, 0.01, 0.2);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createArrow(mob.getEntity(), attackMult, projectileSpeed, pierceChance,
-          randomOffset(projectiles), 0.185);
+      ProjectileUtil.createArrow(mob.getEntity(),
+          attackMult, projectileSpeed, pierceChance, randomOffset(projectiles), 0.2);
     }
     shotId++;
   }
@@ -191,33 +191,18 @@ public class ProjectileUtil {
   }
 
   public static boolean isProjectile(EntityType entityType) {
-    switch (entityType) {
-      case ARROW:
-      case THROWN_EXP_BOTTLE:
-      case SPLASH_POTION:
-      case WITHER_SKULL:
-      case SHULKER_BULLET:
-      case PRIMED_TNT:
-      case SMALL_FIREBALL:
-      case LLAMA_SPIT:
-      case SPECTRAL_ARROW:
-      case TRIDENT:
-      case FIREBALL:
-      case DRAGON_FIREBALL:
-      case EGG:
-      case SNOWBALL:
-        return true;
-      default:
-        return false;
-    }
+    return switch (entityType) {
+      case ARROW, THROWN_EXP_BOTTLE, SPLASH_POTION, WITHER_SKULL, SHULKER_BULLET, PRIMED_TNT, SMALL_FIREBALL, LLAMA_SPIT, SPECTRAL_ARROW, TRIDENT, FIREBALL, DRAGON_FIREBALL, EGG, SNOWBALL -> true;
+      default -> false;
+    };
   }
 
-  private static double randomOffset(double magnitude) {
-    return 0.11 + magnitude * 0.005;
+  private static float randomOffset(float magnitude) {
+    return 0.08f + magnitude * 0.007f;
   }
 
-  private static double randomWandOffset(double magnitude) {
-    return 0.12 + magnitude * 0.005;
+  private static float randomWandOffset(float magnitude) {
+    return 0.09f + magnitude * 0.008f;
   }
 
   private static ItemStack buildWandProjectile() {

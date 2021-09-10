@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import land.face.strife.StrifePlugin;
+import land.face.strife.events.SpawnerSpawnEvent;
+import land.face.strife.events.UniqueSpawnEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.util.DateTimeUtil;
 import land.face.strife.util.LogUtil;
@@ -125,6 +127,9 @@ public class Spawner extends BukkitRunnable {
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
         (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
             .spawnUnique(s.getUniqueEntity(), s.getLocation()));
+
+    SpawnerSpawnEvent spawnerSpawnEvent = new SpawnerSpawnEvent(mob, s);
+    Bukkit.getPluginManager().callEvent(spawnerSpawnEvent);
 
     if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
       Bukkit.getLogger().warning("Spawner failed to spawn unique! " + s.getId());

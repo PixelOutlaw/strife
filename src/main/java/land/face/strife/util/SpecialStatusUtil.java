@@ -15,6 +15,7 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Boolean> SPAWNER_SPAWNED = new WeakHashMap<>();
   private static final Map<Entity, Boolean> STANDODAH = new WeakHashMap<>();
   private static final Map<Entity, Boolean> DESPAWN_ON_UNLOAD = new WeakHashMap<>();
+  private static final Map<Entity, Boolean> GUILD_MOB = new WeakHashMap<>();
 
   private static final Map<Entity, String> HANDLED_BLOCK = new WeakHashMap<>();
 
@@ -51,6 +52,14 @@ public class SpecialStatusUtil {
 
   public static boolean isFallImmune(Entity e) {
     return FALL_IMMUNE.getOrDefault(e, false);
+  }
+
+  public static void setIsGuildMob(Entity e) {
+    GUILD_MOB.put(e, true);
+  }
+
+  public static boolean isGuildMob(Entity e) {
+    return GUILD_MOB.getOrDefault(e, false);
   }
 
   public static void setSneakImmune(Entity e) {

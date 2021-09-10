@@ -18,6 +18,7 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.events.UniqueSpawnEvent;
+import land.face.strife.patch.AttackGoalPatcher;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ItemPassengerTask;
 import land.face.strife.util.ItemUtil;
@@ -40,6 +41,7 @@ import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Piglin;
 import org.bukkit.entity.Rabbit;
@@ -145,10 +147,21 @@ public class UniqueEntityManager {
       }
       ((Phantom) le).setSize(size);
     } else if (le instanceof Rabbit) {
-      ((Rabbit) le).setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
+      if (uniqueEntity.isAngry()) {
+        ((Rabbit) le).setRabbitType(Rabbit.Type.THE_KILLER_BUNNY);
+      }
       ((Rabbit) le).setAdult();
     } else if (le instanceof Creeper) {
       ((Creeper) le).setPowered(uniqueEntity.isPowered());
+    }
+
+    if (le instanceof Mob) {
+      if (!uniqueEntity.getRemoveGoals().isEmpty()) {
+        AttackGoalPatcher.removeGoals((Mob) le, uniqueEntity.getRemoveGoals());
+      }
+      if (!uniqueEntity.getAddGoals().isEmpty()) {
+        AttackGoalPatcher.addGoals((Mob) le, uniqueEntity);
+      }
     }
 
     if (le instanceof Raider) {
@@ -219,6 +232,14 @@ public class UniqueEntityManager {
 
     if (uniqueEntity.isInvisible()) {
       le.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999999, 10));
+    }
+
+    if (uniqueEntity.isSilent()) {
+      le.setSilent(true);
+    }
+
+    if (uniqueEntity.isGuildMob()) {
+      SpecialStatusUtil.setIsGuildMob(le);
     }
 
     le.setCanPickupItems(false);
@@ -368,6 +389,9 @@ public class UniqueEntityManager {
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
       uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
       uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
+      uniqueEntity.setSilent(cs.getBoolean("silent", false));
+      uniqueEntity.setGuildMob(cs.getBoolean("guild-mob", false));
+      boolean adaptiveName = cs.getBoolean("adaptive-name", false);
       if (uniqueEntity.getType() == EntityType.VILLAGER
           || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
         String prof = cs.getString("profession");
@@ -377,8 +401,18 @@ public class UniqueEntityManager {
       }
       uniqueEntity.setBaseLevel(cs.getInt("base-level", -1));
 
+      uniqueEntity.setCustomAi(cs.getBoolean("custom-ai.enabled", false));
+      uniqueEntity.setAggressiveAi(cs.getBoolean("custom-ai.aggressive", true));
+      try {
+        uniqueEntity.setAttackSound(Sound.valueOf(cs.getString("custom-ai.attack-sound")));
+      } catch (Exception e) {
+        uniqueEntity.setAttackSound(Sound.ENTITY_DOLPHIN_ATTACK);
+      }
+      uniqueEntity.setRemoveGoals(cs.getStringList("custom-ai.remove-goals"));
+      uniqueEntity.setAddGoals(cs.getStringList("custom-ai.add-goals"));
+
       Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
-          uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0);
+          uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0 || adaptiveName);
 
       if (disguise != null) {
         cacheDisguise(uniqueEntity, disguise);
