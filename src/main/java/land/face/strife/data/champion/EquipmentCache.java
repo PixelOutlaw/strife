@@ -1,11 +1,15 @@
 package land.face.strife.data.champion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.print.DocFlavor.READER;
+import land.face.dinvy.windows.EquipmentMenu.DeluxeSlot;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.LoreAbilityManager;
@@ -23,64 +27,76 @@ public class EquipmentCache {
   @Setter
   private long lastUpdate;
 
-  private final Map<EquipmentSlot, Integer> slotHashCodeMap = new HashMap<>();
+  private final Map<String, Integer> slotHashCodeMap = new HashMap<>();
 
-  private final Map<EquipmentSlot, Map<StrifeStat, Float>> slotStatMap = new HashMap<>();
-  private final Map<EquipmentSlot, List<LoreAbility>> slotAbilityMap = new HashMap<>();
-  private final Map<EquipmentSlot, List<StrifeTrait>> slotTraitMap = new HashMap<>();
+  private final Map<String, Map<StrifeStat, Float>> slotStatMap = new HashMap<>();
+  private final Map<String, List<LoreAbility>> slotAbilityMap = new HashMap<>();
+  private final Map<String, List<StrifeTrait>> slotTraitMap = new HashMap<>();
 
   private final Set<LoreAbility> loreAbilities = new HashSet<>();
   private final Map<StrifeStat, Float> combinedStats = new HashMap<>();
   private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
-  public final static EquipmentSlot[] ITEM_SLOTS = EquipmentSlot.values();
+  public final static Set<String> ITEM_SLOTS = buildSlots();
+  public final static EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();
+  public final static DeluxeSlot[] DELUXE_SLOTS = DeluxeSlot.values();
+
+  private static Set<String> buildSlots() {
+    Set<String> keys = new HashSet<>();
+    for (DeluxeSlot slot : DeluxeSlot.values()) {
+      keys.add(slot.toString());
+    }
+    keys.add("HAND");
+    keys.add("OFF_HAND");
+    return keys;
+  }
 
   public EquipmentCache() {
-    for (EquipmentSlot slot : ITEM_SLOTS) {
-      slotHashCodeMap.put(slot, -1);
-      slotStatMap.put(slot, new HashMap<>());
-      slotAbilityMap.put(slot, new ArrayList<>());
-      slotTraitMap.put(slot, new ArrayList<>());
+    for (String key : ITEM_SLOTS) {
+      slotHashCodeMap.put(key, -1);
+      slotStatMap.put(key, new HashMap<>());
+      slotAbilityMap.put(key, new ArrayList<>());
+      slotTraitMap.put(key, new ArrayList<>());
     }
     lastUpdate = System.currentTimeMillis();
   }
 
-  public void setSlotStats(EquipmentSlot slot, Map<StrifeStat, Float> stats) {
+  public void setSlotStats(String slot, Map<StrifeStat, Float> stats) {
     this.slotStatMap.get(slot).clear();
     this.slotStatMap.get(slot).putAll(stats);
   }
 
-  public Map<StrifeStat, Float> getSlotStats(EquipmentSlot slot) {
+  public Map<StrifeStat, Float> getSlotStats(String slot) {
     return this.slotStatMap.get(slot);
   }
 
-  public void setSlotTraits(EquipmentSlot slot, Set<StrifeTrait> traits) {
+  public void setSlotTraits(String slot, Set<StrifeTrait> traits) {
     this.slotTraitMap.get(slot).clear();
     this.slotTraitMap.get(slot).addAll(traits);
   }
 
-  public List<StrifeTrait> getSlotTraits(EquipmentSlot slot) {
+  public List<StrifeTrait> getSlotTraits(String slot) {
     return this.slotTraitMap.get(slot);
   }
 
-  public void setSlotAbilities(EquipmentSlot slot, Set<LoreAbility> abilities) {
+  public void setSlotAbilities(String slot, Set<LoreAbility> abilities) {
     this.slotAbilityMap.get(slot).clear();
     this.slotAbilityMap.get(slot).addAll(abilities);
   }
 
-  public List<LoreAbility> getSlotAbilities(EquipmentSlot slot) {
+  public List<LoreAbility> getSlotAbilities(String slot) {
     return this.slotAbilityMap.get(slot);
   }
 
-  public int getSlotHash(EquipmentSlot slot) {
+  public int getSlotHash(String slot) {
     return slotHashCodeMap.get(slot);
   }
 
-  public void setSlotHash(EquipmentSlot slot, int hash) {
+  public void setSlotHash(String slot, int hash) {
     this.slotHashCodeMap.put(slot, hash);
   }
 
-  public void clearSlot(EquipmentSlot slot) {
+  public void clearSlot(String slot) {
     this.slotAbilityMap.get(slot).clear();
     this.slotStatMap.get(slot).clear();
     this.slotTraitMap.get(slot).clear();
@@ -101,12 +117,22 @@ public class EquipmentCache {
   public void recombineStats() {
     combinedStats.clear();
     combinedStats.putAll(StatUpdateManager.combineMaps(
-        slotStatMap.get(EquipmentSlot.HAND),
-        slotStatMap.get(EquipmentSlot.OFF_HAND),
-        slotStatMap.get(EquipmentSlot.HEAD),
-        slotStatMap.get(EquipmentSlot.CHEST),
-        slotStatMap.get(EquipmentSlot.LEGS),
-        slotStatMap.get(EquipmentSlot.FEET)
+        slotStatMap.get("HAND"),
+        slotStatMap.get("OFF_HAND"),
+        slotStatMap.get("HELMET"),
+        slotStatMap.get("BODY"),
+        slotStatMap.get("LEGS"),
+        slotStatMap.get("BOOTS"),
+        slotStatMap.get("NECKLACE"),
+        slotStatMap.get("RING_1"),
+        slotStatMap.get("RING_2"),
+        slotStatMap.get("EARRING_1"),
+        slotStatMap.get("EARRING_2"),
+        slotStatMap.get("COSMETIC_HAT"),
+        slotStatMap.get("SOUL_GEM_1"),
+        slotStatMap.get("SOUL_GEM_2"),
+        slotStatMap.get("SOUL_GEM_3"),
+        slotStatMap.get("SOUL_GEM_4")
     ));
   }
 
@@ -115,15 +141,15 @@ public class EquipmentCache {
     if (mob.getChampion() != null) {
       loreAbilities.addAll(mob.getChampion().getSaveData().getBoundAbilities());
     }
-    for (EquipmentSlot slot : ITEM_SLOTS) {
-      loreAbilities.addAll(slotAbilityMap.get(slot));
+    for (String key : ITEM_SLOTS) {
+      loreAbilities.addAll(slotAbilityMap.get(key));
     }
   }
 
   public void recombineTraits() {
     combinedTraits.clear();
-    for (EquipmentSlot slot : slotTraitMap.keySet()) {
-      combinedTraits.addAll(slotTraitMap.get(slot));
+    for (String key : slotTraitMap.keySet()) {
+      combinedTraits.addAll(slotTraitMap.get(key));
     }
   }
 

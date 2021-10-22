@@ -22,12 +22,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
@@ -107,13 +107,12 @@ public class ShootProjectile extends Effect {
       if (!gravity) {
         projectile.setGravity(false);
       }
-      if (projectileEntity == EntityType.ARROW) {
-        if (arrowColor != null) {
+      if (projectileEntity == EntityType.ARROW || projectileEntity == EntityType.SPECTRAL_ARROW) {
+        if (projectileEntity != EntityType.SPECTRAL_ARROW && arrowColor != null) {
           ((Arrow) projectile).setColor(arrowColor);
         }
-        //((Arrow) projectile).setCritical(attackMultiplier > 0.95);
-        ((Arrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
-        ProjectileUtil.setPierce((Arrow) projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
+        ((AbstractArrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
+        ProjectileUtil.setPierce((AbstractArrow) projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
       } else if (projectileEntity == EntityType.FIREBALL || projectileEntity == EntityType.DRAGON_FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);

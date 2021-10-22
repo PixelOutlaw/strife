@@ -34,7 +34,7 @@
   </parent>
 
   <artifactId>strife</artifactId>
-  <version>3.6.0</version>
+  <version>3.6.1</version>
   <packaging>jar</packaging>
 
   <name>strife</name>
@@ -81,6 +81,12 @@
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
       <version>1.17.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.pixeloutlaw</groupId>
+      <artifactId>deluxe-invy</artifactId>
+      <version>1.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

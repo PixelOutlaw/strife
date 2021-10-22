@@ -48,12 +48,11 @@ public class TargetingUtil {
     if (!(victim instanceof Mob)) {
       return;
     }
-    AttributeInstance attr = victim.getAttribute(GENERIC_FOLLOW_RANGE);
-    double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 80);
-    victim.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
-
     LivingEntity target = ((Mob) victim).getTarget();
     if (target == null || !target.isValid()) {
+      AttributeInstance attr = victim.getAttribute(GENERIC_FOLLOW_RANGE);
+      double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 80);
+      victim.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
       ((Mob) victim).setTarget(attacker);
     }
   }
@@ -75,35 +74,39 @@ public class TargetingUtil {
     }
     List<LivingEntity> targetList = new ArrayList<>(areaTargets);
     switch (effect.getPriority()) {
-      case RANDOM:
+      case RANDOM -> {
         Collections.shuffle(targetList);
         areaTargets.retainAll(targetList.subList(0, maxTargets));
-        return;
-      case CLOSEST:
+      }
+      case CLOSEST -> {
         DISTANCE_COMPARATOR.setLoc(caster.getEntity().getLocation());
         targetList.sort(DISTANCE_COMPARATOR);
         areaTargets.retainAll(targetList.subList(0, maxTargets));
-        return;
-      case FARTHEST:
+      }
+      case FARTHEST -> {
         DISTANCE_COMPARATOR.setLoc(caster.getEntity().getLocation());
         targetList.sort(DISTANCE_COMPARATOR);
-        areaTargets.retainAll(targetList.subList(targetList.size() - maxTargets, targetList.size()));
-        return;
-      case LEAST_HEALTH:
+        areaTargets.retainAll(
+            targetList.subList(targetList.size() - maxTargets, targetList.size()));
+      }
+      case LEAST_HEALTH -> {
         targetList.sort(HEALTH_COMPARATOR);
         areaTargets.retainAll(targetList.subList(0, maxTargets));
-        return;
-      case MOST_HEALTH:
+      }
+      case MOST_HEALTH -> {
         targetList.sort(HEALTH_COMPARATOR);
-        areaTargets.retainAll(targetList.subList(targetList.size() - maxTargets, targetList.size()));
-        return;
-      case LEAST_PERCENT_HEALTH:
+        areaTargets.retainAll(
+            targetList.subList(targetList.size() - maxTargets, targetList.size()));
+      }
+      case LEAST_PERCENT_HEALTH -> {
         targetList.sort(PERCENT_HEALTH_COMPARATOR);
         areaTargets.retainAll(targetList.subList(0, maxTargets));
-        return;
-      case MOST_PERCENT_HEALTH:
+      }
+      case MOST_PERCENT_HEALTH -> {
         targetList.sort(PERCENT_HEALTH_COMPARATOR);
-        areaTargets.retainAll(targetList.subList(targetList.size() - maxTargets, targetList.size()));
+        areaTargets.retainAll(
+            targetList.subList(targetList.size() - maxTargets, targetList.size()));
+      }
     }
   }
 

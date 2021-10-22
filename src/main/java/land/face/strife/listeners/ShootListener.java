@@ -62,6 +62,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 public class ShootListener implements Listener {
 
@@ -245,18 +246,28 @@ public class ShootListener implements Listener {
     if (ProjectileUtil.getHitEffects(event.getEntity()) == null) {
       return;
     }
-    boolean contactTrigger = ProjectileUtil.isContactTrigger(event.getEntity());
-
     TargetResponse response;
-    if (contactTrigger) {
-      Location loc = event.getEntity().getLocation().clone().add(event.getEntity().getLocation()
-          .getDirection().multiply(-0.2));
-      response = new TargetResponse(loc);
-    } else {
-      if (!(event.getHitEntity() instanceof LivingEntity)) {
+    if (!ProjectileUtil.isContactTrigger(event.getEntity())) {
+      if ((!(event.getHitEntity() instanceof LivingEntity)
+          || event.getHitEntity().isInvulnerable()
+          || event.getHitEntity().hasMetadata("NPC"))) {
         return;
       }
       response = new TargetResponse(Collections.singleton((LivingEntity) event.getHitEntity()));
+    } else {
+      Location effectLocation = null;
+      if (event.getHitBlock() != null) {
+        effectLocation = event.getHitBlock().getLocation().clone().add(0.5, 0.5, 0.5);
+        if (event.getHitBlockFace() != null) {
+          effectLocation.add(event.getHitBlockFace().getDirection());
+        } else {
+          effectLocation.add(
+              event.getEntity().getLocation().getDirection().clone().multiply(-1.1));
+        }
+      } else if (event.getHitEntity() != null) {
+        effectLocation = event.getEntity().getLocation().clone();
+      }
+      response = new TargetResponse(effectLocation);
     }
 
     StrifeMob caster = plugin.getStrifeMobManager()

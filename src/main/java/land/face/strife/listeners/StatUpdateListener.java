@@ -66,8 +66,8 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
     if (player.isDead() || player.getHealth() <= 0D) {
       return;
     }
-    plugin.getStrifeMobManager()
-        .updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager()
+        .getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateVanillaAttributes(player);
   }
 

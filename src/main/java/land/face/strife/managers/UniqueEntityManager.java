@@ -18,7 +18,7 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.events.UniqueSpawnEvent;
-import land.face.strife.patch.AttackGoalPatcher;
+import land.face.strife.patch.GoalPatcher;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ItemPassengerTask;
 import land.face.strife.util.ItemUtil;
@@ -157,10 +157,10 @@ public class UniqueEntityManager {
 
     if (le instanceof Mob) {
       if (!uniqueEntity.getRemoveGoals().isEmpty()) {
-        AttackGoalPatcher.removeGoals((Mob) le, uniqueEntity.getRemoveGoals());
+        GoalPatcher.removeGoals((Mob) le, uniqueEntity.getRemoveGoals());
       }
       if (!uniqueEntity.getAddGoals().isEmpty()) {
-        AttackGoalPatcher.addGoals((Mob) le, uniqueEntity);
+        GoalPatcher.addGoals((Mob) le, uniqueEntity);
       }
     }
 
@@ -277,8 +277,7 @@ public class UniqueEntityManager {
     if (mobLevel == 0) {
       mob.setStats(uniqueEntity.getAttributeMap());
     } else {
-      mob.setStats(
-          StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
+      mob.setStats(StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
     }
 
     if (uniqueEntity.getMaxMods() > 0) {
@@ -311,6 +310,10 @@ public class UniqueEntityManager {
     }
 
     plugin.getStatUpdateManager().updateVanillaAttributes(mob);
+    StatUtil.getStat(mob, StrifeStat.BARRIER);
+    StatUtil.getStat(mob, StrifeStat.HEALTH);
+    StatUtil.getStat(mob, StrifeStat.ENERGY);
+    mob.restoreBarrier(200000);
 
     mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
 

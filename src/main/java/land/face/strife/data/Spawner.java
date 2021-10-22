@@ -2,13 +2,13 @@ package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import land.face.strife.StrifePlugin;
 import land.face.strife.events.SpawnerSpawnEvent;
-import land.face.strife.events.UniqueSpawnEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.util.DateTimeUtil;
 import land.face.strife.util.LogUtil;
@@ -32,8 +32,8 @@ public class Spawner extends BukkitRunnable {
 
   public static int SPAWNER_OFFSET = 0;
 
-  private final List<LivingEntity> entities = new CopyOnWriteArrayList<>();
-  private final List<Long> respawnTimes = new CopyOnWriteArrayList<>();
+  private final Set<LivingEntity> entities = new HashSet<>();
+  private final List<Long> respawnTimes = new ArrayList<>();
 
   private final String id;
   private final String uniqueId;
@@ -66,17 +66,19 @@ public class Spawner extends BukkitRunnable {
 
   @Override
   public void run() {
-    for (LivingEntity le : entities) {
+    Iterator<LivingEntity> iterator = entities.iterator();
+    while (iterator.hasNext()) {
+      LivingEntity le = iterator.next();
       if (le == null || !le.isValid()) {
-        entities.remove(le);
+        iterator.remove();
         continue;
       }
       double xDist = Math.abs(location.getX() - le.getLocation().getX());
       double zDist = Math.abs(location.getZ() - le.getLocation().getZ());
       if (Math.abs(xDist) + Math.abs(zDist) > leashRange) {
         despawnParticles(le);
-        Set<Player> players = new HashSet<>(
-            le.getLocation().getNearbyEntitiesByType(Player.class, 15));
+        Set<Player> players = new HashSet<>(le.getLocation()
+            .getNearbyEntitiesByType(Player.class, 15));
         for (Player p : players) {
           StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, le,
               IndicatorStyle.FLOAT_UP_SLOW, 30, "&4&lOUT OF RANGE");
@@ -85,76 +87,69 @@ public class Spawner extends BukkitRunnable {
           StrifePlugin.getInstance().getStrifeMobManager().removeStrifeMob(le);
         }
         le.remove();
+        iterator.remove();
         LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
       }
     }
     spawnSpawner(this);
   }
 
-  public static void spawnSpawner(Spawner s) {
-    if (s.getUniqueEntity() == null || s.getLocation() == null) {
+  public static void spawnSpawner(Spawner spawner) {
+    if (spawner.getUniqueEntity() == null || spawner.getLocation() == null) {
+      return;
+    }
+    if (!DateTimeUtil.isWorldTimeInRange(spawner.getLocation().getWorld(),
+        spawner.getStartTime(), spawner.getEndTime())) {
+      return;
+    }
+    if (System.currentTimeMillis() < spawner.getSnoozeTime()) {
       return;
     }
 
-    if (!DateTimeUtil.isWorldTimeInRange(
-        s.getLocation().getWorld(), s.getStartTime(), s.getEndTime())) {
+    spawner.getRespawnTimes().removeIf(aLong -> System.currentTimeMillis() > aLong);
+
+    int totalMobSlotsInUse = spawner.getRespawnTimes().size() + spawner.getEntities().size();
+    int maxMobs = spawner.getAmount();
+    if (totalMobSlotsInUse >= maxMobs) {
+      return;
+    }
+    if (!isChuckLoaded(spawner)) {
       return;
     }
 
-    if (System.currentTimeMillis() < s.getSnoozeTime()) {
-      return;
-    }
-
-    int maxMobs = s.getAmount();
-    for (long stamp : s.getRespawnTimes()) {
-      if (System.currentTimeMillis() > stamp) {
-        s.getRespawnTimes().remove(stamp);
-      }
-    }
-
-    int existingMobs = s.getRespawnTimes().size() + s.getEntities().size();
-    if (existingMobs >= maxMobs) {
-      return;
-    }
-
-    if (!isChuckLoaded(s)) {
-      return;
-    }
-
-    if (maxMobs - existingMobs < 1) {
-      return;
-    }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
         (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
-            .spawnUnique(s.getUniqueEntity(), s.getLocation()));
+            .spawnUnique(spawner.getUniqueEntity(), spawner.getLocation()));
 
-    SpawnerSpawnEvent spawnerSpawnEvent = new SpawnerSpawnEvent(mob, s);
+    SpawnerSpawnEvent spawnerSpawnEvent = new SpawnerSpawnEvent(mob, spawner);
     Bukkit.getPluginManager().callEvent(spawnerSpawnEvent);
 
     if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
-      Bukkit.getLogger().warning("Spawner failed to spawn unique! " + s.getId());
+      Bukkit.getLogger().warning("Spawner failed to spawn unique! " + spawner.getId());
       return;
     }
 
-    if (StringUtils.isBlank(s.getUniqueEntity().getMount())
+    mob.setSpawner(spawner);
+
+    if (StringUtils.isBlank(spawner.getUniqueEntity().getMount())
         && mob.getEntity().getVehicle() != null) {
       mob.getEntity().getVehicle().remove();
     }
 
     SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
-    s.addEntity(mob.getEntity());
+    spawner.addEntity(mob.getEntity());
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       if (mob.getEntity() == null || !mob.getEntity().isValid()) {
-        s.setSnoozeTime(System.currentTimeMillis() + 10000);
+        spawner.setSnoozeTime(System.currentTimeMillis() + 10000);
       } else {
         if (mob.getMods().size() >= 2) {
-          announceSpawnToNearbyPlayers(mob, s.getLocation());
+          announceSpawnToNearbyPlayers(mob, spawner.getLocation());
         }
         // Random displacement to prevent clumping
-        if (s.getUniqueEntity().getDisplaceMultiplier() != 0) {
+        if (spawner.getUniqueEntity().getDisplaceMultiplier() != 0) {
           Vector vec = new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize();
-          vec.multiply(s.getUniqueEntity().getDisplaceMultiplier());
+          vec.multiply(spawner.getUniqueEntity().getDisplaceMultiplier());
           mob.getEntity().setVelocity(vec);
           mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
         }
@@ -261,7 +256,7 @@ public class Spawner extends BukkitRunnable {
     this.respawnSeconds = respawnSeconds;
   }
 
-  public List<LivingEntity> getEntities() {
+  public Set<LivingEntity> getEntities() {
     return entities;
   }
 

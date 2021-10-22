@@ -29,6 +29,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
@@ -86,16 +87,13 @@ public class TargetingListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void modifyAttackRange(EntityDamageByEntityEvent event) {
+  public void modifyAttackRange(StrifeDamageEvent event) {
     if (event.isCancelled()) {
       return;
     }
-    if (event.getEntity() instanceof Mob) {
-      LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
-      TargetingUtil.expandMobRange(attacker, (Mob) event.getEntity());
-      if (event.getDamager() instanceof LivingEntity) {
-        ((Mob) event.getEntity()).setTarget(attacker);
-      }
+    if (event.getDefender().getEntity() instanceof Mob) {
+      TargetingUtil.expandMobRange(event.getAttacker().getEntity(),
+          event.getDefender().getEntity());
     }
   }
 

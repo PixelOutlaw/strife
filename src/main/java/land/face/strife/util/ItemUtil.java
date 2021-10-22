@@ -4,6 +4,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.destroystokyo.paper.Namespaced;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import land.face.dinvy.pojo.PlayerData;
+import land.face.dinvy.windows.EquipmentMenu.DeluxeSlot;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -99,6 +102,9 @@ public class ItemUtil {
   }
 
   public static boolean isTool(ItemStack stack) {
+    if (stack == null) {
+      return false;
+    }
     String material = stack.getType().toString();
     if (material.endsWith("_PICKAXE")) {
       return verifyAndApplyDestroyKeys(stack, pickDestroyKeys);
@@ -198,22 +204,18 @@ public class ItemUtil {
   }
 
   public static ItemStack getItem(EntityEquipment equipment, EquipmentSlot slot) {
-    switch (slot) {
-      case HAND:
-        return equipment.getItemInMainHand();
-      case OFF_HAND:
-        return equipment.getItemInOffHand();
-      case HEAD:
-        return equipment.getHelmet();
-      case CHEST:
-        return equipment.getChestplate();
-      case LEGS:
-        return equipment.getLeggings();
-      case FEET:
-        return equipment.getBoots();
-      default:
-        return null;
-    }
+    return switch (slot) {
+      case HAND -> equipment.getItemInMainHand();
+      case OFF_HAND -> equipment.getItemInOffHand();
+      case HEAD -> equipment.getHelmet();
+      case CHEST -> equipment.getChestplate();
+      case LEGS -> equipment.getLeggings();
+      case FEET -> equipment.getBoots();
+    };
+  }
+
+  public static ItemStack getItem(PlayerData data, DeluxeSlot slot) {
+    return data.getEquipmentItem(slot);
   }
 
   public static List<String> getLore(ItemStack stack) {
@@ -253,7 +255,7 @@ public class ItemUtil {
     entity.getEquipment().setBootsDropChance(0f);
     entity.getEquipment().setItemInMainHandDropChance(0f);
     entity.getEquipment().setItemInOffHandDropChance(0f);
-    for (EquipmentSlot slot : EquipmentCache.ITEM_SLOTS) {
+    for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
       if (!items.containsKey(slot)) {
         continue;
       }
@@ -289,6 +291,22 @@ public class ItemUtil {
       return hash == -1;
     }
     return itemStack.hashCode() == hash;
+  }
+
+  public static boolean meetsLevelRequirement(ItemStack stack, int level) {
+    if (stack == null || stack.getType() == Material.AIR) {
+      return true;
+    }
+    List<String> lore = TextUtils.getLore(stack);
+    if (lore.size() < 1) {
+      return true;
+    }
+    String strippedLine = ChatColor.stripColor(lore.get(0));
+    if (strippedLine.contains("Level Requirement: ")) {
+      int itemLevel = Integer.parseInt(strippedLine.replace("Level Requirement: ", ""));
+      return level >= itemLevel;
+    }
+    return true;
   }
 
   public static short getPercentageDamage(ItemStack stack, double percent) {

@@ -25,7 +25,6 @@ public class Damage extends Effect {
   private float attackMultiplier;
   private float healMultiplier;
   private float damageReductionRatio;
-  private float maxDamage;
   private final Map<DamageType, Float> damageMultipliers = new HashMap<>();
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
@@ -73,9 +72,13 @@ public class Damage extends Effect {
     if (!attackSuccess) {
       return;
     }
-    mods.setAttackMultiplier(applyMultipliers(caster, mods.getAttackMultiplier()));
+    mods.setAttackMultiplier(mods.getAttackMultiplier());
 
     Map<DamageType, Float> damage = DamageUtil.buildDamage(caster, target, mods);
+    float multi = applyMultipliers(caster, 1);
+    if (multi != 1) {
+      damage.replaceAll((type, amount) -> amount * multi);
+    }
     if (selfInflict) {
       target = caster;
     }
@@ -90,10 +93,6 @@ public class Damage extends Effect {
 
     if (strifeDamageEvent.isCancelled()) {
       return;
-    }
-
-    if (maxDamage > 0) {
-      strifeDamageEvent.setFinalDamage(Math.min(maxDamage, strifeDamageEvent.getFinalDamage()));
     }
 
     target.trackDamage(caster, (float) strifeDamageEvent.getFinalDamage());
@@ -225,9 +224,5 @@ public class Damage extends Effect {
 
   public void setBlocking(boolean blocking) {
     isBlocking = blocking;
-  }
-
-  public void setMaxDamage(float maxDamage) {
-    this.maxDamage = maxDamage;
   }
 }

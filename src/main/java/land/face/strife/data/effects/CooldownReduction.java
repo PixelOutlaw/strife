@@ -25,7 +25,7 @@ public class CooldownReduction extends Effect {
       selectedAbility = caster.getChampion().getSaveData().getAbility(slot).getId();
     }
     StrifePlugin.getInstance().getAbilityManager()
-        .cooldownReduce(caster.getEntity(), selectedAbility, milliseconds);
+        .reduceCooldowns(caster.getEntity(), selectedAbility, milliseconds);
   }
 
   public void setSeconds(double seconds) {

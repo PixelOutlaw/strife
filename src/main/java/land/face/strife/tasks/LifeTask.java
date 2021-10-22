@@ -11,6 +11,7 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.attribute.Attribute;
@@ -22,13 +23,15 @@ public class LifeTask extends BukkitRunnable {
   private static final float REGEN_PERCENT_PER_SECOND = 0.1F;
   private static final float POTION_REGEN_FLAT_PER_LEVEL = 2f;
   private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
-
   private final WeakReference<StrifeMob> parentMob;
   private final List<RestoreData> lifeRestore = new ArrayList<>();
+
+  private final float tickMultiplier;
 
   public LifeTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
     this.runTaskTimer(StrifePlugin.getInstance(), 20L, REGEN_TICK_RATE);
+    tickMultiplier = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
   }
 
   @Override
@@ -46,11 +49,9 @@ public class LifeTask extends BukkitRunnable {
       return;
     }
 
-    float tickMultiplier = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
-
     PlayerDataUtil.restoreHealth(mob.getEntity(), getBonusHealth());
 
-    float lifeAmount = StatUtil.getRegen(mob);
+    float lifeAmount = StatUtil.getStat(mob, StrifeStat.REGENERATION);
 
     if (mob.getEntity().hasPotionEffect(REGENERATION)) {
       int potionIntensity = mob.getEntity().getPotionEffect(REGENERATION).getAmplifier() + 1;

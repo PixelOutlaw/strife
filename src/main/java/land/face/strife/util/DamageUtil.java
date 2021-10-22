@@ -3,12 +3,6 @@ package land.face.strife.util;
 import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
-import static land.face.strife.util.StatUtil.getEarthResist;
-import static land.face.strife.util.StatUtil.getFireResist;
-import static land.face.strife.util.StatUtil.getIceResist;
-import static land.face.strife.util.StatUtil.getLightResist;
-import static land.face.strife.util.StatUtil.getLightningResist;
-import static land.face.strife.util.StatUtil.getShadowResist;
 import static land.face.strife.util.StatUtil.getWardingMult;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
@@ -45,6 +39,7 @@ import me.glaremasters.guilds.api.GuildsAPI;
 import me.glaremasters.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -60,6 +55,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -68,9 +64,20 @@ public class DamageUtil {
   private static StrifePlugin plugin;
   private static GuildsAPI guildsAPI;
 
-  private static String ATTACK_BLOCKED;
-  private static String ATTACK_DODGED;
-  public static double EVASION_THRESHOLD;
+  public static String ATTACK_BLOCKED;
+  public static String ATTACK_DODGED;
+
+  public static float BASE_ATTACK_SECONDS = 1.6f;
+
+  public static float EVASION_THRESHOLD = 0.5f;
+  public static float BASE_EVASION_MULT = 0.8f;
+  public static float EVASION_ACCURACY_MULT = 0.6f;
+
+  public static int BASE_RECHARGE_TICKS;
+  public static long TICK_RATE;
+  public static int DELAY_TICKS;
+  public static float FLAT_BARRIER_PER_SECOND;
+  public static float PERCENT_BARRIER_PER_SECOND;
 
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
@@ -79,20 +86,43 @@ public class DamageUtil {
 
   private static float PVP_MULT;
 
+  private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
   public static void refresh() {
     plugin = StrifePlugin.getInstance();
     guildsAPI = Guilds.getApi();
-    EVASION_THRESHOLD = plugin.getSettings().getDouble("config.mechanics.evasion-threshold", 0.5);
-    PVP_MULT = (float) plugin.getSettings().getDouble("config.mechanics.pvp-multiplier", 0.5);
+
+    BASE_ATTACK_SECONDS = (float) plugin.getSettings()
+        .getDouble("config.mechanics.attack-speed.base-attack-time", 1.6);
+
+    EVASION_THRESHOLD = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.evade-threshold", 0.5);
+    BASE_EVASION_MULT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.evasion-multiplier", 0.8);
+    EVASION_ACCURACY_MULT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.accuracy-multiplier", 0.6);
+
+    PVP_MULT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.pvp-multiplier", 0.5);
     ATTACK_BLOCKED = StringExtensionsKt.chatColorize(plugin.getSettings()
         .getString("language.status.block-message", "&e&lBlocked!"));
     ATTACK_DODGED = StringExtensionsKt.chatColorize(plugin.getSettings()
         .getString("language.status.evade-message", "&7&l&oDodge!"));
+
+    BASE_RECHARGE_TICKS = plugin.getSettings()
+        .getInt("config.mechanics.barrier.base-delay-ticks", 80);
+    TICK_RATE = plugin.getSettings()
+        .getInt("config.mechanics.barrier.task-tick-rate", 3);
+    DELAY_TICKS = (int) ((float) BASE_RECHARGE_TICKS / TICK_RATE);
+    FLAT_BARRIER_PER_SECOND = plugin.getSettings()
+        .getInt("config.mechanics.barrier.flat-per-second", 4);
+    PERCENT_BARRIER_PER_SECOND = (float) plugin.getSettings()
+        .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
   }
 
-  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender, List<Effect> effects) {
+  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender,
+      List<Effect> effects) {
     if (effects == null) {
       return;
     }
@@ -147,7 +177,7 @@ public class DamageUtil {
       plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
     }
 
-    if (attacker != defender){
+    if (attacker != defender) {
       attacker.bumpCombat();
       defender.bumpCombat();
     }
@@ -178,7 +208,8 @@ public class DamageUtil {
     return true;
   }
 
-  public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
+  public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender,
+      DamageModifiers mods) {
     Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, defender, mods);
     applyAttackTypeMods(attacker, mods.getAttackType(), damageMap);
     return damageMap;
@@ -232,7 +263,8 @@ public class DamageUtil {
     elementalDamage *= generalDamageMultiplier;
     elementalDamage *= pvpMult;
 
-    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio() * pvpMult;
+    float damageReduction =
+        defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio() * pvpMult;
     float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
@@ -241,7 +273,11 @@ public class DamageUtil {
     rawDamage *= DamageUtil.getTenacityMult(defender);
     rawDamage *= DamageUtil.getMinionMult(attacker);
     if (attacker.getEntity().getFreezeTicks() > 0 && attacker.getEntity() instanceof Player) {
-      rawDamage *= 1 - 0.3 * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+      rawDamage *= 1 - 0.3 * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity()
+          .getMaxFreezeTicks());
+    }
+    if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
+      rawDamage *= 1 - (0.03 * plugin.getBlockManager().getEarthRunes(defender));
     }
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
@@ -252,6 +288,10 @@ public class DamageUtil {
           attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
       plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
           LifeSkillType.SNEAK, gainedXp, false, false);
+    }
+
+    if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {
+      rawDamage = Math.min(mods.getAbilityMods().get(AbilityMod.MAX_DAMAGE), rawDamage);
     }
 
     if (rawDamage < 1) {
@@ -294,7 +334,8 @@ public class DamageUtil {
     DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
 
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
-      plugin.getRageManager().changeRage(attacker, attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
+      plugin.getRageManager()
+          .changeRage(attacker, attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
     if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
       plugin.getRageManager().changeRage(defender, defender.getStat(StrifeStat.RAGE_WHEN_HIT));
@@ -306,7 +347,8 @@ public class DamageUtil {
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
   }
 
-  private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods, float pvpMult) {
+  private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods,
+      float pvpMult) {
     Player player = (Player) attacker.getEntity();
     float sneakSkill = plugin.getChampionManager().getChampion(player)
         .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
@@ -335,7 +377,8 @@ public class DamageUtil {
     return sneakEvent.getSneakAttackDamage();
   }
 
-  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
+  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender,
+      DamageModifiers mods) {
     float attackPenalty = 1f;
     if (mods.isScaleChancesWithAttack()) {
       attackPenalty = mods.getAttackMultiplier();
@@ -345,7 +388,9 @@ public class DamageUtil {
     boolean success = critChance >= rollDouble(hasLuck(attacker.getEntity()));
     if (success) {
       DamageUtil.callCritEvent(attacker, defender);
-      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.75f);
+      defender.getEntity().getWorld()
+          .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f,
+              0.75f);
       //if (attacker.getEntity() instanceof Player) {
       //  StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
       //      defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 3, "&c&lCRIT!");
@@ -355,92 +400,61 @@ public class DamageUtil {
   }
 
   public static float getRawDamage(StrifeMob attacker, DamageType damageType) {
-    switch (damageType) {
-      case PHYSICAL:
-        return attacker.getStat(StrifeStat.PHYSICAL_DAMAGE);
-      case MAGICAL:
-        return attacker.getStat(StrifeStat.MAGIC_DAMAGE);
-      case FIRE:
-        return attacker.getStat(StrifeStat.FIRE_DAMAGE);
-      case ICE:
-        return attacker.getStat(StrifeStat.ICE_DAMAGE);
-      case LIGHTNING:
-        return attacker.getStat(StrifeStat.LIGHTNING_DAMAGE);
-      case DARK:
-        return attacker.getStat(StrifeStat.DARK_DAMAGE);
-      case EARTH:
-        return attacker.getStat(StrifeStat.EARTH_DAMAGE);
-      case LIGHT:
-        return attacker.getStat(StrifeStat.LIGHT_DAMAGE);
-      case TRUE_DAMAGE:
-        return attacker.getStat(StrifeStat.TRUE_DAMAGE);
-      default:
-        return 0;
-    }
+    return switch (damageType) {
+      case PHYSICAL -> attacker.getStat(StrifeStat.PHYSICAL_DAMAGE);
+      case MAGICAL -> attacker.getStat(StrifeStat.MAGIC_DAMAGE);
+      case FIRE -> attacker.getStat(StrifeStat.FIRE_DAMAGE);
+      case ICE -> attacker.getStat(StrifeStat.ICE_DAMAGE);
+      case LIGHTNING -> attacker.getStat(StrifeStat.LIGHTNING_DAMAGE);
+      case DARK -> attacker.getStat(StrifeStat.DARK_DAMAGE);
+      case EARTH -> attacker.getStat(StrifeStat.EARTH_DAMAGE);
+      case LIGHT -> attacker.getStat(StrifeStat.LIGHT_DAMAGE);
+      case TRUE_DAMAGE -> attacker.getStat(StrifeStat.TRUE_DAMAGE);
+    };
   }
 
-  public static float applyDamageScale(StrifeMob caster, StrifeMob target, BonusDamage bonusDamage) {
+  public static float applyDamageScale(StrifeMob caster, StrifeMob target,
+      BonusDamage bonusDamage) {
     float amount = bonusDamage.getAmount();
-    switch (bonusDamage.getDamageScale()) {
-      case FLAT:
-        return amount;
-      case CASTER_STAT_PERCENT:
-        return bonusDamage.getAmount() * caster.getStat(bonusDamage.getDamageStat());
-      case TARGET_STAT_PERCENT:
-        return bonusDamage.getAmount() * target.getStat(bonusDamage.getDamageStat());
-      case CASTER_LEVEL:
-        return amount * StatUtil.getMobLevel(caster.getEntity());
-      case CASTER_DAMAGE:
-        return amount * DamageUtil.getRawDamage(caster, bonusDamage.getDamageType());
-      case TARGET_CURRENT_HEALTH:
-        return amount * (float) target.getEntity().getHealth();
-      case CASTER_CURRENT_HEALTH:
-        return amount * (float) caster.getEntity().getHealth();
-      case TARGET_MISSING_HEALTH:
-        return amount * (float) (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
-      case CASTER_MISSING_HEALTH:
-        return amount * (float) (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
-      case TARGET_MAX_HEALTH:
-        return amount * (float) target.getEntity().getMaxHealth();
-      case CASTER_MAX_HEALTH:
-        return amount * (float) caster.getEntity().getMaxHealth();
-      case TARGET_CURRENT_BARRIER:
-        return amount * target.getBarrier();
-      case CASTER_CURRENT_BARRIER:
-        return amount * caster.getBarrier();
-      case TARGET_MISSING_BARRIER:
-        return amount * (StatUtil.getMaximumBarrier(target) - target.getBarrier());
-      case CASTER_MISSING_BARRIER:
-        return amount * (StatUtil.getMaximumBarrier(caster) - caster.getBarrier());
-      case TARGET_MAX_BARRIER:
-        return amount * StatUtil.getMaximumBarrier(target);
-      case CASTER_MAX_BARRIER:
-        return amount * StatUtil.getMaximumBarrier(caster);
-      case TARGET_CURRENT_ENERGY:
-        return amount * StatUtil.getEnergy(target);
-      case CASTER_CURRENT_ENERGY:
-        return amount * StatUtil.getEnergy(caster);
-      case TARGET_MISSING_ENERGY:
-        return amount * (StatUtil.updateMaxEnergy(target) - StatUtil.getEnergy(target));
-      case CASTER_MISSING_ENERGY:
-        return amount * (StatUtil.updateMaxEnergy(caster) - StatUtil.getEnergy(caster));
-      case TARGET_MAX_ENERGY:
-        return amount * StatUtil.updateMaxEnergy(target);
-      case CASTER_MAX_ENERGY:
-        return amount * StatUtil.updateMaxEnergy(caster);
-      case TARGET_CURRENT_RAGE:
-        return amount * StrifePlugin.getInstance().getRageManager().getRage(target.getEntity());
-      case CASTER_CURRENT_RAGE:
-        return amount * StrifePlugin.getInstance().getRageManager().getRage(caster.getEntity());
-      case TARGET_MAX_RAGE:
-        return amount * StatUtil.getMaximumRage(target);
-      case CASTER_MAX_RAGE:
-        return amount * StatUtil.getMaximumRage(caster);
-    }
-    return amount;
+    return switch (bonusDamage.getDamageScale()) {
+      case FLAT -> amount;
+      case CASTER_STAT_PERCENT -> bonusDamage.getAmount() *
+          caster.getStat(bonusDamage.getDamageStat());
+      case TARGET_STAT_PERCENT -> bonusDamage.getAmount() *
+          target.getStat(bonusDamage.getDamageStat());
+      case CASTER_LEVEL -> amount * StatUtil.getMobLevel(caster.getEntity());
+      case CASTER_DAMAGE -> amount * DamageUtil.getRawDamage(caster, bonusDamage.getDamageType());
+      case TARGET_CURRENT_HEALTH -> amount * (float) target.getEntity().getHealth();
+      case CASTER_CURRENT_HEALTH -> amount * (float) caster.getEntity().getHealth();
+      case TARGET_MISSING_HEALTH -> amount *
+          (float) (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
+      case CASTER_MISSING_HEALTH -> amount *
+          (float) (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
+      case TARGET_MAX_HEALTH -> amount * (float) target.getEntity().getMaxHealth();
+      case CASTER_MAX_HEALTH -> amount * (float) caster.getEntity().getMaxHealth();
+      case TARGET_CURRENT_BARRIER -> amount * target.getBarrier();
+      case CASTER_CURRENT_BARRIER -> amount * caster.getBarrier();
+      case TARGET_MISSING_BARRIER -> amount * (target.getMaxBarrier() - target.getBarrier());
+      case CASTER_MISSING_BARRIER -> amount * (caster.getMaxBarrier() - caster.getBarrier());
+      case TARGET_MAX_BARRIER -> amount * target.getMaxBarrier();
+      case CASTER_MAX_BARRIER -> amount * caster.getMaxBarrier();
+      case TARGET_CURRENT_ENERGY -> amount * StatUtil.getEnergy(target);
+      case CASTER_CURRENT_ENERGY -> amount * StatUtil.getEnergy(caster);
+      case TARGET_MISSING_ENERGY -> amount * (target.getMaxEnergy() - StatUtil.getEnergy(target));
+      case CASTER_MISSING_ENERGY -> amount * (caster.getMaxEnergy() - StatUtil.getEnergy(caster));
+      case TARGET_MAX_ENERGY -> amount * target.getMaxEnergy();
+      case CASTER_MAX_ENERGY -> amount * caster.getMaxEnergy();
+      case TARGET_CURRENT_RAGE -> amount *
+          StrifePlugin.getInstance().getRageManager().getRage(target.getEntity());
+      case CASTER_CURRENT_RAGE -> amount *
+          StrifePlugin.getInstance().getRageManager().getRage(caster.getEntity());
+      case TARGET_MAX_RAGE -> amount * target.getMaxRage();
+      case CASTER_MAX_RAGE -> amount * caster.getMaxRage();
+    };
   }
 
-  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, StrifeMob target, DamageModifiers mods) {
+  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, StrifeMob target,
+      DamageModifiers mods) {
     Map<DamageType, Float> damageMap = new HashMap<>();
     boolean modsEnabled = mods != null;
     for (DamageType damageType : DMG_TYPES) {
@@ -464,10 +478,12 @@ public class DamageUtil {
 
   public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap, Map<AbilityMod, Float> abilityMods) {
-    damageMap.replaceAll((t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
+    damageMap.replaceAll(
+        (t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
   }
 
-  public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType, Map<DamageType, Float> damageMap) {
+  public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
+      Map<DamageType, Float> damageMap) {
     if (attackType == AttackType.BONUS) {
       return;
     }
@@ -507,11 +523,13 @@ public class DamageUtil {
     }
   }
 
-  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender, Map<DamageType, Float> damageMap,
+  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender,
+      Map<DamageType, Float> damageMap,
       DamageModifiers mods) {
-    float darkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
-    if (darkDamage != 0) {
-      damageMap.put(DamageType.DARK, darkDamage * getDarknessManager().getCorruptionMult(defender.getEntity()));
+    float baseDarkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
+    if (baseDarkDamage != 0) {
+      damageMap.put(DamageType.DARK,
+          baseDarkDamage * getDarknessManager().getCorruptionMult(defender.getEntity()));
     }
     float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
         attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
@@ -524,8 +542,8 @@ public class DamageUtil {
     float totalElementalDamage = 0;
     Map<DamageType, Float> elementalDamages = new HashMap<>();
     for (DamageType type : damageMap.keySet()) {
-      if (type != DamageType.PHYSICAL && type != DamageType.MAGICAL && type != DamageType.TRUE_DAMAGE
-          && type != DamageType.EARTH) {
+      if (type != DamageType.PHYSICAL && type != DamageType.MAGICAL &&
+          type != DamageType.TRUE_DAMAGE) {
         float amount = damageMap.get(type);
         totalElementalDamage += amount;
         elementalDamages.put(type, amount);
@@ -565,14 +583,20 @@ public class DamageUtil {
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-        applyCorrupt(defender.getEntity(), 5 + darkDamage / 3, true);
+        applyCorrupt(defender.getEntity(), 10 + baseDarkDamage / 4, true);
       }
       case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
         int runes = plugin.getBlockManager().getEarthRunes(attacker);
-        float maxLife = (float) attacker.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH)
-            .getValue();
-        float newDamage = damageMap.get(DamageType.EARTH) * 1.1f + (runes * 0.02f * maxLife);
+        float newDamage = damageMap.get(DamageType.EARTH) * (1.25f + (runes * 0.05f));
+        defender.getEntity().getWorld().playSound(
+            defender.getEntity().getEyeLocation(), Sound.BLOCK_ROOTED_DIRT_BREAK, 1f, 0.85f);
+        defender.getEntity().getWorld().spawnParticle(
+            Particle.ITEM_CRACK,
+            defender.getEntity().getLocation().clone().add(0, 0.4, 0),
+            20, 0.1, 0.1, 0.1, 0.13f,
+            EARTH_CRACK
+        );
         damageMap.put(DamageType.EARTH, newDamage);
       }
       case LIGHT -> {
@@ -587,7 +611,7 @@ public class DamageUtil {
   public static float getDamageReduction(DamageType type, StrifeMob attack, StrifeMob defend,
       Map<AbilityMod, Float> modDoubleMap) {
     switch (type) {
-      case PHYSICAL:
+      case PHYSICAL -> {
         float armor = getDefenderArmor(attack, defend);
         armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0f);
         armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0f);
@@ -595,7 +619,8 @@ public class DamageUtil {
           armor *= 0.8;
         }
         return getArmorMult(armor);
-      case MAGICAL:
+      }
+      case MAGICAL -> {
         float warding = getDefenderWarding(attack, defend);
         warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0f);
         warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
@@ -603,28 +628,36 @@ public class DamageUtil {
           warding *= 0.8;
         }
         return getWardingMult(warding);
-      case FIRE:
-        float fireResist = getFireResist(defend, attack.hasTrait(StrifeTrait.SOUL_FLAME)) / 100;
+      }
+      case FIRE -> {
+        float fireResist = defend.getStat(StrifeStat.FIRE_RESIST) / 100;
+        if (attack.hasTrait(StrifeTrait.SOUL_FLAME) && fireResist > 0) {
+          fireResist /= 2;
+        }
         return fireResist >= 0 ? (1 - fireResist) : 1 + Math.abs(fireResist);
-      case ICE:
-        float iceResist = getIceResist(defend) / 100;
+      }
+      case ICE -> {
+        float iceResist = defend.getStat(StrifeStat.ICE_RESIST) / 100;
         return iceResist >= 0 ? (1 - iceResist) : 1 + Math.abs(iceResist);
-      case LIGHTNING:
-        float lightningResist = getLightningResist(defend) / 100;
+      }
+      case LIGHTNING -> {
+        float lightningResist = defend.getStat(StrifeStat.LIGHTNING_RESIST) / 100;
         return lightningResist >= 0 ? (1 - lightningResist) : 1 + Math.abs(lightningResist);
-      case DARK:
-        float darkResist = getShadowResist(defend) / 100;
+      }
+      case DARK -> {
+        float darkResist = defend.getStat(StrifeStat.DARK_RESIST) / 100;
         return darkResist >= 0 ? (1 - darkResist) : 1 + Math.abs(darkResist);
-      case EARTH:
-        float earthResist = getEarthResist(defend) / 100;
+      }
+      case EARTH -> {
+        float earthResist = defend.getStat(StrifeStat.EARTH_RESIST) / 100;
         return earthResist >= 0 ? (1 - earthResist) : 1 + Math.abs(earthResist);
-      case LIGHT:
-        float lightResist = getLightResist(defend) / 100;
+      }
+      case LIGHT -> {
+        float lightResist = defend.getStat(StrifeStat.LIGHT_RESIST) / 100;
         return lightResist >= 0 ? (1 - lightResist) : 1 + Math.abs(lightResist);
-      case TRUE_DAMAGE:
-      default:
-        return 1;
+      }
     }
+    return 1;
   }
 
   public static double getMinionMult(StrifeMob mob) {
@@ -697,7 +730,8 @@ public class DamageUtil {
 
   public static void attemptFreeze(float damage, StrifeMob attacker, StrifeMob defender) {
     LivingEntity defendEntity = defender.getEntity();
-    defendEntity.getWorld().playSound(defendEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
+    defendEntity.getWorld()
+        .playSound(defendEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
     int ticks = 50 + (int) (80f * (damage / defendEntity.getMaxHealth()));
     defender.setFrost(defender.getFrost() + ticks);
   }
@@ -718,7 +752,8 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> mods) {
+  public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
+      Map<AbilityMod, Float> mods) {
 
     float totalEvasion = StatUtil.getEvasion(defender);
     float totalAccuracy = StatUtil.getAccuracy(attacker);
@@ -757,19 +792,23 @@ public class DamageUtil {
     defender.getEntity().getWorld()
         .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (defender.getEntity() instanceof Player) {
-      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENTs", ATTACK_DODGED, 10, 100);
+      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENTs",
+          ATTACK_DODGED, 10, 100);
     }
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager()
-          .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 6, "&7&oMiss");
+          .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 6,
+              "&7&oMiss");
     }
   }
 
   public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     if (defender.getEntity() instanceof Player) {
-      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENT", ATTACK_BLOCKED, 10, 100);
+      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENT",
+          ATTACK_BLOCKED, 10, 100);
     }
     if (attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
@@ -827,7 +866,8 @@ public class DamageUtil {
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
-  public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier, float healMultiplier) {
+  public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier,
+      float healMultiplier) {
     float energy = attacker.getStat(StrifeStat.ENERGY_ON_HIT) * attackMultiplier * healMultiplier;
     StatUtil.changeEnergy(attacker, energy);
   }
@@ -843,7 +883,7 @@ public class DamageUtil {
     float chance = (attacker.getStat(StrifeStat.BLEED_CHANCE) +
         mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_CHANCE, 0f)) / 100;
     if (chance >= rollDouble()) {
-      float damage = rawPhysical  * BLEED_PERCENT;
+      float damage = rawPhysical * BLEED_PERCENT;
       if (mods.isScaleChancesWithAttack()) {
         damage *= Math.min(1f, mods.getAttackMultiplier());
       }
@@ -886,11 +926,13 @@ public class DamageUtil {
     }
     float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
     reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6f;
-    defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(), Sound.BLOCK_LANTERN_STEP,
-        SoundCategory.HOSTILE, 1f, 1.5f);
+    defender.getEntity().getWorld()
+        .playSound(defender.getEntity().getLocation(), Sound.BLOCK_LANTERN_STEP,
+            SoundCategory.HOSTILE, 1f, 1.5f);
     if (attacker.getEntity() instanceof Player) {
       ((Player) attacker.getEntity()).spawnParticle(Particle.DAMAGE_INDICATOR,
-          TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER), (int) reflectDamage, 0.3, 0.3,
+          TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER),
+          (int) reflectDamage, 0.3, 0.3,
           0.3, 0.1);
     }
     if (defender.getEntity() instanceof Player) {
@@ -952,7 +994,8 @@ public class DamageUtil {
   }
 
   public static AttackType getAttackType(EntityDamageByEntityEvent event) {
-    if (event.getCause() == DamageCause.ENTITY_EXPLOSION || event.getDamager() instanceof EvokerFangs) {
+    if (event.getCause() == DamageCause.ENTITY_EXPLOSION
+        || event.getDamager() instanceof EvokerFangs) {
       return AttackType.AREA;
     } else if (event.getDamager() instanceof Projectile) {
       return AttackType.PROJECTILE;
@@ -1064,7 +1107,8 @@ public class DamageUtil {
     BLEED_CHANCE,
     BLEED_DAMAGE,
     STATUS_CHANCE,
-    BACK_ATTACK
+    BACK_ATTACK,
+    MAX_DAMAGE
   }
 
   public enum AttackType {

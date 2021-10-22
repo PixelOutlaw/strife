@@ -16,23 +16,28 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.tasks;
+package land.face.strife.listeners;
 
-import land.face.strife.managers.AbilityManager;
-import org.bukkit.scheduler.BukkitRunnable;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import land.face.dinvy.events.EquipItemEvent;
+import land.face.strife.StrifePlugin;
+import land.face.strife.util.ItemUtil;
+import org.bukkit.Sound;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
-public class AbilityTickTask extends BukkitRunnable {
+public record DeluxeEquipListener(StrifePlugin plugin) implements Listener {
 
-  private AbilityManager abilityManager;
-
-  public static int ABILITY_TICK_RATE = 4;
-
-  public AbilityTickTask(AbilityManager abilityManager) {
-    this.abilityManager = abilityManager;
-  }
-
-  @Override
-  public void run() {
-    abilityManager.tickAbilityCooldowns();
+  @EventHandler
+  public void onEntityDeathEvent(EquipItemEvent event) {
+    if (plugin.getAbilityIconManager().isAbilityIcon(event.getStack())) {
+      event.setCancelled(true);
+      return;
+    }
+    if (!ItemUtil.meetsLevelRequirement(event.getStack(), event.getPlayer().getLevel())) {
+      event.setCancelled(true);
+      MessageUtils.sendMessage(event.getPlayer(), "&e[!] You aren't a high enough level to equip this!");
+      event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.8f);
+    }
   }
 }

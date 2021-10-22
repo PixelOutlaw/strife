@@ -101,8 +101,7 @@ public class StatusBar {
     if (target.get() == null) {
       barrierBar.setVisible(!hidden);
     } else {
-      barrierBar.setVisible(
-          !hidden && StatUtil.getMaximumBarrier(Objects.requireNonNull(target.get())) > 1);
+      barrierBar.setVisible(!hidden && target.get().getMaxBarrier() > 1);
     }
     Bukkit.getScheduler()
         .runTaskLater(StrifePlugin.getInstance(), () -> healthBar.setVisible(!hidden), 0L);

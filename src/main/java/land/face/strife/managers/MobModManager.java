@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -128,18 +129,13 @@ public class MobModManager {
   }
 
   private ChatColor getPrefixColor(int modCount) {
-    switch (modCount) {
-      case 0:
-        return ChatColor.WHITE;
-      case 1:
-        return ChatColor.BLUE;
-      case 2:
-        return ChatColor.DARK_PURPLE;
-      case 3:
-        return ChatColor.RED;
-      default:
-        return ChatColor.WHITE;
-    }
+    return switch (modCount) {
+      case 0 -> ChatColor.WHITE;
+      case 1 -> ChatColor.BLUE;
+      case 2 -> ChatColor.DARK_PURPLE;
+      case 3 -> ChatColor.RED;
+      default -> ChatColor.WHITE;
+    };
   }
 
   private int getModCount(int max) {
@@ -163,7 +159,7 @@ public class MobModManager {
     mod.setBaseStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("base-stats")));
     mod.setPerLevelStats(
         StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));
-    for (EquipmentSlot slot : EquipmentCache.ITEM_SLOTS) {
+    for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
       String equipmentId = cs.getString("equipment." + slot, null);
       if (equipmentId != null) {
         ItemStack stack = equipmentManager.getItem(equipmentId);

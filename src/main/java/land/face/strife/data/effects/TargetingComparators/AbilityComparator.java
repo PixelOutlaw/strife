@@ -6,22 +6,19 @@ import land.face.strife.data.ability.Ability;
 public class AbilityComparator implements Comparator<Ability> {
 
   public int compare(Ability a1, Ability a2) {
-    int req1 = 0;
-    if (a1.getAbilityIconData() != null) {
-      for (int val : a1.getAbilityIconData().getLifeSkillRequirements().values()) {
-        if (val > req1) {
-          req1 = val;
+    return Integer.compare(getAbilityLevel(a1), getAbilityLevel(a2));
+  }
+
+  private int getAbilityLevel(Ability ability) {
+    int level = 0;
+    if (ability.getAbilityIconData() != null) {
+      for (int val : ability.getAbilityIconData().getLifeSkillRequirements().values()) {
+        if (val > level) {
+          level = val;
         }
       }
+      level = Math.max(level, ability.getAbilityIconData().getLevelRequirement());
     }
-    int req2 = 0;
-    if (a2.getAbilityIconData() != null) {
-      for (int val : a2.getAbilityIconData().getLifeSkillRequirements().values()) {
-        if (val > req2) {
-          req2 = val;
-        }
-      }
-    }
-    return Integer.compare(req1, req2);
+    return level;
   }
 }

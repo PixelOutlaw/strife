@@ -41,6 +41,8 @@ public enum StrifeStat {
   BARRIER_MULT(),
   BARRIER_SPEED("Barrier Recharge Rate"),
   BARRIER_REGEN("Barrier Regeneration"),
+  BARRIER_START_SPEED("Shorter Barrier Delay"),
+  DAMAGE_TO_BARRIERS("Damage To Barriers"),
 
   PHYSICAL_DAMAGE("Physical Damage"),
   MAGIC_DAMAGE("Magical Damage"),
@@ -66,6 +68,7 @@ public enum StrifeStat {
   BLOCK_RECOVERY("Block Recovery"),
 
   TENACITY("Tenacity"),
+  COOLDOWN_REDUCTION("Cooldown Reduction"),
 
   DAMAGE_REDUCTION("Damage Reduction"),
   DAMAGE_REFLECT("Reflected Damage"),

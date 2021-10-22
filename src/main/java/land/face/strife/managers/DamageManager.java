@@ -49,8 +49,13 @@ public class DamageManager {
   }
 
   public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage, DamageModifiers modifiers) {
-    if (!modifiers.isBypassBarrier()) {
+    if (!modifiers.isBypassBarrier() && defender.getBarrier() > 0) {
+      float dmgVsBarrier = 1 + attacker.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
+      damage *= dmgVsBarrier;
       damage = defender.damageBarrier(damage);
+      damage /= dmgVsBarrier;
+    } else {
+      attacker.damageBarrier(0);
     }
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {

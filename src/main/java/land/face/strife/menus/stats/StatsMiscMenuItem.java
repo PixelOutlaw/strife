@@ -54,48 +54,47 @@ public class StatsMiscMenuItem extends MenuItem {
     if (!player.isValid()) {
       return getIcon();
     }
-    StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.DIAMOND_BOOTS);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
-    lore.add(ChatColor.DARK_AQUA + "Maximum Energy: " + ChatColor.WHITE + INT_FORMAT
-        .format(StatUtil.updateMaxEnergy(pStats)));
-    if (!pStats.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
+    lore.add(ChatColor.DARK_AQUA + "Maximum Energy: " + ChatColor.WHITE + INT_FORMAT.format(mob.getMaxEnergy()));
+    if (!mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
       lore.add(ChatColor.DARK_AQUA + "Energy Regeneration: " + ChatColor.WHITE + ONE_DECIMAL
-          .format(pStats.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
+          .format(mob.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
     }
-    if (pStats.getStat(StrifeStat.ENERGY_ON_HIT) > 0) {
+    if (mob.getStat(StrifeStat.ENERGY_ON_HIT) > 0) {
       lore.add(ChatColor.DARK_AQUA + "Energy On Hit: " + ChatColor.WHITE + INT_FORMAT.format(
-          pStats.getStat(StrifeStat.ENERGY_ON_HIT)));
+          mob.getStat(StrifeStat.ENERGY_ON_HIT)));
     }
-    if (pStats.getStat(StrifeStat.ENERGY_ON_KILL) > 0) {
+    if (mob.getStat(StrifeStat.ENERGY_ON_KILL) > 0) {
       lore.add(ChatColor.DARK_AQUA + "Energy On Kill: " + ChatColor.WHITE + INT_FORMAT.format(
-          pStats.getStat(StrifeStat.ENERGY_ON_KILL)));
+          mob.getStat(StrifeStat.ENERGY_ON_KILL)));
     }
-    if (pStats.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0) {
+    if (mob.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0) {
       lore.add(ChatColor.DARK_AQUA + "Energy When Hit: " + ChatColor.WHITE + INT_FORMAT.format(
-          pStats.getStat(StrifeStat.ENERGY_WHEN_HIT)));
+          mob.getStat(StrifeStat.ENERGY_WHEN_HIT)));
     }
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
-        pStats.getStat(StrifeStat.MOVEMENT_SPEED)));
+        mob.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);
     lore.add(ChatColor.DARK_AQUA + "Healing Power: " + ChatColor.WHITE + INT_FORMAT.format(
-        100 + pStats.getStat(StrifeStat.HEALING_POWER)) + "%");
+        100 + mob.getStat(StrifeStat.HEALING_POWER)) + "%");
     lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
-        100 + pStats.getStat(StrifeStat.EFFECT_DURATION)) + "%");
+        100 + mob.getStat(StrifeStat.EFFECT_DURATION)) + "%");
     lore.add(breakLine);
-    if (pStats.getStat(StrifeStat.DOGE) > 0) {
+    if (mob.getStat(StrifeStat.DOGE) > 0) {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
       lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
     }
     lore.add(ChatColor.DARK_AQUA + "Crafting Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getStat(StrifeStat.CRAFT_SKILL)));
+        INT_FORMAT.format(mob.getStat(StrifeStat.CRAFT_SKILL)));
     lore.add(ChatColor.DARK_AQUA + "Enchanting Skill Bonus: " + ChatColor.WHITE + "+" +
-        INT_FORMAT.format(pStats.getStat(StrifeStat.ENCHANT_SKILL)));
+        INT_FORMAT.format(mob.getStat(StrifeStat.ENCHANT_SKILL)));
 
     lore.add(breakLine);
 

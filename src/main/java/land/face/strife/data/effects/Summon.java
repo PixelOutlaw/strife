@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import static land.face.strife.data.champion.EquipmentCache.EQUIPMENT_SLOTS;
 import static land.face.strife.data.champion.EquipmentCache.ITEM_SLOTS;
 
 import land.face.strife.StrifePlugin;
@@ -70,7 +71,7 @@ public class Summon extends LocationEffect {
         DisguiseAPI.disguiseToAll(summonedEntity.getEntity(), disguise);
 
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-          for (EquipmentSlot slot : ITEM_SLOTS) {
+          for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
             if (slot == EquipmentSlot.HAND && ItemUtil
                 .isWandOrStaff(caster.getEntity().getEquipment().getItem(EquipmentSlot.HAND))) {
               summonedEntity.getEntity().getEquipment().setItem(slot, SpawnListener.SKELETON_WAND);

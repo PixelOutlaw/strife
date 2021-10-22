@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class ShearsEquipListener implements Listener {
 
+  // Deprecated
   @EventHandler
   public void playerInteractEvent(PlayerInteractEvent e) {
     if (e.isCancelled()) {

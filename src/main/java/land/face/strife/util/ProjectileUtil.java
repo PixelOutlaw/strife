@@ -10,6 +10,7 @@ import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
@@ -50,7 +51,7 @@ public class ProjectileUtil {
     return ATTACK_MULT.getOrDefault(projectile, 1f);
   }
 
-  public static void setPierce(Arrow arrow, float chance) {
+  public static void setPierce(AbstractArrow arrow, float chance) {
     if (chance > 0) {
       int maxPuncture = 0;
       while (maxPuncture < 3) {

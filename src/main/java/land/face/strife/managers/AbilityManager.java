@@ -21,7 +21,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
-import land.face.strife.data.ability.AbilityCooldownContainer;
+import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.Phase;
@@ -33,10 +33,12 @@ import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.timers.SoulTimer;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -48,14 +50,15 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class AbilityManager {
 
   private final StrifePlugin plugin;
 
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
-  private final Map<LivingEntity, Set<AbilityCooldownContainer>> coolingDownAbilities = new ConcurrentHashMap<>();
-  private final Map<UUID, Set<AbilityCooldownContainer>> savedPlayerCooldowns = new ConcurrentHashMap<>();
+  private final Map<LivingEntity, Set<CooldownTracker>> cdMap = new ConcurrentHashMap<>();
+  private final Map<UUID, Set<CooldownTracker>> savedCooldowns = new ConcurrentHashMap<>();
 
   private final Random random = new Random();
 
@@ -149,50 +152,40 @@ public class AbilityManager {
     return true;
   }
 
-  public void cooldownReduce(LivingEntity livingEntity, String abilityId, int msReduction) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
+  public void reduceCooldowns(LivingEntity livingEntity, String abilityId, long msReduction) {
+    if (!cdMap.containsKey(livingEntity)) {
       return;
     }
-    AbilityCooldownContainer container = getCooldownContainer(livingEntity, abilityId);
-    if (container == null) {
+    CooldownTracker tracker = getCooldownTracker(livingEntity, abilityId);
+    if (tracker == null) {
       return;
     }
-    int abilityCooldown = getAbility(container.getAbilityId()).getCooldown() * 1000;
-    while (msReduction >= abilityCooldown && container.getSpentCharges() >= 1) {
-      container.setSpentCharges(container.getSpentCharges() - 1);
-      msReduction -= abilityCooldown;
-    }
-    container.setStartTime(container.getStartTime() - msReduction);
-    container.setEndTime(container.getEndTime() - msReduction);
-    if (livingEntity instanceof Player) {
-      plugin.getAbilityIconManager()
-          .updateIconProgress((Player) livingEntity, getAbility(abilityId));
-    }
+    tracker.reduce(msReduction);
   }
 
   public void unToggleAll(LivingEntity livingEntity) {
-    if (!coolingDownAbilities.containsKey(livingEntity)) {
+    if (!cdMap.containsKey(livingEntity)) {
       return;
     }
-    for (AbilityCooldownContainer cooldownContainer : coolingDownAbilities.get(livingEntity)) {
+    for (CooldownTracker cooldownContainer : cdMap.get(livingEntity)) {
       doToggleOff(cooldownContainer, plugin.getStrifeMobManager().getStatMob(livingEntity));
     }
   }
 
   public void unToggleAbility(StrifeMob mob, String abilityId) {
-    AbilityCooldownContainer container = getCooldownContainer(mob.getEntity(), abilityId);
+    CooldownTracker container = getCooldownTracker(mob.getEntity(), abilityId);
     if (container == null) {
       return;
     }
     doToggleOff(container, mob);
   }
 
-  private void doToggleOff(AbilityCooldownContainer container, StrifeMob mob) {
-    if (!container.isToggledOn()) {
+  private void doToggleOff(CooldownTracker tracker, StrifeMob mob) {
+    if (!tracker.isToggleState()) {
       return;
     }
-    container.setToggledOn(false);
-    Ability ability = getAbility(container.getAbilityId());
+    tracker.setToggleState(false);
+    Ability ability = tracker.getAbility();
     coolDownAbility(mob, ability);
 
     Set<LivingEntity> targets = new HashSet<>();
@@ -202,91 +195,50 @@ public class AbilityManager {
     plugin.getEffectManager().processEffectList(mob, response, ability.getToggleOffEffects());
   }
 
-  public AbilityCooldownContainer getCooldownContainer(LivingEntity le, String abilityId) {
-    if (coolingDownAbilities.get(le) == null) {
-      coolingDownAbilities.put(le, new HashSet<>());
+  public CooldownTracker getCooldownTracker(LivingEntity le, String abilityId) {
+    if (cdMap.get(le) == null) {
+      cdMap.put(le, new HashSet<>());
       return null;
     }
-    for (AbilityCooldownContainer cont : coolingDownAbilities.get(le)) {
-      if (abilityId.equals(cont.getAbilityId())) {
-        return cont;
+    Iterator<CooldownTracker> trackerIterator = cdMap.get(le).iterator();
+    while (trackerIterator.hasNext()) {
+      CooldownTracker tracker = trackerIterator.next();
+      if (tracker.isCancelled()) {
+        trackerIterator.remove();
+        continue;
+      }
+      if (tracker.getAbility().getId().equals(abilityId)) {
+        return tracker;
       }
     }
     return null;
   }
 
-  public double getCooldownPercent(AbilityCooldownContainer container) {
-    if (container == null) {
-      return 1.0D;
-    }
-    double progress = container.getEndTime() - System.currentTimeMillis();
-    double maxTime = container.getEndTime() - container.getStartTime();
-    return progress / maxTime;
-  }
-
-  public void tickAbilityCooldowns() {
-    for (LivingEntity le : coolingDownAbilities.keySet()) {
-      if (le == null || !le.isValid() || coolingDownAbilities.get(le).isEmpty()) {
-        coolingDownAbilities.remove(le);
-        continue;
-      }
-      Iterator<AbilityCooldownContainer> iterator = coolingDownAbilities.get(le).iterator();
-      while (iterator.hasNext()) {
-        AbilityCooldownContainer container = iterator.next();
-        Ability ability = getAbility(container.getAbilityId());
-        if (container.isToggledOn()) {
-          plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
+  public void savePlayerCooldowns(Player player) {
+    if (cdMap.containsKey(player)) {
+      savedCooldowns.put(player.getUniqueId(), new HashSet<>());
+      for (CooldownTracker container : cdMap.get(player)) {
+        if (container.isCancelled()) {
           continue;
         }
-        if (System.currentTimeMillis() >= container.getEndTime()) {
-          if (container.getSpentCharges() <= 1) {
-            iterator.remove();
-            LogUtil.printDebug("Final cooldown for " + container.getAbilityId() + ", removing");
-            if (le instanceof Player) {
-              plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
-            }
-            continue;
-          }
-          container.setSpentCharges(container.getSpentCharges() - 1);
-          container.setStartTime(System.currentTimeMillis());
-          container.setEndTime(System.currentTimeMillis() + ability.getCooldown() * 1000);
-          LogUtil.printDebug("Cooled one charge for " + container.getAbilityId());
-          if (le instanceof Player) {
-            plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
-          }
-        } else if (le instanceof Player && container.getSpentCharges() == ability.getMaxCharges()) {
-          plugin.getAbilityIconManager().updateIconProgress((Player) le, ability);
-        }
-      }
-    }
-  }
-
-  public void savePlayerCooldowns(Player player) {
-    if (coolingDownAbilities.containsKey(player)) {
-      savedPlayerCooldowns.put(player.getUniqueId(), new HashSet<>());
-      for (AbilityCooldownContainer container : coolingDownAbilities.get(player)) {
         container.setLogoutTime(System.currentTimeMillis());
-        savedPlayerCooldowns.get(player.getUniqueId()).add(container);
+        savedCooldowns.get(player.getUniqueId()).add(container);
       }
-      coolingDownAbilities.remove(player);
+      cdMap.remove(player);
     }
   }
 
   public void loadPlayerCooldowns(Player player) {
-    coolingDownAbilities.put(player, new HashSet<>());
-    if (!savedPlayerCooldowns.containsKey(player.getUniqueId())) {
+    cdMap.put(player, new HashSet<>());
+    if (!savedCooldowns.containsKey(player.getUniqueId())) {
       return;
     }
-    for (AbilityCooldownContainer container : savedPlayerCooldowns.get(player.getUniqueId())) {
-      long timeDifference = System.currentTimeMillis() - container.getLogoutTime();
-      container.setStartTime(container.getStartTime() + timeDifference);
-      container.setEndTime(container.getEndTime() + timeDifference);
-      container.setToggledOn(false);
-      coolingDownAbilities.get(player).add(container);
-      plugin.getAbilityIconManager()
-          .updateIconProgress(player, getAbility(container.getAbilityId()));
+    for (CooldownTracker container : savedCooldowns.get(player.getUniqueId())) {
+      container.setStartTime(System.currentTimeMillis());
+      cdMap.get(player).add(container);
+      container.updateIcon();
     }
-    savedPlayerCooldowns.remove(player.getUniqueId());
+    savedCooldowns.remove(player.getUniqueId());
   }
 
   private boolean hasEnergy(StrifeMob caster, Ability ability) {
@@ -299,19 +251,32 @@ public class AbilityManager {
     return true;
   }
 
-  private boolean canBeCast(StrifeMob caster, Ability ability) {
+  public Map<StrifeStat, Float> getApplicableAbilityPassiveStats(Player player,
+      @NotNull Ability ability) {
+    if (ability.isPassiveStatsOnCooldown()) {
+      if (ability.getTargetType() == TargetType.TOGGLE) {
+        CooldownTracker tracker = getCooldownTracker(player, ability.getId());
+        if (tracker != null && tracker.isToggleState()) {
+          return StatUpdateManager.combineMaps(ability.getPassiveStats(), ability.getTogglePassiveStats());
+        }
+        return ability.getPassiveStats();
+      }
+      return ability.getPassiveStats();
+    }
+    CooldownTracker tracker = getCooldownTracker(player, ability.getId());
+    if (tracker == null || tracker.getChargesLeft() > 0) {
+      return ability.getPassiveStats();
+    }
+    return new HashMap<>();
+  }
+
+  public boolean canBeCast(StrifeMob caster, @NotNull Ability ability) {
     if (caster.getEntity() == null || !caster.getEntity().isValid()) {
       return false;
     }
-    if (ability == null) {
-      Bukkit.getLogger().warning("[Strife] " + caster.getEntity().getName() + " tried to cast null ability");
-      return false;
-    }
-    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
-    if (container == null || container.getSpentCharges() < ability.getMaxCharges()) {
-      return true;
-    }
-    return System.currentTimeMillis() > container.getEndTime();
+    CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
+    return tracker == null || tracker.isToggleState()
+        || (ability.getMaxCharges() > 1 && tracker.getChargesLeft() > 0);
   }
 
   private void playChatMessages(StrifeMob caster, Ability ability) {
@@ -409,21 +374,18 @@ public class AbilityManager {
     if (ability.getCooldown() < 1) {
       return;
     }
-    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
-      coolingDownAbilities.put(caster.getEntity(), new HashSet<>());
+    if (!cdMap.containsKey(caster.getEntity())) {
+      cdMap.put(caster.getEntity(), new HashSet<>());
     }
-    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
-    if (container == null) {
-      container = new AbilityCooldownContainer(ability.getId(),
-          System.currentTimeMillis() + (int) (ability.getCooldown() * 1000f));
-      coolingDownAbilities.get(caster.getEntity()).add(container);
+    CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
+    if (tracker == null) {
+      tracker = new CooldownTracker(caster, ability);
+      cdMap.get(caster.getEntity()).add(tracker);
+      if (ability.getTargetType() == TargetType.TOGGLE) {
+        tracker.setToggleState(true);
+      }
     }
-    if (container.getSpentCharges() == 0) {
-      container.setStartTime(System.currentTimeMillis());
-      container.setEndTime(System.currentTimeMillis() + (int) (ability.getCooldown() * 1000f));
-    }
-    container.setSpentCharges(container.getSpentCharges() + 1);
-    container.setToggledOn(false);
+    tracker.setChargesLeft(tracker.getChargesLeft() - 1);
   }
 
   /*
@@ -434,18 +396,18 @@ public class AbilityManager {
     if (ability.getTargetType() != TargetType.TOGGLE) {
       throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
-    if (!coolingDownAbilities.containsKey(caster.getEntity())) {
-      coolingDownAbilities.put(caster.getEntity(), new HashSet<>());
+    if (!cdMap.containsKey(caster.getEntity())) {
+      cdMap.put(caster.getEntity(), new HashSet<>());
     }
-    AbilityCooldownContainer container = getCooldownContainer(caster.getEntity(), ability.getId());
-    if (container == null) {
-      container = new AbilityCooldownContainer(ability.getId(), 0);
-      container.setToggledOn(true);
-      coolingDownAbilities.get(caster.getEntity()).add(container);
+    CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
+    if (tracker == null) {
+      tracker = new CooldownTracker(caster, ability);
+      tracker.setToggleState(true);
+      cdMap.get(caster.getEntity()).add(tracker);
       return true;
     }
-    if (container.isToggledOn()) {
-      container.setToggledOn(false);
+    if (tracker.isToggleState()) {
+      tracker.setToggleState(false);
       coolDownAbility(caster, ability);
 
       Set<LivingEntity> entities = new HashSet<>();
@@ -455,7 +417,7 @@ public class AbilityManager {
       plugin.getEffectManager().processEffectList(caster, response, ability.getToggleOffEffects());
       return false;
     }
-    container.setToggledOn(true);
+    tracker.setToggleState(true);
     return true;
   }
 
@@ -477,11 +439,11 @@ public class AbilityManager {
   private TargetResponse getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
-      case SELF:
-      case TOGGLE:
+      case SELF, TOGGLE -> {
         targets.add(caster.getEntity());
         return new TargetResponse(targets, true);
-      case PARTY:
+      }
+      case PARTY -> {
         if (caster.getEntity() instanceof Player) {
           targets.addAll(
               plugin.getSnazzyPartiesHook().getNearbyPartyMembers((Player) caster.getEntity(),
@@ -490,17 +452,20 @@ public class AbilityManager {
           targets.add(caster.getEntity());
         }
         return new TargetResponse(targets, true);
-      case MASTER:
+      }
+      case MASTER -> {
         if (caster.getMaster() != null) {
           targets.add(caster.getMaster().getEntity());
         }
         return new TargetResponse(targets, true);
-      case MINIONS:
+      }
+      case MINIONS -> {
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
         }
         return new TargetResponse(targets, true);
-      case SINGLE_OTHER:
+      }
+      case SINGLE_OTHER -> {
         if (target != null) {
           targets.add(target);
           return new TargetResponse(targets);
@@ -511,16 +476,19 @@ public class AbilityManager {
           targets.add(newTarget);
         }
         return new TargetResponse(targets, true);
-      case TARGET_AREA:
+      }
+      case TARGET_AREA -> {
         Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), target,
             ability.getRange(), ability.isRaycastsTargetEntities());
         return new TargetResponse(loc);
-      case TARGET_GROUND:
+      }
+      case TARGET_GROUND -> {
         Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), target,
             ability.getRange(), ability.isRaycastsTargetEntities());
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);
-      case NEAREST_SOUL:
+      }
+      case NEAREST_SOUL -> {
         SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(),
             ability.getRange());
         if (soul != null) {
@@ -529,6 +497,7 @@ public class AbilityManager {
         TargetResponse response = new TargetResponse(targets, true);
         response.setForce(true);
         return response;
+      }
     }
     return new TargetResponse(new HashSet<>());
   }
@@ -620,7 +589,7 @@ public class AbilityManager {
 
     int cooldown = cs.getInt("cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
-    int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 2);
+    int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);
     float cost = (float) cs.getDouble("cost", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
@@ -637,10 +606,20 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
+    boolean passivesOnCooldown = cs.getBoolean("passive-stats-on-cooldown", false);
     boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
-    loadedAbilities.put(key, new Ability(key, name, effects, toggleOffEffects, targetType, range,
+
+    Ability ability = new Ability(key, name, effects, toggleOffEffects, targetType, range,
         cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
-        raycastsHitEntities, conditions, friendly, abilityIconData, cancelStealth));
+        raycastsHitEntities, conditions, passivesOnCooldown, friendly, abilityIconData,
+        cancelStealth);
+
+    ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
+        cs.getConfigurationSection("passive-stats")));
+    ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
+        cs.getConfigurationSection("passive-toggle-stats")));
+
+    loadedAbilities.put(key, ability);
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 

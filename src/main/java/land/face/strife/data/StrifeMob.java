@@ -39,12 +39,14 @@ public class StrifeMob {
 
   private final EquipmentCache equipmentCache = new EquipmentCache();
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
+  @Getter
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
   private String uniqueEntityId = null;
 
   private final WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
+  private WeakReference<Spawner> spawner = new WeakReference<>(null);
 
   private EntityAbilitySet abilitySet;
   private final Set<String> mods = new HashSet<>();
@@ -57,7 +59,11 @@ public class StrifeMob {
 
   private float energy = 0;
   private float maxEnergy = 0;
+  @Getter @Setter
+  private float maxRage = 0;
   private float barrier = 0;
+  @Getter @Setter
+  private float maxLife = 1;
   private float maxBarrier = 0;
   private float block = 0;
   @Getter
@@ -154,11 +160,9 @@ public class StrifeMob {
   }
 
   public void restoreBarrier(float amount) {
-    if (amount < 0) {
-      Bukkit.getLogger().warning("Tried to restore a negative barrier amount!");
+    if (amount < 0.01) {
       return;
     }
-    float maxBarrier = StatUtil.getMaximumBarrier(this);
     barrier = Math.min(barrier + amount, maxBarrier);
     if (barrierTask != null) {
       barrierTask.forceAbsorbHearts();
@@ -166,11 +170,11 @@ public class StrifeMob {
   }
 
   public float damageBarrier(float amount) {
-    if (amount < 0) {
-      Bukkit.getLogger().warning("Tried to damage barrier by a negative amount!");
+    float barrierDelayMultiplier = 1 + getStat(StrifeStat.BARRIER_START_SPEED) / 100;
+    barrierTask.bumpBarrierTime(barrierDelayMultiplier);
+    if (amount < 0.01) {
       return amount;
     }
-    barrierTask.bumpBarrierTime();
     float diff = barrier - amount;
     if (diff > 0) {
       barrier -= amount;
@@ -194,6 +198,12 @@ public class StrifeMob {
   public void updateBarrierScale() {
     if (getEntity() instanceof Player && barrierTask != null) {
       barrierTask.updateBarrierScale();
+    }
+  }
+
+  public void setBarrierDelayTicks(int ticks) {
+    if (barrierTask != null) {
+      barrierTask.setDelayTicks(ticks);
     }
   }
 
@@ -287,11 +297,20 @@ public class StrifeMob {
         lastChampionUpdate = getChampion().getLastChanged();
       }
     }
-    return statCache.getOrDefault(stat, 0f);
+    return StatUtil.getStat(this, stat);
+  }
+
+  public Spawner getSpawner() {
+    return spawner.get();
+  }
+
+  public void setSpawner(Spawner spawner) {
+    this.spawner = new WeakReference<>(spawner);
   }
 
   public void forceSetStat(StrifeStat stat, float value) {
     baseStats.put(stat, value);
+    buffsChanged = true;
   }
 
   public LivingEntity getEntity() {

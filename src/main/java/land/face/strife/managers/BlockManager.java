@@ -150,7 +150,6 @@ public class BlockManager {
       AttackType attackType, boolean isBlocking) {
     if (rollBlock(defender, isBlocking)) {
       blockFatigue(defender, attackMult, isBlocking, attackType == AttackType.PROJECTILE);
-      bumpRunes(defender);
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
       DamageUtil.doBlock(attacker, defender);
       return true;

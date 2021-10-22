@@ -46,6 +46,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.events.EquipItemEvent;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
@@ -69,6 +71,7 @@ import land.face.strife.listeners.CreeperExplodeListener;
 import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
+import land.face.strife.listeners.DeluxeEquipListener;
 import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.DoubleJumpListener;
 import land.face.strife.listeners.EndermanListener;
@@ -137,7 +140,6 @@ import land.face.strife.menus.stats.StatsMenu;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
-import land.face.strife.tasks.AbilityTickTask;
 import land.face.strife.tasks.BoostTickTask;
 import land.face.strife.tasks.BossBarsTask;
 import land.face.strife.tasks.DamageOverTimeTask;
@@ -247,6 +249,8 @@ public class StrifePlugin extends FacePlugin {
   private int maxSkillLevel;
 
   public SnazzyPartiesHook snazzyPartiesHook;
+  @Getter
+  private DeluxeInvyPlugin deluxeInvyPlugin;
 
   public static float WALK_COST;
   public static float WALK_COST_PERCENT;
@@ -371,7 +375,6 @@ public class StrifePlugin extends FacePlugin {
     ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
-    AbilityTickTask iconDuraTask = new AbilityTickTask(abilityManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     EveryTickTask everyTickTask = new EveryTickTask(this);
     IndicatorTask indicatorTask = new IndicatorTask(this);
@@ -447,10 +450,6 @@ public class StrifePlugin extends FacePlugin {
         2L,
         1L
     ));
-    taskList.add(iconDuraTask.runTaskTimer(this,
-        3 * 20L, // Start timer after 3s
-        AbilityTickTask.ABILITY_TICK_RATE
-    ));
     taskList.add(virtualEntityTask.runTaskTimer(this,
         20L, // Start timer after 3s
         1L // Run it every tick
@@ -488,7 +487,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new ShearsEquipListener(), this);
+    // Disabled when invy is controlled by another plugin
+    // Bukkit.getPluginManager().registerEvents(new ShearsEquipListener(), this);
     Bukkit.getPluginManager().registerEvents(new MinionListener(this), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
@@ -505,6 +505,10 @@ public class StrifePlugin extends FacePlugin {
     }
     if (Bukkit.getPluginManager().getPlugin("HeadDatabase") != null) {
       Bukkit.getPluginManager().registerEvents(new HeadLoadListener(this), this);
+    }
+    if (Bukkit.getPluginManager().getPlugin("DeluxeInvy") != null) {
+      deluxeInvyPlugin = (DeluxeInvyPlugin) Bukkit.getPluginManager().getPlugin("DeluxeInvy");
+      Bukkit.getPluginManager().registerEvents(new DeluxeEquipListener(this), this);
     }
 
     ReturnButton returnButton = new ReturnButton(this, Material.ARROW,

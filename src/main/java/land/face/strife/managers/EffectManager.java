@@ -224,6 +224,7 @@ public class EffectManager {
         ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
         ((RestoreBarrier) effect).setDamageScale(
             DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((RestoreBarrier) effect).setNewDelayTicks(cs.getInt("new-barrier-delay-ticks", -1));
       }
       case RESTORE_ENERGY -> {
         effect = new ChangeEnergy();
@@ -243,7 +244,6 @@ public class EffectManager {
         ((Damage) effect).setDamageReductionRatio(damageReductionRatio);
         ((Damage) effect).setHealMultiplier(
             (float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
-        ((Damage) effect).setMaxDamage((float) cs.getDouble("max-damage", -1D));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
@@ -729,7 +729,8 @@ public class EffectManager {
         ParticleStyle style = ParticleStyle.valueOf(cs.getString("style", "NORMAL"));
         ((StrifeParticle) effect).setStyle(style);
         if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
-            || particle == Particle.SPELL_INSTANT) {
+            || particle == Particle.SPELL_INSTANT || particle == Particle.GLOW
+            || particle == Particle.ELECTRIC_SPARK) {
           ((StrifeParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
           ((StrifeParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
           ((StrifeParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);

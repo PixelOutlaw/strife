@@ -17,14 +17,18 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.data.effects.Riptide;
+import land.face.strife.events.AbilityCastEvent;
+import land.face.strife.events.AbilityCooldownEvent;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.*;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -60,6 +64,20 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
   private final static String UNUSED_PATH =
       "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onAbilityCooldown(final AbilityCooldownEvent event) {
+    if (event.getHolder().getChampion() != null) {
+      event.getHolder().getChampion().recombineCache();
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onAbilityCast(final AbilityCastEvent event) {
+    if (event.getCaster().getChampion() != null) {
+      event.getCaster().getChampion().recombineCache();
+    }
+  }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerItemDamage(final PlayerItemDamageEvent event) {
@@ -130,6 +148,13 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     }
   }
 
+  @EventHandler
+  public void onInvyLoad(final InventoryLoadComplete event) {
+    if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
+      plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
+    }
+  }
+
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
@@ -152,7 +177,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
     event.getPlayer().setHealthScaled(true);
     HealthDisplayType displayType = champion.getSaveData().getHealthDisplayType();
-    float maxHealth = Math.max(StatUtil.getHealth(playerMob), 1);
+    float maxHealth = Math.max(StatUtil.getStat(playerMob, StrifeStat.HEALTH), 1);
     event.getPlayer().setInvulnerable(true);
     event.getPlayer().setHealthScale(StatUpdateManager.getHealthScale(displayType, maxHealth));
     event.getPlayer().setInvulnerable(false);
@@ -167,7 +192,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
       Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 2L);
+          () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 1L);
+      Bukkit.getScheduler().runTaskLater(plugin,
+          () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 10L);
     }
   }
 
@@ -207,8 +234,15 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     plugin.getCounterManager().clearCounters(event.getPlayer());
-    mob.restoreBarrier(200000);
-    StatUtil.changeEnergy(mob, 200000);
+
+    StatUtil.getStat(mob, StrifeStat.BARRIER);
+    StatUtil.getStat(mob, StrifeStat.HEALTH);
+    StatUtil.getStat(mob, StrifeStat.ENERGY);
+
+    mob.restoreBarrier(mob.getMaxBarrier());
+    mob.setEnergy(mob.getMaxEnergy());
+    mob.getEntity().setHealth(mob.getMaxLife());
+
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
     Bukkit.getScheduler().runTaskLater(plugin, () ->
         event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100), 2L);

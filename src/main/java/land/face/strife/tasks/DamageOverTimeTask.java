@@ -32,6 +32,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Material;
@@ -150,9 +151,11 @@ public class DamageOverTimeTask extends BukkitRunnable {
         continue;
       }
       float damage = BURN_FLAT_DAMAGE;
-
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
-      damage *= 1 - StatUtil.getFireResist(mob, false) / 100;
+      if (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.1) {
+        return;
+      }
+      damage *= 1 - StatUtil.getStat(mob, StrifeStat.FIRE_RESIST) / 100;
       damage *= 1 - mob.getStat(StrifeStat.BURNING_RESIST) / 100;
       damage = mob.damageBarrier(damage);
       if (damage < 0.05) {

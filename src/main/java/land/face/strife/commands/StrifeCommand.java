@@ -310,8 +310,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(
-        ability.getAbilityIconData().getAbilitySlot(), ability);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
+        .setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 

@@ -227,12 +227,12 @@ public class BossBarManager {
   }
 
   private void updateBarrierProgress(StatusBar bar) {
-    if (StatUtil.getMaximumBarrier(bar.getTarget()) < 1) {
+    if (bar.getTarget().getMaxBarrier() < 1) {
       bar.getBarrierBar().setVisible(false);
       return;
     }
-    double maxBarrier = StatUtil.getMaximumBarrier(bar.getTarget());
-    bar.getBarrierBar().setProgress(Math.min(bar.getTarget().getBarrier() / maxBarrier, 1D));
+    bar.getBarrierBar().setProgress(
+        Math.min(bar.getTarget().getBarrier() / bar.getTarget().getMaxBarrier(), 1D));
   }
 
   private void updateSkillProgress(SkillBar bar) {
@@ -249,7 +249,7 @@ public class BossBarManager {
       name = WordUtils.capitalizeFully(barOwner.getEntity().getType().toString().replaceAll("_", " "));
     }
     name += "   ";
-    if (!barOwner.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && barOwner.getStat(StrifeStat.BARRIER) > 0) {
+    if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
       name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(barOwner.getBarrier()) + "❤ ";
     }
     name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";

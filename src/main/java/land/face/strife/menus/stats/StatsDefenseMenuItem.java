@@ -58,7 +58,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (!player.isValid()) {
       return getIcon();
     }
-    StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
     ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
     itemMeta.setDisplayName(getDisplayName());
@@ -66,42 +66,41 @@ public class StatsDefenseMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
 
     lore.add(breakLine);
-    if (!pStats.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && pStats.getStat(StrifeStat.BARRIER) > 0) {
-      lore.add(addStat("Maximum Barrier: ", StatUtil.getMaximumBarrier(pStats), INT_FORMAT));
-      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(pStats) * 10, PER_TEN,
+    if (!mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && mob.getMaxBarrier() > 0) {
+      lore.add(addStat("Maximum Barrier: ", StatUtil.getStat(mob, StrifeStat.BARRIER), INT_FORMAT));
+      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN,
           ONE_DECIMAL));
-      if (pStats.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(addStat("Barrier Regeneration: ", StatUtil.getBarrierRegen(pStats), PER_TEN, TWO_DECIMAL));
+      if (mob.getStat(StrifeStat.BARRIER_REGEN) > 0) {
+        lore.add(addStat("Barrier Regeneration: ", StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN), PER_TEN, TWO_DECIMAL));
       }
       lore.add(breakLine);
     }
 
-    lore.add(addStat("Maximum Life: ", StatUtil.getHealth(pStats), INT_FORMAT));
-    lore.add(addStat("Life Regeneration: ", StatUtil.getRegen(pStats), PER_TEN, TWO_DECIMAL));
-    if (pStats.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
+    lore.add(addStat("Maximum Life: ", mob.getMaxLife(), INT_FORMAT));
+    lore.add(addStat("Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, TWO_DECIMAL));
+    if (mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
-      lore.add(addStat("Maximum Rage: ", pStats.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
-      lore.add(addStat("Rage When Hit: ", pStats.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
+      lore.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
+      lore.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
     }
     lore.add(breakLine);
-    lore.add(addStat("Armor Rating: ", StatUtil.getArmor(pStats), INT_FORMAT));
-    lore.add(addStat("Ward Rating: ", StatUtil.getWarding(pStats), INT_FORMAT));
-    lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(pStats), INT_FORMAT));
-    if (pStats.getStat(StrifeStat.BLOCK) > 0) {
-      lore.add(addStat("Block Rating: ", pStats.getStat(StrifeStat.BLOCK), INT_FORMAT));
+    lore.add(addStat("Armor Rating: ", StatUtil.getStat(mob, StrifeStat.ARMOR), INT_FORMAT));
+    lore.add(addStat("Ward Rating: ", StatUtil.getStat(mob, StrifeStat.WARDING), INT_FORMAT));
+    lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(mob), INT_FORMAT));
+    if (mob.getStat(StrifeStat.BLOCK) > 0) {
+      lore.add(addStat("Block Rating: ", mob.getStat(StrifeStat.BLOCK), INT_FORMAT));
     }
-    if (pStats.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
-      lore.add(addStat("Reflected Damage: ", pStats.getStat(StrifeStat.DAMAGE_REFLECT),
+    if (mob.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
+      lore.add(addStat("Reflected Damage: ", mob.getStat(StrifeStat.DAMAGE_REFLECT),
           INT_FORMAT));
     }
     lore.add(breakLine);
-    lore.add(addStat("Fire Resistance: ", StatUtil.getFireResist(pStats, false), "%", INT_FORMAT));
-    lore.add(addStat("Ice Resistance: ", StatUtil.getIceResist(pStats), "%", INT_FORMAT));
-    lore.add(
-        addStat("Lightning Resistance: ", StatUtil.getLightningResist(pStats), "%", INT_FORMAT));
-    lore.add(addStat("Earth Resistance: ", StatUtil.getEarthResist(pStats), "%", INT_FORMAT));
-    lore.add(addStat("Light Resistance: ", StatUtil.getLightResist(pStats), "%", INT_FORMAT));
-    lore.add(addStat("Shadow Resistance: ", StatUtil.getShadowResist(pStats), "%", INT_FORMAT));
+    lore.add(addStat("Fire Resistance: ", StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), "%", INT_FORMAT));
+    lore.add(addStat("Ice Resistance: ", StatUtil.getStat(mob, StrifeStat.ICE_RESIST), "%", INT_FORMAT));
+    lore.add(addStat("Lightning Resistance: ", StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), "%", INT_FORMAT));
+    lore.add(addStat("Earth Resistance: ", StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), "%", INT_FORMAT));
+    lore.add(addStat("Light Resistance: ", StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), "%", INT_FORMAT));
+    lore.add(addStat("Shadow Resistance: ", StatUtil.getStat(mob, StrifeStat.DARK_RESIST), "%", INT_FORMAT));
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
 

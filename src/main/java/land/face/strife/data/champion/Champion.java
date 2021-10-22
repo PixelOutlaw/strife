@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
+import land.face.strife.data.ability.Ability;
 import land.face.strife.managers.StatUpdateManager;
+import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import lombok.Getter;
@@ -85,9 +87,20 @@ public class Champion {
         baseStats,
         levelPointStats,
         pathStats,
+        getAbilityStats(AbilitySlot.SLOT_A),
+        getAbilityStats(AbilitySlot.SLOT_B),
+        getAbilityStats(AbilitySlot.SLOT_C),
         StrifePlugin.getInstance().getBoostManager().getStats()
     ));
     lastChanged = System.currentTimeMillis();
+  }
+
+  public Map<StrifeStat, Float> getAbilityStats(AbilitySlot abilitySlot) {
+    Ability ability = getSaveData().getAbility(abilitySlot);
+    if (ability == null) {
+      return new HashMap<>();
+    }
+    return StrifePlugin.getInstance().getAbilityManager().getApplicableAbilityPassiveStats(player, ability);
   }
 
   public void setPathStats(Map<StrifeStat, Float> map) {

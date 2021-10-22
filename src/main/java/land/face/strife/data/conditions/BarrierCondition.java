@@ -18,15 +18,15 @@ public class BarrierCondition extends Condition {
     double barrierValue;
     if (percentage) {
       if (getCompareTarget() == CompareTarget.SELF) {
-        if (caster.getStat(StrifeStat.BARRIER) < 0.1 || caster.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
+        if (caster.getMaxBarrier() < 0.1 || caster.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
-        barrierValue = caster.getBarrier() / StatUtil.getMaximumBarrier(caster);
+        barrierValue = caster.getBarrier() / caster.getMaxBarrier();
       } else {
-        if (target.getStat(StrifeStat.BARRIER) < 0.1 || target.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
+        if (target.getMaxBarrier() < 0.1 || target.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
-        barrierValue = target.getBarrier() / StatUtil.getMaximumBarrier(target);
+        barrierValue = target.getBarrier() / target.getMaxBarrier();
       }
     } else {
       barrierValue = getCompareTarget() == CompareTarget.SELF ? caster.getBarrier() : target.getBarrier();

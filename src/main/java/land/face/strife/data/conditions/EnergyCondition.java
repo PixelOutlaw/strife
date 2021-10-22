@@ -18,12 +18,12 @@ public class EnergyCondition extends Condition {
     if (trueTarget == null || !(trueTarget.getEntity() instanceof Player)) {
       return false;
     }
+    float energy;
     if (percentage) {
-      float energy = trueTarget.getEnergy() / StatUtil.updateMaxEnergy(trueTarget);
-      return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
+      energy = trueTarget.getEnergy() / trueTarget.getMaxEnergy();
     } else {
-      float energy = target.getEnergy();
-      return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
+      energy = target.getEnergy();
     }
+    return PlayerDataUtil.conditionCompare(getComparison(), energy, getValue());
   }
 }

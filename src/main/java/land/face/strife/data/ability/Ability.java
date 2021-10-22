@@ -1,9 +1,13 @@
 package land.face.strife.data.ability;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
 
 public class Ability {
 
@@ -23,12 +27,19 @@ public class Ability {
   private final boolean showMessages;
   private final Set<Condition> conditions;
   private final AbilityIconData abilityIconData;
+  @Getter
+  private final Map<StrifeStat, Float> passiveStats = new HashMap<>();
+  @Getter
+  private final Map<StrifeStat, Float> togglePassiveStats = new HashMap<>();
+  @Getter
+  private final boolean passiveStatsOnCooldown;
   private final boolean friendly;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
       TargetType targetType, float range, float cost, int cooldown, int maxCharges, int globalCooldownTicks,
       boolean showMsgs, boolean requireTarget, boolean raycastsTargetEntities,
-      Set<Condition> conditions, boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth) {
+      Set<Condition> conditions, boolean passiveStatsOnCooldown, boolean friendly,
+      AbilityIconData abilityIconData, boolean cancelStealth) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -43,6 +54,7 @@ public class Ability {
     this.cost = cost;
     this.showMessages = showMsgs;
     this.conditions = conditions;
+    this.passiveStatsOnCooldown = passiveStatsOnCooldown;
     this.abilityIconData = abilityIconData;
     this.friendly = friendly;
     this.cancelStealth = cancelStealth;
@@ -84,7 +96,7 @@ public class Ability {
     return requireTarget;
   }
 
-  public int getCooldown() {
+  public double getCooldown() {
     return cooldown;
   }
 

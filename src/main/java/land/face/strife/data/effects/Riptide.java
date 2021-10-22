@@ -4,8 +4,10 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -48,24 +50,20 @@ public class Riptide extends Effect {
   }
 
   private static void tickRiptide() {
-    Iterator<LivingEntity> iterator = RIPTIDE_MAP.keySet().iterator();
-    while (iterator.hasNext()) {
-      LivingEntity le = iterator.next();
+    Set<LivingEntity> loopMobs = new HashSet<>(RIPTIDE_MAP.keySet());
+    for (LivingEntity le : loopMobs) {
       if (!le.isValid()) {
-        Bukkit.getLogger().info("CANCELED INVALID");
         sendCancelPacket(le);
-        iterator.remove();
+        RIPTIDE_MAP.remove(le);
         continue;
       }
       if (le.getVelocity().getY() < 0.1 && le.isOnGround()) {
-        Bukkit.getLogger().info("CANCELED GROUND");
-        iterator.remove();
+        RIPTIDE_MAP.remove(le);
         continue;
       }
       if (RIPTIDE_MAP.get(le) < 1) {
-        Bukkit.getLogger().info("CANCELED TIMEOUT");
         sendCancelPacket(le);
-        iterator.remove();
+        RIPTIDE_MAP.remove(le);
         continue;
       }
       RIPTIDE_MAP.put(le, RIPTIDE_MAP.get(le) - 1);

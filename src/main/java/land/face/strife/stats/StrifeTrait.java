@@ -22,6 +22,8 @@ public enum StrifeTrait {
   ENERGY_ABSORB("20% Of Damage Taken From Energy"),
   NO_ENERGY_REGEN("Energy Does Not Regenerate"),
   BLEEDING_EDGE("&6&nPassive Effect - Bleeding Edge", " &eHalf of attack damage taken from", " &elife is instead added as &4Bleeding"),
+  BARRIER_NO_BURN("&6&nPassive Effect - Heat Shield", " &eWhile you have barrier, &6&nBurning", " &edeals no damage"),
+  STONE_SKIN("&6&nPassive Effect - Stone Skin", " &eReceive 3% less damage per", " &eactive &2Earth Rune"),
   BLOOD_BOIL("&6&nPassive Effect - Blood Boil", " &eWhen &4Bleeding&e, &eall &cRage &egained", " &eis increased by &f30%"),
   SOUL_FLAME("Passive Effect - Blue Flame");
 

@@ -6,6 +6,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -18,8 +19,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BarrierTask extends BukkitRunnable {
 
-  private static final long TICK_RATE = 3L;
-  private static final int DELAY_TICKS = (int) ((float) 120 / TICK_RATE);
   private static final BlockData BLOCK_DATA = Bukkit.getServer()
       .createBlockData(Material.WHITE_STAINED_GLASS);
 
@@ -27,12 +26,15 @@ public class BarrierTask extends BukkitRunnable {
   private int delayTicks = 0;
   private float barrierScale = 20f;
 
+  private final float tickMultiplier;
+
   public BarrierTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, TICK_RATE);
+    this.runTaskTimer(StrifePlugin.getInstance(), 20L, DamageUtil.TICK_RATE);
     if (parentMob.getChampion() != null) {
       updateBarrierScale();
     }
+    tickMultiplier = (1 / (20f / DamageUtil.TICK_RATE)) * 0.1f;
   }
 
   @Override
@@ -43,29 +45,37 @@ public class BarrierTask extends BukkitRunnable {
       return;
     }
     forceAbsorbHearts();
+    if (mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) || mob.getMaxBarrier() < 0.1) {
+      delayTicks = 10;
+      return;
+    }
     if (delayTicks > 0) {
       delayTicks--;
+      mob.restoreBarrier(StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier);
       return;
     }
-    if (mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) || mob.getStat(StrifeStat.BARRIER) < 0.1) {
+    if (mob.getBarrier() >= mob.getMaxBarrier()) {
       delayTicks = 10;
       return;
     }
-    if (mob.getBarrier() >= StatUtil.getMaximumBarrier(mob)) {
-      delayTicks = 10;
-      return;
-    }
-    float barrierGain = TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
+    float barrierGain = DamageUtil.TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
+    barrierGain += StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier;
     mob.restoreBarrier(barrierGain);
   }
 
   public void updateBarrierScale() {
-    barrierScale = StatUpdateManager.getBarrierScale(parentMob.get().getChampion().getSaveData()
-            .getHealthDisplayType(), (float) parentMob.get().getEntity().getMaxHealth(), parentMob.get().getMaxBarrier());
+    barrierScale = StatUpdateManager.getBarrierScale(parentMob.get().getChampion()
+        .getSaveData().getHealthDisplayType(), parentMob.get().getStat(StrifeStat.HEALTH),
+        parentMob.get().getStat(StrifeStat.BARRIER));
   }
 
-  public void bumpBarrierTime() {
-    delayTicks = DELAY_TICKS;
+  public void bumpBarrierTime(float barrierDelayMult) {
+    delayTicks = (int) ((float) DamageUtil.DELAY_TICKS / barrierDelayMult);
+  }
+
+  public void setDelayTicks(int delayTicks) {
+    this.delayTicks = Math.min(delayTicks, (int)
+        ((float) DamageUtil.BASE_RECHARGE_TICKS / DamageUtil.TICK_RATE));
   }
 
   public static void spawnBarrierParticles(LivingEntity entity, float amount) {

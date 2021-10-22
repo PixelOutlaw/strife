@@ -36,8 +36,9 @@ public class CreateWorldSpaceEntity extends LocationEffect {
 
   public void apply(StrifeMob caster, Location location) {
     cacheEffects();
-    getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction, maxTicks, velocity,
-        maxDisplacement, cachedEffectSchedule, strictDuration, zeroVerticalAxis);
+    getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction,
+        maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
+        zeroVerticalAxis);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {

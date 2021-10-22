@@ -50,7 +50,7 @@ public class ExperienceListener implements Listener {
   private static final String LEVEL_UP = "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)";
   private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
 
-  private List<String> penaltyFreeWorlds;
+  private final List<String> penaltyFreeWorlds;
 
   public ExperienceListener(StrifePlugin plugin) {
     this.plugin = plugin;

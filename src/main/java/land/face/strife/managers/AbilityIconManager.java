@@ -9,14 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
-import land.face.strife.data.ability.AbilityCooldownContainer;
+import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
-import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.apache.commons.lang.WordUtils;
@@ -82,8 +81,9 @@ public class AbilityIconManager {
         player.getWorld().dropItem(player.getLocation(), extraStack);
       }
     }
-    Bukkit.getScheduler().runTaskLater(plugin,
-        () -> plugin.getAbilityIconManager().updateIconProgress(player, slot), 2L);
+    plugin.getChampionManager().getChampion(player).setLastChanged(1);
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        plugin.getAbilityIconManager().updateIconProgress(player, slot), 2L);
   }
 
   public boolean playerHasAbility(Player player, Ability ability) {
@@ -150,22 +150,11 @@ public class AbilityIconManager {
     if (ability == null || !champion.getSaveData().getAbilities().containsValue(ability)) {
       return;
     }
-    AbilityCooldownContainer container = plugin.getAbilityManager()
-        .getCooldownContainer(champion.getPlayer(), ability.getId());
-    int charges = ability.getMaxCharges();
-    double percent = 1D;
-    boolean toggled = false;
+    CooldownTracker container = plugin.getAbilityManager()
+        .getCooldownTracker(champion.getPlayer(), ability.getId());
     if (container != null) {
-      toggled = container.isToggledOn();
-      if (container.getSpentCharges() == charges) {
-        charges = 1;
-        percent = plugin.getAbilityManager().getCooldownPercent(container);
-      } else {
-        charges -= container.getSpentCharges();
-      }
+      container.updateIcon();
     }
-    ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), champion.getPlayer(),
-        ability.getAbilityIconData().getAbilitySlot().getSlotIndex(), percent, charges, toggled);
   }
 
   public List<String> buildRequirementsLore(Champion champion, AbilityIconData data) {
