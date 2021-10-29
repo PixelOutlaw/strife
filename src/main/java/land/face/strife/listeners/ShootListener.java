@@ -181,7 +181,7 @@ public class ShootListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onPlayerTridentThrow(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof Player)) {
+    if (!(event.getEntity().getShooter() instanceof Player player)) {
       return;
     }
     if (!(event.getEntity() instanceof Trident)) {
@@ -190,7 +190,6 @@ public class ShootListener implements Listener {
 
     event.setCancelled(true);
 
-    Player player = (Player) event.getEntity().getShooter();
     player.resetCooldown();
 
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);

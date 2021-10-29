@@ -107,6 +107,18 @@ public class CombatListener implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void pvpFlag(StrifeDamageEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getAttacker().getEntity() instanceof Player
+        && event.getDefender().getEntity() instanceof Player) {
+      event.getAttacker().flagPvp();
+      event.getDefender().flagPvp();
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void strifeDamageHandler(EntityDamageByEntityEvent event) {
     if (event.isCancelled()) {
@@ -294,6 +306,8 @@ public class CombatListener implements Listener {
       eventDamage *= dmgVsBarrier;
       eventDamage = defender.damageBarrier(eventDamage);
       eventDamage /= dmgVsBarrier;
+    } else {
+      defender.damageBarrier(0);
     }
 
     if (finalDamage > 0) {

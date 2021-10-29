@@ -86,7 +86,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>deluxe-invy</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

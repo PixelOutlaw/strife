@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.dinvy.pojo.PlayerData;
-import land.face.dinvy.windows.EquipmentMenu.DeluxeSlot;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
@@ -20,7 +20,6 @@ import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
@@ -171,7 +170,6 @@ public class StrifeMobManager {
     }
 
     for (String slot : updateItems.keySet()) {
-      Bukkit.getLogger().info("Checking item in slot: " + slot);
       ItemStack item = updateItems.get(slot);
       equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
       equipmentCache.setSlotStats(slot, getItemStats(slot, equipment, invyData));

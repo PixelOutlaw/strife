@@ -934,9 +934,10 @@ public class DamageUtil {
           TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER),
           (int) reflectDamage, 0.3, 0.3,
           0.3, 0.1);
-    }
-    if (defender.getEntity() instanceof Player) {
-      attacker.flagPvp();
+      if (defender.getEntity() instanceof Player) {
+        attacker.flagPvp();
+        defender.flagPvp();
+      }
     }
     attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
   }

@@ -224,6 +224,7 @@ public class EffectManager {
         ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
         ((RestoreBarrier) effect).setDamageScale(
             DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((RestoreBarrier) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((RestoreBarrier) effect).setNewDelayTicks(cs.getInt("new-barrier-delay-ticks", -1));
       }
       case RESTORE_ENERGY -> {

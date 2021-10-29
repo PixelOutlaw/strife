@@ -1,19 +1,14 @@
 package land.face.strife.data.champion;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.print.DocFlavor.READER;
-import land.face.dinvy.windows.EquipmentMenu.DeluxeSlot;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.LoreAbilityManager;
-import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;

@@ -20,6 +20,7 @@ package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Bukkit;
@@ -105,26 +106,22 @@ public class MinionListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onMasterAttack(final EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
+  public void onMasterAttack(final StrifeDamageEvent event) {
+    if (event.isCancelled() || event.getDamageModifiers().getAttackMultiplier() < 0.55) {
       return;
     }
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      if (event.getEntity().isDead()) {
+      if (event.getDefender().getEntity().isDead()) {
         return;
       }
-      Entity attacker = getDamagingEntity(event.getDamager());
-      if (!(attacker instanceof LivingEntity)) {
-        return;
-      }
-      StrifeMob attackEntity = plugin.getStrifeMobManager().getStatMob((LivingEntity) attacker);
-      if (attackEntity.getMinions()
-          .contains(plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()))) {
+      StrifeMob attackEntity = event.getAttacker();
+      if (attackEntity.getMinions().contains(plugin.getStrifeMobManager()
+          .getStatMob(event.getDefender().getEntity()))) {
         return;
       }
       for (StrifeMob minion : attackEntity.getMinions()) {
         if (minion.getEntity() instanceof Mob) {
-          ((Mob) minion.getEntity()).setTarget((LivingEntity) event.getEntity());
+          ((Mob) minion.getEntity()).setTarget(event.getDefender().getEntity());
         }
       }
     }, 1L);
@@ -141,10 +138,9 @@ public class MinionListener implements Listener {
     }
     StrifeMob hitEnt = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
     for (StrifeMob minion : hitEnt.getMinions()) {
-      if (!(minion.getEntity() instanceof Mob)) {
+      if (!(minion.getEntity() instanceof Mob mob)) {
         continue;
       }
-      Mob mob = (Mob) minion.getEntity();
       if (mob.getTarget() == null || !mob.getTarget().isValid()) {
         mob.setTarget((LivingEntity) attacker);
       }

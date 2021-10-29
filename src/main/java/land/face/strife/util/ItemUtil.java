@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import land.face.dinvy.pojo.PlayerData;
-import land.face.dinvy.windows.EquipmentMenu.DeluxeSlot;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
