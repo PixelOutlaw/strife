@@ -67,7 +67,7 @@ public class AttackTargetGoal implements Goal<Mob> {
 
   @Override
   public void start() {
-    this.attackTimestamp = 0;
+    // Nothing
   }
 
   @Override

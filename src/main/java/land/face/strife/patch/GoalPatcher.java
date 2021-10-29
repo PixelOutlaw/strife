@@ -49,14 +49,12 @@ public class GoalPatcher {
           Bukkit.getMobGoals().addGoal(mob, 2, goal);
         }
       }
-      /*
       case "strife:follow_master" -> {
-        AttackEntityGoal goalAttack = new AttackEntityGoal(mob, sound, attackRange, aggressive, flying);
-        if (!Bukkit.getMobGoals().hasGoal(mob, goalAttack.getKey())) {
-          Bukkit.getMobGoals().addGoal(mob, 3, goalAttack);
+        FollowMasterGoal goal = new FollowMasterGoal(mob);
+        if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
+          Bukkit.getMobGoals().addGoal(mob, 3, goal);
         }
       }
-      */
       case "strife:float_behind_master" -> {
         FloatBehindGoal goal = new FloatBehindGoal(mob);
         if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
