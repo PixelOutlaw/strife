@@ -10,7 +10,11 @@ import lombok.Setter;
 
 public class RestoreBarrier extends Effect {
 
+  @Setter
   private float amount;
+  @Setter
+  private float flatBonus = 0;
+  @Setter
   private DamageScale damageScale;
   @Setter
   private int newDelayTicks;
@@ -23,17 +27,10 @@ public class RestoreBarrier extends Effect {
     float restoreAmount = amount;
     BonusDamage bonusDamage = new BonusDamage(damageScale, DamageType.TRUE_DAMAGE, null, restoreAmount);
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
+    restoreAmount += flatBonus;
     target.restoreBarrier(applyMultipliers(caster, restoreAmount));
     if (newDelayTicks >= 0) {
       target.setBarrierDelayTicks(newDelayTicks);
     }
-  }
-
-  public void setAmount(float amount) {
-    this.amount = amount;
-  }
-
-  public void setDamageScale(DamageScale damageScale) {
-    this.damageScale = damageScale;
   }
 }
