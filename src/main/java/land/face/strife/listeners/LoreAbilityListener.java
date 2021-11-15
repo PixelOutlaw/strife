@@ -44,37 +44,34 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class LoreAbilityListener implements Listener {
 
   private final StrifeMobManager strifeMobManager;
-  private final LoreAbilityManager loreAbilityManager;
 
-  public LoreAbilityListener(StrifeMobManager strifeMobManager,
-      LoreAbilityManager loreAbilityManager) {
+  public LoreAbilityListener(StrifeMobManager strifeMobManager) {
     this.strifeMobManager = strifeMobManager;
-    this.loreAbilityManager = loreAbilityManager;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAbilityCast(AbilityCastEvent event) {
-    executeBoundEffects(event.getCaster(), event.getCaster().getEntity(), event.getCaster().getLoreAbilities(ON_CAST));
+    executeBoundEffects(event.getCaster(), event.getCaster(), event.getCaster().getLoreAbilities(ON_CAST));
     executeFiniteEffects(event.getCaster(), event.getCaster(), ON_CAST);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAirJump(AirJumpEvent event) {
-    executeBoundEffects(event.getJumper(), event.getJumper().getEntity(), event.getJumper().getLoreAbilities(ON_AIR_JUMP));
+    executeBoundEffects(event.getJumper(), event.getJumper(), event.getJumper().getLoreAbilities(ON_AIR_JUMP));
     executeFiniteEffects(event.getJumper(), event.getJumper(), ON_AIR_JUMP);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onCombatChange(CombatChangeEvent event) {
     TriggerType type = event.getNewState() == NewCombatState.ENTER ? ON_COMBAT_START : ON_COMBAT_END;
-    executeBoundEffects(event.getTarget(), event.getTarget().getEntity(), event.getTarget().getLoreAbilities(type));
+    executeBoundEffects(event.getTarget(), event.getTarget(), event.getTarget().getLoreAbilities(type));
     executeFiniteEffects(event.getTarget(), event.getTarget(), type);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onCriticalHit(CriticalEvent event) {
     Set<LoreAbility> abilitySet = new HashSet<>(event.getAttacker().getLoreAbilities(ON_CRIT));
-    executeBoundEffects(event.getAttacker(), event.getVictim().getEntity(), abilitySet);
+    executeBoundEffects(event.getAttacker(), event.getVictim(), abilitySet);
     executeFiniteEffects(event.getAttacker(), event.getVictim(), ON_CRIT);
   }
 
@@ -87,7 +84,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     StrifeMob mob = getAttrEntity((Player) event.getEntity());
-    executeBoundEffects(mob, (LivingEntity) event.getEntity(), mob.getLoreAbilities(ON_FALL));
+    executeBoundEffects(mob, mob, mob.getLoreAbilities(ON_FALL));
     executeFiniteEffects(mob, mob, ON_FALL);
   }
 
@@ -95,7 +92,7 @@ public class LoreAbilityListener implements Listener {
   public void onEvade(EvadeEvent event) {
     Champion champion = event.getEvader().getChampion();
     if (champion != null) {
-      executeBoundEffects(event.getEvader(), event.getAttacker().getEntity(), event.getEvader().getLoreAbilities(ON_EVADE));
+      executeBoundEffects(event.getEvader(), event.getAttacker(), event.getEvader().getLoreAbilities(ON_EVADE));
     }
     executeFiniteEffects(event.getEvader(), event.getAttacker(), ON_EVADE);
   }
@@ -104,7 +101,7 @@ public class LoreAbilityListener implements Listener {
   public void onBlock(BlockEvent event) {
     Champion champion = event.getBlocker().getChampion();
     if (champion != null) {
-      executeBoundEffects(event.getBlocker(), event.getAttacker().getEntity(), event.getBlocker().getLoreAbilities(ON_BLOCK));
+      executeBoundEffects(event.getBlocker(), event.getAttacker(), event.getBlocker().getLoreAbilities(ON_BLOCK));
     }
     executeFiniteEffects(event.getBlocker(), event.getAttacker(), ON_BLOCK);
   }
@@ -113,7 +110,7 @@ public class LoreAbilityListener implements Listener {
   public void onSneakAttack(SneakAttackEvent event) {
     Champion champion = event.getAttacker().getChampion();
     if (champion != null) {
-      executeBoundEffects(event.getAttacker(), event.getVictim().getEntity(), event.getAttacker().getLoreAbilities(ON_SNEAK_ATTACK));
+      executeBoundEffects(event.getAttacker(), event.getVictim(), event.getAttacker().getLoreAbilities(ON_SNEAK_ATTACK));
     }
     executeFiniteEffects(event.getAttacker(), event.getVictim(), ON_SNEAK_ATTACK);
   }
@@ -130,7 +127,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
     HashSet<LoreAbility> abilitySet = new HashSet<>(killerMob.getLoreAbilities(ON_KILL));
-    executeBoundEffects(killerMob, event.getEntity(), abilitySet);
+    executeBoundEffects(killerMob, strifeMobManager.getStatMob(event.getEntity()), abilitySet);
     executeFiniteEffects(killerMob, victim, ON_KILL);
   }
 
@@ -154,18 +151,18 @@ public class LoreAbilityListener implements Listener {
             event.getDamageModifiers().getDamageReductionRatio()));
     if (trigger) {
       HashSet<LoreAbility> abilitySet = new HashSet<>(attacker.getLoreAbilities(ON_HIT));
-      executeBoundEffects(attacker, defender.getEntity(), abilitySet);
+      executeBoundEffects(attacker, defender, abilitySet);
     }
 
     executeFiniteEffects(attacker, defender, ON_HIT);
 
     if (defender.getEntity() instanceof Player) {
-      executeBoundEffects(defender, attacker.getEntity(), event.getDefender().getLoreAbilities(WHEN_HIT));
+      executeBoundEffects(defender, attacker, event.getDefender().getLoreAbilities(WHEN_HIT));
     }
     executeFiniteEffects(defender, attacker, WHEN_HIT);
   }
 
-  public static void executeBoundEffects(StrifeMob caster, LivingEntity target,
+  public static void executeBoundEffects(StrifeMob caster, StrifeMob target,
       Set<LoreAbility> loreAbilities) {
     if (loreAbilities == null || loreAbilities.isEmpty()) {
       return;
@@ -180,7 +177,7 @@ public class LoreAbilityListener implements Listener {
       if (buff.getConsumeTriggers().contains(type)) {
         for (LoreAbility la : buff.getAbilities()) {
           if (la.getTriggerType() == type) {
-            StrifePlugin.getInstance().getLoreAbilityManager().applyLoreAbility(la, caster, target.getEntity());
+            StrifePlugin.getInstance().getLoreAbilityManager().applyLoreAbility(la, caster, target);
             caster.removeBuff(buff, 1);
           }
         }

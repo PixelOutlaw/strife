@@ -104,7 +104,7 @@ public class ChampionManager {
         continue;
       }
       for (LoreAbility ability : abilities) {
-        plugin.getLoreAbilityManager().applyLoreAbility(ability, mob, mob.getEntity());
+        plugin.getLoreAbilityManager().applyLoreAbility(ability, mob, mob);
       }
     }
   }

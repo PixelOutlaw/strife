@@ -103,13 +103,13 @@ public class LoreAbilityManager {
     LogUtil.printDebug("Loaded lore ability " + key + " successfully.");
   }
 
-  public void applyLoreAbility(LoreAbility la, StrifeMob caster, LivingEntity target) {
+  public void applyLoreAbility(LoreAbility la, StrifeMob caster, StrifeMob target) {
     LogUtil.printDebug(PlayerDataUtil.getName(caster.getEntity()) + " is casting: " + la.getId());
     if (la.getAbility() != null) {
       abilityManager.execute(la.getAbility(), caster, target);
     }
     Set<LivingEntity> entities = new HashSet<>();
-    entities.add(target);
+    entities.add(target.getEntity());
 
     TargetResponse response = new TargetResponse(entities);
 

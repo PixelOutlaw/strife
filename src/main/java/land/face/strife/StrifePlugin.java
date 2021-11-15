@@ -146,6 +146,7 @@ import land.face.strife.tasks.DamageOverTimeTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.ForceAttackSpeed;
+import land.face.strife.tasks.FrostTask;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.SaveTask;
@@ -377,6 +378,7 @@ public class StrifePlugin extends FacePlugin {
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     EveryTickTask everyTickTask = new EveryTickTask(this);
+    FrostTask frostTask = new FrostTask(this);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     damageOverTimeTask = new DamageOverTimeTask(this);
     particleTask = new ParticleTask();
@@ -462,6 +464,10 @@ public class StrifePlugin extends FacePlugin {
         20L,
         1L
     ));
+    taskList.add(frostTask.runTaskTimer(this,
+        20L,
+        1L
+    ));
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> boostManager.checkBoostSchedule(),
         60L,
@@ -496,7 +502,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FishingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
-    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, loreAbilityManager), this);
+    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
     entityHider = new EntityHider(this, Policy.BLACKLIST);
 

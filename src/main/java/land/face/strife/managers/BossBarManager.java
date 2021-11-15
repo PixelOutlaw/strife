@@ -253,6 +253,9 @@ public class BossBarManager {
       name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(barOwner.getBarrier()) + "❤ ";
     }
     name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";
+    if (barOwner.getFrost() > 100) {
+      name += "  " + ChatColor.AQUA + (barOwner.getFrost() / 100) + "❄";
+    }
     return name;
   }
 

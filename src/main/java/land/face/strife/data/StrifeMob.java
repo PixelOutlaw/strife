@@ -135,19 +135,9 @@ public class StrifeMob {
     }
   }
 
-  public void setFrost(float frost) {
-    this.frost = Math.min((int) frost, 400);
-    int fireTicks = getEntity().getFireTicks();
-    if (fireTicks > 0) {
-      if (fireTicks >= frost) {
-        getEntity().setFireTicks(fireTicks - (int) frost);
-        return;
-      } else {
-        this.frost -= fireTicks;
-        getEntity().setFireTicks(0);
-      }
-    }
-    getEntity().setFreezeTicks((int) Math.min(this.frost / 2.8f, 139f));
+  public void setFrost(float newFrost) {
+    this.frost = Math.max(0, Math.min((int) newFrost, 10000));
+    getEntity().setFreezeTicks((int) ((float) this.frost / 72f));
   }
 
   public float getMaxBlock() {

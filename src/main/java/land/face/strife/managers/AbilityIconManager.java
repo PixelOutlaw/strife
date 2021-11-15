@@ -21,6 +21,7 @@ import land.face.strife.util.PlayerDataUtil;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -59,6 +60,9 @@ public class AbilityIconManager {
   }
 
   public void setAllAbilityIcons(Player player) {
+    if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) {
+      return;
+    }
     ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
     for (Ability ability : data.getAbilities().values()) {
       setAbilityIcon(player, ability.getAbilityIconData());

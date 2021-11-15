@@ -89,12 +89,12 @@ public class AbilityManager {
     return null;
   }
 
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target) {
+  public boolean execute(final Ability ability, final StrifeMob caster, StrifeMob target) {
     return execute(ability, caster, target, false);
   }
 
-  public boolean execute(final Ability ability, final StrifeMob caster, LivingEntity target,
-      boolean ignoreReqs) {
+  public boolean execute(final Ability ability, final StrifeMob caster,
+      final StrifeMob target, boolean ignoreReqs) {
     if (!ignoreReqs) {
       if (ability.getCooldown() != 0 && !canBeCast(caster, ability)) {
         doOnCooldownPrompt(caster, ability);
@@ -104,7 +104,7 @@ public class AbilityManager {
         doNoEnergyPrompt(caster, ability);
         return false;
       }
-      if (!PlayerDataUtil.areConditionsMet(caster, caster, ability.getConditions())) {
+      if (!PlayerDataUtil.areConditionsMet(caster, target, ability.getConditions())) {
         doRequirementNotMetPrompt(caster, ability);
         return false;
       }
@@ -329,7 +329,7 @@ public class AbilityManager {
 
     if (type == TriggerAbilityType.PHASE_SHIFT) {
       for (Ability a : abilities) {
-        execute(a, caster, caster.getEntity());
+        execute(a, caster, caster);
       }
       return true;
     }
@@ -338,12 +338,9 @@ public class AbilityManager {
       return false;
     }
 
-    LivingEntity targetEntity;
     if (target == null) {
-      targetEntity = TargetingUtil.getMobTarget(caster);
+      LivingEntity targetEntity = TargetingUtil.getMobTarget(caster);
       target = targetEntity == null ? null : plugin.getStrifeMobManager().getStatMob(targetEntity);
-    } else {
-      targetEntity = target.getEntity();
     }
 
     StrifeMob finalTarget = target;
@@ -355,7 +352,7 @@ public class AbilityManager {
       return false;
     }
     Ability ability = selectorList.get(random.nextInt(selectorList.size()));
-    return execute(ability, caster, targetEntity, true);
+    return execute(ability, caster, target, true);
   }
 
   public void setGlobalCooldown(Player player, Ability ability) {
@@ -436,7 +433,7 @@ public class AbilityManager {
     }
   }
 
-  private TargetResponse getTargets(StrifeMob caster, LivingEntity target, Ability ability) {
+  private TargetResponse getTargets(StrifeMob caster, StrifeMob target, Ability ability) {
     Set<LivingEntity> targets = new HashSet<>();
     switch (ability.getTargetType()) {
       case SELF, TOGGLE -> {
@@ -466,8 +463,8 @@ public class AbilityManager {
         return new TargetResponse(targets, true);
       }
       case SINGLE_OTHER -> {
-        if (target != null) {
-          targets.add(target);
+        if (target != null && target.getEntity() != null) {
+          targets.add(target.getEntity());
           return new TargetResponse(targets);
         }
         LivingEntity newTarget = TargetingUtil.selectFirstEntityInSight(caster.getEntity(),
@@ -478,12 +475,16 @@ public class AbilityManager {
         return new TargetResponse(targets, true);
       }
       case TARGET_AREA -> {
-        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), target,
+        LivingEntity targetEntity = (target == null || target.getEntity() == null)
+            ? null : target.getEntity();
+        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity,
             ability.getRange(), ability.isRaycastsTargetEntities());
         return new TargetResponse(loc);
       }
       case TARGET_GROUND -> {
-        Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), target,
+        LivingEntity targetEntity = (target == null || target.getEntity() == null)
+            ? null : target.getEntity();
+        Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity,
             ability.getRange(), ability.isRaycastsTargetEntities());
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);

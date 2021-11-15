@@ -96,22 +96,6 @@ public class StatUtil {
     return 1 + ae.getStat(StrifeStat.DAMAGE_MULT) / 100;
   }
 
-  public static double getMeleeDamage(StrifeMob ae) {
-    float multiplier =
-        ae.getStat(StrifeStat.MELEE_PHYSICAL_MULT) + ae.getStat(StrifeStat.PHYSICAL_MULT);
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + multiplier / 100);
-  }
-
-  public static double getRangedDamage(StrifeMob ae) {
-    float multiplier =
-        ae.getStat(StrifeStat.RANGED_PHYSICAL_MULT) + ae.getStat(StrifeStat.PHYSICAL_MULT);
-    return ae.getStat(StrifeStat.PHYSICAL_DAMAGE) * (1 + multiplier / 100);
-  }
-
-  public static double getMagicDamage(StrifeMob ae) {
-    return ae.getStat(StrifeStat.MAGIC_DAMAGE) * (1 + ae.getStat(StrifeStat.MAGIC_MULT) / 100);
-  }
-
   public static float getCriticalChance(StrifeMob attacker, float attackMult, float bonusCrit) {
     float totalCrit = attackMult * 1.2f * (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit);
     return totalCrit / 100;
@@ -119,7 +103,7 @@ public class StatUtil {
 
   public static float getAttackTime(StrifeMob ae) {
 
-    float attackTime = DamageUtil.BASE_ATTACK_SECONDS * (1f + ae.getFrost() / 400f);
+    float attackTime = DamageUtil.BASE_ATTACK_SECONDS * (1f + ae.getFrost() / 10000f);
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {

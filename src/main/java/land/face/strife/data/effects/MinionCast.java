@@ -16,7 +16,8 @@ public class MinionCast extends Effect {
       if (StringUtils.isNotBlank(uniqueId) && !uniqueId.equals(minion.getUniqueEntityId())) {
         continue;
       }
-      getPlugin().getAbilityManager().execute(ability, minion, TargetingUtil.getMobTarget(minion));
+      getPlugin().getAbilityManager().execute(ability, minion, getPlugin().getStrifeMobManager()
+          .getStatMob(TargetingUtil.getMobTarget(minion)));
     }
   }
 

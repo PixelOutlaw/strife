@@ -41,6 +41,7 @@ import land.face.strife.data.conditions.EnergyCondition;
 import land.face.strife.data.conditions.EntityTypeCondition;
 import land.face.strife.data.conditions.FactionCondition;
 import land.face.strife.data.conditions.FlyingCondition;
+import land.face.strife.data.conditions.FrostCondition;
 import land.face.strife.data.conditions.GroundedCondition;
 import land.face.strife.data.conditions.HealthCondition;
 import land.face.strife.data.conditions.HeightCondition;
@@ -864,6 +865,9 @@ public class EffectManager {
       case BARRIER:
         boolean percent = cs.getBoolean("percentage", false);
         condition = new BarrierCondition(percent);
+        break;
+      case FROST:
+        condition = new FrostCondition();
         break;
       case RAGE:
         boolean percent4 = cs.getBoolean("percentage", false);

@@ -15,6 +15,7 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -87,6 +88,14 @@ public class SpawnListener implements Listener {
     if (event.getEntity().getVehicle() instanceof LivingEntity && StringUtils.isNotBlank(
         plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity().getVehicle())
             .getUniqueEntityId())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onNaturalCatSpawn(CreatureSpawnEvent event) {
+    if (event.getEntity().getType() == EntityType.CAT &&
+        event.getSpawnReason() == SpawnReason.NATURAL) {
       event.setCancelled(true);
     }
   }

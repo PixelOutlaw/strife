@@ -423,6 +423,7 @@ public class DamageUtil {
       case TARGET_STAT_PERCENT -> bonusDamage.getAmount() *
           target.getStat(bonusDamage.getDamageStat());
       case CASTER_LEVEL -> amount * StatUtil.getMobLevel(caster.getEntity());
+      case TARGET_LEVEL -> amount * StatUtil.getMobLevel(target.getEntity());
       case CASTER_DAMAGE -> amount * DamageUtil.getRawDamage(caster, bonusDamage.getDamageType());
       case TARGET_CURRENT_HEALTH -> amount * (float) target.getEntity().getHealth();
       case CASTER_CURRENT_HEALTH -> amount * (float) caster.getEntity().getHealth();
@@ -478,8 +479,8 @@ public class DamageUtil {
 
   public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap, Map<AbilityMod, Float> abilityMods) {
-    damageMap.replaceAll(
-        (t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
+    damageMap.replaceAll((t, v) ->
+        damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
   }
 
   public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
@@ -573,7 +574,7 @@ public class DamageUtil {
       }
       case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
-        attemptFreeze(damageMap.get(finalElementType), attacker, defender);
+        attemptFreeze(defender, damageMap.get(finalElementType));
         damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.2f);
       }
       case LIGHTNING -> {
@@ -634,26 +635,41 @@ public class DamageUtil {
         if (attack.hasTrait(StrifeTrait.SOUL_FLAME) && fireResist > 0) {
           fireResist /= 2;
         }
+        if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
+          fireResist += 0.5;
+        }
+        fireResist = Math.min(fireResist, 0.85f);
         return fireResist >= 0 ? (1 - fireResist) : 1 + Math.abs(fireResist);
       }
       case ICE -> {
         float iceResist = defend.getStat(StrifeStat.ICE_RESIST) / 100;
+        if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
+          iceResist -= 0.3;
+        }
+        iceResist = Math.min(iceResist, 0.85f);
         return iceResist >= 0 ? (1 - iceResist) : 1 + Math.abs(iceResist);
       }
       case LIGHTNING -> {
         float lightningResist = defend.getStat(StrifeStat.LIGHTNING_RESIST) / 100;
+        if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
+          lightningResist -= 0.3;
+        }
+        lightningResist = Math.min(lightningResist, 0.85f);
         return lightningResist >= 0 ? (1 - lightningResist) : 1 + Math.abs(lightningResist);
       }
       case DARK -> {
         float darkResist = defend.getStat(StrifeStat.DARK_RESIST) / 100;
+        darkResist = Math.min(darkResist, 0.85f);
         return darkResist >= 0 ? (1 - darkResist) : 1 + Math.abs(darkResist);
       }
       case EARTH -> {
         float earthResist = defend.getStat(StrifeStat.EARTH_RESIST) / 100;
+        earthResist = Math.min(earthResist, 0.85f);
         return earthResist >= 0 ? (1 - earthResist) : 1 + Math.abs(earthResist);
       }
       case LIGHT -> {
         float lightResist = defend.getStat(StrifeStat.LIGHT_RESIST) / 100;
+        lightResist = Math.min(lightResist, 0.85f);
         return lightResist >= 0 ? (1 - lightResist) : 1 + Math.abs(lightResist);
       }
     }
@@ -728,11 +744,11 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static void attemptFreeze(float damage, StrifeMob attacker, StrifeMob defender) {
+  public static void attemptFreeze(StrifeMob defender, float damage) {
     LivingEntity defendEntity = defender.getEntity();
-    defendEntity.getWorld()
-        .playSound(defendEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
-    int ticks = 50 + (int) (80f * (damage / defendEntity.getMaxHealth()));
+    defendEntity.getWorld().playSound(defendEntity.getEyeLocation(),
+        Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
+    int ticks = 500 + (int) (1000f * (damage / defendEntity.getMaxHealth()));
     defender.setFrost(defender.getFrost() + ticks);
   }
 
@@ -1014,7 +1030,7 @@ public class DamageUtil {
 
   public static void dealRawDamage(LivingEntity le, float damage) {
     if (le.getHealth() <= damage) {
-      le.damage(damage);
+      le.setHealth(0);
     } else {
       le.setHealth(le.getHealth() - damage);
     }
@@ -1049,6 +1065,7 @@ public class DamageUtil {
     CASTER_STAT_PERCENT,
     TARGET_STAT_PERCENT,
     CASTER_LEVEL,
+    TARGET_LEVEL,
     CASTER_DAMAGE,
     TARGET_CURRENT_HEALTH,
     CASTER_CURRENT_HEALTH,

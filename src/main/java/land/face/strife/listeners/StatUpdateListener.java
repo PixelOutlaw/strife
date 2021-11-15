@@ -1,15 +1,15 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
  * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -27,9 +27,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -70,6 +72,24 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
         .getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateVanillaAttributes(player);
   }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onWorldChange(PlayerTeleportEvent event) {
+    if (event.getTo().getWorld() != event.getFrom().getWorld()) {
+      plugin.getStrifeMobManager()
+          .updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+    }
+  }
+
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onGamemodeChange(PlayerGameModeChangeEvent event) {
+    plugin.getStrifeMobManager()
+        .updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+  }
+
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerQuit(PlayerQuitEvent event) {

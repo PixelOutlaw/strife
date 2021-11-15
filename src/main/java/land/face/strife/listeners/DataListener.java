@@ -42,6 +42,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityPotionEffectEvent.Cause;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -64,6 +65,13 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
   private final static String UNUSED_PATH =
       "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onAttackEffect(final EntityPotionEffectEvent event) {
+    if (event.getCause() == Cause.ATTACK) {
+      event.setCancelled(true);
+    }
+  }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAbilityCooldown(final AbilityCooldownEvent event) {

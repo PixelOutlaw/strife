@@ -22,6 +22,7 @@ import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.WeakHashMap;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
@@ -39,10 +40,10 @@ public class StatsMenu extends ItemMenu {
 
   public StatsMenu(StrifePlugin plugin) {
     super(StringExtensionsKt.chatColorize("&0&lStats!"), Size.fit(45), plugin);
-    setItem(0, new StatsEquipmentItem(this, EquipmentSlot.HEAD, "&eNo Helmet"));
-    setItem(9, new StatsEquipmentItem(this, EquipmentSlot.CHEST, "&eNo Chest Armor"));
-    setItem(18, new StatsEquipmentItem(this, EquipmentSlot.LEGS, "&eNo... pants?"));
-    setItem(27, new StatsEquipmentItem(this, EquipmentSlot.FEET, "&eNo Boots"));
+    setItem(0, new StatsDeluxeEquipmentItem(this, DeluxeSlot.HELMET, "&eNo Helmet"));
+    setItem(9, new StatsDeluxeEquipmentItem(this, DeluxeSlot.BODY, "&eNo Chest Armor"));
+    setItem(18, new StatsDeluxeEquipmentItem(this, DeluxeSlot.LEGS, "&eNo... pants?"));
+    setItem(27, new StatsDeluxeEquipmentItem(this, DeluxeSlot.BOOTS, "&eNo Boots"));
     setItem(1, new StatsEquipmentItem(this, EquipmentSlot.HAND, "&eNo Weapon"));
     setItem(10, new StatsEquipmentItem(this, EquipmentSlot.OFF_HAND, "&eNo Offhand Item"));
 

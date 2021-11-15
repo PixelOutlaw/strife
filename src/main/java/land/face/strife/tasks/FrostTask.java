@@ -19,31 +19,18 @@
 package land.face.strife.tasks;
 
 import land.face.strife.StrifePlugin;
-import land.face.strife.util.JumpUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
-public class EveryTickTask extends BukkitRunnable {
+public class FrostTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
 
-  public EveryTickTask(StrifePlugin plugin) {
+  public FrostTask(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
   @Override
   public void run() {
-    plugin.getBlockManager().tickHolograms();
-    plugin.getBlockManager().tickBlock();
-    for (Player p : Bukkit.getOnlinePlayers()) {
-      double hoverPower = JumpUtil.determineHoverPower(p);
-      if (hoverPower > 0) {
-        Vector bonusVelocity = p.getLocation().getDirection().clone().multiply(0.01);
-        bonusVelocity.setY(bonusVelocity.getY() + hoverPower * 0.0005);
-        p.setVelocity(p.getVelocity().clone().add(bonusVelocity));
-      }
-    }
+    plugin.getStrifeMobManager().tickFrost();
   }
 }
