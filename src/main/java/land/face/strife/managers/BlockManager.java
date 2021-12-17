@@ -18,16 +18,18 @@
  */
 package land.face.strife.managers;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
+import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BlockData;
@@ -38,7 +40,6 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -131,10 +132,10 @@ public class BlockManager {
       } else {
         while (blockData.getRunes() > blockData.getRuneHolograms().size()
             && blockData.getRuneHolograms().size() < 6) {
-          Hologram hologram = HologramsAPI
-              .createHologram(StrifePlugin.getInstance(), mob.getEntity().getEyeLocation());
-          hologram.appendItemLine(new ItemStack(Material.COARSE_DIRT));
-          blockData.getRuneHolograms().add(hologram);
+          Hologram holo = DHAPI.createHologram(UUID.randomUUID().toString(),
+              mob.getEntity().getEyeLocation().clone(),
+              List.of("#ICON: COARSE_DIRT"));
+          blockData.getRuneHolograms().add(holo);
         }
       }
       orbitRunes(mob.getEntity().getLocation().clone().add(0, 1, 0), blockData.getRuneHolograms());
@@ -146,8 +147,8 @@ public class BlockManager {
       if (entry.getValue().getRunes() > 0) {
         for (Hologram holo : entry.getValue().getRuneHolograms()) {
           holo.delete();
-          holo.getWorld().playSound(holo.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
-          holo.getWorld().spawnParticle(
+          holo.getLocation().getWorld().playSound(holo.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
+          holo.getLocation().getWorld().spawnParticle(
               Particle.ITEM_CRACK,
               holo.getLocation(),
               20, 0, 0, 0, 0.07f,
@@ -166,7 +167,7 @@ public class BlockManager {
       float radian1 = (float) Math.toRadians(start + step * index);
       Location loc = center.clone();
       loc.add(Math.cos(radian1), 0, Math.sin(radian1));
-      holo.teleport(loc);
+      DHAPI.moveHologram(holo, loc);
       index++;
     }
   }

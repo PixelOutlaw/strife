@@ -1,6 +1,6 @@
 package land.face.strife.data;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.util.HashSet;
 import java.util.Set;
 

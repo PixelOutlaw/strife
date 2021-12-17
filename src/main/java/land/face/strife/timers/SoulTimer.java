@@ -18,7 +18,7 @@
  */
 package land.face.strife.timers;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -99,14 +99,14 @@ public class SoulTimer extends BukkitRunnable {
       if (currentViewers.contains(player)) {
         continue;
       }
-      soulHead.getVisibilityManager().hideTo(player);
+      soulHead.hide(p);
     }
 
     for (Player player : currentViewers) {
       if (oldViewers.contains(player)) {
         continue;
       }
-      soulHead.getVisibilityManager().showTo(player);
+      soulHead.show(player, 0);
     }
 
     viewers.clear();

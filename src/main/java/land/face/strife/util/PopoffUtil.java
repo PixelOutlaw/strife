@@ -1,10 +1,10 @@
 package land.face.strife.util;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
-import com.gmail.filoghost.holographicdisplays.api.VisibilityManager;
+import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import land.face.strife.StrifePlugin;
+import java.util.List;
+import java.util.UUID;
 import land.face.strife.data.effects.DamagePopoff;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -14,19 +14,19 @@ public class PopoffUtil {
 
   private static double MAX_GRAVITY = -2;
 
-  public static DamagePopoff createPopoff(Player player, Location location, Vector velocity, double gravity,
-      int life, String text) {
-    Hologram hologram = HologramsAPI.createHologram(StrifePlugin.getInstance(), location);
-    hologram.clearLines();
-    hologram.appendTextLine(StringExtensionsKt.chatColorize(text));
-    VisibilityManager visibilityManager = hologram.getVisibilityManager();
-    visibilityManager.showTo(player);
-    visibilityManager.setVisibleByDefault(false);
+  public static DamagePopoff createPopoff(Player player, Location location, Vector velocity,
+      double gravity, int life, String text) {
+    Hologram holo = DHAPI.createHologram(UUID.randomUUID().toString(),
+        location.clone(),
+        List.of(StringExtensionsKt.chatColorize(text))
+    );
+    holo.hideAll();
+    holo.show(player, 0);
     DamagePopoff indicator = new DamagePopoff();
 
     indicator.setLife(life);
     indicator.setVelocity(velocity);
-    indicator.setHologram(hologram);
+    indicator.setHologram(holo);
     indicator.setGravity(gravity);
 
     return indicator;
@@ -44,7 +44,7 @@ public class PopoffUtil {
     velocity.setY(Math.max(MAX_GRAVITY, velocity.getY() - indicator.getGravity()));
     indicator.setVelocity(velocity);
     location.add(velocity);
-    hologram.teleport(location);
+    DHAPI.moveHologram(hologram, location);
     return false;
   }
 

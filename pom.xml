@@ -134,11 +134,12 @@
       <groupId>com.github.shynixn.headdatabase</groupId>
       <artifactId>hdb-api</artifactId>
       <version>1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.gmail.filoghost.holographicdisplays</groupId>
-      <artifactId>holographicdisplays-api</artifactId>
-      <version>2.4.0</version>
+      <groupId>com.github.decentsoftware-eu</groupId>
+      <artifactId>decentholograms</artifactId>
+      <version>2.2.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

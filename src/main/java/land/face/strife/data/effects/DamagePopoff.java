@@ -1,6 +1,6 @@
 package land.face.strife.data.effects;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.util.Vector;
 
 public class DamagePopoff {

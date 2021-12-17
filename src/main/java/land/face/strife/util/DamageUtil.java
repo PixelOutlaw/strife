@@ -307,8 +307,8 @@ public class DamageUtil {
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
-          damageString = ChatColor.WHITE + "\uF809" + "✸" + "\uF80A" +
-              StringUtils.repeat("\uF808", damageString.length()) + damageString;
+          damageString = ChatColor.WHITE + "✸" + "\uF809" +
+              StringUtils.repeat("\uF806", damageString.length()) + damageString;
         }
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
             IndicatorStyle.RANDOM_POPOFF, 9, damageString);
