@@ -133,7 +133,8 @@ public class CombatListener implements Listener {
       event.setDamage(BASE, plugin.getDamageManager().getHandledDamage(event.getDamager()));
       return;
     }
-    if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof ArmorStand) {
+    if (!(event.getEntity() instanceof LivingEntity defendEntity)
+        || event.getEntity() instanceof ArmorStand) {
       return;
     }
     if (event.getDamager() instanceof EvokerFangs && FangUtil
@@ -142,7 +143,6 @@ public class CombatListener implements Listener {
       return;
     }
 
-    LivingEntity defendEntity = (LivingEntity) event.getEntity();
     LivingEntity attackEntity = DamageUtil.getAttacker(event.getDamager());
 
     if (attackEntity == null) {
@@ -166,23 +166,32 @@ public class CombatListener implements Listener {
     }
 
     Projectile projectile = null;
-    boolean isMultishot = false;
-    List<Effect> extraEffects = null;
-    int shotId = -1;
+    boolean isAbilityProjectile = false;
 
     if (event.getDamager() instanceof Projectile) {
       projectile = (Projectile) event.getDamager();
-      shotId = ProjectileUtil.getShotId(projectile);
-      if (shotId != -1) {
-        String idKey = "SHOT_HIT_" + shotId;
-        if (defendEntity.hasMetadata(idKey)) {
-          isMultishot = true;
-        }
+      if (ProjectileUtil.isAbilityProjectile(projectile)) {
+        isAbilityProjectile = true;
       }
     }
 
     StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+
+    if (!isAbilityProjectile && !attacker.canAttack()) {
+      event.setCancelled(true);
+      return;
+    }
+
     StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
+
+    if (!isAbilityProjectile) {
+      boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker,
+          defender, TriggerAbilityType.ON_HIT);
+      if (mobAbility) {
+        event.setCancelled(true);
+        return;
+      }
+    }
 
     if (TargetingUtil.isFriendly(attacker, defender)) {
       event.setCancelled(true);
@@ -223,8 +232,8 @@ public class CombatListener implements Listener {
     }
     putMonsterHit(attackEntity);
 
-    if (isMultishot) {
-      attackMultiplier *= 0.25;
+    if (projectile != null) {
+      attackMultiplier *= defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
     }
 
     if (attackMultiplier < 0.05) {
@@ -236,13 +245,6 @@ public class CombatListener implements Listener {
     boolean isSneakAttack = attackEntity instanceof Player && plugin.getStealthManager()
         .canSneakAttack((Player) attackEntity);
 
-    boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
-
-    if (mobAbility) {
-      event.setCancelled(true);
-      return;
-    }
-
     if (attackEntity instanceof Player) {
       plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
     }
@@ -253,10 +255,10 @@ public class CombatListener implements Listener {
     damageModifiers.setHealMultiplier(healMultiplier);
     damageModifiers.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
     damageModifiers.setScaleChancesWithAttack(true);
-    damageModifiers.setConsumeEarthRunes(!isMultishot);
-    damageModifiers.setApplyOnHitEffects(!isMultishot && attackMultiplier > Math.random());
+    damageModifiers.setApplyOnHitEffects(attackMultiplier > Math.random());
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
+    damageModifiers.setGuardBreak(false);
 
     if (backAttack) {
       damageModifiers.getAbilityMods().put(AbilityMod.BACK_ATTACK, 1f);
@@ -269,15 +271,6 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
-
-    if (!isMultishot && shotId != -1) {
-      String idKey = "SHOT_HIT_" + shotId;
-      defendEntity.setMetadata(idKey, new FixedMetadataValue(StrifePlugin.getInstance(), true));
-      Bukkit.getScheduler().runTaskLater(plugin, () ->
-          defendEntity.removeMetadata(idKey, StrifePlugin.getInstance()), 2500L);
-    }
-
-    DamageUtil.applyExtraEffects(attacker, defender, extraEffects);
 
     if (attackMultiplier < 0.05) {
       event.setDamage(BASE, 0);
@@ -322,10 +315,7 @@ public class CombatListener implements Listener {
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
       finalDamage *= 0.5;
       float bleed = finalDamage;
-      if (defender.getStat(StrifeStat.BLEED_RESIST) > 0) {
-        bleed *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
-      }
-      DamageUtil.applyBleed(defender, bleed, true);
+      DamageUtil.applyBleed(defender, defender, bleed, true);
     }
 
     Bukkit.getScheduler().runTaskLater(plugin,
@@ -338,7 +328,7 @@ public class CombatListener implements Listener {
       return;
     }
 
-    event.setDamage(BASE, eventDamage);
+    event.setDamage(BASE, Math.max(eventDamage, 0.001));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

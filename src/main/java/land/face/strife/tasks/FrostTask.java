@@ -1,36 +1,88 @@
-/**
- * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
 package land.face.strife.tasks;
 
+import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.util.DamageUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class FrostTask extends BukkitRunnable {
 
-  private final StrifePlugin plugin;
+  private final WeakReference<StrifeMob> parentMob;
+  private int frostTick = 0;
+  private boolean isCold;
 
-  public FrostTask(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public FrostTask(StrifeMob parentMob) {
+    this.parentMob = new WeakReference<>(parentMob);
+    this.runTaskTimer(StrifePlugin.getInstance(), 20L, 1);
   }
 
   @Override
   public void run() {
-    plugin.getStrifeMobManager().tickFrost();
+
+    StrifeMob mob = parentMob.get();
+    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+      cancel();
+      return;
+    }
+
+    frostTick++;
+    frostTick = frostTick % 20;
+    boolean playParticles = frostTick % 5 == 0;
+
+    LivingEntity le = mob.getEntity();
+    if (le.getType() == EntityType.PLAYER && ((Player) le).getGameMode() == GameMode.ADVENTURE) {
+      if (frostTick == 0) {
+        Block block = le.getLocation().getBlock();
+        isCold = isLocationCold(block);
+      }
+      if (isCold) {
+        DamageUtil.addFrost(null, mob, 5);
+        if (mob.getFrost() > 9900) {
+          DamageUtil.dealRawDamage(le, 1);
+        }
+      } else {
+        mob.setFrost(mob.getFrost() - 25);
+      }
+    } else if (mob.getFrost() > 0) {
+      mob.setFrost(mob.getFrost() - 25);
+    }
+
+    if (playParticles && mob.getFrost() > 0) {
+      playFrostParticles(mob, le);
+    }
+  }
+
+  private static void playFrostParticles(StrifeMob mob, LivingEntity livingEntity) {
+    livingEntity.getWorld().spawnParticle(Particle.SNOWFLAKE,
+        livingEntity.getEyeLocation(),
+        1 + mob.getFrost() / 3000,
+        0.5, 0.6, 0.5,
+        0);
+  }
+
+  private static boolean isLocationCold(Block block) {
+    if (block.getTemperature() > 0.1) {
+      return false;
+    }
+    if (block.getType() == Material.WATER) {
+      return true;
+    }
+    if (block.getLightFromSky() > 12) {
+      if (block.getLightLevel() > 5) {
+        return false;
+      }
+      return block.getWorld().hasStorm()
+          || (block.getWorld().getTime() > 13000 && block.getWorld().getTime() < 23000);
+    }
+    return false;
   }
 }

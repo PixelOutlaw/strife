@@ -70,9 +70,14 @@ public class StatUtil {
         mob.setMaxBarrier(amount);
         return amount;
       }
+      case BLOCK -> {
+        float amount = stats.getOrDefault(StrifeStat.BLOCK, 0f);
+        mob.setMaxBlock(amount);
+        return amount;
+      }
       case FIRE_RESIST, ICE_RESIST, LIGHTNING_RESIST, LIGHT_RESIST, DARK_RESIST, EARTH_RESIST -> {
         float amount = stats.getOrDefault(stat, 0f) + stats.getOrDefault(StrifeStat.ALL_RESIST, 0f);
-        return Math.min(amount, mob.getEntity() instanceof Player ? 80 : 99);
+        return Math.min(amount, 95);
       }
     }
     return stats.getOrDefault(stat, 0f);
@@ -160,7 +165,7 @@ public class StatUtil {
   }
 
   public static float getArmorMult(float armor) {
-    return armor > 0 ? 80 / (80 + armor) : 1 - (armor / 100);
+    return (float) Math.pow(0.5f, armor / 100f);
   }
 
   public static float getWardingMult(StrifeMob attacker, StrifeMob defender) {
@@ -173,7 +178,7 @@ public class StatUtil {
   }
 
   public static float getWardingMult(float warding) {
-    return warding > 0 ? 80 / (80 + warding) : 1 - (warding / 100);
+    return (float) Math.pow(0.5f, warding / 100f);
   }
 
   public static float getMinimumEvasionMult(float evasion, float accuracy) {

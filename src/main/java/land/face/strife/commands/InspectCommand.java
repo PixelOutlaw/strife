@@ -27,7 +27,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import land.face.strife.StrifePlugin;
 import org.bukkit.entity.Player;
 
-@CommandAlias("stats|inspect")
+@CommandAlias("stats|inspect|view-stats|viewstats")
 public class InspectCommand extends BaseCommand {
 
   private final StrifePlugin plugin;

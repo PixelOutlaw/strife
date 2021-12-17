@@ -137,11 +137,12 @@ public class AreaEffect extends LocationEffect {
     if (canBeEvaded && DamageUtil.determineEvasion(caster, target, attackModifiers) == -1) {
       return true;
     }
-    if (canBeCountered && getPlugin().getCounterManager().executeCounters(caster.getEntity(), target.getEntity())) {
+    if (canBeCountered && getPlugin().getCounterManager()
+        .executeCounters(caster.getEntity(), target.getEntity())) {
       return true;
     }
     return canBeBlocked && getPlugin().getBlockManager()
-        .isAttackBlocked(caster, target, 1.0f, AttackType.AREA, false);
+        .isAttackBlocked(caster, target, 1.0f, AttackType.AREA, false, false);
   }
 
   private boolean canTargetBeHit(UUID caster, UUID target) {

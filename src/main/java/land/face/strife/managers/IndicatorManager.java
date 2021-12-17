@@ -73,23 +73,19 @@ public class IndicatorManager {
     Vector velocity = null;
     double gravity = 0;
     switch (type) {
-      case RANDOM_POPOFF:
+      case RANDOM_POPOFF -> {
         velocity = new Vector(
             -randomDamageHSpeed + 2 * Math.random() * randomDamageHSpeed,
             randomDamageVSpeed / 2 + Math.random() * randomDamageVSpeed,
             -randomDamageHSpeed + 2 * Math.random() * randomDamageHSpeed);
         gravity = randomDamageGravity;
-        break;
-      case BOUNCE:
+      }
+      case BOUNCE -> {
         velocity = bounceVector.clone();
         gravity = bounceGravity;
-        break;
-      case FLOAT_UP_FAST:
-        velocity = fastFloatVector.clone();
-        break;
-      case FLOAT_UP_SLOW:
-        velocity = slowFloatVector.clone();
-        break;
+      }
+      case FLOAT_UP_FAST -> velocity = fastFloatVector.clone();
+      case FLOAT_UP_SLOW -> velocity = slowFloatVector.clone();
     }
 
     DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) creator, midway, velocity, gravity, life, text);

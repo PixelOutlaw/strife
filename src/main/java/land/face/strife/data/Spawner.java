@@ -13,6 +13,8 @@ import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.util.DateTimeUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
+import lombok.Getter;
+import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
@@ -38,7 +40,10 @@ public class Spawner extends BukkitRunnable {
   private final String id;
   private final String uniqueId;
   private final UniqueEntity uniqueEntity;
+
   private int amount;
+  @Getter @Setter
+  private int level = -1;
   private Location location;
   private double leashRange;
   private long respawnSeconds;
@@ -130,6 +135,9 @@ public class Spawner extends BukkitRunnable {
     }
 
     mob.setSpawner(spawner);
+    if (spawner.getLevel() > 0) {
+      SpecialStatusUtil.setMobLevel(mob.getEntity(), spawner.getLevel());
+    }
 
     if (StringUtils.isBlank(spawner.getUniqueEntity().getMount())
         && mob.getEntity().getVehicle() != null) {

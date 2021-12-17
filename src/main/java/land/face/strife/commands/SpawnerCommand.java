@@ -59,8 +59,8 @@ public class SpawnerCommand extends BaseCommand {
       return;
     }
 
-    Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueName, amount, sender.getLocation(), respawnSecs,
-        leashRange);
+    Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueName, amount, sender.getLocation(),
+        respawnSecs, leashRange);
     plugin.getSpawnerManager().addSpawner(spawnerId, spawner);
     sendMessage(sender, "&aSpawner &f" + spawnerId + " &asuccessfully added!");
   }
@@ -171,7 +171,8 @@ public class SpawnerCommand extends BaseCommand {
       sendMessage(sender, "&eNo spawner with the name  " + spawnerName + " name exists!");
       return;
     }
-    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName).setLocation(sender.getLocation());
+    plugin.getSpawnerManager().getSpawnerMap().get(spawnerName)
+        .setLocation(sender.getLocation().clone());
     sendMessage(sender, "&aUpdated location of &f" + spawnerName + " &ato here.");
   }
 

@@ -18,17 +18,11 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.DamageUtil;
+import land.face.strife.util.CorruptionUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -91,70 +85,15 @@ public class StrifeMobManager {
     return trackedEntities.get(entity);
   }
 
-  public void tickFrost() {
-    frostTick++;
-    frostTick = frostTick % 4;
+  public void tickCorruption() {
     Map<LivingEntity, StrifeMob> loopMobs = Collections.synchronizedMap(trackedEntities);
     for (StrifeMob mob : loopMobs.values()) {
       LivingEntity le = mob.getEntity();
-      if (le == null || !le.isValid()) {
+      if (mob.getCorruption() < 0.1 || le == null || !le.isValid()) {
         continue;
       }
-      if (le.getFireTicks() > 0 && mob.getFrost() > 0) {
-        mob.setFrost(mob.getFrost() - le.getFireTicks());
-        le.setFireTicks(0);
-      }
-      Block block = le.getLocation().getBlock();
-      if (le.getType() == EntityType.PLAYER && ((Player) le).getGameMode() == GameMode.ADVENTURE) {
-        boolean isLocationCold = isLocationCold(block);
-        int incrementAmount = isLocationCold ? 5 : -25;
-        mob.setFrost(mob.getFrost() + incrementAmount);
-        if (mob.getFrost() > 0) {
-          if (isLocationCold && mob.getFrost() > 9900) {
-            DamageUtil.dealRawDamage(le, 1);
-          }
-          playFrostParticles(mob, le);
-        }
-      } else if (mob.getFrost() > 0) {
-        mob.setFrost(mob.getFrost() - 25);
-        playFrostParticles(mob, le);
-      }
+      CorruptionUtil.tickCorruption(mob);
     }
-  }
-
-  private static void playFrostParticles(StrifeMob mob, LivingEntity livingEntity) {
-    if (frostTick != 0) {
-      return;
-    }
-    livingEntity.getWorld().spawnParticle(Particle.SNOWFLAKE,
-        livingEntity.getEyeLocation(),
-        1 + mob.getFrost() / 3000,
-        0.5, 0.6, 0.5,
-        0);
-  }
-
-  private static boolean isLocationCold(Block block) {
-    if (!isColdBiome(block.getBiome())) {
-      return false;
-    }
-    if (block.getType() == Material.WATER) {
-      return true;
-    }
-    if (block.getLightFromSky() > 12) {
-      if (block.getLightLevel() > 5) {
-        return false;
-      }
-      return block.getWorld().hasStorm()
-          || (block.getWorld().getTime() > 14000 && block.getWorld().getTime() < 22000);
-    }
-    return false;
-  }
-
-  private static boolean isColdBiome(Biome biome) {
-    return switch (biome) {
-      case ICE_SPIKES, SNOWY_BEACH, SNOWY_MOUNTAINS, SNOWY_TAIGA, SNOWY_TAIGA_HILLS, SNOWY_TAIGA_MOUNTAINS, SNOWY_TUNDRA -> true;
-      default -> false;
-    };
   }
 
   public void despawnAllTempEntities() {

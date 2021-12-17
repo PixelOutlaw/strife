@@ -44,14 +44,12 @@ public class FloatBehindGoalPatcher {
         return true;
       }
       if (masterDetectCooldown > System.currentTimeMillis()) {
-        Bukkit.getLogger().info("nope!");
         return false;
       }
       masterDetectCooldown = System.currentTimeMillis() + 3000;
       StrifeMob masterMob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(mob);
       if (masterMob != null) {
         master = masterMob.getEntity();
-        Bukkit.getLogger().info("master detected");
         return true;
       }
       return false;

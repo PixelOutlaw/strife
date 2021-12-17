@@ -88,12 +88,11 @@ public class ShootListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onPlayerArrowShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof Player)
+    if (!(event.getEntity().getShooter() instanceof Player player)
         || !(event.getEntity() instanceof Arrow)) {
       return;
     }
 
-    Player player = (Player) event.getEntity().getShooter();
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 
     event.setCancelled(true);
@@ -134,48 +133,39 @@ public class ShootListener implements Listener {
 
   @EventHandler
   public void onEntityShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof LivingEntity) ||
-        (event.getEntity().getShooter() instanceof Player)) {
-      return;
-    }
-
-    StrifeMob mob = plugin.getStrifeMobManager()
-        .getStatMob((LivingEntity) event.getEntity().getShooter());
-
-    if (event.getEntity().getShooter() instanceof Mob
-        && ((Mob) event.getEntity().getShooter()).getTarget() != null) {
-      StrifeMob target = plugin.getStrifeMobManager()
-          .getStatMob(((Mob) event.getEntity().getShooter()).getTarget());
-
-      if (TargetingUtil.isFriendly(mob, target)) {
-        event.setCancelled(true);
-        ((Mob) event.getEntity().getShooter()).setTarget(null);
+    if (event.getEntity().getShooter() instanceof LivingEntity shooter) {
+      if (shooter instanceof Player) {
         return;
       }
-    }
 
-    if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
-      event.setCancelled(true);
-      return;
-    }
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(shooter);
 
-    ItemStack weapon = Objects.requireNonNull(((LivingEntity) event.getEntity().getShooter())
-        .getEquipment()).getItemInMainHand();
-    if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
-      ProjectileUtil.shootWand(mob, 1);
-      event.setCancelled(true);
-      return;
-    }
+      if (shooter instanceof Mob && ((Mob) shooter).getTarget() != null) {
+        StrifeMob target = plugin.getStrifeMobManager().getStatMob(((Mob) shooter).getTarget());
+        if (TargetingUtil.isFriendly(mob, target)) {
+          event.setCancelled(true);
+          ((Mob) shooter).setTarget(null);
+          return;
+        }
+      }
 
-    if (ItemUtil.isPistol(weapon)) {
-      doPistolShot(mob, 1f);
-      event.setCancelled(true);
-      return;
-    }
+      if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
+        event.setCancelled(true);
+        return;
+      }
 
-    if (event.getEntity() instanceof Arrow) {
-      ProjectileUtil.shootArrow(mob, 1f);
-      event.setCancelled(true);
+      ItemStack weapon = shooter.getEquipment().getItemInMainHand();
+      if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
+        ((LivingEntity) event.getEntity().getShooter()).swingMainHand();
+        ProjectileUtil.shootWand(mob, 1);
+        event.setCancelled(true);
+      } else if (ItemUtil.isPistol(weapon)) {
+        doPistolShot(mob, 1f);
+        event.setCancelled(true);
+      } else if (event.getEntity() instanceof Arrow) {
+        ProjectileUtil.shootArrow(mob, 1f);
+        event.setCancelled(true);
+      }
     }
   }
 

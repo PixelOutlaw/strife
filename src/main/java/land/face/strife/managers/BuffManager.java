@@ -58,13 +58,13 @@ public class BuffManager {
         try {
           loadedBuff.getTraits().add(StrifeTrait.valueOf(s));
         } catch (Exception e) {
-          Bukkit.getLogger().info("[Strife] (Buff) Unknown trait " + s);
+          Bukkit.getLogger().warning("[Strife] (Buff) Unknown trait " + s);
         }
       }
       for (String s : loreAbilities) {
         LoreAbility la = StrifePlugin.getInstance().getLoreAbilityManager().getLoreAbilityFromId(s);
         if (la == null) {
-          Bukkit.getLogger().info("[Strife] (Buff) Unknown lore ability " + s);
+          Bukkit.getLogger().warning("[Strife] (Buff) Unknown lore ability " + s);
         } else {
           loadedBuff.getLoreAbilities().add(la);
         }

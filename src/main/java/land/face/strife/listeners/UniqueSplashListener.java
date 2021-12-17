@@ -31,16 +31,14 @@ public class UniqueSplashListener implements Listener {
     if (hitEffects == null || hitEffects.isEmpty()) {
       return;
     }
-    if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
+    if (!(event.getEntity().getShooter() instanceof LivingEntity attackEntity)) {
       return;
     }
-    LivingEntity attackEntity = (LivingEntity) event.getEntity().getShooter();
     StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
     for (Entity e : event.getAffectedEntities()) {
-      if (!(e instanceof LivingEntity)) {
+      if (!(e instanceof LivingEntity defendEntity)) {
         continue;
       }
-      LivingEntity defendEntity = (LivingEntity) e;
       StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
       double evasionMultiplier = StatUtil.getMinimumEvasionMult(StatUtil.getEvasion(defender),
@@ -53,8 +51,7 @@ public class UniqueSplashListener implements Listener {
         return;
       }
 
-      if (plugin.getBlockManager().rollBlock(defender, false)) {
-        plugin.getBlockManager().blockFatigue(defender, 1.0, false, false);
+      if (plugin.getBlockManager().rollBlock(defender, 1.0f, false, true, false)) {
         DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);
         return;

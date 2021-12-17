@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Projectile;
 
 public class SpecialStatusUtil {
 
@@ -13,7 +14,6 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Boolean> FALL_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SNEAK_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SPAWNER_SPAWNED = new WeakHashMap<>();
-  private static final Map<Entity, Boolean> STANDODAH = new WeakHashMap<>();
   private static final Map<Entity, Boolean> DESPAWN_ON_UNLOAD = new WeakHashMap<>();
   private static final Map<Entity, Boolean> GUILD_MOB = new WeakHashMap<>();
 

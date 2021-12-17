@@ -43,17 +43,11 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
     }
     switch (event.getCause()) {
       case LAVA, FIRE -> {
-        if (le.getFireTicks() == 0) {
-          plugin.getStrifeMobManager().getStatMob(le).setFrost(0);
-        }
         le.setFireTicks(Math.max(le.getFireTicks(), 80));
         event.setCancelled(true);
         plugin.getDamageOverTimeTask().trackBurning(le);
       }
       case HOT_FLOOR -> {
-        if (le.getFireTicks() == 0) {
-          plugin.getStrifeMobManager().getStatMob(le).setFrost(0);
-        }
         le.setFireTicks(40);
         plugin.getDamageOverTimeTask().trackBurning(le);
         event.setCancelled(true);

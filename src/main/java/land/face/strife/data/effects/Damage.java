@@ -16,6 +16,8 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -36,6 +38,8 @@ public class Damage extends Effect {
   private boolean applyOnHitEffects;
   private boolean showPopoffs;
   private boolean bypassBarrier;
+  @Getter @Setter
+  private boolean guardBreak;
   private boolean selfInflict;
   private final List<Effect> hitEffects = new ArrayList<>();
   private final List<Effect> killEffects = new ArrayList<>();
@@ -57,6 +61,7 @@ public class Damage extends Effect {
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
     mods.setBypassBarrier(bypassBarrier);
+    mods.setGuardBreak(guardBreak);
     mods.setScaleChancesWithAttack(false);
     if (canSneakAttack && caster.getEntity() instanceof Player && getPlugin().getStealthManager()
         .canSneakAttack((Player) caster.getEntity())) {

@@ -30,13 +30,13 @@ import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.managers.BlockManager;
-import land.face.strife.managers.CorruptionManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import me.glaremasters.guilds.Guilds;
 import me.glaremasters.guilds.api.GuildsAPI;
 import me.glaremasters.guilds.guild.Guild;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -121,21 +121,6 @@ public class DamageUtil {
         .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
   }
 
-  public static void applyExtraEffects(StrifeMob attacker, StrifeMob defender,
-      List<Effect> effects) {
-    if (effects == null) {
-      return;
-    }
-    Set<LivingEntity> entities = new HashSet<>();
-    entities.add(defender.getEntity());
-    TargetResponse response = new TargetResponse(entities);
-
-    if (effects.isEmpty()) {
-      return;
-    }
-    plugin.getEffectManager().executeEffectList(attacker, response, effects);
-  }
-
   public static boolean isGuildAlly(StrifeMob attacker, StrifeMob defender) {
     if (attacker.getEntity().getType() == EntityType.PLAYER) {
       return isGuildAlly(defender, (Player) attacker.getEntity());
@@ -169,6 +154,8 @@ public class DamageUtil {
 
   public static boolean preDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
 
+    TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+
     if (attacker.isUseEquipment()) {
       plugin.getStrifeMobManager().updateEquipmentStats(attacker);
     }
@@ -198,8 +185,7 @@ public class DamageUtil {
 
     if (mods.isCanBeBlocked()) {
       if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
-          mods.getAttackType(), mods.isBlocking())) {
-        TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
+          mods.getAttackType(), mods.isBlocking(), mods.isGuardBreak())) {
         DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
         return false;
       }
@@ -218,6 +204,21 @@ public class DamageUtil {
   public static void reduceDamage(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, mods.getAbilityMods());
+  }
+
+  public static String buildDamageString(int i) {
+    String str = Integer.toString(i);
+    return str
+        .replaceAll("0", "０")
+        .replaceAll("1", "１")
+        .replaceAll("2", "２")
+        .replaceAll("3", "３")
+        .replaceAll("4", "４")
+        .replaceAll("5", "５")
+        .replaceAll("6", "６")
+        .replaceAll("7", "７")
+        .replaceAll("8", "８")
+        .replaceAll("9", "９");
   }
 
   public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender,
@@ -302,19 +303,20 @@ public class DamageUtil {
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
       if (rawDamage == 0) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.AQUA + "0");
+            IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.AQUA + "０");
       } else {
-        damageString = String.valueOf(Math.round(rawDamage));
+        damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
-          damageString = damageString + ChatColor.RED + "✸";
+          damageString = ChatColor.WHITE + "\uF809" + "✸" + "\uF80A" +
+              StringUtils.repeat("\uF808", damageString.length()) + damageString;
         }
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.BOLD + damageString);
+            IndicatorStyle.RANDOM_POPOFF, 9, damageString);
       }
     }
     if (mods.isShowPopoffs() && attacker.getMaster() != null &&
         attacker.getMaster().getEntity() instanceof Player) {
-      damageString = String.valueOf(Math.round(rawDamage));
+      damageString = buildDamageString(Math.round(rawDamage));
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
     }
@@ -530,7 +532,7 @@ public class DamageUtil {
     float baseDarkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
     if (baseDarkDamage != 0) {
       damageMap.put(DamageType.DARK,
-          baseDarkDamage * getDarknessManager().getCorruptionMult(defender.getEntity()));
+          baseDarkDamage * CorruptionUtil.getCorruptionMultiplier(defender));
     }
     float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
         attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
@@ -574,7 +576,7 @@ public class DamageUtil {
       }
       case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
-        attemptFreeze(defender, damageMap.get(finalElementType));
+        attemptFreeze(attacker, defender, damageMap.get(finalElementType));
         damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.2f);
       }
       case LIGHTNING -> {
@@ -584,7 +586,7 @@ public class DamageUtil {
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-        applyCorrupt(defender.getEntity(), 10 + baseDarkDamage / 4, true);
+        CorruptionUtil.applyCorrupt(defender, 10 + baseDarkDamage / 4, true);
       }
       case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
@@ -744,12 +746,12 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static void attemptFreeze(StrifeMob defender, float damage) {
+  public static void attemptFreeze(StrifeMob attacker, StrifeMob defender, float damage) {
     LivingEntity defendEntity = defender.getEntity();
     defendEntity.getWorld().playSound(defendEntity.getEyeLocation(),
         Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
     int ticks = 500 + (int) (1000f * (damage / defendEntity.getMaxHealth()));
-    defender.setFrost(defender.getFrost() + ticks);
+    DamageUtil.addFrost(attacker, defender, ticks);
   }
 
   public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {
@@ -791,13 +793,11 @@ public class DamageUtil {
       Map<AbilityMod, Float> attackModifiers) {
     if (Math.random() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
       DamageUtil.doEvasion(attacker, defender);
-      TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
       return -1;
     }
     float evasionMultiplier = getFullEvasionMult(attacker, defender, attackModifiers);
     if (evasionMultiplier < EVASION_THRESHOLD) {
       DamageUtil.doEvasion(attacker, defender);
-      TargetingUtil.expandMobRange(attacker.getEntity(), defender.getEntity());
       return -1;
     }
     return evasionMultiplier;
@@ -906,16 +906,19 @@ public class DamageUtil {
       float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) + mods.getAbilityMods()
           .getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
       damage *= 1 + (bleedDamage / 100);
-      damage *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
-      applyBleed(defender, damage, bypassBarrier);
+      applyBleed(attacker, defender, damage, bypassBarrier);
     }
     return false;
   }
 
-  public static void applyBleed(StrifeMob defender, float amount, boolean bypassBarrier) {
+  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount, boolean bypassBarrier) {
     if (amount < 0.1) {
       return;
     }
+    if (defender.getFrost() > 0 && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE)) {
+      amount *= 1.3;
+    }
+    amount *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
     boolean bleedSuccess = plugin.getBleedManager().addBleed(defender, amount, bypassBarrier);
     if (bleedSuccess) {
       defender.getEntity().getWorld()
@@ -923,13 +926,15 @@ public class DamageUtil {
     }
   }
 
-  public static void applyCorrupt(LivingEntity defender, float amount, boolean silent) {
-    StrifePlugin.getInstance().getCorruptionManager().applyCorruption(defender, amount);
-    if (!silent) {
-      defender.getWorld().playSound(defender.getEyeLocation(), Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
+  public static void addFrost(StrifeMob attacker, StrifeMob defender, float amount) {
+    if (attacker != null && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE) &&
+        StrifePlugin.getInstance().getBleedManager().isBleeding(defender.getEntity())) {
+      amount *= 1.3;
     }
-    defender.getWorld().spawnParticle(Particle.SMOKE_NORMAL,
-        defender.getEyeLocation(), 10, 0.4, 0.4, 0.5, 0.1);
+    if (amount < 0.1) {
+      return;
+    }
+    defender.setFrost(defender.getFrost() + amount);
   }
 
   public static void doReflectedDamage(StrifeMob defender, StrifeMob attacker,
@@ -1054,10 +1059,6 @@ public class DamageUtil {
 
   private static BlockManager getBlockManager() {
     return StrifePlugin.getInstance().getBlockManager();
-  }
-
-  private static CorruptionManager getDarknessManager() {
-    return StrifePlugin.getInstance().getCorruptionManager();
   }
 
   public enum DamageScale {

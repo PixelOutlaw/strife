@@ -47,7 +47,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import land.face.dinvy.DeluxeInvyPlugin;
-import land.face.dinvy.events.EquipItemEvent;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
@@ -61,74 +60,16 @@ import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.effects.CreateModelAnimation;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.TriggerLoreAbility;
+import land.face.strife.data.effects.Wait;
 import land.face.strife.hooks.SnazzyPartiesHook;
-import land.face.strife.listeners.ChatListener;
-import land.face.strife.listeners.CombatListener;
-import land.face.strife.listeners.CreeperExplodeListener;
-import land.face.strife.listeners.DOTListener;
-import land.face.strife.listeners.DataListener;
-import land.face.strife.listeners.DeathListener;
-import land.face.strife.listeners.DeluxeEquipListener;
-import land.face.strife.listeners.DogeListener;
-import land.face.strife.listeners.DoubleJumpListener;
-import land.face.strife.listeners.EndermanListener;
-import land.face.strife.listeners.EntityHider;
+import land.face.strife.listeners.*;
 import land.face.strife.listeners.EntityHider.Policy;
-import land.face.strife.listeners.EntityMagicListener;
-import land.face.strife.listeners.ExperienceListener;
-import land.face.strife.listeners.FallListener;
-import land.face.strife.listeners.FishingListener;
-import land.face.strife.listeners.HeadLoadListener;
-import land.face.strife.listeners.HealingListener;
-import land.face.strife.listeners.InventoryListener;
-import land.face.strife.listeners.LaunchAndLandListener;
-import land.face.strife.listeners.LoreAbilityListener;
-import land.face.strife.listeners.MinionListener;
-import land.face.strife.listeners.MoneyDropListener;
-import land.face.strife.listeners.ShearsEquipListener;
-import land.face.strife.listeners.ShootListener;
-import land.face.strife.listeners.SkillLevelUpListener;
-import land.face.strife.listeners.SpawnListener;
-import land.face.strife.listeners.StatUpdateListener;
-import land.face.strife.listeners.SwingListener;
-import land.face.strife.listeners.TargetingListener;
-import land.face.strife.listeners.UniqueSplashListener;
-import land.face.strife.managers.AbilityIconManager;
-import land.face.strife.managers.AbilityManager;
-import land.face.strife.managers.AgilityManager;
-import land.face.strife.managers.AttackSpeedManager;
-import land.face.strife.managers.BleedManager;
-import land.face.strife.managers.BlockManager;
-import land.face.strife.managers.BoostManager;
-import land.face.strife.managers.BossBarManager;
-import land.face.strife.managers.BuffManager;
-import land.face.strife.managers.ChampionManager;
-import land.face.strife.managers.ChaserManager;
-import land.face.strife.managers.CorruptionManager;
-import land.face.strife.managers.CounterManager;
-import land.face.strife.managers.DamageManager;
-import land.face.strife.managers.EffectManager;
-import land.face.strife.managers.EntityEquipmentManager;
-import land.face.strife.managers.ExperienceManager;
-import land.face.strife.managers.IndicatorManager;
-import land.face.strife.managers.LoreAbilityManager;
+import land.face.strife.managers.*;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
-import land.face.strife.managers.MobModManager;
-import land.face.strife.managers.MonsterManager;
-import land.face.strife.managers.PathManager;
-import land.face.strife.managers.RageManager;
-import land.face.strife.managers.SkillExperienceManager;
-import land.face.strife.managers.SoulManager;
-import land.face.strife.managers.SpawnerManager;
-import land.face.strife.managers.StatUpdateManager;
-import land.face.strife.managers.StealthManager;
-import land.face.strife.managers.StrifeAttributeManager;
-import land.face.strife.managers.StrifeMobManager;
-import land.face.strife.managers.UniqueEntityManager;
-import land.face.strife.managers.WSEManager;
 import land.face.strife.menus.abilities.AbilityMenu;
 import land.face.strife.menus.abilities.AbilitySubmenu;
 import land.face.strife.menus.abilities.ReturnButton;
@@ -140,19 +81,21 @@ import land.face.strife.menus.stats.StatsMenu;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
+import land.face.strife.tasks.BlockTask;
 import land.face.strife.tasks.BoostTickTask;
 import land.face.strife.tasks.BossBarsTask;
+import land.face.strife.tasks.CorruptionTask;
 import land.face.strife.tasks.DamageOverTimeTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.ForceAttackSpeed;
-import land.face.strife.tasks.FrostTask;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.StealthParticleTask;
 import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
+import land.face.strife.util.CorruptionUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
@@ -164,6 +107,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -171,6 +115,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 public class StrifePlugin extends FacePlugin {
 
@@ -179,18 +124,9 @@ public class StrifePlugin extends FacePlugin {
   private PluginLogger debugPrinter;
   private LogLevel logLevel;
   private MasterConfiguration settings;
-  private VersionedSmartYamlConfiguration attributesYAML;
-  private VersionedSmartYamlConfiguration baseStatsYAML;
-  private VersionedSmartYamlConfiguration uniqueEnemiesYAML;
-  private VersionedSmartYamlConfiguration equipmentYAML;
-  private VersionedSmartYamlConfiguration conditionYAML;
-  private VersionedSmartYamlConfiguration effectYAML;
-  private VersionedSmartYamlConfiguration pathYAML;
-  private VersionedSmartYamlConfiguration abilityYAML;
-  private VersionedSmartYamlConfiguration loreAbilityYAML;
-  private VersionedSmartYamlConfiguration buffsYAML;
-  private VersionedSmartYamlConfiguration modsYAML;
-  private VersionedSmartYamlConfiguration globalBoostsYAML;
+  private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, uniqueEnemiesYAML,
+      equipmentYAML, conditionYAML, effectYAML, pathYAML, abilityYAML, loreAbilityYAML, buffsYAML,
+      modsYAML, globalBoostsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
   private StrifeMobManager strifeMobManager;
@@ -204,7 +140,6 @@ public class StrifePlugin extends FacePlugin {
   private BlockManager blockManager;
   private CounterManager counterManager;
   private BleedManager bleedManager;
-  private CorruptionManager corruptionManager;
   private RageManager rageManager;
   private MonsterManager monsterManager;
   private StealthManager stealthManager;
@@ -291,7 +226,8 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
 
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
-    SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(new File(getDataFolder(), "agility-locations.yml"));
+    SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(
+        new File(getDataFolder(), "agility-locations.yml"));
 
     for (VersionedSmartYamlConfiguration config : configurations) {
       if (config.update()) {
@@ -313,10 +249,9 @@ public class StrifePlugin extends FacePlugin {
     strifeMobManager = new StrifeMobManager(this);
     abilityManager = new AbilityManager(this);
     attributeManager = new StrifeAttributeManager();
-    blockManager = new BlockManager();
+    blockManager = new BlockManager(this);
     counterManager = new CounterManager(this);
     bleedManager = new BleedManager(this);
-    corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager(this);
     equipmentManager = new EntityEquipmentManager();
@@ -345,13 +280,18 @@ public class StrifePlugin extends FacePlugin {
       logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
     } catch (Exception e) {
       logLevel = LogLevel.ERROR;
-      LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
+      LogUtil.printError(
+          "DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
     }
 
-    WALK_COST = (float) settings.getDouble("config.mechanics.energy.walk-cost-flat", 3) * EnergyTask.TICK_MULT;
-    WALK_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.walk-regen-percent", 0.75);
-    RUN_COST = (float) settings.getDouble("config.mechanics.energy.run-cost-flat", 10) * EnergyTask.TICK_MULT;
-    RUN_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.run-regen-percent", 0.25);
+    WALK_COST = (float) settings.getDouble("config.mechanics.energy.walk-cost-flat", 3)
+        * EnergyTask.TICK_MULT;
+    WALK_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.walk-regen-percent",
+        0.75);
+    RUN_COST = (float) settings.getDouble("config.mechanics.energy.run-cost-flat", 10)
+        * EnergyTask.TICK_MULT;
+    RUN_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.run-regen-percent",
+        0.25);
 
     buildBuffs();
     buildEquipment();
@@ -378,7 +318,8 @@ public class StrifePlugin extends FacePlugin {
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     EveryTickTask everyTickTask = new EveryTickTask(this);
-    FrostTask frostTask = new FrostTask(this);
+    CorruptionTask corruptionTask = new CorruptionTask(this);
+    BlockTask blockTask = new BlockTask(this);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     damageOverTimeTask = new DamageOverTimeTask(this);
     particleTask = new ParticleTask();
@@ -398,7 +339,8 @@ public class StrifePlugin extends FacePlugin {
     commandManager.getCommandCompletions()
         .registerCompletion("boosts", c -> boostManager.getLoadedBoostIds());
     commandManager.getCommandCompletions()
-        .registerCompletion("skills", c -> Stream.of(LifeSkillType.types).map(Enum::name).collect(Collectors.toList()));
+        .registerCompletion("skills",
+            c -> Stream.of(LifeSkillType.types).map(Enum::name).collect(Collectors.toList()));
     commandManager.getCommandCompletions()
         .registerCompletion("spawners", c -> spawnerManager.getSpawnerMap().keySet());
     commandManager.getCommandCompletions()
@@ -464,9 +406,13 @@ public class StrifePlugin extends FacePlugin {
         20L,
         1L
     ));
-    taskList.add(frostTask.runTaskTimer(this,
+    taskList.add(corruptionTask.runTaskTimer(this,
         20L,
-        1L
+        8L
+    ));
+    taskList.add(blockTask.runTaskTimer(this,
+        20L,
+        2L
     ));
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> boostManager.checkBoostSchedule(),
@@ -557,6 +503,8 @@ public class StrifePlugin extends FacePlugin {
     getChampionManager().updateAll();
 
     DamageUtil.refresh();
+    CorruptionUtil.refresh();
+
     ItemUtil.pickDestroyKeys.clear();
     ItemUtil.hoeDestroyKeys.clear();
     ItemUtil.axeDestroyKeys.clear();
@@ -577,33 +525,34 @@ public class StrifePlugin extends FacePlugin {
       return;
     }
 
-    ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, ENTITY_METADATA) {
-      public void onPacketSending(PacketEvent event) {
-        try {
-          int entityId = event.getPacket().getIntegers().read(0);
-          if (entityId < 0) {
-            return;
-          }
-          Entity entity = event.getPacket()
-              .getEntityModifier(event.getPlayer().getWorld()).read(0);
-          if (entity instanceof LivingEntity && Riptide
-              .isRiptideAnimationPlaying((LivingEntity) entity)) {
-            StructureModifier<List<WrappedWatchableObject>> watcher = event.getPacket()
-                .getWatchableCollectionModifier();
-            for (WrappedWatchableObject watch : watcher.read(0)) {
-              if (watch.getIndex() == 6) {
-                watch.setValue(Riptide.RIPTIDE_POSE_ENUM);
+    ProtocolLibrary.getProtocolManager()
+        .addPacketListener(new PacketAdapter(this, ENTITY_METADATA) {
+          public void onPacketSending(PacketEvent event) {
+            try {
+              int entityId = event.getPacket().getIntegers().read(0);
+              if (entityId < 0) {
+                return;
               }
-              if (watch.getIndex() == 7) {
-                watch.setValue((byte) 4);
+              Entity entity = event.getPacket()
+                  .getEntityModifier(event.getPlayer().getWorld()).read(0);
+              if (entity instanceof LivingEntity && Riptide
+                  .isRiptideAnimationPlaying((LivingEntity) entity)) {
+                StructureModifier<List<WrappedWatchableObject>> watcher = event.getPacket()
+                    .getWatchableCollectionModifier();
+                for (WrappedWatchableObject watch : watcher.read(0)) {
+                  if (watch.getIndex() == 6) {
+                    watch.setValue(Riptide.RIPTIDE_POSE_ENUM);
+                  }
+                  if (watch.getIndex() == 7) {
+                    watch.setValue((byte) 4);
+                  }
+                }
               }
+            } catch (Exception e) {
+              e.printStackTrace();
             }
           }
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    });
+        });
 
     LogUtil.printInfo("Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
     LogUtil.printInfo("Loaded " + effectManager.getLoadedEffects().size() + " effects");
@@ -630,10 +579,12 @@ public class StrifePlugin extends FacePlugin {
     spawnerManager.cancelAll();
     rageManager.endRageTasks();
     bleedManager.endBleedTasks();
-    corruptionManager.endCorruptTasks();
     particleTask.clearParticles();
 
     Spawner.SPAWNER_OFFSET = 0;
+    for (ArmorStand stand : CreateModelAnimation.CURRENT_STANDS) {
+      stand.remove();
+    }
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
@@ -654,9 +605,7 @@ public class StrifePlugin extends FacePlugin {
     String version = plugin.getServer().getClass().getPackage().getName().split("\\.")[3];
     try {
       return Class.forName("net.minecraft.server." + version + "." + name);
-    }
-
-    catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException e) {
       e.printStackTrace();
       return null;
     }
@@ -665,9 +614,7 @@ public class StrifePlugin extends FacePlugin {
   public static Class<?> getPoseClass() {
     try {
       return Class.forName("net.minecraft.world.entity.EntityPose");
-    }
-
-    catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException e) {
       e.printStackTrace();
       return null;
     }
@@ -700,6 +647,12 @@ public class StrifePlugin extends FacePlugin {
 
   private void buildEffects() {
     LogUtil.printDebug("Starting effect load!");
+    for (int i = 1; i <= 100; i++) {
+      Wait wait = new Wait();
+      wait.setTickDelay(i);
+      effectManager.loadEffect("wait-" + i, wait);
+    }
+    LogUtil.printDebug("Loaded base 100 waits");
     for (String key : effectYAML.getKeys(false)) {
       if (!effectYAML.isConfigurationSection(key)) {
         continue;
@@ -841,8 +794,17 @@ public class StrifePlugin extends FacePlugin {
         double yPos = cs.getDouble("location.y");
         double zPos = cs.getDouble("location.z");
         loc = new Location(Bukkit.getWorld(world), xPos, yPos, zPos);
+        double xDir = cs.getDouble("location.x-dir", 0);
+        double yDir = cs.getDouble("location.y-dir", 0);
+        double zDir = cs.getDouble("location.z-dir", 0);
+        loc.setDirection(new Vector(xDir, yDir, zDir));
       } else {
         LogUtil.printWarning("Spawner " + spawnerId + " has invalid location");
+      }
+
+      if (loc == null) {
+        Bukkit.getLogger().warning("[Strife] Spawner " + spawnerId + " has invalid location!");
+        continue;
       }
 
       Spawner spawner = new Spawner(spawnerId, uniqueEntity, uniqueId, amount, loc,
@@ -852,15 +814,16 @@ public class StrifePlugin extends FacePlugin {
       spawner.setEndTime(cs.getInt("end-time", -1));
 
       spawners.put(spawnerId, spawner);
-      spawnerManager.setSpawnerMap(spawners);
     }
+    spawnerManager.setSpawnerMap(spawners);
   }
 
   private void saveSpawners() {
     for (String spawnerId : spawnerYAML.getKeys(false)) {
       Spawner spawner = spawnerManager.getSpawnerMap().get(spawnerId);
       if (spawner == null) {
-        Objects.requireNonNull(Objects.requireNonNull(spawnerYAML.getConfigurationSection(spawnerId)).getParent())
+        Objects.requireNonNull(
+                Objects.requireNonNull(spawnerYAML.getConfigurationSection(spawnerId)).getParent())
             .set(spawnerId, null);
         LogUtil.printDebug("Spawner " + spawnerId + " has been removed.");
       }
@@ -875,10 +838,15 @@ public class StrifePlugin extends FacePlugin {
       spawnerYAML.set(spawnerId + ".amount", spawner.getAmount());
       spawnerYAML.set(spawnerId + ".respawn-seconds", spawner.getRespawnSeconds());
       spawnerYAML.set(spawnerId + ".leash-dist", spawner.getLeashRange());
+
       spawnerYAML.set(spawnerId + ".location.world", spawner.getLocation().getWorld().getName());
       spawnerYAML.set(spawnerId + ".location.x", spawner.getLocation().getX());
       spawnerYAML.set(spawnerId + ".location.y", spawner.getLocation().getY());
       spawnerYAML.set(spawnerId + ".location.z", spawner.getLocation().getZ());
+      spawnerYAML.set(spawnerId + ".location.x-dir", spawner.getLocation().getDirection().getX());
+      spawnerYAML.set(spawnerId + ".location.y-dir", spawner.getLocation().getDirection().getY());
+      spawnerYAML.set(spawnerId + ".location.z-dir", spawner.getLocation().getDirection().getZ());
+
       spawnerYAML.set(spawnerId + ".start-time", spawner.getStartTime());
       spawnerYAML.set(spawnerId + ".end-time", spawner.getEndTime());
       LogUtil.printDebug("Saved spawner " + spawnerId + ".");
@@ -912,10 +880,6 @@ public class StrifePlugin extends FacePlugin {
 
   public BleedManager getBleedManager() {
     return bleedManager;
-  }
-
-  public CorruptionManager getCorruptionManager() {
-    return corruptionManager;
   }
 
   public RageManager getRageManager() {

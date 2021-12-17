@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.StatUtil;
@@ -22,12 +23,11 @@ public class Bleed extends Effect {
     bleedAmount = DamageUtil.applyDamageScale(caster, target, container);
     if (applyBleedMods) {
       bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;
-      bleedAmount *= 1 - target.getStat(StrifeStat.BLEED_RESIST) / 100;
     }
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
     }
-    DamageUtil.applyBleed(target, applyMultipliers(caster, bleedAmount), bypassBarrier);
+    DamageUtil.applyBleed(caster, target, applyMultipliers(caster, bleedAmount), bypassBarrier);
   }
 
   public void setDamageScale(DamageScale damageScale) {

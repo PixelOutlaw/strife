@@ -126,6 +126,7 @@ public class ShootProjectile extends Effect {
       }
       projectile.setBounce(bounce);
       ProjectileUtil.setAttackMult(projectile, (float) attackMultiplier);
+      ProjectileUtil.setAbilityProjectile(projectile);
       if (blockHitEffects) {
         ProjectileUtil.setContactTrigger(projectile);
       }

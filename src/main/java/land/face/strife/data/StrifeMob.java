@@ -1,5 +1,6 @@
 package land.face.strife.data;
 
+import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import land.face.strife.stats.StrifeTrait;
 import land.face.strife.tasks.BarrierTask;
 import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
+import land.face.strife.tasks.FrostTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.SpecialStatusUtil;
@@ -42,11 +44,11 @@ public class StrifeMob {
   @Getter
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
-  private String uniqueEntityId = null;
-
   private final WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
+  private WeakReference<UniqueEntity> uniqueEntity = null;
   private WeakReference<Spawner> spawner = new WeakReference<>(null);
+  private WeakReference<ModeledEntity> modelEntity = null;
 
   private EntityAbilitySet abilitySet;
   private final Set<String> mods = new HashSet<>();
@@ -67,7 +69,11 @@ public class StrifeMob {
   private float maxBarrier = 0;
   private float block = 0;
   @Getter
+  private float maxBlock = 1000;
+  @Getter
   private int frost;
+  @Getter
+  private float corruption;
   private boolean shielded;
 
   private boolean useEquipment;
@@ -77,6 +83,7 @@ public class StrifeMob {
   private BarrierTask barrierTask = new BarrierTask(this);
   private LifeTask lifeTask = new LifeTask(this);
   private EnergyTask energyTask = new EnergyTask(this);
+  private FrostTask frostTask = new FrostTask(this);
   private MinionTask minionTask = null;
 
   private final Set<StrifeMob> minions = new HashSet<>();
@@ -87,16 +94,36 @@ public class StrifeMob {
 
   private long globalCooldownStamp = 1L;
 
+  private final Map<Integer, Integer> multishotMap = new HashMap<>();
+
   public StrifeMob(Champion champion) {
     this.livingEntity = new WeakReference<>(champion.getPlayer());
     this.champion = new WeakReference<>(champion);
     useEquipment = true;
+    statCache.clear();
+    statCache.putAll(getFinalStats());
   }
 
   public StrifeMob(LivingEntity livingEntity) {
     this.livingEntity = new WeakReference<>(livingEntity);
     this.champion = new WeakReference<>(null);
     useEquipment = livingEntity instanceof Player;
+    statCache.clear();
+    statCache.putAll(getFinalStats());
+  }
+
+  public boolean canAttack() {
+    if (uniqueEntity == null || uniqueEntity.get() == null) {
+      return true;
+    }
+    if (!uniqueEntity.get().isAttackDisabledOnGlobalCooldown()) {
+      return true;
+    }
+    return isGlobalCooldownReady();
+  }
+
+  public void setUniqueEntity(UniqueEntity uniqueEntity) {
+    this.uniqueEntity = new WeakReference<>(uniqueEntity);
   }
 
   public void bumpGlobalCooldown(int millis) {
@@ -120,12 +147,12 @@ public class StrifeMob {
   }
 
   public void setBlock(float block) {
-    this.block = block;
+    this.block = Math.min(block, maxBlock);
     if (getEntity() instanceof Player player) {
       for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
         player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
       }
-      float maxBlock = getMaxBlock();
+      block = Math.max(block, 0);
       float percent = maxBlock > 0 ? block / maxBlock : 1;
       if (percent > 0.99) {
         player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
@@ -140,13 +167,28 @@ public class StrifeMob {
     getEntity().setFreezeTicks((int) ((float) this.frost / 72f));
   }
 
-  public float getMaxBlock() {
-    return statCache.getOrDefault(StrifeStat.BLOCK, 0f);
+  public float addCorruption(float amount) {
+    corruption += amount;
+    return corruption;
+  }
+
+  public float removeCorruption(float amount) {
+    corruption = Math.max(0, corruption - amount);
+    return corruption;
+  }
+
+  public void setCorruption(float amount) {
+    corruption = Math.max(0, amount);
   }
 
   public void setMaxBarrier(float maxBarrier) {
     this.maxBarrier = maxBarrier;
     barrier = Math.min(barrier, maxBarrier);
+  }
+
+  public void setMaxBlock(float maxBlock) {
+    this.maxBlock = maxBlock;
+    setBlock(Math.min(block, maxBlock));
   }
 
   public void restoreBarrier(float amount) {
@@ -286,6 +328,7 @@ public class StrifeMob {
       if (getChampion() != null) {
         lastChampionUpdate = getChampion().getLastChanged();
       }
+      setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
     }
     return StatUtil.getStat(this, stat);
   }
@@ -296,6 +339,17 @@ public class StrifeMob {
 
   public void setSpawner(Spawner spawner) {
     this.spawner = new WeakReference<>(spawner);
+  }
+
+  public ModeledEntity getModelEntity() {
+    if (modelEntity == null) {
+      return null;
+    }
+    return modelEntity.get();
+  }
+
+  public void setModelEntity(ModeledEntity modelEntity) {
+    this.modelEntity = new WeakReference<>(modelEntity);
   }
 
   public void forceSetStat(StrifeStat stat, float value) {
@@ -324,11 +378,10 @@ public class StrifeMob {
   }
 
   public String getUniqueEntityId() {
-    return uniqueEntityId;
-  }
-
-  public void setUniqueEntityId(String uniqueEntityId) {
-    this.uniqueEntityId = uniqueEntityId;
+    if (uniqueEntity == null) {
+      return null;
+    }
+    return uniqueEntity.get().getId();
   }
 
   public Set<String> getMods() {
@@ -381,8 +434,10 @@ public class StrifeMob {
 
   public Buff getBuff(String buffId, UUID source) {
     for (Buff buff : runningBuffs) {
-      if (buff.getId().equals(buffId) && buff.getSource().equals(source)) {
-        return buff;
+      if (buff.getId().equals(buffId)) {
+        if ((buff.getSource() == null && source == null) || buff.getSource().equals(source)) {
+          return buff;
+        }
       }
     }
     return null;
@@ -557,19 +612,44 @@ public class StrifeMob {
     return livingEntity.get().getHealth() * (1 + (double) minionTask.getLifespan() / 10D);
   }
 
+  public float getMultishotRatio(int shotId) {
+    if (multishotMap.containsKey(shotId)) {
+      int amount = multishotMap.get(shotId);
+      multishotMap.put(shotId, amount + 1);
+      return switch (amount) {
+        case 1 -> 0.3f;
+        case 2 -> 0.1f;
+        default -> 0;
+      };
+    }
+    multishotMap.put(shotId, 1);
+    return 1;
+  }
+
+  public void clearMultishot() {
+    multishotMap.clear();
+  }
+
   public void restartTimers() {
     if (lifeTask != null && !lifeTask.isCancelled()) {
       lifeTask.cancel();
     }
     lifeTask = new LifeTask(this);
+
     if (barrierTask != null && !barrierTask.isCancelled()) {
       barrierTask.cancel();
     }
     barrierTask = new BarrierTask(this);
+
     if (energyTask != null && !energyTask.isCancelled()) {
       energyTask.cancel();
     }
     energyTask = new EnergyTask(this);
+
+    if (frostTask != null && !frostTask.isCancelled()) {
+      frostTask.cancel();
+    }
+    frostTask = new FrostTask(this);
   }
 
   public void bumpCombat() {

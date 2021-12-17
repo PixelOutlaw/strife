@@ -10,6 +10,8 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DamageModifiers {
 
@@ -28,10 +30,11 @@ public class DamageModifiers {
   private boolean canBeBlocked = true;
   private boolean canBeEvaded = true;
   private boolean applyOnHitEffects = true;
-  private boolean consumeEarthRunes = false;
   private boolean scaleChancesWithAttack = false;
   private boolean showPopoffs = true;
   private boolean bypassBarrier = false;
+  @Getter @Setter
+  private boolean guardBreak = false;
 
   public AttackType getAttackType() {
     return attackType;
@@ -143,14 +146,6 @@ public class DamageModifiers {
 
   public void setBypassBarrier(boolean bypassBarrier) {
     this.bypassBarrier = bypassBarrier;
-  }
-
-  public boolean isConsumeEarthRunes() {
-    return consumeEarthRunes;
-  }
-
-  public void setConsumeEarthRunes(boolean consumeEarthRunes) {
-    this.consumeEarthRunes = consumeEarthRunes;
   }
 
   private static Map<DamageType, Float> buildBaseDamageMults() {

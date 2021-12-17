@@ -30,6 +30,7 @@ public class ProjectileUtil {
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
+  private static final Map<Projectile, Boolean> ABILITY_PROJECTILE = new WeakHashMap<>();
 
   private static final ItemStack wandProjectile = buildWandProjectile();
 
@@ -41,6 +42,14 @@ public class ProjectileUtil {
 
   public static boolean isContactTrigger(Projectile projectile) {
     return CONTACT_TRIGGER.containsKey(projectile);
+  }
+
+  public static void setAbilityProjectile(Projectile projectile) {
+    ABILITY_PROJECTILE.put(projectile, true);
+  }
+
+  public static boolean isAbilityProjectile(Projectile projectile) {
+    return ABILITY_PROJECTILE.containsKey(projectile);
   }
 
   public static void setAttackMult(Projectile projectile, float mult) {
@@ -101,7 +110,8 @@ public class ProjectileUtil {
 
   public static void shootWand(StrifeMob mob, double attackMult) {
     float projectileSpeed = 0.85f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
+    int projectiles = ProjectileUtil.getTotalProjectiles(1,
+        mob.getStat(StrifeStat.MULTISHOT) * attackMult);
 
     ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0.03, 0.22, true);
     projectiles--;
@@ -118,7 +128,8 @@ public class ProjectileUtil {
   public static void shootArrow(StrifeMob mob, float attackMult) {
     float projectileSpeed = 1.65f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT));
+    int projectiles = ProjectileUtil.getTotalProjectiles(1,
+        mob.getStat(StrifeStat.MULTISHOT) * attackMult);
 
     ProjectileUtil.createArrow(mob.getEntity(),
         attackMult, projectileSpeed, pierceChance, 0.01, 0.2);
@@ -199,11 +210,11 @@ public class ProjectileUtil {
   }
 
   private static float randomOffset(float magnitude) {
-    return 0.08f + magnitude * 0.007f;
+    return 0.14f + magnitude * 0.01f;
   }
 
   private static float randomWandOffset(float magnitude) {
-    return 0.09f + magnitude * 0.008f;
+    return 0.12f + magnitude * 0.01f;
   }
 
   private static ItemStack buildWandProjectile() {

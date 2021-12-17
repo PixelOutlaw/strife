@@ -318,6 +318,8 @@ public class AbilityManager {
 
   public boolean abilityCast(StrifeMob caster, StrifeMob target, TriggerAbilityType type) {
     EntityAbilitySet abilitySet = caster.getAbilitySet();
+    if (type == TriggerAbilityType.WHEN_HIT) {
+    }
     if (abilitySet == null) {
       return false;
     }
@@ -366,7 +368,7 @@ public class AbilityManager {
 
   private void coolDownAbility(StrifeMob caster, Ability ability) {
     if (ability.getGlobalCooldownTicks() > 0) {
-      caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 500);
+      caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 50);
     }
     if (ability.getCooldown() < 1) {
       return;

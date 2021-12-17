@@ -25,12 +25,22 @@ import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.events.AbilityCooldownEvent;
+import land.face.strife.events.CombatChangeEvent;
+import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.*;
-import org.bukkit.*;
+import land.face.strife.util.DamageUtil;
+import land.face.strife.util.ItemUtil;
+import land.face.strife.util.SpecialStatusUtil;
+import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
@@ -40,9 +50,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityCombustByBlockEvent;
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent.Cause;
+import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -65,6 +84,13 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
   private final static String UNUSED_PATH =
       "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onCombatChange(CombatChangeEvent event) {
+    if (event.getNewState() == NewCombatState.EXIT) {
+      event.getTarget().clearMultishot();
+    }
+  }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAttackEffect(final EntityPotionEffectEvent event) {
@@ -238,7 +264,8 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
     plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
-    plugin.getCorruptionManager().clearCorrupt(event.getPlayer().getUniqueId());
+    mob.setCorruption(0);
+    mob.setFrost(0);
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     plugin.getCounterManager().clearCounters(event.getPlayer());

@@ -1,6 +1,5 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 
 public class ConsumeCorrupt extends Effect {
@@ -10,12 +9,11 @@ public class ConsumeCorrupt extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double value = StrifePlugin.getInstance().getCorruptionManager()
-        .getCorruption(target.getEntity());
+    double value = target.getCorruption();
     if (value <= 0) {
       return;
     }
-    StrifePlugin.getInstance().getCorruptionManager().clearCorrupt(target.getEntity());
+    target.setCorruption(0);
     if (damageRatio > 0.01) {
       target.getEntity().damage(value * damageRatio, caster.getEntity());
     }

@@ -22,14 +22,13 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BlockData;
 import land.face.strife.data.StrifeMob;
@@ -37,34 +36,60 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
-import land.face.strife.util.LogUtil;
+import land.face.strife.util.StatUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public class BlockManager {
 
+  private final StrifePlugin plugin;
+
   private final Map<StrifeMob, BlockData> blockDataMap = new WeakHashMap<>();
   private final Random random = new Random();
+  private static final double MAX_BLOCK_CHANCE = 0.55;
+
+  private final float FLAT_BLOCK_S;
+  private final float PERCENT_BLOCK_S;
+  private final float MINIMUM_BLOCK;
+  private final float MELEE_FATIGUE;
+  private final float PROJECTILE_FATIGUE;
+  private final float GUARD_BREAK_POWER;
 
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.COARSE_DIRT);
 
-  private static final float FLAT_BLOCK_S = 8f;
-  private static final float PERCENT_BLOCK_S = 0.03f;
-  private static final double MAX_BLOCK_CHANCE = 0.5;
+  public BlockManager(StrifePlugin plugin) {
+    this.plugin = plugin;
+    FLAT_BLOCK_S = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.flat-block-recovery", 10);
+    PERCENT_BLOCK_S = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.percent-block-recovery", 0.01f);
+    MINIMUM_BLOCK = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.minimum-block", -25);
+    MELEE_FATIGUE = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.melee-fatigue", 70);
+    PROJECTILE_FATIGUE = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.projectile-fatigue", 45);
+    GUARD_BREAK_POWER = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.guard-break-multiplier", 1.5f);
+  }
 
   public void tickBlock() {
-    for (StrifeMob mob : blockDataMap.keySet()) {
-      if (mob.getMaxBlock() < 0.5 || mob.getBlock() >= mob.getMaxBlock()) {
-        mob.setBlock(mob.getMaxBlock());
+    Map<LivingEntity, StrifeMob> loopMobs = Collections
+        .synchronizedMap(plugin.getStrifeMobManager().getMobs());
+    for (StrifeMob mob : loopMobs.values()) {
+      if (mob.getMaxBlock() < 1) {
         continue;
       }
       float blockGain = FLAT_BLOCK_S + PERCENT_BLOCK_S * mob.getMaxBlock();
-      mob.setBlock(Math.min(mob.getMaxBlock(), mob.getBlock() + blockGain / 20));
+      mob.setBlock(Math.min(mob.getMaxBlock(), mob.getBlock() + blockGain / 10));
     }
   }
 
@@ -147,31 +172,13 @@ public class BlockManager {
   }
 
   public boolean isAttackBlocked(StrifeMob attacker, StrifeMob defender, float attackMult,
-      AttackType attackType, boolean isBlocking) {
-    if (rollBlock(defender, isBlocking)) {
-      blockFatigue(defender, attackMult, isBlocking, attackType == AttackType.PROJECTILE);
+      AttackType attackType, boolean isBlocking, boolean guardBreak) {
+    if (rollBlock(defender, attackMult, isBlocking, attackType == AttackType.PROJECTILE, guardBreak)) {
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
       DamageUtil.doBlock(attacker, defender);
       return true;
     }
     return false;
-  }
-
-  public boolean rollBlock(StrifeMob strifeMob, boolean isBlocking) {
-    if (!blockDataMap.containsKey(strifeMob)) {
-      BlockData data = new BlockData();
-      blockDataMap.put(strifeMob, data);
-      strifeMob.setBlock(strifeMob.getMaxBlock());
-    }
-    if (strifeMob.getStat(StrifeStat.BLOCK) < 1) {
-      return false;
-    }
-    double blockChance = Math.min(strifeMob.getBlock() / 100, MAX_BLOCK_CHANCE);
-    if (isBlocking) {
-      blockChance *= 2;
-    }
-    LogUtil.printDebug("Block chance: " + blockChance);
-    return random.nextDouble() < blockChance;
   }
 
   public int getEarthRunes(StrifeMob mob) {
@@ -185,7 +192,6 @@ public class BlockManager {
     if (!blockDataMap.containsKey(mob)) {
       BlockData data = new BlockData();
       blockDataMap.put(mob, data);
-      mob.setBlock(mob.getMaxBlock());
     }
     BlockData data = blockDataMap.get(mob);
     int maxRunes = Math.round(mob.getStat(StrifeStat.MAX_EARTH_RUNES));
@@ -207,28 +213,48 @@ public class BlockManager {
     setEarthRunes(mob, runes + 1);
   }
 
-  public void blockFatigue(StrifeMob mob, double attackMultipler, boolean physicallyBlocked,
-      boolean projectile) {
-    float fatigue = projectile ? 30 : 60;
+  public boolean rollBlock(StrifeMob mob, float attackPower, boolean physicallyBlocked,
+      boolean projectile, boolean guardBreak) {
+
+    if (StatUtil.getStat(mob, StrifeStat.BLOCK) < 1) {
+      return false;
+    }
+
+    double blockChance = Math.min(mob.getBlock() / 100, MAX_BLOCK_CHANCE);
+    if (physicallyBlocked) {
+      blockChance *= 2;
+    }
+
+    if (random.nextDouble() > blockChance) {
+      return false;
+    }
+
+    float fatigue = projectile ? PROJECTILE_FATIGUE : MELEE_FATIGUE;
     if (physicallyBlocked) {
       fatigue /= 2;
     }
-    fatigue *= attackMultipler;
-    mob.setBlock(Math.max(0, mob.getBlock() - fatigue));
+    fatigue *= attackPower;
+    if (guardBreak) {
+      fatigue *= GUARD_BREAK_POWER;
+    }
+    mob.setBlock(Math.max(MINIMUM_BLOCK, mob.getBlock() - fatigue));
+
+    if (guardBreak && mob.getBlock() <= 0) {
+      return false;
+    }
+    return true;
   }
 
   private static void pushRunesBar(StrifeMob mob, int maxRunes, int runes) {
     if (!(mob.getEntity() instanceof Player)) {
       return;
     }
-    String message = ChatColor.GREEN + "Runes: " + ChatColor.DARK_GREEN + IntStream.range(0, runes)
-        .mapToObj(i -> "₪")
-        .collect(Collectors.joining(""));
-    message += ChatColor.BLACK + IntStream.range(0, maxRunes - runes).mapToObj(i -> "₪")
-        .collect(Collectors.joining(""));
+    String message = ChatColor.GREEN + "Runes: " +
+        ChatColor.DARK_GREEN + StringUtils.repeat("₪", runes);
+    message += ChatColor.BLACK + StringUtils.repeat("₪", maxRunes - runes);
 
-    AdvancedActionBarUtil
-        .addMessage((Player) mob.getEntity(), "rune-bar", message, runes == 0 ? 200 : 12000, 6);
+    AdvancedActionBarUtil.addMessage((Player) mob.getEntity(),
+        "rune-bar", message, runes == 0 ? 200 : 12000, 6);
   }
 
   public static <T> T getRandomFromCollection(Collection<T> coll) {

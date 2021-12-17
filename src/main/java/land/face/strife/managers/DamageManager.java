@@ -28,6 +28,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -70,10 +71,7 @@ public class DamageManager {
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
       damage *= 0.5;
       float bleed = damage;
-      if (defender.getStat(StrifeStat.BLEED_RESIST) > 0) {
-        bleed *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
-      }
-      DamageUtil.applyBleed(defender, bleed, true);
+      DamageUtil.applyBleed(attacker, defender, bleed, true);
     }
 
     handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);

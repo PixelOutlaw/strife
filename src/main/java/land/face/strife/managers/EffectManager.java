@@ -76,6 +76,7 @@ import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.DamageUtil.OriginLocation;
+import land.face.strife.util.DisguiseUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
@@ -188,6 +189,10 @@ public class EffectManager {
     }
   }
 
+  public void loadEffect(String id, Effect e) {
+    loadedEffects.put(id, e);
+  }
+
   public void loadEffect(String key, ConfigurationSection cs) {
     Effect.setPlugin(plugin);
     String type = cs.getString("type", "NULL").toUpperCase();
@@ -253,6 +258,7 @@ public class EffectManager {
             attackMult >= 0.6 || damageReductionRatio >= 0.6));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
+        ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
         ((Damage) effect).setSelfInflict(cs.getBoolean("self-inflict", false));
         List<String> hitEffects = cs.getStringList("hit-effects");
         delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
@@ -435,9 +441,8 @@ public class EffectManager {
         ((ShootProjectile) effect).setThrowSpin(cs.getBoolean("throw-spin", true));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
-        ((ShootProjectile) effect).setDisguise(
-            PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
-                key, false));
+        ((ShootProjectile) effect).setDisguise(DisguiseUtil.parseDisguise(
+            cs.getConfigurationSection("disguise"), key, false));
         String thrownStackMaterial = cs.getString("thrown-stack-material");
         if (StringUtils.isNotBlank(thrownStackMaterial)) {
           ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
@@ -638,7 +643,38 @@ public class EffectManager {
         ((SwingArm) effect).setRandom(cs.getBoolean("random", false));
         ((SwingArm) effect).setSlot(EquipmentSlot.valueOf(cs.getString("hand", "HAND")));
       }
+      case DISGUISE -> {
+        effect = new Disguise();
+        ((Disguise) effect).setDisguise(DisguiseUtil.parseDisguise(
+            cs.getConfigurationSection("disguise"), key, false));
+        ((Disguise) effect).setDuration(cs.getInt("duration", -1));
+      }
       case UNDISGUISE -> effect = new Undisguise();
+      case MODEL_ANIMATION -> {
+        effect = new ModelAnimation();
+        ((ModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
+        ((ModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 5));
+        ((ModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 5));
+        ((ModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
+      }
+      case CREATE_MODEL -> {
+        effect = new CreateModelAnimation();
+        ((CreateModelAnimation) effect).setModelId(cs.getString("model-id"));
+        ((CreateModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
+        ((CreateModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 5));
+        ((CreateModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 5));
+        ((CreateModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
+        ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
+        ((CreateModelAnimation) effect).setTargetLock(cs.getBoolean("target-lock", false));
+        ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", true));
+      }
+      case CHANGE_PART -> {
+        effect = new ChangePart();
+        ((ChangePart) effect).setNewModelId(cs.getString("model-id"));
+        ((ChangePart) effect).setOldModelId(cs.getString("old-model-id"));
+        ((ChangePart) effect).setNewPartId(cs.getString("new-part-id"));
+        ((ChangePart) effect).setOldPartId(cs.getString("old-part-id"));
+      }
       case TARGET -> {
         effect = new ForceTarget();
         ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite", true));

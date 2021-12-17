@@ -3,6 +3,9 @@ package land.face.strife.managers;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ModeledEntity;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -21,9 +24,9 @@ import land.face.strife.events.UniqueSpawnEvent;
 import land.face.strife.patch.GoalPatcher;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ItemPassengerTask;
+import land.face.strife.util.DisguiseUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
-import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
@@ -270,9 +273,11 @@ public class UniqueEntityManager {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
 
     int mobLevel = uniqueEntity.getBaseLevel();
-    if (mobLevel == -1) {
+    if (mobLevel < 0) {
       mobLevel = StatUtil.getMobLevel(le);
     }
+
+    SpecialStatusUtil.setMobLevel(le, mobLevel);
 
     if (mobLevel == 0) {
       mob.setStats(uniqueEntity.getAttributeMap());
@@ -284,11 +289,31 @@ public class UniqueEntityManager {
       plugin.getMobModManager().doModApplication(mob, uniqueEntity.getMaxMods());
     }
 
-    mob.setUniqueEntityId(uniqueEntity.getId());
+    mob.setUniqueEntity(uniqueEntity);
     mob.setFactions(new HashSet<>(uniqueEntity.getFactions()));
     mob.setAlliedGuild(null);
     SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
     mob.setCharmImmune(uniqueEntity.isCharmImmune());
+
+    if (uniqueEntity.getModelId() != null) {
+      ActiveModel model = ModelEngineAPI.api.getModelManager()
+          .createActiveModel(uniqueEntity.getModelId());
+      if (model == null) {
+        Bukkit.getLogger().warning("Failed to load model: " + uniqueEntity.getModelId());
+      } else {
+        ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager().createModeledEntity(le);
+        if (modeledEntity == null) {
+          Bukkit.getLogger().warning("Failed to create modelled entity");
+        } else {
+          modeledEntity.setNametagVisible(true);
+          modeledEntity.setNametag(uniqueEntity.getName());
+          modeledEntity.addActiveModel(model);
+          modeledEntity.detectPlayers();
+          modeledEntity.setInvisible(true);
+          mob.setModelEntity(modeledEntity);
+        }
+      }
+    }
 
     if (uniqueEntity.isBurnImmune()) {
       SpecialStatusUtil.setBurnImmune(le);
@@ -389,6 +414,8 @@ public class UniqueEntityManager {
         uniqueEntity.setColor(DyeColor.valueOf(color));
       }
       uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
+      uniqueEntity.setModelId(cs.getString("model-id", null));
+      uniqueEntity.setAttackDisabledOnGlobalCooldown(cs.getBoolean("disable-attacks-on-global-cooldown", false));
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
       uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
       uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
@@ -414,7 +441,7 @@ public class UniqueEntityManager {
       uniqueEntity.setRemoveGoals(cs.getStringList("custom-ai.remove-goals"));
       uniqueEntity.setAddGoals(cs.getStringList("custom-ai.add-goals"));
 
-      Disguise disguise = PlayerDataUtil.parseDisguise(cs.getConfigurationSection("disguise"),
+      Disguise disguise = DisguiseUtil.parseDisguise(cs.getConfigurationSection("disguise"),
           uniqueEntity.getName(), uniqueEntity.getMaxMods() > 0 || adaptiveName);
 
       if (disguise != null) {

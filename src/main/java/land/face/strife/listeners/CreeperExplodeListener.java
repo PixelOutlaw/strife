@@ -19,6 +19,8 @@
 package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.util.DamageUtil;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -29,7 +31,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 
 public class CreeperExplodeListener implements Listener {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
   public CreeperExplodeListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -51,14 +53,18 @@ public class CreeperExplodeListener implements Listener {
       return;
     }
 
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob((Creeper) event.getDamager());
+    StrifeMob victim = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
     if (plugin.getBleedManager().isBleeding(creeper)) {
       float amount = plugin.getBleedManager().getBleedOnEntity(creeper);
       plugin.getBleedManager().addBleed(
           plugin.getStrifeMobManager().getStatMob(target), amount + 5, false);
     }
-    if (plugin.getCorruptionManager().isCorrupted((LivingEntity) event.getDamager())) {
-      float amount = plugin.getCorruptionManager().getCorruption((LivingEntity) event.getDamager());
-      plugin.getCorruptionManager().applyCorruption((LivingEntity) event.getEntity(), amount + 10);
+    if (mob.getCorruption() > 0) {
+      victim.addCorruption(mob.getCorruption() * 0.5f + 20);
+    }
+    if (mob.getFrost() > 0) {
+      DamageUtil.addFrost(mob, victim, mob.getFrost() * 0.5f + 2000);
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();

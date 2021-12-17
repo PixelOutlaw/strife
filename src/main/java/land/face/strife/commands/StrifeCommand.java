@@ -21,7 +21,6 @@ package land.face.strife.commands;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendActionBar;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import com.destroystokyo.paper.entity.ai.Goal;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
@@ -34,6 +33,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
+import com.ticxo.modelengine.api.model.ActiveModel;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +56,6 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -71,6 +70,7 @@ public class StrifeCommand extends BaseCommand {
   private final String REVEAL_PREFIX;
   private final String REVEAL_REPLACEMENT;
   private final String SET_LEVEL_MSG;
+  private final String SET_XP_MSG;
   private final String PVP_WIN_MSG;
   private final String PVP_LOSE_MSG;
 
@@ -86,6 +86,8 @@ public class StrifeCommand extends BaseCommand {
         .getString("language.command.reveal-replace", "&f"));
     SET_LEVEL_MSG = plugin.getSettings()
         .getString("language.command.set-level-msg", "{c}Your level in &f{n} {c}is now &f{a}{c}!");
+    SET_XP_MSG = plugin.getSettings()
+        .getString("language.command.set-xp-msg", "{c}Your xp in &f{n} {c}is now &f{a}{c}!");
     PVP_WIN_MSG = plugin.getSettings()
         .getString("language.pvp.gain-score-action-bar", "&aGained PvP Rating! &f{0} (+{1})");
     PVP_LOSE_MSG = plugin.getSettings()
@@ -227,6 +229,28 @@ public class StrifeCommand extends BaseCommand {
           sendMessage(sender, " " + goal.getKey().getNamespacedKey()));
     }
     sendMessage(sender, "Guild: " + targetMob.getAlliedGuild());
+  }
+
+  @Subcommand("animation-test")
+  @CommandPermission("strife.animation")
+  public void animationTest(Player sender, String id, int lerpIn, int lerpOut, double speed) {
+    List<LivingEntity> targets = new ArrayList<>(
+        TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
+    targets.remove(sender);
+    if (targets.isEmpty()) {
+      sendMessage(sender, "&eNo target found...");
+      return;
+    }
+    TargetingUtil.DISTANCE_COMPARATOR.setLoc((sender).getLocation());
+    targets.sort(TargetingUtil.DISTANCE_COMPARATOR);
+    StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.get(0));
+    if (targetMob.getEntity() instanceof Mob && targetMob.getModelEntity() != null) {
+      for (ActiveModel model : targetMob.getModelEntity().getAllActiveModel().values()) {
+        model.addState(id, lerpIn, lerpOut, speed);
+      }
+    } else {
+      MessageUtils.sendMessage(sender, "&eInvalid target");
+    }
   }
 
   @Subcommand("reset")
@@ -419,6 +443,29 @@ public class StrifeCommand extends BaseCommand {
     );
     sendMessage(sender,
         "Set " + name + " level of " + target.getPlayer().getName() + " to " + newLevel);
+  }
+
+  @Subcommand("setskillxp")
+  @CommandCompletion("@players @skills @range:1-99")
+  @CommandPermission("strife.admin")
+  public void skillXpCommand(CommandSender sender, OnlinePlayer target, String skill, int xp) {
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skill.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "<red>Unknown skill " + skill + "??");
+      return;
+    }
+    ChatColor color = type.getColor();
+    String name = type.getName();
+
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setSkillExp(type, xp);
+    sendMessage(target.getPlayer(), SET_LEVEL_MSG
+        .replace("{c}", "" + color)
+        .replace("{n}", name)
+        .replace("{a}", Integer.toString(xp))
+    );
+    sendMessage(sender, "Set " + name + " xp of " + target.getPlayer().getName() + " to " + xp);
   }
 
   @Subcommand("addskillxp|skillxp")

@@ -70,6 +70,11 @@
       <id>eldonexus</id>
       <url>https://eldonexus.de/repository/maven-releases/</url>
     </repository>
+    <repository>
+      <id>nexus</id>
+      <name>Lumine Public</name>
+      <url>https://mvn.lumine.io/repository/maven-public/</url>
+    </repository>
   </repositories>
 
   <dependencies>
@@ -140,6 +145,12 @@
       <groupId>com.github.Xezard</groupId>
       <artifactId>XGlow</artifactId>
       <version>1.0.5</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ticxo.modelengine</groupId>
+      <artifactId>api</artifactId>
+      <version>R2.2.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

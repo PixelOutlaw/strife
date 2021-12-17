@@ -20,7 +20,6 @@ package land.face.strife.listeners;
 
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
-import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 
@@ -29,12 +28,10 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
-import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -43,8 +40,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
 
@@ -84,17 +79,6 @@ public class TargetingListener implements Listener {
         .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
     SNEAK_EFFECTIVENESS = plugin.getSettings()
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void modifyAttackRange(StrifeDamageEvent event) {
-    if (event.isCancelled()) {
-      return;
-    }
-    if (event.getDefender().getEntity() instanceof Mob) {
-      TargetingUtil.expandMobRange(event.getAttacker().getEntity(),
-          event.getDefender().getEntity());
-    }
   }
 
   @EventHandler(priority = EventPriority.LOW)
@@ -156,8 +140,8 @@ public class TargetingListener implements Listener {
       }
       float mobLevel = StatUtil.getMobLevel(mob);
 
-      LogUtil.printDebug(
-          "Sneak calc for " + player.getName() + " from lvl " + mobLevel + " " + mob.getType());
+      LogUtil.printDebug("Sneak calc for " + player.getName() +
+          " from lvl " + mobLevel + " " + mob.getType());
 
       Location playerLoc = player.getLocation();
       Location entityLoc = mob.getLocation();

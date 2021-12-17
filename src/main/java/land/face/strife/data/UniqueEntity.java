@@ -54,6 +54,8 @@ public class UniqueEntity {
   private int maxMods;
   private boolean removeFollowMods;
   private boolean powered;
+  @Getter @Setter
+  private boolean attackDisabledOnGlobalCooldown;
   private double displaceMultiplier;
   private String mount;
   private Map<EquipmentSlot, String> equipment = new HashMap<>();
@@ -69,6 +71,8 @@ public class UniqueEntity {
   private List<String> removeGoals;
   @Getter @Setter
   private List<String> addGoals;
+  @Getter @Setter
+  private String modelId;
 
   public String getId() {
     return id;

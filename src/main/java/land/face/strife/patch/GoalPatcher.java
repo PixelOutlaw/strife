@@ -61,7 +61,7 @@ public class GoalPatcher {
           Bukkit.getMobGoals().addGoal(mob, 3, goal);
         }
       }
-      default -> Bukkit.getLogger().info("Custom goal " + id + " not found! Not adding...");
+      default -> Bukkit.getLogger().warning("Custom goal " + id + " not found! Not adding...");
     }
   }
 

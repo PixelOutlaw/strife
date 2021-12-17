@@ -16,9 +16,6 @@ public class BobberReflectionHandler {
     Object nmsHook;
     try {
       nmsHook = NMS_GET_HANDLE.invoke(fishHook);
-      Bukkit.getLogger().warning("aaa: " + nmsHook);
-      //nmsHook = NMS_GET_HANDLE2.invoke(nmsHook);
-      //Bukkit.getLogger().warning("bbbb: " + nmsHook);
     } catch (Exception e) {
       e.printStackTrace();
       return;

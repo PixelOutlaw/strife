@@ -38,13 +38,13 @@ public class FishingListener implements Listener {
     int minFishTime = (int) (150D * fishMult);
     int maxFishTime = minFishTime + (int) (150D * Math.random() * fishMult);
 
-    Bukkit.getLogger().info("aaa" + minFishTime + " " + maxFishTime);
+    //Bukkit.getLogger().info("aaa" + minFishTime + " " + maxFishTime);
 
-    Bukkit.getLogger().info("beoreMax" + event.getHook().getMaxWaitTime());
+    //Bukkit.getLogger().info("beoreMax" + event.getHook().getMaxWaitTime());
     event.getHook().setMaxWaitTime(maxFishTime);
-    Bukkit.getLogger().info("afterMax" + event.getHook().getMaxWaitTime());
-    Bukkit.getLogger().info("beforeMin" + event.getHook().getMinWaitTime());
+    //Bukkit.getLogger().info("afterMax" + event.getHook().getMaxWaitTime());
+    //Bukkit.getLogger().info("beforeMin" + event.getHook().getMinWaitTime());
     event.getHook().setMinWaitTime(minFishTime);
-    Bukkit.getLogger().info("afterMin" + event.getHook().getMinWaitTime());
+    //Bukkit.getLogger().info("afterMin" + event.getHook().getMinWaitTime());
   }
 }

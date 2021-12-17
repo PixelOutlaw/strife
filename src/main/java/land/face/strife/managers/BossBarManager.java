@@ -256,6 +256,9 @@ public class BossBarManager {
     if (barOwner.getFrost() > 100) {
       name += "  " + ChatColor.AQUA + (barOwner.getFrost() / 100) + "❄";
     }
+    if (barOwner.getCorruption() > 0.9) {
+      name += "  " + ChatColor.DARK_PURPLE + (int) barOwner.getCorruption() + "\uD83D\uDC80";
+    }
     return name;
   }
 
