@@ -16,6 +16,7 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
@@ -64,7 +65,7 @@ public class DeathListener implements Listener {
 
     plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.DEATH);
 
-    if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && SpecialStatusUtil
+    if (mob.getMaster() != null || (mob.getUniqueEntityId() == null && ChunkUtil
         .isDespawnOnUnload(mob.getEntity()))) {
       event.setDroppedExp(0);
       return;

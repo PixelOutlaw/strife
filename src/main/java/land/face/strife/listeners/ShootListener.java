@@ -269,7 +269,8 @@ public class ShootListener implements Listener {
       return;
     }
 
-    plugin.getEffectManager().processEffectList(caster, response, hitEffects);
+    plugin.getEffectManager().processEffectList(caster, response, hitEffects,
+        ProjectileUtil.getShotId(event.getEntity()));
     event.getEntity().remove();
   }
 

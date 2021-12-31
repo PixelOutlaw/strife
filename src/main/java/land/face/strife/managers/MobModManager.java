@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +56,7 @@ public class MobModManager {
         prefix = mod.getPrefix() + " ";
         prefixWeight = mod.getWeight();
       }
-      SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
+      ChunkUtil.setDespawnOnUnload(mob.getEntity());
       mob.getMods().add(mod.getId());
     }
     mob.getEntity()

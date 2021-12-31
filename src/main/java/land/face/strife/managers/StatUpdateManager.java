@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
@@ -30,7 +31,6 @@ import java.util.Map;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.tasks.ForceAttackSpeed;
 import land.face.strife.util.StatUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -122,22 +122,12 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
       }
     }
   }
-
-  public void updateAttackAttrs(StrifeMob strifeMob) {
-    if (strifeMob.getEntity() instanceof Player) {
-      double attacksPerSecond = 1 / StatUtil.getAttackTime(strifeMob);
-      ForceAttackSpeed.addAttackTime((Player) strifeMob.getEntity(), attacksPerSecond);
-      strifeMob.getEntity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-    }
-  }
-
   public void updateVanillaAttributes(Player player) {
     updateVanillaAttributes(strifeMobManager.getStatMob(player));
   }
 
   public void updateVanillaAttributes(StrifeMob strifeMob) {
     updateMovementSpeed(strifeMob);
-    updateAttackAttrs(strifeMob);
     updateHealth(strifeMob);
     updateWeight(strifeMob);
   }

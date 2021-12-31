@@ -144,7 +144,7 @@ public class Spawner extends BukkitRunnable {
       mob.getEntity().getVehicle().remove();
     }
 
-    SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
+    ChunkUtil.setDespawnOnUnload(mob.getEntity());
     spawner.addEntity(mob.getEntity());
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {

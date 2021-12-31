@@ -309,7 +309,6 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(sender, "&aYou raised &f%player% &ato level &f%level%.",
         new String[][]{{"%player%", target.getPlayer().getDisplayName()},
             {"%level%", "" + newLevel}});
-    sendMessage(target.getPlayer(), "&aAn administrator has raised your level");
     plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
   }
 

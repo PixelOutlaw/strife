@@ -112,7 +112,6 @@ public abstract class Effect {
     CANCEL_ENDLESS_EFFECT,
     REVIVE,
     HEAL,
-    FOOD,
     COOLDOWN_REDUCTION,
     UNTOGGLE,
     RESTORE_BARRIER,

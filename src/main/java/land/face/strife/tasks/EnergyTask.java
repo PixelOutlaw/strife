@@ -13,6 +13,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.GameMode;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -22,7 +23,7 @@ public class EnergyTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
   private final List<RestoreData> energyRestore = new ArrayList<>();
-  public static final int TICKS_PER = 4;
+  public static final int TICKS_PER = 5;
   public static final float TICK_MULT = 1f / (20f / TICKS_PER);
 
   public EnergyTask(StrifeMob parentMob) {
@@ -42,45 +43,46 @@ public class EnergyTask extends BukkitRunnable {
       return;
     }
 
-    if (mob.getEnergy() >= mob.getMaxEnergy()) {
+    Player player = null;
+    if (mob.getEntity().getType() == EntityType.PLAYER) {
+      player = (Player) mob.getEntity();
+    }
+
+    if (mob.getEnergy() >= mob.getMaxEnergy() && (player != null && !player.isSprinting())) {
       mob.setEnergy(mob.getMaxEnergy());
       getBonusEnergy();
       return;
     }
 
-    float energy = 0;
+    float energyChange = 0;
     boolean noRegen = mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN);
     if (!noRegen) {
-      energy += TICK_MULT * 0.1f * mob.getStat(StrifeStat.ENERGY_REGEN);
-      energy *= getHungerPotionMult(mob.getEntity());
+      energyChange += TICK_MULT * 0.1f * mob.getStat(StrifeStat.ENERGY_REGEN);
+      energyChange *= getHungerPotionMult(mob.getEntity());
     }
 
-    if (mob.getEntity() instanceof Player) {
-      Player player = (Player) mob.getEntity();
+    if (player != null) {
       if (player.isDead() || player.getGameMode() == GameMode.CREATIVE) {
         return;
       }
 
-      if (player.getFoodLevel() > 6 && player.isSprinting()) {
-        energy *= StrifePlugin.RUN_COST_PERCENT;
-        energy -= StrifePlugin.RUN_COST * getAgilityMult(mob);
+      if (player.isSprinting()) {
+        if (mob.getEnergy() < 0.5) {
+          player.setSprinting(false);
+        } else {
+          energyChange *= StrifePlugin.RUN_COST_PERCENT;
+          energyChange -= StrifePlugin.RUN_COST * getAgilityMult(mob);
+        }
       } else if (MoveUtil.hasMoved(player)) {
-        if (player.isSprinting()) {
-          player.setSprinting(false);
-        }
-        energy *= StrifePlugin.WALK_COST_PERCENT;
+        energyChange *= StrifePlugin.WALK_COST_PERCENT;
         if (!noRegen) {
-          energy -= StrifePlugin.WALK_COST * getAgilityMult(mob);
-        }
-      } else {
-        if (player.isSprinting()) {
-          player.setSprinting(false);
+          energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
         }
       }
     }
 
-    energy += getBonusEnergy();
-    mob.setEnergy(mob.getEnergy() + energy);
+    energyChange += getBonusEnergy();
+    mob.setEnergy(mob.getEnergy() + energyChange);
   }
 
   private static float getAgilityMult(StrifeMob mob) {

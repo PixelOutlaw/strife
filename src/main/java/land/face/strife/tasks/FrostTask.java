@@ -33,39 +33,40 @@ public class FrostTask extends BukkitRunnable {
       cancel();
       return;
     }
-
-    frostTick++;
-    frostTick = frostTick % 20;
-    boolean playParticles = frostTick % 5 == 0;
-
-    LivingEntity le = mob.getEntity();
-    if (le.getType() == EntityType.PLAYER && ((Player) le).getGameMode() == GameMode.ADVENTURE) {
-      if (frostTick == 0) {
-        Block block = le.getLocation().getBlock();
-        isCold = isLocationCold(block);
-      }
-      if (isCold) {
-        DamageUtil.addFrost(null, mob, 5);
-        if (mob.getFrost() > 9900) {
-          DamageUtil.dealRawDamage(le, 1);
+    if (mob.getEntity().getType() == EntityType.PLAYER) {
+      Player player = (Player) mob.getEntity();
+      if (player.getGameMode() == GameMode.ADVENTURE) {
+        frostTick++;
+        frostTick = frostTick % 20;
+        if (frostTick == 0) {
+          Block block = player.getLocation().getBlock();
+          isCold = isLocationCold(block);
         }
-      } else {
-        mob.setFrost(mob.getFrost() - 25);
+        if (isCold) {
+          DamageUtil.addFrost(null, mob, 5);
+          if (mob.getFrost() > 9900) {
+            DamageUtil.dealRawDamage(player, 1);
+          }
+        } else if (mob.getFrost() > 0) {
+          mob.setFrost(mob.getFrost() - 25);
+          playFrostParticles(mob, mob.getEntity());
+        }
+        return;
       }
-    } else if (mob.getFrost() > 0) {
-      mob.setFrost(mob.getFrost() - 25);
-    }
-
-    if (playParticles && mob.getFrost() > 0) {
-      playFrostParticles(mob, le);
+      mob.setFrost(0);
+    } else {
+      if (mob.getFrost() > 0) {
+        mob.setFrost(mob.getFrost() - 25);
+        playFrostParticles(mob, mob.getEntity());
+      }
     }
   }
 
   private static void playFrostParticles(StrifeMob mob, LivingEntity livingEntity) {
     livingEntity.getWorld().spawnParticle(Particle.SNOWFLAKE,
         livingEntity.getEyeLocation(),
-        1 + mob.getFrost() / 3000,
-        0.5, 0.6, 0.5,
+        1,
+        0.5, 0.8, 0.5,
         0);
   }
 

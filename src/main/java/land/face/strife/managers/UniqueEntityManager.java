@@ -2,6 +2,7 @@ package land.face.strife.managers;
 
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
@@ -292,7 +293,7 @@ public class UniqueEntityManager {
     mob.setUniqueEntity(uniqueEntity);
     mob.setFactions(new HashSet<>(uniqueEntity.getFactions()));
     mob.setAlliedGuild(null);
-    SpecialStatusUtil.setDespawnOnUnload(mob.getEntity());
+    ChunkUtil.setDespawnOnUnload(mob.getEntity());
     mob.setCharmImmune(uniqueEntity.isCharmImmune());
 
     if (uniqueEntity.getModelId() != null) {

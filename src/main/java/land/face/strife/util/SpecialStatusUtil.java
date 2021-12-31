@@ -14,21 +14,12 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Boolean> FALL_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SNEAK_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SPAWNER_SPAWNED = new WeakHashMap<>();
-  private static final Map<Entity, Boolean> DESPAWN_ON_UNLOAD = new WeakHashMap<>();
   private static final Map<Entity, Boolean> GUILD_MOB = new WeakHashMap<>();
 
   private static final Map<Entity, String> HANDLED_BLOCK = new WeakHashMap<>();
 
   private static final Map<Entity, Integer> MOB_LEVEL = new WeakHashMap<>();
   private static final Map<Entity, String> UNIQUE_ID = new WeakHashMap<>();
-
-  public static void setDespawnOnUnload(Entity e) {
-    DESPAWN_ON_UNLOAD.put(e, true);
-  }
-
-  public static boolean isDespawnOnUnload(Entity e) {
-    return DESPAWN_ON_UNLOAD.getOrDefault(e, false);
-  }
 
   public static void setBurnImmune(Entity e) {
     BURN_IMMUNE.put(e, true);

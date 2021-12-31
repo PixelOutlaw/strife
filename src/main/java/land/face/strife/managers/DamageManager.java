@@ -56,7 +56,7 @@ public class DamageManager {
       damage = defender.damageBarrier(damage);
       damage /= dmgVsBarrier;
     } else {
-      attacker.damageBarrier(0);
+      defender.damageBarrier(0);
     }
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {

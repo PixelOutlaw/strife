@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +43,7 @@ public class ShootBlock extends LocationEffect {
 
     for (int i = 0; i < quantity; i++) {
       FallingBlock block = location.getWorld().spawnFallingBlock(location, blockData);
-      SpecialStatusUtil.setDespawnOnUnload(block);
+      ChunkUtil.setDespawnOnUnload(block);
       Vector newDirection = castDirection.clone();
       applySpread(newDirection, spread);
       block.setVelocity(newDirection);

@@ -87,11 +87,14 @@ public class DoubleJumpListener implements Listener {
         event.getPlayer().getLocation().clone().add(0, 1, 0).getBlock().getType().isAir();
 
     int jumps = JumpUtil.getJumps(event.getPlayer());
-    if (event.getPlayer().getFoodLevel() < 6 || (jumps < 1 && !waterHop)) {
+    if ((jumps < 1 && !waterHop)) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (mob.getEnergy() < 20) {
       return;
     }
 
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     int agilityLevel = PlayerDataUtil.getLifeSkillLevel(mob.getChampion(), AGILITY);
 
     if (agilityLevel < 40) {

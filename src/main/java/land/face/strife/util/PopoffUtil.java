@@ -17,11 +17,12 @@ public class PopoffUtil {
   public static DamagePopoff createPopoff(Player player, Location location, Vector velocity,
       double gravity, int life, String text) {
     Hologram holo = DHAPI.createHologram(UUID.randomUUID().toString(),
-        location.clone(),
-        List.of(StringExtensionsKt.chatColorize(text))
-    );
+        location.clone(), false, List.of(""));
     holo.hideAll();
-    holo.show(player, 0);
+    holo.addPage();
+    DHAPI.setHologramLines(holo, 1, List.of(StringExtensionsKt.chatColorize(text)));
+    holo.show(player, 1);
+
     DamagePopoff indicator = new DamagePopoff();
 
     indicator.setLife(life);

@@ -23,6 +23,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -98,8 +99,7 @@ public class StrifeMobManager {
 
   public void despawnAllTempEntities() {
     for (StrifeMob strifeMob : trackedEntities.values()) {
-      if (strifeMob.getEntity().isValid() && SpecialStatusUtil.isDespawnOnUnload(
-          strifeMob.getEntity())) {
+      if (strifeMob.getEntity().getType() != EntityType.PLAYER && strifeMob.getEntity().isValid()) {
         strifeMob.getEntity().remove();
       }
     }
@@ -110,15 +110,6 @@ public class StrifeMobManager {
       entity.getPassengers().get(0).remove();
     }
     trackedEntities.remove(entity);
-  }
-
-  public void doChunkDespawn(Entity entity) {
-    if (entity instanceof LivingEntity) {
-      removeStrifeMob((LivingEntity) entity);
-    }
-    if (SpecialStatusUtil.isDespawnOnUnload(entity)) {
-      entity.remove();
-    }
   }
 
   public boolean isTrackedEntity(LivingEntity entity) {

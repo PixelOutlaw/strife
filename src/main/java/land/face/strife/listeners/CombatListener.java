@@ -21,7 +21,6 @@ import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +29,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
-import land.face.strife.data.effects.Effect;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -58,7 +56,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class CombatListener implements Listener {
 
@@ -199,6 +196,7 @@ public class CombatListener implements Listener {
     }
 
     float attackMultiplier = 1f;
+    float multishotRatio = 1f;
     float healMultiplier = 1f;
     boolean backAttack = false;
 
@@ -218,6 +216,17 @@ public class CombatListener implements Listener {
     } else if (attackType == AttackType.PROJECTILE) {
       attackMultiplier = ProjectileUtil.getAttackMult(projectile);
       assert projectile != null;
+      if (attackMultiplier < 0.05) {
+        event.setCancelled(true);
+        removeIfExisting(projectile);
+        return;
+      }
+      multishotRatio = defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
+      if (multishotRatio < 0.05) {
+        event.setCancelled(true);
+        removeIfExisting(projectile);
+        return;
+      }
       //double angle = projectile.getVelocity().angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
     } else if (attackType == AttackType.AREA) {
@@ -233,7 +242,7 @@ public class CombatListener implements Listener {
     putMonsterHit(attackEntity);
 
     if (projectile != null) {
-      attackMultiplier *= defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
+      attackMultiplier *= multishotRatio;
     }
 
     if (attackMultiplier < 0.05) {

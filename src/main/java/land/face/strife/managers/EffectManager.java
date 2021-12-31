@@ -110,6 +110,11 @@ public class EffectManager {
   }
 
   public void processEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
+    processEffectList(caster, response, effectList, -1);
+  }
+
+  public void processEffectList(StrifeMob caster, TargetResponse response,
+      List<Effect> effectList, int projectileId) {
     if (caster == null || caster.getEntity() == null ||
         (!caster.getEntity().isValid() && response.isCancelOnCasterDeath())) {
       return;
@@ -124,7 +129,7 @@ public class EffectManager {
         continue;
       }
       if (effect instanceof Wait) {
-        LogUtil.printDebug("Effects in this chunk: " + taskChunk.toString());
+        LogUtil.printDebug("Effects in this chunk: " + taskChunk);
         executeEffectList(caster, response, taskChunk);
         runEffects.remove();
         List<Effect> newEffectList = new ArrayList<>();
@@ -132,6 +137,9 @@ public class EffectManager {
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
             processEffectList(caster, response, newEffectList), ((Wait) effect).getTickDelay());
         return;
+      }
+      if (projectileId != -1 && effect instanceof Damage) {
+        ((Damage) effect).currentProjectileId = projectileId;
       }
       taskChunk.add(effect);
       runEffects.remove();
@@ -216,10 +224,6 @@ public class EffectManager {
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Heal) effect).setUseHealingPower(cs.getBoolean("use-healing-power", false));
         ((Heal) effect).setHealCaster(cs.getBoolean("heal-caster", false));
-      }
-      case FOOD -> {
-        effect = new Food();
-        ((Food) effect).setAmount(cs.getDouble("amount", 1));
       }
       case SET_FALL -> {
         effect = new SetFall();

@@ -1,5 +1,6 @@
 package land.face.strife.data;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -245,9 +246,6 @@ public class StrifeMob {
 
   public void setEnergy(float energy) {
     this.energy = Math.min(Math.max(0, energy), maxEnergy);
-    if (getEntity() instanceof Player player) {
-      player.setFoodLevel((int) Math.min(20D, 20D * energy / maxEnergy));
-    }
   }
 
   public float getMaxEnergy() {
@@ -566,7 +564,7 @@ public class StrifeMob {
     minion.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
     minion.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
     minion.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
-    SpecialStatusUtil.setDespawnOnUnload(minion.getEntity());
+    ChunkUtil.setDespawnOnUnload(minion.getEntity());
     minion.setMaster(this, lifespan);
   }
 

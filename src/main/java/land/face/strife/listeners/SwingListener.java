@@ -76,8 +76,6 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
         }
         event.setCancelled(true);
       }
-      plugin.getStatUpdateManager()
-          .updateAttackAttrs(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     }
   }
 

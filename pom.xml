@@ -85,7 +85,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
-      <version>1.17.1.0</version>
+      <version>1.17.1.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -131,6 +131,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.github.Mitsugaru</groupId>
+      <artifactId>PlayerPoints</artifactId>
+      <version>master-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.shynixn.headdatabase</groupId>
       <artifactId>hdb-api</artifactId>
       <version>1.0</version>
@@ -152,6 +157,12 @@
       <groupId>com.ticxo.modelengine</groupId>
       <artifactId>api</artifactId>
       <version>R2.2.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.Sentropic</groupId>
+      <artifactId>GUI-API</artifactId>
+      <version>1.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

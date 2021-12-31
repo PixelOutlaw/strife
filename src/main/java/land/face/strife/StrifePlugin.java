@@ -88,7 +88,6 @@ import land.face.strife.tasks.CorruptionTask;
 import land.face.strife.tasks.DamageOverTimeTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
-import land.face.strife.tasks.ForceAttackSpeed;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.SaveTask;
@@ -103,6 +102,7 @@ import land.face.strife.util.LogUtil.LogLevel;
 import lombok.Getter;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
+import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -152,6 +152,8 @@ public class StrifePlugin extends FacePlugin {
   private AbilityManager abilityManager;
   private LoreAbilityManager loreAbilityManager;
   private AbilityIconManager abilityIconManager;
+  @Getter
+  private GuiManager guiManager;
   private BuffManager buffManager;
   private PathManager pathManager;
   private SpawnerManager spawnerManager;
@@ -187,6 +189,8 @@ public class StrifePlugin extends FacePlugin {
   public SnazzyPartiesHook snazzyPartiesHook;
   @Getter
   private DeluxeInvyPlugin deluxeInvyPlugin;
+  @Getter
+  private PlayerPoints playerPointsPlugin;
 
   public static float WALK_COST;
   public static float WALK_COST_PERCENT;
@@ -269,6 +273,7 @@ public class StrifePlugin extends FacePlugin {
     mobModManager = new MobModManager(settings, equipmentManager);
     loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
+    guiManager = new GuiManager(this);
     buffManager = new BuffManager();
     pathManager = new PathManager();
 
@@ -313,7 +318,6 @@ public class StrifePlugin extends FacePlugin {
     SaveTask saveTask = new SaveTask(this);
     StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
     StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
-    ForceAttackSpeed forceAttackSpeed = new ForceAttackSpeed();
     BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
@@ -356,11 +360,6 @@ public class StrifePlugin extends FacePlugin {
     for (int i = 0; i < 200; i++) {
       levelingRate.put(i, i, (int) Math.round(normalExpr.setVariable("LEVEL", i).evaluate()));
     }
-
-    taskList.add(forceAttackSpeed.runTaskTimer(this,
-        20L,
-        1L
-    ));
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> championManager.tickPassiveLoreAbilities(),
         20L * 5, // Start save after 5s
@@ -462,6 +461,9 @@ public class StrifePlugin extends FacePlugin {
       deluxeInvyPlugin = (DeluxeInvyPlugin) Bukkit.getPluginManager().getPlugin("DeluxeInvy");
       Bukkit.getPluginManager().registerEvents(new DeluxeEquipListener(this), this);
     }
+    if (Bukkit.getPluginManager().getPlugin("PlayerPoints") != null) {
+      playerPointsPlugin = (PlayerPoints) Bukkit.getPluginManager().getPlugin("PlayerPoints");
+    }
 
     ReturnButton returnButton = new ReturnButton(this, Material.ARROW,
         StringExtensionsKt.chatColorize("&e&l<< Go Back"));
@@ -499,6 +501,7 @@ public class StrifePlugin extends FacePlugin {
       statUpdateManager.updateVanillaAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
+      guiManager.setupGui(player);
     }
     getChampionManager().updateAll();
 

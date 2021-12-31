@@ -16,6 +16,8 @@
  */
 package land.face.strife.listeners;
 
+import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
@@ -191,6 +193,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
+
+    plugin.getGuiManager().setupGui(event.getPlayer());
+
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     Champion champion = playerMob.getChampion();
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
@@ -218,6 +223,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
     playerMob.updateBarrierScale();
 
+    event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
+    event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
+    plugin.getAttackSpeedManager().getAttackMultiplier(playerMob, true);
     for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR)
         .getModifiers()) {
       event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
@@ -292,16 +300,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
     plugin.getStrifeMobManager().getStatMob(entity);
     plugin.getBossBarManager().pushBar(player, plugin.getStrifeMobManager().getStatMob(entity));
-  }
-
-  @EventHandler(priority = EventPriority.NORMAL)
-  public void onChunkUnload(ChunkUnloadEvent e) {
-    for (Entity ent : e.getChunk().getEntities()) {
-      if (ent.hasMetadata("NPC")) {
-        continue;
-      }
-      plugin.getStrifeMobManager().doChunkDespawn(ent);
-    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

@@ -16,6 +16,7 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
+import land.face.strife.util.ProjectileUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -43,6 +44,8 @@ public class Damage extends Effect {
   private boolean selfInflict;
   private final List<Effect> hitEffects = new ArrayList<>();
   private final List<Effect> killEffects = new ArrayList<>();
+
+  public int currentProjectileId = -1;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -79,8 +82,17 @@ public class Damage extends Effect {
     }
     mods.setAttackMultiplier(mods.getAttackMultiplier());
 
+    float multishotRatio = 1;
+    if (currentProjectileId != -1) {
+      multishotRatio = target.getMultishotRatio(currentProjectileId);
+      currentProjectileId = -1;
+      if (multishotRatio < 0.05) {
+        return;
+      }
+    }
+
     Map<DamageType, Float> damage = DamageUtil.buildDamage(caster, target, mods);
-    float multi = applyMultipliers(caster, 1);
+    float multi = applyMultipliers(caster, 1) * multishotRatio;
     if (multi != 1) {
       damage.replaceAll((type, amount) -> amount * multi);
     }

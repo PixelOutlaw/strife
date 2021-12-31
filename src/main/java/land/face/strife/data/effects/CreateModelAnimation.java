@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
@@ -50,7 +51,7 @@ public class CreateModelAnimation extends LocationEffect {
     stand.setInvulnerable(true);
 
     CURRENT_STANDS.add(stand);
-    SpecialStatusUtil.setDespawnOnUnload(stand);
+    ChunkUtil.setDespawnOnUnload(stand);
 
     ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager().createModeledEntity(stand);
     if (modeledEntity == null) {
@@ -104,7 +105,7 @@ public class CreateModelAnimation extends LocationEffect {
     stand.setAI(false);
     stand.setInvulnerable(true);
 
-    SpecialStatusUtil.setDespawnOnUnload(stand);
+    ChunkUtil.setDespawnOnUnload(stand);
 
     ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager().createModeledEntity(stand);
     if (modeledEntity == null) {

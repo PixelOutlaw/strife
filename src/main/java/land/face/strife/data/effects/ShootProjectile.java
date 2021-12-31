@@ -1,13 +1,10 @@
 package land.face.strife.data.effects;
 
-import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ThrownItemTask;
@@ -74,7 +71,7 @@ public class ShootProjectile extends Effect {
     if (radialAngle != 0) {
       startAngle = -radialAngle / 2;
     }
-    double newSpread = projectiles == 1 ? spread : spread * Math.pow(projectiles, 0.5);
+    double newSpread = projectiles == 1 ? 0 : spread * Math.pow(projectiles, 0.5);
     for (int i = 0; i < projectiles; i++) {
       Vector direction;
       if (targeted && target != null) {
@@ -137,7 +134,7 @@ public class ShootProjectile extends Effect {
         DisguiseAPI.disguiseToPlayers(projectile, disguise, Bukkit.getOnlinePlayers());
       }
 
-      SpecialStatusUtil.setDespawnOnUnload(projectile);
+      ChunkUtil.setDespawnOnUnload(projectile);
       ProjectileUtil.setShotId(projectile);
 
       if (maxDuration != -1) {

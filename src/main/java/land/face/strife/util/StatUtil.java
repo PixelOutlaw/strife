@@ -79,6 +79,14 @@ public class StatUtil {
         float amount = stats.getOrDefault(stat, 0f) + stats.getOrDefault(StrifeStat.ALL_RESIST, 0f);
         return Math.min(amount, 95);
       }
+      case BARRIER_REGEN -> {
+        if (mob.hasTrait(StrifeTrait.OVERSHIELD) && mob.getEntity().getHealth() > mob.getMaxLife() - 0.01) {
+          float amount = stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
+          amount += getStat(mob, StrifeStat.REGENERATION) * 0.3;
+          return amount;
+        } else
+          return stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
+      }
     }
     return stats.getOrDefault(stat, 0f);
   }

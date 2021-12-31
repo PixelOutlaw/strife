@@ -23,7 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BossBarsTask extends BukkitRunnable {
 
-  private BossBarManager bossBarManager;
+  private final BossBarManager bossBarManager;
 
   public BossBarsTask(BossBarManager bossBarManager) {
     this.bossBarManager = bossBarManager;

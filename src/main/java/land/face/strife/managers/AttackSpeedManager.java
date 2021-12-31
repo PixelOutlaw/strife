@@ -49,6 +49,12 @@ public class AttackSpeedManager {
     lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
   }
 
+  public float getAttackRecharge(StrifeMob attacker) {
+    long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
+    long fullAttackMillis = getFullAttackMillis(attacker.getEntity().getUniqueId());
+    return Math.min(1, (float) millisPassed / fullAttackMillis);
+  }
+
   public float getAttackMultiplier(StrifeMob attacker) {
     return getAttackMultiplier(attacker, true);
   }
