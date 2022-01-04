@@ -820,8 +820,6 @@ public class DamageUtil {
 
   public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
     if (defender.getEntity() instanceof Player) {
       AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENT",
           ATTACK_BLOCKED, 10, 100);
@@ -996,9 +994,6 @@ public class DamageUtil {
     }
     if (amount <= 0 || entity.getHealth() <= 0 || entity.isDead()) {
       return 0;
-    }
-    if (entity instanceof Player) {
-      amount *= Math.min(((Player) entity).getFoodLevel() / 7.0D, 1.0D);
     }
     return amount;
   }

@@ -91,6 +91,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   public void onCombatChange(CombatChangeEvent event) {
     if (event.getNewState() == NewCombatState.EXIT) {
       event.getTarget().clearMultishot();
+      event.getTarget().setBlock(event.getTarget().getMaxBlock());
     }
   }
 
@@ -201,6 +202,10 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
+    if (champion.getSaveData().getEnergy() != -1) {
+      playerMob.setEnergy(champion.getSaveData().getEnergy());
+      champion.getSaveData().setEnergy(-1);
+    }
 
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
@@ -226,11 +231,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
     event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
     plugin.getAttackSpeedManager().getAttackMultiplier(playerMob, true);
-    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR)
-        .getModifiers()) {
-      event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
-    }
-    event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
 
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
       Bukkit.getScheduler().runTaskLater(plugin,
@@ -259,10 +259,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
     plugin.getCounterManager().clearCounters(player);
     plugin.getBossBarManager().disableBars(player);
-    for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
-      player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
-    }
-    player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
+    plugin.getStrifeMobManager().saveEnergy(player);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -367,12 +364,8 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   public void onRespawn(PlayerRespawnEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    mob.setBlock(mob.getMaxBlock());
     mob.restartTimers();
-    for (AttributeModifier mod : event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR)
-        .getModifiers()) {
-      event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
-    }
-    event.getPlayer().getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

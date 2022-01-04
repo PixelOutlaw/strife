@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
@@ -62,6 +63,7 @@ public class AbilityManager {
 
   private final Random random = new Random();
 
+  /*
   private static final String ON_COOLDOWN = StringExtensionsKt
       .chatColorize("&6&lAbility On Cooldown!");
   private static final String NO_ENERGY = StringExtensionsKt
@@ -70,6 +72,7 @@ public class AbilityManager {
       .chatColorize("&7&lNo Target Found!");
   private static final String NO_REQUIRE = StringExtensionsKt
       .chatColorize("&c&lAbility Requirements Not Met!");
+   */
   private static final String CAST = StringExtensionsKt
       .chatColorize("&a&l&oCast &f&l&o{n}&a&l&o!");
 
@@ -515,10 +518,8 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    AdvancedActionBarUtil
-        .addMessage((Player) caster.getEntity(), "ability-status", NO_TARGET, 40, 11);
-    ((Player) caster.getEntity())
-        .playSound(caster.getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_INVALID_TARGET, 60,10));
+    ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
   }
 
   private void doRequirementNotMetPrompt(StrifeMob caster, Ability ability) {
@@ -526,8 +527,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    AdvancedActionBarUtil
-        .addMessage((Player) caster.getEntity(), "ability-status", NO_REQUIRE, 40, 11);
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_REQUIREMENT, 90,10));
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
@@ -537,8 +537,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    AdvancedActionBarUtil
-        .addMessage((Player) caster.getEntity(), "ability-status", ON_COOLDOWN, 40, 11);
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_COOLDOWN, 54,10));
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.6f);
     Bukkit.getScheduler().runTaskLater(plugin, () -> ((Player) caster.getEntity())
@@ -550,11 +549,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    String message = NO_ENERGY
-        .replace("{n1}", Integer.toString((int) Math.floor(caster.getEnergy())))
-        .replace("{n2}", Integer.toString((int) Math.ceil(ability.getCost())));
-    AdvancedActionBarUtil
-        .addMessage((Player) caster.getEntity(), "ability-status", message, 40, 11);
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_ENERGY, 49,10));
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
   }

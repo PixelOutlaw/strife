@@ -4,13 +4,13 @@ import com.sentropic.guiapi.GUIAPI;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.NoticeData;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class GuiManager {
@@ -18,6 +18,7 @@ public class GuiManager {
   private final StrifePlugin plugin;
 
   private final Map<Player, GUI> guiMap = new WeakHashMap<>();
+  private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
   private final GUIComponent healthBase = new GUIComponent("status-base", new TextComponent("❶"),
       178, 0, Alignment.CENTER);
@@ -32,8 +33,32 @@ public class GuiManager {
   private final Map<Integer, String> moneyStringNumbers = new HashMap<>();
   private final Map<Integer, String> gemStringNumbers = new HashMap<>();
 
+  private final ChatColor levelColorBukkit = ChatColor.of("#72D92D");
+
+  public static final TextComponent EMPTY = new TextComponent("");
+  public static final TextComponent NOTICE_COOLDOWN = new TextComponent("᳥");
+  public static final TextComponent NOTICE_ENERGY = new TextComponent("᳣");
+  public static final TextComponent NOTICE_REQUIREMENT = new TextComponent("᳤");
+  public static final TextComponent NOTICE_INVALID_TARGET = new TextComponent("᳢");
+
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
+  }
+
+  public void postNotice(Player player, NoticeData data) {
+    noticeMap.put(player, data);
+    guiMap.get(player).update(new GUIComponent("notices", data.getTextComponent(), data.getWidth(), 0, Alignment.CENTER));
+  }
+
+  public void tickNotices(Player player) {
+    if (noticeMap.containsKey(player)) {
+      NoticeData data = noticeMap.get(player);
+      data.setDurationTicks(data.getDurationTicks() - 1);
+      if (data.getDurationTicks() == 0) {
+        guiMap.get(player).update(new GUIComponent("notices", EMPTY, 0, 0, Alignment.CENTER));
+        noticeMap.remove(player);
+      }
+    }
   }
 
   public void setupGui(Player p) {
@@ -54,7 +79,9 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("gem-display", new TextComponent(""), 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("attack-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notices", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("rage-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("block-ind", new TextComponent(""), 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("dura-helmet", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-body", new TextComponent(""), 0, 0, Alignment.CENTER));
@@ -130,7 +157,7 @@ public class GuiManager {
         .replaceAll("8", "७\uF801")
         .replaceAll("9", "८\uF801")
         .replaceAll("0", "९\uF801");
-    s = net.md_5.bungee.api.ChatColor.of(new Color(0x72D92D)) + s + ChatColor.RESET;
+    s = ChatColor.GOLD + s + ChatColor.RESET;
     levelStringNumbers.put(i, s);
     return s;
   }

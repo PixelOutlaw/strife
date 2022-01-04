@@ -11,6 +11,8 @@ import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.stats.AbilitySlot;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -35,6 +37,8 @@ public class ChampionSaveData {
   private int bonusLevels;
 
   private float pvpScore = 700;
+  @Getter @Setter
+  private float energy = 10000000;
 
   // Player preferences
   private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;

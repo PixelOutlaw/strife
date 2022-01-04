@@ -68,11 +68,17 @@ public class StatUtil {
         float amount = stats.getOrDefault(StrifeStat.BARRIER, 0f) *
             (1 + stats.getOrDefault(StrifeStat.BARRIER_MULT, 0f) / 100);
         mob.setMaxBarrier(amount);
+        if (!mob.isInCombat()) {
+          mob.setBarrier(amount);
+        }
         return amount;
       }
       case BLOCK -> {
         float amount = stats.getOrDefault(StrifeStat.BLOCK, 0f);
         mob.setMaxBlock(amount);
+        if (!mob.isInCombat()) {
+          mob.setBlock(amount);
+        }
         return amount;
       }
       case FIRE_RESIST, ICE_RESIST, LIGHTNING_RESIST, LIGHT_RESIST, DARK_RESIST, EARTH_RESIST -> {

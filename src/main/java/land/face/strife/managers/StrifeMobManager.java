@@ -65,8 +65,10 @@ public class StrifeMobManager {
     }
     if (!trackedEntities.containsKey(entity)) {
       StrifeMob mob;
+      float energy = 200000;
       if (entity instanceof Player) {
         mob = new StrifeMob(plugin.getChampionManager().getChampion((Player) entity));
+        energy = mob.getChampion().getSaveData().getEnergy();
       } else {
         mob = new StrifeMob(entity);
       }
@@ -77,13 +79,18 @@ public class StrifeMobManager {
       StatUtil.getStat(mob, StrifeStat.ENERGY);
 
       mob.restoreBarrier(200000);
-      mob.setEnergy(entity instanceof Player ? StatUtil.getStat(mob, StrifeStat.ENERGY)
-          * ((Player) entity).getFoodLevel() / 20 : 200000);
-
+      mob.setEnergy(energy);
       trackedEntities.put(entity, mob);
     }
     entity.setMaximumNoDamageTicks(0);
     return trackedEntities.get(entity);
+  }
+
+  public void saveEnergy(Player player) {
+    if (trackedEntities.containsKey(player)) {
+      StrifeMob mob = trackedEntities.get(player);
+      mob.getChampion().getSaveData().setEnergy(mob.getEnergy());
+    }
   }
 
   public void tickCorruption() {

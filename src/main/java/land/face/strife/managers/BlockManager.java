@@ -59,7 +59,7 @@ public class BlockManager {
 
   private final float FLAT_BLOCK_S;
   private final float PERCENT_BLOCK_S;
-  private final float MINIMUM_BLOCK;
+  private final float PERCENT_MAX_BLOCK_MIN;
   private final float MELEE_FATIGUE;
   private final float PROJECTILE_FATIGUE;
   private final float GUARD_BREAK_POWER;
@@ -72,8 +72,8 @@ public class BlockManager {
         .getDouble("config.mechanics.block.flat-block-recovery", 10);
     PERCENT_BLOCK_S = (float) plugin.getSettings()
         .getDouble("config.mechanics.block.percent-block-recovery", 0.01f);
-    MINIMUM_BLOCK = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.minimum-block", -25);
+    PERCENT_MAX_BLOCK_MIN = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.negative-block-percent", 0.25);
     MELEE_FATIGUE = (float) plugin.getSettings()
         .getDouble("config.mechanics.block.melee-fatigue", 70);
     PROJECTILE_FATIGUE = (float) plugin.getSettings()
@@ -238,12 +238,18 @@ public class BlockManager {
     if (guardBreak) {
       fatigue *= GUARD_BREAK_POWER;
     }
-    mob.setBlock(Math.max(MINIMUM_BLOCK, mob.getBlock() - fatigue));
+    mob.setBlock(mob.getBlock() - fatigue);
 
-    if (guardBreak && mob.getBlock() <= 0) {
-      return false;
+    if (mob.getBlock() <= 0) {
+      mob.setBlock(-mob.getMaxBlock() * PERCENT_MAX_BLOCK_MIN);
+      mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(),
+          mob.getMaxBlock() > 35 ? Sound.ITEM_SHIELD_BREAK : Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+      return !guardBreak;
+    } else {
+      mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(),
+          Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+      return true;
     }
-    return true;
   }
 
   private static void pushRunesBar(StrifeMob mob, int maxRunes, int runes) {

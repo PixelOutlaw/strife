@@ -17,7 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class CombatCountdownTask extends BukkitRunnable {
 
-  private static final int BUMP_TIME_HALF_SECONDS = 20;
+  private static final int BUMP_TIME_HALF_SECONDS = 24;
   private final WeakReference<StrifeMob> parentMob;
   private boolean pvp = false;
   private static final ItemStack combatStack = new ItemStack(Material.IRON_SWORD);

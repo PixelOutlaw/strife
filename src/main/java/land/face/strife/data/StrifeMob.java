@@ -149,18 +149,10 @@ public class StrifeMob {
 
   public void setBlock(float block) {
     this.block = Math.min(block, maxBlock);
-    if (getEntity() instanceof Player player) {
-      for (AttributeModifier mod : player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers()) {
-        player.getAttribute(Attribute.GENERIC_ARMOR).removeModifier(mod);
-      }
-      block = Math.max(block, 0);
-      float percent = maxBlock > 0 ? block / maxBlock : 1;
-      if (percent > 0.99) {
-        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(-20);
-      } else {
-        player.getAttribute(Attribute.GENERIC_ARMOR).setBaseValue(Math.max(1, 20 * percent));
-      }
-    }
+  }
+
+  public void setBarrier(float barrier) {
+    this.barrier = Math.min(barrier, maxBarrier);
   }
 
   public void setFrost(float newFrost) {

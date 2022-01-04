@@ -28,6 +28,7 @@ import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.util.JumpUtil;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -82,13 +83,21 @@ public class EveryTickTask extends BukkitRunnable {
       new TextComponent("\uD809\uDC18"),
       new TextComponent("\uD809\uDC19"));
 
-  private static final TextComponent emptyText = new TextComponent("");
-
-  private int test;
+  private final List<TextComponent> blockLevels = List.of(
+      new TextComponent("௦"),
+      new TextComponent("௧"),
+      new TextComponent("௨"),
+      new TextComponent("௩"),
+      new TextComponent("௪"),
+      new TextComponent("௫"),
+      new TextComponent("௬"),
+      new TextComponent("௭"),
+      new TextComponent("௮"),
+      new TextComponent("௯")
+  );
 
   public EveryTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
-    test = plugin.getConfig().getInt("config.test", 0);
   }
 
   @Override
@@ -152,9 +161,9 @@ public class EveryTickTask extends BukkitRunnable {
 
         int attackProgress = (int) (10 * plugin.getAttackSpeedManager().getAttackRecharge(mob));
         if (attackProgress != 10) {
-          gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 20, 0, Alignment.CENTER));
+          gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 22, 0, Alignment.CENTER));
         } else {
-          gui.update(new GUIComponent("attack-bar", emptyText, 0, 0, Alignment.CENTER));
+          gui.update(new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
         }
 
         int xpProgress = (int) (9 * p.getExp());
@@ -163,9 +172,25 @@ public class EveryTickTask extends BukkitRunnable {
         double rage = plugin.getRageManager().getRage(p);
         if (rage > 0.5) {
           int rageStage = (int) (4 * plugin.getRageManager().getRage(p) / mob.getMaxRage());
-          gui.update(new GUIComponent("rage-bar", rageLevels.get(rageStage), 22, -120, Alignment.CENTER));
+          gui.update(new GUIComponent("rage-bar", rageLevels.get(rageStage), 22, -140, Alignment.CENTER));
         } else {
-          gui.update(new GUIComponent("rage-bar", emptyText, 0, 0, Alignment.CENTER));
+          gui.update(new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+        }
+
+        double maxBlock = mob.getMaxBlock();
+        if (maxBlock > 35) {
+          int blockStage = 0;
+          if (mob.getBlock() > 0) {
+            blockStage = 1 + (int) (9 * mob.getBlock() / mob.getMaxBlock());
+          }
+          if (blockStage < 10) {
+            gui.update(new GUIComponent("block-ind", blockLevels.get(blockStage), 20, -120,
+                Alignment.CENTER));
+          } else {
+            gui.update(new GUIComponent("block-ind", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+          }
+        } else {
+          gui.update(new GUIComponent("block-ind", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
         }
 
         PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData(p);
@@ -196,6 +221,8 @@ public class EveryTickTask extends BukkitRunnable {
           bonusVelocity.setY(bonusVelocity.getY() + hoverPower * 0.0005);
           p.setVelocity(p.getVelocity().clone().add(bonusVelocity));
         }
+
+        plugin.getGuiManager().tickNotices(p);
       }
     }
   }
