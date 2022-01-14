@@ -18,7 +18,6 @@
  */
 package land.face.strife.managers;
 
-import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 

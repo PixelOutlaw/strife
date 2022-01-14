@@ -5,24 +5,18 @@ import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
 import static land.face.strife.util.StatUtil.getWardingMult;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.DamageModifiers.ElementalStatus;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
@@ -451,6 +445,8 @@ public class DamageUtil {
           StrifePlugin.getInstance().getRageManager().getRage(target.getEntity());
       case CASTER_CURRENT_RAGE -> amount *
           StrifePlugin.getInstance().getRageManager().getRage(caster.getEntity());
+      case TARGET_CURRENT_CORRUPTION -> amount * target.getCorruption();
+      case CASTER_CURRENT_CORRUPTION -> amount * caster.getCorruption();
       case TARGET_MAX_RAGE -> amount * target.getMaxRage();
       case CASTER_MAX_RAGE -> amount * caster.getMaxRage();
     };
@@ -807,10 +803,6 @@ public class DamageUtil {
     callEvadeEvent(defender, attacker);
     defender.getEntity().getWorld()
         .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
-    if (defender.getEntity() instanceof Player) {
-      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENTs",
-          ATTACK_DODGED, 10, 100);
-    }
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager()
           .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 6,
@@ -820,10 +812,6 @@ public class DamageUtil {
 
   public static void doBlock(StrifeMob attacker, StrifeMob defender) {
     callBlockEvent(defender, attacker);
-    if (defender.getEntity() instanceof Player) {
-      AdvancedActionBarUtil.addMessage((Player) defender.getEntity(), "COMBAT-EVENT",
-          ATTACK_BLOCKED, 10, 100);
-    }
     if (attacker.getEntity() instanceof Player) {
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
           IndicatorStyle.RANDOM_POPOFF, 7, "&e⛨&lBlock");
@@ -1083,6 +1071,8 @@ public class DamageUtil {
     CASTER_MAX_ENERGY,
     TARGET_CURRENT_RAGE,
     CASTER_CURRENT_RAGE,
+    TARGET_CURRENT_CORRUPTION,
+    CASTER_CURRENT_CORRUPTION,
     TARGET_MAX_RAGE,
     CASTER_MAX_RAGE
   }

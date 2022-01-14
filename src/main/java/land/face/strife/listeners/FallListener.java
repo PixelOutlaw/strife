@@ -56,7 +56,6 @@ public class FallListener implements Listener {
     Champion champion = plugin.getChampionManager().getChampion((Player) event.getEntity());
     if (rollBonus) {
       damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
-      MessageUtils.sendActionBar((Player) event.getEntity(), ROLL_TEXT);
     } else {
       damage *= 50.0 / (50 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
       ((Player) event.getEntity()).addPotionEffect(new PotionEffect(SLOW, 100, 0, true));

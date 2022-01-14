@@ -19,6 +19,7 @@ package land.face.strife.listeners;
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import land.face.dinvy.events.EquipmentUpdateEvent;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -44,8 +45,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -74,7 +73,6 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -202,10 +200,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
     plugin.getChampionManager().verifyStatValues(champion);
-    if (champion.getSaveData().getEnergy() != -1) {
-      playerMob.setEnergy(champion.getSaveData().getEnergy());
-      champion.getSaveData().setEnergy(-1);
-    }
 
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
@@ -227,6 +221,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     event.getPlayer().setInvulnerable(false);
 
     playerMob.updateBarrierScale();
+    float foodRatio = event.getPlayer().getFoodLevel();
+    foodRatio *= 0.05;
+    playerMob.setEnergy(playerMob.getMaxEnergy() * foodRatio);
 
     event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
     event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
@@ -238,6 +235,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 10L);
     }
+
+    plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
+    plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -318,6 +318,12 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     }
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
         Math.max(5, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
+  }
+
+  @EventHandler
+  public void onPlayerWorldChance(EquipmentUpdateEvent event) {
+    plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
+    plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer(), event.getData());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

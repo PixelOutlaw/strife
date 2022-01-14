@@ -37,8 +37,6 @@ public class ChampionSaveData {
   private int bonusLevels;
 
   private float pvpScore = 700;
-  @Getter @Setter
-  private float energy = 10000000;
 
   // Player preferences
   private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;

@@ -22,6 +22,7 @@ import land.face.strife.util.CorruptionUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -65,21 +66,16 @@ public class StrifeMobManager {
     }
     if (!trackedEntities.containsKey(entity)) {
       StrifeMob mob;
-      float energy = 200000;
-      if (entity instanceof Player) {
+      if (entity.getType() == EntityType.PLAYER) {
         mob = new StrifeMob(plugin.getChampionManager().getChampion((Player) entity));
-        energy = mob.getChampion().getSaveData().getEnergy();
       } else {
         mob = new StrifeMob(entity);
       }
       mob.setStats(plugin.getMonsterManager().getBaseStats(entity));
-
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);
-
       mob.restoreBarrier(200000);
-      mob.setEnergy(energy);
       trackedEntities.put(entity, mob);
     }
     entity.setMaximumNoDamageTicks(0);
@@ -89,7 +85,7 @@ public class StrifeMobManager {
   public void saveEnergy(Player player) {
     if (trackedEntities.containsKey(player)) {
       StrifeMob mob = trackedEntities.get(player);
-      mob.getChampion().getSaveData().setEnergy(mob.getEnergy());
+      player.setFoodLevel((int) (20 * mob.getEnergy() / mob.getMaxEnergy()));
     }
   }
 

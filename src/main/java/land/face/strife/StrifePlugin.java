@@ -502,6 +502,7 @@ public class StrifePlugin extends FacePlugin {
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
       guiManager.setupGui(player);
+      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), true);
     }
     getChampionManager().updateAll();
 

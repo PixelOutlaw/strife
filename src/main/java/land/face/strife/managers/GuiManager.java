@@ -5,13 +5,19 @@ import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.pojo.PlayerData;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class GuiManager {
 
@@ -20,7 +26,7 @@ public class GuiManager {
   private final Map<Player, GUI> guiMap = new WeakHashMap<>();
   private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
-  private final GUIComponent healthBase = new GUIComponent("status-base", new TextComponent("❶"),
+  private final GUIComponent healthBase = new GUIComponent("status-base", new TextComponent("➲"),
       178, 0, Alignment.CENTER);
   private final GUIComponent levelBase = new GUIComponent("level-base", new TextComponent("⅟"), 27,
       -105, Alignment.CENTER);
@@ -40,9 +46,31 @@ public class GuiManager {
   public static final TextComponent NOTICE_ENERGY = new TextComponent("᳣");
   public static final TextComponent NOTICE_REQUIREMENT = new TextComponent("᳤");
   public static final TextComponent NOTICE_INVALID_TARGET = new TextComponent("᳢");
+  public static final TextComponent WING_TING = new TextComponent("䶰");
+  public static final TextComponent WING_TING_EMPTY = new TextComponent("䎘");
+  public static final TextComponent EARTH_RUNE = new TextComponent("㆞");
+
+  private final List<TextComponent> xpBar = List.of(
+      new TextComponent("⒈"),
+      new TextComponent("⒉"),
+      new TextComponent("⒊"),
+      new TextComponent("⒋"),
+      new TextComponent("⒌"),
+      new TextComponent("⒍"),
+      new TextComponent("⒎"),
+      new TextComponent("⒏"),
+      new TextComponent("⒐"),
+      new TextComponent("⒑")
+  );
+
+  public static final Map<Integer, TextComponent> HP_BAR = new HashMap<>();
+  public static final Map<Integer, TextComponent> ENERGY_BAR = new HashMap<>();
 
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    if (HP_BAR.isEmpty()) {
+      buildHealthAndEnergy();
+    }
   }
 
   public void postNotice(Player player, NoticeData data) {
@@ -90,6 +118,15 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("dura-weapon", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-offhand", new TextComponent(""), 0, 0, Alignment.CENTER));
 
+    gui.putOnTop(new GUIComponent("wing-1", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("wing-2", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("wing-3", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("wing-4", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("wing-5", EMPTY, 0, 0, Alignment.CENTER));
+
+    gui.putOnTop(new GUIComponent("rune-display", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("rune-amount", EMPTY, 0, 0, Alignment.CENTER));
+
     guiMap.put(p, gui);
   }
 
@@ -99,6 +136,108 @@ public class GuiManager {
 
   public void updateComponent(Player player, GUIComponent component) {
     guiMap.get(player).update(component);
+  }
+
+  public void updateLevelDisplay(Player player) {
+    GUI gui = guiMap.get(player);
+    String originalLevelString = Integer.toString(player.getLevel());
+    String levelString = plugin.getGuiManager().convertToLevelFont(player.getLevel());
+    gui.update(new GUIComponent("level-display",
+        new TextComponent(levelString), originalLevelString.length() * 12, -106,
+        Alignment.CENTER));
+
+    int xpProgress = (int) (9 * player.getExp());
+    gui.update(new GUIComponent("xp-base", xpBar.get(xpProgress), 15, 98, Alignment.CENTER));
+  }
+
+  public void updateEquipmentDisplay(Player player) {
+    updateEquipmentDisplay(player,
+        DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData(player));
+  }
+
+  public void updateEquipmentDisplay(Player player, PlayerData data) {
+    GUI gui = guiMap.get(player);
+    if (data != null) {
+      gui.update(new GUIComponent("dura-helmet",
+          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.HELMET), "০")),
+          45, 233, Alignment.RIGHT));
+      gui.update(new GUIComponent("dura-body",
+          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.BODY), "১")),
+          45, 233, Alignment.RIGHT));
+      gui.update(new GUIComponent("dura-legs",
+          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.LEGS), "২")),
+          45, 233, Alignment.RIGHT));
+      gui.update(new GUIComponent("dura-boots",
+          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.BOOTS), "৩")),
+          45, 233, Alignment.RIGHT));
+      gui.update(new GUIComponent("dura-weapon",
+          new TextComponent(duraString(player.getEquipment().getItemInMainHand(), "৪")),
+          45, 233, Alignment.RIGHT));
+      gui.update(new GUIComponent("dura-offhand",
+          new TextComponent(duraString(player.getEquipment().getItemInOffHand(), "৫")),
+          45, 233, Alignment.RIGHT));
+    }
+  }
+
+  public static String duraString(ItemStack stack, String string) {
+    if (stack == null || stack.getType().getMaxDurability() < 5) {
+      return org.bukkit.ChatColor.GRAY + string;
+    }
+    float percent = 1 - ((float) stack.getDurability() / stack.getType().getMaxDurability());
+    if (percent > 0.6) {
+      return org.bukkit.ChatColor.WHITE + string;
+    }
+    if (percent > 0.4) {
+      return org.bukkit.ChatColor.YELLOW + string;
+    }
+    if (percent > 0.2) {
+      return org.bukkit.ChatColor.GOLD + string;
+    }
+    return org.bukkit.ChatColor.DARK_RED + string;
+  }
+
+
+  public static void buildHealthAndEnergy() {
+    Bukkit.getLogger().info("[Strife] Building GUI missing life/energy");
+    Bukkit.getLogger().info("[Strife] This could take a bit...");
+    for (int i = 0; i <= 178; i++) {
+      int remainder = i;
+      String hpBar = "";
+      String eBar = "";
+      if (remainder >= 128) {
+        hpBar += "❺\uF801";
+        eBar += "❿\uF801";
+        remainder -= 128;
+      }
+      if (remainder >= 64) {
+        hpBar += "❹\uF801";
+        eBar += "❾\uF801";
+        remainder -= 64;
+      }
+      if (remainder >= 32) {
+        hpBar += "❸\uF801";
+        eBar += "❽\uF801";
+        remainder -= 32;
+      }
+      if (remainder >= 16) {
+        hpBar += "❷\uF801";
+        eBar += "❼\uF801";
+        remainder -= 16;
+      }
+      if (remainder >= 8) {
+        hpBar += "❶\uF801";
+        eBar += "❻\uF801";
+        remainder -= 8;
+      }
+      while (remainder > 0) {
+        hpBar += "\uD801\uDCA0\uF801";
+        eBar += "੦\uF801";
+        remainder--;
+      }
+      HP_BAR.put(i, new TextComponent(ChatColor.DARK_RED + hpBar + ChatColor.RESET));
+      ENERGY_BAR.put(i, new TextComponent(ChatColor.GOLD + eBar + ChatColor.RESET));
+    }
+    Bukkit.getLogger().info("[Strife] Missing life/energy bars built!");
   }
 
   public String convertToHpDisplay(int i) {

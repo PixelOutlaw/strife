@@ -1,8 +1,5 @@
 package land.face.strife.data.buff;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,9 +14,6 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class Buff extends BukkitRunnable {
@@ -76,6 +70,7 @@ public class Buff extends BukkitRunnable {
       cancel();
       return;
     }
+    /*
     if (StringUtils.isNotBlank(actionBarTag)
         && buffOwner.get().getEntity().getType() == EntityType.PLAYER) {
       String msg = TextUtils.color("&9&l" + actionBarTag +
@@ -83,6 +78,8 @@ public class Buff extends BukkitRunnable {
       AdvancedActionBarUtil.addMessage((Player) buffOwner.get().getEntity(),
           actionBarTag + source, msg, 4);
     }
+
+     */
     secondsRemaining -= 0.2;
     if (secondsRemaining < 0) {
       // This also cancels the buff!

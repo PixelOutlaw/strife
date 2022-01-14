@@ -18,9 +18,9 @@
  */
 package land.face.strife.commands;
 
-import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendActionBar;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
@@ -33,7 +33,11 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
+import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.mount.controller.MountController;
+import com.ticxo.modelengine.api.mount.handler.IMountHandler;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +60,7 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -145,13 +150,6 @@ public class StrifeCommand extends BaseCommand {
 
     winData.setPvpScore(response.getNewWinnerValue());
     loseData.setPvpScore(response.getNewLoserValue());
-
-    sendActionBar(winner.getPlayer(), PVP_WIN_MSG.replace("{0}",
-            String.valueOf(Math.round(response.getNewWinnerValue())))
-        .replace("{1}", String.valueOf(Math.round(winDiff))));
-    sendActionBar(loser.getPlayer(), PVP_LOSE_MSG.replace("{0}",
-            String.valueOf(Math.round(response.getNewLoserValue())))
-        .replace("{1}", String.valueOf(Math.round(loseDiff))));
   }
 
   @Subcommand("cd|cooldown")
@@ -336,6 +334,47 @@ public class StrifeCommand extends BaseCommand {
     plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
         .setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
+  }
+
+  @Subcommand("spawn-mount")
+  @CommandCompletion("@players")
+  @CommandPermission("strife.admin")
+  public void mmmmm(Player sender, String modelId) {
+    ActiveModel model = ModelEngineAPI.api.getModelManager().createActiveModel(modelId);
+    if (model == null) {
+      MessageUtils.sendMessage(sender, "invalid modelid");
+      return;
+    }
+    Horse horse = sender.getWorld().spawn(sender.getLocation(), Horse.class);
+    horse.setAdult();
+    horse.setBreed(false);
+
+    ChunkUtil.setDespawnOnUnload(horse);
+
+    ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager().createModeledEntity(horse);
+    if (modeledEntity == null) {
+      Bukkit.getLogger().warning("Failed to create modelled entity");
+      if (horse.isValid()) {
+        horse.remove();
+      }
+    } else {
+      modeledEntity.setNametagVisible(false);
+      modeledEntity.addActiveModel(model);
+      modeledEntity.detectPlayers();
+      modeledEntity.setInvisible(true);
+
+      MountController controller = ModelEngineAPI.api.getControllerManager()
+          .createController("walking");
+      if (controller == null) {
+        controller = ModelEngineAPI.api.getControllerManager().createController("walking");
+      }
+      final IMountHandler handler = modeledEntity.getMountHandler();
+      handler.removePassenger(sender);
+      handler.setCanDamageMount(handler.getDriver(), true);
+      handler.setDriver(null);
+      handler.setDriver(sender, controller);
+      handler.setCanDamageMount(sender, false);
+    }
   }
 
   @Subcommand("ability remove")

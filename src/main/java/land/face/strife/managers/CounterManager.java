@@ -16,7 +16,6 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -80,9 +79,6 @@ public class CounterManager {
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
             IndicatorStyle.BOUNCE, 7, "&3⛨&lCounter");
-      }
-      if (defender instanceof Player) {
-        AdvancedActionBarUtil.addMessage((Player) defender, "COMBAT-EVENT", COUNTER_MESSAGE, 10, 100);
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);

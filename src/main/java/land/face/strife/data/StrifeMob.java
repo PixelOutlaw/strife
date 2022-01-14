@@ -18,6 +18,7 @@ import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
@@ -75,6 +76,8 @@ public class StrifeMob {
   private int frost;
   @Getter
   private float corruption;
+  @Getter
+  private int maxAirJumps;
   private boolean shielded;
 
   private boolean useEquipment;
@@ -319,6 +322,18 @@ public class StrifeMob {
         lastChampionUpdate = getChampion().getLastChanged();
       }
       setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
+      if (getChampion() != null) {
+        int agilityLevel = getChampion().getLifeSkillLevel(LifeSkillType.AGILITY);
+        if (agilityLevel < 40) {
+          maxAirJumps = 0;
+        } else {
+          int amount = 1 + (int) getStat(StrifeStat.AIR_JUMPS);
+          if (agilityLevel > 59) {
+            amount++;
+          }
+          maxAirJumps = amount;
+        }
+      }
     }
     return StatUtil.getStat(this, stat);
   }

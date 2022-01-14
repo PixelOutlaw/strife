@@ -1,6 +1,5 @@
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -22,8 +21,8 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
-import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.AbilityIconData;
+import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.Phase;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
@@ -145,10 +144,6 @@ public class AbilityManager {
     if (caster.getEntity() instanceof Player) {
       if (ability.isCancelStealth()) {
         plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
-      }
-      if (ability.isShowMessages()) {
-        AdvancedActionBarUtil.addMessage((Player) caster.getEntity(), "ability-status",
-            CAST.replace("{n}", ability.getId()), 20, 11);
       }
     }
     playChatMessages(caster, ability);

@@ -18,17 +18,19 @@
  */
 package land.face.strife.timers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.BorderEffectUtil;
 import land.face.strife.util.LogUtil;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Particle;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -42,8 +44,15 @@ public class RageTimer extends BukkitRunnable {
   private int graceTicks;
   private int invalidTicks = 0;
   private int heartbeat = 0;
-  private double maxTintPercentPerRage = 0.005;
-  private double baseTint = 0.2;
+  private final double maxTintPercentPerRage = 0.005;
+  private final double baseTint = 0.2;
+
+  private static final List<TextComponent> rageLevels = List.of(
+      new TextComponent("\uD809\uDC15"),
+      new TextComponent("\uD809\uDC16"),
+      new TextComponent("\uD809\uDC17"),
+      new TextComponent("\uD809\uDC18"),
+      new TextComponent("\uD809\uDC19"));
 
   private static final int MAX_GRACE_TICKS = 50;
 
@@ -59,6 +68,7 @@ public class RageTimer extends BukkitRunnable {
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
     double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
     sendBorder((Player) mob.getEntity(), percent, 5000);
+    sendRageGui();
   }
 
   @Override
@@ -78,7 +88,6 @@ public class RageTimer extends BukkitRunnable {
     graceTicks--;
     if (graceTicks > 0) {
       sendBorder();
-      pushRageActionBar(mob, maxRage, rageRemaining, 20);
       return;
     } else if (graceTicks == 0) {
       double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
@@ -91,10 +100,8 @@ public class RageTimer extends BukkitRunnable {
     if (rageRemaining <= 0) {
       LogUtil.printDebug("Rage complete, removing");
       StrifePlugin.getInstance().getRageManager().clearRage(mobUuid);
-      pushRageActionBar(mob, maxRage, 0, 60);
-    } else {
-      pushRageActionBar(mob, maxRage, rageRemaining, 20);
     }
+    sendRageGui();
   }
 
   private void sendBorder() {
@@ -114,13 +121,26 @@ public class RageTimer extends BukkitRunnable {
   public void bumpRage(float amount) {
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
     rageRemaining = Math.max(0, Math.min(rageRemaining + amount, maxRage));
+    sendRageGui();
     double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
     sendBorder((Player) mob.getEntity(), percent, 4000);
     heartbeat = 0;
     if (amount >= 0) {
       graceTicks = MAX_GRACE_TICKS;
     }
-    pushRageActionBar(mob, maxRage, rageRemaining, 60);
+  }
+
+  private void sendRageGui() {
+    if (rageRemaining <= 0) {
+      StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(
+          new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    } else if (mob.getEntity().getType() == EntityType.PLAYER) {
+      int rageStage = (int) (4 * rageRemaining / mob.getMaxRage());
+      if (mob.getEntity().getType() == EntityType.PLAYER) {
+        StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(
+            new GUIComponent("rage-bar", rageLevels.get(rageStage), 22, -140, Alignment.CENTER));
+      }
+    }
   }
 
   public float getRage() {
@@ -138,20 +158,5 @@ public class RageTimer extends BukkitRunnable {
         1 + (int) (rageStacks / 20),
         0.6, 0.6, 0.6
     );
-  }
-
-  private static void pushRageActionBar(StrifeMob mob, float maxRage, float rage, int ticks) {
-    if (!(mob.getEntity() instanceof Player)) {
-      return;
-    }
-    int maxBars = 7 + (int) (maxRage / 10);
-    int rageBars = Math.round((rage / maxRage) * maxBars);
-    String message = ChatColor.RED + "RAGE! " + ChatColor.DARK_RED + IntStream.range(0, rageBars).mapToObj(i -> "▌\uF801")
-        .collect(Collectors.joining(""));
-    message += ChatColor.BLACK + IntStream.range(0, maxBars - rageBars).mapToObj(i -> "▌\uF801")
-        .collect(Collectors.joining(""));
-    message += " " + ChatColor.RED + (int) rage;
-
-    AdvancedActionBarUtil.addMessage((Player) mob.getEntity(), "rage-bar", message, ticks, 5);
   }
 }

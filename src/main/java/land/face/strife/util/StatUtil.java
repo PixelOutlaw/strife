@@ -68,9 +68,6 @@ public class StatUtil {
         float amount = stats.getOrDefault(StrifeStat.BARRIER, 0f) *
             (1 + stats.getOrDefault(StrifeStat.BARRIER_MULT, 0f) / 100);
         mob.setMaxBarrier(amount);
-        if (!mob.isInCombat()) {
-          mob.setBarrier(amount);
-        }
         return amount;
       }
       case BLOCK -> {

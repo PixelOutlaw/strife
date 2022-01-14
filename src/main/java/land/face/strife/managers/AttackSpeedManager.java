@@ -44,6 +44,10 @@ public class AttackSpeedManager {
     warnLevel = plugin.getSettings().getInt("config.mechanics.energy.warn-level", 10) + 1;
   }
 
+  public void resetAttack(StrifeMob mob) {
+    setAttackTime(mob.getEntity().getUniqueId(), (long) (1000 * StatUtil.getAttackTime(mob)));
+  }
+
   public void setAttackTime(UUID uuid, long fullAttackMillis) {
     lastAttackMap.get(uuid).setFullAttackMs(fullAttackMillis);
     lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
@@ -83,7 +87,7 @@ public class AttackSpeedManager {
     float energyMult = Math.min(1, attacker.getEnergy() / energyCost);
 
     if (resetTime && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < warnLevel) {
-      TitleUtils.sendTitle((Player) attacker.getEntity(), "", ChatColor.RED + "Low Energy!", 10, 0, 8);
+      TitleUtils.sendTitle((Player) attacker.getEntity(), "  ", ChatColor.RED + "Low Energy!", 10, 0, 8);
       MessageUtils.sendMessage(attacker.getEntity(),
           "&e[!] Your energy is low! Try &fattacking slower &eor &fdrinking an energy potion&e! Your energy is shown where your hunger bar normally would be!");
     }

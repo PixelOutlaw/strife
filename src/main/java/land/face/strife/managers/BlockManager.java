@@ -18,7 +18,8 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.AdvancedActionBarUtil;
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.util.Collection;
@@ -39,7 +40,7 @@ import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.StatUtil;
-import org.apache.commons.lang3.StringUtils;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -111,7 +112,7 @@ public class BlockManager {
         continue;
       }
       if (System.currentTimeMillis() > blockData.getRuneFalloff()) {
-        blockData.setRunes(0);
+        setEarthRunes(mob, 0);
       }
       if (blockData.getRunes() == 0 && blockData.getRuneHolograms().size() == 0) {
         continue;
@@ -223,7 +224,7 @@ public class BlockManager {
 
     double blockChance = Math.min(mob.getBlock() / 100, MAX_BLOCK_CHANCE);
     if (physicallyBlocked) {
-      blockChance *= 2;
+      blockChance *= 2.5;
     }
 
     if (random.nextDouble() > blockChance) {
@@ -232,7 +233,7 @@ public class BlockManager {
 
     float fatigue = projectile ? PROJECTILE_FATIGUE : MELEE_FATIGUE;
     if (physicallyBlocked) {
-      fatigue /= 2;
+      fatigue *= 0.8;
     }
     fatigue *= attackPower;
     if (guardBreak) {
@@ -240,14 +241,13 @@ public class BlockManager {
     }
     mob.setBlock(mob.getBlock() - fatigue);
 
-    if (mob.getBlock() <= 0) {
+    if (mob.getBlock() <= 0 && guardBreak) {
       mob.setBlock(-mob.getMaxBlock() * PERCENT_MAX_BLOCK_MIN);
-      mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(),
-          mob.getMaxBlock() > 35 ? Sound.ITEM_SHIELD_BREAK : Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
-      return !guardBreak;
+      mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BREAK, 1f, 1f);
+      return false;
     } else {
-      mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(),
-          Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
+      mob.setBlock(Math.max(0.1f, mob.getBlock()));
+      mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
       return true;
     }
   }
@@ -256,12 +256,19 @@ public class BlockManager {
     if (!(mob.getEntity() instanceof Player)) {
       return;
     }
-    String message = ChatColor.GREEN + "Runes: " +
-        ChatColor.DARK_GREEN + StringUtils.repeat("₪", runes);
-    message += ChatColor.BLACK + StringUtils.repeat("₪", maxRunes - runes);
-
-    AdvancedActionBarUtil.addMessage((Player) mob.getEntity(),
-        "rune-bar", message, runes == 0 ? 200 : 12000, 6);
+    if (runes == 0) {
+      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
+          new GUIComponent("rune-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
+      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
+          new GUIComponent("rune-amount", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
+      return;
+    }
+    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
+        new GUIComponent("rune-display", GuiManager.EARTH_RUNE, 17, 125, Alignment.RIGHT));
+    String string = StrifePlugin.getInstance().getGuiManager().convertToHpDisplay(runes);
+    TextComponent aaa = new TextComponent(ChatColor.GREEN + string + ChatColor.RESET);
+    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
+        new GUIComponent("rune-amount", aaa, string.length() * 8, 128, Alignment.RIGHT));
   }
 
   public static <T> T getRandomFromCollection(Collection<T> coll) {

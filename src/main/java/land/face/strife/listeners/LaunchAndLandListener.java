@@ -7,10 +7,12 @@ import com.tealcube.minecraft.bukkit.facecore.event.LaunchEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.AgilityLocationContainer;
+import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Riptide;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -43,7 +45,7 @@ public class LaunchAndLandListener implements Listener {
         && event.getPlayer().getPotionEffect(PotionEffectType.JUMP).getAmplifier() < 0) {
       return;
     }
-    int lastSneak = MoveUtil.getLastSneak(event.getPlayer().getUniqueId());
+    int lastSneak = MoveUtil.getLastSneak(event.getPlayer());
     if (lastSneak == -1 || lastSneak > 200) {
       return;
     }
@@ -52,6 +54,10 @@ public class LaunchAndLandListener implements Listener {
       return;
     }
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
+      if (mob.getEnergy() < 12) {
+        plugin.getGuiManager().postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 49, 10));
+        event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
+      }
       StatUtil.changeEnergy(mob, -12);
     }
     Vector bonusVelocity = event.getPlayer().getLocation().getDirection();

@@ -136,6 +136,7 @@ public class ExperienceListener implements Listener {
       sendMessage(p, "&cAlas! You lost &f" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP &cfrom dying!");
       p.setExp(Math.max(p.getExp() - 0.025f, 0.00001f));
     }
+    plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
     plugin.getSoulManager().setLostExp(p, lostXP);
   }
 

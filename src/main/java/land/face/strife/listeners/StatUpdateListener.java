@@ -18,22 +18,18 @@
  */
 package land.face.strife.listeners;
 
+import land.face.dinvy.events.EquipmentUpdateEvent;
 import land.face.strife.StrifePlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.PlayerInventory;
 
 public record StatUpdateListener(StrifePlugin plugin) implements Listener {
 
@@ -46,31 +42,19 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onInventoryClose(InventoryCloseEvent event) {
-    if (!((OfflinePlayer) event.getPlayer()).isOnline()) {
-      return;
-    }
-    InventoryView inventoryView = event.getView();
-    if (!(inventoryView.getTopInventory() instanceof PlayerInventory) &&
-        !(inventoryView.getBottomInventory() instanceof PlayerInventory)) {
-      return;
-    }
-    PlayerInventory playerInventory;
-    if (inventoryView.getTopInventory() instanceof PlayerInventory) {
-      playerInventory = (PlayerInventory) inventoryView.getTopInventory();
-    } else {
-      playerInventory = (PlayerInventory) inventoryView.getBottomInventory();
-    }
-    HumanEntity humanEntity = playerInventory.getHolder();
-    if (!(humanEntity instanceof Player player)) {
-      return;
-    }
-    if (player.isDead() || player.getHealth() <= 0D) {
-      return;
-    }
-    plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager()
-        .getStatMob(event.getPlayer()));
-    plugin.getStatUpdateManager().updateVanillaAttributes(player);
+  public void onPlayerJoin(final PlayerJoinEvent event) {
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      plugin.getStrifeMobManager().updateEquipmentStats(
+          plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+    }, 10L);
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onEquipmentUpdate(EquipmentUpdateEvent event) {
+    plugin.getStrifeMobManager().updateEquipmentStats(
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -81,7 +65,6 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
       plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
     }
   }
-
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onGamemodeChange(PlayerGameModeChangeEvent event) {

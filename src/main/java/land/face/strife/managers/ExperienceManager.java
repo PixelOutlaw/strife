@@ -56,12 +56,13 @@ public class ExperienceManager implements StrifeExperienceManager {
 
     if (!exact) {
       double statsMult = pStats.getStat(StrifeStat.XP_GAIN) / 100;
-      if (pStats.getChampion().getSaveData().isDisplayExp()) {
-        String xp = FORMAT.format(amount * (1 + statsMult));
-        MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));
-      }
       pStats.getChampion().getDetailsContainer().addExp((float) amount);
       amount *= 1 + statsMult;
+    }
+
+    if (exact || pStats.getChampion().getSaveData().isDisplayExp()) {
+      String xp = FORMAT.format(amount);
+      MessageUtils.sendMessage(player, EXP_MESSAGE.replace("{0}", xp));
     }
 
     double faceExpToLevel = maxFaceExp * (1 - currentExpPercent);
@@ -87,6 +88,7 @@ public class ExperienceManager implements StrifeExperienceManager {
     double newExpPercent = currentExpPercent + amount / maxFaceExp;
 
     player.setExp((float) newExpPercent);
+    plugin.getGuiManager().updateLevelDisplay(player);
   }
 
   public Integer getMaxFaceExp(int level) {
