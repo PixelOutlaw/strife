@@ -37,7 +37,9 @@ public class CorruptionUtil {
   }
 
   public static void tickCorruption(StrifeMob mob) {
-    mob.setCorruption(mob.getCorruption() * percentCorruptPerTick - flatCorruptPerTick);
+    float newCorruption = mob.getCorruption() * percentCorruptPerTick;
+    newCorruption -= flatCorruptPerTick;
+    mob.setCorruption(newCorruption);
     spawnCorruptionParticles(mob.getEntity(), mob.getCorruption());
   }
 

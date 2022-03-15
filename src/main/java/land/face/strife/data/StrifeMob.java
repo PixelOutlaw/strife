@@ -37,6 +37,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
 public class StrifeMob {
@@ -581,6 +582,10 @@ public class StrifeMob {
 
   public void setMaster(StrifeMob master, int lifespan) {
     minionTask = new MinionTask(this, master, lifespan);
+    if (getEntity() instanceof Mob) {
+      getFactions().clear();
+      ((Mob) getEntity()).setTarget(null);
+    }
   }
 
   public void addHealingOverTime(float amount, int ticks) {

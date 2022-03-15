@@ -128,6 +128,7 @@ public class LoreAbilityManager {
     ON_KILL,
     WHEN_HIT,
     ON_CRIT,
+    ON_DEATH,
     ON_BLOCK,
     ON_EVADE,
     ON_SNEAK_ATTACK,

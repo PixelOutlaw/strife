@@ -13,16 +13,14 @@ public class GoalPatcher {
   public static void addGoals(Mob mob, UniqueEntity uniqueEntity) {
     for (String goal : uniqueEntity.getAddGoals()) {
       switch (mob.getType()) {
-        case BAT -> addGoal(mob, goal, uniqueEntity.getAttackSound(), 1.75f,
-            uniqueEntity.getFollowRange(), uniqueEntity.isAggressiveAi(), true);
+        case BAT -> addGoal(mob, goal, 1.75f, uniqueEntity.getFollowRange(), uniqueEntity.isAggressiveAi(), true);
         case TROPICAL_FISH, PUFFERFISH, COD, SALMON -> FishPatcher.patchFish((Fish) mob);
-        default -> addGoal(mob, goal, uniqueEntity.getAttackSound(), 2.25f,
-            uniqueEntity.getFollowRange(), uniqueEntity.isAggressiveAi(), false);
+        default -> addGoal(mob, goal, 2.25f, uniqueEntity.getFollowRange(), uniqueEntity.isAggressiveAi(), false);
       }
     }
   }
 
-  public static void addGoal(Mob mob, String id, Sound sound, float attackRange, float followRange,
+  public static void addGoal(Mob mob, String id, float attackRange, float followRange,
       boolean aggressive, boolean flying) {
     switch (id) {
       case "strife:return_home" -> {
@@ -32,7 +30,7 @@ public class GoalPatcher {
         }
       }
       case "strife:attack_target" -> {
-        AttackTargetGoal goal = new AttackTargetGoal(mob, sound, attackRange);
+        AttackTargetGoal goal = new AttackTargetGoal(mob, attackRange);
         if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
           Bukkit.getMobGoals().addGoal(mob, 1, goal);
         }

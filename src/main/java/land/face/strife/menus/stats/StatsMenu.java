@@ -24,8 +24,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.menus.BlankIcon;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.menus.ItemMenu;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -45,7 +49,7 @@ public class StatsMenu extends ItemMenu {
     setItem(18, new StatsDeluxeEquipmentItem(this, DeluxeSlot.LEGS, "&eNo... pants?"));
     setItem(27, new StatsDeluxeEquipmentItem(this, DeluxeSlot.BOOTS, "&eNo Boots"));
     setItem(1, new StatsEquipmentItem(this, EquipmentSlot.HAND, "&eNo Weapon"));
-    setItem(10, new StatsEquipmentItem(this, EquipmentSlot.OFF_HAND, "&eNo Offhand Item"));
+    setItem(10, new StatsDeluxeEquipmentItem(this, DeluxeSlot.OFF_HAND, "&eNo offhand Item"));
 
     setItem(12, new StatsOffenseMenuItem(this));
     setItem(14, new StatsDefenseMenuItem(this));
@@ -63,6 +67,24 @@ public class StatsMenu extends ItemMenu {
 
   public Map<Player, Player> getInspectionTargetMap() {
     return inspectionTargetMap;
+  }
+
+  public static String printStatWithoutPlus(String name, ChatColor color,
+      StrifeMob mob, StrifeStat stat, DecimalFormat format) {
+    float value = StatUtil.getStat(mob, stat);
+    if (value < -0.4) {
+      return ChatColor.RED + format.format(value);
+    }
+    return ChatColor.WHITE + format.format(value);
+  }
+
+  public static String printStatWithPlus(String name, ChatColor color,
+      StrifeMob mob, StrifeStat stat, DecimalFormat format) {
+    float value = StatUtil.getStat(mob, stat);
+    if (value < -0.4) {
+      return ChatColor.RED + format.format(value);
+    }
+    return ChatColor.WHITE + format.format(value);
   }
 }
 

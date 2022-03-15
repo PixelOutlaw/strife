@@ -26,8 +26,11 @@ import land.face.strife.data.LastAttackTracker;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 public class AttackSpeedManager {
@@ -44,12 +47,32 @@ public class AttackSpeedManager {
     warnLevel = plugin.getSettings().getInt("config.mechanics.energy.warn-level", 10) + 1;
   }
 
-  public void resetAttack(StrifeMob mob) {
-    setAttackTime(mob.getEntity().getUniqueId(), (long) (1000 * StatUtil.getAttackTime(mob)));
+  public void resetAttack(StrifeMob mob, float ratio, boolean override) {
+    if (mob.getEntity().getType() != EntityType.PLAYER) {
+      return;
+    }
+    float attackSeconds = StatUtil.getAttackTime(mob) * ratio;
+    setAttackTime(mob.getEntity().getUniqueId(), (long) (1000 * attackSeconds), override);
+    int ticks = (int) (attackSeconds * 14);
+    if (((Player) mob.getEntity()).getCooldown(Material.DIAMOND_CHESTPLATE) < ticks) {
+      ((Player) mob.getEntity()).setCooldown(Material.DIAMOND_CHESTPLATE, ticks);
+    }
   }
 
-  public void setAttackTime(UUID uuid, long fullAttackMillis) {
-    lastAttackMap.get(uuid).setFullAttackMs(fullAttackMillis);
+  public void setAttackTime(UUID uuid, long fullAttackMillis, boolean override) {
+    if (!lastAttackMap.containsKey(uuid)) {
+      lastAttackMap.put(uuid, new LastAttackTracker(System.currentTimeMillis(), fullAttackMillis));
+      return;
+    }
+    long lastAttackStamp = lastAttackMap.get(uuid).getLastAttackStamp();
+    long lastAttackTime = lastAttackMap.get(uuid).getFullAttackMs();
+    boolean attackRefreshed = System.currentTimeMillis() > lastAttackStamp + lastAttackTime;
+    if (override || attackRefreshed) {
+      lastAttackMap.get(uuid).setFullAttackMs(fullAttackMillis);
+    } else {
+      long newAttackTime = Math.max(fullAttackMillis, (lastAttackStamp + lastAttackTime) - System.currentTimeMillis());
+      lastAttackMap.get(uuid).setFullAttackMs(newAttackTime);
+    }
     lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
   }
 
@@ -59,11 +82,7 @@ public class AttackSpeedManager {
     return Math.min(1, (float) millisPassed / fullAttackMillis);
   }
 
-  public float getAttackMultiplier(StrifeMob attacker) {
-    return getAttackMultiplier(attacker, true);
-  }
-
-  public float getAttackMultiplier(StrifeMob attacker, boolean resetTime) {
+  public float getAttackMultiplier(StrifeMob attacker, float resetRatio) {
     if (!(attacker.getEntity() instanceof Player)
         || ((Player) attacker.getEntity()).getGameMode() == GameMode.CREATIVE) {
       return 1f;
@@ -73,8 +92,8 @@ public class AttackSpeedManager {
     }
     long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
     long fullAttackMillis = getFullAttackMillis(attacker.getEntity().getUniqueId());
-    if (resetTime) {
-      setAttackTime(attacker.getEntity().getUniqueId(), (long) (1000 * StatUtil.getAttackTime(attacker)));
+    if (resetRatio != -1) {
+      resetAttack(attacker, resetRatio, false);
     }
 
     float attackMult = Math.min(1, (float) millisPassed / fullAttackMillis);
@@ -83,10 +102,10 @@ public class AttackSpeedManager {
       return attackMult;
     }
 
-    float energyCost = 0.35f * attackCost + 0.65f * attackMult * attackCost;
+    float energyCost = (0.4f + 0.6f * attackMult) * attackCost;
     float energyMult = Math.min(1, attacker.getEnergy() / energyCost);
 
-    if (resetTime && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < warnLevel) {
+    if (resetRatio != -1 && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < warnLevel) {
       TitleUtils.sendTitle((Player) attacker.getEntity(), "  ", ChatColor.RED + "Low Energy!", 10, 0, 8);
       MessageUtils.sendMessage(attacker.getEntity(),
           "&e[!] Your energy is low! Try &fattacking slower &eor &fdrinking an energy potion&e! Your energy is shown where your hunger bar normally would be!");

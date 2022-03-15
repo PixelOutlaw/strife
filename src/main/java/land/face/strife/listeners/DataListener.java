@@ -16,25 +16,19 @@
  */
 package land.face.strife.listeners;
 
-import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import land.face.dinvy.events.EquipmentUpdateEvent;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
-import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.events.AbilityCastEvent;
+import land.face.strife.events.AbilityChangeEvent;
 import land.face.strife.events.AbilityCooldownEvent;
+import land.face.strife.events.AbilityGainChargeEvent;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
-import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.UniqueEntityManager;
-import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
@@ -44,7 +38,7 @@ import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -55,7 +49,6 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityCombustByBlockEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityPickupItemEvent;
@@ -67,10 +60,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
@@ -78,12 +68,24 @@ import org.bukkit.potion.PotionEffectType;
 
 public record DataListener(StrifePlugin plugin) implements Listener {
 
-  private final static String UNUSED_MESSAGE_1 =
-      "&6&lLevelup! You have &f&l{0} &6&lunused Levelpoints!";
-  private final static String UNUSED_MESSAGE_2 =
-      "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
-  private final static String UNUSED_PATH =
-      "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
+  @EventHandler
+  public void onAbilityChange(final AbilityChangeEvent event) {
+    plugin.getAbilityIconManager().updateChargesGui(event.getChampion().getPlayer());
+  }
+
+  @EventHandler
+  public void onCast(AbilityCastEvent event) {
+    if (event.getCaster().getEntity().getType() == EntityType.PLAYER) {
+      plugin.getAbilityIconManager().updateChargesGui((Player) event.getCaster().getEntity());
+    }
+  }
+
+  @EventHandler
+  public void onRecharge(AbilityGainChargeEvent event) {
+    if (event.getHolder().getEntity().getType() == EntityType.PLAYER) {
+      plugin.getAbilityIconManager().updateChargesGui((Player) event.getHolder().getEntity());
+    }
+  }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onCombatChange(CombatChangeEvent event) {
@@ -171,95 +173,11 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     event.setCancelled(true);
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onEntityAttack(final EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
-      return;
-    }
-    LivingEntity attacker = DamageUtil.getAttacker(event.getDamager());
-    if (attacker instanceof Player) {
-      plugin.getBossBarManager().pushBar((Player) attacker,
-          plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()));
-    }
-  }
-
   @EventHandler
   public void onInvyLoad(final InventoryLoadComplete event) {
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
       plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     }
-  }
-
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onPlayerJoin(final PlayerJoinEvent event) {
-
-    plugin.getGuiManager().setupGui(event.getPlayer());
-
-    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-    Champion champion = playerMob.getChampion();
-    plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
-    plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
-    plugin.getChampionManager().verifyStatValues(champion);
-
-    if (champion.getUnusedStatPoints() > 0) {
-      notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
-    }
-    if (event.getPlayer().getLevel() / 10 > champion.getSaveData().getPathMap().size()) {
-      notifyUnusedPaths(event.getPlayer());
-    }
-
-    plugin.getCounterManager().clearCounters(event.getPlayer());
-    ensureAbilitiesDontInstantCast(event.getPlayer());
-
-    plugin.getChampionManager().update(event.getPlayer());
-
-    event.getPlayer().setHealthScaled(true);
-    HealthDisplayType displayType = champion.getSaveData().getHealthDisplayType();
-    float maxHealth = Math.max(StatUtil.getStat(playerMob, StrifeStat.HEALTH), 1);
-    event.getPlayer().setInvulnerable(true);
-    event.getPlayer().setHealthScale(StatUpdateManager.getHealthScale(displayType, maxHealth));
-    event.getPlayer().setInvulnerable(false);
-
-    playerMob.updateBarrierScale();
-    float foodRatio = event.getPlayer().getFoodLevel();
-    foodRatio *= 0.05;
-    playerMob.setEnergy(playerMob.getMaxEnergy() * foodRatio);
-
-    event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-    event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
-    plugin.getAttackSpeedManager().getAttackMultiplier(playerMob, true);
-
-    if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
-      Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 1L);
-      Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 10L);
-    }
-
-    plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
-    plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerQuit(final PlayerQuitEvent event) {
-    doPlayerLeave(event.getPlayer());
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerKick(final PlayerKickEvent event) {
-    doPlayerLeave(event.getPlayer());
-  }
-
-  private void doPlayerLeave(Player player) {
-    plugin.getAbilityManager().unToggleAll(player);
-    plugin.getBoostManager().removeBooster(player.getUniqueId());
-    plugin.getAbilityManager().savePlayerCooldowns(player);
-    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
-    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
-    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
-    plugin.getCounterManager().clearCounters(player);
-    plugin.getBossBarManager().disableBars(player);
-    plugin.getStrifeMobManager().saveEnergy(player);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -284,8 +202,11 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     mob.getEntity().setHealth(mob.getMaxLife());
 
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
-    Bukkit.getScheduler().runTaskLater(plugin, () ->
-        event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100), 2L);
+    event.getPlayer().setCooldown(Material.GOLDEN_CHESTPLATE, 100);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE, 100);
+      event.getPlayer().setCooldown(Material.GOLDEN_CHESTPLATE, 100);
+    }, 2L);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -296,7 +217,8 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     final Player player = event.getPlayer();
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
     plugin.getStrifeMobManager().getStatMob(entity);
-    plugin.getBossBarManager().pushBar(player, plugin.getStrifeMobManager().getStatMob(entity));
+    plugin.getBossBarManager().pushBar(player,
+        plugin.getStrifeMobManager().getStatMob(entity), false);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -316,14 +238,10 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       ensureAbilitiesDontInstantCast(event.getPlayer());
       return;
     }
+    event.getPlayer().setCooldown(Material.GOLDEN_CHESTPLATE,
+        Math.max(5, event.getPlayer().getCooldown(Material.GOLDEN_CHESTPLATE)));
     event.getPlayer().setCooldown(Material.DIAMOND_CHESTPLATE,
         Math.max(5, event.getPlayer().getCooldown(Material.DIAMOND_CHESTPLATE)));
-  }
-
-  @EventHandler
-  public void onPlayerWorldChance(EquipmentUpdateEvent event) {
-    plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
-    plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer(), event.getData());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -389,18 +307,5 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (player.getInventory().getHeldItemSlot() < 3) {
       player.getInventory().setHeldItemSlot(3);
     }
-  }
-
-  private void notifyUnusedPoints(final Player player, final int unused) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
-      MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
-    }, 20L * 5);
-  }
-
-  private void notifyUnusedPaths(final Player player) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      MessageUtils.sendMessage(player, UNUSED_PATH);
-    }, 20L * 5 + 1);
   }
 }

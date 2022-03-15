@@ -59,8 +59,8 @@ public class MobModManager {
       ChunkUtil.setDespawnOnUnload(mob.getEntity());
       mob.getMods().add(mod.getId());
     }
-    mob.getEntity()
-        .setCustomName(getPrefixColor(mods.size()) + prefix + ChatColor.WHITE + mob.getEntity().getCustomName());
+    mob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix +
+        ChatColor.WHITE + mob.getEntity().getCustomName());
   }
 
   public void applyMobMod(StrifeMob strifeMob, MobMod mobMod) {

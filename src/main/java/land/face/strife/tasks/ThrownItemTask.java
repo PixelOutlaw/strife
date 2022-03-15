@@ -48,10 +48,10 @@ public class ThrownItemTask extends BukkitRunnable {
     loc.add(0, -0.9, 0);
     loc.setDirection(projectile.getVelocity());
     if (spin) {
-      stand.setRightArmPose(stand.getRightArmPose().add(0.82, 0.0, 0.0));
+      stand.setRightArmPose(stand.getRightArmPose().add(0.4, 0.0, 0.0));
     }
-    loc.add(projectile.getVelocity());
     stand.teleport(loc);
+    stand.setVelocity(projectile.getVelocity());
   }
 }
 

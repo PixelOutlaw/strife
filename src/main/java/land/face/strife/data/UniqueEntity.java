@@ -11,7 +11,6 @@ import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.DyeColor;
-import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.EquipmentSlot;
@@ -35,6 +34,8 @@ public class UniqueEntity {
   private boolean armsRaised;
   private boolean hasAI;
   private boolean gravity;
+  @Getter @Setter
+  private boolean collidable;
   @Getter @Setter
   private boolean guildMob;
   private Profession profession;
@@ -65,8 +66,6 @@ public class UniqueEntity {
   private boolean customAi;
   @Getter @Setter
   private boolean aggressiveAi;
-  @Getter @Setter
-  private Sound attackSound;
   @Getter @Setter
   private List<String> removeGoals;
   @Getter @Setter

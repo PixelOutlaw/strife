@@ -23,15 +23,12 @@ public class AttackTargetGoal implements Goal<Mob> {
   private final Mob mob;
   private final float attackRange;
   private long attackTimestamp = 0;
-  private final Sound attackSound;
-  private final Random random = new Random(System.currentTimeMillis());
 
-  public AttackTargetGoal(Mob mob, Sound attackSound, float attackRange) {
+  public AttackTargetGoal(Mob mob, float attackRange) {
     this.mob = mob;
     this.mob.getPathfinder().setCanPassDoors(true);
     this.mob.getPathfinder().setCanOpenDoors(true);
     this.mob.getPathfinder().setCanFloat(true);
-    this.attackSound = attackSound;
     this.attackRange = (float) Math.pow(attackRange, 2f);
   }
 
@@ -51,9 +48,8 @@ public class AttackTargetGoal implements Goal<Mob> {
   }
 
   private void attack(LivingEntity entity) {
-    attackTimestamp = System.currentTimeMillis() + 750;
+    attackTimestamp = System.currentTimeMillis() + 900;
     mob.lookAt(entity);
-    mob.getWorld().playSound(mob.getLocation(), attackSound, 1f, 0.75f + random.nextFloat() * 0.5f);
     mob.swingMainHand();
     mob.swingOffHand();
     double baseDamage = 8;

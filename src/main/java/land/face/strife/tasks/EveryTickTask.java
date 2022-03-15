@@ -18,21 +18,23 @@
  */
 package land.face.strife.tasks;
 
+import static land.face.strife.listeners.CurrencyChangeListener.divideAndConquerLength;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.util.JumpUtil;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.nunnerycode.mint.MintPlugin;
@@ -40,10 +42,14 @@ import org.nunnerycode.mint.MintPlugin;
 public class EveryTickTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
+  public static final Map<Player, Integer> recentMoneyMap = new WeakHashMap<>();
+  public static final Map<Player, Integer> recentGemMap = new WeakHashMap<>();
 
-  private static final String barrierChar1 = "⑴\uF801";
-  private static final String barrierChar2 = "⑵\uF801";
-  private static final String barrierChar3 = "⑶\uF801";
+  public static final List<TextComponent> moneyBackground = List.of(
+      new TextComponent("錢"),
+      new TextComponent("₿"),
+      new TextComponent("௹")
+  );
 
   private final List<TextComponent> attackIndication = List.of(
       new TextComponent("码"),
@@ -81,10 +87,14 @@ public class EveryTickTask extends BukkitRunnable {
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.setFoodLevel(19);
       if (p.getGameMode() == GameMode.ADVENTURE) {
+        boolean dead = "Graveyard".equals(p.getWorld().getName());
         GUI gui = plugin.getGuiManager().getGui(p);
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
 
         float life = (float) p.getHealth();
+        if (dead) {
+          life = 0;
+        }
         float maxLife = (float) p.getMaxHealth();
         float missingPercent = 1 - life / maxLife;
         int totalMissingSegments = (int) (178 * missingPercent);
@@ -98,32 +108,40 @@ public class EveryTickTask extends BukkitRunnable {
             missingEnergySegments, 88, Alignment.RIGHT));
 
         float barrier = mob.getBarrier();
+        if (dead) {
+          barrier = 0;
+        }
         float percentBarrier = barrier / mob.getMaxBarrier();
         int barrierSegments = (int) (178 * percentBarrier);
         double barrierRatio = mob.getMaxBarrier() / maxLife;
-        String barrierChar =
-            barrierRatio < 0.5 ? barrierChar1 : barrierRatio < 1.0 ? barrierChar2 : barrierChar3;
-        String barrierString = StringUtils.repeat(barrierChar, barrierSegments);
-        gui.update(new GUIComponent("barrier-bar",
-            new TextComponent(barrierString), barrierSegments, -90, Alignment.LEFT));
+        TextComponent barrierText = barrierRatio < 0.5 ?
+            GuiManager.BARRIER_BAR_1.get(barrierSegments) : barrierRatio < 1.0 ?
+            GuiManager.BARRIER_BAR_2.get(barrierSegments) : GuiManager.BARRIER_BAR_3.get(barrierSegments);
+        gui.update(new GUIComponent("barrier-bar", barrierText, barrierSegments, -90, Alignment.LEFT));
 
-        String hpString = plugin.getGuiManager().convertToHpDisplay((int) (p.getHealth() + barrier));
+        String hpString = plugin.getGuiManager().convertToHpDisplay((int) (life + barrier));
         String energyString = plugin.getGuiManager().convertToEnergyDisplayFont((int) mob.getEnergy());
 
-        int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(p.getUniqueId());
-        String moneyString = plugin.getGuiManager().convertToMoneyFont(money);
-        int gems = plugin.getPlayerPointsPlugin().getAPI().look(p.getUniqueId());
-        String gemString = plugin.getGuiManager().convertToGemFont(gems);
-        gui.update(new GUIComponent("life-display",
-            new TextComponent(hpString), hpString.length() * 8, 1, Alignment.CENTER));
-        gui.update(new GUIComponent("energy-display",
-            new TextComponent(energyString), energyString.length() * 8, 1, Alignment.CENTER));
-        gui.update(new GUIComponent("money-display",
-            new TextComponent(moneyString), divideAndConquerLength(money) * 4, 175,
-            Alignment.RIGHT));
-        gui.update(new GUIComponent("gem-display",
-            new TextComponent(gemString), divideAndConquerLength(gems) * 4, 227,
-            Alignment.RIGHT));
+        if (recentGemMap.getOrDefault(p, 0) > 0) {
+          recentGemMap.put(p, recentGemMap.get(p) - 1);
+        } else if (recentMoneyMap.getOrDefault(p, 0) > 0) {
+          recentMoneyMap.put(p, recentMoneyMap.get(p) - 1);
+        } else {
+          if (recentMoneyMap.containsKey(p) || recentGemMap.containsKey(p)) {
+            recentMoneyMap.remove(p);
+            recentGemMap.remove(p);
+            gui.update(new GUIComponent("bits-base", moneyBackground.get(0),
+                72, 170, Alignment.CENTER));
+            int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(p.getUniqueId());
+            String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.YELLOW);
+            plugin.getGuiManager().updateComponent(p, new GUIComponent("money-display",
+                new TextComponent(moneyString), divideAndConquerLength(money) * 5, 193, Alignment.RIGHT));
+          }
+        }
+        gui.update(new GUIComponent("life-display", new TextComponent(hpString),
+            hpString.length() * 8, 0, Alignment.CENTER));
+        gui.update(new GUIComponent("energy-display", new TextComponent(energyString),
+            energyString.length() * 8, 0, Alignment.CENTER));
 
         int attackProgress = (int) (10 * plugin.getAttackSpeedManager().getAttackRecharge(mob));
         if (attackProgress != 10) {
@@ -131,6 +149,8 @@ public class EveryTickTask extends BukkitRunnable {
         } else {
           gui.update(new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
         }
+
+        plugin.getGuiManager().updateAir(gui, p);
 
         double maxBlock = mob.getMaxBlock();
         if (maxBlock > 20) {
@@ -156,49 +176,6 @@ public class EveryTickTask extends BukkitRunnable {
         }
 
         plugin.getGuiManager().tickNotices(p);
-      }
-    }
-  }
-
-  // This ugly function is surprisingly the most efficient way
-  // to determine the length of an integer...
-  // https://www.baeldung.com/java-number-of-digits-in-int
-  private int divideAndConquerLength(int number) {
-    if (number < 100000) {
-      if (number < 100) {
-        if (number < 10) {
-          return 1;
-        } else {
-          return 2;
-        }
-      } else {
-        if (number < 1000) {
-          return 3;
-        } else {
-          if (number < 10000) {
-            return 4;
-          } else {
-            return 5;
-          }
-        }
-      }
-    } else {
-      if (number < 10000000) {
-        if (number < 1000000) {
-          return 6;
-        } else {
-          return 7;
-        }
-      } else {
-        if (number < 100000000) {
-          return 8;
-        } else {
-          if (number < 1000000000) {
-            return 9;
-          } else {
-            return 10;
-          }
-        }
       }
     }
   }

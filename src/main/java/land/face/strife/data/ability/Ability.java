@@ -6,14 +6,18 @@ import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.managers.AbilityManager.AbilityType;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 public class Ability {
 
   private final String id;
   private final String name;
   private final TargetType targetType;
+  @Getter
+  private final AbilityType castType;
   private final boolean raycastsTargetEntities;
   private final boolean requireTarget;
   private final boolean cancelStealth;
@@ -36,10 +40,10 @@ public class Ability {
   private final boolean friendly;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
-      TargetType targetType, float range, float cost, int cooldown, int maxCharges, int globalCooldownTicks,
-      boolean showMsgs, boolean requireTarget, boolean raycastsTargetEntities,
-      Set<Condition> conditions, boolean passiveStatsOnCooldown, boolean friendly,
-      AbilityIconData abilityIconData, boolean cancelStealth) {
+      AbilityType castType, TargetType targetType, float range, float cost, int cooldown,
+      int maxCharges, int globalCooldownTicks, boolean showMsgs, boolean requireTarget,
+      boolean raycastsTargetEntities, Set<Condition> conditions, boolean passiveStatsOnCooldown,
+      boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -48,6 +52,7 @@ public class Ability {
     this.effects = effects;
     this.toggleOffEffects = toggleOffEffects;
     this.targetType = targetType;
+    this.castType = castType;
     this.requireTarget = requireTarget;
     this.raycastsTargetEntities = raycastsTargetEntities;
     this.range = range;
@@ -60,6 +65,7 @@ public class Ability {
     this.cancelStealth = cancelStealth;
   }
 
+  @NotNull
   public String getId() {
     return id;
   }

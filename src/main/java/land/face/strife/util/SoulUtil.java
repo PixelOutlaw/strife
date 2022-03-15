@@ -11,9 +11,10 @@ public class SoulUtil {
 
   public static Hologram createSoul(Player player, String text, Location location) {
     Hologram holo = DHAPI.createHologram(UUID.randomUUID().toString(),
-        location.clone().add(0, 0.75, 0),
-        List.of(text, "#ICON: PLAYER_HEAD (" + player.getName()+ ")"));
+        location.clone(), false, List.of(""));
     holo.hideAll();
+    holo.addPage();
+    DHAPI.setHologramLines(holo, 1, List.of(text, "#ICON: PLAYER_HEAD (" + player.getName()+ ")"));
     return holo;
   }
 }

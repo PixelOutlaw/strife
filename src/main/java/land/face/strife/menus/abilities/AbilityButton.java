@@ -27,11 +27,15 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.events.AbilityCastEvent;
+import land.face.strife.events.AbilityChangeEvent;
 import land.face.strife.managers.AbilityIconManager;
+import land.face.strife.managers.AbilityManager.AbilityType;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.ItemUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -43,7 +47,7 @@ public class AbilityButton extends MenuItem {
   private final Ability ability;
 
   AbilityButton(StrifePlugin plugin, Ability ability) {
-    super("", new ItemStack(Material.DIAMOND_CHESTPLATE));
+    super("", new ItemStack(ability.getCastType().getMaterial()));
     this.plugin = plugin;
     this.ability = ability;
   }
@@ -97,6 +101,9 @@ public class AbilityButton extends MenuItem {
     }
     champion.getSaveData().setAbility(slot, ability);
     plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
+    AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, ability);
+    Bukkit.getPluginManager().callEvent(abilityChangeEvent);
+    plugin.getAbilityIconManager().updateChargesGui(event.getPlayer());
     event.setWillUpdate(true);
   }
 }

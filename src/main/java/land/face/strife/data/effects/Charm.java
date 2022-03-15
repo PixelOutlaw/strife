@@ -36,14 +36,14 @@ public class Charm extends Effect {
       ((Wolf) target.getEntity()).setAngry(true);
     }
 
-    target.getFactions().clear();
-
     float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
     caster.addMinion(target, (int) lifespan);
-    ((Mob) target.getEntity()).setTarget(null);
 
-    target.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, caster.getStat(StrifeStat.MINION_DAMAGE) / 1000);
-    double maxHealth = target.getEntity().getMaxHealth() * (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 1000));
+    float damageRatio = 1 + caster.getStat(StrifeStat.MINION_DAMAGE) / 1000;
+    float lifeRatio = 1 + caster.getStat(StrifeStat.MINION_LIFE) / 1000;
+
+    target.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, damageRatio);
+    double maxHealth = target.getEntity().getMaxHealth() * lifeRatio;
     target.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
     target.getEntity().setHealth(maxHealth);
 

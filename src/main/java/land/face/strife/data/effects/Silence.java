@@ -11,8 +11,8 @@ public class Silence extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     if (target.getEntity() instanceof Player) {
-      ((Player) target.getEntity()).setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(duration,
-          ((Player) target.getEntity()).getCooldown(Material.DIAMOND_CHESTPLATE)));
+      ((Player) target.getEntity()).setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(duration,
+          ((Player) target.getEntity()).getCooldown(Material.GOLDEN_CHESTPLATE)));
     }
   }
 

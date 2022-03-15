@@ -20,6 +20,7 @@ package land.face.strife.listeners;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
@@ -132,9 +133,9 @@ public class ExperienceListener implements Listener {
       sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
     } else {
       double xpToLevel = plugin.getLevelingRate().get(p.getLevel());
-      lostXP = Math.min(xpToLevel * 0.025, p.getExp() * xpToLevel);
+      lostXP = Math.min(xpToLevel * 0.01, p.getExp() * xpToLevel);
       sendMessage(p, "&cAlas! You lost &f" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP &cfrom dying!");
-      p.setExp(Math.max(p.getExp() - 0.025f, 0.00001f));
+      p.setExp(Math.max(p.getExp() - 0.01f, 0.00001f));
     }
     plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
     plugin.getSoulManager().setLostExp(p, lostXP);

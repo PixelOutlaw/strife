@@ -1,13 +1,12 @@
 package land.face.strife.listeners;
 
-import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 import static org.bukkit.potion.PotionEffectType.SLOW;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
@@ -41,32 +40,34 @@ public class FallListener implements Listener {
       event.setCancelled(true);
       return;
     }
-    if (!(event.getEntity() instanceof Player)) {
+    if (!(event.getEntity() instanceof Player player)) {
       return;
     }
 
-    int msSinceLastSneak = MoveUtil.getLastSneak(event.getEntity().getUniqueId());
+    int msSinceLastSneak = MoveUtil.getLastSneak(player);
     boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= fallMs;
+;
+    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(player);
 
     double damage = event.getDamage(DamageModifier.BASE) - 1;
-    double maxHealth = ((Player) event.getEntity()).getAttribute(GENERIC_MAX_HEALTH).getValue();
+    double maxHealth = playerMob.getMaxLife();
     damage += damage * maxHealth * 0.055;
     damage = Math.max(damage, 0);
 
-    Champion champion = plugin.getChampionManager().getChampion((Player) event.getEntity());
+    Champion champion = playerMob.getChampion();
     if (rollBonus) {
       damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
     } else {
       damage *= 50.0 / (50 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
-      ((Player) event.getEntity()).addPotionEffect(new PotionEffect(SLOW, 100, 0, true));
+      player.addPotionEffect(new PotionEffect(SLOW, 100, 0, true));
     }
 
-    if (((Player) event.getEntity()).hasPotionEffect(DAMAGE_RESISTANCE)) {
+    if (player.hasPotionEffect(DAMAGE_RESISTANCE)) {
       double level = ((Player) event.getEntity()).getPotionEffect(DAMAGE_RESISTANCE).getAmplifier();
       damage *= 1 - (0.1 * (level + 1));
     }
 
-    if (damage < ((Player) event.getEntity()).getHealth()) {
+    if (damage < player.getHealth()) {
       float xp = Math.min(2 + (float) event.getDamage(DamageModifier.BASE) / 3, 10);
       if (rollBonus) {
         xp *= 1.8;
@@ -80,7 +81,11 @@ public class FallListener implements Listener {
       return;
     }
 
+    if (damage >= player.getHealth()) {
+      DamageUtil.doPreDeath(playerMob);
+    }
+
     DamageUtil.removeDamageModifiers(event);
-    event.setDamage(DamageModifier.BASE, Math.max(damage, 0));
+    event.setDamage(DamageModifier.BASE, damage);
   }
 }

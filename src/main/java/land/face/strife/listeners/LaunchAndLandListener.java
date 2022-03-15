@@ -57,6 +57,7 @@ public class LaunchAndLandListener implements Listener {
       if (mob.getEnergy() < 12) {
         plugin.getGuiManager().postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 49, 10));
         event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
+        return;
       }
       StatUtil.changeEnergy(mob, -12);
     }

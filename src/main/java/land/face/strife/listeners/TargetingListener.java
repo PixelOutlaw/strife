@@ -22,6 +22,7 @@ import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLA
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
+import static org.bukkit.potion.PotionEffectType.registerPotionEffectType;
 
 import java.util.Random;
 import land.face.strife.StrifePlugin;
@@ -30,10 +31,15 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.ProjectileUtil.IgnoreState;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FishHook;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -41,6 +47,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.util.Vector;
 
 public class TargetingListener implements Listener {
@@ -79,6 +86,42 @@ public class TargetingListener implements Listener {
         .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
     SNEAK_EFFECTIVENESS = plugin.getSettings()
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onProjectileHitFriendly(ProjectileHitEvent event) {
+    if (event.isCancelled() || event.getHitEntity() == null) {
+      return;
+    }
+    if (!(event.getHitEntity() instanceof LivingEntity)) {
+      return;
+    }
+    if (event.getHitEntity() instanceof ArmorStand && event.getHitEntity().isInvulnerable()) {
+      event.setCancelled(true);
+      return;
+    }
+    IgnoreState state = ProjectileUtil.getIgnoreStatus(event.getEntity(), event.getHitEntity().getEntityId());
+    switch (state) {
+      case IGNORED -> event.setCancelled(true);
+      case NONE -> {
+        boolean isFriendly = TargetingUtil.isFriendly(plugin.getStrifeMobManager().getStatMob(
+            (LivingEntity) event.getEntity().getShooter()), plugin.getStrifeMobManager().getStatMob(
+            (LivingEntity) event.getHitEntity()));
+        int entityId = event.getHitEntity().getEntityId();
+        ProjectileUtil.addIgnoredId(event.getEntity(), isFriendly ? entityId : -entityId);
+        if (isFriendly) {
+          event.setCancelled(true);
+        }
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onFishHookInvulnerable(ProjectileHitEvent event) {
+    if (event.getEntity() instanceof FishHook && event.getHitEntity() != null &&
+        event.getHitEntity().isInvulnerable()) {
+      event.setCancelled(true);
+    }
   }
 
   @EventHandler(priority = EventPriority.LOW)

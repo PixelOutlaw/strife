@@ -585,6 +585,7 @@ public class EffectManager {
             ((BuffEffect) finalEffect).setLoadedBuff(plugin.getBuffManager()
                 .getBuffFromId(buffId)), 10L);
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((BuffEffect) effect).setUniversal(cs.getBoolean("global", false));
       }
       case REMOVE_BUFF -> {
         effect = new RemoveBuff();

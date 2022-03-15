@@ -28,7 +28,6 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
-import land.face.strife.util.TargetingUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -76,12 +75,16 @@ public class DamageManager {
 
     handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);
     if (damage >= defender.getEntity().getHealth()) {
+      DamageUtil.doPreDeath(defender);
+    }
+    boolean death = damage >= defender.getEntity().getHealth();
+    if (attacker.getEntity() instanceof Player) {
+      plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender, death);
+    }
+    if (damage >= defender.getEntity().getHealth()) {
       defender.getEntity().damage(damage, attacker.getEntity());
     } else {
       defender.getEntity().damage(damage);
-    }
-    if (attacker.getEntity() instanceof Player) {
-      plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender);
     }
     handledDamages.remove(attacker.getEntity().getUniqueId());
 

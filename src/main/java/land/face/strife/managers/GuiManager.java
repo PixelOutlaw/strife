@@ -23,21 +23,20 @@ public class GuiManager {
 
   private final StrifePlugin plugin;
 
-  private final Map<Player, GUI> guiMap = new WeakHashMap<>();
+  // Must be static, to persist through reloads
+  private static final Map<Player, GUI> guiMap = new WeakHashMap<>();
   private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
   private final GUIComponent healthBase = new GUIComponent("status-base", new TextComponent("➲"),
       178, 0, Alignment.CENTER);
   private final GUIComponent levelBase = new GUIComponent("level-base", new TextComponent("⅟"), 27,
       -105, Alignment.CENTER);
-  private final GUIComponent bitsBase = new GUIComponent("bits-base", new TextComponent("錢"),
-      102, 180, Alignment.CENTER);
+  private final GUIComponent bitsBase = new GUIComponent("bits-base", new TextComponent("錢"), 72, 170, Alignment.CENTER);
 
   private final Map<Integer, String> hpStringNumbers = new HashMap<>();
   private final Map<Integer, String> energyStringNumbers = new HashMap<>();
   private final Map<Integer, String> levelStringNumbers = new HashMap<>();
   private final Map<Integer, String> moneyStringNumbers = new HashMap<>();
-  private final Map<Integer, String> gemStringNumbers = new HashMap<>();
 
   private final ChatColor levelColorBukkit = ChatColor.of("#72D92D");
 
@@ -51,31 +50,60 @@ public class GuiManager {
   public static final TextComponent EARTH_RUNE = new TextComponent("㆞");
 
   private final List<TextComponent> xpBar = List.of(
-      new TextComponent("⒈"),
-      new TextComponent("⒉"),
-      new TextComponent("⒊"),
-      new TextComponent("⒋"),
-      new TextComponent("⒌"),
-      new TextComponent("⒍"),
-      new TextComponent("⒎"),
-      new TextComponent("⒏"),
-      new TextComponent("⒐"),
-      new TextComponent("⒑")
+      new TextComponent("傰"),
+      new TextComponent("傱"),
+      new TextComponent("傲"),
+      new TextComponent("傳"),
+      new TextComponent("傴"),
+      new TextComponent("債"),
+      new TextComponent("傶"),
+      new TextComponent("傷"),
+      new TextComponent("傸"),
+      new TextComponent("傹"),
+      new TextComponent("傺"),
+      new TextComponent("傻"),
+      new TextComponent("傼"),
+      new TextComponent("傽"),
+      new TextComponent("傾"),
+      new TextComponent("傿")
+  );
+
+  private final List<TextComponent> oxygenBar = List.of(
+      new TextComponent("僀"),
+      new TextComponent("僁"),
+      new TextComponent("僂"),
+      new TextComponent("僃"),
+      new TextComponent("僄"),
+      new TextComponent("僅"),
+      new TextComponent("僆"),
+      new TextComponent("僇"),
+      new TextComponent("僈"),
+      new TextComponent("僉"),
+      new TextComponent("僊"),
+      new TextComponent("僋"),
+      new TextComponent("僌"),
+      new TextComponent("働"),
+      new TextComponent("僎"),
+      new TextComponent("像")
   );
 
   public static final Map<Integer, TextComponent> HP_BAR = new HashMap<>();
   public static final Map<Integer, TextComponent> ENERGY_BAR = new HashMap<>();
+  public static final Map<Integer, TextComponent> BARRIER_BAR_1 = new HashMap<>();
+  public static final Map<Integer, TextComponent> BARRIER_BAR_2 = new HashMap<>();
+  public static final Map<Integer, TextComponent> BARRIER_BAR_3 = new HashMap<>();
 
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
     if (HP_BAR.isEmpty()) {
-      buildHealthAndEnergy();
+      buildHealthEnergyAndBarrier();
     }
   }
 
   public void postNotice(Player player, NoticeData data) {
     noticeMap.put(player, data);
-    guiMap.get(player).update(new GUIComponent("notices", data.getTextComponent(), data.getWidth(), 0, Alignment.CENTER));
+    guiMap.get(player).update(
+        new GUIComponent("notices", data.getTextComponent(), data.getWidth(), 0, Alignment.CENTER));
   }
 
   public void tickNotices(Player player) {
@@ -90,6 +118,9 @@ public class GuiManager {
   }
 
   public void setupGui(Player p) {
+    if (guiMap.containsKey(p)) {
+      return;
+    }
     GUI gui = GUIAPI.getGUIManager().getGUI(p);
     gui.putUnderneath(healthBase);
     gui.putUnderneath(levelBase);
@@ -99,24 +130,26 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("missing-energy", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("barrier-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("life-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("xp-base", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("energy-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("money-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("level-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("gem-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-
-    gui.putOnTop(new GUIComponent("attack-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("notices", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("rage-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("block-ind", new TextComponent(""), 0, 0, Alignment.CENTER));
-
+    /*
     gui.putOnTop(new GUIComponent("dura-helmet", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-body", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-legs", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-boots", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-weapon", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("dura-offhand", new TextComponent(""), 0, 0, Alignment.CENTER));
+    */
+
+    gui.putOnTop(new GUIComponent("life-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("xp-base", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("air-base", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("energy-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("money-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("level-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+
+    gui.putOnTop(new GUIComponent("attack-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notices", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("rage-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("block-ind", new TextComponent(""), 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("wing-1", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("wing-2", EMPTY, 0, 0, Alignment.CENTER));
@@ -124,8 +157,24 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("wing-4", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("wing-5", EMPTY, 0, 0, Alignment.CENTER));
 
+    gui.putOnTop(new GUIComponent("food-bar-1", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-bar-2", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-bar-3", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-bar-4", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-bar-5", EMPTY, 0, 0, Alignment.CENTER));
+
+    gui.putOnTop(new GUIComponent("food-icon-FULLNESS", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-icon-PROTEIN", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-icon-FAT", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-icon-CARBOHYDRATE", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("food-icon-VITAMINS", EMPTY, 0, 0, Alignment.CENTER));
+
     gui.putOnTop(new GUIComponent("rune-display", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("rune-amount", EMPTY, 0, 0, Alignment.CENTER));
+
+    gui.putOnTop(new GUIComponent("slot-a-charges", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("slot-b-charges", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("slot-c-charges", EMPTY, 0, 0, Alignment.CENTER));
 
     guiMap.put(p, gui);
   }
@@ -146,8 +195,20 @@ public class GuiManager {
         new TextComponent(levelString), originalLevelString.length() * 12, -106,
         Alignment.CENTER));
 
-    int xpProgress = (int) (9 * player.getExp());
+    int xpProgress = (int) (16 * player.getExp());
     gui.update(new GUIComponent("xp-base", xpBar.get(xpProgress), 15, 98, Alignment.CENTER));
+  }
+
+  public void updateAir(GUI gui, Player player) {
+    if (player.getRemainingAir() == player.getMaximumAir()) {
+      gui.update(new GUIComponent("air-base", EMPTY, 0, 0, Alignment.CENTER));
+    } else if (player.getRemainingAir() < 1) {
+      gui.update(new GUIComponent("air-base", oxygenBar.get(0), 15, 98, Alignment.CENTER));
+    } else {
+      int progress = (int) Math.ceil(
+          15 * ((float) player.getRemainingAir()) / player.getMaximumAir());
+      gui.update(new GUIComponent("air-base", oxygenBar.get(progress), 15, 98, Alignment.CENTER));
+    }
   }
 
   public void updateEquipmentDisplay(Player player) {
@@ -196,46 +257,69 @@ public class GuiManager {
     return org.bukkit.ChatColor.DARK_RED + string;
   }
 
-
-  public static void buildHealthAndEnergy() {
+  public static void buildHealthEnergyAndBarrier() {
     Bukkit.getLogger().info("[Strife] Building GUI missing life/energy");
     Bukkit.getLogger().info("[Strife] This could take a bit...");
     for (int i = 0; i <= 178; i++) {
       int remainder = i;
-      String hpBar = "";
-      String eBar = "";
+      StringBuilder hpBar = new StringBuilder();
+      StringBuilder eBar = new StringBuilder();
+      StringBuilder barrierBar1 = new StringBuilder();
+      StringBuilder barrierBar2 = new StringBuilder();
+      StringBuilder barrierBar3 = new StringBuilder();
       if (remainder >= 128) {
-        hpBar += "❺\uF801";
-        eBar += "❿\uF801";
+        hpBar.append("❺\uF801");
+        eBar.append("❿\uF801");
+        barrierBar1.append("⒃\uF801");
+        barrierBar2.append("⒄\uF801");
+        barrierBar3.append("⒅\uF801");
         remainder -= 128;
       }
       if (remainder >= 64) {
-        hpBar += "❹\uF801";
-        eBar += "❾\uF801";
+        hpBar.append("❹\uF801");
+        eBar.append("❾\uF801");
+        barrierBar1.append("⒀\uF801");
+        barrierBar2.append("⒁\uF801");
+        barrierBar3.append("⒂\uF801");
         remainder -= 64;
       }
       if (remainder >= 32) {
-        hpBar += "❸\uF801";
-        eBar += "❽\uF801";
+        hpBar.append("❸\uF801");
+        eBar.append("❽\uF801");
+        barrierBar1.append("⑽\uF801");
+        barrierBar2.append("⑾\uF801");
+        barrierBar3.append("⑿\uF801");
         remainder -= 32;
       }
       if (remainder >= 16) {
-        hpBar += "❷\uF801";
-        eBar += "❼\uF801";
+        hpBar.append("❷\uF801");
+        eBar.append("❼\uF801");
+        barrierBar1.append("⑺\uF801");
+        barrierBar2.append("⑻\uF801");
+        barrierBar3.append("⑼\uF801");
         remainder -= 16;
       }
       if (remainder >= 8) {
-        hpBar += "❶\uF801";
-        eBar += "❻\uF801";
+        hpBar.append("❶\uF801");
+        eBar.append("❻\uF801");
+        barrierBar1.append("⑷\uF801");
+        barrierBar2.append("⑸\uF801");
+        barrierBar3.append("⑹\uF801");
         remainder -= 8;
       }
       while (remainder > 0) {
-        hpBar += "\uD801\uDCA0\uF801";
-        eBar += "੦\uF801";
+        hpBar.append("\uD801\uDCA0\uF801");
+        eBar.append("੦\uF801");
+        barrierBar1.append("⑴\uF801");
+        barrierBar2.append("⑵\uF801");
+        barrierBar3.append("⑶\uF801");
         remainder--;
       }
-      HP_BAR.put(i, new TextComponent(ChatColor.DARK_RED + hpBar + ChatColor.RESET));
-      ENERGY_BAR.put(i, new TextComponent(ChatColor.GOLD + eBar + ChatColor.RESET));
+      HP_BAR.put(i, new TextComponent(ChatColor.DARK_RED + hpBar.toString() + ChatColor.RESET));
+      ENERGY_BAR.put(i, new TextComponent(ChatColor.GOLD + eBar.toString() + ChatColor.RESET));
+      BARRIER_BAR_1.put(i, new TextComponent(barrierBar1.toString()));
+      BARRIER_BAR_2.put(i, new TextComponent(barrierBar2.toString()));
+      BARRIER_BAR_3.put(i, new TextComponent(barrierBar3.toString()));
     }
     Bukkit.getLogger().info("[Strife] Missing life/energy bars built!");
   }
@@ -301,45 +385,23 @@ public class GuiManager {
     return s;
   }
 
-  public String convertToMoneyFont(int i) {
+  public String convertToMoneyFont(int i, ChatColor color) {
     if (moneyStringNumbers.containsKey(i)) {
-      return moneyStringNumbers.get(i);
+      return color + moneyStringNumbers.get(i) + ChatColor.RESET;
     }
     String s = Integer.toString(i);
     s = s
-        .replaceAll("1", "①\uF801")
-        .replaceAll("2", "②\uF801")
-        .replaceAll("3", "③\uF801")
-        .replaceAll("4", "④\uF801")
-        .replaceAll("5", "⑤\uF801")
-        .replaceAll("6", "⑥\uF801")
-        .replaceAll("7", "⑦\uF801")
-        .replaceAll("8", "⑧\uF801")
-        .replaceAll("9", "⑨\uF801")
-        .replaceAll("0", "⑩\uF801");
-    s = ChatColor.YELLOW + s + ChatColor.RESET;
+        .replaceAll("1", "①")
+        .replaceAll("2", "②")
+        .replaceAll("3", "③")
+        .replaceAll("4", "④")
+        .replaceAll("5", "⑤")
+        .replaceAll("6", "⑥")
+        .replaceAll("7", "⑦")
+        .replaceAll("8", "⑧")
+        .replaceAll("9", "⑨")
+        .replaceAll("0", "⑩");
     moneyStringNumbers.put(i, s);
-    return s;
-  }
-
-  public String convertToGemFont(int i) {
-    if (gemStringNumbers.containsKey(i)) {
-      return gemStringNumbers.get(i);
-    }
-    String s = Integer.toString(i);
-    s = s
-        .replaceAll("1", "①\uF801")
-        .replaceAll("2", "②\uF801")
-        .replaceAll("3", "③\uF801")
-        .replaceAll("4", "④\uF801")
-        .replaceAll("5", "⑤\uF801")
-        .replaceAll("6", "⑥\uF801")
-        .replaceAll("7", "⑦\uF801")
-        .replaceAll("8", "⑧\uF801")
-        .replaceAll("9", "⑨\uF801")
-        .replaceAll("0", "⑩\uF801");
-    s = ChatColor.LIGHT_PURPLE + s + ChatColor.RESET;
-    gemStringNumbers.put(i, s);
-    return s;
+    return color + s + ChatColor.RESET;
   }
 }

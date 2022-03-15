@@ -116,7 +116,7 @@ public class DisguiseUtil {
         try {
           switch (type) {
             case MUSHROOM_COW:
-              if (typeData.toUpperCase().equals("BROWN")) {
+              if (typeData.equalsIgnoreCase("BROWN")) {
                 ((MushroomCowWatcher) watcher).setVariant(Variant.BROWN);
               } else {
                 ((MushroomCowWatcher) watcher).setVariant(Variant.RED);

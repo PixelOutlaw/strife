@@ -40,6 +40,7 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -316,8 +317,6 @@ public class AbilityManager {
 
   public boolean abilityCast(StrifeMob caster, StrifeMob target, TriggerAbilityType type) {
     EntityAbilitySet abilitySet = caster.getAbilitySet();
-    if (type == TriggerAbilityType.WHEN_HIT) {
-    }
     if (abilitySet == null) {
       return false;
     }
@@ -345,8 +344,7 @@ public class AbilityManager {
 
     StrifeMob finalTarget = target;
     List<Ability> selectorList = abilities.stream()
-        .filter(ability -> isAbilityCastReady(caster, finalTarget, ability))
-        .collect(Collectors.toList());
+        .filter(ability -> isAbilityCastReady(caster, finalTarget, ability)).toList();
 
     if (selectorList.isEmpty()) {
       return false;
@@ -355,13 +353,26 @@ public class AbilityManager {
     return execute(ability, caster, target, true);
   }
 
-  public void setGlobalCooldown(Player player, Ability ability) {
-    setGlobalCooldown(player, ability.getGlobalCooldownTicks());
+  public void setGlobalCooldown(Player player, Ability ability, int ticks) {
+    if (ability.getCastType() == AbilityType.SPELL) {
+      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
+          .getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
+      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
+          .getCooldown(Material.DIAMOND_CHESTPLATE), ability.getGlobalCooldownTicks()));
+    } else if (ability.getCastType() == AbilityType.ATTACK) {
+      int amount = Math.max(ability.getGlobalCooldownTicks(), ticks);
+      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
+          .getCooldown(Material.DIAMOND_CHESTPLATE), amount));
+      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
+          .getCooldown(Material.GOLDEN_CHESTPLATE), ability.getGlobalCooldownTicks()));
+    }
   }
 
   public void setGlobalCooldown(Player player, int ticks) {
-    player.setCooldown(Material.DIAMOND_CHESTPLATE,
-        Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
+    player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
+        .getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
+    player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
+          .getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
   }
 
   private void coolDownAbility(StrifeMob caster, Ability ability) {
@@ -532,9 +543,10 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_COOLDOWN, 54,10));
-    ((Player) caster.getEntity())
-        .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.6f);
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(),
+        new NoticeData(GuiManager.NOTICE_COOLDOWN, 54,10));
+    ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(),
+        Sound.UI_BUTTON_CLICK, 1f, 1.6f);
     Bukkit.getScheduler().runTaskLater(plugin, () -> ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.6f), 2L);
   }
@@ -544,7 +556,8 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_ENERGY, 49,10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(),
+        new NoticeData(GuiManager.NOTICE_ENERGY, 49,10));
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
   }
@@ -560,6 +573,14 @@ public class AbilityManager {
       targetType = TargetType.valueOf(cs.getString("target-type"));
     } catch (Exception e) {
       LogUtil.printWarning("Skipping load of ability " + key + " - Invalid target type.");
+      return;
+    }
+
+    AbilityType abilityType;
+    try {
+      abilityType = AbilityType.valueOf(cs.getString("ability-type", "SPELL"));
+    } catch (Exception e) {
+      LogUtil.printWarning("Skipping load of ability " + key + " - Invalid ability type.");
       return;
     }
 
@@ -597,13 +618,14 @@ public class AbilityManager {
       }
       conditions.add(plugin.getEffectManager().getConditions().get(s));
     }
-    AbilityIconData abilityIconData = buildIconData(key, cs.getConfigurationSection("icon"));
+    AbilityIconData abilityIconData = buildIconData(key, abilityType,
+        cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
     boolean passivesOnCooldown = cs.getBoolean("passive-stats-on-cooldown", false);
     boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
 
-    Ability ability = new Ability(key, name, effects, toggleOffEffects, targetType, range,
-        cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
+    Ability ability = new Ability(key, name, effects, toggleOffEffects, abilityType, targetType,
+        range, cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
         raycastsHitEntities, conditions, passivesOnCooldown, friendly, abilityIconData,
         cancelStealth);
 
@@ -616,14 +638,15 @@ public class AbilityManager {
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 
-  private AbilityIconData buildIconData(String key, ConfigurationSection iconSection) {
+  private AbilityIconData buildIconData(String key, AbilityType castType,
+      ConfigurationSection iconSection) {
     if (iconSection == null) {
       return null;
     }
     LogUtil.printDebug("Ability " + key + " has icon!");
     String format = StringExtensionsKt.chatColorize(
         Objects.requireNonNull(iconSection.getString("format", "&f&l")));
-    Material material = Material.valueOf(iconSection.getString("material"));
+    Material material = castType.getMaterial();
     List<String> lore = ListExtensionsKt.chatColorize(iconSection.getStringList("lore"));
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
@@ -674,5 +697,18 @@ public class AbilityManager {
     data.getExpWeights().clear();
     data.getExpWeights().putAll(expWeight);
     return data;
+  }
+
+  public enum AbilityType {
+
+    ATTACK(Material.DIAMOND_CHESTPLATE),
+    SPELL(Material.GOLDEN_CHESTPLATE);
+
+    @Getter
+    private final Material material;
+
+    AbilityType(Material material) {
+      this.material = material;
+    }
   }
 }

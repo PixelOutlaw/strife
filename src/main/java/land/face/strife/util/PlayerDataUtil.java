@@ -249,4 +249,59 @@ public class PlayerDataUtil {
         .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));
     return Math.max(0.0f, Math.min(1.0f, progress));
   }
+
+  private static final Map<String, String> cachedSuperscript = new HashMap<>();
+
+  public static String convertToSuperscript(String original) {
+    if (cachedSuperscript.containsKey(original)) {
+      return cachedSuperscript.get(original);
+    }
+    String s = original.toLowerCase();
+    s = s
+        .replaceAll("(?<!§)a", "ᵃ\uF801")
+        .replaceAll("(?<!§)b", "ᵇ\uF801")
+        .replaceAll("(?<!§)c", "ᶜ\uF801")
+        .replaceAll("(?<!§)d", "ᵈ\uF801")
+        .replaceAll("(?<!§)e", "ᵉ\uF801")
+        .replaceAll("(?<!§)f", "ᶠ\uF801")
+        .replaceAll("g", "ᵍ\uF801")
+        .replaceAll("h", "ʰ\uF801")
+        .replaceAll("i", "ᶦ\uF801")
+        .replaceAll("j", "ʲ\uF801")
+        .replaceAll("k", "ᵏ\uF801")
+        .replaceAll("l", "ˡ\uF801")
+        .replaceAll("m", "ᵐ\uF801")
+        .replaceAll("n", "ⁿ\uF801")
+        .replaceAll("o", "ᵒ\uF801")
+        .replaceAll("p", "ᵖ\uF801")
+        .replaceAll("q", "ᵠ\uF801")
+        .replaceAll("r", "ʳ\uF801")
+        .replaceAll("s", "ˢ\uF801")
+        .replaceAll("t", "ᵗ\uF801")
+        .replaceAll("u", "ᵘ\uF801")
+        .replaceAll("v", "ᵛ\uF801")
+        .replaceAll("w", "ʷ\uF801")
+        .replaceAll("(?<!§)x", "ˣ\uF801")
+        .replaceAll("y", "ʸ\uF801")
+        .replaceAll("z", "ᶻ\uF801")
+        .replaceAll("(?<!§)1", "¹\uF801")
+        .replaceAll("(?<!§)2", "²\uF801")
+        .replaceAll("(?<!§)3", "³\uF801")
+        .replaceAll("(?<!§)4", "⁴\uF801")
+        .replaceAll("(?<!§)5", "⁵\uF801")
+        .replaceAll("(?<!§)6", "⁶\uF801")
+        .replaceAll("(?<!§)7", "⁷\uF801")
+        .replaceAll("(?<!§)8", "⁸\uF801")
+        .replaceAll("(?<!§)9", "⁹\uF801")
+        .replaceAll("(?<!§)0", "⁰\uF801")
+        .replaceAll("-", "⁻\uF801")
+        .replaceAll("/", "⃫\uF801")
+        .replaceAll("\\(", "⁽\uF801")
+        .replaceAll("\\)", "⁾\uF801")
+        .replaceAll("'", "՚\uF801")
+        .replaceAll("!", "ᵎ\uF801")
+        .replaceAll("\\?", "ˀ\uF801");
+    cachedSuperscript.put(original, s);
+    return s;
+  }
 }

@@ -1,26 +1,19 @@
 package land.face.strife.data;
 
 import java.lang.ref.WeakReference;
-import java.util.Objects;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
-import land.face.strife.util.StatUtil;
-import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.Disguise;
-import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
+import land.face.strife.util.GlowUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BossBar;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import ru.xezard.glow.data.glow.Glow;
+import org.inventivetalent.glow.GlowAPI;
 
 public class StatusBar {
 
   private WeakReference<StrifeMob> target;
   private final BossBar barrierBar;
   private final BossBar healthBar;
-  private final Glow glowContainer;
 
   private int lifeTicks;
   private boolean dead;
@@ -33,30 +26,17 @@ public class StatusBar {
     this.lifeTicks = 400;
     this.dead = false;
     this.hidden = false;
-    glowContainer = Glow.builder()
-        .animatedColor(ChatColor.WHITE)
-        .name(UUID.randomUUID().toString().substring(0, 16))
-        .build();
   }
 
   public void clearGlow(Player player) {
-    glowContainer.removeHolders(glowContainer.getHolders().toArray(new Entity[0]));
-    glowContainer.hideFrom(player);
+    if (target.get() != null) {
+      GlowUtil.setGlow(player, target.get().getEntity(), null);
+    }
   }
 
   public void refreshGlow(Player player, ChatColor color) {
-    if (color == glowContainer.getColor() && glowContainer.getHolders()
-        .contains(getTarget().getEntity())) {
-      return;
-    }
-    glowContainer.removeHolders(glowContainer.getHolders().toArray(new Entity[0]));
-    glowContainer.setColor(color);
-    glowContainer.addHolders(getTarget().getEntity());
-    glowContainer.display(player);
-    Disguise disguise = DisguiseAPI.getDisguise(getTarget().getEntity());
-    if (disguise != null) {
-      FlagWatcher watcher = disguise.getWatcher();
-      watcher.setGlowColor(color);
+    if (target.get() != null) {
+      GlowUtil.setGlow(player, target.get().getEntity(), color);
     }
   }
 

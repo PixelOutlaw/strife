@@ -27,16 +27,21 @@ import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.DamageUtil;
+import land.face.strife.util.DamageUtil.AbilityMod;
+import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -84,29 +89,94 @@ public class StatsDefenseMenuItem extends MenuItem {
       lore.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
     }
     lore.add(breakLine);
-    lore.add(addStat("Armor Rating: ", StatUtil.getStat(mob, StrifeStat.ARMOR), INT_FORMAT));
-    lore.add(addStat("Ward Rating: ", StatUtil.getStat(mob, StrifeStat.WARDING), INT_FORMAT));
-    lore.add(addStat("Evasion Rating: ", StatUtil.getEvasion(mob), INT_FORMAT));
+
+    float armor = StatUtil.getStat(mob, StrifeStat.ARMOR);
+    String physReduction = "";
+    if (armor > 0.1) {
+      float armorMultNumber = 100 * (1 - StatUtil.getArmorMult(armor));
+      physReduction = " " + ChatColor.GRAY + "(-" + INT_FORMAT.format(armorMultNumber) + "%" +
+          ChatColor.RED + "⚔" + ChatColor.GRAY + ")";
+    }
+    lore.add(addStat("Armor Rating: ", armor, INT_FORMAT) + physReduction);
+
+    float warding = StatUtil.getStat(mob, StrifeStat.WARDING);
+    String wardReduction = "";
+    if (warding > 0.1) {
+      float wardMultNumber = 100 * (1 - StatUtil.getWardingMult(warding));
+      wardReduction = " " + ChatColor.GRAY + "(-" + INT_FORMAT.format(wardMultNumber) + "%" +
+          ChatColor.BLUE + "☄" + ChatColor.GRAY + ")";
+    }
+    lore.add(addStat("Ward Rating: ", warding, INT_FORMAT) + wardReduction);
+
+    float evasion = StatUtil.getEvasion(mob);
+    float dodgeChance = StatUtil.getStat(mob, StrifeStat.DODGE_CHANCE);
+    lore.add(addStat("Evasion Rating: ", evasion, INT_FORMAT));
+    if (evasion > 10 || dodgeChance > 0.5) {
+      Map<StrifeStat, Float> stats = StrifePlugin.getInstance().getMonsterManager().getBaseStats(
+          EntityType.ZOMBIE, player.getLevel());
+      float accForLevel = stats.get(StrifeStat.ACCURACY) *
+          (1 + stats.get(StrifeStat.ACCURACY_MULT) / 100);
+      float minEvasion = StatUtil.getMinimumEvasionMult(evasion, accForLevel);
+      float evasionRate = 1 - minEvasion;
+      if (evasionRate > 0.5) {
+        evasionRate = Math.min(99, 100 - dodgeChance) * (evasionRate / (evasionRate + 0.5f));
+      } else {
+        evasionRate = 0;
+      }
+      lore.add(addStat("Chance To Avoid Hits: ", evasionRate + dodgeChance, INT_FORMAT) + "%");
+      if (dodgeChance > 0.5) {
+        lore.add(ChatColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
+      }
+      if (evasionRate > 0.5) {
+        lore.add(ChatColor.GRAY + " +" + INT_FORMAT.format(evasionRate) + "% From Evasion (Estimated)");
+      }
+    }
     if (mob.getStat(StrifeStat.BLOCK) > 0) {
       lore.add(addStat("Block Rating: ", mob.getStat(StrifeStat.BLOCK), INT_FORMAT));
+      float blockRecovery = mob.getStat(StrifeStat.BLOCK_RECOVERY);
+      if (blockRecovery != 0) {
+        String plus = blockRecovery >= 0 ? ChatColor.WHITE + "+" : "";
+        lore.add(addStat("Block Recovery: " + plus,
+            mob.getStat(StrifeStat.BLOCK_RECOVERY), INT_FORMAT) + "%");
+      }
     }
     if (mob.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
       lore.add(addStat("Reflected Damage: ", mob.getStat(StrifeStat.DAMAGE_REFLECT),
           INT_FORMAT));
     }
     lore.add(breakLine);
-    lore.add(addStat("Fire Resistance: ", StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), "%", INT_FORMAT));
-    lore.add(addStat("Ice Resistance: ", StatUtil.getStat(mob, StrifeStat.ICE_RESIST), "%", INT_FORMAT));
-    lore.add(addStat("Lightning Resistance: ", StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), "%", INT_FORMAT));
-    lore.add(addStat("Earth Resistance: ", StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), "%", INT_FORMAT));
-    lore.add(addStat("Light Resistance: ", StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), "%", INT_FORMAT));
-    lore.add(addStat("Shadow Resistance: ", StatUtil.getStat(mob, StrifeStat.DARK_RESIST), "%", INT_FORMAT));
+    lore.add(ChatColor.YELLOW + "Elemental Resistances:");
+    StringBuilder resistDisplay = new StringBuilder();
+    resistDisplay.append(" ");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), ChatColor.GOLD, "\uD83D\uDD25");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.ICE_RESIST), ChatColor.AQUA, "❄");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), ChatColor.YELLOW, "⚡");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), ChatColor.DARK_GREEN, "₪");
+    lore.add(resistDisplay.toString());
+    StringBuilder resistDisplay2 = new StringBuilder();
+    resistDisplay2.append(" ");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), ChatColor.WHITE, "❂");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.DARK_RESIST), ChatColor.DARK_PURPLE, "☠");
+
+    lore.add(resistDisplay2.toString());
+    lore.add(ChatColor.YELLOW + "Status Resistances:");
+    StringBuilder resistDisplay3 = new StringBuilder();
+    resistDisplay3.append(" ");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BLEED_RESIST), ChatColor.DARK_RED, "\uD83D\uDCA7");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.POISON_RESIST), ChatColor.DARK_GREEN, "\uD83D\uDCA7");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.WITHER_RESIST), ChatColor.DARK_GRAY, "☠");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), ChatColor.RED, "\uD83D\uDD25");
+    lore.add(resistDisplay3.toString());
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
     return itemStack;
+  }
+
+  private static void addResist(StringBuilder builder, float value, ChatColor color, String symbol) {
+    builder.append(color).append((int) value).append("%").append(symbol).append("  ");
   }
 
   @Override

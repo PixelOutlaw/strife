@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.EnumWrappers.EntityPose;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,7 +14,9 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Pose;
 import org.bukkit.scheduler.BukkitTask;
 
 public class Riptide extends Effect {
@@ -28,9 +31,6 @@ public class Riptide extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (RIPTIDE_POSE_ENUM == null || STANDING_POSE_ENUM == null) {
-      return;
-    }
     RIPTIDE_MAP.put(target.getEntity(), ticks);
     try {
       PacketContainer fakeSpin = ProtocolLibrary.getProtocolManager()
@@ -101,10 +101,10 @@ public class Riptide extends Effect {
     }
   }
 
-  public static void buildNMSEnum(StrifePlugin plugin) {
+  public static void buildNMSEnum() {
     try {
-      RIPTIDE_POSE_ENUM = StrifePlugin.getPoseClass().getField("e").get(null);
-      STANDING_POSE_ENUM = StrifePlugin.getPoseClass().getField("a").get(null);
+      RIPTIDE_POSE_ENUM = EntityPose.SPIN_ATTACK.toNms();
+      STANDING_POSE_ENUM = EntityPose.STANDING.toNms();
     } catch (Exception e) {
       e.printStackTrace();
     }

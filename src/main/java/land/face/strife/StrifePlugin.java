@@ -24,7 +24,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
-import com.github.yannicklamprecht.worldborder.api.WorldBorderApi;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
@@ -120,6 +119,8 @@ import org.bukkit.util.Vector;
 public class StrifePlugin extends FacePlugin {
 
   private static StrifePlugin instance;
+  @Getter
+  private static boolean glowEnabled;
 
   private PluginLogger debugPrinter;
   private LogLevel logLevel;
@@ -180,9 +181,6 @@ public class StrifePlugin extends FacePlugin {
   private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
   private PaperCommandManager commandManager;
-
-  @Getter
-  private WorldBorderApi worldBorderApi;
 
   private int maxSkillLevel;
 
@@ -407,7 +405,7 @@ public class StrifePlugin extends FacePlugin {
     ));
     taskList.add(corruptionTask.runTaskTimer(this,
         20L,
-        8L
+        10L
     ));
     taskList.add(blockTask.runTaskTimer(this,
         20L,
@@ -433,6 +431,8 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new JoinAndLeaveListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new CurrencyChangeListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
@@ -464,6 +464,7 @@ public class StrifePlugin extends FacePlugin {
     if (Bukkit.getPluginManager().getPlugin("PlayerPoints") != null) {
       playerPointsPlugin = (PlayerPoints) Bukkit.getPluginManager().getPlugin("PlayerPoints");
     }
+    glowEnabled = Bukkit.getPluginManager().getPlugin("GlowApi") != null;
 
     ReturnButton returnButton = new ReturnButton(this, Material.ARROW,
         StringExtensionsKt.chatColorize("&e&l<< Go Back"));
@@ -502,7 +503,8 @@ public class StrifePlugin extends FacePlugin {
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
       guiManager.setupGui(player);
-      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), true);
+      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
+      strifeMobManager.loadEnergy(player);
     }
     getChampionManager().updateAll();
 
@@ -518,16 +520,8 @@ public class StrifePlugin extends FacePlugin {
     ItemUtil.axeDestroyKeys.addAll(configYAML.getStringList("axe-destroy-keys"));
     ItemUtil.shearsDestroyKeys.addAll(configYAML.getStringList("shears-destroy-keys"));
 
-    Riptide.buildNMSEnum(this);
+    Riptide.buildNMSEnum();
     Riptide.startTask(this);
-
-    RegisteredServiceProvider<WorldBorderApi> worldBorderApiRegisteredServiceProvider = getServer()
-        .getServicesManager().getRegistration(WorldBorderApi.class);
-
-    if (worldBorderApiRegisteredServiceProvider != null) {
-      worldBorderApi = worldBorderApiRegisteredServiceProvider.getProvider();
-      return;
-    }
 
     ProtocolLibrary.getProtocolManager()
         .addPacketListener(new PacketAdapter(this, ENTITY_METADATA) {
@@ -594,6 +588,7 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_C);
+      strifeMobManager.saveEnergy(player);
     }
 
     ShootBlock.clearTimers();

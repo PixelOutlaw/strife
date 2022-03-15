@@ -32,9 +32,8 @@ import land.face.strife.data.StatusBar;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.GlowUtil;
 import land.face.strife.util.PlayerDataUtil;
-import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
@@ -44,6 +43,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.inventivetalent.glow.GlowAPI.Color;
 
 public class BossBarManager {
 
@@ -109,10 +109,13 @@ public class BossBarManager {
     updateSkillBar(bar);
   }
 
-  public void pushBar(Player player, StrifeMob target) {
+  public void pushBar(Player player, StrifeMob target, boolean death) {
     StatusBar bar = statusBars.get(player);
     if (bar == null) {
-      createHealthBar(player, target);
+      bar = createHealthBar(player, target);
+    }
+    if (bar.getTarget() != target) {
+      bar.clearGlow(player);
     }
     bar = statusBars.get(player);
     bar.setTarget(target);
@@ -124,6 +127,13 @@ public class BossBarManager {
           .getPartyManager()
           .areInSameParty(player, (Player) target.getEntity())) {
         bar.refreshGlow(player, ChatColor.AQUA);
+      } else if (death) {
+        bar.refreshGlow(player, ChatColor.DARK_RED);
+        bar.setDead(true);
+        updateBarTitle(bar, deathMessages.get(random.nextInt(deathMessages.size())));
+        bar.getBarrierBar().setProgress(0);
+        bar.getHealthBar().setProgress(0);
+        bar.setLifeTicks(25);
       } else {
         bar.refreshGlow(player, ChatColor.GOLD);
       }
@@ -135,11 +145,6 @@ public class BossBarManager {
     if (statusBars.containsKey(player)) {
       StatusBar bossBar = statusBars.get(player);
       if (!bossBar.isDead()) {
-        bossBar.setDead(true);
-        updateBarTitle(bossBar, deathMessages.get(random.nextInt(deathMessages.size())));
-        bossBar.getBarrierBar().setProgress(0);
-        bossBar.getHealthBar().setProgress(0);
-        bossBar.setLifeTicks(25);
         if (plugin.getChampionManager().getChampion(player).getSaveData().isGlowEnabled()) {
           if (bossBar.getTarget() != null && bossBar.getTarget().getEntity() != null) {
             bossBar.refreshGlow(player, ChatColor.DARK_RED);

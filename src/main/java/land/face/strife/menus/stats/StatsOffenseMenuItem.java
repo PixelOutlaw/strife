@@ -98,7 +98,7 @@ public class StatsOffenseMenuItem extends MenuItem {
 
     lore.add(breakLine);
 
-    lore.add(addStat("Attack Damage: ", total, INT_FORMAT));
+    lore.add(addStat("Total Damage: ", total, INT_FORMAT));
     StringBuilder damageDisplay = new StringBuilder();
     if (physical > magical) {
       addIfApplicable(damageDisplay, physical, ChatColor.RED, "⚔");
@@ -116,7 +116,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     addIfApplicable(damageDisplay, trueDmg, ChatColor.GRAY, "Ω");
     lore.add(damageDisplay.toString());
     float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
-    if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
+    if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT) || critMult < 0.1) {
       float critDamage;
       critDamage = physical + magical;
       if (mob.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
@@ -148,7 +148,7 @@ public class StatsOffenseMenuItem extends MenuItem {
         loreSection.add(addStat("Multishot: ", mob.getStat(StrifeStat.MULTISHOT), "%", INT_FORMAT));
       }
     }
-    if (mob.getStat(StrifeStat.CRITICAL_RATE) > 0 || !mob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
+    if (mob.getStat(StrifeStat.CRITICAL_RATE) > 0 && !mob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
       loreSection.add(
           addStat("Critical Chance: ", Math.min(100, mob.getStat(StrifeStat.CRITICAL_RATE)), "%", INT_FORMAT));
       loreSection.add(
@@ -187,10 +187,10 @@ public class StatsOffenseMenuItem extends MenuItem {
         lore.add(addStat("Life Steal: ", mob.getStat(StrifeStat.LIFE_STEAL), "%", INT_FORMAT));
       }
       if (mob.getStat(StrifeStat.HP_ON_HIT) > 0) {
-        lore.add(addStat("Health On Hit: ", mob.getStat(StrifeStat.HP_ON_HIT), INT_FORMAT));
+        lore.add(addStat("Life On Hit: ", mob.getStat(StrifeStat.HP_ON_HIT), INT_FORMAT));
       }
       if (mob.getStat(StrifeStat.HP_ON_KILL) > 0) {
-        lore.add(addStat("Health On Kill: ", mob.getStat(StrifeStat.HP_ON_KILL), INT_FORMAT));
+        lore.add(addStat("Life On Kill: ", mob.getStat(StrifeStat.HP_ON_KILL), INT_FORMAT));
       }
     }
     lore.add(breakLine);

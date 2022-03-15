@@ -31,10 +31,7 @@ public class HealingListener implements Listener {
       return;
     }
     switch (event.getRegainReason()) {
-      case SATIATED:
-      case EATING:
-      case REGEN:
-        event.setAmount(0);
+      case SATIATED, EATING, REGEN -> event.setCancelled(true);
     }
   }
 

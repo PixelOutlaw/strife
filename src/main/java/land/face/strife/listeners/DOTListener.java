@@ -64,11 +64,15 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
         plugin.getDamageOverTimeTask().trackWither(le);
         event.setCancelled(true);
       }
-      case CONTACT -> {
-        event.setCancelled(true);
+      case CONTACT -> event.setCancelled(true);
+      case SUFFOCATION -> {
+        DamageUtil.dealRawDamage(le, (float) le.getMaxHealth() * 0.05f);
+        event.setDamage(0);
       }
-      case SUFFOCATION, DROWNING -> DamageUtil.dealRawDamage(le,
-          (float) le.getMaxHealth() * 0.005f);
+      case DROWNING -> {
+        DamageUtil.dealRawDamage(le, 5 + (float) le.getMaxHealth() * 0.2f);
+        event.setDamage(0);
+      }
     }
   }
 }

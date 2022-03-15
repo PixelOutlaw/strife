@@ -22,12 +22,14 @@ import land.face.strife.util.CorruptionUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -42,12 +44,15 @@ public class StrifeMobManager {
   private final Map<String, String> levelReqMap = new HashMap<>();
 
   private static int frostTick = 0;
+  @Getter
+  private final float baseAirTicks;
 
   public StrifeMobManager(StrifePlugin plugin) {
     this.plugin = plugin;
     dualWieldAttackSpeed =
         (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
     levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
+    baseAirTicks = plugin.getSettings().getInt("config.mechanics.base-oxygen-ticks", 300);
     for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
       levelReqMap.put(slot.toString(), plugin.getSettings().getString("language.level-req." + slot, ""));
     }
@@ -86,6 +91,13 @@ public class StrifeMobManager {
     if (trackedEntities.containsKey(player)) {
       StrifeMob mob = trackedEntities.get(player);
       player.setFoodLevel((int) (20 * mob.getEnergy() / mob.getMaxEnergy()));
+    }
+  }
+
+  public void loadEnergy(Player player) {
+    if (trackedEntities.containsKey(player)) {
+      StrifeMob mob = trackedEntities.get(player);
+      mob.setEnergy(mob.getMaxEnergy() / ((float) player.getFoodLevel() / 20));
     }
   }
 
@@ -130,10 +142,6 @@ public class StrifeMobManager {
     if (!ItemUtil.doesHashMatch(handItem, equipmentCache.getSlotHash("HAND"))) {
       updateItems.put("HAND", handItem);
     }
-    ItemStack offhandItem = ItemUtil.getItem(equipment, OFF_HAND);
-    if (!ItemUtil.doesHashMatch(offhandItem, equipmentCache.getSlotHash("OFF_HAND"))) {
-      updateItems.put("OFF_HAND", offhandItem);
-    }
     if (mob.getEntity() instanceof Player) {
       invyData = plugin.getDeluxeInvyPlugin().getPlayerManager()
           .getPlayerData(((Player) mob.getEntity()).getPlayer());
@@ -151,7 +159,7 @@ public class StrifeMobManager {
     equipmentCache.setLastUpdate(System.currentTimeMillis());
 
     if (updateItems.containsKey("HAND")) {
-      updateItems.put("OFF_HAND", offhandItem);
+      updateItems.put("OFF_HAND", updateItems.get("OFF_HAND"));
     } else if (updateItems.containsKey("OFF_HAND")) {
       updateItems.put("HAND", handItem);
     }
@@ -186,13 +194,20 @@ public class StrifeMobManager {
         return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand());
       }
       case "OFF_HAND" -> {
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+        if (invyData == null) {
           return new HashSet<>();
         }
-        if (!ItemUtil.isValidOffhand(equipment)) {
+        ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
+        if (offhandItem == null) {
           return new HashSet<>();
         }
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInOffHand());
+        if (ItemUtil.isArmor(offhandItem.getType())) {
+          return new HashSet<>();
+        }
+        if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
+          return new HashSet<>();
+        }
+        return plugin.getLoreAbilityManager().getAbilities(offhandItem);
       }
       default -> {
         if (invyData == null) {
@@ -214,13 +229,20 @@ public class StrifeMobManager {
         return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
       }
       case "OFF_HAND" -> {
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+        if (invyData == null) {
           return new HashMap<>();
         }
-        if (!ItemUtil.isValidOffhand(equipment)) {
+        ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
+        if (offhandItem == null) {
           return new HashMap<>();
         }
-        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInOffHand());
+        if (ItemUtil.isArmor(offhandItem.getType())) {
+          return new HashMap<>();
+        }
+        if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
+          return new HashMap<>();
+        }
+        return plugin.getStatUpdateManager().getItemStats(offhandItem);
       }
       default -> {
         if (invyData == null) {
@@ -242,13 +264,20 @@ public class StrifeMobManager {
         return ItemUtil.getTraits(equipment.getItemInMainHand());
       }
       case "OFF_HAND" -> {
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+        if (invyData == null) {
           return new HashSet<>();
         }
-        if (!ItemUtil.isValidOffhand(equipment)) {
+        ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
+        if (offhandItem == null) {
           return new HashSet<>();
         }
-        return ItemUtil.getTraits(equipment.getItemInOffHand());
+        if (ItemUtil.isArmor(offhandItem.getType())) {
+          return new HashSet<>();
+        }
+        if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
+          return new HashSet<>();
+        }
+        return ItemUtil.getTraits(offhandItem);
       }
       default -> {
         if (invyData == null) {

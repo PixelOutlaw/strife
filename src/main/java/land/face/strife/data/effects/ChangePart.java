@@ -1,12 +1,11 @@
 package land.face.strife.data.effects;
 
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.generator.ModelBlueprint;
+import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.PartEntity;
 import land.face.strife.data.StrifeMob;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 
 public class ChangePart extends Effect {
 
@@ -34,7 +33,7 @@ public class ChangePart extends Effect {
     if (blueprint == null) {
       return;
     }
-    final int id = blueprint.getItemModelId(newPartId);
+    final int id = blueprint.getItemId(newPartId);
     if (id <= 0) {
       return;
     }

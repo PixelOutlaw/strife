@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
@@ -97,7 +99,7 @@ public class ShootListener implements Listener {
 
     event.setCancelled(true);
 
-    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob);
+    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob, 1);
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
 
     if (attackMultiplier < 0.1) {
@@ -106,11 +108,11 @@ public class ShootListener implements Listener {
     }
 
     ItemStack mainHand = player.getEquipment().getItemInMainHand();
-    ItemStack offHand = player.getEquipment().getItemInOffHand();
+    ItemStack offHand = DeluxeInvyPlugin.getInstance().getPlayerManager()
+        .getPlayerData(player).getEquipmentItem(DeluxeSlot.OFF_HAND);
 
-    EquipmentSlot slot =
-        mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW ?
-            EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+    EquipmentSlot slot = mainHand.getType() == Material.BOW ||
+        mainHand.getType() == Material.CROSSBOW ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
 
     if (ItemUtil.isPistol(slot == EquipmentSlot.HAND ? mainHand : offHand)) {
       if (!ItemUtil.isBullets(slot == EquipmentSlot.HAND ? offHand : mainHand)) {
@@ -184,7 +186,7 @@ public class ShootListener implements Listener {
 
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
 
-    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats);
+    float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats, 1.2f);
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.2);
 
     int throwCooldownTicks = (int) (40 * StatUtil.getAttackTime(pStats));

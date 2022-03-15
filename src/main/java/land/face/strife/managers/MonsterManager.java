@@ -68,28 +68,21 @@ public class MonsterManager {
   }
 
   public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity, int level) {
-    Map<StrifeStat, Float> levelStats = new HashMap<>();
-    EntityType type = livingEntity.getType();
-    if (!entityStatDataMap.containsKey(type)) {
-      return levelStats;
-    }
     if (level == -1) {
       level = StatUtil.getMobLevel(livingEntity);
+    }
+    return getBaseStats(livingEntity.getType(), level);
+  }
+
+  public Map<StrifeStat, Float> getBaseStats(EntityType type, int level) {
+    Map<StrifeStat, Float> levelStats = new HashMap<>();
+    if (!entityStatDataMap.containsKey(type)) {
+      return levelStats;
     }
     for (StrifeStat attr : entityStatDataMap.get(type).getPerLevelMap().keySet()) {
       levelStats.put(attr, entityStatDataMap.get(type).getPerLevelMap().get(attr) * level);
     }
-    if (type == EntityType.PLAYER && level >= 100) {
-      int bLevel = championManager.getChampion((Player) livingEntity).getBonusLevels();
-      Map<StrifeStat, Float> bonusStats = new HashMap<>();
-      for (StrifeStat attr : entityStatDataMap.get(type).getPerBonusLevelMap().keySet()) {
-        bonusStats.put(attr, entityStatDataMap.get(type).getPerBonusLevelMap().get(attr) * bLevel);
-      }
-      return StatUpdateManager
-          .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats, bonusStats);
-    }
-    return StatUpdateManager
-        .combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
+    return StatUpdateManager.combineMaps(entityStatDataMap.get(type).getBaseValueMap(), levelStats);
   }
 
   public void loadBaseStats(String key, ConfigurationSection cs) {

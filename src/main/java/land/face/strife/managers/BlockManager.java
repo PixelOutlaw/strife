@@ -63,6 +63,8 @@ public class BlockManager {
   private final float PERCENT_MAX_BLOCK_MIN;
   private final float MELEE_FATIGUE;
   private final float PROJECTILE_FATIGUE;
+  private final float PHYSICAL_BLOCK_FATIGUE_MULT;
+  private final float PHYSICAL_BLOCK_CHANCE_MULT;
   private final float GUARD_BREAK_POWER;
 
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.COARSE_DIRT);
@@ -79,6 +81,10 @@ public class BlockManager {
         .getDouble("config.mechanics.block.melee-fatigue", 70);
     PROJECTILE_FATIGUE = (float) plugin.getSettings()
         .getDouble("config.mechanics.block.projectile-fatigue", 45);
+    PHYSICAL_BLOCK_FATIGUE_MULT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.physical-block-fatigue-mult", 0.75);
+    PHYSICAL_BLOCK_CHANCE_MULT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.block.physical-block-chance-mult", 4.0);
     GUARD_BREAK_POWER = (float) plugin.getSettings()
         .getDouble("config.mechanics.block.guard-break-multiplier", 1.5f);
   }
@@ -224,7 +230,7 @@ public class BlockManager {
 
     double blockChance = Math.min(mob.getBlock() / 100, MAX_BLOCK_CHANCE);
     if (physicallyBlocked) {
-      blockChance *= 2.5;
+      blockChance *= PHYSICAL_BLOCK_CHANCE_MULT;
     }
 
     if (random.nextDouble() > blockChance) {
@@ -233,7 +239,7 @@ public class BlockManager {
 
     float fatigue = projectile ? PROJECTILE_FATIGUE : MELEE_FATIGUE;
     if (physicallyBlocked) {
-      fatigue *= 0.8;
+      fatigue *= PHYSICAL_BLOCK_FATIGUE_MULT;
     }
     fatigue *= attackPower;
     if (guardBreak) {

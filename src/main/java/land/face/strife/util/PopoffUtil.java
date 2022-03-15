@@ -2,7 +2,6 @@ package land.face.strife.util;
 
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.List;
 import java.util.UUID;
 import land.face.strife.data.effects.DamagePopoff;
@@ -20,7 +19,7 @@ public class PopoffUtil {
         location.clone(), false, List.of(""));
     holo.hideAll();
     holo.addPage();
-    DHAPI.setHologramLines(holo, 1, List.of(StringExtensionsKt.chatColorize(text)));
+    DHAPI.setHologramLines(holo, 1, List.of(text));
     holo.show(player, 1);
 
     DamagePopoff indicator = new DamagePopoff();

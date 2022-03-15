@@ -1,6 +1,7 @@
 package land.face.strife.util;
 
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -29,6 +30,7 @@ public class ProjectileUtil {
   private static final Map<Projectile, Boolean> CONTACT_TRIGGER = new WeakHashMap<>();
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
+  private static final Map<Projectile, List<Integer>> IGNORED_IDS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
   private static final Map<Projectile, Boolean> ABILITY_PROJECTILE = new WeakHashMap<>();
 
@@ -90,6 +92,27 @@ public class ProjectileUtil {
 
   public static void setHitEffects(Projectile projectile, List<Effect> effects) {
     HIT_EFFECTS.put(projectile, effects);
+  }
+
+  public static IgnoreState getIgnoreStatus(Projectile projectile, int entityId) {
+    if (!IGNORED_IDS.containsKey(projectile)) {
+      return IgnoreState.NONE;
+    }
+    List<Integer> values = IGNORED_IDS.get(projectile);
+    if (values.contains(entityId)) {
+      return IgnoreState.IGNORED;
+    }
+    if (values.contains(-entityId)) {
+      return IgnoreState.ALLOWED;
+    }
+    return IgnoreState.NONE;
+  }
+
+  public static void addIgnoredId(Projectile projectile, int entityId) {
+    if (!IGNORED_IDS.containsKey(projectile)) {
+      IGNORED_IDS.put(projectile, new ArrayList<>());
+    }
+    IGNORED_IDS.get(projectile).add(entityId);
   }
 
   public static List<Effect> getHitEffects(Projectile projectile) {
@@ -221,5 +244,11 @@ public class ProjectileUtil {
     ItemStack stack = new ItemStack(Material.NETHER_STAR);
     ItemStackExtensionsKt.setCustomModelData(stack, 100);
     return stack;
+  }
+
+  public enum IgnoreState {
+    ALLOWED,
+    IGNORED,
+    NONE
   }
 }

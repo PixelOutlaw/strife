@@ -1,5 +1,7 @@
 package land.face.strife.managers;
 
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.AbilityIconData;
@@ -15,9 +18,14 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.events.AbilityChangeEvent;
+import land.face.strife.managers.AbilityManager.AbilityType;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -63,10 +71,14 @@ public class AbilityIconManager {
     if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) {
       return;
     }
-    ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    ChampionSaveData data = champion.getSaveData();
     for (Ability ability : data.getAbilities().values()) {
       setAbilityIcon(player, ability.getAbilityIconData());
+      AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, ability);
+      Bukkit.getPluginManager().callEvent(abilityChangeEvent);
     }
+    plugin.getAbilityIconManager().updateChargesGui(player);
   }
 
   public void setAbilityIcon(Player player, AbilityIconData abilityIconData) {
@@ -104,19 +116,19 @@ public class AbilityIconManager {
   }
 
   public void triggerAbility(Player player, int slotNumber) {
-    if (player.getCooldown(Material.DIAMOND_CHESTPLATE) > 0) {
-      return;
-    }
     AbilitySlot slot = AbilitySlot.fromSlot(slotNumber);
     if (slot == AbilitySlot.INVALID) {
       return;
     }
-    Ability ability = plugin.getChampionManager().getChampion(player).getSaveData()
-        .getAbility(slot);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
+    Ability ability = mob.getChampion().getSaveData().getAbility(slot);
     if (ability == null) {
       if (isAbilityIcon(player.getInventory().getItem(slotNumber))) {
         player.getInventory().setItem(slotNumber, null);
       }
+      return;
+    }
+    if (player.getCooldown(ability.getCastType().getMaterial()) > 0) {
       return;
     }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(ability,
@@ -126,7 +138,12 @@ public class AbilityIconManager {
       plugin.getAbilityManager().setGlobalCooldown(player, 5);
       return;
     }
-    plugin.getAbilityManager().setGlobalCooldown(player, ability);
+    if (ability.getCastType() == AbilityType.ATTACK) {
+      plugin.getAbilityManager().setGlobalCooldown(player, ability, (int) (StatUtil.getAttackTime(mob) * 14));
+      plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
+    } else {
+      plugin.getAbilityManager().setGlobalCooldown(player, ability, ability.getGlobalCooldownTicks());
+    }
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
     updateIconProgress(player, ability);
   }
@@ -139,6 +156,61 @@ public class AbilityIconManager {
         champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
     setIconDamage(plugin.getChampionManager().getChampion(player),
         champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
+  }
+
+  public void updateChargesGui(Player player) {
+    Champion champion = plugin.getStrifeMobManager().getStatMob(player).getChampion();
+    Ability abilityA = champion.getSaveData().getAbility(AbilitySlot.SLOT_A);
+    Ability abilityB = champion.getSaveData().getAbility(AbilitySlot.SLOT_B);
+    Ability abilityC = champion.getSaveData().getAbility(AbilitySlot.SLOT_C);
+
+    if (abilityA == null || abilityA.getMaxCharges() < 2) {
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-a-charges",
+          GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    } else {
+      String charges = "";
+      CooldownTracker cd = plugin.getAbilityManager().getCooldownTracker(player, abilityA.getId());
+      if (cd == null) {
+        charges = charges + StringUtils.repeat("☊", abilityA.getMaxCharges());
+      } else {
+        charges = charges + StringUtils.repeat("☊", cd.getChargesLeft());
+        charges = charges + StringUtils.repeat("☋", abilityA.getMaxCharges() - cd.getChargesLeft());
+      }
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-a-charges",
+          new TextComponent(charges), charges.length() * 3, -89, Alignment.LEFT));
+    }
+
+    if (abilityB == null || abilityB.getMaxCharges() < 2) {
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-b-charges",
+          GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    } else {
+      String charges = "";
+      CooldownTracker cd = plugin.getAbilityManager().getCooldownTracker(player, abilityB.getId());
+      if (cd == null) {
+        charges = charges + StringUtils.repeat("☊", abilityB.getMaxCharges());
+      } else {
+        charges = charges + StringUtils.repeat("☊", cd.getChargesLeft());
+        charges = charges + StringUtils.repeat("☋", abilityB.getMaxCharges() - cd.getChargesLeft());
+      }
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-b-charges",
+          new TextComponent(charges), charges.length() * 3, -69, Alignment.LEFT));
+    }
+
+    if (abilityC == null || abilityC.getMaxCharges() < 2) {
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-c-charges",
+          GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    } else {
+      String charges = "";
+      CooldownTracker cd = plugin.getAbilityManager().getCooldownTracker(player, abilityC.getId());
+      if (cd == null) {
+        charges = charges + StringUtils.repeat("☊", abilityC.getMaxCharges());
+      } else {
+        charges = charges + StringUtils.repeat("☊", cd.getChargesLeft());
+        charges = charges + StringUtils.repeat("☋", abilityC.getMaxCharges() - cd.getChargesLeft());
+      }
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-c-charges",
+          new TextComponent(charges), charges.length() * 3, -49, Alignment.LEFT));
+    }
   }
 
   private void updateIconProgress(Player player, AbilitySlot slot) {

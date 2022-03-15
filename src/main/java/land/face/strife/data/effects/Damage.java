@@ -74,6 +74,7 @@ public class Damage extends Effect {
     mods.getBonusDamages().addAll(bonusDamages);
     mods.getDamageMultipliers().putAll(damageMultipliers);
     mods.getAbilityMods().putAll(abilityMods);
+    mods.setBasicAttack(false);
 
     boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);
 

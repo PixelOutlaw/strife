@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class AbilityIconData {
 
-  private ItemStack stack;
+  private final ItemStack stack;
   private AbilitySlot abilitySlot;
   private int totalSkillRequirement = 0;
   private int levelRequirement = 0;

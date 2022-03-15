@@ -28,6 +28,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
@@ -39,6 +42,13 @@ public class DoubleJumpListener implements Listener {
   private final Map<Player, Float> dodgeCost = new WeakHashMap<>();
   private final Map<Player, Long> lastDodge = new WeakHashMap<>();
 
+  private final float rollPower;
+  private final float rollAscent;
+  private final float baseRollCost;
+  private final float rollCostMult;
+  private final float rollCostFlat;
+  private final float rollCostDecay;
+  private final float maxRollCost;
 
   public DoubleJumpListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -47,6 +57,20 @@ public class DoubleJumpListener implements Listener {
       Vector vector = new Vector(Math.cos(radian), 0, Math.sin(radian));
       cachedJumpAnimation.put(step, vector);
     }
+    rollPower = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.roll-power", 1f);
+    rollAscent = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.roll-ascent", 0.12f);
+    baseRollCost = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.base-roll-cost", 6f);
+    rollCostMult = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.roll-cost-mult", 1.5f);
+    rollCostFlat = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.roll-cost-flat-increase", 1f);
+    rollCostDecay = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.roll-cost-decay", 3f) / 1000;
+    maxRollCost = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.max-roll-cost", 45);
   }
 
   @EventHandler
@@ -90,8 +114,10 @@ public class DoubleJumpListener implements Listener {
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     if (mob.getEnergy() < 20) {
-      plugin.getGuiManager().postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 49,10));
-      event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
+      plugin.getGuiManager()
+          .postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 49, 10));
+      event.getPlayer()
+          .playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
       return;
     }
 
@@ -117,11 +143,17 @@ public class DoubleJumpListener implements Listener {
         && event.getPlayer().getPotionEffect(PotionEffectType.JUMP).getAmplifier() < 0) {
       return;
     }
-    int lastSneak = MoveUtil.getLastSneak(event.getPlayer());
-    if (lastSneak == -1 || lastSneak > 200) {
+    if (event.getPlayer().hasPotionEffect(PotionEffectType.SLOW)) {
       return;
     }
-    if (!event.getPlayer().getLocation().clone().add(0, -0.05, 0)
+    int lastSneak = MoveUtil.getLastSneak(event.getPlayer());
+    if (lastSneak == -1 || lastSneak > 250) {
+      return;
+    }
+    if (MoveUtil.getVelocity(event.getPlayer()).getY() > 0) {
+      return;
+    }
+    if (!event.getPlayer().getLocation().clone().add(0, -0.02, 0)
         .getBlock().isCollidable()) {
       return;
     }
@@ -133,11 +165,10 @@ public class DoubleJumpListener implements Listener {
       return;
     }
 
-    float currentCost = dodgeCost.getOrDefault(player, 6f);
+    float currentCost = dodgeCost.getOrDefault(player, baseRollCost);
     if (lastDodge.containsKey(player)) {
-      // Reduce the cost by 4 per second since last dodge, down to 5
       float msSinceDodge = System.currentTimeMillis() - lastDodge.get(player);
-      currentCost = Math.max(6f, currentCost - (msSinceDodge * 0.004f));
+      currentCost = Math.max(baseRollCost, currentCost - (msSinceDodge * rollCostDecay));
     }
 
     if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
@@ -153,17 +184,28 @@ public class DoubleJumpListener implements Listener {
       return;
     }
 
-    StatUtil.changeEnergy(mob, -currentCost);
+    float finalCurrentCost = currentCost;
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      if (MoveUtil.getVelocity(player).getY() < 0.001) {
 
-    lastDodge.put(player, System.currentTimeMillis());
-    dodgeCost.put(player, Math.min(45, currentCost * 1.5f + 1f));
+        StatUtil.changeEnergy(mob, -finalCurrentCost);
 
-    player.setCooldown(Material.DIAMOND_CHESTPLATE, 16);
-    plugin.getAttackSpeedManager().resetAttack(mob);
+        lastDodge.put(player, System.currentTimeMillis());
+        dodgeCost.put(player, Math.min(maxRollCost, finalCurrentCost * rollCostMult + rollCostFlat));
 
-    player.setVelocity(currentVelocity.add(horizontalMovement.normalize().multiply(0.8f)).setY(0.21f));
-    player.getWorld().spawnParticle(Particle.SPIT, player.getLocation(), 10, 0, 0, 0, 0.11);
-    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true));
+
+        plugin.getAbilityManager().setGlobalCooldown(player, 16);
+        plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
+
+        player.setVelocity(currentVelocity.add(horizontalMovement.normalize()
+            .multiply(rollPower)).setY(rollAscent));
+        player.getWorld().spawnParticle(Particle.SPIT,
+            player.getLocation(), 10, 0, 0, 0, 0.11);
+        player.getWorld().playSound(player.getLocation(),
+            Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+      }
+    }, 3L);
   }
 
   private void doAirJump(StrifeMob mob, Player player, int jumps) {

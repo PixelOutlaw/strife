@@ -107,7 +107,7 @@ public class InventoryListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.LOW)
   public void onPlayerDropItem(PlayerSwapHandItemsEvent event) {
     if (isIcon(event.getMainHandItem()) || isIcon(event.getOffHandItem())) {
       event.setCancelled(true);

@@ -75,30 +75,10 @@ public class ItemUtil {
   }
 
   public static boolean isMeleeWeapon(Material material) {
-    switch (material) {
-      case WOODEN_AXE:
-      case WOODEN_HOE:
-      case WOODEN_SHOVEL:
-      case STONE_AXE:
-      case STONE_SWORD:
-      case STONE_HOE:
-      case STONE_SHOVEL:
-      case IRON_AXE:
-      case IRON_SWORD:
-      case IRON_HOE:
-      case IRON_SHOVEL:
-      case GOLDEN_AXE:
-      case GOLDEN_SWORD:
-      case GOLDEN_HOE:
-      case GOLDEN_SHOVEL:
-      case DIAMOND_AXE:
-      case DIAMOND_SWORD:
-      case DIAMOND_HOE:
-      case DIAMOND_SHOVEL:
-        return true;
-      default:
-        return false;
-    }
+    return switch (material) {
+      case WOODEN_AXE, WOODEN_HOE, WOODEN_SHOVEL, STONE_AXE, STONE_SWORD, STONE_HOE, STONE_SHOVEL, IRON_AXE, IRON_SWORD, IRON_HOE, IRON_SHOVEL, GOLDEN_AXE, GOLDEN_SWORD, GOLDEN_HOE, GOLDEN_SHOVEL, DIAMOND_AXE, DIAMOND_SWORD, DIAMOND_HOE, DIAMOND_SHOVEL -> true;
+      default -> false;
+    };
   }
 
   public static boolean isTool(ItemStack stack) {
@@ -142,9 +122,7 @@ public class ItemUtil {
         equipment.getItemInOffHand().getType());
   }
 
-  public static boolean isValidOffhand(EntityEquipment entityEquipment) {
-    ItemStack mainItem = entityEquipment.getItemInMainHand();
-    ItemStack offItem = entityEquipment.getItemInOffHand();
+  public static boolean isValidOffhand(ItemStack mainItem, ItemStack offItem) {
     if (mainItem.getType() == Material.AIR || offItem.getType() == Material.AIR) {
       return true;
     }
@@ -181,16 +159,25 @@ public class ItemUtil {
   }
 
   public static boolean isQuiver(ItemStack stack) {
+    if (stack == null) {
+      return false;
+    }
     int itemData = getCustomData(stack);
     return stack.getType() == Material.ARROW && itemData < 10000;
   }
 
   public static boolean isBullets(ItemStack stack) {
+    if (stack == null) {
+      return false;
+    }
     int itemData = getCustomData(stack);
     return stack.getType() == Material.ARROW && itemData > 9999 && itemData < 11000;
   }
 
   public static boolean isWandOrStaff(ItemStack stack) {
+    if (stack == null) {
+      return false;
+    }
     if (stack.getType() != Material.WOODEN_SWORD) {
       return false;
     }
@@ -199,6 +186,9 @@ public class ItemUtil {
   }
 
   public static boolean isValidMageOffhand(ItemStack stack) {
+    if (stack == null) {
+      return true;
+    }
     return stack.getType() == Material.BOOK || stack.getType() == Material.SHIELD ||
         stack.getType() == Material.POTATO;
   }

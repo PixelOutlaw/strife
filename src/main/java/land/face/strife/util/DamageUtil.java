@@ -1,5 +1,8 @@
 package land.face.strife.util;
 
+import static land.face.strife.listeners.LoreAbilityListener.executeBoundEffects;
+import static land.face.strife.listeners.LoreAbilityListener.executeFiniteEffects;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_DEATH;
 import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
@@ -7,13 +10,16 @@ import static land.face.strife.util.StatUtil.getWardingMult;
 
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.DamageModifiers.ElementalStatus;
+import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
@@ -105,7 +111,7 @@ public class DamageUtil {
         .getString("language.status.evade-message", "&7&l&oDodge!"));
 
     BASE_RECHARGE_TICKS = plugin.getSettings()
-        .getInt("config.mechanics.barrier.base-delay-ticks", 80);
+        .getInt("config.mechanics.barrier.base-delay-ticks", 100);
     TICK_RATE = plugin.getSettings()
         .getInt("config.mechanics.barrier.task-tick-rate", 3);
     DELAY_TICKS = (int) ((float) BASE_RECHARGE_TICKS / TICK_RATE);
@@ -172,6 +178,9 @@ public class DamageUtil {
     if (mods.isCanBeEvaded()) {
       float evadeMult = DamageUtil.determineEvasion(attacker, defender, mods.getAbilityMods());
       if (evadeMult == -1) {
+        if (mods.isBasicAttack() && mods.getAttackType() == AttackType.MELEE) {
+          plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f, true);
+        }
         return false;
       }
       mods.setAttackMultiplier(attackMult * evadeMult);
@@ -384,9 +393,8 @@ public class DamageUtil {
     boolean success = critChance >= rollDouble(hasLuck(attacker.getEntity()));
     if (success) {
       DamageUtil.callCritEvent(attacker, defender);
-      defender.getEntity().getWorld()
-          .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GENERIC_BIG_FALL, 2f,
-              0.75f);
+      defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
+          Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.75f);
       //if (attacker.getEntity() instanceof Player) {
       //  StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
       //      defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 3, "&c&lCRIT!");
@@ -801,12 +809,11 @@ public class DamageUtil {
 
   public static void doEvasion(StrifeMob attacker, StrifeMob defender) {
     callEvadeEvent(defender, attacker);
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
+        Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (attacker.getEntity() instanceof Player) {
-      StrifePlugin.getInstance().getIndicatorManager()
-          .addIndicator(attacker.getEntity(), defender.getEntity(), IndicatorStyle.BOUNCE, 6,
-              "&7&oMiss");
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "&7&oMiss");
     }
   }
 
@@ -946,12 +953,18 @@ public class DamageUtil {
         defender.flagPvp();
       }
     }
-    attacker.getEntity().setHealth(Math.max(0D, attacker.getEntity().getHealth() - reflectDamage));
+    DamageUtil.dealRawDamage(attacker.getEntity(), reflectDamage);
   }
 
   public static void callCritEvent(StrifeMob attacker, StrifeMob victim) {
     CriticalEvent c = new CriticalEvent(attacker, victim);
     Bukkit.getPluginManager().callEvent(c);
+  }
+
+  public static void doPreDeath(StrifeMob victim) {
+    Set<LoreAbility> abilitySet = new HashSet<>(victim.getLoreAbilities(ON_DEATH));
+    executeBoundEffects(victim, victim, abilitySet);
+    executeFiniteEffects(victim, victim, ON_DEATH);
   }
 
   public static void callEvadeEvent(StrifeMob evader, StrifeMob attacker) {
@@ -1017,6 +1030,10 @@ public class DamageUtil {
   }
 
   public static void dealRawDamage(LivingEntity le, float damage) {
+    if (damage >= le.getHealth()) {
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
+      DamageUtil.doPreDeath(mob);
+    }
     if (le.getHealth() <= damage) {
       le.setHealth(0);
     } else {

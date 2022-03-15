@@ -32,7 +32,10 @@ import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
@@ -130,6 +133,9 @@ public class UniqueEntityManager {
 
     if (!uniqueEntity.isGravity()) {
       le.setGravity(false);
+    }
+    if (!uniqueEntity.isCollidable()) {
+      le.setCollidable(false);
     }
     if (!uniqueEntity.isHasAI()) {
       le.setAI(false);
@@ -306,8 +312,6 @@ public class UniqueEntityManager {
         if (modeledEntity == null) {
           Bukkit.getLogger().warning("Failed to create modelled entity");
         } else {
-          modeledEntity.setNametagVisible(true);
-          modeledEntity.setNametag(uniqueEntity.getName());
           modeledEntity.addActiveModel(model);
           modeledEntity.detectPlayers();
           modeledEntity.setInvisible(true);
@@ -335,15 +339,13 @@ public class UniqueEntityManager {
       }, 2L);
     }
 
-    plugin.getStatUpdateManager().updateVanillaAttributes(mob);
-    StatUtil.getStat(mob, StrifeStat.BARRIER);
-    StatUtil.getStat(mob, StrifeStat.HEALTH);
-    StatUtil.getStat(mob, StrifeStat.ENERGY);
-    mob.restoreBarrier(200000);
-
     mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      plugin.getStatUpdateManager().updateVanillaAttributes(mob);
+
+      StatUtil.getStat(mob, StrifeStat.BARRIER);
+      mob.restoreBarrier(200000);
       plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.PHASE_SHIFT);
       plugin.getParticleTask().addParticle(le, uniqueEntity.getStrifeParticle());
       plugin.getAbilityManager().startAbilityTimerTask(mob);
@@ -385,9 +387,8 @@ public class UniqueEntityManager {
       }
 
       uniqueEntity.setId(entityNameKey);
-      uniqueEntity.setName(
-          StringExtensionsKt
-              .chatColorize(Objects.requireNonNull(cs.getString("name", "&fSET &cA &9NAME"))));
+      uniqueEntity.setName(StringExtensionsKt.chatColorize(Objects.requireNonNull(
+          cs.getString("name", "&fSET &cA &9NAME"))));
       uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
       uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
       uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
@@ -418,6 +419,7 @@ public class UniqueEntityManager {
       uniqueEntity.setModelId(cs.getString("model-id", null));
       uniqueEntity.setAttackDisabledOnGlobalCooldown(cs.getBoolean("disable-attacks-on-global-cooldown", false));
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
+      uniqueEntity.setCollidable(cs.getBoolean("collidable", true));
       uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
       uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
       uniqueEntity.setSilent(cs.getBoolean("silent", false));
@@ -434,11 +436,6 @@ public class UniqueEntityManager {
 
       uniqueEntity.setCustomAi(cs.getBoolean("custom-ai.enabled", false));
       uniqueEntity.setAggressiveAi(cs.getBoolean("custom-ai.aggressive", true));
-      try {
-        uniqueEntity.setAttackSound(Sound.valueOf(cs.getString("custom-ai.attack-sound")));
-      } catch (Exception e) {
-        uniqueEntity.setAttackSound(Sound.ENTITY_DOLPHIN_ATTACK);
-      }
       uniqueEntity.setRemoveGoals(cs.getStringList("custom-ai.remove-goals"));
       uniqueEntity.setAddGoals(cs.getStringList("custom-ai.add-goals"));
 

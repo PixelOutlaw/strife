@@ -203,12 +203,12 @@ public class CombatListener implements Listener {
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
       if (ItemUtil.isWandOrStaff(Objects.requireNonNull(attackEntity.getEquipment()).getItemInMainHand())) {
-        double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
-        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.2D));
+        double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
+        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.25D));
         event.setCancelled(true);
         return;
       }
-      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker);
+      attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
       attackMultiplier = (float) Math.pow(attackMultiplier, 1.1);
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
@@ -322,8 +322,8 @@ public class CombatListener implements Listener {
     }
 
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
-      finalDamage *= 0.5;
-      float bleed = finalDamage;
+      eventDamage *= 0.5;
+      float bleed = eventDamage;
       DamageUtil.applyBleed(defender, defender, bleed, true);
     }
 
@@ -335,6 +335,15 @@ public class CombatListener implements Listener {
           (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
       event.setCancelled(true);
       return;
+    } else {
+      if (eventDamage >= defendEntity.getHealth()) {
+        DamageUtil.doPreDeath(defender);
+      }
+    }
+
+    if (attackEntity instanceof Player) {
+      plugin.getBossBarManager().pushBar((Player) attackEntity, plugin.getStrifeMobManager()
+          .getStatMob(defendEntity), eventDamage > defendEntity.getHealth());
     }
 
     event.setDamage(BASE, Math.max(eventDamage, 0.001));

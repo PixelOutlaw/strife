@@ -10,7 +10,6 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -112,25 +111,10 @@ public class CooldownTracker extends BukkitRunnable {
             1, 1, toggleState);
         return;
       }
-      int maxCharges = ability.getMaxCharges();
-      int displayedNumber = 1;
-      double percent = 1D;
-      if (ability.getMaxCharges() > 1) {
-        if (chargesLeft >= maxCharges) {
-          displayedNumber = maxCharges;
-        } else {
-          if (chargesLeft == 0) {
-            percent = (double) duration / maxDuration;
-          } else {
-            displayedNumber = chargesLeft;
-          }
-        }
-      } else {
-        percent = (double) duration / maxDuration;
-      }
+      double percent = (double) duration / maxDuration;
       ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(),
           player, ability.getAbilityIconData().getAbilitySlot().getSlotIndex(),
-          percent, displayedNumber, toggleState);
+          percent, 1, toggleState);
     }
   }
 }

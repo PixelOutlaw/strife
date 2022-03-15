@@ -79,6 +79,8 @@ public enum StrifeStat {
   PROJECTILE_DAMAGE("Projectile Damage"),
   PROJECTILE_REDUCTION("Projectile Protection"),
 
+  LUNG_CAPACITY("Lung Capacity"),
+
   ATTACK_SPEED("Attack Speed"),
   CRITICAL_RATE("Critical Chance"),
   CRITICAL_DAMAGE("Critical Damage"),
@@ -155,6 +157,9 @@ public enum StrifeStat {
   ACCURACY_MULT(),
   MINION_MULT_INTERNAL(),
 
+  LIFE_FROM_POTIONS("Life From Potions"),
+  ENERGY_FROM_POTIONS("Energy From Potions"),
+  POTION_REFILL("Potion Refill Speed"),
   EFFECT_DURATION("Effect Duration");
 
   // values() is dumb, so we only run it once, and hit use this to

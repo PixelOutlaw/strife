@@ -177,9 +177,7 @@ public class ChampionSaveData {
   }
 
   public boolean isGlowEnabled() {
-    // TODO: allow Enable
-    // return glowEnabled;
-    return false;
+    return glowEnabled;
   }
 
   public void setGlowEnabled(boolean glowEnabled) {

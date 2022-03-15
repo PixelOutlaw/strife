@@ -24,13 +24,17 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
@@ -100,9 +104,6 @@ public class DeathListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathClearData(final EntityDeathEvent event) {
-    if (event.getEntity().getKiller() != null) {
-      plugin.getBossBarManager().doBarDeath(event.getEntity().getKiller());
-    }
     plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     plugin.getSpawnerManager().addRespawnTime(event.getEntity());

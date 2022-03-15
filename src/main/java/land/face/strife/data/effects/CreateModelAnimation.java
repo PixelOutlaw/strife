@@ -7,7 +7,6 @@ import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.util.HashSet;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.TargetingUtil;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -57,7 +56,6 @@ public class CreateModelAnimation extends LocationEffect {
     if (modeledEntity == null) {
       Bukkit.getLogger().warning("Failed to create modelled entity");
     } else {
-      modeledEntity.setNametagVisible(false);
       modeledEntity.addActiveModel(model);
       modeledEntity.detectPlayers();
       modeledEntity.setInvisible(true);
@@ -111,7 +109,6 @@ public class CreateModelAnimation extends LocationEffect {
     if (modeledEntity == null) {
       Bukkit.getLogger().warning("Failed to create modelled entity");
     } else {
-      modeledEntity.setNametagVisible(false);
       modeledEntity.addActiveModel(model);
       modeledEntity.detectPlayers();
       modeledEntity.setInvisible(true);

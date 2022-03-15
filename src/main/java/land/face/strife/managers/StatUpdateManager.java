@@ -92,6 +92,9 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
   }
 
   public void updateHealth(StrifeMob mob) {
+    if (!mob.getEntity().isValid()) {
+      return;
+    }
     double health = mob.getEntity().getHealth();
     double oldMaxHealth = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
     double maxHealth = Math.max(StatUtil.getStat(mob, StrifeStat.HEALTH), 1);
@@ -129,6 +132,9 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
     updateMovementSpeed(strifeMob);
     updateHealth(strifeMob);
     updateWeight(strifeMob);
+    float maxAir = strifeMobManager.getBaseAirTicks() * (1 + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
+    strifeMob.getEntity().setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
+    strifeMob.getEntity().setMaximumAir((int) maxAir);
   }
 
   public static float getHealthScale(HealthDisplayType healthDisplayType, float maxHealth) {

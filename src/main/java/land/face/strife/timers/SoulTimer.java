@@ -53,7 +53,7 @@ public class SoulTimer extends BukkitRunnable {
 
   private final Map<StrifeStat, Float> statMap = new HashMap<>();
 
-  private static int MAX_SOUL_LIFESPAN = 300000;
+  private final static int MAX_SOUL_LIFESPAN = 300000;
 
   private double lostExp = 0;
 
@@ -90,23 +90,20 @@ public class SoulTimer extends BukkitRunnable {
     Set<Player> currentViewers = new HashSet<>();
 
     for (Entity e : location.getWorld().getNearbyEntities(location, 24, 24, 24, this::canSeeSouls)) {
-      ((Player) e).spawnParticle(Particle.SOUL, location, 4, 0.3, 0.3, 0.3, 0);
-      ((Player) e).spawnParticle(Particle.END_ROD, location, 4, 0.6, 0.6, 0.6, 0);
       currentViewers.add((Player) e);
     }
 
-    for (Player player : oldViewers) {
-      if (currentViewers.contains(player)) {
-        continue;
+    for (Player viewer : currentViewers) {
+      viewer.spawnParticle(Particle.SOUL, location, 4, 0.3, 0.3, 0.3, 0);
+      viewer.spawnParticle(Particle.END_ROD, location, 4, 0.6, 0.6, 0.6, 0);
+      if (!oldViewers.contains(viewer)) {
+        soulHead.show(viewer, 1);
       }
-      soulHead.hide(p);
     }
 
-    for (Player player : currentViewers) {
-      if (oldViewers.contains(player)) {
-        continue;
-      }
-      soulHead.show(player, 0);
+    oldViewers.removeAll(currentViewers);
+    for (Player viewer : oldViewers) {
+      soulHead.show(viewer, 0);
     }
 
     viewers.clear();

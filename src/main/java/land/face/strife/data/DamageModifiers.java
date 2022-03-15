@@ -25,6 +25,8 @@ public class DamageModifiers {
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private final Set<ElementalStatus> elementalStatuses = new HashSet<>();
+  @Getter @Setter
+  private boolean isBasicAttack = true;
   private boolean isSneakAttack = false;
   private boolean isBlocking = false;
   private boolean canBeBlocked = true;

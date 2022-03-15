@@ -20,6 +20,7 @@ package land.face.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
@@ -36,8 +37,6 @@ import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.mount.controller.MountController;
-import com.ticxo.modelengine.api.mount.handler.IMountHandler;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +54,7 @@ import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.EloUtil;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -130,6 +130,15 @@ public class StrifeCommand extends BaseCommand {
       mat = Material.APPLE;
     }
     ToastUtils.sendToast(target.getPlayer(), message, new ItemStack(mat), style);
+  }
+
+  @Subcommand("notif")
+  @CommandCompletion("@players SNEED")
+  @Syntax("<player> <fadeIn> <duration> <fadeOut> <message>")
+  @CommandPermission("strife.admin")
+  public void sendNotif(CommandSender sender, OnlinePlayer target, int in, int stay, int out, @Default("sneed") String message) {
+    message = PlayerDataUtil.convertToSuperscript(TextUtils.color(message));
+    target.getPlayer().sendTitle(message, "", in, stay, out);
   }
 
   @Subcommand("defeat")
@@ -358,22 +367,9 @@ public class StrifeCommand extends BaseCommand {
         horse.remove();
       }
     } else {
-      modeledEntity.setNametagVisible(false);
       modeledEntity.addActiveModel(model);
       modeledEntity.detectPlayers();
       modeledEntity.setInvisible(true);
-
-      MountController controller = ModelEngineAPI.api.getControllerManager()
-          .createController("walking");
-      if (controller == null) {
-        controller = ModelEngineAPI.api.getControllerManager().createController("walking");
-      }
-      final IMountHandler handler = modeledEntity.getMountHandler();
-      handler.removePassenger(sender);
-      handler.setCanDamageMount(handler.getDriver(), true);
-      handler.setDriver(null);
-      handler.setDriver(sender, controller);
-      handler.setCanDamageMount(sender, false);
     }
   }
 

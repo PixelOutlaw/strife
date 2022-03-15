@@ -28,7 +28,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -82,10 +81,20 @@ public class StatsMiscMenuItem extends MenuItem {
     lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
         mob.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);
-    lore.add(ChatColor.DARK_AQUA + "Healing Power: " + ChatColor.WHITE + INT_FORMAT.format(
-        100 + mob.getStat(StrifeStat.HEALING_POWER)) + "%");
+    lore.add(ChatColor.DARK_AQUA + "Cooldown Reduction: " + ChatColor.WHITE
+        + INT_FORMAT.format(mob.getStat(StrifeStat.COOLDOWN_REDUCTION)) + "%");
     lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.EFFECT_DURATION)) + "%");
+    lore.add(ChatColor.DARK_AQUA + "Healing Power: " + ChatColor.WHITE + INT_FORMAT.format(
+        100 + mob.getStat(StrifeStat.HEALING_POWER)) + "%");
+    lore.add(breakLine);
+    lore.add(ChatColor.DARK_AQUA + "Life From Potions: " + ChatColor.WHITE + INT_FORMAT.format(
+        100 + mob.getStat(StrifeStat.LIFE_FROM_POTIONS)) + "%");
+    lore.add(ChatColor.DARK_AQUA + "Energy From Potions: " + ChatColor.WHITE + INT_FORMAT.format(
+        100 + mob.getStat(StrifeStat.ENERGY_FROM_POTIONS)) + "%");
+    lore.add(ChatColor.DARK_AQUA + "Potion Refill Speed: " + ChatColor.WHITE + INT_FORMAT.format(
+        100 + mob.getStat(StrifeStat.POTION_REFILL)) + "%");
+
     lore.add(breakLine);
     if (mob.getStat(StrifeStat.DOGE) > 0) {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
