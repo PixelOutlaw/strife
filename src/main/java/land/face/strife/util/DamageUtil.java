@@ -965,6 +965,7 @@ public class DamageUtil {
     Set<LoreAbility> abilitySet = new HashSet<>(victim.getLoreAbilities(ON_DEATH));
     executeBoundEffects(victim, victim, abilitySet);
     executeFiniteEffects(victim, victim, ON_DEATH);
+    plugin.getAbilityIconManager().untoggleDeathToggles(victim);
   }
 
   public static void callEvadeEvent(StrifeMob evader, StrifeMob attacker) {

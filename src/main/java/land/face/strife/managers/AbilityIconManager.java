@@ -12,6 +12,7 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.champion.Champion;
@@ -32,6 +33,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -115,6 +117,24 @@ public class AbilityIconManager {
     return !StringUtils.isBlank(name) && name.startsWith(ABILITY_PREFIX) && !name.contains("✫");
   }
 
+  public void untoggleDeathToggles(StrifeMob mob) {
+    if (mob.getEntity().getType() != EntityType.PLAYER) {
+      return;
+    }
+    Ability abilityA = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_A);
+    Ability abilityB = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_B);
+    Ability abilityC = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_C);
+    if (abilityA != null && abilityA.isDeathUntoggle()) {
+      plugin.getAbilityManager().unToggleAbility(mob, abilityA.getId());
+    }
+    if (abilityB != null && abilityB.isDeathUntoggle()) {
+      plugin.getAbilityManager().unToggleAbility(mob, abilityB.getId());
+    }
+    if (abilityC != null && abilityC.isDeathUntoggle()) {
+      plugin.getAbilityManager().unToggleAbility(mob, abilityC.getId());
+    }
+  }
+
   public void triggerAbility(Player player, int slotNumber) {
     AbilitySlot slot = AbilitySlot.fromSlot(slotNumber);
     if (slot == AbilitySlot.INVALID) {
@@ -128,11 +148,17 @@ public class AbilityIconManager {
       }
       return;
     }
-    if (player.getCooldown(ability.getCastType().getMaterial()) > 0) {
+    boolean toggledOn = false;
+    CooldownTracker cooldownTracker = plugin.getAbilityManager()
+        .getCooldownTracker(player, ability.getId());
+    if (cooldownTracker != null) {
+      toggledOn = cooldownTracker.isToggleState();
+    }
+    if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 0) {
       return;
     }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(ability,
-        plugin.getStrifeMobManager().getStatMob(player), null);
+        plugin.getStrifeMobManager().getStatMob(player), null, toggledOn);
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       plugin.getAbilityManager().setGlobalCooldown(player, 5);

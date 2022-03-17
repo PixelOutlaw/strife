@@ -25,6 +25,8 @@ public class Ability {
   private final float cost;
   private final List<Effect> effects;
   private final List<Effect> toggleOffEffects;
+  @Getter
+  private final boolean deathUntoggle;
   private final int cooldown;
   private final int maxCharges;
   private final int globalCooldownTicks;
@@ -43,7 +45,8 @@ public class Ability {
       AbilityType castType, TargetType targetType, float range, float cost, int cooldown,
       int maxCharges, int globalCooldownTicks, boolean showMsgs, boolean requireTarget,
       boolean raycastsTargetEntities, Set<Condition> conditions, boolean passiveStatsOnCooldown,
-      boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth) {
+      boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth,
+      boolean deathUntoggle) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -63,6 +66,7 @@ public class Ability {
     this.abilityIconData = abilityIconData;
     this.friendly = friendly;
     this.cancelStealth = cancelStealth;
+    this.deathUntoggle = deathUntoggle;
   }
 
   @NotNull

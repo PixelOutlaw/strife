@@ -623,11 +623,12 @@ public class AbilityManager {
     boolean friendly = cs.getBoolean("friendly", false);
     boolean passivesOnCooldown = cs.getBoolean("passive-stats-on-cooldown", false);
     boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
+    boolean deathUntoggle = cs.getBoolean("untoggle-on-death", false);
 
     Ability ability = new Ability(key, name, effects, toggleOffEffects, abilityType, targetType,
         range, cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
         raycastsHitEntities, conditions, passivesOnCooldown, friendly, abilityIconData,
-        cancelStealth);
+        cancelStealth, deathUntoggle);
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
         cs.getConfigurationSection("passive-stats")));
