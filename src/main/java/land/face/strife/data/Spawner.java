@@ -122,6 +122,19 @@ public class Spawner extends BukkitRunnable {
       return;
     }
 
+    if (0.1 > Math.random()) {
+      int level = spawner.getUniqueEntity().getBaseLevel();
+      StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
+          (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager().spawnVagabond(level,
+              spawner.getLocation()));
+      if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+        Bukkit.getLogger().warning("Spawner failed to spawn vagabond! " + spawner.getId());
+        return;
+      }
+      spawner.addEntity(mob.getEntity());
+      return;
+    }
+
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
         (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
             .spawnUnique(spawner.getUniqueEntity(), spawner.getLocation()));

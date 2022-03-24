@@ -63,8 +63,8 @@ public class MonsterManager {
     return (float) expression.setVariable("LEVEL", mobLevel).evaluate();
   }
 
-  public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity) {
-    return getBaseStats(livingEntity, -1);
+  public Map<StrifeStat, Float> getBaseStats(EntityType type) {
+    return getBaseStats(type, -1);
   }
 
   public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity, int level) {

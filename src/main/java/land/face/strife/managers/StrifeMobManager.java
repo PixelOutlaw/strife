@@ -68,6 +68,13 @@ public class StrifeMobManager {
     if (entity == null) {
       return null;
     }
+    return getStatMob(entity, entity.getType());
+  }
+
+  public StrifeMob getStatMob(LivingEntity entity, EntityType simulationType) {
+    if (entity == null) {
+      return null;
+    }
     if (!trackedEntities.containsKey(entity)) {
       StrifeMob mob;
       if (entity.getType() == EntityType.PLAYER) {
@@ -75,7 +82,7 @@ public class StrifeMobManager {
       } else {
         mob = new StrifeMob(entity);
       }
-      mob.setStats(plugin.getMonsterManager().getBaseStats(entity));
+      mob.setStats(plugin.getMonsterManager().getBaseStats(simulationType));
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);

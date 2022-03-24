@@ -147,6 +147,24 @@ public class StatUtil {
     return attackTime;
   }
 
+  public static Map<StrifeStat, Float> buildStatsFromAttributes(Map<StrifeAttribute, Integer> m) {
+    Map<StrifeStat, Float> attributeMap = new HashMap<>();
+    for (StrifeAttribute stat : m.keySet()) {
+      int statLevel = m.get(stat);
+      if (statLevel == 0) {
+        continue;
+      }
+      for (StrifeStat attr : stat.getAttributeMap().keySet()) {
+        float amount = stat.getAttributeMap().get(attr) * statLevel;
+        if (attributeMap.containsKey(attr)) {
+          amount += attributeMap.get(attr);
+        }
+        attributeMap.put(attr, amount);
+      }
+    }
+    return attributeMap;
+  }
+
   public static float getCriticalMultiplier(StrifeMob ae) {
     return 1 + (ae.getStat(StrifeStat.CRITICAL_DAMAGE) / 100);
   }

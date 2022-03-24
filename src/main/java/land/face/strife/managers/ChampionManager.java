@@ -34,6 +34,7 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -176,21 +177,7 @@ public class ChampionManager {
   }
 
   public void rebuildAttributes(Champion champion) {
-    Map<StrifeStat, Float> attributeMap = new HashMap<>();
-    for (StrifeAttribute stat : champion.getLevelMap().keySet()) {
-      int statLevel = champion.getLevelMap().get(stat);
-      if (statLevel == 0) {
-        continue;
-      }
-      for (StrifeStat attr : stat.getAttributeMap().keySet()) {
-        float amount = stat.getAttributeMap().get(attr) * statLevel;
-        if (attributeMap.containsKey(attr)) {
-          amount += attributeMap.get(attr);
-        }
-        attributeMap.put(attr, amount);
-      }
-    }
-    champion.setLevelPointStats(attributeMap);
+    champion.setLevelPointStats(StatUtil.buildStatsFromAttributes(champion.getLevelMap()));
   }
 
   public boolean addBoundLoreAbility(StrifeMob mob, LoreAbility loreAbility) {
