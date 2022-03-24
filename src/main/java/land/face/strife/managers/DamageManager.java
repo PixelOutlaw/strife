@@ -59,11 +59,7 @@ public class DamageManager {
     }
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {
-      if (damage > defender.getEntity().getHealth()) {
-        defender.getEntity().damage(damage);
-        return damage;
-      }
-      defender.getEntity().setHealth(defender.getEntity().getHealth() - damage);
+      DamageUtil.dealRawDamage(defender.getEntity(), damage);
       return damage;
     }
 

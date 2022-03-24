@@ -61,6 +61,11 @@ public class StatUtil {
         mob.setMaxRage(event.getAppliedValue());
         return event.getAppliedValue();
       }
+      case MAX_EARTH_RUNES -> {
+        float amount = stats.getOrDefault(StrifeStat.MAX_EARTH_RUNES, 0f);
+        mob.setMaxEarthRunes(Math.round(amount));
+        return amount;
+      }
       case BARRIER -> {
         if (mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED)) {
           return 0;

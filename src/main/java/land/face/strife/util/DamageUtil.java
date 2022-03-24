@@ -24,7 +24,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Ignite;
-import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
@@ -187,7 +186,7 @@ public class DamageUtil {
     }
 
     if (mods.isCanBeBlocked()) {
-      if (plugin.getBlockManager().isAttackBlocked(attacker, defender, attackMult,
+      if (plugin.getBlockManager().attemptBlock(attacker, defender, attackMult,
           mods.getAttackType(), mods.isBlocking(), mods.isGuardBreak())) {
         DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
         return false;
@@ -281,7 +280,7 @@ public class DamageUtil {
           .getMaxFreezeTicks());
     }
     if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
-      rawDamage *= 1 - (0.03 * plugin.getBlockManager().getEarthRunes(defender));
+      rawDamage *= 1 - (0.03 * defender.getEarthRunes());
     }
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
@@ -535,8 +534,8 @@ public class DamageUtil {
       DamageModifiers mods) {
     float baseDarkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
     if (baseDarkDamage != 0) {
-      damageMap.put(DamageType.DARK,
-          baseDarkDamage * CorruptionUtil.getCorruptionMultiplier(defender));
+      damageMap.put(DamageType.DARK, baseDarkDamage *
+          plugin.getCorruptionManager().getCorruptionMultiplier(defender));
     }
     float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
         attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
@@ -590,11 +589,11 @@ public class DamageUtil {
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-        CorruptionUtil.applyCorrupt(defender, 10 + baseDarkDamage / 4, true);
+        plugin.getCorruptionManager().addCorruption(defender, 10 + baseDarkDamage / 4, true);
       }
       case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
-        int runes = plugin.getBlockManager().getEarthRunes(attacker);
+        int runes = attacker.getEarthRunes();
         float newDamage = damageMap.get(DamageType.EARTH) * (1.25f + (runes * 0.05f));
         defender.getEntity().getWorld().playSound(
             defender.getEntity().getEyeLocation(), Sound.BLOCK_ROOTED_DIRT_BREAK, 1f, 0.85f);
@@ -818,11 +817,7 @@ public class DamageUtil {
   }
 
   public static void doBlock(StrifeMob attacker, StrifeMob defender) {
-    callBlockEvent(defender, attacker);
-    if (attacker.getEntity() instanceof Player) {
-      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          IndicatorStyle.RANDOM_POPOFF, 7, "&e⛨&lBlock");
-    }
+
   }
 
   public static float getPotionMult(LivingEntity attacker, LivingEntity defender) {
@@ -979,11 +974,6 @@ public class DamageUtil {
         sneakDamage);
     Bukkit.getPluginManager().callEvent(sneakAttackEvent);
     return sneakAttackEvent;
-  }
-
-  public static void callBlockEvent(StrifeMob evader, StrifeMob attacker) {
-    BlockEvent ev = new BlockEvent(evader, attacker);
-    Bukkit.getPluginManager().callEvent(ev);
   }
 
   public static boolean hasLuck(LivingEntity entity) {

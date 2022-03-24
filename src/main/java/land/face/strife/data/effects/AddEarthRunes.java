@@ -1,6 +1,5 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 
 public class AddEarthRunes extends Effect {
@@ -9,8 +8,7 @@ public class AddEarthRunes extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    int runes = StrifePlugin.getInstance().getBlockManager().getEarthRunes(target);
-    StrifePlugin.getInstance().getBlockManager().setEarthRunes(target,runes + amount);
+    target.setEarthRunes(target.getEarthRunes() + amount);
   }
 
   public void setAmount(int amount) {

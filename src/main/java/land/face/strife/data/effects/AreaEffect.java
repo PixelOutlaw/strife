@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -142,7 +141,7 @@ public class AreaEffect extends LocationEffect {
       return true;
     }
     return canBeBlocked && getPlugin().getBlockManager()
-        .isAttackBlocked(caster, target, 1.0f, AttackType.AREA, false, false);
+        .attemptBlock(caster, target, 1.0f, AttackType.AREA, false, false);
   }
 
   private boolean canTargetBeHit(UUID caster, UUID target) {

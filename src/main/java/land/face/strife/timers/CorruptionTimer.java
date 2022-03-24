@@ -16,22 +16,39 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.tasks;
+package land.face.strife.timers;
 
+import java.lang.ref.WeakReference;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.CorruptionManager;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class CorruptionTask extends BukkitRunnable {
+public class CorruptionTimer extends BukkitRunnable {
 
-  private final StrifePlugin plugin;
+  private final WeakReference<StrifeMob> target;
+  private final UUID savedUUID;
+  private final CorruptionManager corruptionManager;
 
-  public CorruptionTask(StrifePlugin plugin) {
-    this.plugin = plugin;
+  public CorruptionTimer(CorruptionManager corruptionManager, StrifeMob mob) {
+    this.target = new WeakReference<>(mob);
+    this.corruptionManager = corruptionManager;
+    savedUUID = mob.getEntity().getUniqueId();
+    runTaskTimer(StrifePlugin.getInstance(), 0L, 10L);
   }
 
   @Override
   public void run() {
-    plugin.getStrifeMobManager().tickCorruption();
+    StrifeMob mob = target.get();
+    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+      corruptionManager.clearCorrupt(savedUUID);
+      return;
+    }
+    if (mob.getCorruption() <= 0) {
+      corruptionManager.clearCorrupt(savedUUID);
+      return;
+    }
+    corruptionManager.tickCorruption(mob);
   }
 }

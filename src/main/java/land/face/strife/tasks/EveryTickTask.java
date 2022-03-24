@@ -64,26 +64,12 @@ public class EveryTickTask extends BukkitRunnable {
       new TextComponent("੯")
   );
 
-  private final List<TextComponent> blockLevels = List.of(
-      new TextComponent("௦"),
-      new TextComponent("௧"),
-      new TextComponent("௨"),
-      new TextComponent("௩"),
-      new TextComponent("௪"),
-      new TextComponent("௫"),
-      new TextComponent("௬"),
-      new TextComponent("௭"),
-      new TextComponent("௮"),
-      new TextComponent("௯")
-  );
-
   public EveryTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
   @Override
   public void run() {
-    plugin.getBlockManager().tickHolograms();
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.setFoodLevel(19);
       if (p.getGameMode() == GameMode.ADVENTURE) {
@@ -151,22 +137,6 @@ public class EveryTickTask extends BukkitRunnable {
         }
 
         plugin.getGuiManager().updateAir(gui, p);
-
-        double maxBlock = mob.getMaxBlock();
-        if (maxBlock > 20) {
-          int blockStage = 0;
-          if (mob.getBlock() > 0) {
-            blockStage = 1 + (int) (9 * mob.getBlock() / mob.getMaxBlock());
-          }
-          if (blockStage < 10) {
-            gui.update(new GUIComponent("block-ind", blockLevels.get(blockStage), 20, -120,
-                Alignment.CENTER));
-          } else {
-            gui.update(new GUIComponent("block-ind", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-          }
-        } else {
-          gui.update(new GUIComponent("block-ind", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-        }
 
         double hoverPower = JumpUtil.determineHoverPower(p);
         if (hoverPower > 0) {

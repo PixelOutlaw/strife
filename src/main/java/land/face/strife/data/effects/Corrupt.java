@@ -9,7 +9,7 @@ public class Corrupt extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    CorruptionUtil.applyCorrupt(target, applyMultipliers(caster, amount), true);
+    getPlugin().getCorruptionManager().addCorruption(target, applyMultipliers(caster, amount), true);
   }
 
   public void setAmount(float amount) {

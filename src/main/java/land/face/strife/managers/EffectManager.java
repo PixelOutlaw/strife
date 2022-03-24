@@ -221,6 +221,7 @@ public class EffectManager {
         effect = new Heal();
         ((Heal) effect).setAmount((float) cs.getDouble("amount", 1));
         ((Heal) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
+        ((Heal) effect).setTickDuration(cs.getInt("tick-duration", -1));
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Heal) effect).setUseHealingPower(cs.getBoolean("use-healing-power", false));
         ((Heal) effect).setHealCaster(cs.getBoolean("heal-caster", false));

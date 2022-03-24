@@ -43,7 +43,6 @@ public class StrifeMobManager {
   private final float dualWieldAttackSpeed;
   private final Map<String, String> levelReqMap = new HashMap<>();
 
-  private static int frostTick = 0;
   @Getter
   private final float baseAirTicks;
 
@@ -98,17 +97,6 @@ public class StrifeMobManager {
     if (trackedEntities.containsKey(player)) {
       StrifeMob mob = trackedEntities.get(player);
       mob.setEnergy(mob.getMaxEnergy() / ((float) player.getFoodLevel() / 20));
-    }
-  }
-
-  public void tickCorruption() {
-    Map<LivingEntity, StrifeMob> loopMobs = Collections.synchronizedMap(trackedEntities);
-    for (StrifeMob mob : loopMobs.values()) {
-      LivingEntity le = mob.getEntity();
-      if (mob.getCorruption() < 0.1 || le == null || !le.isValid()) {
-        continue;
-      }
-      CorruptionUtil.tickCorruption(mob);
     }
   }
 

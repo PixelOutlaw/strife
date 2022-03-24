@@ -18,45 +18,35 @@
  */
 package land.face.strife.managers;
 
-import com.sentropic.guiapi.gui.Alignment;
-import com.sentropic.guiapi.gui.GUIComponent;
-import eu.decentsoftware.holograms.api.DHAPI;
-import eu.decentsoftware.holograms.api.holograms.Hologram;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.BlockData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.events.BlockEvent;
+import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.tasks.ParticleTask;
+import land.face.strife.timers.BlockTimer;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AttackType;
+import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 public class BlockManager {
 
   private final StrifePlugin plugin;
 
-  private final Map<StrifeMob, BlockData> blockDataMap = new WeakHashMap<>();
+  private final Map<UUID, BlockTimer> blockTimers = new HashMap<>();
   private final Random random = new Random();
+
   private static final double MAX_BLOCK_CHANCE = 0.55;
+  public static final int BLOCK_TICK = 4;
+  private static final float BLOCK_TICK_MULT = (float) BLOCK_TICK / 20;
 
   private final float FLAT_BLOCK_S;
   private final float PERCENT_BLOCK_S;
@@ -66,8 +56,6 @@ public class BlockManager {
   private final float PHYSICAL_BLOCK_FATIGUE_MULT;
   private final float PHYSICAL_BLOCK_CHANCE_MULT;
   private final float GUARD_BREAK_POWER;
-
-  private static final ItemStack BLOCK_DATA = new ItemStack(Material.COARSE_DIRT);
 
   public BlockManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -89,136 +77,46 @@ public class BlockManager {
         .getDouble("config.mechanics.block.guard-break-multiplier", 1.5f);
   }
 
-  public void tickBlock() {
-    Map<LivingEntity, StrifeMob> loopMobs = Collections
-        .synchronizedMap(plugin.getStrifeMobManager().getMobs());
-    for (StrifeMob mob : loopMobs.values()) {
-      if (mob.getMaxBlock() < 1) {
-        continue;
-      }
-      float blockGain = FLAT_BLOCK_S + PERCENT_BLOCK_S * mob.getMaxBlock();
-      mob.setBlock(Math.min(mob.getMaxBlock(), mob.getBlock() + blockGain / 10));
-    }
-  }
-
-  public void tickHolograms() {
-    Iterator<StrifeMob> iterator = blockDataMap.keySet().iterator();
-    while (iterator.hasNext()) {
-      StrifeMob mob = iterator.next();
-      if (mob == null) {
-        iterator.remove();
-        continue;
-      }
-      BlockData blockData = blockDataMap.get(mob);
-      if (!mob.getEntity().isValid()) {
-        for (Hologram holo : blockData.getRuneHolograms()) {
-          holo.delete();
-        }
-        iterator.remove();
-        continue;
-      }
-      if (System.currentTimeMillis() > blockData.getRuneFalloff()) {
-        setEarthRunes(mob, 0);
-      }
-      if (blockData.getRunes() == 0 && blockData.getRuneHolograms().size() == 0) {
-        continue;
-      }
-      if (blockData.getRunes() < blockData.getRuneHolograms().size()) {
-        while (blockData.getRunes() < blockData.getRuneHolograms().size()) {
-          Hologram hologram = getRandomFromCollection(blockData.getRuneHolograms());
-          mob.getEntity().getWorld().playSound(hologram.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
-          mob.getEntity().getWorld().spawnParticle(
-              Particle.ITEM_CRACK,
-              hologram.getLocation(),
-              20, 0, 0, 0, 0.07f,
-              BLOCK_DATA
-          );
-          blockData.getRuneHolograms().remove(hologram);
-          hologram.delete();
-        }
-      } else {
-        while (blockData.getRunes() > blockData.getRuneHolograms().size()
-            && blockData.getRuneHolograms().size() < 6) {
-          Hologram holo = DHAPI.createHologram(UUID.randomUUID().toString(),
-              mob.getEntity().getEyeLocation().clone(),
-              List.of("#ICON: COARSE_DIRT"));
-          blockData.getRuneHolograms().add(holo);
-        }
-      }
-      orbitRunes(mob.getEntity().getLocation().clone().add(0, 1, 0), blockData.getRuneHolograms());
-    }
-  }
-
-  public void clearAllEarthRunes() {
-    for (Entry<StrifeMob, BlockData> entry : blockDataMap.entrySet()) {
-      if (entry.getValue().getRunes() > 0) {
-        for (Hologram holo : entry.getValue().getRuneHolograms()) {
-          holo.delete();
-          holo.getLocation().getWorld().playSound(holo.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
-          holo.getLocation().getWorld().spawnParticle(
-              Particle.ITEM_CRACK,
-              holo.getLocation(),
-              20, 0, 0, 0, 0.07f,
-              BLOCK_DATA
-          );
-        }
-      }
-    }
-  }
-
-  private void orbitRunes(Location center, Set<Hologram> runeHolograms) {
-    float step = 360f / runeHolograms.size();
-    float start = ParticleTask.getCurrentTick();
-    int index = 0;
-    for (Hologram holo : runeHolograms) {
-      float radian1 = (float) Math.toRadians(start + step * index);
-      Location loc = center.clone();
-      loc.add(Math.cos(radian1), 0, Math.sin(radian1));
-      DHAPI.moveHologram(holo, loc);
-      index++;
-    }
-  }
-
-  public boolean isAttackBlocked(StrifeMob attacker, StrifeMob defender, float attackMult,
+  public boolean attemptBlock(StrifeMob attacker, StrifeMob defender, float attackMult,
       AttackType attackType, boolean isBlocking, boolean guardBreak) {
     if (rollBlock(defender, attackMult, isBlocking, attackType == AttackType.PROJECTILE, guardBreak)) {
       DamageUtil.doReflectedDamage(defender, attacker, attackType);
-      DamageUtil.doBlock(attacker, defender);
+      BlockEvent ev = new BlockEvent(defender, attacker);
+      Bukkit.getPluginManager().callEvent(ev);
+      if (attacker.getEntity() instanceof Player) {
+        plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+            IndicatorStyle.RANDOM_POPOFF, 7, "&e⛨&lBlock");
+      }
+      if (!blockTimers.containsKey(defender.getEntity().getUniqueId())) {
+        blockTimers.put(defender.getEntity().getUniqueId(), new BlockTimer(this, defender));
+      }
       return true;
     }
     return false;
   }
 
-  public int getEarthRunes(StrifeMob mob) {
-    if (!blockDataMap.containsKey(mob)) {
-      return 0;
-    }
-    return blockDataMap.get(mob).getRunes();
+  public void tickBlock(StrifeMob mob) {
+    float blockGain = FLAT_BLOCK_S + PERCENT_BLOCK_S * mob.getMaxBlock();
+    mob.setBlock(mob.getBlock() + (BLOCK_TICK_MULT * blockGain));
   }
 
-  public void setEarthRunes(StrifeMob mob, int runes) {
-    if (!blockDataMap.containsKey(mob)) {
-      BlockData data = new BlockData();
-      blockDataMap.put(mob, data);
+  public void endTasks() {
+    for (BlockTimer timer : blockTimers.values()) {
+      timer.cancel();
     }
-    BlockData data = blockDataMap.get(mob);
-    int maxRunes = Math.round(mob.getStat(StrifeStat.MAX_EARTH_RUNES));
-    if (maxRunes < 0.99 || mob.getStat(StrifeStat.EARTH_DAMAGE) < 1) {
-      data.setRunes(0);
-      pushRunesBar(mob, maxRunes, 0);
-      return;
-    }
-    int newRunes = Math.max(Math.min(runes, maxRunes), 0);
-    data.setRunes(newRunes);
-    pushRunesBar(mob, maxRunes, newRunes);
+    blockTimers.clear();
   }
 
-  public void bumpRunes(StrifeMob mob) {
-    if (mob.getStat(StrifeStat.EARTH_DAMAGE) < 1) {
-      return;
+  public void clearBlock(LivingEntity entity) {
+    clearBlock(entity.getUniqueId());
+  }
+
+  public void clearBlock(UUID uuid) {
+    if (blockTimers.containsKey(uuid)) {
+      LogUtil.printDebug("Cancelled Block - Cleared");
+      blockTimers.get(uuid).cancel();
+      blockTimers.remove(uuid);
     }
-    int runes = getEarthRunes(mob);
-    setEarthRunes(mob, runes + 1);
   }
 
   public boolean rollBlock(StrifeMob mob, float attackPower, boolean physicallyBlocked,
@@ -256,34 +154,5 @@ public class BlockManager {
       mob.getEntity().getWorld().playSound(mob.getEntity().getEyeLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
       return true;
     }
-  }
-
-  private static void pushRunesBar(StrifeMob mob, int maxRunes, int runes) {
-    if (!(mob.getEntity() instanceof Player)) {
-      return;
-    }
-    if (runes == 0) {
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("rune-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("rune-amount", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      return;
-    }
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-display", GuiManager.EARTH_RUNE, 17, 125, Alignment.RIGHT));
-    String string = StrifePlugin.getInstance().getGuiManager().convertToHpDisplay(runes);
-    TextComponent aaa = new TextComponent(ChatColor.GREEN + string + ChatColor.RESET);
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-amount", aaa, string.length() * 8, 128, Alignment.RIGHT));
-  }
-
-  public static <T> T getRandomFromCollection(Collection<T> coll) {
-    int num = (int) (Math.random() * coll.size());
-    for (T t : coll) {
-      if (--num < 0) {
-        return t;
-      }
-    }
-    throw new AssertionError();
   }
 }

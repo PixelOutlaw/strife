@@ -34,7 +34,7 @@ public class BleedManager {
 
   private final StrifePlugin plugin;
 
-  private Map<UUID, BleedTimer> bleedMap = new ConcurrentHashMap<>();
+  private final Map<UUID, BleedTimer> bleedMap = new ConcurrentHashMap<>();
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.REDSTONE);
 
   public BleedManager(StrifePlugin plugin) {

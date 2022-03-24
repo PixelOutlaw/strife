@@ -16,21 +16,43 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package land.face.strife.tasks;
+package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import land.face.strife.events.RuneChangeEvent;
+import land.face.strife.timers.RuneTimer;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
-public class BlockTask extends BukkitRunnable {
+public class RuneChangeListener implements Listener {
 
   private final StrifePlugin plugin;
 
-  public BlockTask(StrifePlugin plugin) {
+  public RuneChangeListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
-  @Override
-  public void run() {
-    plugin.getBlockManager().tickBlock();
+  @EventHandler
+  public void onRuneChange(RuneChangeEvent event) {
+    if (event.getHolder().getEntity() instanceof Player) {
+      plugin.getRuneManager().pushRuneGui(event.getHolder(), event.getNewValue());
+    }
+    if (event.getNewValue() == 0) {
+      plugin.getRuneManager().clearRunes(event.getHolder().getEntity().getUniqueId());
+      return;
+    }
+    RuneTimer runeTimer;
+    if (!plugin.getRuneManager().getRuneTimers()
+        .containsKey(event.getHolder().getEntity().getUniqueId())) {
+      runeTimer = new RuneTimer(plugin.getRuneManager(), event.getHolder());
+      plugin.getRuneManager().getRuneTimers()
+          .put(event.getHolder().getEntity().getUniqueId(), runeTimer);
+    } else {
+      runeTimer = plugin.getRuneManager().getRuneTimers()
+          .get(event.getHolder().getEntity().getUniqueId());
+      runeTimer.bumpTime();
+    }
+    runeTimer.updateHolos();
   }
 }

@@ -19,6 +19,9 @@ import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.events.AirJumpEvent;
+import land.face.strife.events.BlockChangeEvent;
+import land.face.strife.events.RuneChangeEvent;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
@@ -29,13 +32,10 @@ import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.FrostTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
-import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -66,6 +66,10 @@ public class StrifeMob {
   private float maxEnergy = 0;
   @Getter @Setter
   private float maxRage = 0;
+  @Getter @Setter
+  private int maxEarthRunes = 3;
+  @Getter
+  private int earthRunes = 0;
   private float barrier = 0;
   @Getter @Setter
   private float maxLife = 1;
@@ -152,11 +156,23 @@ public class StrifeMob {
   }
 
   public void setBlock(float block) {
+    float start = this.block;
     this.block = Math.min(block, maxBlock);
+    if (start != block) {
+      Bukkit.getPluginManager().callEvent(new BlockChangeEvent(this, start, this.block));
+    }
   }
 
   public void setBarrier(float barrier) {
     this.barrier = Math.min(barrier, maxBarrier);
+  }
+
+  public void setEarthRunes(int runes) {
+    int start = earthRunes;
+    this.earthRunes = Math.max(0, Math.min(runes, maxEarthRunes));
+    if (start != earthRunes) {
+      Bukkit.getPluginManager().callEvent(new RuneChangeEvent(this, start, earthRunes));
+    }
   }
 
   public void setFrost(float newFrost) {
