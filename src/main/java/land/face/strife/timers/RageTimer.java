@@ -67,7 +67,7 @@ public class RageTimer extends BukkitRunnable {
     runTaskTimer(StrifePlugin.getInstance(), 0L, 4L);
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
     double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
-    sendBorder((Player) mob.getEntity(), percent, 5000);
+    sendBorder(mob.getEntity(), percent, 5000);
     sendRageGui();
   }
 
@@ -91,7 +91,9 @@ public class RageTimer extends BukkitRunnable {
       return;
     } else if (graceTicks == 0) {
       double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
-      sendBorder((Player) mob.getEntity(), percent, 6000);
+      if (mob.getEntity().getType() == EntityType.PLAYER) {
+        sendBorder(mob.getEntity(), percent, 6000);
+      }
     }
 
     float lostTicks = 1 + rageRemaining * 0.12f;
@@ -115,7 +117,7 @@ public class RageTimer extends BukkitRunnable {
     heartbeat = 1;
     float maxRage = mob.getStat(StrifeStat.MAXIMUM_RAGE);
     double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
-    sendBorder((Player) mob.getEntity(), percent, 2000);
+    sendBorder(mob.getEntity(), percent, 2000);
   }
 
   public void bumpRage(float amount) {
@@ -123,7 +125,7 @@ public class RageTimer extends BukkitRunnable {
     rageRemaining = Math.max(0, Math.min(rageRemaining + amount, maxRage));
     sendRageGui();
     double percent = (baseTint + maxRage * maxTintPercentPerRage) * (rageRemaining / maxRage);
-    sendBorder((Player) mob.getEntity(), percent, 4000);
+    sendBorder(mob.getEntity(), percent, 4000);
     heartbeat = 0;
     if (amount >= 0) {
       graceTicks = MAX_GRACE_TICKS;
@@ -131,6 +133,9 @@ public class RageTimer extends BukkitRunnable {
   }
 
   private void sendRageGui() {
+    if (mob.getEntity().getType() != EntityType.PLAYER) {
+      return;
+    }
     if (rageRemaining <= 0) {
       StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(
           new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
@@ -147,8 +152,10 @@ public class RageTimer extends BukkitRunnable {
     return rageRemaining;
   }
 
-  private static void sendBorder(Player player, double percentage, int delay) {
-    BorderEffectUtil.sendBorder(player, percentage , delay);
+  private static void sendBorder(LivingEntity livingEntity, double percentage, int delay) {
+    if (livingEntity.getType() == EntityType.PLAYER) {
+      BorderEffectUtil.sendBorder((Player) livingEntity, percentage, delay);
+    }
   }
 
   private static void spawnRageParticles(LivingEntity entity, float rageStacks) {

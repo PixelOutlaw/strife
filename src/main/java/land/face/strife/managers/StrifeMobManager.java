@@ -2,9 +2,7 @@ package land.face.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 import static org.bukkit.inventory.EquipmentSlot.HAND;
-import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,18 +16,14 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.CorruptionUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -82,7 +76,8 @@ public class StrifeMobManager {
       } else {
         mob = new StrifeMob(entity);
       }
-      mob.setStats(plugin.getMonsterManager().getBaseStats(simulationType));
+      int level = StatUtil.getMobLevel(entity);
+      mob.setStats(plugin.getMonsterManager().getBaseStats(simulationType, level));
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);

@@ -19,12 +19,9 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
-import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.events.UniqueSpawnEvent;
-import land.face.strife.events.VagabondEquipEvent;
-import land.face.strife.events.VagabondSpawnEvent;
 import land.face.strife.patch.GoalPatcher;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ItemPassengerTask;
@@ -35,9 +32,7 @@ import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -59,7 +54,6 @@ import org.bukkit.entity.Piglin;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Raider;
 import org.bukkit.entity.Shulker;
-import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
@@ -124,123 +118,6 @@ public class UniqueEntityManager {
     assert uniqueEntity.getType().getEntityClass() != null;
     return Objects.requireNonNull(location.getWorld()).spawn(location,
         uniqueEntity.getType().getEntityClass(), e -> lambdaSetup(e, uniqueEntity, location));
-  }
-
-  public Entity spawnVagabond(int level, Location location) {
-    return Objects.requireNonNull(location.getWorld()).spawn(location,
-        Skeleton.class, e -> vagabondSetup(e, level));
-  }
-
-  private void vagabondSetup(Skeleton entity, int level) {
-
-    // TODO: vagabond disguises
-    // if (cachedDisguises.containsKey(uniqueEntity)) {
-    //   DisguiseAPI.disguiseToAll(entity, cachedDisguises.get(uniqueEntity));
-    // }
-
-    PlayerDisguise playerDisguise = new PlayerDisguise("vagabond1", "obv_Salan");
-    playerDisguise.setReplaceSounds(true);
-    playerDisguise.setName(ChatColor.GRAY + "Vagabond");
-    playerDisguise.setDynamicName(false);
-
-    DisguiseAPI.disguiseEntity(entity, playerDisguise);
-
-    entity.setRemoveWhenFarAway(true);
-    ChunkUtil.setDespawnOnUnload(entity);
-
-    // TODO: Goals
-    // GoalPatcher.removeGoals((Mob) entity, uniqueEntity.getRemoveGoals());
-    // GoalPatcher.addGoals((Mob) entity, uniqueEntity);
-
-    SpecialStatusUtil.setWeakAggro(entity);
-
-    AttributeInstance attributeInstance = entity.getAttribute(GENERIC_FOLLOW_RANGE);
-    if (attributeInstance != null) {
-      attributeInstance.setBaseValue(32);
-      for (AttributeModifier mod : attributeInstance.getModifiers()) {
-        attributeInstance.removeModifier(mod);
-      }
-    }
-
-    entity.setCanPickupItems(false);
-
-    // TODO: equip mob event
-
-    // TODO: name generation
-    entity.setCustomName(ChatColor.GRAY + "Vagabond");
-    entity.setCustomNameVisible(true);
-
-    String mobClass = "swordsman";
-
-    VagabondEquipEvent vagabondEquipEvent = new VagabondEquipEvent(entity, mobClass, level);
-    Bukkit.getPluginManager().callEvent(vagabondEquipEvent);
-
-    SpecialStatusUtil.setMobLevel(entity, level);
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(entity, EntityType.PLAYER);
-
-    Map<StrifeAttribute, Integer> vagabondAttributes = new HashMap<>();
-    switch (mobClass) {
-      case "swordsman" -> {
-        vagabondAttributes.put(plugin.getAttributeManager().getAttribute("str"), level / 2);
-        vagabondAttributes.put(plugin.getAttributeManager().getAttribute("con"), level / 2);
-        if (level >= 30) {
-          vagabondAttributes.put(plugin.getAttributeManager().getAttribute("savagery"),
-              (level - 20) % 10);
-        }
-        if (level >= 35) {
-          vagabondAttributes.put(plugin.getAttributeManager().getAttribute("mountain"),
-              (level - 25) % 10);
-        }
-      }
-    }
-    Map<StrifeStat, Float> attributeStats = StatUtil.buildStatsFromAttributes(vagabondAttributes);
-
-    boolean dualWield = ItemUtil.isDualWield(entity.getEquipment());
-    Map<StrifeStat, Float> equipmentStats = new HashMap<>();
-    for (EquipmentSlot slot : EquipmentSlot.values()) {
-      switch (slot) {
-        case HAND, OFF_HAND -> {
-          ItemStack stack = entity.getEquipment().getItem(slot);
-          if (stack == null || stack.getType() == Material.AIR) {
-            continue;
-          }
-          Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager()
-              .getItemStats(stack, dualWield ? 0.8f : 1.0f);
-          StatUpdateManager.combineMaps(equipmentStats, newMap);
-        }
-        default -> {
-          ItemStack stack = entity.getEquipment().getItem(slot);
-          if (stack == null || stack.getType() == Material.AIR) {
-            continue;
-          }
-          Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack);
-          StatUpdateManager.combineMaps(equipmentStats, newMap);
-        }
-      }
-    }
-
-    mob.setStats(StatUpdateManager.combineMaps(
-        mob.getBaseStats(),
-        attributeStats,
-        equipmentStats
-    ));
-
-    ChunkUtil.setDespawnOnUnload(mob.getEntity());
-    mob.setCharmImmune(true);
-
-    // TODO: abilities
-    // mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
-
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      plugin.getStatUpdateManager().updateVanillaAttributes(mob);
-      StatUtil.getStat(mob, StrifeStat.BARRIER);
-      mob.restoreBarrier(200000);
-      plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.PHASE_SHIFT);
-      plugin.getAbilityManager().startAbilityTimerTask(mob);
-    }, 0L);
-
-    VagabondSpawnEvent vagabondSpawnEvent = new VagabondSpawnEvent(mob);
-    Bukkit.getPluginManager().callEvent(vagabondSpawnEvent);
   }
 
   private void lambdaSetup(Entity entity, UniqueEntity uniqueEntity, Location location) {
@@ -400,14 +277,14 @@ public class UniqueEntityManager {
     le.setCustomName(uniqueEntity.getName());
     le.setCustomNameVisible(uniqueEntity.isShowName());
 
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
-
     int mobLevel = uniqueEntity.getBaseLevel();
     if (mobLevel < 0) {
       mobLevel = StatUtil.getMobLevel(le);
     }
 
     SpecialStatusUtil.setMobLevel(le, mobLevel);
+
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
 
     if (mobLevel == 0) {
       mob.setStats(uniqueEntity.getAttributeMap());
@@ -543,6 +420,7 @@ public class UniqueEntityManager {
       uniqueEntity.setAttackDisabledOnGlobalCooldown(cs.getBoolean("disable-attacks-on-global-cooldown", false));
       uniqueEntity.setGravity(cs.getBoolean("gravity", true));
       uniqueEntity.setCollidable(cs.getBoolean("collidable", true));
+      uniqueEntity.setVagabondAllowed(cs.getBoolean("vagabond-allowed", true));
       uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
       uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
       uniqueEntity.setSilent(cs.getBoolean("silent", false));

@@ -131,6 +131,7 @@ import land.face.strife.managers.StealthManager;
 import land.face.strife.managers.StrifeAttributeManager;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.managers.UniqueEntityManager;
+import land.face.strife.managers.VagabondManager;
 import land.face.strife.managers.WSEManager;
 import land.face.strife.menus.abilities.AbilityMenu;
 import land.face.strife.menus.abilities.AbilitySubmenu;
@@ -222,6 +223,8 @@ public class StrifePlugin extends FacePlugin {
   private StealthManager stealthManager;
   @Getter
   private UniqueEntityManager uniqueEntityManager;
+  @Getter
+  private VagabondManager vagabondManager;
   @Getter
   private BossBarManager bossBarManager;
   @Getter
@@ -334,6 +337,7 @@ public class StrifePlugin extends FacePlugin {
 
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
+    vagabondManager = new VagabondManager(this);
     bossBarManager = new BossBarManager(this);
     damageManager = new DamageManager(this);
     chaserManager = new ChaserManager(this);
@@ -402,7 +406,8 @@ public class StrifePlugin extends FacePlugin {
     buildPaths();
     buildLoreAbilities();
 
-    buildUniqueEnemies();
+    uniqueEntityManager.loadUniques(uniqueEnemiesYAML);
+    vagabondManager.loadClasses(configYAML.getConfigurationSection("vagabonds"));
     buildMobMods();
     loadSpawners();
 
@@ -823,10 +828,6 @@ public class StrifePlugin extends FacePlugin {
     ConfigurationSection cs = globalBoostsYAML.getConfigurationSection("boost-templates");
     assert cs != null;
     boostManager.loadStatBoosts(cs);
-  }
-
-  private void buildUniqueEnemies() {
-    uniqueEntityManager.loadUniques(uniqueEnemiesYAML);
   }
 
   public void loadSpawners() {

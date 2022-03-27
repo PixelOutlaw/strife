@@ -4,6 +4,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -303,5 +304,15 @@ public class PlayerDataUtil {
         .replaceAll("\\?", "ˀ\uF801");
     cachedSuperscript.put(original, s);
     return s;
+  }
+
+  public static <T> T getRandomFromCollection(Collection<T> coll) {
+    int num = (int) (Math.random() * coll.size());
+    for (T t : coll) {
+      if (--num < 0) {
+        return t;
+      }
+    }
+    throw new AssertionError();
   }
 }

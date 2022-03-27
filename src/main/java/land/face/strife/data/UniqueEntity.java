@@ -72,6 +72,8 @@ public class UniqueEntity {
   private List<String> addGoals;
   @Getter @Setter
   private String modelId;
+  @Getter @Setter
+  private boolean vagabondAllowed;
 
   public String getId() {
     return id;

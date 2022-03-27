@@ -38,6 +38,7 @@ import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -60,7 +61,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     Map<StrifeStat, Float> bases = StrifePlugin.getInstance().getMonsterManager()
-        .getBaseStats(player, player.getLevel());
+        .getBaseStats(EntityType.PLAYER, player.getLevel());
 
     Material material;
     AttackType type;

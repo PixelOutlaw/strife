@@ -36,6 +36,7 @@ import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 public class ChampionManager {
@@ -172,8 +173,8 @@ public class ChampionManager {
   }
 
   public void buildBaseStats(Champion champion) {
-    champion.setBaseStats(plugin.getMonsterManager().getBaseStats(champion.getPlayer(),
-        champion.getPlayer().getLevel()));
+    champion.setBaseStats(plugin.getMonsterManager().getBaseStats(
+        EntityType.PLAYER, champion.getPlayer().getLevel()));
   }
 
   public void rebuildAttributes(Champion champion) {

@@ -106,6 +106,13 @@ public class StrifeCommand extends BaseCommand {
     plugin.getUniqueEntityManager().spawnUnique(entityId, sender.getLocation());
   }
 
+  @Subcommand("vagabond")
+  @CommandCompletion("@uniques")
+  @CommandPermission("strife.admin")
+  public void vagabondSummon(Player sender, String className, int level) {
+    plugin.getVagabondManager().spawnVagabond(level, className, sender.getLocation());
+  }
+
   @Subcommand("toast")
   @CommandCompletion("INFO|GOAL|CHALLENGE APPLE @players SNEED")
   @Syntax("<MATERIAL> <player> <message>")
@@ -370,6 +377,9 @@ public class StrifeCommand extends BaseCommand {
       modeledEntity.addActiveModel(model);
       modeledEntity.detectPlayers();
       modeledEntity.setInvisible(true);
+      modeledEntity.getMountHandler().setSteerable(true);
+      modeledEntity.getMountHandler().setCanCarryPassenger(true);
+      modeledEntity.getMountHandler().setDriver(sender);
     }
   }
 

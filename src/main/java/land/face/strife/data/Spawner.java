@@ -122,17 +122,22 @@ public class Spawner extends BukkitRunnable {
       return;
     }
 
-    if (0.1 > Math.random()) {
-      int level = spawner.getUniqueEntity().getBaseLevel();
-      StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
-          (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager().spawnVagabond(level,
-              spawner.getLocation()));
-      if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
-        Bukkit.getLogger().warning("Spawner failed to spawn vagabond! " + spawner.getId());
-        return;
+    if (spawner.getUniqueEntity().isVagabondAllowed()) {
+      if (spawner.getUniqueEntity().getBaseLevel() > StrifePlugin.getInstance()
+          .getVagabondManager().getMinimumLevel()) {
+        if (StrifePlugin.getInstance().getVagabondManager().getSpawnChance() > Math.random()) {
+          int level = spawner.getUniqueEntity().getBaseLevel();
+          StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
+              (LivingEntity) StrifePlugin.getInstance().getVagabondManager().spawnVagabond(level,
+                  spawner.getLocation()));
+          if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+            Bukkit.getLogger().warning("Spawner failed to spawn vagabond! " + spawner.getId());
+            return;
+          }
+          spawner.addEntity(mob.getEntity());
+          return;
+        }
       }
-      spawner.addEntity(mob.getEntity());
-      return;
     }
 
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(

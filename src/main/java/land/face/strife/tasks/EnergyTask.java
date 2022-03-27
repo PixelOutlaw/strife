@@ -23,12 +23,12 @@ public class EnergyTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
   private final List<RestoreData> energyRestore = new ArrayList<>();
-  public static final int TICKS_PER = 5;
+  public static final int TICKS_PER = 10;
   public static final float TICK_MULT = 1f / (20f / TICKS_PER);
 
   public EnergyTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, TICKS_PER);
+    this.runTaskTimer(StrifePlugin.getInstance(), 10L, TICKS_PER);
   }
 
   @Override

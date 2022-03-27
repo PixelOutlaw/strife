@@ -25,6 +25,7 @@ import java.util.Map;
 import land.face.strife.data.EntityStatData;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
@@ -61,17 +62,6 @@ public class MonsterManager {
       expression = data.getBaseExpExpr();
     }
     return (float) expression.setVariable("LEVEL", mobLevel).evaluate();
-  }
-
-  public Map<StrifeStat, Float> getBaseStats(EntityType type) {
-    return getBaseStats(type, -1);
-  }
-
-  public Map<StrifeStat, Float> getBaseStats(LivingEntity livingEntity, int level) {
-    if (level == -1) {
-      level = StatUtil.getMobLevel(livingEntity);
-    }
-    return getBaseStats(livingEntity.getType(), level);
   }
 
   public Map<StrifeStat, Float> getBaseStats(EntityType type, int level) {

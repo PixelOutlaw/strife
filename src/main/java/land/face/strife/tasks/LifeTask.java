@@ -21,7 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class LifeTask extends BukkitRunnable {
 
-  private static final long REGEN_TICK_RATE = 4L;
+  private static final long REGEN_TICK_RATE = 10L;
   private static final float REGEN_PERCENT_PER_SECOND = 0.1F;
   private static final float POTION_REGEN_FLAT_PER_LEVEL = 2f;
   private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
@@ -32,7 +32,7 @@ public class LifeTask extends BukkitRunnable {
 
   public LifeTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, REGEN_TICK_RATE);
+    this.runTaskTimer(StrifePlugin.getInstance(), 5L, REGEN_TICK_RATE);
     tickMultiplier = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
   }
 

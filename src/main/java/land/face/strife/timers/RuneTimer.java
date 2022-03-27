@@ -30,6 +30,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.RuneManager;
 import land.face.strife.tasks.ParticleTask;
+import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -82,7 +83,7 @@ public class RuneTimer extends BukkitRunnable {
     int visualRunes = runeHolograms.size();
     if (currentRunes < runeHolograms.size()) {
       while (currentRunes < runeHolograms.size()) {
-        Hologram hologram = getRandomFromCollection(runeHolograms);
+        Hologram hologram = PlayerDataUtil.getRandomFromCollection(runeHolograms);
         mob.getEntity().getWorld()
             .playSound(hologram.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
         mob.getEntity().getWorld().spawnParticle(
@@ -121,15 +122,5 @@ public class RuneTimer extends BukkitRunnable {
       DHAPI.moveHologram(holo, loc);
       index++;
     }
-  }
-
-  public static <T> T getRandomFromCollection(Collection<T> coll) {
-    int num = (int) (Math.random() * coll.size());
-    for (T t : coll) {
-      if (--num < 0) {
-        return t;
-      }
-    }
-    throw new AssertionError();
   }
 }
