@@ -29,7 +29,6 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -128,6 +127,9 @@ public class TargetingUtil {
   }
 
   public static boolean isFriendly(StrifeMob attacker, StrifeMob defender) {
+    if (defender.getOwner() != null) {
+      return isFriendly(attacker, defender.getOwner());
+    }
     if (attacker.getEntity() == defender.getEntity()) {
       return true;
     }

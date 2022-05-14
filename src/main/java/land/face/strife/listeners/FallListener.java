@@ -46,7 +46,7 @@ public class FallListener implements Listener {
 
     int msSinceLastSneak = MoveUtil.getLastSneak(player);
     boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= fallMs;
-;
+
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(player);
 
     double damage = event.getDamage(DamageModifier.BASE) - 1;
@@ -59,7 +59,12 @@ public class FallListener implements Listener {
       damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
     } else {
       damage *= 50.0 / (50 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
-      player.addPotionEffect(new PotionEffect(SLOW, 100, 0, true));
+      player.addPotionEffect(new PotionEffect(SLOW, 100, 0, true, false));
+    }
+
+    if (playerMob.isInvincible()) {
+      event.setCancelled(true);
+      return;
     }
 
     if (player.hasPotionEffect(DAMAGE_RESISTANCE)) {
@@ -81,11 +86,10 @@ public class FallListener implements Listener {
       return;
     }
 
-    if (damage >= player.getHealth()) {
-      DamageUtil.doPreDeath(playerMob);
-    }
-
     DamageUtil.removeDamageModifiers(event);
+    if (damage >= player.getHealth()) {
+      damage = DamageUtil.doPreDeath(playerMob, (float) damage);
+    }
     event.setDamage(DamageModifier.BASE, damage);
   }
 }

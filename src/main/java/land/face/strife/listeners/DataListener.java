@@ -111,6 +111,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAbilityCast(final AbilityCastEvent event) {
+    plugin.getPlayerMountManager().despawn(event.getCaster().getEntity().getUniqueId());
     if (event.getCaster().getChampion() != null) {
       event.getCaster().getChampion().recombineCache();
     }
@@ -233,6 +234,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerTeleport(PlayerTeleportEvent event) {
+    plugin.getPlayerMountManager().despawn(event.getPlayer().getUniqueId());
     Riptide.sendCancelPacket(event.getPlayer());
     if (event.getTo().getWorld() != event.getTo().getWorld()) {
       ensureAbilitiesDontInstantCast(event.getPlayer());
@@ -246,6 +248,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerWorldChance(PlayerChangedWorldEvent event) {
+    plugin.getPlayerMountManager().despawn(event.getPlayer().getUniqueId());
     ensureAbilitiesDontInstantCast(event.getPlayer());
   }
 

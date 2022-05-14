@@ -4,7 +4,6 @@ import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
@@ -38,13 +37,9 @@ public class FishingListener implements Listener {
     int minFishTime = (int) (150D * fishMult);
     int maxFishTime = minFishTime + (int) (150D * Math.random() * fishMult);
 
-    //Bukkit.getLogger().info("aaa" + minFishTime + " " + maxFishTime);
-
-    //Bukkit.getLogger().info("beoreMax" + event.getHook().getMaxWaitTime());
     event.getHook().setMaxWaitTime(maxFishTime);
-    //Bukkit.getLogger().info("afterMax" + event.getHook().getMaxWaitTime());
-    //Bukkit.getLogger().info("beforeMin" + event.getHook().getMinWaitTime());
     event.getHook().setMinWaitTime(minFishTime);
-    //Bukkit.getLogger().info("afterMin" + event.getHook().getMinWaitTime());
+    event.getHook().setWaitTime((int)
+        (minFishTime + (Math.random() * (maxFishTime - minFishTime))));
   }
 }

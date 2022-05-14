@@ -49,6 +49,9 @@ public class DamageManager {
   }
 
   public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage, DamageModifiers modifiers) {
+    if (defender.isInvincible()) {
+      return 0;
+    }
     if (!modifiers.isBypassBarrier() && defender.getBarrier() > 0) {
       float dmgVsBarrier = 1 + attacker.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
       damage *= dmgVsBarrier;
@@ -59,7 +62,7 @@ public class DamageManager {
     }
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {
-      DamageUtil.dealRawDamage(defender.getEntity(), damage);
+      DamageUtil.dealRawDamage(defender, damage);
       return damage;
     }
 
@@ -71,17 +74,14 @@ public class DamageManager {
 
     handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);
     if (damage >= defender.getEntity().getHealth()) {
-      DamageUtil.doPreDeath(defender);
+      damage = DamageUtil.doPreDeath(defender, damage);
     }
     boolean death = damage >= defender.getEntity().getHealth();
     if (attacker.getEntity() instanceof Player) {
       plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender, death);
+      defender.getEntity().setKiller((Player) attacker.getEntity());
     }
-    if (damage >= defender.getEntity().getHealth()) {
-      defender.getEntity().damage(damage, attacker.getEntity());
-    } else {
-      defender.getEntity().damage(damage);
-    }
+    defender.getEntity().damage(damage);
     handledDamages.remove(attacker.getEntity().getUniqueId());
 
     return damage;

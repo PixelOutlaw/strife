@@ -52,6 +52,8 @@ public class UniqueEntity {
   private boolean fallImmune;
   private boolean ignoreSneak;
   private boolean saddled;
+  @Getter @Setter
+  private boolean canTarget;
   private int maxMods;
   private boolean removeFollowMods;
   private boolean powered;

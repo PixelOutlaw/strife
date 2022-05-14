@@ -107,13 +107,17 @@ public class DamageOverTimeTask extends BukkitRunnable {
       float damage = poisonPower * (POISON_FLAT_DAMAGE + (float) le.getMaxHealth() * POISON_PERCENT_MAX_HEALTH_DAMAGE);
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
+      if (mob.isInvincible()) {
+        return;
+      }
+
       damage *= 1 - mob.getStat(StrifeStat.POISON_RESIST) / 100;
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
-      if (damage >= le .getHealth()) {
+      if (damage >= le.getHealth()) {
         poisonIterator.remove();
       }
-      DamageUtil.dealRawDamage(le, damage);
+      DamageUtil.dealRawDamage(mob, damage);
     }
   }
 
@@ -129,13 +133,17 @@ public class DamageOverTimeTask extends BukkitRunnable {
       float damage = witherPower * WITHER_FLAT_DAMAGE;
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
+      if (mob.isInvincible()) {
+        return;
+      }
+
       damage *= 1 - mob.getStat(StrifeStat.WITHER_RESIST) / 100;
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
-      if (damage >= le .getHealth()) {
+      if (damage >= le.getHealth()) {
         witherIterator.remove();
       }
-      DamageUtil.dealRawDamage(le, damage);
+      DamageUtil.dealRawDamage(mob, damage);
     }
   }
 
@@ -152,9 +160,11 @@ public class DamageOverTimeTask extends BukkitRunnable {
       }
       float damage = BURN_FLAT_DAMAGE;
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
-      if (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.1) {
+      if (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.1 ||
+          mob.isInvincible()) {
         return;
       }
+
       damage *= 1 - StatUtil.getStat(mob, StrifeStat.FIRE_RESIST) / 100;
       damage *= 1 - mob.getStat(StrifeStat.BURNING_RESIST) / 100;
       damage = mob.damageBarrier(damage);
@@ -168,7 +178,6 @@ public class DamageOverTimeTask extends BukkitRunnable {
       if (damage >= le .getHealth()) {
         iterator.remove();
       }
-      DamageUtil.dealRawDamage(le, damage);
     }
   }
 }

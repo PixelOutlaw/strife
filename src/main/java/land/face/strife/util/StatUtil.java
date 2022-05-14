@@ -118,7 +118,7 @@ public class StatUtil {
   }
 
   public static float getCriticalChance(StrifeMob attacker, float attackMult, float bonusCrit) {
-    float totalCrit = attackMult * 1.2f * (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit);
+    float totalCrit = attackMult * (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit);
     return totalCrit / 100;
   }
 

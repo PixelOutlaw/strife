@@ -3,6 +3,9 @@ package land.face.strife.listeners;
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -33,20 +36,21 @@ public class JoinAndLeaveListener implements Listener {
   private final static String UNUSED_PATH =
       "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
 
+  private final Set<UUID> mounted = new HashSet<>();
+
   public JoinAndLeaveListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerJoin(final PlayerJoinEvent event) {
-
+    event.getPlayer().setGravity(true);
     plugin.getGuiManager().setupGui(event.getPlayer());
 
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     Champion champion = playerMob.getChampion();
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
-    plugin.getChampionManager().verifyStatValues(champion);
 
     if (champion.getUnusedStatPoints() > 0) {
       notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
@@ -58,7 +62,12 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getCounterManager().clearCounters(event.getPlayer());
     ensureAbilitiesDontInstantCast(event.getPlayer());
 
+    plugin.getChampionManager().verifyStatValues(champion);
     plugin.getChampionManager().update(event.getPlayer());
+
+    if (champion.getSaveData().isOnMount()) {
+      plugin.getPlayerMountManager().spawnMount(event.getPlayer());
+    }
 
     event.getPlayer().setHealthScaled(true);
     HealthDisplayType displayType = champion.getSaveData().getHealthDisplayType();
@@ -68,7 +77,17 @@ public class JoinAndLeaveListener implements Listener {
     event.getPlayer().setInvulnerable(false);
 
     playerMob.updateBarrierScale();
-    plugin.getStrifeMobManager().loadEnergy(event.getPlayer());
+
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        plugin.getStrifeMobManager().updateCollisions(event.getPlayer()), 20L);
+
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      plugin.getPlayerMountManager().updateSelectedMount(event.getPlayer());
+      if (mounted.contains(event.getPlayer().getUniqueId())) {
+        plugin.getPlayerMountManager().spawnMount(event.getPlayer());
+        mounted.remove(event.getPlayer().getUniqueId());
+      }
+    }, 40L);
 
     event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
     event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
@@ -96,6 +115,10 @@ public class JoinAndLeaveListener implements Listener {
   }
 
   private void doPlayerLeave(Player player) {
+    if (plugin.getPlayerMountManager().isMounted(player)) {
+      mounted.add(player.getUniqueId());
+    }
+    plugin.getPlayerMountManager().despawn(player.getUniqueId());
     plugin.getAbilityManager().unToggleAll(player);
     plugin.getStrifeMobManager().saveEnergy(player);
     plugin.getBoostManager().removeBooster(player.getUniqueId());

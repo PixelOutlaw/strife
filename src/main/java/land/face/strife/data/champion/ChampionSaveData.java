@@ -41,6 +41,8 @@ public class ChampionSaveData {
   // Player preferences
   private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;
 
+  @Getter @Setter
+  private boolean onMount;
   private boolean glowEnabled;
   private boolean displayExp;
 

@@ -128,6 +128,7 @@ public abstract class Condition {
     BLEEDING,
     DARKNESS,
     RANGE,
+    SIZE,
     STEALTHED,
     BURNING,
     EARTH_RUNES,

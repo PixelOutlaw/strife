@@ -24,6 +24,10 @@ public class SnazzyPartiesHook {
     return members;
   }
 
+  public boolean inSameParty(Player player, Player player2) {
+    return getPlugin().getPartyManager().areInSameParty(player, player2);
+  }
+
   private SnazzyPartiesPlugin getPlugin() {
     try {
       return SnazzyPartiesPlugin.getInstance();

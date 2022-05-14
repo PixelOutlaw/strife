@@ -19,6 +19,9 @@
 package land.face.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
@@ -53,6 +56,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.EloUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
@@ -111,6 +115,13 @@ public class StrifeCommand extends BaseCommand {
   @CommandPermission("strife.admin")
   public void vagabondSummon(Player sender, String className, int level) {
     plugin.getVagabondManager().spawnVagabond(level, className, sender.getLocation());
+  }
+
+  @Subcommand("invincible")
+  @CommandPermission("strife.admin")
+  public void invincible(Player sender, int ticks) {
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(sender);
+    mob.applyInvincible(ticks);
   }
 
   @Subcommand("toast")
@@ -243,6 +254,21 @@ public class StrifeCommand extends BaseCommand {
           sendMessage(sender, " " + goal.getKey().getNamespacedKey()));
     }
     sendMessage(sender, "Guild: " + targetMob.getAlliedGuild());
+    String statDump = "&aStats: ";
+    for (StrifeStat strifeStat : targetMob.getFinalStats().keySet()) {
+      statDump += "&f[" + ChatColor.DARK_GREEN + strifeStat.toString() +
+          "&7:" + ChatColor.YELLOW + Math.round(targetMob.getFinalStats().get(strifeStat)) + "&f] ";
+    }
+    sendMessage(sender, statDump);
+    if (targets.get(0).getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
+      sendMessage(sender, "&9MoveAttr: " + targets.get(0).getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue());
+    }
+    if (targets.get(0).getAttribute(GENERIC_FLYING_SPEED) != null) {
+      sendMessage(sender, "&9FlyAttr: " + targets.get(0).getAttribute(GENERIC_FLYING_SPEED).getBaseValue());
+    }
+    if (targets.get(0).getAttribute(GENERIC_FOLLOW_RANGE) != null) {
+      sendMessage(sender, "&9FollowATTR: " + targets.get(0).getAttribute(GENERIC_FOLLOW_RANGE).getBaseValue());
+    }
   }
 
   @Subcommand("animation-test")
@@ -350,37 +376,6 @@ public class StrifeCommand extends BaseCommand {
     plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
         .setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
-  }
-
-  @Subcommand("spawn-mount")
-  @CommandCompletion("@players")
-  @CommandPermission("strife.admin")
-  public void mmmmm(Player sender, String modelId) {
-    ActiveModel model = ModelEngineAPI.api.getModelManager().createActiveModel(modelId);
-    if (model == null) {
-      MessageUtils.sendMessage(sender, "invalid modelid");
-      return;
-    }
-    Horse horse = sender.getWorld().spawn(sender.getLocation(), Horse.class);
-    horse.setAdult();
-    horse.setBreed(false);
-
-    ChunkUtil.setDespawnOnUnload(horse);
-
-    ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager().createModeledEntity(horse);
-    if (modeledEntity == null) {
-      Bukkit.getLogger().warning("Failed to create modelled entity");
-      if (horse.isValid()) {
-        horse.remove();
-      }
-    } else {
-      modeledEntity.addActiveModel(model);
-      modeledEntity.detectPlayers();
-      modeledEntity.setInvisible(true);
-      modeledEntity.getMountHandler().setSteerable(true);
-      modeledEntity.getMountHandler().setCanCarryPassenger(true);
-      modeledEntity.getMountHandler().setDriver(sender);
-    }
   }
 
   @Subcommand("ability remove")

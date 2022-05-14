@@ -62,13 +62,6 @@ public class StrifeMobManager {
     if (entity == null) {
       return null;
     }
-    return getStatMob(entity, entity.getType());
-  }
-
-  public StrifeMob getStatMob(LivingEntity entity, EntityType simulationType) {
-    if (entity == null) {
-      return null;
-    }
     if (!trackedEntities.containsKey(entity)) {
       StrifeMob mob;
       if (entity.getType() == EntityType.PLAYER) {
@@ -77,12 +70,15 @@ public class StrifeMobManager {
         mob = new StrifeMob(entity);
       }
       int level = StatUtil.getMobLevel(entity);
-      mob.setStats(plugin.getMonsterManager().getBaseStats(simulationType, level));
+      mob.setStats(plugin.getMonsterManager().getBaseStats(entity.getType(), level));
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);
       mob.restoreBarrier(200000);
       trackedEntities.put(entity, mob);
+      if (entity instanceof Player) {
+        mob.setEnergy(mob.getMaxEnergy() * ((Player) entity).getFoodLevel() / 20);
+      }
     }
     entity.setMaximumNoDamageTicks(0);
     return trackedEntities.get(entity);
@@ -91,14 +87,20 @@ public class StrifeMobManager {
   public void saveEnergy(Player player) {
     if (trackedEntities.containsKey(player)) {
       StrifeMob mob = trackedEntities.get(player);
-      player.setFoodLevel((int) (20 * mob.getEnergy() / mob.getMaxEnergy()));
+      float value = 20f * mob.getEnergy();
+      player.setFoodLevel((int) (value / mob.getMaxEnergy()));
     }
   }
 
-  public void loadEnergy(Player player) {
-    if (trackedEntities.containsKey(player)) {
-      StrifeMob mob = trackedEntities.get(player);
-      mob.setEnergy(mob.getMaxEnergy() / ((float) player.getFoodLevel() / 20));
+  public void updateCollisions(Player player) {
+    for (StrifeMob strifeMob : trackedEntities.values()) {
+      if (strifeMob.getUniqueEntityId() == null) {
+        continue;
+      }
+      if (!plugin.getUniqueEntityManager()
+          .getUnique(strifeMob.getUniqueEntityId()).isCollidable()) {
+        strifeMob.getEntity().getCollidableExemptions().add(player.getUniqueId());
+      }
     }
   }
 

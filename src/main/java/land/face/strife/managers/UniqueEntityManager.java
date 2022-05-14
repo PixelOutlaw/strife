@@ -10,10 +10,14 @@ import com.ticxo.modelengine.api.model.ModeledEntity;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import land.face.learnin.LearninBooksPlugin;
+import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
@@ -28,6 +32,7 @@ import land.face.strife.tasks.ItemPassengerTask;
 import land.face.strife.util.DisguiseUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
@@ -51,6 +56,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Piglin;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Raider;
 import org.bukkit.entity.Shulker;
@@ -135,7 +141,8 @@ public class UniqueEntityManager {
       le.setGravity(false);
     }
     if (!uniqueEntity.isCollidable()) {
-      le.setCollidable(false);
+      le.getCollidableExemptions().addAll(Bukkit.getServer()
+          .getOnlinePlayers().stream().map(Player::getUniqueId).toList());
     }
     if (!uniqueEntity.isHasAI()) {
       le.setAI(false);
@@ -241,7 +248,8 @@ public class UniqueEntityManager {
     }
 
     if (uniqueEntity.isInvisible()) {
-      le.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999999, 10));
+      le.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,
+          99999999, 10, true, false));
     }
 
     if (uniqueEntity.isSilent()) {
@@ -368,6 +376,7 @@ public class UniqueEntityManager {
   }
 
   public void loadUniques(VersionedSmartYamlConfiguration uniqueEnemiesYAML) {
+    List<LoadedKnowledge> knowledge = new ArrayList<>();
     for (String entityNameKey : uniqueEnemiesYAML.getKeys(false)) {
       if (!uniqueEnemiesYAML.isConfigurationSection(entityNameKey)) {
         continue;
@@ -398,6 +407,7 @@ public class UniqueEntityManager {
       uniqueEntity.setPushImmune(cs.getBoolean("push-immune", false));
       uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
       uniqueEntity.setSaddled(cs.getBoolean("saddled", false));
+      uniqueEntity.setCanTarget(cs.getBoolean("can-target", true));
       uniqueEntity.setMaxMods(cs.getInt("max-mods", 3));
       uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
       if (uniqueEntity.getType() == EntityType.CREEPER) {
@@ -473,7 +483,24 @@ public class UniqueEntityManager {
       if (abilityCS != null) {
         uniqueEntity.setAbilitySet(new EntityAbilitySet(abilityCS));
       }
+
+      ConfigurationSection section = cs.getConfigurationSection("knowledge");
+      if (section != null) {
+        LoadedKnowledge loadedKnowledge = PlayerDataUtil
+            .loadKnowledge(entityNameKey, uniqueEntity.getBaseLevel(), section);
+        loadedKnowledge.getPerkOne().clear();
+        loadedKnowledge.getPerkOne().add("&8◇ -10% Dmg From This Mob");
+        loadedKnowledge.getPerkOne().add("&e◆ -10% Dmg From This Mob");
+        loadedKnowledge.getPerkTwo().clear();
+        loadedKnowledge.getPerkTwo().add("&8◇ +10% Dmg To This Mob");
+        loadedKnowledge.getPerkTwo().add("&e◆ +10% Dmg To This Mob");
+        loadedKnowledge.getPerkThree().clear();
+        loadedKnowledge.getPerkThree().add("&8◇ +10% Loot From This Mob");
+        loadedKnowledge.getPerkThree().add("&e◆ +10% Loot From This Mob");
+        knowledge.add(loadedKnowledge);
+      }
       addUniqueEntity(entityNameKey, uniqueEntity);
     }
+    LearninBooksPlugin.instance.getKnowledgeManager().addExternalKnowledge(knowledge);
   }
 }

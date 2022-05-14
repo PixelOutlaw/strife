@@ -13,24 +13,17 @@ public class GoalPatcher {
   public static void addGoals(Mob mob, UniqueEntity uniqueEntity) {
     for (String goal : uniqueEntity.getAddGoals()) {
       switch (mob.getType()) {
-        case BAT -> addGoal(mob, goal, 1.75f, uniqueEntity.getFollowRange(), uniqueEntity.isAggressiveAi(), true);
+        case BAT -> addGoal(mob, goal, 1.75f);
         case TROPICAL_FISH, PUFFERFISH, COD, SALMON -> FishPatcher.patchFish((Fish) mob);
-        default -> addGoal(mob, goal, 2.25f, uniqueEntity.getFollowRange(), uniqueEntity.isAggressiveAi(), false);
+        default -> addGoal(mob, goal, 2.25f);
       }
     }
   }
 
-  public static void addGoal(Mob mob, String id, float attackRange, float followRange,
-      boolean aggressive, boolean flying) {
+  public static void addGoal(Mob mob, String id, float range) {
     switch (id) {
-      case "strife:return_home" -> {
-        ReturnHomeGoal returnHomeGoal = new ReturnHomeGoal(mob, Math.pow(followRange + 3, 2));
-        if (!Bukkit.getMobGoals().hasGoal(mob, returnHomeGoal.getKey())) {
-          Bukkit.getMobGoals().addGoal(mob, 0, returnHomeGoal);
-        }
-      }
       case "strife:attack_target" -> {
-        AttackTargetGoal goal = new AttackTargetGoal(mob, attackRange);
+        AttackTargetGoal goal = new AttackTargetGoal(mob, range);
         if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
           Bukkit.getMobGoals().addGoal(mob, 1, goal);
         }

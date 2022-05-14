@@ -1,0 +1,36 @@
+version: 0.0.1
+
+mounts:
+  normal-horse:
+    model-id: 100
+    name: "Chestnut"
+    color: CHESTNUT
+    style: NONE
+    speed: 200
+    lore:
+      - "&6Movement Speed: 200"
+  white-horse:
+    model-id: 101
+    name: "Whiteoid"
+    color: WHITE
+    style: NONE
+    speed: 200
+    lore:
+      - "&6Movement Speed: 200"
+  black-horse:
+    model-id: 102
+    name: "blackoid"
+    color: BLACK
+    style: NONE
+    speed: 200
+    lore:
+      - "&6Movement Speed: 200"
+  birb-1:
+    model-id: 102
+    me-model: "nocsy_yokai_bird"
+    name: "Birb1"
+    color: BLACK
+    style: NONE
+    speed: 200
+    lore:
+      - "&6Movement Speed: 200"

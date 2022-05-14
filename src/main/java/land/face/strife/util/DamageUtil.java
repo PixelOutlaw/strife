@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import static com.sk89q.worldedit.math.BlockVector3.at;
 import static land.face.strife.listeners.LoreAbilityListener.executeBoundEffects;
 import static land.face.strife.listeners.LoreAbilityListener.executeFiniteEffects;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_DEATH;
@@ -8,6 +9,20 @@ import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
 import static land.face.strife.util.StatUtil.getWardingMult;
 
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.World;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.internal.platform.StringMatcher;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +30,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.DamageModifiers;
@@ -27,6 +43,7 @@ import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
+import land.face.strife.hooks.SnazzyPartiesHook;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
@@ -57,6 +74,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import scala.concurrent.impl.FutureConvertersImpl.P;
 
 public class DamageUtil {
 
@@ -87,6 +105,11 @@ public class DamageUtil {
 
   private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
   private static final Random RANDOM = new Random(System.currentTimeMillis());
+
+  private static final RegionContainer regionContainer = WorldGuard.getInstance()
+      .getPlatform().getRegionContainer();
+  private static final StringMatcher stringMatcher = WorldGuard.getInstance()
+      .getPlatform().getMatcher();
 
   public static void refresh() {
     plugin = StrifePlugin.getInstance();
@@ -174,6 +197,10 @@ public class DamageUtil {
 
     float attackMult = mods.getAttackMultiplier();
 
+    if (defender.isInvincible()) {
+      return false;
+    }
+
     if (mods.isCanBeEvaded()) {
       float evadeMult = DamageUtil.determineEvasion(attacker, defender, mods.getAbilityMods());
       if (evadeMult == -1) {
@@ -238,10 +265,24 @@ public class DamageUtil {
     float potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
     float critMult = 0;
 
-    boolean criticalHit = standardDamage > 0.9 && isCriticalHit(attacker, defender, mods);
-    if (criticalHit) {
+    boolean criticalHit = standardDamage > 0.9 && !attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2)
+        && isCriticalHit(attacker, defender, mods);
+
+    if (criticalHit && !attacker.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
       critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
           mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
+      if (attacker.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
+        float chance = attacker.getStat(StrifeStat.CRITICAL_RATE) +
+            mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f);
+        if (chance > 100) {
+          if (DamageUtil.isLethalHit(attacker, defender, chance - 100)) {
+            critMult *= 2;
+          }
+        }
+      }
+      if (defender.hasTrait(StrifeTrait.IRON_SCARS)) {
+        critMult += 0.4;
+      }
     }
 
     float pvpMult = 1f;
@@ -273,8 +314,10 @@ public class DamageUtil {
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
     }
+
     rawDamage *= DamageUtil.getTenacityMult(defender);
     rawDamage *= DamageUtil.getMinionMult(attacker);
+
     if (attacker.getEntity().getFreezeTicks() > 0 && attacker.getEntity() instanceof Player) {
       rawDamage *= 1 - 0.3 * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity()
           .getMaxFreezeTicks());
@@ -282,7 +325,9 @@ public class DamageUtil {
     if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
       rawDamage *= 1 - (0.03 * defender.getEarthRunes());
     }
+
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
+    rawDamage += DamageUtil.getKnowledgeMult(attacker, defender);
 
     if (mods.isSneakAttack() && !SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
       rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
@@ -400,6 +445,14 @@ public class DamageUtil {
       //}
     }
     return success;
+  }
+
+  private static boolean isLethalHit(StrifeMob attacker, StrifeMob defender, float chance) {
+    if (chance / 100 >= rollDouble()) {
+      DamageUtil.callCritEvent(attacker, defender);
+      return true;
+    }
+    return false;
   }
 
   public static float getRawDamage(StrifeMob attacker, DamageType damageType) {
@@ -532,6 +585,9 @@ public class DamageUtil {
   public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap,
       DamageModifiers mods) {
+    if (mods.getAttackType() == AttackType.BONUS) {
+      return;
+    }
     float baseDarkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
     if (baseDarkDamage != 0) {
       damageMap.put(DamageType.DARK, baseDarkDamage *
@@ -542,8 +598,11 @@ public class DamageUtil {
     if (mods.isScaleChancesWithAttack()) {
       chance *= Math.min(1.0, mods.getAttackMultiplier());
     }
-    if (mods.getAttackType() == AttackType.BONUS || !DamageUtil.rollBool(chance, true)) {
-      return;
+    if (!DamageUtil.rollBool(chance, true)) {
+      if (!attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2) ||
+          !isCriticalHit(attacker, defender, mods)) {
+        return;
+      }
     }
     float totalElementalDamage = 0;
     Map<DamageType, Float> elementalDamages = new HashMap<>();
@@ -694,6 +753,25 @@ public class DamageUtil {
     return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
   }
 
+  public static float getKnowledgeMult(StrifeMob attacker, StrifeMob defender) {
+    if (attacker.getEntity() instanceof Player) {
+      if (defender.getUniqueEntityId() != null) {
+        if (LearninBooksPlugin.instance.getKnowledgeManager()
+            .getKnowledgeLevel((Player) attacker.getEntity(), defender.getUniqueEntityId()) > 1) {
+          return 1.1f;
+        }
+      }
+    } else if (defender.getEntity() instanceof Player) {
+      if (attacker.getUniqueEntityId() != null) {
+        if (LearninBooksPlugin.instance.getKnowledgeManager()
+            .getKnowledgeLevel((Player) defender.getEntity(), attacker.getUniqueEntityId()) > 0) {
+          return 0.9f;
+        }
+      }
+    }
+    return 1f;
+  }
+
   public static LivingEntity getAttacker(Entity entity) {
     if (!entity.getPassengers().isEmpty()) {
       if (entity.getPassengers().get(0) instanceof LivingEntity) {
@@ -840,16 +918,38 @@ public class DamageUtil {
     if (resistEffect != null) {
       potionMult -= 0.1 * (resistEffect.getAmplifier() + 1);
     }
-
     return Math.max(0, potionMult);
   }
 
   public static boolean canAttack(Player attacker, Player defender) {
-    CombatListener.addPlayer(attacker);
-    defender.damage(0, attacker);
-    boolean friendly = CombatListener.hasFriendlyPlayer(attacker);
-    CombatListener.removePlayer(attacker);
-    return !friendly;
+    if (plugin.getSnazzyPartiesHook().inSameParty(attacker, defender)) {
+      return false;
+    }
+    World world = stringMatcher.getWorldByName(defender.getWorld().getName());
+    RegionManager manager = regionContainer.get(world);
+
+    BlockVector3 vectorLoc1 = at(
+        defender.getLocation().getBlockX(),
+        defender.getLocation().getBlockY(),
+        defender.getLocation().getBlockZ()
+    );
+    ApplicableRegionSet regions1 = manager.getApplicableRegions(vectorLoc1);
+    if (State.DENY == regions1.queryValue(WorldGuardPlugin.inst()
+        .wrapPlayer(attacker), Flags.PVP)) {
+      return false;
+    }
+
+    BlockVector3 vectorLoc2 = at(
+        attacker.getLocation().getBlockX(),
+        attacker.getLocation().getBlockY(),
+        attacker.getLocation().getBlockZ()
+    );
+    ApplicableRegionSet regions2 = manager.getApplicableRegions(vectorLoc2);
+    if (State.DENY == regions2.queryValue(WorldGuardPlugin.inst()
+        .wrapPlayer(attacker), Flags.PVP)) {
+      return false;
+    }
+    return true;
   }
 
   public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
@@ -899,7 +999,8 @@ public class DamageUtil {
     return false;
   }
 
-  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount, boolean bypassBarrier) {
+  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount,
+      boolean bypassBarrier) {
     if (amount < 0.1) {
       return;
     }
@@ -933,6 +1034,9 @@ public class DamageUtil {
     if (!attacker.getEntity().isValid()) {
       return;
     }
+    if (defender.isInvincible()) {
+      return;
+    }
     float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
     reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6f;
     defender.getEntity().getWorld()
@@ -948,7 +1052,7 @@ public class DamageUtil {
         defender.flagPvp();
       }
     }
-    DamageUtil.dealRawDamage(attacker.getEntity(), reflectDamage);
+    DamageUtil.dealRawDamage(attacker, reflectDamage);
   }
 
   public static void callCritEvent(StrifeMob attacker, StrifeMob victim) {
@@ -956,11 +1060,16 @@ public class DamageUtil {
     Bukkit.getPluginManager().callEvent(c);
   }
 
-  public static void doPreDeath(StrifeMob victim) {
+  public static float doPreDeath(StrifeMob victim, float damage) {
     Set<LoreAbility> abilitySet = new HashSet<>(victim.getLoreAbilities(ON_DEATH));
     executeBoundEffects(victim, victim, abilitySet);
     executeFiniteEffects(victim, victim, ON_DEATH);
     plugin.getAbilityIconManager().untoggleDeathToggles(victim);
+    if (victim.isInvincible()) {
+      victim.getEntity().setHealth(1);
+      return 0.05f;
+    }
+    return damage;
   }
 
   public static void callEvadeEvent(StrifeMob evader, StrifeMob attacker) {
@@ -1020,10 +1129,13 @@ public class DamageUtil {
     }
   }
 
-  public static void dealRawDamage(LivingEntity le, float damage) {
+  public static void dealRawDamage(StrifeMob mob, float damage) {
+    if (mob.isInvincible()) {
+      return;
+    }
+    LivingEntity le = mob.getEntity();
     if (damage >= le.getHealth()) {
-      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
-      DamageUtil.doPreDeath(mob);
+      damage = DamageUtil.doPreDeath(mob, damage);
     }
     if (le.getHealth() <= damage) {
       le.setHealth(0);

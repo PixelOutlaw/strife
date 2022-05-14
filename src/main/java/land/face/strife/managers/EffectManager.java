@@ -55,6 +55,7 @@ import land.face.strife.data.conditions.NearbyEntitiesCondition;
 import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RageCondition;
 import land.face.strife.data.conditions.RangeCondition;
+import land.face.strife.data.conditions.SizeCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.StealthCondition;
 import land.face.strife.data.conditions.TimeCondition;
@@ -69,6 +70,7 @@ import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
+import land.face.strife.events.EventEffectEvent;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AbilityMod;
@@ -242,6 +244,7 @@ public class EffectManager {
         effect = new ChangeEnergy();
         ((ChangeEnergy) effect).setAmount((float) cs.getDouble("amount", 1));
         ((ChangeEnergy) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((ChangeEnergy) effect).setTickDuration(cs.getInt("tick-duration", -1));
       }
       case INCREASE_RAGE -> {
         effect = new ChangeRage();
@@ -303,6 +306,8 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
+        ((CreateWorldSpaceEntity) effect).setModelEffect(cs.getString("model-effect", null));
+        ((CreateWorldSpaceEntity) effect).setMaxFallTicks(cs.getInt("max-fall-ticks", 3));
         ((CreateWorldSpaceEntity) effect).setMaxDisplacement(
             (float) cs.getDouble("max-displacement", 0));
         ((CreateWorldSpaceEntity) effect).setOriginLocation(
@@ -344,6 +349,13 @@ public class EffectManager {
         List<String> counterEffects = cs.getStringList("effects");
         delayedSetEffects(((Counter) effect).getEffects(), counterEffects, key, false);
       }
+      case EFFECT_LIB_PARTICLE -> {
+        effect = new EffectLibParticle();
+        ((EffectLibParticle) effect).setParticleClass(
+            cs.getString("particle-class", "AnimatedBallEffect"));
+        ((EffectLibParticle) effect).setParticleConfig(
+            cs.getConfigurationSection("particle-config"));
+      }
       case AREA_EFFECT -> {
         effect = new AreaEffect();
         List<String> areaEffects = cs.getStringList("effects");
@@ -366,7 +378,7 @@ public class EffectManager {
         ((AreaEffect) effect).setCanBeBlocked(canBeBlocked);
         ((AreaEffect) effect).setCanBeCountered(cs.getBoolean("can-be-countered", canBeBlocked));
         ((AreaEffect) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", false));
-        ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 0));
+        ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 4));
         ((AreaEffect) effect).setRadius((float) cs.getDouble("radius", 0.55));
         if (((AreaEffect) effect).getMaxTargets() != -1) {
           ((AreaEffect) effect).setPriority(
@@ -412,6 +424,18 @@ public class EffectManager {
       case RIPTIDE -> {
         effect = new Riptide();
         ((Riptide) effect).setTicks(cs.getInt("ticks", 40) / 2);
+      }
+      case EVENT -> {
+        effect = new Event();
+        try {
+          Map<String, String> map = new HashMap<>();
+          for (String k : cs.getConfigurationSection("data-keys").getKeys(false)) {
+            map.put(k, cs.getString("data-keys." + k));
+          }
+          ((Event) effect).setDataKeys(map);
+        } catch (Exception e) {
+          Bukkit.getLogger().warning("[Strife] Invalid config for EventEffect=" + key);
+        }
       }
       case PROJECTILE -> {
         effect = new ShootProjectile();
@@ -520,6 +544,11 @@ public class EffectManager {
         ((Frost) effect).setOverride(cs.getBoolean("override", false));
         ((Frost) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         ((Frost) effect).setAddDuration(cs.getBoolean("add-duration", true));
+      }
+      case INVINCIBLE -> {
+        effect = new Invincible();
+        ((Invincible) effect).setDuration(cs.getInt("duration", 20));
+        ((Invincible) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
       }
       case SILENCE -> {
         effect = new Silence();
@@ -696,6 +725,11 @@ public class EffectManager {
         effect = new Stealth();
         ((Stealth) effect).setRemoveStealth(cs.getBoolean("remove", false));
       }
+      case CHANGE_SIZE -> {
+        effect = new ChangeSize();
+        ((ChangeSize) effect).setAmount(cs.getInt("amount", 1));
+      }
+      case ZERO_VELOCITY -> effect = new ZeroVelocity();
       case STINGER -> {
         effect = new Stinger();
         ((Stinger) effect).setAmount(cs.getInt("amount", 1));
@@ -1010,6 +1044,9 @@ public class EffectManager {
       case RANGE:
         condition = new RangeCondition();
         ((RangeCondition) condition).setRangeSquared(Math.pow(cs.getDouble("value", 0), 2));
+        break;
+      case SIZE:
+        condition = new SizeCondition();
         break;
       case STEALTHED:
         condition = new StealthCondition();

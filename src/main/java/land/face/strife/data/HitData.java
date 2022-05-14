@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class HitData {
 
-  private UUID target;
+  private final UUID target;
   private long timeStamp;
 
   public HitData(UUID target, long cooldown) {

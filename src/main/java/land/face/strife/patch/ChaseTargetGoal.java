@@ -28,6 +28,8 @@ public class ChaseTargetGoal implements Goal<Mob> {
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
   private final Mob mob;
+  private float followRange;
+  private long retryStamp = System.currentTimeMillis();
 
   public ChaseTargetGoal(Mob mob) {
     this.mob = mob;
@@ -48,7 +50,8 @@ public class ChaseTargetGoal implements Goal<Mob> {
 
   @Override
   public void start() {
-    // Nothing
+    followRange = (float) mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
+    followRange *= followRange;
   }
 
   @Override
@@ -58,11 +61,21 @@ public class ChaseTargetGoal implements Goal<Mob> {
 
   @Override
   public void tick() {
-    float followRange = (float) mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
-    if (mob.getTarget().getLocation().distanceSquared(mob.getLocation()) > Math.pow(followRange, 2)) {
+    if (retryStamp > System.currentTimeMillis()) {
+      if (mob.getTarget().getWorld() == mob.getWorld()) {
+        mob.lookAt(mob.getTarget());
+      }
+      return;
+    }
+    if (mob.getTarget().getWorld() != mob.getWorld()) {
       mob.setTarget(null);
       return;
     }
+    if (mob.getTarget().getLocation().distanceSquared(mob.getLocation()) > followRange) {
+      mob.setTarget(null);
+      return;
+    }
+    retryStamp = System.currentTimeMillis() + 400;
     mob.lookAt(mob.getTarget());
     mob.getPathfinder().moveTo(mob.getTarget(), 1.0D);
   }

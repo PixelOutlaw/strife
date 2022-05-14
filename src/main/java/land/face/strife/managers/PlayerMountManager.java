@@ -1,0 +1,215 @@
+/**
+ * The MIT License Copyright (c) 2015 Teal Cube Games
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+package land.face.strife.managers;
+
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ActiveModel.ModelState;
+import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.mount.controller.FlyingMountController_v16;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
+import land.face.strife.StrifePlugin;
+import land.face.strife.data.LoadedMount;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.patch.FacelandMountController;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.tasks.MountTask;
+import land.face.strife.util.ItemUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Pig;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+public class PlayerMountManager {
+
+  private final StrifePlugin plugin;
+
+  private final Map<UUID, MountTask> ownerMap = new HashMap<>();
+  private final Map<UUID, String> selectedMount = new HashMap<>();
+  private final Map<String, LoadedMount> loadedMounts = new HashMap<>();
+
+  private final List<String> bannedWorlds;
+
+  public PlayerMountManager(StrifePlugin plugin) {
+    this.plugin = plugin;
+    bannedWorlds = plugin.getSettings().getStringList("mounts.banned-worlds");
+  }
+
+  public boolean isMounted(Player player) {
+    return ownerMap.containsKey(player.getUniqueId());
+  }
+
+  public LoadedMount getMount(Player player) {
+    if (!selectedMount.containsKey(player.getUniqueId())) {
+      return null;
+    }
+    return loadedMounts.get(selectedMount.get(player.getUniqueId()));
+  }
+
+  public boolean spawnMount(Player player) {
+    if (bannedWorlds.contains((player.getWorld().getName()))) {
+      MessageUtils.sendMessage(player, "&e[!] Mounts cannot be summoned here.");
+      return false;
+    }
+    UUID uuid = player.getUniqueId();
+    if (ownerMap.containsKey(uuid)) {
+      Bukkit.getLogger().info("[Strife] aaaa");
+      return false;
+    }
+    String mountId = selectedMount.get(uuid);
+    if (mountId == null) {
+      Bukkit.getLogger().info("[Strife] bbb");
+      return false;
+    }
+    LoadedMount loadedMount = loadedMounts.get(mountId);
+    if (loadedMount == null) {
+      Bukkit.getLogger().info("[Strife] cccc");
+      return false;
+    }
+    createMount(player, loadedMount);
+    return true;
+  }
+
+  public void updateSelectedMount(Player player) {
+    if (plugin.getDeluxeInvyPlugin() == null) {
+      return;
+    }
+    ItemStack stack = DeluxeInvyPlugin.getInstance().getPlayerManager()
+        .getPlayerData(player).getEquipmentItem(DeluxeSlot.MOUNT);
+    if (stack == null || stack.getType() != Material.SADDLE) {
+      selectedMount.remove(player.getUniqueId());
+      if (ownerMap.containsKey(player.getUniqueId())) {
+        despawn(player.getUniqueId());
+      }
+      return;
+    }
+    int mountData = ItemUtil.getCustomData(stack);
+    LoadedMount mount = getLoadedMountFromData(mountData);
+    if (mount == null) {
+      selectedMount.remove(player.getUniqueId());
+      if (ownerMap.containsKey(player.getUniqueId())) {
+        despawn(player.getUniqueId());
+      }
+      return;
+    }
+    selectedMount.put(player.getUniqueId(), mount.getId());
+  }
+
+  public LoadedMount getLoadedMountFromData(int data) {
+    for (LoadedMount l : loadedMounts.values()) {
+      if (l.getCustomModelData() == data) {
+        return l;
+      }
+    }
+    return null;
+  }
+
+  private void createMount(Player player, LoadedMount loadedMount) {
+
+    Pig pig = player.getWorld().spawn(player.getLocation(), Pig.class);
+    pig.setAdult();
+    pig.setBreed(false);
+    pig.setSilent(true);
+    pig.setCustomName(player.getName() + "'s Mount");
+    pig.setCustomNameVisible(false);
+
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(pig);
+    mob.setOwner(plugin.getStrifeMobManager().getStatMob(player));
+    mob.forceSetStat(StrifeStat.MOVEMENT_SPEED, loadedMount.getSpeed());
+    mob.forceSetStat(StrifeStat.HEALTH, 20 + player.getLevel());
+    mob.forceSetStat(StrifeStat.HEALTH_MULT, 0);
+    mob.forceSetStat(StrifeStat.WEIGHT, 200);
+    mob.forceSetStat(StrifeStat.ARMOR, 250);
+    mob.forceSetStat(StrifeStat.WARDING, 250);
+    mob.forceSetStat(StrifeStat.ALL_RESIST, 80);
+    mob.forceSetStat(StrifeStat.DAMAGE_REDUCTION, -5);
+    plugin.getStatUpdateManager().updateVanillaAttributes(mob);
+    ChunkUtil.setDespawnOnUnload(pig);
+
+    ActiveModel model = null;
+    if (loadedMount.getModelId() != null) {
+      model = ModelEngineAPI.api.getModelManager().createActiveModel(
+          loadedMount.getModelId());
+      if (model == null) {
+        Bukkit.getLogger().warning("[Strife] (Mounts) No valid model for " + loadedMount.getId());
+      } else {
+        ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager()
+            .createModeledEntity(pig);
+        if (modeledEntity != null) {
+          modeledEntity.addActiveModel(model);
+          modeledEntity.detectPlayers();
+          modeledEntity.setInvisible(true);
+          modeledEntity.getMountHandler().setSteerable(true);
+          modeledEntity.getMountHandler().setCanCarryPassenger(true);
+          FacelandMountController c = new FacelandMountController(model, loadedMount.isFlying());
+          modeledEntity.getMountHandler().setDriver(player, c);
+          c.setFlying(modeledEntity);
+        }
+      }
+    } else {
+      pig.addPassenger(player);
+    }
+
+    MountTask mountTask = new MountTask(this, player.getUniqueId(), mob, model);
+    ownerMap.put(player.getUniqueId(), mountTask);
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    champion.getSaveData().setOnMount(true);
+  }
+
+  public void despawn(UUID uuid) {
+    MountTask task = ownerMap.get(uuid);
+    if (task == null) {
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(Bukkit.getPlayer(uuid));
+    champion.getSaveData().setOnMount(false);
+    task.getMount().get().getEntity().eject();
+    if (task.getModel() != null) {
+      task.getModel().getModeledEntity().getMountHandler().dismountAllPassengers();
+      task.getModel().clearModel();
+    }
+    task.getMount().get().getEntity().remove();
+    ownerMap.remove(task.getPlayerUUID());
+    if (!task.isCancelled()) {
+      task.cancel();
+    }
+  }
+
+  public void clearAll() {
+    for (MountTask task : ownerMap.values()) {
+      if (task.getModel() != null) {
+        task.getModel().clearModel();
+      }
+      task.getMount().get().getEntity().remove();
+      task.cancel();
+    }
+    ownerMap.clear();
+  }
+
+  public void loadMount(LoadedMount loadedMount) {
+    loadedMounts.put(loadedMount.getId(), loadedMount);
+  }
+}

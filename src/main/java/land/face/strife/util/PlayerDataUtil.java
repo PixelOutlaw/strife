@@ -1,15 +1,14 @@
 package land.face.strife.util;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
-import java.lang.reflect.InvocationTargetException;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -21,6 +20,7 @@ import land.face.strife.data.conditions.Condition.ConditionUser;
 import land.face.strife.listeners.SwingListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -29,6 +29,23 @@ import org.bukkit.inventory.EquipmentSlot;
 public class PlayerDataUtil {
 
   private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
+
+  public static LoadedKnowledge loadKnowledge(String key, int weight,
+      ConfigurationSection knowledgeSection) {
+    String name = TextUtils.color(knowledgeSection.getString("name", ""));
+    String lore1 = TextUtils.color(knowledgeSection.getString("lore1", ""));
+    String lore2 = TextUtils.color(knowledgeSection.getString("lore2", ""));
+    String lore3 = TextUtils.color(knowledgeSection.getString("lore3", ""));
+    List<String> desc = TextUtils.color(knowledgeSection.getStringList("desc"));
+    int threshold1 = knowledgeSection.getInt("rank-1", 10);
+    int threshold2 = knowledgeSection.getInt("rank-2", 100);
+    int threshold3 = knowledgeSection.getInt("rank-3", 1000);
+    LoadedKnowledge mobKnowledge = new LoadedKnowledge(
+        key, name, weight, threshold1, threshold2, threshold3,
+        lore1, lore2, lore3, desc);
+    mobKnowledge.setSource("strife");
+    return mobKnowledge;
+  }
 
   public static boolean isGlowEnabled(Player player) {
     return StrifePlugin.getInstance().getChampionManager().getChampion(player).getSaveData().isGlowEnabled();
@@ -76,24 +93,16 @@ public class PlayerDataUtil {
   }
 
   private static void swing(LivingEntity entity, EquipmentSlot slot) {
-
-    PacketContainer swingPacket = new PacketContainer(PacketType.Play.Server.ANIMATION);
-    swingPacket.getEntityModifier(entity.getWorld()).write(0, entity);
-    swingPacket.getIntegers().write(0, entity.getEntityId());
-    swingPacket.getIntegers().write(1, slot == EquipmentSlot.HAND ? 0 : 3);
-
-    ProtocolLibrary.getProtocolManager().broadcastServerPacket(swingPacket, entity, false);
-
-    if (!(entity instanceof Player)) {
-      return;
-    }
-
-    SwingListener.addFakeSwing(entity.getUniqueId());
-
-    try {
-      ProtocolLibrary.getProtocolManager().sendServerPacket((Player) entity, swingPacket, true);
-    } catch (InvocationTargetException exception) {
-      Bukkit.getLogger().warning("Unable to send self swing packet");
+    if (slot == EquipmentSlot.HAND) {
+      SwingListener.spoofSwing(entity.getUniqueId());
+      entity.swingMainHand();
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          SwingListener.removeSwing(entity.getUniqueId()), 2L);
+    } else if (slot == EquipmentSlot.OFF_HAND) {
+      SwingListener.spoofSwing(entity.getUniqueId());
+      entity.swingOffHand();
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          SwingListener.removeSwing(entity.getUniqueId()), 2L);
     }
   }
 
@@ -149,17 +158,12 @@ public class PlayerDataUtil {
 
   // TODO: Something less stupid, this shouldn't be in this Util
   public static boolean conditionCompare(Comparison comparison, double val1, double val2) {
-    switch (comparison) {
-      case GREATER_THAN:
-        return val1 > val2;
-      case LESS_THAN:
-        return val1 < val2;
-      case EQUAL:
-        return val1 == val2;
-      case NONE:
-        throw new IllegalArgumentException("Compare condition is NONE! Invalid usage!");
-    }
-    return false;
+    return switch (comparison) {
+      case GREATER_THAN -> val1 > val2;
+      case LESS_THAN -> val1 < val2;
+      case EQUAL -> val1 == val2;
+      case NONE -> throw new IllegalArgumentException("Compare condition is NONE! Invalid usage!");
+    };
   }
 
   public static int getMaxItemDestroyLevel(Player player) {

@@ -16,9 +16,11 @@ skills:
   lvl-up-broadcast: "{c}&lSkill Up! &f{p} {c}has reached &f{n} {c}skill level &f{l}{c}!"
 wand:
   not-charged: "&e&lNot charged enough!"
-bar-title-entity-killed:
-  - '&cENEMY SLAIN!'
-  - '&c&lded!'
+
+enemy-killed-title: '&4&lENEMY SLAIN!'
+silly-enemy-killed-titles:
+  - "&4&lget memed on lad xD"
+
 level-req:
   generic: "&c&lYou will not benefit from the stats on this item!"
   main: "&e&lYou do not meet the level requirement for your weapon!"

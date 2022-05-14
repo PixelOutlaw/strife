@@ -8,7 +8,7 @@ import land.face.strife.data.champion.LifeSkillType;
 
 public class CombatDetailsContainer {
 
-  private Map<LifeSkillType, Float> skillWeight = new HashMap<>();
+  private final Map<LifeSkillType, Float> skillWeight = new HashMap<>();
   private float totalExp = 0;
 
   private static float EXP_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()

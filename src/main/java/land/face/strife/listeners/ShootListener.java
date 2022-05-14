@@ -56,15 +56,16 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Spellcaster.Spell;
 import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 public class ShootListener implements Listener {
 
@@ -94,6 +95,8 @@ public class ShootListener implements Listener {
         || !(event.getEntity() instanceof Arrow)) {
       return;
     }
+
+    plugin.getPlayerMountManager().despawn(player.getUniqueId());
 
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 
@@ -134,7 +137,7 @@ public class ShootListener implements Listener {
   }
 
   @EventHandler
-  public void onEntityShoot(ProjectileLaunchEvent event) {
+  public void onEntitySpell(ProjectileLaunchEvent event) {
     if (event.getEntity().getShooter() instanceof LivingEntity shooter) {
       if (shooter instanceof Player) {
         return;
@@ -168,6 +171,44 @@ public class ShootListener implements Listener {
         ProjectileUtil.shootArrow(mob, 1f);
         event.setCancelled(true);
       }
+    }
+  }
+
+  @EventHandler
+  public void onEntitySpell(EntitySpellCastEvent event) {
+    Mob entity = event.getEntity();
+    if (event.getSpell() == Spell.DISAPPEAR ||
+        event.getSpell() == Spell.NONE || entity instanceof Player) {
+      return;
+    }
+
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(entity);
+
+    if (entity.getTarget() != null) {
+      StrifeMob target = plugin.getStrifeMobManager().getStatMob(entity.getTarget());
+      if (TargetingUtil.isFriendly(mob, target)) {
+        event.setCancelled(true);
+        entity.setTarget(null);
+        return;
+      }
+    }
+
+    if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
+      event.setCancelled(true);
+      return;
+    }
+
+    ItemStack weapon = entity.getEquipment().getItemInMainHand();
+    if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
+      entity.swingMainHand();
+      ProjectileUtil.shootWand(mob, 1);
+      event.setCancelled(true);
+    } else if (ItemUtil.isPistol(weapon)) {
+      doPistolShot(mob, 1f);
+      event.setCancelled(true);
+    } else if (event.getEntity() instanceof Arrow) {
+      ProjectileUtil.shootArrow(mob, 1f);
+      event.setCancelled(true);
     }
   }
 

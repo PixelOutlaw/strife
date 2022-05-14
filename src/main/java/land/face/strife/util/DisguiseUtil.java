@@ -106,7 +106,7 @@ public class DisguiseUtil {
       boolean babyData = section.getBoolean("baby", false);
       MobDisguise mobDisguise = new MobDisguise(type);
       FlagWatcher watcher = mobDisguise.getWatcher();
-      if (babyData && type == DisguiseType.ZOMBIE) {
+      if (babyData && (type == DisguiseType.ZOMBIE || type == DisguiseType.HUSK)) {
         ((ZombieWatcher) watcher).setBaby();
       }
       if (watcher instanceof AgeableWatcher) {

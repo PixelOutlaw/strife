@@ -32,7 +32,6 @@ import land.face.strife.data.StatusBar;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.GlowUtil;
 import land.face.strife.util.PlayerDataUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
@@ -43,22 +42,24 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.inventivetalent.glow.GlowAPI.Color;
 
 public class BossBarManager {
 
   private final StrifePlugin plugin;
   private final Map<Player, StatusBar> statusBars = new WeakHashMap<>();
   private final Map<Player, SkillBar> skillBars = new HashMap<>();
-  private final List<String> deathMessages;
+  private final String deathMessage;
+  private final List<String> sillyDeathMsgs;
   private final int healthDuration;
   private final int skillDuration;
   private final Random random = new Random();
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.deathMessages = ListExtensionsKt.chatColorize(
-        plugin.getSettings().getStringList("language.bar-title-entity-killed"));
+    this.deathMessage = StringExtensionsKt.chatColorize(plugin.getSettings()
+        .getString("language.enemy-killed-title"));
+    this.sillyDeathMsgs = ListExtensionsKt.chatColorize(plugin.getSettings()
+        .getStringList("language.silly-enemy-killed-titles"));
     this.healthDuration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
     this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
   }
@@ -130,7 +131,13 @@ public class BossBarManager {
       } else if (death) {
         bar.refreshGlow(player, ChatColor.DARK_RED);
         bar.setDead(true);
-        updateBarTitle(bar, deathMessages.get(random.nextInt(deathMessages.size())));
+        String title;
+        if (Math.random() < 0.025) {
+          title = sillyDeathMsgs.get(random.nextInt(sillyDeathMsgs.size()));
+        } else {
+          title = deathMessage;
+        }
+        updateBarTitle(bar, title);
         bar.getBarrierBar().setProgress(0);
         bar.getHealthBar().setProgress(0);
         bar.setLifeTicks(25);
@@ -255,9 +262,9 @@ public class BossBarManager {
     }
     name += "   ";
     if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
-      name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(barOwner.getBarrier()) + "❤ ";
+      name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(barOwner.getBarrier()) + "♡ ";
     }
-    name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(barOwner.getEntity().getHealth()) + "❤";
+    name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(barOwner.getEntity().getHealth()) + "♡";
     if (barOwner.getFrost() > 100) {
       name += "  " + ChatColor.AQUA + (barOwner.getFrost() / 100) + "❄";
     }

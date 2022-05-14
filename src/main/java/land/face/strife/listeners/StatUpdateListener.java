@@ -18,9 +18,15 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import land.face.dinvy.events.EquipmentUpdateEvent;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LoadedMount;
+import land.face.strife.util.ItemUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -30,6 +36,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.ItemStack;
 
 public record StatUpdateListener(StrifePlugin plugin) implements Listener {
 
@@ -55,6 +62,18 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
     plugin.getStrifeMobManager().updateEquipmentStats(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+    if (event.isHard()) {
+      plugin.getPlayerMountManager().updateSelectedMount(event.getPlayer());
+      ItemStack mountStack = event.getData().getEquipmentItem(DeluxeSlot.MOUNT);
+      if (mountStack != null && mountStack.getType() == Material.SADDLE) {
+        int data = ItemUtil.getCustomData(mountStack);
+        LoadedMount loadedMount = plugin.getPlayerMountManager().getLoadedMountFromData(data);
+        if (loadedMount != null) {
+          ItemStackExtensionsKt.setDisplayName(mountStack, loadedMount.getName());
+          TextUtils.setLore(mountStack, loadedMount.getLore());
+        }
+      }
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -68,9 +87,11 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onGamemodeChange(PlayerGameModeChangeEvent event) {
-    plugin.getStrifeMobManager()
-        .updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
+    plugin.getStrifeMobManager().updateEquipmentStats(
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+    plugin.getAttackSpeedManager().resetAttack(
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()), 1, false);
   }
 
 

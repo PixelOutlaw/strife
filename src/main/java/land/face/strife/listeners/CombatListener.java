@@ -151,10 +151,13 @@ public class CombatListener implements Listener {
 
     DamageUtil.removeDamageModifiers(event);
 
-    if (attackEntity instanceof Player && FRIENDLY_PLAYER_CHECKER.contains(attackEntity)) {
-      FRIENDLY_PLAYER_CHECKER.remove(attackEntity);
-      event.setCancelled(true);
-      return;
+    if (attackEntity instanceof Player) {
+      plugin.getPlayerMountManager().despawn(attackEntity.getUniqueId());
+      if (FRIENDLY_PLAYER_CHECKER.contains(attackEntity)) {
+        FRIENDLY_PLAYER_CHECKER.remove(attackEntity);
+        event.setCancelled(true);
+        return;
+      }
     }
 
     if (event.getCause() == DamageCause.MAGIC) {
@@ -180,6 +183,11 @@ public class CombatListener implements Listener {
     }
 
     StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
+
+    if (defender.isInvincible()) {
+      event.setCancelled(true);
+      return;
+    }
 
     if (!isAbilityProjectile) {
       boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker,
@@ -335,10 +343,10 @@ public class CombatListener implements Listener {
           (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
       event.setCancelled(true);
       return;
-    } else {
-      if (eventDamage >= defendEntity.getHealth()) {
-        DamageUtil.doPreDeath(defender);
-      }
+    }
+
+    if (eventDamage >= defendEntity.getHealth()) {
+      eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
     }
 
     if (attackEntity instanceof Player) {

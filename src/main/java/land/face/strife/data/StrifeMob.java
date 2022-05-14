@@ -19,7 +19,6 @@ import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.events.AirJumpEvent;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.events.RuneChangeEvent;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
@@ -30,6 +29,7 @@ import land.face.strife.tasks.BarrierTask;
 import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.FrostTask;
+import land.face.strife.tasks.InvincibleTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.StatUtil;
@@ -52,6 +52,7 @@ public class StrifeMob {
   private WeakReference<UniqueEntity> uniqueEntity = null;
   private WeakReference<Spawner> spawner = new WeakReference<>(null);
   private WeakReference<ModeledEntity> modelEntity = null;
+  private WeakReference<StrifeMob> owner = new WeakReference<>(null);
 
   private EntityAbilitySet abilitySet;
   private final Set<String> mods = new HashSet<>();
@@ -93,6 +94,7 @@ public class StrifeMob {
   private LifeTask lifeTask = new LifeTask(this);
   private EnergyTask energyTask = new EnergyTask(this);
   private FrostTask frostTask = new FrostTask(this);
+  private InvincibleTask invincibleTask = null;
   private MinionTask minionTask = null;
 
   private final Set<StrifeMob> minions = new HashSet<>();
@@ -374,6 +376,17 @@ public class StrifeMob {
     this.modelEntity = new WeakReference<>(modelEntity);
   }
 
+  public StrifeMob getOwner() {
+    if (owner == null) {
+      return null;
+    }
+    return owner.get();
+  }
+
+  public void setOwner(StrifeMob owner) {
+    this.owner = new WeakReference<>(owner);
+  }
+
   public void forceSetStat(StrifeStat stat, float value) {
     baseStats.put(stat, value);
     buffsChanged = true;
@@ -452,6 +465,32 @@ public class StrifeMob {
     baseStats.putAll(stats);
     statCache.clear();
     statCache.putAll(getFinalStats());
+  }
+
+  public boolean isInvincible() {
+    return invincibleTask != null;
+  }
+
+  public void applyInvincible(int ticks) {
+    if (ticks < 1) {
+      Bukkit.getLogger().info("[Strife] You may not apply invincibility shorter than 1 tick");
+      return;
+    }
+    if (invincibleTask == null) {
+      invincibleTask = new InvincibleTask(this, ticks);
+    } else {
+      invincibleTask.bump(ticks);
+    }
+  }
+
+  public void cancelInvincibility() {
+    if (invincibleTask != null) {
+      invincibleTask.sendGuiUpdate();
+      if (invincibleTask.isCancelled()) {
+        invincibleTask.cancel();
+      }
+      invincibleTask = null;
+    }
   }
 
   public Buff getBuff(String buffId, UUID source) {

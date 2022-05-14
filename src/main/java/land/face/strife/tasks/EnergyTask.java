@@ -69,6 +69,7 @@ public class EnergyTask extends BukkitRunnable {
       if (player.isSprinting()) {
         if (mob.getEnergy() < 0.5) {
           player.setSprinting(false);
+          player.setFoodLevel(4);
         } else {
           energyChange *= StrifePlugin.RUN_COST_PERCENT;
           energyChange -= StrifePlugin.RUN_COST * getAgilityMult(mob);
@@ -78,6 +79,7 @@ public class EnergyTask extends BukkitRunnable {
         if (!noRegen) {
           energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
         }
+        player.setFoodLevel(19);
       }
     }
 

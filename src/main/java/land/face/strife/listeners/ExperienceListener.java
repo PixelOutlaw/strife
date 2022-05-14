@@ -23,10 +23,13 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.List;
 import java.util.Set;
+import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.events.StrifeCombatXpEvent;
 import land.face.strife.events.UniqueKillEvent;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
@@ -75,6 +78,25 @@ public class ExperienceListener implements Listener {
     UniqueKillEvent ev = new UniqueKillEvent(mob, killers);
     Bukkit.getPluginManager().callEvent(ev);
 
+    if (mob.getUniqueEntityId() != null && LearninBooksPlugin.instance.getKnowledgeManager()
+        .getLoadedKnowledge().containsKey(mob.getUniqueEntityId())) {
+      for (Player p : ev.getKillers()) {
+        LearninBooksPlugin.instance.getKnowledgeManager()
+            .incrementKnowledge(p, mob.getUniqueEntityId(), 1);
+      }
+    }
+
+    for (String key : mob.getMods()) {
+      key = "mod-" + key;
+      if (LearninBooksPlugin.instance.getKnowledgeManager()
+          .getLoadedKnowledge().containsKey(key)) {
+        for (Player p : ev.getKillers()) {
+          LearninBooksPlugin.instance.getKnowledgeManager()
+              .incrementKnowledge(p, key, 1);
+        }
+      }
+    }
+
     float droppedXp = event.getDroppedExp();
     event.setDroppedExp(0);
 
@@ -100,7 +122,15 @@ public class ExperienceListener implements Listener {
     }
 
     for (Player player : killers) {
-      plugin.getExperienceManager().addExperience(player, (droppedXp * expMultiplier), false);
+      float finalXp = (droppedXp * expMultiplier);
+      StrifeCombatXpEvent xpEvent = new StrifeCombatXpEvent(player, event.getEntity(), finalXp);
+      Bukkit.getPluginManager().callEvent(xpEvent);
+      if (xpEvent.isCancelled()) {
+        StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(player);
+        playerMob.getChampion().getDetailsContainer().addExp(finalXp);
+      } else {
+        plugin.getExperienceManager().addExperience(player, finalXp, false);
+      }
     }
   }
 

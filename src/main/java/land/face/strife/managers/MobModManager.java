@@ -158,8 +158,7 @@ public class MobModManager {
     mod.setPrefix(cs.getString("prefix"));
     mod.setWeight(cs.getInt("weight", 0));
     mod.setBaseStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("base-stats")));
-    mod.setPerLevelStats(
-        StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));
+    mod.setPerLevelStats(StatUtil.getStatMapFromSection(cs.getConfigurationSection("per-level-stats")));
     for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
       String equipmentId = cs.getString("equipment." + slot, null);
       if (equipmentId != null) {

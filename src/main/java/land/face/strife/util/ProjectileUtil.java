@@ -172,6 +172,7 @@ public class ProjectileUtil {
         Arrow.class, e -> e.setVelocity(velocity));
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    //arrow.getBoundingBox().expand(0.1);
 
     setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
@@ -188,6 +189,7 @@ public class ProjectileUtil {
         });
     bullet.setShooter(shooter);
     bullet.setGravity(gravity);
+    //bullet.getBoundingBox().expand(0.1);
 
     setAttackMult(bullet, (float) attackMult);
     setShotId(bullet);

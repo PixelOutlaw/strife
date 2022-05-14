@@ -17,11 +17,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.VagabondClass;
+import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.EntityAbilitySet;
+import land.face.strife.data.ability.EntityAbilitySet.Phase;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.effects.Effect;
@@ -88,7 +91,7 @@ public class VagabondManager {
   @Getter
   private float spawnChance;
 
-  private final String vagabond = ChatColor.DARK_RED + "< " + ChatColor.RED + "Vagabond" + ChatColor.DARK_RED +  " >";
+  private final String vagabond = ChatColor.GOLD + "< " + ChatColor.GRAY + "Vagabond" + ChatColor.GOLD +  " >";
 
   private final Random random = new Random();
 
@@ -136,9 +139,9 @@ public class VagabondManager {
     }
 
     entity.setCanPickupItems(false);
-
     entity.setCustomName(vagabond);
     entity.setCustomNameVisible(true);
+    ChunkUtil.setDespawnOnUnload(entity);
 
     VagabondClass mobClass;
     if (className == null || !loadedVagabondClasses.containsKey(className)) {
@@ -152,7 +155,8 @@ public class VagabondManager {
     Bukkit.getPluginManager().callEvent(vagabondEquipEvent);
 
     SpecialStatusUtil.setMobLevel(entity, level);
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(entity, EntityType.PLAYER);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(entity);
+    mob.setCharmImmune(true);
 
     Map<StrifeAttribute, Integer> vagabondAttributes = new HashMap<>();
     for (String attr : mobClass.getLevelsPerAttribute().keySet()) {
@@ -166,8 +170,8 @@ public class VagabondManager {
             " for vagabond class " + mobClass.getId());
         continue;
       }
-      vagabondAttributes.put(realAttr,
-          (level - minValue) / mobClass.getLevelsPerAttribute().get(attr));
+      vagabondAttributes.put(realAttr, (level - minValue) /
+          mobClass.getLevelsPerAttribute().get(attr));
     }
     Map<StrifeStat, Float> attributeStats = StatUtil.buildStatsFromAttributes(vagabondAttributes);
 
@@ -195,25 +199,38 @@ public class VagabondManager {
       }
     }
 
-    mob.setStats(StatUpdateManager.combineMaps(
-        mob.getBaseStats(),
+    Map<StrifeStat, Float> baseStats = plugin.getMonsterManager()
+        .getBaseStats(EntityType.PLAYER, level);
+
+    Map<StrifeStat, Float> totalStats = StatUpdateManager.combineMaps(
+        baseStats,
         attributeStats,
         equipmentStats
-    ));
+    );
+    totalStats.put(StrifeStat.MOVEMENT_SPEED, totalStats.get(StrifeStat.MOVEMENT_SPEED) * 2.5f);
+    mob.setStats(totalStats);
 
-    ChunkUtil.setDespawnOnUnload(mob.getEntity());
-    mob.setCharmImmune(true);
-
-    // TODO: abilities
-    // mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
+    EntityAbilitySet entityAbilitySet = new EntityAbilitySet();
+    Set<Ability> newAbilities = new HashSet<>();
+    newAbilities.add(plugin.getAbilityManager().getAbility(
+        PlayerDataUtil.getRandomFromCollection(mobClass.getPossibleAbilitiesA())));
+    newAbilities.add(plugin.getAbilityManager().getAbility(
+        PlayerDataUtil.getRandomFromCollection(mobClass.getPossibleAbilitiesB())));
+    newAbilities.add(plugin.getAbilityManager().getAbility(
+        PlayerDataUtil.getRandomFromCollection(mobClass.getPossibleAbilitiesC())));
+    Map<Phase, Set<Ability>> abilities = entityAbilitySet.getAbilities(TriggerAbilityType.TIMER);
+    for (Phase phase : EntityAbilitySet.PHASES) {
+      abilities.put(phase, newAbilities);
+    }
+    mob.setAbilitySet(entityAbilitySet);
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      plugin.getStatUpdateManager().updateVanillaAttributes(mob);
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       mob.restoreBarrier(200000);
+      plugin.getStatUpdateManager().updateVanillaAttributes(mob);
       plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.PHASE_SHIFT);
       plugin.getAbilityManager().startAbilityTimerTask(mob);
-    }, 0L);
+    }, 1L);
 
     VagabondSpawnEvent vagabondSpawnEvent = new VagabondSpawnEvent(mob);
     Bukkit.getPluginManager().callEvent(vagabondSpawnEvent);

@@ -139,7 +139,9 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("dura-offhand", new TextComponent(""), 0, 0, Alignment.CENTER));
     */
 
+    gui.putOnTop(new GUIComponent("invincible", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("life-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+
     gui.putOnTop(new GUIComponent("xp-base", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("air-base", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("energy-display", new TextComponent(""), 0, 0, Alignment.CENTER));

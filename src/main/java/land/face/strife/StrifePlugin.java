@@ -26,6 +26,7 @@ import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
@@ -46,15 +47,19 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.learnin.LearninBooksPlugin;
+import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
 import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
+import land.face.strife.commands.MountCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
+import land.face.strife.data.LoadedMount;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
@@ -74,6 +79,7 @@ import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DeluxeEquipListener;
+import land.face.strife.listeners.MountListener;
 import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.DoubleJumpListener;
 import land.face.strife.listeners.EndermanListener;
@@ -121,6 +127,7 @@ import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
 import land.face.strife.managers.PathManager;
+import land.face.strife.managers.PlayerMountManager;
 import land.face.strife.managers.RageManager;
 import land.face.strife.managers.RuneManager;
 import land.face.strife.managers.SkillExperienceManager;
@@ -159,6 +166,7 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
+import land.face.strife.util.PlayerDataUtil;
 import lombok.Getter;
 import ninja.amp.ampmenus.MenuListener;
 import org.apache.commons.lang.StringUtils;
@@ -169,6 +177,8 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Horse.Color;
+import org.bukkit.entity.Horse.Style;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -186,7 +196,7 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, uniqueEnemiesYAML,
       equipmentYAML, conditionYAML, effectYAML, pathYAML, abilityYAML, loreAbilityYAML, buffsYAML,
-      modsYAML, globalBoostsYAML;
+      modsYAML, globalBoostsYAML, mountsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -227,6 +237,8 @@ public class StrifePlugin extends FacePlugin {
   private VagabondManager vagabondManager;
   @Getter
   private BossBarManager bossBarManager;
+  @Getter
+  private PlayerMountManager playerMountManager;
   @Getter
   private DamageManager damageManager;
   @Getter
@@ -283,6 +295,9 @@ public class StrifePlugin extends FacePlugin {
   private DeluxeInvyPlugin deluxeInvyPlugin;
   @Getter
   private PlayerPoints playerPointsPlugin;
+  @Getter
+  private com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager effectLibManager =
+      new com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager(this);
 
   public static float WALK_COST;
   public static float WALK_COST_PERCENT;
@@ -301,6 +316,7 @@ public class StrifePlugin extends FacePlugin {
 
   @Override
   public void enable() {
+    instance = this;
     debugPrinter = new PluginLogger(this);
 
     List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();
@@ -320,6 +336,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
     configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
+    configurations.add(mountsYAML = defaultSettingsLoad("mounts.yml"));
 
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
     SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(
@@ -339,6 +356,7 @@ public class StrifePlugin extends FacePlugin {
     uniqueEntityManager = new UniqueEntityManager(this);
     vagabondManager = new VagabondManager(this);
     bossBarManager = new BossBarManager(this);
+    playerMountManager = new PlayerMountManager(this);
     damageManager = new DamageManager(this);
     chaserManager = new ChaserManager(this);
     experienceManager = new ExperienceManager(this);
@@ -410,6 +428,7 @@ public class StrifePlugin extends FacePlugin {
     vagabondManager.loadClasses(configYAML.getConfigurationSection("vagabonds"));
     buildMobMods();
     loadSpawners();
+    loadMounts();
 
     SaveTask saveTask = new SaveTask(this);
     StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
@@ -425,6 +444,7 @@ public class StrifePlugin extends FacePlugin {
 
     commandManager.registerCommand(new InspectCommand(this));
     commandManager.registerCommand(new LevelUpCommand(this));
+    commandManager.registerCommand(new MountCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
     commandManager.registerCommand(new SpawnerCommand(this));
     commandManager.registerCommand(new AbilityMacroCommand(this));
@@ -533,6 +553,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new BlockChangeListener(this), this);
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new MountListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FishingListener(this), this);
@@ -593,7 +614,6 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.setAllAbilityIcons(player);
       guiManager.setupGui(player);
       attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
-      strifeMobManager.loadEnergy(player);
     }
     getChampionManager().updateAll();
 
@@ -667,6 +687,9 @@ public class StrifePlugin extends FacePlugin {
     blockManager.endTasks();
     runeManager.endTasks();
     particleTask.clearParticles();
+    playerMountManager.clearAll();
+
+    LearninBooksPlugin.instance.getKnowledgeManager().purgeKnowledge("strife");
 
     Spawner.SPAWNER_OFFSET = 0;
     for (ArmorStand stand : CreateModelAnimation.CURRENT_STANDS) {
@@ -808,6 +831,7 @@ public class StrifePlugin extends FacePlugin {
   }
 
   public void buildMobMods() {
+    List<LoadedKnowledge> knowledges = new ArrayList<>();
     for (String key : modsYAML.getKeys(false)) {
       if (!modsYAML.isConfigurationSection(key)) {
         continue;
@@ -815,7 +839,14 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = modsYAML.getConfigurationSection(key);
       assert cs != null;
       mobModManager.loadMobMod(key, cs);
+      ConfigurationSection section = cs.getConfigurationSection("knowledge");
+      if (section != null) {
+        LoadedKnowledge lk = PlayerDataUtil
+            .loadKnowledge("mod-" + key, 300 + knowledges.size(), section);
+        knowledges.add(lk);
+      }
     }
+    LearninBooksPlugin.instance.getKnowledgeManager().addExternalKnowledge(knowledges);
   }
 
   private void loadScheduledBoosts() {
@@ -881,6 +912,32 @@ public class StrifePlugin extends FacePlugin {
       spawners.put(spawnerId, spawner);
     }
     spawnerManager.setSpawnerMap(spawners);
+  }
+
+  public void loadMounts() {
+    try {
+      for (String key : mountsYAML.getConfigurationSection("mounts").getKeys(false)) {
+        ConfigurationSection mountSection = mountsYAML.getConfigurationSection("mounts." + key);
+        Color color = Color.valueOf(mountSection.getString("color", "BROWN"));
+        Style style = Style.valueOf(mountSection.getString("style", "NONE"));
+        int customModelData = mountSection.getInt("model-id", -1);
+        if (customModelData == -1) {
+          Bukkit.getLogger().warning("[Strife] (Mounts) Invalid model-id for " + key);
+          continue;
+        }
+        String meModel = mountSection.getString("me-model", null);
+        String name = TextUtils.color(mountSection.getString("name", "No Name"));
+        List<String> lore = mountSection.getStringList("lore");
+        float speed = (float) mountSection.getDouble("speed");
+        float walkAnimationSpeed = (float) mountSection.getDouble("walk-animation-speed", 1.0);
+        boolean flying = mountSection.getBoolean("flying", false);
+        playerMountManager.loadMount(new LoadedMount(key, customModelData, name, lore, meModel,
+            color, style, speed, walkAnimationSpeed, flying));
+        Bukkit.getLogger().info("[Strife] (Mounts) Loaded mount " + key);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   private void saveSpawners() {

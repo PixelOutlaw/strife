@@ -24,9 +24,11 @@ import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
 import static org.bukkit.potion.PotionEffectType.registerPotionEffectType;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
@@ -96,6 +98,9 @@ public class TargetingListener implements Listener {
     if (!(event.getHitEntity() instanceof LivingEntity)) {
       return;
     }
+    if (event.getHitEntity() == event.getEntity().getShooter()) {
+      return;
+    }
     if (event.getHitEntity() instanceof ArmorStand && event.getHitEntity().isInvulnerable()) {
       event.setCancelled(true);
       return;
@@ -120,6 +125,17 @@ public class TargetingListener implements Listener {
   public void onFishHookInvulnerable(ProjectileHitEvent event) {
     if (event.getEntity() instanceof FishHook && event.getHitEntity() != null &&
         event.getHitEntity().isInvulnerable()) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onNoTarget(EntityTargetLivingEntityEvent event) {
+    String uniqueId = SpecialStatusUtil.getUniqueId(event.getEntity());
+    if (StringUtils.isEmpty(uniqueId)) {
+      return;
+    }
+    if (!plugin.getUniqueEntityManager().getUnique(uniqueId).isCanTarget()) {
       event.setCancelled(true);
     }
   }

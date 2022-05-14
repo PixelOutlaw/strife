@@ -17,6 +17,13 @@ public class EntityAbilitySet {
   private final Map<TriggerAbilityType, Map<Phase, Set<Ability>>> abilityMegaMap;
   private Phase phase = Phase.PHASE_ONE;
 
+  public EntityAbilitySet() {
+    abilityMegaMap = new HashMap<>();
+    for (TriggerAbilityType type: TYPES) {
+      abilityMegaMap.put(type, new HashMap<>());
+    }
+  }
+
   public EntityAbilitySet(EntityAbilitySet abilitySet) {
     abilityMegaMap = abilitySet == null ? new HashMap<>() : abilitySet.abilityMegaMap;
   }

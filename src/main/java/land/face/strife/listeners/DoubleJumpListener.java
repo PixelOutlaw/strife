@@ -14,6 +14,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -28,8 +29,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -49,6 +48,13 @@ public class DoubleJumpListener implements Listener {
   private final float rollCostFlat;
   private final float rollCostDecay;
   private final float maxRollCost;
+
+  private final float airDashAscent;
+  private final float airDashPower;
+
+  private final float particleSpeed;
+  private final float longParticleSpeed;
+  private final Particle particle;
 
   public DoubleJumpListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -71,6 +77,18 @@ public class DoubleJumpListener implements Listener {
         .getDouble("config.mechanics.agility.roll-cost-decay", 3f) / 1000;
     maxRollCost = (float) plugin.getSettings()
         .getDouble("config.mechanics.agility.max-roll-cost", 45);
+
+    airDashAscent = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.air-dash-ascent", 0.275);
+    airDashPower = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.air-dash-power", 0.825);
+
+    particleSpeed = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.air-jump-particle-speed", 0.11);
+    longParticleSpeed = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.long-jump-particle-speed", 0.11);
+    particle = Particle.valueOf(plugin.getSettings()
+        .getString("config.mechanics.agility.air-jump-particle", "SPIT"));
   }
 
   @EventHandler
@@ -136,6 +154,9 @@ public class DoubleJumpListener implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void dodgeRoll(PlayerToggleSneakEvent event) {
+    if (event.getPlayer().getGameMode() != GameMode.ADVENTURE) {
+      return;
+    }
     if (event.isSneaking() || event.isCancelled() || event.getPlayer().isSprinting()) {
       return;
     }
@@ -193,15 +214,15 @@ public class DoubleJumpListener implements Listener {
         lastDodge.put(player, System.currentTimeMillis());
         dodgeCost.put(player, Math.min(maxRollCost, finalCurrentCost * rollCostMult + rollCostFlat));
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true, false));
 
         plugin.getAbilityManager().setGlobalCooldown(player, 16);
         plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
 
         player.setVelocity(currentVelocity.add(horizontalMovement.normalize()
             .multiply(rollPower)).setY(rollAscent));
-        player.getWorld().spawnParticle(Particle.SPIT,
-            player.getLocation(), 10, 0, 0, 0, 0.11);
+        player.getWorld().spawnParticle(particle,
+            player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
         player.getWorld().playSound(player.getLocation(),
             Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
       }
@@ -219,13 +240,20 @@ public class DoubleJumpListener implements Listener {
     player.setFallDistance(0);
 
     Vector velocity = player.getVelocity().clone();
-
     Vector bonusVelocity = player.getLocation().getDirection();
-    bonusVelocity.setY(Math.max(2, bonusVelocity.getY()));
-    bonusVelocity.normalize().multiply(0.55);
 
-    double bonusY = Math.max(bonusVelocity.getY(), velocity.getY());
-    bonusVelocity.setY(bonusY);
+    if (mob.getTraits().contains(StrifeTrait.AIR_DASH)) {
+      bonusVelocity.setY(0.0001);
+      bonusVelocity.normalize().multiply(airDashPower);
+      double bonusY = Math.max(airDashAscent, velocity.getY() + airDashAscent / 3);
+      bonusVelocity.setY(bonusY);
+    } else {
+      bonusVelocity.setY(Math.max(2, bonusVelocity.getY()));
+      bonusVelocity.normalize().multiply(0.55);
+      double bonusY = Math.max(bonusVelocity.getY(), velocity.getY());
+      bonusVelocity.setY(bonusY);
+    }
+
     bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
 
     velocity.setY(0);
@@ -272,8 +300,8 @@ public class DoubleJumpListener implements Listener {
 
   private void flingParticle(Player player) {
     for (Integer step : cachedJumpAnimation.keySet()) {
-      player.getWorld().spawnParticle(Particle.SPIT, player.getLocation(), 0,
-          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), 0.11);
+      player.getWorld().spawnParticle(particle, player.getLocation(), 0,
+          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), particleSpeed);
     }
   }
 }

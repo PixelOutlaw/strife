@@ -8,6 +8,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
+import lombok.Setter;
 import org.bukkit.Location;
 
 public class CreateWorldSpaceEntity extends LocationEffect {
@@ -23,6 +24,10 @@ public class CreateWorldSpaceEntity extends LocationEffect {
   private float maxDisplacement;
   private boolean strictDuration;
   private boolean zeroVerticalAxis;
+  @Setter
+  private String modelEffect;
+  @Setter
+  private int maxFallTicks;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -38,7 +43,7 @@ public class CreateWorldSpaceEntity extends LocationEffect {
     cacheEffects();
     getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction,
         maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
-        zeroVerticalAxis);
+        zeroVerticalAxis, modelEffect, maxFallTicks);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {

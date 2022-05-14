@@ -36,6 +36,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -44,10 +45,30 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
   private static final Set<UUID> FAKE_SWINGS = new HashSet<>();
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void onSwingLowest(PlayerInteractEvent event) {
+  public void onInteractLowest(PlayerInteractEvent event) {
     if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
-      FAKE_SWINGS.remove(event.getPlayer().getUniqueId());
       event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onDamageLowest(EntityDamageByEntityEvent event) {
+    if (FAKE_SWINGS.contains(event.getDamager().getUniqueId())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onSwingLowest(PlayerAnimationEvent event) {
+    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onSwingMONITOR(PlayerAnimationEvent event) {
+    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+      event.setCancelled(false);
     }
   }
 
@@ -62,6 +83,9 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSwingLeft(PlayerInteractEvent event) {
+    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+      return;
+    }
     if (event.useItemInHand() == Result.DENY || event.getHand() == EquipmentSlot.OFF_HAND) {
       return;
     }
@@ -84,7 +108,11 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
     }
   }
 
-  public static void addFakeSwing(UUID uuid) {
+  public static void spoofSwing(UUID uuid) {
     FAKE_SWINGS.add(uuid);
+  }
+
+  public static void removeSwing(UUID uuid) {
+    FAKE_SWINGS.remove(uuid);
   }
 }

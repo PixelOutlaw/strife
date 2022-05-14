@@ -71,7 +71,6 @@ public class EveryTickTask extends BukkitRunnable {
   @Override
   public void run() {
     for (Player p : Bukkit.getOnlinePlayers()) {
-      p.setFoodLevel(19);
       if (p.getGameMode() == GameMode.ADVENTURE) {
         boolean dead = "Graveyard".equals(p.getWorld().getName());
         GUI gui = plugin.getGuiManager().getGui(p);

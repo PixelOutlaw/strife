@@ -1,6 +1,7 @@
 package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.ticxo.modelengine.api.model.ActiveModel.ModelState;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.events.SpawnerSpawnEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
+import land.face.strife.patch.ReturnHomeGoal;
 import land.face.strife.util.DateTimeUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
@@ -26,6 +28,7 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -46,6 +49,7 @@ public class Spawner extends BukkitRunnable {
   private int level = -1;
   private Location location;
   private double leashRange;
+  private transient float squaredLeashRange;
   private long respawnSeconds;
   private long chunkKey;
   private int startTime;
@@ -62,6 +66,7 @@ public class Spawner extends BukkitRunnable {
     this.location = location;
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
+    squaredLeashRange = (float) Math.pow(leashRange, 2);
     chunkKey = location.getChunk().getChunkKey();
 
     runTaskTimer(StrifePlugin.getInstance(), SPAWNER_OFFSET % 20, 40L);
@@ -78,9 +83,7 @@ public class Spawner extends BukkitRunnable {
         iterator.remove();
         continue;
       }
-      double xDist = Math.abs(location.getX() - le.getLocation().getX());
-      double zDist = Math.abs(location.getZ() - le.getLocation().getZ());
-      if (Math.abs(xDist) + Math.abs(zDist) > leashRange) {
+      if (location.distanceSquared(le.getLocation()) > squaredLeashRange) {
         despawnParticles(le);
         Set<Player> players = new HashSet<>(le.getLocation()
             .getNearbyEntitiesByType(Player.class, 15));
@@ -179,6 +182,13 @@ public class Spawner extends BukkitRunnable {
           mob.getEntity().setVelocity(vec);
           mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
         }
+        if (mob.getEntity() instanceof Mob) {
+          ReturnHomeGoal returnHomeGoal = new ReturnHomeGoal((Mob) mob.getEntity(),
+              spawner.squaredLeashRange * 0.75);
+          if (!Bukkit.getMobGoals().hasGoal((Mob) mob.getEntity(), returnHomeGoal.getKey())) {
+            Bukkit.getMobGoals().addGoal((Mob) mob.getEntity(), 0, returnHomeGoal);
+          }
+        }
       }
     }, 1L);
   }
@@ -268,6 +278,7 @@ public class Spawner extends BukkitRunnable {
 
   public void setLeashRange(double leashRange) {
     this.leashRange = leashRange;
+    squaredLeashRange = (float) Math.pow(leashRange, 2);
   }
 
   public long getRespawnMillis() {

@@ -110,20 +110,14 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
     double speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
-    if (entity instanceof Player) {
-      ((Player) entity).setWalkSpeed(0.2f * (float) speed);
-      ((Player) entity).setFlySpeed(0.2f * (float) speed);
-    } else {
-      if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
-        double base = entity.getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue();
-        entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(base * speed);
-      }
-      if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
-        double base = entity.getAttribute(GENERIC_FLYING_SPEED).getBaseValue();
-        entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(base * speed);
-      }
+    if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
+      entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(0.1 * speed);
+    }
+    if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
+      entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(0.1 * speed);
     }
   }
+
   public void updateVanillaAttributes(Player player) {
     updateVanillaAttributes(strifeMobManager.getStatMob(player));
   }
