@@ -33,7 +33,6 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
@@ -82,7 +81,7 @@ public class ChampionManager {
 
   public void update(Champion champion) {
     champion.recombineCache();
-    plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
   public void update(Player player) {

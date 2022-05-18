@@ -15,7 +15,6 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -234,7 +233,7 @@ public class SpawnListener implements Listener {
   }
 
   private void setEntityAttributes(StrifeMob strifeMob, LivingEntity entity) {
-    plugin.getStatUpdateManager().updateVanillaAttributes(strifeMob);
+    plugin.getStatUpdateManager().updateAllAttributes(strifeMob);
     double health = entity.getAttribute(GENERIC_MAX_HEALTH).getBaseValue();
     if (entity instanceof Slime) {
       health *= 0.6 + (double) ((Slime) entity).getSize() / 3.0;

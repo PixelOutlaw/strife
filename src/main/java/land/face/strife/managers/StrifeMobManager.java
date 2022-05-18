@@ -293,7 +293,6 @@ public class StrifeMobManager {
     if (mob.getChampion() != null) {
       mob.getChampion().recombineCache();
     }
-    mob.updateBarrierScale();
   }
 
   private void applyDualWieldStatChanges(EquipmentCache cache, String slot) {

@@ -31,7 +31,6 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
-import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
@@ -90,7 +89,6 @@ public class FlatfileStorage implements DataStorage {
     // Preferences
     config.set(champUuid + ".display-exp", champion.isDisplayExp());
     config.set(champUuid + ".glow-enabled", champion.isGlowEnabled());
-    config.set(champUuid + ".health-display", champion.getHealthDisplayType().toString());
 
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
@@ -154,13 +152,6 @@ public class FlatfileStorage implements DataStorage {
       }
       ConfigurationSection section = config.getConfigurationSection(key);
 
-      HealthDisplayType displayType;
-      try {
-        displayType = HealthDisplayType.valueOf(section.getString("health-display", "TEN_HEALTH_HEARTS"));
-      } catch (Exception e) {
-        displayType = HealthDisplayType.TEN_LIFE_PER_HEART;
-      }
-      saveData.setHealthDisplayType(displayType);
       saveData.setDisplayExp(section.getBoolean("display-exp", false));
       saveData.setGlowEnabled(section.getBoolean("glow-enabled", true));
 

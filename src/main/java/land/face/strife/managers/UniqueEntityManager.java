@@ -350,7 +350,7 @@ public class UniqueEntityManager {
     mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      plugin.getStatUpdateManager().updateVanillaAttributes(mob);
+      plugin.getStatUpdateManager().updateAllAttributes(mob);
 
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       mob.restoreBarrier(200000);

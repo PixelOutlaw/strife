@@ -78,7 +78,7 @@ public class Thrall extends Effect {
       entity.getEquipment().setItemInMainHand(SpawnListener.SKELETON_WAND);
     }
 
-    getPlugin().getStatUpdateManager().updateVanillaAttributes(mob);
+    getPlugin().getStatUpdateManager().updateAllAttributes(mob);
 
     float durationSeconds =
         (float) lifeSeconds * (1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100);

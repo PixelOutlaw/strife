@@ -57,10 +57,9 @@ public class StatsMenu extends ItemMenu {
     setItem(22, new StatsBonusMenuItem(this));
     setItem(24, new StatsEffectMenuItem(this));
 
-    setItem(41, new StatsOpenLevelupMenu(plugin));
-    setItem(42, new StatsToggleGlow(plugin));
-    setItem(43, new StatsVerboseXP(plugin));
-    setItem(44, new StatsChangeHealthDisplay(plugin));
+    setItem(42, new StatsOpenLevelupMenu(plugin));
+    setItem(43, new StatsToggleGlow(plugin));
+    setItem(44, new StatsVerboseXP(plugin));
 
     fillEmptySlots(new BlankIcon());
   }

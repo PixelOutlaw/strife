@@ -44,7 +44,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().update(event.getPlayer());
-      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+      plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }, 3L);
   }
 
@@ -53,7 +53,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getStrifeMobManager().updateEquipmentStats(
           plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+      plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }, 10L);
   }
 
@@ -61,7 +61,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
   public void onEquipmentUpdate(EquipmentUpdateEvent event) {
     plugin.getStrifeMobManager().updateEquipmentStats(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-    plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+    plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     if (event.isHard()) {
       plugin.getPlayerMountManager().updateSelectedMount(event.getPlayer());
       ItemStack mountStack = event.getData().getEquipmentItem(DeluxeSlot.MOUNT);
@@ -81,7 +81,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
     if (event.getTo().getWorld() != event.getFrom().getWorld()) {
       plugin.getStrifeMobManager()
           .updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+      plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }
   }
 
@@ -89,7 +89,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
   public void onGamemodeChange(PlayerGameModeChangeEvent event) {
     plugin.getStrifeMobManager().updateEquipmentStats(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
-    plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+    plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     plugin.getAttackSpeedManager().resetAttack(
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()), 1, false);
   }

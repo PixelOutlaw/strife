@@ -24,16 +24,12 @@ public class BarrierTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
   private int delayTicks = 0;
-  private float barrierScale = 20f;
 
   private final float tickMultiplier;
 
   public BarrierTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
     this.runTaskTimer(StrifePlugin.getInstance(), 20L, DamageUtil.TICK_RATE);
-    if (parentMob.getChampion() != null) {
-      updateBarrierScale();
-    }
     tickMultiplier = (1 / (20f / DamageUtil.TICK_RATE)) * 0.1f;
   }
 
@@ -61,12 +57,6 @@ public class BarrierTask extends BukkitRunnable {
     float barrierGain = DamageUtil.TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
     barrierGain += StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier;
     mob.restoreBarrier(barrierGain);
-  }
-
-  public void updateBarrierScale() {
-    barrierScale = StatUpdateManager.getBarrierScale(parentMob.get().getChampion()
-        .getSaveData().getHealthDisplayType(), parentMob.get().getStat(StrifeStat.HEALTH),
-        parentMob.get().getStat(StrifeStat.BARRIER));
   }
 
   public void bumpBarrierTime(float barrierDelayMult) {
@@ -99,7 +89,7 @@ public class BarrierTask extends BukkitRunnable {
       mob.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION,
           99999, 50, true, false));
       float percent = Math.min(1, mob.getBarrier() / mob.getMaxBarrier());
-      mob.getEntity().setAbsorptionAmount(percent * barrierScale);
+      mob.getEntity().setAbsorptionAmount(percent * 20);
     } else {
       mob.getEntity().setAbsorptionAmount(0);
       mob.getEntity().removePotionEffect(PotionEffectType.ABSORPTION);

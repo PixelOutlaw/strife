@@ -9,11 +9,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
-import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.AbilitySlot;
-import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.attribute.Attribute;
@@ -68,15 +64,6 @@ public class JoinAndLeaveListener implements Listener {
     if (champion.getSaveData().isOnMount()) {
       plugin.getPlayerMountManager().spawnMount(event.getPlayer());
     }
-
-    event.getPlayer().setHealthScaled(true);
-    HealthDisplayType displayType = champion.getSaveData().getHealthDisplayType();
-    float maxHealth = Math.max(StatUtil.getStat(playerMob, StrifeStat.HEALTH), 1);
-    event.getPlayer().setInvulnerable(true);
-    event.getPlayer().setHealthScale(StatUpdateManager.getHealthScale(displayType, maxHealth));
-    event.getPlayer().setInvulnerable(false);
-
-    playerMob.updateBarrierScale();
 
     Bukkit.getScheduler().runTaskLater(plugin, () ->
         plugin.getStrifeMobManager().updateCollisions(event.getPlayer()), 20L);
@@ -138,9 +125,8 @@ public class JoinAndLeaveListener implements Listener {
   }
 
   private void notifyUnusedPaths(final Player player) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      MessageUtils.sendMessage(player, UNUSED_PATH);
-    }, 20L * 5 + 1);
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        MessageUtils.sendMessage(player, UNUSED_PATH), 20L * 5 + 1);
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

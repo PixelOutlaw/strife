@@ -543,7 +543,6 @@ public class EffectManager {
         ((Frost) effect).setDuration(cs.getInt("duration", 20));
         ((Frost) effect).setOverride(cs.getBoolean("override", false));
         ((Frost) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
-        ((Frost) effect).setAddDuration(cs.getBoolean("add-duration", true));
       }
       case INVINCIBLE -> {
         effect = new Invincible();

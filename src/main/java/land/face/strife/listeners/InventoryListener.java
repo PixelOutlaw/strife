@@ -41,7 +41,7 @@ public class InventoryListener implements Listener {
     }
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       plugin.getStrifeMobManager().updateEquipmentStats(event.getPlayer());
-      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+      plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }, 1L);
   }
 
@@ -74,7 +74,7 @@ public class InventoryListener implements Listener {
     }
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       plugin.getStrifeMobManager().updateEquipmentStats(event.getPlayer());
-      plugin.getStatUpdateManager().updateVanillaAttributes(event.getPlayer());
+      plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }, 1L);
   }
 

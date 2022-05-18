@@ -2,7 +2,6 @@ package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil;
 import lombok.Setter;
 
 public class Frost extends Effect {
@@ -11,8 +10,6 @@ public class Frost extends Effect {
   private int duration = 0;
   @Setter
   private boolean strictDuration;
-  @Setter
-  private boolean addDuration;
   @Setter
   private boolean override;
 
@@ -25,10 +22,12 @@ public class Frost extends Effect {
     }
     if (override) {
       target.setFrost((int) trueDuration);
-    } else if (addDuration) {
-      DamageUtil.addFrost(caster, target, trueDuration);
     } else {
-      target.setFrost(Math.max(target.getFrost(), (int) trueDuration));
+      if (trueDuration > 0) {
+        target.addFrost((int) trueDuration);
+      } else {
+        target.removeFrost((int) trueDuration);
+      }
     }
   }
 }

@@ -18,8 +18,6 @@ import org.bukkit.entity.Player;
 
 public class ChampionSaveData {
 
-  public static final HealthDisplayType[] DISPLAY_OPTIONS = HealthDisplayType.values();
-
   private final UUID uniqueId;
   private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
   private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
@@ -37,9 +35,6 @@ public class ChampionSaveData {
   private int bonusLevels;
 
   private float pvpScore = 700;
-
-  // Player preferences
-  private HealthDisplayType healthDisplayType = HealthDisplayType.TEN_LIFE_PER_HEART;
 
   @Getter @Setter
   private boolean onMount;
@@ -72,14 +67,6 @@ public class ChampionSaveData {
 
   public Set<LoreAbility> getBoundAbilities() {
     return boundAbilities;
-  }
-
-  public HealthDisplayType getHealthDisplayType() {
-    return healthDisplayType;
-  }
-
-  public void setHealthDisplayType(HealthDisplayType healthDisplayType) {
-    this.healthDisplayType = healthDisplayType;
   }
 
   public boolean isDisplayExp() {
@@ -184,15 +171,5 @@ public class ChampionSaveData {
 
   public void setGlowEnabled(boolean glowEnabled) {
     this.glowEnabled = glowEnabled;
-  }
-
-  public enum HealthDisplayType {
-    TWENTY_LIFE_PER_HEART,
-    TEN_LIFE_PER_HEART,
-    FIVE_LIFE_PER_HEART,
-    VANILLA_TWO_LIFE_PER_HEART,
-    ONE_ROW_OF_LIFE,
-    TWO_ROWS_OF_LIFE,
-    THREE_ROWS_OF_LIFE
   }
 }

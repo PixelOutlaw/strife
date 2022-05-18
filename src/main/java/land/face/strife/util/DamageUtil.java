@@ -1023,7 +1023,7 @@ public class DamageUtil {
     if (amount < 0.1) {
       return;
     }
-    defender.setFrost(defender.getFrost() + amount);
+    defender.addFrost((int) amount);
   }
 
   public static void doReflectedDamage(StrifeMob defender, StrifeMob attacker,

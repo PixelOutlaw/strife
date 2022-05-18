@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.ChampionSaveData.HealthDisplayType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
 import org.bukkit.ChatColor;
@@ -118,42 +117,18 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
     }
   }
 
-  public void updateVanillaAttributes(Player player) {
-    updateVanillaAttributes(strifeMobManager.getStatMob(player));
+  public void updateAllAttributes(Player player) {
+    updateAllAttributes(strifeMobManager.getStatMob(player));
   }
 
-  public void updateVanillaAttributes(StrifeMob strifeMob) {
+  public void updateAllAttributes(StrifeMob strifeMob) {
     updateMovementSpeed(strifeMob);
     updateHealth(strifeMob);
     updateWeight(strifeMob);
     float maxAir = strifeMobManager.getBaseAirTicks() * (1 + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
     strifeMob.getEntity().setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
     strifeMob.getEntity().setMaximumAir((int) maxAir);
-  }
-
-  public static float getHealthScale(HealthDisplayType healthDisplayType, float maxHealth) {
-    return switch (healthDisplayType) {
-      case TWENTY_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxHealth / 20f);
-      case TEN_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxHealth / 10f);
-      case FIVE_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxHealth / 5f);
-      case VANILLA_TWO_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxHealth / 2f);
-      case TWO_ROWS_OF_LIFE -> 40f;
-      case THREE_ROWS_OF_LIFE -> 60f;
-      case ONE_ROW_OF_LIFE -> 20f;
-    };
-  }
-
-  public static float getBarrierScale(HealthDisplayType healthDisplayType, float maxHealth,
-      float maxBarrier) {
-    return switch (healthDisplayType) {
-      case VANILLA_TWO_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxBarrier / 2f);
-      case FIVE_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxBarrier / 5f);
-      case TEN_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxBarrier / 10f);
-      case TWENTY_LIFE_PER_HEART -> 2f * (float) Math.ceil(maxBarrier / 20f);
-      case TWO_ROWS_OF_LIFE -> 20f * (float) Math.max(Math.floor(2 * maxBarrier / maxHealth), 1);
-      case THREE_ROWS_OF_LIFE -> 20f * (float) Math.max(Math.floor(3 * maxBarrier / maxHealth), 1);
-      case ONE_ROW_OF_LIFE -> 20f * (float) Math.max(Math.floor(maxBarrier / maxHealth), 1);
-    };
+    StatUtil.getStat(strifeMob, StrifeStat.BARRIER);
   }
 
   @SafeVarargs

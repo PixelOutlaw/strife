@@ -80,6 +80,8 @@ public class StrifeMob {
   private float maxBlock = 1000;
   @Getter
   private int frost;
+  @Getter @Setter
+  private int frostGraceTicks;
   @Getter
   private float corruption;
   @Getter
@@ -177,9 +179,20 @@ public class StrifeMob {
     }
   }
 
-  public void setFrost(float newFrost) {
-    this.frost = Math.max(0, Math.min((int) newFrost, 10000));
-    getEntity().setFreezeTicks((int) ((float) this.frost / 72f));
+  public void addFrost(int added) {
+    frostGraceTicks = 20;
+    frost = Math.min(frost + added, 10000);
+    getEntity().setFreezeTicks((int) ((float) frost / 72f));
+  }
+
+  public void removeFrost(int subbed) {
+    frost = Math.max(frost - subbed, 0);
+    getEntity().setFreezeTicks((int) ((float) frost / 72f));
+  }
+
+  public void setFrost(int value) {
+    frost = Math.max(0, Math.min(value, 10000));
+    getEntity().setFreezeTicks((int) ((float) frost / 72f));
   }
 
   public float addCorruption(float amount) {
@@ -239,12 +252,6 @@ public class StrifeMob {
         barrierTask.forceAbsorbHearts();
       }
       return -1 * diff;
-    }
-  }
-
-  public void updateBarrierScale() {
-    if (getEntity() instanceof Player && barrierTask != null) {
-      barrierTask.updateBarrierScale();
     }
   }
 

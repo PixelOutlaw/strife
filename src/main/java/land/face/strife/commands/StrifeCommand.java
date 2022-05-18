@@ -23,8 +23,6 @@ import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
-import com.sentropic.guiapi.gui.GUIComponent;
-import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
@@ -37,9 +35,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
-import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.model.ModeledEntity;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +60,6 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Horse;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -206,7 +201,7 @@ public class StrifeCommand extends BaseCommand {
       plugin.enable();
 
       for (Player player : Bukkit.getOnlinePlayers()) {
-        plugin.getStatUpdateManager().updateVanillaAttributes(player);
+        plugin.getStatUpdateManager().updateAllAttributes(player);
       }
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p,
@@ -311,7 +306,7 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(target.getPlayer(),
         "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
     plugin.getChampionManager().update(target.getPlayer());
-    plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
   @Subcommand("clear|wipe")
@@ -330,7 +325,7 @@ public class StrifeCommand extends BaseCommand {
         new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
     sendMessage(target.getPlayer(), "&aYour stats have been wiped :O");
     plugin.getChampionManager().update(target.getPlayer());
-    plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
   @Subcommand("raise|levelup")
@@ -349,7 +344,7 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(sender, "&aYou raised &f%player% &ato level &f%level%.",
         new String[][]{{"%player%", target.getPlayer().getDisplayName()},
             {"%level%", "" + newLevel}});
-    plugin.getStatUpdateManager().updateVanillaAttributes(champion.getPlayer());
+    plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
   @Subcommand("ability set")

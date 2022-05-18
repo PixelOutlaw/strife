@@ -64,11 +64,10 @@ public class CreeperExplodeListener implements Listener {
       victim.addCorruption(mob.getCorruption() * 0.5f + 20);
     }
     if (mob.getFrost() > 0) {
-      DamageUtil.addFrost(mob, victim, mob.getFrost() * 0.5f + 2000);
+      victim.addFrost((int) (mob.getFrost() * 0.5f + 2000));
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();
-      plugin.getStrifeMobManager().getStatMob(target).setFrost(0);
       event.getEntity().setFireTicks(Math.max(event.getEntity().getFireTicks(), ticks + 40));
     }
   }

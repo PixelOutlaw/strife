@@ -609,7 +609,7 @@ public class StrifePlugin extends FacePlugin {
     }
 
     for (Player player : Bukkit.getOnlinePlayers()) {
-      statUpdateManager.updateVanillaAttributes(player);
+      statUpdateManager.updateAllAttributes(player);
       abilityManager.loadPlayerCooldowns(player);
       abilityIconManager.setAllAbilityIcons(player);
       guiManager.setupGui(player);

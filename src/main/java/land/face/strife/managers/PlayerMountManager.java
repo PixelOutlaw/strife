@@ -20,9 +20,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.model.ActiveModel.ModelState;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.mount.controller.FlyingMountController_v16;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +144,7 @@ public class PlayerMountManager {
     mob.forceSetStat(StrifeStat.WARDING, 250);
     mob.forceSetStat(StrifeStat.ALL_RESIST, 80);
     mob.forceSetStat(StrifeStat.DAMAGE_REDUCTION, -5);
-    plugin.getStatUpdateManager().updateVanillaAttributes(mob);
+    plugin.getStatUpdateManager().updateAllAttributes(mob);
     ChunkUtil.setDespawnOnUnload(pig);
 
     ActiveModel model = null;

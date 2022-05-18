@@ -43,10 +43,10 @@ public class Ignite extends Effect {
       return true;
     }
     if (frost >= ticks) {
-      mob.setFrost(frost - ticks);
+      mob.removeFrost(ticks);
       return false;
     }
-    mob.setFrost(0);
+    mob.removeFrost(1000000);
     mob.getEntity().setFireTicks(ticks - frost);
     return true;
   }

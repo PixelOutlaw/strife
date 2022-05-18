@@ -189,7 +189,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
     plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
     mob.setCorruption(0);
-    mob.setFrost(0);
+    mob.removeFrost(100000);
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     plugin.getCounterManager().clearCounters(event.getPlayer());
