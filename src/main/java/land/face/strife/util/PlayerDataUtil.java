@@ -1,6 +1,7 @@
 package land.face.strife.util;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionUser;
 import land.face.strife.listeners.SwingListener;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -32,17 +34,29 @@ public class PlayerDataUtil {
 
   public static LoadedKnowledge loadKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
-    String name = TextUtils.color(knowledgeSection.getString("name", ""));
-    String lore1 = TextUtils.color(knowledgeSection.getString("lore1", ""));
-    String lore2 = TextUtils.color(knowledgeSection.getString("lore2", ""));
-    String lore3 = TextUtils.color(knowledgeSection.getString("lore3", ""));
-    List<String> desc = TextUtils.color(knowledgeSection.getStringList("desc"));
+    String name = TextUtils.color(knowledgeSection.getString("name",
+        ChatColor.GRAY + key + "(WORK IN PROGRESS)"));
+    String lore1 = TextUtils.color("&4&l&nMob Info (Offense)\\n\\n" +
+        knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    String lore2 = TextUtils.color("&4&l&nMob Info (Defense)\\n\\n" +
+        knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    String lore3 = TextUtils.color("&4&l&nMob Info (Stats)\\n\\n" +
+        knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    List<String> desc = new ArrayList<>();
+    desc.add("");
+    desc.add("&fKnowledge Type: &cCombat");
+    desc.add("&fEnemy Level: &e" + weight);
+    desc.add("");
+    desc.add("&7Click to view what you've");
+    desc.add("&7learned from this enemy!");
+    desc.add("");
+    TextUtils.color(knowledgeSection.getStringList("desc"));
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
     int threshold3 = knowledgeSection.getInt("rank-3", 1000);
     LoadedKnowledge mobKnowledge = new LoadedKnowledge(
         key, name, weight, threshold1, threshold2, threshold3,
-        lore1, lore2, lore3, desc);
+        lore1, lore2, lore3, TextUtils.color(desc));
     mobKnowledge.setSource("strife");
     return mobKnowledge;
   }

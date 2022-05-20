@@ -841,8 +841,8 @@ public class StrifePlugin extends FacePlugin {
       mobModManager.loadMobMod(key, cs);
       ConfigurationSection section = cs.getConfigurationSection("knowledge");
       if (section != null) {
-        LoadedKnowledge lk = PlayerDataUtil
-            .loadKnowledge("mod-" + key, 300 + knowledges.size(), section);
+        LoadedKnowledge lk = PlayerDataUtil.loadKnowledge(
+            "mod-" + key, 300 + knowledges.size(), section);
         knowledges.add(lk);
       }
     }
