@@ -194,9 +194,8 @@ public class StrifePlugin extends FacePlugin {
   private PluginLogger debugPrinter;
   private LogLevel logLevel;
   private MasterConfiguration settings;
-  private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, uniqueEnemiesYAML,
-      equipmentYAML, conditionYAML, effectYAML, pathYAML, abilityYAML, loreAbilityYAML, buffsYAML,
-      modsYAML, globalBoostsYAML, mountsYAML;
+  private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
+          pathYAML, abilityYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -326,7 +325,6 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(langYAML = defaultSettingsLoad("language.yml"));
     configurations.add(attributesYAML = defaultSettingsLoad("attributes.yml"));
     configurations.add(baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml"));
-    configurations.add(uniqueEnemiesYAML = defaultSettingsLoad("unique-enemies.yml"));
     configurations.add(equipmentYAML = defaultSettingsLoad("equipment.yml"));
     configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
     configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
@@ -338,7 +336,6 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
     configurations.add(mountsYAML = defaultSettingsLoad("mounts.yml"));
 
-    spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
     SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(
         new File(getDataFolder(), "agility-locations.yml"));
 
@@ -347,6 +344,9 @@ public class StrifePlugin extends FacePlugin {
         getLogger().info("Updating " + config.getFileName());
       }
     }
+
+    List<SmartYamlConfiguration> uniques = uniqueFileLoad();
+    spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
     settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
     storage = new FlatfileStorage(this);
@@ -424,7 +424,7 @@ public class StrifePlugin extends FacePlugin {
     buildPaths();
     buildLoreAbilities();
 
-    uniqueEntityManager.loadUniques(uniqueEnemiesYAML);
+    uniqueEntityManager.loadUniques(uniques);
     vagabondManager.loadClasses(configYAML.getConfigurationSection("vagabonds"));
     buildMobMods();
     loadSpawners();
@@ -714,7 +714,17 @@ public class StrifePlugin extends FacePlugin {
 
   private VersionedSmartYamlConfiguration defaultSettingsLoad(String name) {
     return new VersionedSmartYamlConfiguration(new File(getDataFolder(), name),
-        getResource(name), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+            getResource(name), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+  }
+
+  private List<SmartYamlConfiguration> uniqueFileLoad() {
+    List<SmartYamlConfiguration> uniques = new ArrayList<>();
+    File folder = new File(getDataFolder(), "uniques");
+    File[] listOfFiles = folder.listFiles();
+    for (File f : Objects.requireNonNull(listOfFiles)) {
+      uniques.add(new SmartYamlConfiguration(f));
+    }
+    return uniques;
   }
 
   private void buildAbilities() {

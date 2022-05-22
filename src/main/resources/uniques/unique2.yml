@@ -1,0 +1,61 @@
+version: "0.0.1"
+zombiechamp2:
+  name: "&fZombie Champion&4 (Lv 230)"
+  type: ZOMBIE
+  disguise: PLAYER
+  disguise-player: "Pur3p0w3r"
+  stats:
+    MELEE_DAMAGE: 1
+    RANGED_DAMAGE: 1
+    MAGIC_DAMAGE: 1
+    ARMOR: 10
+    WARDING: 5
+    EVASION: 5
+    ACCURACY: 5
+    ARMOR_PENETRATION: 10
+    WARD_PENETRATION: 10
+    FIRE_RESIST: -20
+    DARK_RESIST: 10
+    ALL_RESIST: 10
+    DAMAGE_REDUCTION: 0.1
+  equipment:
+    main-hand: item-name-two
+    off-hand: item-name-two
+    helmet: item-name-two
+    chestplate: item-name-two
+    leggings: item-name-two
+    boots: item-name-two
+  particles:
+    radius: 2
+    count: 20
+    effect: FLAME
+  abilities:
+    PHASE_BEGIN:
+      PHASE_ONE:
+        - BuffSelfResist
+      PHASE_THREE:
+        - BuffSelfResist
+      PHASE_FIVE:
+        - BuffSelfResist
+    ON_HIT:
+      PHASE_THREE:
+        - Fireball
+      PHASE_FOUR:
+        - Fireball
+      PHASE_FIVE:
+        - Fireball
+    WHEN_HIT:
+      PHASE_ONE:
+        - Fireball
+      PHASE_TWO:
+        - IgniteAttacker
+        - Invisible5s
+      PHASE_THREE:
+        - IgniteAttacker
+        - Invisible5s
+      PHASE_FOUR:
+        - IgniteAttacker
+        - Invisible5s
+      PHASE_FIVE:
+        - IgniteAttacker
+        - Invisible5s
