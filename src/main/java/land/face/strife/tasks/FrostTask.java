@@ -50,6 +50,7 @@ public class FrostTask extends BukkitRunnable {
 
     if (isCold) {
       mob.addFrost(5);
+      playFrostParticles(mob.getEntity());
       if (mob.getFrost() > 9900) {
         if (!mob.isInvincible()) {
           DamageUtil.dealRawDamage(mob, 1);
