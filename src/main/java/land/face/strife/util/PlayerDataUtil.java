@@ -32,15 +32,15 @@ public class PlayerDataUtil {
 
   private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
 
-  public static LoadedKnowledge loadKnowledge(String key, int weight,
+  public static LoadedKnowledge loadMobKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
     String name = TextUtils.color(knowledgeSection.getString("name",
         ChatColor.GRAY + key + "(WORK IN PROGRESS)"));
-    String lore1 = TextUtils.color("&4&l&nMob Info (Offense)\\n\\n" +
+    String lore1 = TextUtils.color("&4&l&nMob Info (Offense)\n\n" +
         knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    String lore2 = TextUtils.color("&4&l&nMob Info (Defense)\\n\\n" +
+    String lore2 = TextUtils.color("&4&l&nMob Info (Defense)\n\n" +
         knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    String lore3 = TextUtils.color("&4&l&nMob Info (Stats)\\n\\n" +
+    String lore3 = TextUtils.color("&4&l&nMob Info (Stats)\n\n" +
         knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
     List<String> desc = new ArrayList<>();
     desc.add("");
@@ -50,7 +50,23 @@ public class PlayerDataUtil {
     desc.add("&7Click to view what you've");
     desc.add("&7learned from this enemy!");
     desc.add("");
-    TextUtils.color(knowledgeSection.getStringList("desc"));
+    int threshold1 = knowledgeSection.getInt("rank-1", 10);
+    int threshold2 = knowledgeSection.getInt("rank-2", 100);
+    int threshold3 = knowledgeSection.getInt("rank-3", 1000);
+    LoadedKnowledge mobKnowledge = new LoadedKnowledge(
+        key, name, weight, threshold1, threshold2, threshold3,
+        lore1, lore2, lore3, TextUtils.color(desc));
+    mobKnowledge.setSource("strife");
+    return mobKnowledge;
+  }
+
+  public static LoadedKnowledge loadModKnowledge(String key, int weight,
+      ConfigurationSection knowledgeSection) {
+    String name = TextUtils.color(knowledgeSection.getString("name", ChatColor.GRAY + key + "(WORK IN PROGRESS)"));
+    String lore1 = TextUtils.color(knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    String lore2 = TextUtils.color(knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    String lore3 = TextUtils.color(knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    List<String> desc = TextUtils.color(knowledgeSection.getStringList("desc"));
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
     int threshold3 = knowledgeSection.getInt("rank-3", 1000);

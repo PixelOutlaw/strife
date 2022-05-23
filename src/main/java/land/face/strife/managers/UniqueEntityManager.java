@@ -459,7 +459,7 @@ public class UniqueEntityManager {
         ConfigurationSection section = cs.getConfigurationSection("knowledge");
         if (section != null) {
           LoadedKnowledge loadedKnowledge = PlayerDataUtil
-              .loadKnowledge(entityNameKey, uniqueEntity.getBaseLevel(), section);
+              .loadMobKnowledge(entityNameKey, uniqueEntity.getBaseLevel(), section);
           loadedKnowledge.getPerkOne().clear();
           loadedKnowledge.getPerkOne().add("&8◇ -10% Dmg From This Mob");
           loadedKnowledge.getPerkOne().add("&e◆ -10% Dmg From This Mob");
