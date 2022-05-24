@@ -1,10 +1,7 @@
 package land.face.strife.data;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
@@ -72,6 +69,8 @@ public class UniqueEntity {
   private List<String> removeGoals;
   @Getter @Setter
   private List<String> addGoals;
+  @Getter
+  private final List<String> bonusKnowledge = new ArrayList<>();
   @Getter @Setter
   private String modelId;
   @Getter @Setter

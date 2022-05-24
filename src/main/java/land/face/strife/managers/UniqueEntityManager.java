@@ -458,6 +458,8 @@ public class UniqueEntityManager {
         }
         ConfigurationSection section = cs.getConfigurationSection("knowledge");
         if (section != null) {
+          uniqueEntity.getBonusKnowledge().clear();
+          uniqueEntity.getBonusKnowledge().addAll(section.getStringList("bonus-knowledge"));
           LoadedKnowledge loadedKnowledge = PlayerDataUtil
               .loadMobKnowledge(entityNameKey, uniqueEntity.getBaseLevel(), section);
           loadedKnowledge.getPerkOne().clear();

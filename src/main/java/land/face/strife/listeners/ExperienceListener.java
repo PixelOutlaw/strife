@@ -26,6 +26,7 @@ import java.util.Set;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.events.StrifeCombatXpEvent;
 import land.face.strife.events.UniqueKillEvent;
@@ -78,11 +79,16 @@ public class ExperienceListener implements Listener {
     UniqueKillEvent ev = new UniqueKillEvent(mob, killers);
     Bukkit.getPluginManager().callEvent(ev);
 
-    if (mob.getUniqueEntityId() != null && LearninBooksPlugin.instance.getKnowledgeManager()
+    UniqueEntity ue = plugin.getUniqueEntityManager().getUnique(mob.getUniqueEntityId());
+    if (ue != null && LearninBooksPlugin.instance.getKnowledgeManager()
         .getLoadedKnowledge().containsKey(mob.getUniqueEntityId())) {
       for (Player p : ev.getKillers()) {
         LearninBooksPlugin.instance.getKnowledgeManager()
             .incrementKnowledge(p, mob.getUniqueEntityId(), 1);
+        for (String bonusKnowledge : ue.getBonusKnowledge()) {
+          LearninBooksPlugin.instance.getKnowledgeManager()
+                  .incrementKnowledge(p, bonusKnowledge, 1);
+        }
       }
     }
 
