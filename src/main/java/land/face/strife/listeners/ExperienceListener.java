@@ -80,14 +80,15 @@ public class ExperienceListener implements Listener {
     Bukkit.getPluginManager().callEvent(ev);
 
     UniqueEntity ue = plugin.getUniqueEntityManager().getUnique(mob.getUniqueEntityId());
-    if (ue != null && LearninBooksPlugin.instance.getKnowledgeManager()
-        .getLoadedKnowledge().containsKey(mob.getUniqueEntityId())) {
-      for (Player p : ev.getKillers()) {
-        LearninBooksPlugin.instance.getKnowledgeManager()
-            .incrementKnowledge(p, mob.getUniqueEntityId(), 1);
-        for (String bonusKnowledge : ue.getBonusKnowledge()) {
-          LearninBooksPlugin.instance.getKnowledgeManager()
-                  .incrementKnowledge(p, bonusKnowledge, 1);
+    if (ue != null) {
+      if (LearninBooksPlugin.instance.getKnowledgeManager().getLoadedKnowledge().containsKey(mob.getUniqueEntityId())) {
+        for (Player p : ev.getKillers()) {
+          LearninBooksPlugin.instance.getKnowledgeManager().incrementKnowledge(p, mob.getUniqueEntityId(), 1);
+        }
+      }
+      for (String bonusKnowledge : ue.getBonusKnowledge()) {
+        for (Player p : ev.getKillers()) {
+          LearninBooksPlugin.instance.getKnowledgeManager().incrementKnowledge(p, bonusKnowledge, 1);
         }
       }
     }
