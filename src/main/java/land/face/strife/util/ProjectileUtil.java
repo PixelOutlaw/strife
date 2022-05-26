@@ -220,11 +220,12 @@ public class ProjectileUtil {
   public static void createTrident(Player shooter, Trident trident, float attackMult,
       double power) {
     Vector vector = trident.getVelocity().multiply(power);
-    Trident newTrident = shooter.getWorld()
-        .spawn(trident.getLocation(), Trident.class, e -> e.setVelocity(vector));
+    Trident newTrident = shooter.getWorld().spawn(trident.getLocation(),
+        Trident.class, e -> e.setVelocity(vector));
     newTrident.setShooter(shooter);
     newTrident.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     setAttackMult(newTrident, attackMult);
+    setShotId(newTrident);
   }
 
   public static boolean isProjectile(EntityType entityType) {
