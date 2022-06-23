@@ -48,7 +48,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
   private final float POISON_FLAT_DAMAGE;
   private final float POISON_PERCENT_MAX_HEALTH_DAMAGE;
 
-  private final Set<LivingEntity> poisonedMobs = new HashSet<>();
+  private final Set<LivingEntity> it = new HashSet<>();
   private final Set<LivingEntity> burningMobs = new HashSet<>();
   private final Set<LivingEntity> witheredMobs = new HashSet<>();
 
@@ -71,7 +71,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
   }
 
   public void trackPoison(LivingEntity livingEntity) {
-    poisonedMobs.add(livingEntity);
+    it.add(livingEntity);
   }
 
   public void trackBurning(LivingEntity livingEntity) {
@@ -83,7 +83,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
   }
 
   public void clearAllDoT(LivingEntity livingEntity) {
-    poisonedMobs.remove(livingEntity);
+    it.remove(livingEntity);
     witheredMobs.remove(livingEntity);
     burningMobs.remove(livingEntity);
   }
@@ -96,7 +96,7 @@ public class DamageOverTimeTask extends BukkitRunnable {
   }
 
   private void dealPoisonDamage() {
-    Iterator<LivingEntity> poisonIterator = poisonedMobs.iterator();
+    Iterator<LivingEntity> poisonIterator = it.iterator();
     while (poisonIterator.hasNext()) {
       LivingEntity le = poisonIterator.next();
       if (le == null || !le.isValid() || !le.hasPotionEffect(POISON)) {
@@ -108,12 +108,13 @@ public class DamageOverTimeTask extends BukkitRunnable {
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
       if (mob.isInvincible()) {
-        return;
+        continue;
       }
 
       damage *= 1 - mob.getStat(StrifeStat.POISON_RESIST) / 100;
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
+
       if (damage >= le.getHealth()) {
         poisonIterator.remove();
       }
@@ -122,11 +123,11 @@ public class DamageOverTimeTask extends BukkitRunnable {
   }
 
   private void dealWitherDamage() {
-    Iterator<LivingEntity> witherIterator = witheredMobs.iterator();
-    while (witherIterator.hasNext()) {
-      LivingEntity le = witherIterator.next();
+    Iterator<LivingEntity> it = witheredMobs.iterator();
+    while (it.hasNext()) {
+      LivingEntity le = it.next();
       if (le == null || !le.isValid() || !le.hasPotionEffect(WITHER)) {
-        witherIterator.remove();
+        it.remove();
         continue;
       }
       int witherPower = le.getPotionEffect(WITHER).getAmplifier() + 1;
@@ -134,25 +135,26 @@ public class DamageOverTimeTask extends BukkitRunnable {
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
       if (mob.isInvincible()) {
-        return;
+        continue;
       }
 
       damage *= 1 - mob.getStat(StrifeStat.WITHER_RESIST) / 100;
       damage *= 0.25;
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
+
       if (damage >= le.getHealth()) {
-        witherIterator.remove();
+        it.remove();
       }
       DamageUtil.dealRawDamage(mob, damage);
     }
   }
 
   private void dealFireDamage() {
-    Iterator<LivingEntity> iterator = burningMobs.iterator();
-    while (iterator.hasNext()) {
-      LivingEntity le = iterator.next();
+    Iterator<LivingEntity> it = burningMobs.iterator();
+    while (it.hasNext()) {
+      LivingEntity le = it.next();
       if (le == null || !le.isValid() || le.getFireTicks() < 1) {
-        iterator.remove();
+        it.remove();
         continue;
       }
       if (le.hasPotionEffect(FIRE_RESISTANCE)) {
@@ -160,24 +162,23 @@ public class DamageOverTimeTask extends BukkitRunnable {
       }
       float damage = BURN_FLAT_DAMAGE;
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
-      if (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.1 ||
-          mob.isInvincible()) {
-        return;
+      if (mob.isInvincible() ||
+          (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.1)) {
+        continue;
       }
 
       damage *= 1 - StatUtil.getStat(mob, StrifeStat.FIRE_RESIST) / 100;
       damage *= 1 - mob.getStat(StrifeStat.BURNING_RESIST) / 100;
       damage = mob.damageBarrier(damage);
-      if (damage < 0.05) {
-        continue;
-      }
+
       if (le.getWorld().getBlockAt(le.getLocation()).getType() == Material.LAVA) {
         mob.addBuff(lavaDebuff, null, 10);
       }
       damage = plugin.getDamageManager().doEnergyAbsorb(mob, damage);
-      if (damage >= le .getHealth()) {
-        iterator.remove();
+      if (damage >= le.getHealth()) {
+        it.remove();
       }
+      DamageUtil.dealRawDamage(mob, damage);
     }
   }
 }

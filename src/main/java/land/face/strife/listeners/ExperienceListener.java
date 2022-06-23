@@ -21,7 +21,9 @@ package land.face.strife.listeners;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
@@ -54,6 +56,8 @@ public class ExperienceListener implements Listener {
 
   private static final String LEVEL_UP = "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)";
   private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
+
+  private static final Map<Integer, String> xpString = new HashMap<>();
 
   private final List<String> penaltyFreeWorlds;
 
@@ -133,6 +137,7 @@ public class ExperienceListener implements Listener {
       StrifeCombatXpEvent xpEvent = new StrifeCombatXpEvent(player, event.getEntity(), finalXp);
       Bukkit.getPluginManager().callEvent(xpEvent);
       if (xpEvent.isCancelled()) {
+        // Only do skillXP
         StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(player);
         playerMob.getChampion().getDetailsContainer().addExp(finalXp);
       } else {
@@ -140,6 +145,28 @@ public class ExperienceListener implements Listener {
       }
     }
   }
+
+  // TODO: xp popoff
+  public static String convertToXpString(int i) {
+    if (xpString.containsKey(i)) {
+      return xpString.get(i);
+    }
+    String s = Integer.toString(i);
+    s = s
+        .replaceAll("0", "⑳")
+        .replaceAll("1", "⑪")
+        .replaceAll("2", "⑫")
+        .replaceAll("3", "⑬")
+        .replaceAll("4", "⑭")
+        .replaceAll("5", "⑮")
+        .replaceAll("6", "⑯")
+        .replaceAll("7", "⑰")
+        .replaceAll("8", "⑱")
+        .replaceAll("9", "⑲");
+    xpString.put(i, s + "学");
+    return s;
+  }
+
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeath(PlayerDeathEvent event) {
@@ -153,6 +180,7 @@ public class ExperienceListener implements Listener {
     if (penaltyFreeWorlds.contains(p.getWorld().getName())) {
       return;
     }
+    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(p);
     if (plugin.getStrifeMobManager().getStatMob(p).diedFromPvp()) {
       return;
     }
@@ -164,13 +192,16 @@ public class ExperienceListener implements Listener {
       return;
     }
     PlayerInventory inv = p.getInventory();
-    double lostXP;
-    if (hadSoulShard(inv)) {
-      lostXP = 0;
+    double lostXP = 0;
+    float lossReduction = playerMob.getStat(StrifeStat.XP_LOST_ON_DEATH);
+    if (lossReduction >= 99.5) {
+      sendMessage(p, "&a&oSomehow, your stats reduce XP loss so low that you didn't lose any! Good job!");
+    } else if (hadSoulShard(inv)) {
       sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
     } else {
       double xpToLevel = plugin.getLevelingRate().get(p.getLevel());
       lostXP = Math.min(xpToLevel * 0.01, p.getExp() * xpToLevel);
+      lostXP *= 1 - lossReduction / 100;
       sendMessage(p, "&cAlas! You lost &f" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP &cfrom dying!");
       p.setExp(Math.max(p.getExp() - 0.01f, 0.00001f));
     }

@@ -105,8 +105,6 @@ public class DeathListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onEntityDeathClearData(final EntityDeathEvent event) {
-    plugin.getRageManager().clearRage(event.getEntity().getUniqueId());
-    plugin.getBleedManager().clearBleed(event.getEntity().getUniqueId());
     plugin.getSpawnerManager().addRespawnTime(event.getEntity());
     plugin.getCounterManager().clearCounters(event.getEntity());
   }

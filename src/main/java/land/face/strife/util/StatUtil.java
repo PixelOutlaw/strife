@@ -128,7 +128,9 @@ public class StatUtil {
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
-      attackBonus += StrifePlugin.getInstance().getRageManager().getRage(ae.getEntity());
+      attackBonus += ae.getRage();
+    } else {
+      attackBonus += ae.getRage() * 0.4f;
     }
 
     if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
@@ -213,13 +215,6 @@ public class StatUtil {
 
   public static float getWardingMult(float warding) {
     return (float) Math.pow(0.5f, warding / 100f);
-  }
-
-  public static float getMinimumEvasionMult(float evasion, float accuracy) {
-    evasion += 10;
-    accuracy += 10;
-    float bonusMultiplier = DamageUtil.EVASION_ACCURACY_MULT * ((evasion - accuracy) / (accuracy));
-    return Math.min(1.1f, DamageUtil.BASE_EVASION_MULT - bonusMultiplier);
   }
 
   public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {

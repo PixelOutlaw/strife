@@ -26,12 +26,14 @@ import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.tasks.BarrierTask;
+import land.face.strife.tasks.BleedTask;
 import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.FrostTask;
 import land.face.strife.tasks.InvincibleTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
+import land.face.strife.tasks.RageTask;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -96,6 +98,9 @@ public class StrifeMob {
   private LifeTask lifeTask = new LifeTask(this);
   private EnergyTask energyTask = new EnergyTask(this);
   private FrostTask frostTask = new FrostTask(this);
+  @Getter
+  private RageTask rageTask = null;
+  private BleedTask bleedTask = null;
   private InvincibleTask invincibleTask = null;
   private MinionTask minionTask = null;
 
@@ -244,7 +249,7 @@ public class StrifeMob {
       BarrierTask.spawnBarrierParticles(getEntity(), amount);
       return 0;
     } else {
-      if (barrier > 0) {
+      if (barrier > 0.5) {
         BarrierTask.spawnBarrierParticles(getEntity(), barrier);
       }
       barrier = 0;
@@ -275,6 +280,74 @@ public class StrifeMob {
 
   public void setMaxEnergy(float maxEnergy) {
     this.maxEnergy = maxEnergy;
+  }
+
+  public float getRage() {
+    if (rageTask == null) {
+      return 0;
+    }
+    return rageTask.getRage();
+  }
+
+  public void endRageTask() {
+    if (rageTask != null) {
+      rageTask.cancel();
+      rageTask = null;
+    }
+  }
+
+  public void changeRage(float amount) {
+    if (amount > 0) {
+      if (rageTask == null) {
+        rageTask = new RageTask(this);
+      }
+      if (hasTrait(StrifeTrait.BLOOD_BOIL) && bleedTask != null) {
+        amount *= 1.3;
+      }
+      rageTask.bumpRage(amount);
+    } else {
+      if (rageTask == null) {
+        return;
+      }
+      rageTask.reduceRage(amount);
+    }
+  }
+
+  public boolean isBleeding() {
+    return bleedTask != null;
+  }
+
+  public float getBleed() {
+    if (bleedTask == null) {
+      return 0;
+    }
+    return bleedTask.getBleed();
+  }
+
+  public boolean addBleed(float amount) {
+    return addBleed(amount, false);
+  }
+
+  public boolean addBleed(float amount, boolean overrideBarrier) {
+    if (amount < 0.5) {
+      return false;
+    }
+    if (!overrideBarrier && barrier > 0.9) {
+      return false;
+    }
+    if (bleedTask == null) {
+      bleedTask = new BleedTask(this, amount);
+    } else {
+      bleedTask.bumpBleed(amount);
+    }
+    return true;
+  }
+
+  public void clearBleed() {
+    if (bleedTask != null && !bleedTask.isCancelled()) {
+      bleedTask.cancel();
+      bleedTask = null;
+    }
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -722,6 +795,16 @@ public class StrifeMob {
       frostTask.cancel();
     }
     frostTask = new FrostTask(this);
+
+    if (rageTask != null) {
+      rageTask.reduceRage(1000000);
+      rageTask.cancel();
+    }
+
+    if (bleedTask != null) {
+      bleedTask.cancel();
+      bleedTask = null;
+    }
   }
 
   public void bumpCombat() {

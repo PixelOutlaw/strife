@@ -217,7 +217,6 @@ public class CombatListener implements Listener {
         return;
       }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
-      attackMultiplier = (float) Math.pow(attackMultiplier, 1.1);
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
@@ -371,7 +370,7 @@ public class CombatListener implements Listener {
       StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
-      plugin.getRageManager().changeRage(killer, killer.getStat(StrifeStat.RAGE_ON_KILL));
+      killer.changeRage(killer.getStat(StrifeStat.RAGE_ON_KILL));
     }
   }
 

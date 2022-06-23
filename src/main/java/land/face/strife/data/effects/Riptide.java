@@ -75,6 +75,9 @@ public class Riptide extends Effect {
   }
 
   public static void sendCancelPacket(LivingEntity target) {
+    if (!RIPTIDE_MAP.containsKey(target)) {
+      return;
+    }
     RIPTIDE_MAP.remove(target);
     try {
       PacketContainer restoreStanding = ProtocolLibrary.getProtocolManager()

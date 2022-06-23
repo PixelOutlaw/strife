@@ -112,22 +112,20 @@ public class StatsDefenseMenuItem extends MenuItem {
     float dodgeChance = StatUtil.getStat(mob, StrifeStat.DODGE_CHANCE);
     lore.add(addStat("Evasion Rating: ", evasion, INT_FORMAT));
     if (evasion > 10 || dodgeChance > 0.5) {
-      Map<StrifeStat, Float> stats = StrifePlugin.getInstance().getMonsterManager().getBaseStats(
-          EntityType.ZOMBIE, player.getLevel());
-      float accForLevel = stats.get(StrifeStat.ACCURACY) *
-          (1 + stats.get(StrifeStat.ACCURACY_MULT) / 100);
-      float minEvasion = StatUtil.getMinimumEvasionMult(evasion, accForLevel);
-      float evasionRate = 1 - minEvasion;
-      if (evasionRate > 0.5) {
-        evasionRate = Math.min(99, 100 - dodgeChance) * (evasionRate / (evasionRate + 0.5f));
-      } else {
-        evasionRate = 0;
+      Map<StrifeStat, Float> normalMobStats = StrifePlugin.getInstance()
+          .getMonsterManager().getBaseStats(EntityType.ZOMBIE, player.getLevel());
+      float accForLevel =normalMobStats.get(StrifeStat.ACCURACY) *
+          (1 + normalMobStats.get(StrifeStat.ACCURACY_MULT) / 100);
+      float minEvasion = DamageUtil.getMinimumEvasionMult(evasion, accForLevel);
+      float evasionRate = 0;
+      if (minEvasion < 0.5) {
+        evasionRate = (100 - dodgeChance) * (0.5f - minEvasion) / 0.5f;
       }
       lore.add(addStat("Chance To Avoid Hits: ", evasionRate + dodgeChance, INT_FORMAT) + "%");
       if (dodgeChance > 0.5) {
         lore.add(ChatColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
       }
-      if (evasionRate > 0.5) {
+      if (minEvasion < 0.5) {
         lore.add(ChatColor.GRAY + " +" + INT_FORMAT.format(evasionRate) + "% From Evasion (Estimated)");
       }
     }

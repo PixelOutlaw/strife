@@ -16,6 +16,10 @@
  */
 package land.face.strife.listeners;
 
+import static land.face.strife.managers.GuiManager.NO_GOD;
+
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
@@ -57,12 +61,14 @@ import org.bukkit.event.entity.EntityPotionEffectEvent.Cause;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.MainHand;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -186,8 +192,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     ensureAbilitiesDontInstantCast(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
 
-    plugin.getRageManager().clearRage(event.getPlayer().getUniqueId());
-    plugin.getBleedManager().clearBleed(event.getPlayer().getUniqueId());
+    mob.clearBleed();
     mob.setCorruption(0);
     mob.removeFrost(100000);
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
@@ -291,6 +296,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   public void onRespawn(PlayerRespawnEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    mob.endRageTask();
     mob.setBlock(mob.getMaxBlock());
     mob.restartTimers();
   }
@@ -303,6 +309,11 @@ public record DataListener(StrifePlugin plugin) implements Listener {
         event.setCancelled(true);
       }
     }
+  }
+
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onHandChange(PlayerChangedMainHandEvent event) {
+    plugin.getGuiManager().updateGodDisplay(event.getPlayer(), event.getMainHand() == MainHand.LEFT);
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

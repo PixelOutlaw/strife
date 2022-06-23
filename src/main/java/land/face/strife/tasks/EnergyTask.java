@@ -57,7 +57,8 @@ public class EnergyTask extends BukkitRunnable {
     float energyChange = 0;
     boolean noRegen = mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN);
     if (!noRegen) {
-      energyChange += TICK_MULT * 0.1f * mob.getStat(StrifeStat.ENERGY_REGEN);
+      energyChange = mob.getStat(StrifeStat.ENERGY_REGEN) + mob.getRage() / 10;
+      energyChange *= TICK_MULT * 0.1f;
       energyChange *= getHungerPotionMult(mob.getEntity());
     }
 

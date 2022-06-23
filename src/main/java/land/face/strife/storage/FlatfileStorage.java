@@ -31,6 +31,7 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
+import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.AbilitySlot;
@@ -100,6 +101,15 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + "." + type.getDataName() + "-exp", champion.getSkillExp(type));
     }
 
+    config.set(champUuid + "." + "god", champion.getSelectedGod() == null ?
+        "NONE" : champion.getSelectedGod().toString());
+    for (SelectedGod g : SelectedGod.values()) {
+      if (g == SelectedGod.NONE) {
+        continue;
+      }
+      config.set(champUuid + "." + g + "-xp", champion.getGodXp().get(g));
+    }
+
     List<String> abilityIds = new ArrayList<>();
     for (Ability ability : champion.getAbilities().values()) {
       if (ability == null) {
@@ -157,6 +167,13 @@ public class FlatfileStorage implements DataStorage {
 
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
       saveData.setBonusLevels(section.getInt("bonus-levels"));
+
+      saveData.setSelectedGod(SelectedGod.valueOf(section.getString("god", "NONE")));
+      saveData.setGodXp(SelectedGod.FACEGUY, section.getInt("FACEGUY-xp", 0));
+      saveData.setGodXp(SelectedGod.ZEXIR, section.getInt("ZEXIR-xp", 0));
+      saveData.setGodXp(SelectedGod.AURORA, section.getInt("AURORA-xp", 0));
+      saveData.setGodXp(SelectedGod.ANYA, section.getInt("ANYA-xp", 0));
+
       for (LifeSkillType type : LifeSkillType.types) {
         int level = section.getInt(type.getDataName() + "-level", 1);
         saveData.setSkillLevel(type, Math.max(1, level));

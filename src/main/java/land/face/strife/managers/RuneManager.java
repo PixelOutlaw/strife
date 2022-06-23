@@ -73,7 +73,7 @@ public class RuneManager {
   }
 
   public void pushRuneGui(StrifeMob mob, int runes) {
-    if (runes == 0) {
+    if (runes < 1) {
       StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
           new GUIComponent("rune-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
       StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
@@ -81,10 +81,10 @@ public class RuneManager {
       return;
     }
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-display", GuiManager.EARTH_RUNE, 17, 125, Alignment.RIGHT));
-    String string = StrifePlugin.getInstance().getGuiManager().convertToHpDisplay(runes);
+        new GUIComponent("rune-display", GuiManager.EARTH_RUNE, 14, 127, Alignment.CENTER));
+    String string = StrifePlugin.getInstance().getGuiManager().convertToMiddleString(runes);
     TextComponent aaa = new TextComponent(ChatColor.GREEN + string + ChatColor.RESET);
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-amount", aaa, string.length() * 8, 128, Alignment.RIGHT));
+        new GUIComponent("rune-amount", aaa, string.length() * 8, 133, Alignment.CENTER));
   }
 }

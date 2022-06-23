@@ -439,12 +439,12 @@ public class UniqueEntityManager {
                 .buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
 
         String passengerItem = cs.getString("item-passenger", "");
-        if (org.apache.commons.lang.StringUtils.isNotBlank(passengerItem)) {
+        if (StringUtils.isNotBlank(passengerItem)) {
           uniqueEntity.setItemPassenger(plugin.getEquipmentManager().getItem(passengerItem));
         }
 
         String particle = cs.getString("particle", "");
-        if (org.apache.commons.lang.StringUtils.isNotBlank(particle)) {
+        if (StringUtils.isNotBlank(particle)) {
           Effect effect = plugin.getEffectManager().getEffect(particle);
           if (effect instanceof StrifeParticle) {
             uniqueEntity.setStrifeParticle((StrifeParticle) effect);

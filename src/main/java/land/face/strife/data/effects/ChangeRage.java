@@ -19,7 +19,7 @@ public class ChangeRage extends Effect {
     float restoreAmount = amount;
     BonusDamage bonusDamage = new BonusDamage(damageScale, null, null, restoreAmount);
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
-    getPlugin().getRageManager().changeRage(target, applyMultipliers(caster, restoreAmount));
+    target.changeRage(applyMultipliers(caster, restoreAmount));
   }
 
   public void setAmount(float amount) {

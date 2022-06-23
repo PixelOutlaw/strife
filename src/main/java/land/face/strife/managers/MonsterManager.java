@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import java.util.HashMap;
@@ -25,13 +26,9 @@ import java.util.Map;
 import land.face.strife.data.EntityStatData;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
-import land.face.strife.util.SpecialStatusUtil;
-import land.face.strife.util.StatUtil;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 
 public class MonsterManager {
 

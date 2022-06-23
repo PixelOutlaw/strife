@@ -41,18 +41,13 @@ public class UniqueSplashListener implements Listener {
       }
       StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
-      double evasionMultiplier = StatUtil.getMinimumEvasionMult(StatUtil.getEvasion(defender),
-          StatUtil.getAccuracy(attacker));
-      evasionMultiplier = evasionMultiplier + (DamageUtil.rollDouble() * (1 - evasionMultiplier));
-
-      if (evasionMultiplier <= 0.5) {
+      if (DamageUtil.determineEvasion(attacker, defender, null) == -1) {
         DamageUtil.doEvasion(attacker, defender);
         event.setCancelled(true);
         return;
       }
 
       if (plugin.getBlockManager().rollBlock(defender, 1.0f, false, true, false)) {
-        DamageUtil.doBlock(attacker, defender);
         event.setCancelled(true);
         return;
       }

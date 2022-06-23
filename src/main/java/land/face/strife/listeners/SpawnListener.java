@@ -3,6 +3,8 @@ package land.face.strife.listeners;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.WordUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Random;
@@ -13,8 +15,6 @@ import land.face.strife.managers.MobModManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;

@@ -11,11 +11,11 @@ import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.stats.AbilitySlot;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+@Data
 public class ChampionSaveData {
 
   private final UUID uniqueId;
@@ -29,6 +29,9 @@ public class ChampionSaveData {
 
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
 
+  private SelectedGod selectedGod;
+  private Map<SelectedGod, Integer> godXp = new HashMap<>();
+
   private int unusedStatPoints;
   private int pendingUnusedStatPoints;
   private int highestReachedLevel;
@@ -36,7 +39,6 @@ public class ChampionSaveData {
 
   private float pvpScore = 700;
 
-  @Getter @Setter
   private boolean onMount;
   private boolean glowEnabled;
   private boolean displayExp;
@@ -45,72 +47,12 @@ public class ChampionSaveData {
     this.uniqueId = uniqueId;
   }
 
-  public Map<AbilitySlot, List<String>> getCastMessages() {
-    return castMessages;
-  }
-
-  public Map<Path, Choice> getPathMap() {
-    return pathMap;
-  }
-
   public void setAbility(AbilitySlot abilitySlot, Ability ability) {
     abilities.put(abilitySlot, ability);
   }
 
   public Ability getAbility(AbilitySlot abilitySlot) {
     return abilities.get(abilitySlot);
-  }
-
-  public Map<AbilitySlot, Ability> getAbilities() {
-    return new HashMap<>(abilities);
-  }
-
-  public Set<LoreAbility> getBoundAbilities() {
-    return boundAbilities;
-  }
-
-  public boolean isDisplayExp() {
-    return displayExp;
-  }
-
-  public void setDisplayExp(boolean displayExp) {
-    this.displayExp = displayExp;
-  }
-
-  public int getBonusLevels() {
-    return bonusLevels;
-  }
-
-  public void setBonusLevels(int bonusLevels) {
-    this.bonusLevels = bonusLevels;
-  }
-
-  public int getUnusedStatPoints() {
-    return unusedStatPoints;
-  }
-
-  public void setUnusedStatPoints(int unusedStatPoints) {
-    this.unusedStatPoints = unusedStatPoints;
-  }
-
-  public int getPendingUnusedStatPoints() {
-    return pendingUnusedStatPoints;
-  }
-
-  public void setPendingUnusedStatPoints(int pendingUnusedStatPoints) {
-    this.pendingUnusedStatPoints = pendingUnusedStatPoints;
-  }
-
-  public int getHighestReachedLevel() {
-    return highestReachedLevel;
-  }
-
-  public void setHighestReachedLevel(int highestReachedLevel) {
-    this.highestReachedLevel = highestReachedLevel;
-  }
-
-  public UUID getUniqueId() {
-    return uniqueId;
   }
 
   public void setLevel(StrifeAttribute stat, int level) {
@@ -137,12 +79,12 @@ public class ChampionSaveData {
     return Bukkit.getPlayer(getUniqueId());
   }
 
-  public Map<StrifeAttribute, Integer> getPendingLevelMap() {
-    return pendingStats;
-  }
-
   public void setSkillLevel(LifeSkillType type, int level) {
     skillLevelMap.put(type, level);
+  }
+
+  public void setGodXp(SelectedGod selectedGod, int amount) {
+    godXp.put(selectedGod, amount);
   }
 
   public void setSkillExp(LifeSkillType type, float amount) {
@@ -157,19 +99,11 @@ public class ChampionSaveData {
     return skillExpMap.getOrDefault(type, 0f);
   }
 
-  public float getPvpScore() {
-    return pvpScore;
-  }
-
-  public void setPvpScore(float pvpScore) {
-    this.pvpScore = pvpScore;
-  }
-
-  public boolean isGlowEnabled() {
-    return glowEnabled;
-  }
-
-  public void setGlowEnabled(boolean glowEnabled) {
-    this.glowEnabled = glowEnabled;
+  public enum SelectedGod {
+    FACEGUY,
+    AURORA,
+    ZEXIR,
+    ANYA,
+    NONE
   }
 }

@@ -28,6 +28,7 @@ import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
@@ -107,7 +108,6 @@ import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
 import land.face.strife.managers.AgilityManager;
 import land.face.strife.managers.AttackSpeedManager;
-import land.face.strife.managers.BleedManager;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.BoostManager;
 import land.face.strife.managers.BossBarManager;
@@ -128,7 +128,6 @@ import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
 import land.face.strife.managers.PathManager;
 import land.face.strife.managers.PlayerMountManager;
-import land.face.strife.managers.RageManager;
 import land.face.strife.managers.RuneManager;
 import land.face.strife.managers.SkillExperienceManager;
 import land.face.strife.managers.SoulManager;
@@ -169,7 +168,6 @@ import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
 import lombok.Getter;
 import ninja.amp.ampmenus.MenuListener;
-import org.apache.commons.lang.StringUtils;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -221,11 +219,7 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private CounterManager counterManager;
   @Getter
-  private BleedManager bleedManager;
-  @Getter
   private CorruptionManager corruptionManager;
-  @Getter
-  private RageManager rageManager;
   @Getter
   private MonsterManager monsterManager;
   @Getter
@@ -367,7 +361,6 @@ public class StrifePlugin extends FacePlugin {
     blockManager = new BlockManager(this);
     runeManager = new RuneManager(this);
     counterManager = new CounterManager(this);
-    bleedManager = new BleedManager(this);
     corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager(this);
@@ -376,7 +369,6 @@ public class StrifePlugin extends FacePlugin {
     boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
     statUpdateManager = new StatUpdateManager(strifeMobManager);
-    rageManager = new RageManager();
     monsterManager = new MonsterManager(championManager);
     stealthManager = new StealthManager(this);
     effectManager = new EffectManager(this);
@@ -681,8 +673,6 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager.clearBars();
     agilityManager.saveLocations();
     spawnerManager.cancelAll();
-    rageManager.endRageTasks();
-    bleedManager.endBleedTasks();
     corruptionManager.endTasks();
     blockManager.endTasks();
     runeManager.endTasks();
@@ -853,6 +843,7 @@ public class StrifePlugin extends FacePlugin {
       if (section != null) {
         LoadedKnowledge lk = PlayerDataUtil.loadModKnowledge(
             "mod-" + key, 300 + knowledges.size(), section);
+        lk.setSource("strife");
         knowledges.add(lk);
       }
     }

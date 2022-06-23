@@ -32,6 +32,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class ExperienceManager implements StrifeExperienceManager {

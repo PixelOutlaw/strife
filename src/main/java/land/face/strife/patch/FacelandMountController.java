@@ -1,5 +1,6 @@
 package land.face.strife.patch;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.ticxo.modelengine.api.animation.StateProperty;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
@@ -7,6 +8,7 @@ import com.ticxo.modelengine.api.model.mount.controller.AbstractMountController;
 import com.ticxo.modelengine.api.model.mount.handler.IMountHandler;
 import com.ticxo.modelengine.api.nms.WrapperLookController;
 import com.ticxo.modelengine.api.nms.WrapperMoveController;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class FacelandMountController extends AbstractMountController {
@@ -54,6 +56,7 @@ public class FacelandMountController extends AbstractMountController {
         }
       }
       if (getInput().front == 0.0f) {
+        MoveUtil.setLastMoved((Player) getEntity());
         modeledEntity.setWalking(false);
         /*
         Vector direction = getEntity().getLocation().getDirection().clone();

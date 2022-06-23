@@ -124,8 +124,10 @@ public class LoreAbilityManager {
   }
 
   public enum TriggerType {
+    EARLY_ON_HIT,
     ON_HIT,
     ON_KILL,
+    EARLY_WHEN_HIT,
     WHEN_HIT,
     ON_CRIT,
     ON_DEATH,

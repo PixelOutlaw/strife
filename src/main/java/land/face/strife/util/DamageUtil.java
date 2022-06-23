@@ -10,16 +10,12 @@ import static land.face.strife.util.StatUtil.getDefenderWarding;
 import static land.face.strife.util.StatUtil.getWardingMult;
 
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.World;
-import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.internal.platform.StringMatcher;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.Flags;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
@@ -43,8 +39,7 @@ import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
-import land.face.strife.hooks.SnazzyPartiesHook;
-import land.face.strife.listeners.CombatListener;
+import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
@@ -74,7 +69,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import scala.concurrent.impl.FutureConvertersImpl.P;
 
 public class DamageUtil {
 
@@ -87,8 +81,8 @@ public class DamageUtil {
   public static float BASE_ATTACK_SECONDS = 1.6f;
 
   public static float EVASION_THRESHOLD = 0.5f;
-  public static float BASE_EVASION_MULT = 0.8f;
-  public static float EVASION_ACCURACY_MULT = 0.6f;
+  public static float EVASION_FLAT_DENOMINATOR = 10;
+  public static float EVASION_SCALED_DENOMINATOR = 0.4f;
 
   public static int BASE_RECHARGE_TICKS;
   public static long TICK_RATE;
@@ -120,10 +114,10 @@ public class DamageUtil {
 
     EVASION_THRESHOLD = (float) plugin.getSettings()
         .getDouble("config.mechanics.evasion.evade-threshold", 0.5);
-    BASE_EVASION_MULT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.evasion-multiplier", 0.8);
-    EVASION_ACCURACY_MULT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.accuracy-multiplier", 0.6);
+    EVASION_FLAT_DENOMINATOR = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.flat-accuracy-denom", 10);
+    EVASION_SCALED_DENOMINATOR = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.scaled-accuracy-denom", 0.45);
 
     PVP_MULT = (float) plugin.getSettings()
         .getDouble("config.mechanics.pvp-multiplier", 0.5);
@@ -197,10 +191,6 @@ public class DamageUtil {
 
     float attackMult = mods.getAttackMultiplier();
 
-    if (defender.isInvincible()) {
-      return false;
-    }
-
     if (mods.isCanBeEvaded()) {
       float evadeMult = DamageUtil.determineEvasion(attacker, defender, mods.getAbilityMods());
       if (evadeMult == -1) {
@@ -218,6 +208,13 @@ public class DamageUtil {
         DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
         return false;
       }
+    }
+
+    StrifePreDamageEvent preDamageEvent = new StrifePreDamageEvent(attacker, defender, mods);
+    Bukkit.getPluginManager().callEvent(preDamageEvent);
+
+    if (defender.isInvincible()) {
+      return false;
     }
 
     return true;
@@ -383,11 +380,10 @@ public class DamageUtil {
     DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
 
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
-      plugin.getRageManager()
-          .changeRage(attacker, attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
+      attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
     if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
-      plugin.getRageManager().changeRage(defender, defender.getStat(StrifeStat.RAGE_WHEN_HIT));
+      defender.changeRage(defender.getStat(StrifeStat.RAGE_WHEN_HIT));
     }
     if (defender.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0.1) {
       StatUtil.changeEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
@@ -501,10 +497,8 @@ public class DamageUtil {
       case CASTER_MISSING_ENERGY -> amount * (caster.getMaxEnergy() - StatUtil.getEnergy(caster));
       case TARGET_MAX_ENERGY -> amount * target.getMaxEnergy();
       case CASTER_MAX_ENERGY -> amount * caster.getMaxEnergy();
-      case TARGET_CURRENT_RAGE -> amount *
-          StrifePlugin.getInstance().getRageManager().getRage(target.getEntity());
-      case CASTER_CURRENT_RAGE -> amount *
-          StrifePlugin.getInstance().getRageManager().getRage(caster.getEntity());
+      case TARGET_CURRENT_RAGE -> amount * target.getRage();
+      case CASTER_CURRENT_RAGE -> amount * caster.getRage();
       case TARGET_CURRENT_CORRUPTION -> amount * target.getCorruption();
       case CASTER_CURRENT_CORRUPTION -> amount * caster.getCorruption();
       case TARGET_MAX_RAGE -> amount * target.getMaxRage();
@@ -856,17 +850,31 @@ public class DamageUtil {
 
     float totalEvasion = StatUtil.getEvasion(defender);
     float totalAccuracy = StatUtil.getAccuracy(attacker);
-    totalAccuracy *= 1 + mods.getOrDefault(AbilityMod.ACCURACY_MULT, 0f) / 100;
-    totalAccuracy += mods.getOrDefault(AbilityMod.ACCURACY, 0f);
 
-    if (mods.containsKey(AbilityMod.BACK_ATTACK)) {
-      totalEvasion *= 0.8;
+    if (mods != null) {
+      totalAccuracy *= 1 + mods.getOrDefault(AbilityMod.ACCURACY_MULT, 0f) / 100;
+      totalAccuracy += mods.getOrDefault(AbilityMod.ACCURACY, 0f);
+
+      if (mods.containsKey(AbilityMod.BACK_ATTACK)) {
+        totalEvasion *= 0.8;
+      }
     }
 
-    float evasionMultiplier = StatUtil.getMinimumEvasionMult(totalEvasion, totalAccuracy);
-    evasionMultiplier = evasionMultiplier + (rollDouble() * (1 - evasionMultiplier));
+    float minimumDamage = getMinimumEvasionMult(totalEvasion, totalAccuracy);
+    return minimumDamage + ((1.1f - minimumDamage) * rollDouble());
+  }
 
-    return evasionMultiplier;
+  public static float getMinimumEvasionMult(float evasion, float accuracy) {
+    float evasionAdvantage = evasion - accuracy;
+    float advantageDenominator = EVASION_FLAT_DENOMINATOR + accuracy * EVASION_SCALED_DENOMINATOR;
+    if (evasionAdvantage > 0) {
+      return 0.8f / (1 + (evasionAdvantage / advantageDenominator));
+    } else if (evasionAdvantage < 0) {
+      float rangeRatio = 0.2f / (1 + (-evasionAdvantage / (advantageDenominator * 0.5f)));
+      return 0.8f + (0.2f - rangeRatio);
+    } else {
+      return 0.8f;
+    }
   }
 
   // returns -1 for true, and an evasion multiplier above 0 if false.
@@ -892,10 +900,6 @@ public class DamageUtil {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), IndicatorStyle.BOUNCE, 6, "&7&oMiss");
     }
-  }
-
-  public static void doBlock(StrifeMob attacker, StrifeMob defender) {
-
   }
 
   public static float getPotionMult(LivingEntity attacker, LivingEntity defender) {
@@ -999,25 +1003,20 @@ public class DamageUtil {
     return false;
   }
 
-  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount,
-      boolean bypassBarrier) {
-    if (amount < 0.1) {
+  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount, boolean bypassBarrier) {
+    if (amount < 0.2) {
       return;
     }
-    if (defender.getFrost() > 0 && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE)) {
+    if (attacker != null && defender.getFrost() > 0
+        && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE)) {
       amount *= 1.3;
     }
     amount *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
-    boolean bleedSuccess = plugin.getBleedManager().addBleed(defender, amount, bypassBarrier);
-    if (bleedSuccess) {
-      defender.getEntity().getWorld()
-          .playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 0.7f);
-    }
+    defender.addBleed(amount, bypassBarrier);
   }
 
   public static void addFrost(StrifeMob attacker, StrifeMob defender, float amount) {
-    if (attacker != null && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE) &&
-        StrifePlugin.getInstance().getBleedManager().isBleeding(defender.getEntity())) {
+    if (attacker != null && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE) && defender.isBleeding()) {
       amount *= 1.3;
     }
     if (amount < 0.1) {

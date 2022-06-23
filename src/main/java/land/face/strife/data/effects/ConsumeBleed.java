@@ -1,6 +1,5 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 
 public class ConsumeBleed extends Effect {
@@ -10,14 +9,12 @@ public class ConsumeBleed extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double value = StrifePlugin.getInstance().getBleedManager()
-        .getBleedOnEntity(target.getEntity());
+    double value = target.getBleed();
     if (value <= 0) {
       return;
     }
-    StrifePlugin.getInstance().getBleedManager().clearBleed(target.getEntity());
+    target.clearBleed();
     target.getEntity().damage(value * damageRatio, caster.getEntity());
-
     caster.getEntity().setHealth(caster.getEntity().getHealth() + value * healRatio);
   }
 

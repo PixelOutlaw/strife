@@ -1,5 +1,7 @@
 package land.face.strife.listeners;
 
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.EARLY_ON_HIT;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.EARLY_WHEN_HIT;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_AIR_JUMP;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_BLOCK;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_CAST;
@@ -29,6 +31,7 @@ import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeDamageEvent;
+import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StrifeMobManager;
 import org.bukkit.entity.LivingEntity;
@@ -145,9 +148,8 @@ public class LoreAbilityListener implements Listener {
       return;
     }
 
-    boolean trigger = event.getDamageModifiers().isApplyOnHitEffects() || (Math.random() < Math
-        .max(event.getDamageModifiers().getAttackMultiplier(),
-            event.getDamageModifiers().getDamageReductionRatio()));
+    boolean trigger = Math.random() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
+            event.getDamageModifiers().getDamageReductionRatio());
     if (trigger) {
       HashSet<LoreAbility> abilitySet = new HashSet<>(attacker.getLoreAbilities(ON_HIT));
       executeBoundEffects(attacker, defender, abilitySet);
@@ -159,6 +161,34 @@ public class LoreAbilityListener implements Listener {
       executeBoundEffects(defender, attacker, event.getDefender().getLoreAbilities(WHEN_HIT));
     }
     executeFiniteEffects(defender, attacker, WHEN_HIT);
+  }
+
+  @EventHandler
+  public void onPreDamage(StrifePreDamageEvent event) {
+    if (event.isCancelled() || !event.getDamageModifiers().isApplyOnHitEffects()) {
+      return;
+    }
+    StrifeMob attacker = event.getAttacker();
+    if (attacker == null) {
+      return;
+    }
+    StrifeMob defender = event.getDefender();
+    if (attacker.isMasterOf(defender)) {
+      return;
+    }
+    boolean trigger = Math.random() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
+        event.getDamageModifiers().getDamageReductionRatio());
+    if (trigger) {
+      HashSet<LoreAbility> abilitySet = new HashSet<>(attacker.getLoreAbilities(EARLY_ON_HIT));
+      executeBoundEffects(attacker, defender, abilitySet);
+    }
+
+    executeFiniteEffects(attacker, defender, EARLY_ON_HIT);
+
+    if (defender.getEntity() instanceof Player) {
+      executeBoundEffects(defender, attacker, event.getDefender().getLoreAbilities(EARLY_WHEN_HIT));
+    }
+    executeFiniteEffects(defender, attacker, EARLY_WHEN_HIT);
   }
 
   public static void executeBoundEffects(StrifeMob caster, StrifeMob target,

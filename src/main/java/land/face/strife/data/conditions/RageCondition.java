@@ -1,16 +1,12 @@
 package land.face.strife.data.conditions;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.RageManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 
 public class RageCondition extends Condition {
 
   private final boolean percentage;
-
-  private final RageManager rageManager = StrifePlugin.getInstance().getRageManager();
 
   public RageCondition(boolean percentage) {
     this.percentage = percentage;
@@ -23,16 +19,15 @@ public class RageCondition extends Condition {
         if (attacker.getStat(StrifeStat.MAXIMUM_RAGE) == 0D) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
-        rageValue = rageManager.getRage(attacker.getEntity()) / attacker.getStat(StrifeStat.MAXIMUM_RAGE);
+        rageValue = attacker.getRage() / attacker.getMaxRage();
       } else {
         if (target.getStat(StrifeStat.MAXIMUM_RAGE) == 0D) {
           return PlayerDataUtil.conditionCompare(getComparison(), 0D, getValue());
         }
-        rageValue = rageManager.getRage(target.getEntity()) / target.getStat(StrifeStat.MAXIMUM_RAGE);
+        rageValue = target.getRage() / target.getMaxRage();
       }
     } else {
-      rageValue = getCompareTarget() == CompareTarget.SELF ? rageManager.getRage(attacker.getEntity())
-          : rageManager.getRage(target.getEntity());
+      rageValue = getCompareTarget() == CompareTarget.SELF ? attacker.getRage() : target.getRage();
     }
     return PlayerDataUtil.conditionCompare(getComparison(), rageValue, getValue());
   }

@@ -48,6 +48,7 @@ import land.face.strife.data.ability.Ability;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
+import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.menus.abilities.ReturnButton;
@@ -64,6 +65,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MainHand;
 
 @CommandAlias("strife")
 public class StrifeCommand extends BaseCommand {
@@ -117,6 +119,24 @@ public class StrifeCommand extends BaseCommand {
   public void invincible(Player sender, int ticks) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(sender);
     mob.applyInvincible(ticks);
+  }
+
+  @Subcommand("setGod")
+  @CommandPermission("strife.admin")
+  public void setGod(CommandSender sender, OnlinePlayer target, String godString) {
+    SelectedGod god;
+    try {
+      god = SelectedGod.valueOf(godString.toUpperCase());
+    } catch (Exception e) {
+      MessageUtils.sendMessage(sender, "Invalid god name: " + godString);
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
+    champion.setGod(god);
+    MessageUtils.sendMessage(sender,
+        "Set god of " + target.getPlayer().getName() + " to " + godString);
+    plugin.getGuiManager().updateGodDisplay(target.getPlayer(),
+        target.getPlayer().getMainHand() == MainHand.RIGHT);
   }
 
   @Subcommand("toast")

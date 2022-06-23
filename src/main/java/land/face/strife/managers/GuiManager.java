@@ -13,11 +13,13 @@ import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
+import land.face.strife.data.champion.Champion;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MainHand;
 
 public class GuiManager {
 
@@ -35,6 +37,7 @@ public class GuiManager {
 
   private final Map<Integer, String> hpStringNumbers = new HashMap<>();
   private final Map<Integer, String> energyStringNumbers = new HashMap<>();
+  private final Map<Integer, String> middleStringNumbers = new HashMap<>();
   private final Map<Integer, String> levelStringNumbers = new HashMap<>();
   private final Map<Integer, String> moneyStringNumbers = new HashMap<>();
 
@@ -48,43 +51,71 @@ public class GuiManager {
   public static final TextComponent WING_TING = new TextComponent("䶰");
   public static final TextComponent WING_TING_EMPTY = new TextComponent("䎘");
   public static final TextComponent EARTH_RUNE = new TextComponent("㆞");
+  public static final TextComponent FROST_ICON = new TextComponent("凚");
+  public static final TextComponent CORRUPT_ICON = new TextComponent("黑");
 
+  public static final TextComponent NO_GOD = new TextComponent("᮰");
+  public static final TextComponent GOD_FACEGUY = new TextComponent("᮱");
+  public static final TextComponent GOD_AURORA = new TextComponent("᮲");
+  public static final TextComponent GOD_ZEXIR = new TextComponent("᮳");
+  public static final TextComponent GOD_ANYA = new TextComponent("᮴");
+
+  @SuppressWarnings("deprecation")
   private final List<TextComponent> xpBar = List.of(
-      new TextComponent("傰"),
-      new TextComponent("傱"),
-      new TextComponent("傲"),
-      new TextComponent("傳"),
-      new TextComponent("傴"),
-      new TextComponent("債"),
-      new TextComponent("傶"),
-      new TextComponent("傷"),
-      new TextComponent("傸"),
-      new TextComponent("傹"),
-      new TextComponent("傺"),
-      new TextComponent("傻"),
-      new TextComponent("傼"),
-      new TextComponent("傽"),
-      new TextComponent("傾"),
-      new TextComponent("傿")
+      new TextComponent("䷀"),
+      new TextComponent("䷁"),
+      new TextComponent("䷂"),
+      new TextComponent("䷃"),
+      new TextComponent("䷄"),
+      new TextComponent("䷅"),
+      new TextComponent("䷆"),
+      new TextComponent("䷇"),
+      new TextComponent("䷈"),
+      new TextComponent("䷉"),
+      new TextComponent("䷊"),
+      new TextComponent("䷋"),
+      new TextComponent("䷌"),
+      new TextComponent("䷍"),
+      new TextComponent("䷎"),
+      new TextComponent("䷏"),
+      new TextComponent("䷐"),
+      new TextComponent("䷑"),
+      new TextComponent("䷒"),
+      new TextComponent("䷓"),
+      new TextComponent("䷔"),
+      new TextComponent("䷕"),
+      new TextComponent("䷖"),
+      new TextComponent("䷗"),
+      new TextComponent("䷘")
   );
 
+  @SuppressWarnings("deprecation")
   private final List<TextComponent> oxygenBar = List.of(
-      new TextComponent("僀"),
-      new TextComponent("僁"),
-      new TextComponent("僂"),
-      new TextComponent("僃"),
-      new TextComponent("僄"),
-      new TextComponent("僅"),
-      new TextComponent("僆"),
-      new TextComponent("僇"),
-      new TextComponent("僈"),
-      new TextComponent("僉"),
-      new TextComponent("僊"),
-      new TextComponent("僋"),
-      new TextComponent("僌"),
-      new TextComponent("働"),
-      new TextComponent("僎"),
-      new TextComponent("像")
+      new TextComponent("䷙"),
+      new TextComponent("䷚"),
+      new TextComponent("䷛"),
+      new TextComponent("䷜"),
+      new TextComponent("䷝"),
+      new TextComponent("䷞"),
+      new TextComponent("䷟"),
+      new TextComponent("䷠"),
+      new TextComponent("䷡"),
+      new TextComponent("䷢"),
+      new TextComponent("䷣"),
+      new TextComponent("䷤"),
+      new TextComponent("䷥"),
+      new TextComponent("䷦"),
+      new TextComponent("䷧"),
+      new TextComponent("䷨"),
+      new TextComponent("䷩"),
+      new TextComponent("䷪"),
+      new TextComponent("䷫"),
+      new TextComponent("䷬"),
+      new TextComponent("䷭"),
+      new TextComponent("䷮"),
+      new TextComponent("䷯"),
+      new TextComponent("䷰"),
+      new TextComponent("䷱")
   );
 
   public static final Map<Integer, TextComponent> HP_BAR = new HashMap<>();
@@ -171,18 +202,49 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("food-icon-CARBOHYDRATE", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("food-icon-VITAMINS", EMPTY, 0, 0, Alignment.CENTER));
 
+    gui.putOnTop(new GUIComponent("frost-display", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("corrupt-display", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("rune-display", EMPTY, 0, 0, Alignment.CENTER));
+
     gui.putOnTop(new GUIComponent("rune-amount", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("frost-amount", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("corrupt-amount", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("slot-a-charges", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("slot-b-charges", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("slot-c-charges", EMPTY, 0, 0, Alignment.CENTER));
 
+    gui.putOnTop(new GUIComponent("god-slot", NO_GOD, 0, 0, Alignment.CENTER));
+
     guiMap.put(p, gui);
+
+    updateGodDisplay(p, p.getMainHand() == MainHand.RIGHT);
   }
 
   public GUI getGui(Player p) {
     return guiMap.get(p);
+  }
+
+  public void updateGodDisplay(Player player, boolean right) {
+    Champion champion = plugin.getChampionManager().getChampion(player);
+
+    TextComponent gc;
+    if (champion.getSaveData().getSelectedGod() == null) {
+      gc = NO_GOD;
+    } else {
+      gc = switch (champion.getSaveData().getSelectedGod()) {
+        case NONE -> NO_GOD;
+        case FACEGUY -> GOD_FACEGUY;
+        case AURORA -> GOD_AURORA;
+        case ZEXIR -> GOD_ZEXIR;
+        case ANYA -> GOD_ANYA;
+      };
+    }
+    if (right) {
+      updateComponent(player, new GUIComponent("god-slot", gc, 19, 99, Alignment.LEFT));
+    } else {
+      updateComponent(player, new GUIComponent("god-slot", gc, 19, -100, Alignment.RIGHT));
+    }
   }
 
   public void updateComponent(Player player, GUIComponent component) {
@@ -197,19 +259,19 @@ public class GuiManager {
         new TextComponent(levelString), originalLevelString.length() * 12, -106,
         Alignment.CENTER));
 
-    int xpProgress = (int) (16 * player.getExp());
-    gui.update(new GUIComponent("xp-base", xpBar.get(xpProgress), 15, 98, Alignment.CENTER));
+    int xpProgress = (int) (24 * player.getExp());
+    gui.update(new GUIComponent("xp-base", xpBar.get(xpProgress), 11, 96, Alignment.CENTER));
   }
 
   public void updateAir(GUI gui, Player player) {
     if (player.getRemainingAir() == player.getMaximumAir()) {
       gui.update(new GUIComponent("air-base", EMPTY, 0, 0, Alignment.CENTER));
     } else if (player.getRemainingAir() < 1) {
-      gui.update(new GUIComponent("air-base", oxygenBar.get(0), 15, 98, Alignment.CENTER));
+      gui.update(new GUIComponent("air-base", oxygenBar.get(0), 11, 96, Alignment.CENTER));
     } else {
       int progress = (int) Math.ceil(
-          15 * ((float) player.getRemainingAir()) / player.getMaximumAir());
-      gui.update(new GUIComponent("air-base", oxygenBar.get(progress), 15, 98, Alignment.CENTER));
+          24 * ((float) player.getRemainingAir()) / player.getMaximumAir());
+      gui.update(new GUIComponent("air-base", oxygenBar.get(progress), 11, 96, Alignment.CENTER));
     }
   }
 
@@ -363,6 +425,26 @@ public class GuiManager {
         .replaceAll("8", "⓼")
         .replaceAll("9", "⓽");
     energyStringNumbers.put(i, s);
+    return s;
+  }
+
+  public String convertToMiddleString(int i) {
+    if (middleStringNumbers.containsKey(i)) {
+      return middleStringNumbers.get(i);
+    }
+    String s = Integer.toString(i);
+    s = s
+        .replaceAll("0", "➓")
+        .replaceAll("1", "➊")
+        .replaceAll("2", "➋")
+        .replaceAll("3", "➌")
+        .replaceAll("4", "➍")
+        .replaceAll("5", "➎")
+        .replaceAll("6", "➏")
+        .replaceAll("7", "➐")
+        .replaceAll("8", "➑")
+        .replaceAll("9", "➒");
+    middleStringNumbers.put(i, s);
     return s;
   }
 

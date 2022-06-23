@@ -76,12 +76,12 @@ public class Damage extends Effect {
     mods.getAbilityMods().putAll(abilityMods);
     mods.setBasicAttack(false);
 
+    mods.setAttackMultiplier(mods.getAttackMultiplier());
     boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);
 
     if (!attackSuccess) {
       return;
     }
-    mods.setAttackMultiplier(mods.getAttackMultiplier());
 
     float multishotRatio = 1;
     if (currentProjectileId != -1) {

@@ -137,6 +137,7 @@ public enum StrifeStat {
   FISHING_TREASURE("Fishing Treasures"),
   MINING_GEMS("Mining Gems"),
   MONEY_KEPT("Bits Kept On Death"),
+  XP_LOST_ON_DEATH("Less XP Loss On Death"),
   AIR_JUMPS("Additional Air Jumps"),
 
   DOGE("Doge Chance"),

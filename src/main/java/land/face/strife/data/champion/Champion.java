@@ -29,6 +29,7 @@ import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -132,7 +133,7 @@ public class Champion {
   }
 
   public int getPendingLevel(StrifeAttribute stat) {
-    return saveData.getPendingLevelMap().getOrDefault(stat, 0);
+    return saveData.getPendingStats().getOrDefault(stat, 0);
   }
 
   public void buildAttributeHeatmap() {
@@ -232,7 +233,7 @@ public class Champion {
   }
 
   public void setPendingLevel(StrifeAttribute stat, int level) {
-    saveData.getPendingLevelMap().put(stat, level);
+    saveData.getPendingStats().put(stat, level);
   }
 
   public Map<StrifeAttribute, Integer> getLevelMap() {
@@ -240,7 +241,7 @@ public class Champion {
   }
 
   public Map<StrifeAttribute, Integer> getPendingLevelMap() {
-    return saveData.getPendingLevelMap();
+    return saveData.getPendingStats();
   }
 
   public Player getPlayer() {
@@ -261,6 +262,22 @@ public class Champion {
 
   public Set<StrifeTrait> getPathTraits() {
     return pathTraits;
+  }
+
+  public void setGod(SelectedGod god) {
+    saveData.setSelectedGod(god);
+  }
+
+  public void addGodXp(SelectedGod god, int amount) {
+    if (saveData.getSelectedGod() == SelectedGod.NONE) {
+      return;
+    }
+    saveData.getGodXp().put(god, saveData.getGodXp().get(god) + amount);
+    // TODO: check levelup
+  }
+
+  public void addGodXp(int amount) {
+    addGodXp(saveData.getSelectedGod(), amount);
   }
 
   public int getUnchosenPaths() {

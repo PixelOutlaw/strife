@@ -85,7 +85,7 @@ public class BarrierTask extends BukkitRunnable {
     if (mob.getChampion() == null) {
       return;
     }
-    if (mob.getBarrier() > 0) {
+    if (mob.getBarrier() >= 1) {
       mob.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION,
           99999, 50, true, false));
       float percent = Math.min(1, mob.getBarrier() / mob.getMaxBarrier());
