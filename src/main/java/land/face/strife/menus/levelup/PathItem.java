@@ -18,7 +18,13 @@
  */
 package land.face.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.List;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LevelPath.Choice;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.champion.Champion;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -33,16 +39,15 @@ public class PathItem extends MenuItem {
   private final StrifePlugin plugin;
   private final int levelRequirement;
   private final Path path;
-  private final ItemStack lockedIcon;
-  private final ItemStack unlockedIcon;
+  private ItemStack lockedIcon;
+  private ItemStack unlockedIcon;
 
-  PathItem(StrifePlugin plugin, int levelRequirement, ItemStack lockedIcon, ItemStack unlockedIcon, Path path) {
+  PathItem(StrifePlugin plugin, int levelRequirement, Path path) {
     super("", new ItemStack(Material.MAGMA_CREAM));
     this.plugin = plugin;
     this.levelRequirement = levelRequirement;
-    this.lockedIcon = lockedIcon;
-    this.unlockedIcon = unlockedIcon;
     this.path = path;
+    buildPathIcon(path);
   }
 
   @Override
@@ -80,5 +85,23 @@ public class PathItem extends MenuItem {
         plugin.getPathMenu(path).open(event.getPlayer());
       }
     }, 2L);
+  }
+
+  private void buildPathIcon(Path path) {
+    List<String> lore = new ArrayList<>();
+    lore.add(TextUtils.color("&f&oThis choice may be made at level " + levelRequirement));
+    lore.addAll(TextUtils.getLore(plugin.getPathManager().getIcon(path, Choice.OPTION_1)));
+    lore.addAll(TextUtils.getLore(plugin.getPathManager().getIcon(path, Choice.OPTION_2)));
+    lore.addAll(TextUtils.getLore(plugin.getPathManager().getIcon(path, Choice.OPTION_3)));
+
+    lockedIcon = new ItemStack(Material.PAPER);
+    ItemStackExtensionsKt.setDisplayName(lockedIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
+    ItemStackExtensionsKt.setCustomModelData(lockedIcon, 200);
+    TextUtils.setLore(lockedIcon, lore);
+
+    unlockedIcon = new ItemStack(Material.PAPER);
+    ItemStackExtensionsKt.setDisplayName(unlockedIcon, TextUtils.color("&f&l&nClick to choose your path!"));
+    ItemStackExtensionsKt.setCustomModelData(unlockedIcon, 201);
+    TextUtils.setLore(unlockedIcon, lore);
   }
 }

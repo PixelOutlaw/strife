@@ -24,6 +24,7 @@ import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -34,6 +35,7 @@ import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.SkillExpGainEvent;
 import land.face.strife.events.SkillLevelUpEvent;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -44,6 +46,20 @@ public class SkillExperienceManager {
   //private static final String XP_AB = "{0}( &f&l{1} {0}/ &f&l{2} XP {0})";
   private final String XP_MSG;
   private final int MAX_SKILL_LEVEL;
+
+  private final List<String> skillBackground = List.of(
+      "𫝀\uF809\uF802",
+      "𫝁\uF809\uF802",
+      "𫝂\uF809\uF802",
+      "𫝃\uF809\uF802",
+      "𫝄\uF809\uF802",
+      "𫝅\uF809\uF802",
+      "𫝆\uF809\uF802",
+      "𫝇\uF809\uF802",
+      "𫝈\uF809\uF802",
+      "𫝉\uF809\uF802"
+  );
+  private final Map<Integer, String> skillLevel = buildSkillLevelStrings();
 
   private final Map<LifeSkillType, LevelingRate> levelingRates = new HashMap<>();
 
@@ -80,7 +96,7 @@ public class SkillExperienceManager {
       String xp = FORMAT.format(amount);
       MessageUtils.sendMessage(player, XP_MSG
           .replace("{c}", "" + type.getColor())
-          .replace("{n}", type.getName())
+          .replace("{n}", type.getPrettyName())
           .replace("{a}", xp)
       );
     }
@@ -106,8 +122,31 @@ public class SkillExperienceManager {
       checkSkillUnlock(player, type);
     }
     saveData.setSkillExp(type, (float) currentExp);
-    plugin.getBossBarManager().pushSkillBar(player, type);
+    plugin.getBossBarManager().updateBar(player, 1, buildSkillString(mob.getChampion(), type));
   }
+
+  private String buildSkillString(Champion champion, LifeSkillType skill) {
+    if (skill == null) {
+      return "";
+    }
+    plugin.getChampionManager().updateRecentSkills(champion, skill);
+    return updateSkillString(champion);
+  }
+
+  public String updateSkillString(Champion champion) {
+    String newTitle = "";
+    for (LifeSkillType skillType : champion.getRecentSkills()) {
+      float progress = PlayerDataUtil.getSkillProgress(champion, skillType);
+      int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
+      if (level < 100) {
+        newTitle += skillBackground.get((int) Math.floor(progress * 10));
+        newTitle += skillType.getCharacter();
+        newTitle += skillLevel.get(level);
+      }
+    }
+    return newTitle;
+  }
+
 
   public Integer getMaxExp(LifeSkillType type, int level) {
     return levelingRates.get(type).get(level);
@@ -121,7 +160,7 @@ public class SkillExperienceManager {
         if (reqLv == champion.getLifeSkillLevel(skill)) {
           if (ability.getAbilityIconData().isRequirementMet(champion)) {
             MessageUtils.sendMessage(player,
-                "&b❖ Neato! You've unlocked the " + skill.getColor() + skill.getName()
+                "&b❖ Neato! You've unlocked the " + skill.getColor() + skill.getPrettyName()
                     + "&b ability, " + skill.getColor() + ability.getName()
                     + "&b! Visit an ability trainer to try it out!");
           }
@@ -152,6 +191,43 @@ public class SkillExperienceManager {
       }
       levelingRates.put(type, skillRate);
     }
+  }
+
+  public Map<Integer, String> buildSkillLevelStrings() {
+    Map<Integer, String> lvlStrings = new HashMap<>();
+    for (int i = 0; i < 100; i++) {
+      String s = Integer.toString(i);
+      if (i < 10) {
+        s = s
+            .replaceAll("0", "𝟘")
+            .replaceAll("1", "𝟙")
+            .replaceAll("2", "𝟚")
+            .replaceAll("3", "𝟛")
+            .replaceAll("4", "𝟜")
+            .replaceAll("5", "𝟝")
+            .replaceAll("6", "𝟞")
+            .replaceAll("7", "𝟟")
+            .replaceAll("8", "𝟠")
+            .replaceAll("9", "𝟡");
+        s = "\uF808\uF803" + s + "\uF828";
+        lvlStrings.put(i, s);
+      } else {
+        s = s
+            .replaceAll("0", "𝟘")
+            .replaceAll("1", "𝟙")
+            .replaceAll("2", "𝟚")
+            .replaceAll("3", "𝟛")
+            .replaceAll("4", "𝟜")
+            .replaceAll("5", "𝟝")
+            .replaceAll("6", "𝟞")
+            .replaceAll("7", "𝟟")
+            .replaceAll("8", "𝟠")
+            .replaceAll("9", "𝟡");
+        s = "\uF819\uF821" + s + "\uF824";
+        lvlStrings.put(i, s);
+      }
+    }
+    return lvlStrings;
   }
 
 }

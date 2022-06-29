@@ -3,6 +3,8 @@ package land.face.strife.listeners;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,6 +26,7 @@ public class FishingListener implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    Champion champion = mob.getChampion();
 
     event.getHook().setCustomName(StringExtensionsKt.chatColorize("&b&l<><"));
     event.getHook().setCustomNameVisible(true);
@@ -32,10 +35,11 @@ public class FishingListener implements Listener {
     bobberVelocity.multiply(0.65f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     event.getHook().setVelocity(bobberVelocity);
 
-    float fishMult = (float) Math.pow(0.5, mob.getStat(StrifeStat.FISHING_SPEED) / 100);
-
-    int minFishTime = (int) (150D * fishMult);
-    int maxFishTime = minFishTime + (int) (150D * Math.random() * fishMult);
+    float speedBonus = mob.getStat(StrifeStat.FISHING_SPEED) +
+        champion.getLifeSkillLevel(LifeSkillType.FISHING);
+    float fishMult = 1 / (1 + (speedBonus / 100));
+    int minFishTime = 20 + (int) (180f * fishMult);
+    int maxFishTime = minFishTime + (int) (140f * Math.random() * fishMult);
 
     event.getHook().setMaxWaitTime(maxFishTime);
     event.getHook().setMinWaitTime(minFishTime);

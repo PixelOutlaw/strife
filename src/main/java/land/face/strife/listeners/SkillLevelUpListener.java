@@ -47,7 +47,7 @@ public class SkillLevelUpListener implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void onSkillLevelUp(SkillLevelUpEvent event) {
     ChatColor color = event.getSkillType().getColor();
-    String name = event.getSkillType().getName();
+    String name = event.getSkillType().getPrettyName();
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
     String lowerTitle =
@@ -59,7 +59,7 @@ public class SkillLevelUpListener implements Listener {
 
     if (event.getNewSkillLevel() % 5 == 0) {
       String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached "
-          + event.getSkillType().getName() + " skill level " + event.getNewSkillLevel() + "!**";
+          + event.getSkillType().getPrettyName() + " skill level " + event.getNewSkillLevel() + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);
       String msg = StringExtensionsKt.chatColorize(buildMessage(event.getPlayer().getDisplayName(), name, color, level));

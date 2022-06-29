@@ -19,8 +19,10 @@
 package land.face.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +54,8 @@ public class Champion {
   private final Map<StrifeStat, Float> combinedStatMap;
   private String attributeHeatmap = "";
 
+  @Getter
+  private final List<LifeSkillType> recentSkills = new ArrayList<>();
   private Player player;
   @Getter @Setter
   private long lastChanged = System.currentTimeMillis();

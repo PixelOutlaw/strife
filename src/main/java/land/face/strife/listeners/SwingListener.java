@@ -21,6 +21,7 @@ package land.face.strife.listeners;
 import static org.bukkit.event.block.Action.LEFT_CLICK_AIR;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
+import io.papermc.paper.event.player.PlayerArmSwingEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -59,6 +60,13 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
+  public void onDamageLowest(PlayerArmSwingEvent event) {
+    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
   public void onSwingLowest(PlayerAnimationEvent event) {
     if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
       event.setCancelled(true);
@@ -81,7 +89,7 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler(priority = EventPriority.LOW)
   public void onSwingLeft(PlayerInteractEvent event) {
     if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
       return;

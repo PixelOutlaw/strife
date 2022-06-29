@@ -807,23 +807,23 @@ public class StrifeMob {
     }
   }
 
-  public void bumpCombat() {
-    bumpCombat(false);
+  public void bumpCombat(StrifeMob mob) {
+    bumpCombat(mob, false);
   }
 
-  public void bumpCombat(boolean pvp) {
+  public void bumpCombat(StrifeMob mob, boolean pvp) {
     if (isInCombat()) {
-      combatCountdownTask.bump();
+      combatCountdownTask.bump(mob);
       if (pvp) {
         combatCountdownTask.setPvp();
       }
       return;
     }
-    combatCountdownTask = new CombatCountdownTask(this);
+    combatCountdownTask = new CombatCountdownTask(this, mob);
     if (pvp) {
       combatCountdownTask.setPvp();
     }
-    combatCountdownTask.runTaskTimer(StrifePlugin.getInstance(), 0L, 10L);
+    combatCountdownTask.runTaskTimer(StrifePlugin.getInstance(), 0L, 4L);
   }
 
   public void flagPvp() {

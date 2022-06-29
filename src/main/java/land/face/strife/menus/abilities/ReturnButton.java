@@ -61,12 +61,13 @@ public class ReturnButton extends MenuItem {
       event.setWillClose(false);
       return;
     }
-    event.setWillClose(true);
+    event.setWillClose(false);
+    event.getPlayer().closeInventory();
     Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
       if (event.getPlayer() != null && event.getPlayer().isValid()) {
         plugin.getAbilityPicker().open(event.getPlayer());
       }
-    }, 2L);
+    }, 0L);
   }
 
   public static void setBackButtonEnabled(Player player, boolean value) {

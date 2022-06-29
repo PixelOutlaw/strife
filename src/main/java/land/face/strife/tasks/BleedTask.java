@@ -34,7 +34,6 @@ public class BleedTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
   private float amount;
-
   private static final ItemStack BLOCK_DATA = new ItemStack(Material.REDSTONE);
 
   private static float flatBleedPerTick = (float) StrifePlugin.getInstance().getSettings()
@@ -52,6 +51,10 @@ public class BleedTask extends BukkitRunnable {
 
   @Override
   public void run() {
+    if (parentMob.get() == null) {
+      cancel();
+      return;
+    }
     if (!parentMob.get().getEntity().isValid()) {
       parentMob.get().clearBleed();
       return;

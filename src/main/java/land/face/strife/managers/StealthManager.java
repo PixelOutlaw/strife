@@ -106,8 +106,7 @@ public class StealthManager {
 
   public void stealthPlayer(Player player) {
     for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
-      if (e instanceof Player && plugin.getBossBarManager().getBarTarget((Player) e) == player) {
-        plugin.getBossBarManager().disableBars((Player) e);
+      if (e instanceof Player) {
         plugin.getIndicatorManager()
             .addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
       } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {

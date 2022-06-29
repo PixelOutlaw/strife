@@ -348,11 +348,6 @@ public class CombatListener implements Listener {
       eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
     }
 
-    if (attackEntity instanceof Player) {
-      plugin.getBossBarManager().pushBar((Player) attackEntity, plugin.getStrifeMobManager()
-          .getStatMob(defendEntity), eventDamage > defendEntity.getHealth());
-    }
-
     event.setDamage(BASE, Math.max(eventDamage, 0.001));
   }
 

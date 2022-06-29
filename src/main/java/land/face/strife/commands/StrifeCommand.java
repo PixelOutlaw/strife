@@ -486,7 +486,7 @@ public class StrifeCommand extends BaseCommand {
       return;
     }
     ChatColor color = type.getColor();
-    String name = type.getName();
+    String name = type.getPrettyName();
 
     plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
         .setSkillLevel(type, newLevel);
@@ -511,7 +511,7 @@ public class StrifeCommand extends BaseCommand {
       return;
     }
     ChatColor color = type.getColor();
-    String name = type.getName();
+    String name = type.getPrettyName();
 
     plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setSkillExp(type, xp);
     sendMessage(target.getPlayer(), SET_LEVEL_MSG
@@ -537,6 +537,25 @@ public class StrifeCommand extends BaseCommand {
     }
     plugin.getSkillExperienceManager()
         .addExperience(target.getPlayer(), type, amount, exact, !silent);
+  }
+
+  @Subcommand("recentskill")
+  @CommandCompletion("@players @skills")
+  @CommandPermission("strife.admin")
+  public void setRecentSkill(CommandSender sender, OnlinePlayer target, String skill) {
+    String skillName = skill.toUpperCase();
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skillName.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "&cUnknown skill " + skill + "???");
+      return;
+    }
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
+    plugin.getChampionManager().updateRecentSkills(champion, type);
+    plugin.getBossBarManager().updateBar(target.getPlayer(), 1,
+        plugin.getSkillExperienceManager().updateSkillString(champion));
+    MessageUtils.sendMessage(sender, "&aSent recent skill");
   }
 
   @Subcommand("addxp")

@@ -1,313 +1,149 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
-import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
-
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.WeakHashMap;
-import land.face.SnazzyPartiesPlugin;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.SkillBar;
-import land.face.strife.data.StatusBar;
-import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.PlayerDataUtil;
-import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BossBarManager {
 
   private final StrifePlugin plugin;
-  private final Map<Player, StatusBar> statusBars = new WeakHashMap<>();
-  private final Map<Player, SkillBar> skillBars = new HashMap<>();
-  private final String deathMessage;
-  private final List<String> sillyDeathMsgs;
-  private final int healthDuration;
-  private final int skillDuration;
-  private final Random random = new Random();
+  private final Map<Player, BossBar> statusBar1 = new HashMap<>();
+  private final Map<Player, BossBar> statusBar2 = new HashMap<>();
+  private final Map<Player, BossBar> statusBar3 = new HashMap<>();
+  private final Map<Player, BossBar> statusBar4 = new HashMap<>();
+
 
   public BossBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.deathMessage = StringExtensionsKt.chatColorize(plugin.getSettings()
-        .getString("language.enemy-killed-title"));
-    this.sillyDeathMsgs = ListExtensionsKt.chatColorize(plugin.getSettings()
-        .getStringList("language.silly-enemy-killed-titles"));
-    this.healthDuration = plugin.getSettings().getInt("config.mechanics.health-bar-duration", 200);
-    this.skillDuration = plugin.getSettings().getInt("config.mechanics.skill-bar-duration", 200);
-  }
-
-  private StatusBar createHealthBar(Player player, StrifeMob target) {
-    if (statusBars.containsKey(player)) {
-      return statusBars.get(player);
-    }
-    BossBar barrierBar = makeBarrierBar();
-    barrierBar.addPlayer(player);
-    BossBar healthBar = makeHealthBar();
-    healthBar.addPlayer(player);
-
-    StatusBar bar = new StatusBar(target, healthBar, barrierBar);
-    bar.setLifeTicks(healthDuration);
-    bar.setHidden(false);
-    bar.setDead(false);
-
-    statusBars.put(player, bar);
-    return bar;
-  }
-
-  private void createSkillBar(Player player) {
-    if (skillBars.containsKey(player)) {
-      return;
-    }
-    BossBar skillBar = makeSkillBar();
-    skillBar.addPlayer(player);
-
-    SkillBar bar = new SkillBar(plugin.getChampionManager().getChampion(player), skillBar);
-    bar.setLifeTicks(skillDuration);
-
-    skillBars.put(player, bar);
-  }
-
-  void pushSkillBar(Player player, LifeSkillType lifeSkillType) {
-    createSkillBar(player);
-    String name = lifeSkillType.getName();
-    SkillBar bar = skillBars.get(player);
-    int level = bar.getOwner().getSaveData().getSkillLevel(lifeSkillType);
-    String xp = StrifePlugin.INT_FORMAT.format(PlayerDataUtil.getLifeSkillExpToLevel(bar.getOwner(), lifeSkillType));
-    String barName = StringExtensionsKt
-        .chatColorize("&f" + name + " Lv" + level + " &8- " + "&f(&a" + xp + "xp to " + (level + 1) + "&f)");
-    bar.getSkillBar().setTitle(barName);
-    bar.setLifeTicks(skillDuration);
-    bar.setLifeSkillType(lifeSkillType);
-    bar.getSkillBar().setVisible(true);
-    updateSkillBar(bar);
-  }
-
-  public void pushBar(Player player, StrifeMob target, boolean death) {
-    StatusBar bar = statusBars.get(player);
-    if (bar == null) {
-      bar = createHealthBar(player, target);
-    }
-    if (bar.getTarget() != target) {
-      bar.clearGlow(player);
-    }
-    bar = statusBars.get(player);
-    bar.setTarget(target);
-    bar.setLifeTicks(healthDuration);
-    bar.setHidden(false);
-    bar.setDead(false);
-    if (plugin.getChampionManager().getChampion(player).getSaveData().isGlowEnabled()) {
-      if (target.getEntity() instanceof Player && SnazzyPartiesPlugin.getInstance()
-          .getPartyManager()
-          .areInSameParty(player, (Player) target.getEntity())) {
-        bar.refreshGlow(player, ChatColor.AQUA);
-      } else if (death) {
-        bar.refreshGlow(player, ChatColor.DARK_RED);
-        bar.setDead(true);
-        String title;
-        if (Math.random() < 0.025) {
-          title = sillyDeathMsgs.get(random.nextInt(sillyDeathMsgs.size()));
-        } else {
-          title = deathMessage;
-        }
-        updateBarTitle(bar, title);
-        bar.getBarrierBar().setProgress(0);
-        bar.getHealthBar().setProgress(0);
-        bar.setLifeTicks(25);
-      } else {
-        bar.refreshGlow(player, ChatColor.GOLD);
+    // Ensure bars do not expire from inactivity
+    Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+      for (BossBar b : statusBar1.values()) {
+        b.setProgress(Math.random());
+        b.setVisible(true);
       }
-    }
-    updateBar(bar);
+      for (BossBar b : statusBar2.values()) {
+        b.setProgress(Math.random());
+        b.setVisible(true);
+      }
+      for (BossBar b : statusBar3.values()) {
+        b.setProgress(Math.random());
+        b.setVisible(true);
+      }
+      for (BossBar b : statusBar4.values()) {
+        b.setProgress(Math.random());
+        b.setVisible(true);
+      }
+    },20L * 5, 100L);
   }
 
-  public void doBarDeath(Player player) {
-    if (statusBars.containsKey(player)) {
-      StatusBar bossBar = statusBars.get(player);
-      if (!bossBar.isDead()) {
-        if (plugin.getChampionManager().getChampion(player).getSaveData().isGlowEnabled()) {
-          if (bossBar.getTarget() != null && bossBar.getTarget().getEntity() != null) {
-            bossBar.refreshGlow(player, ChatColor.DARK_RED);
-          }
+  public void createBars(Player player) {
+    if (statusBar1.containsKey(player)) {
+      statusBar1.get(player).removeAll();
+    }
+    if (statusBar2.containsKey(player)) {
+      statusBar2.get(player).removeAll();
+    }
+    if (statusBar3.containsKey(player)) {
+      statusBar3.get(player).removeAll();
+    }
+    if (statusBar4.containsKey(player)) {
+      statusBar4.get(player).removeAll();
+    }
+    statusBar1.put(player, buildBar(player));
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        statusBar2.put(player, buildBar(player)), 1L);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        statusBar3.put(player, buildBar(player)), 2L);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        statusBar4.put(player, buildBar(player)), 3L);
+  }
+
+  public void updateBar(Player player, int barNumber, String text) {
+    switch (barNumber) {
+      case 1 -> {
+        if (statusBar1.containsKey(player)) {
+          statusBar1.get(player).setTitle(text);
+        }
+      }
+      case 2 -> {
+        if (statusBar2.containsKey(player)) {
+          statusBar2.get(player).setTitle(text);
+        }
+      }
+      case 3 -> {
+        if (statusBar3.containsKey(player)) {
+          statusBar3.get(player).setTitle(text);
+        }
+      }
+      case 4 -> {
+        if (statusBar4.containsKey(player)) {
+          statusBar4.get(player).setTitle(text);
         }
       }
     }
   }
 
-  public void tickBars() {
-    for (Player p : Bukkit.getOnlinePlayers()) {
-      StatusBar bar = statusBars.get(p);
-      if (bar != null) {
-        updateBar(bar);
-      }
-      SkillBar skillBar = skillBars.get(p);
-      if (skillBar != null) {
-        updateSkillBar(skillBar);
-      }
-    }
-  }
-
-  public LivingEntity getBarTarget(Player player) {
-    StatusBar bar = statusBars.get(player);
-    if (bar == null || bar.getTarget() == null) {
-      return null;
-    }
-    return bar.getTarget().getEntity();
-  }
-
-  public void disableBars(Player player) {
-    StatusBar bar = statusBars.get(player);
-    if (bar == null || bar.getTarget() == null) {
-      return;
-    }
-    bar.setHidden(true);
-    bar.clearGlow(player);
-  }
-
-  private void updateBar(StatusBar bossBar) {
-    if (bossBar.isHidden()) {
-      return;
-    }
-    if (bossBar.getTarget() == null) {
-      bossBar.setHidden(true);
-      return;
-    }
-    bossBar.setLifeTicks(bossBar.getLifeTicks() - 1);
-    if (bossBar.getLifeTicks() < 1) {
-      bossBar.clearGlow(bossBar.getHealthBar().getPlayers().get(0));
-      bossBar.setHidden(true);
-      bossBar.setTarget(null);
-      return;
-    }
-    if (bossBar.isDead()) {
-      return;
-    }
-    if (bossBar.getTarget().getEntity() == null || !bossBar.getTarget().getEntity().isValid()) {
-      bossBar.clearGlow(bossBar.getHealthBar().getPlayers().get(0));
-      bossBar.setHidden(true);
-      bossBar.setTarget(null);
-      return;
-    }
-    updateBarTitle(bossBar, createBarTitle(bossBar.getTarget()));
-    updateBarrierProgress(bossBar);
-    updateHealthProgress(bossBar);
-  }
-
-  private void updateSkillBar(SkillBar skillBar) {
-    if (!skillBar.getSkillBar().isVisible()) {
-      return;
-    }
-    if (skillBar.getLifeTicks() < 1) {
-      skillBar.getSkillBar().setVisible(false);
-      return;
-    }
-    skillBar.setLifeTicks(skillBar.getLifeTicks() - 1);
-    updateSkillProgress(skillBar);
-  }
-
-  private void updateHealthProgress(StatusBar bar) {
-    double health = bar.getTarget().getEntity().getHealth();
-    double maxHealth = bar.getTarget().getEntity().getAttribute(GENERIC_MAX_HEALTH).getValue();
-    bar.getHealthBar().setProgress(Math.min(health / maxHealth, 1D));
-  }
-
-  private void updateBarrierProgress(StatusBar bar) {
-    if (bar.getTarget().getMaxBarrier() < 1) {
-      bar.getBarrierBar().setVisible(false);
-      return;
-    }
-    bar.getBarrierBar().setProgress(
-        Math.min(bar.getTarget().getBarrier() / bar.getTarget().getMaxBarrier(), 1D));
-  }
-
-  private void updateSkillProgress(SkillBar bar) {
-    bar.getSkillBar().setProgress(PlayerDataUtil.getSkillProgress(bar.getOwner(), bar.getLifeSkillType()));
-  }
-
-  private String createBarTitle(StrifeMob barOwner) {
-    String name;
-    if (barOwner.getEntity() instanceof Player) {
-      name = (barOwner.getEntity().getName()) + ChatColor.GRAY + " Lv" + ((Player) barOwner.getEntity()).getLevel();
-    } else if (StringUtils.isNotBlank(barOwner.getEntity().getCustomName())) {
-      name = barOwner.getEntity().getCustomName();
-    } else {
-      name = WordUtils.capitalizeFully(barOwner.getEntity().getType().toString().replaceAll("_", " "));
-    }
-    name += "   ";
-    if (barOwner.getStat(StrifeStat.BARRIER) > 0) {
-      name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(barOwner.getBarrier()) + "♡ ";
-    }
-    name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(barOwner.getEntity().getHealth()) + "♡";
-    if (barOwner.getFrost() > 100) {
-      name += "  " + ChatColor.AQUA + (barOwner.getFrost() / 100) + "❄";
-    }
-    if (barOwner.getCorruption() > 0.9) {
-      name += "  " + ChatColor.DARK_PURPLE + (int) barOwner.getCorruption() + "\uD83D\uDC80";
-    }
-    return name;
-  }
-
-  private void updateBarTitle(StatusBar bossBar, String title) {
-    if (bossBar.getBarrierBar().isVisible()) {
-      bossBar.getBarrierBar().setTitle(title);
-      bossBar.getHealthBar().setTitle(null);
-    } else {
-      bossBar.getBarrierBar().setTitle(null);
-      bossBar.getHealthBar().setTitle(title);
-    }
+  public void clearBars(Player p) {
+    statusBar1.get(p).removeAll();
+    statusBar2.get(p).removeAll();
+    statusBar3.get(p).removeAll();
+    statusBar4.get(p).removeAll();
+    statusBar1.remove(p);
+    statusBar2.remove(p);
+    statusBar3.remove(p);
+    statusBar4.remove(p);
   }
 
   public void clearBars() {
-    for (Player p : statusBars.keySet()) {
-      statusBars.get(p).getBarrierBar().removeAll();
-      statusBars.get(p).getHealthBar().removeAll();
+    for (Player p : statusBar1.keySet()) {
+      statusBar1.get(p).removeAll();
+      statusBar2.get(p).removeAll();
+      statusBar3.get(p).removeAll();
+      statusBar4.get(p).removeAll();
     }
-    statusBars.clear();
-    for (Player p : skillBars.keySet()) {
-      skillBars.get(p).getSkillBar().removeAll();
+    for (Player p : statusBar2.keySet()) {
+      statusBar2.get(p).removeAll();
     }
-    skillBars.clear();
+    for (Player p : statusBar3.keySet()) {
+      statusBar3.get(p).removeAll();
+    }
+    for (Player p : statusBar4.keySet()) {
+      statusBar4.get(p).removeAll();
+    }
+    statusBar1.clear();
+    statusBar2.clear();
+    statusBar3.clear();
+    statusBar4.clear();
   }
 
-  private static BossBar makeSkillBar() {
-    return StrifePlugin.getInstance().getServer()
-        .createBossBar("skillbar", BarColor.GREEN, BarStyle.SOLID);
-  }
-
-  private static BossBar makeHealthBar() {
-    return StrifePlugin.getInstance().getServer()
-        .createBossBar("healthbar", BarColor.RED, BarStyle.SOLID);
-  }
-
-  private static BossBar makeBarrierBar() {
-    return StrifePlugin.getInstance().getServer()
-        .createBossBar("barrierBar", BarColor.WHITE, BarStyle.SOLID);
+  private static BossBar buildBar(Player player) {
+    BossBar bar = StrifePlugin.getInstance().getServer()
+        .createBossBar("", BarColor.PURPLE, BarStyle.SOLID);
+    bar.addPlayer(player);
+    return bar;
   }
 }

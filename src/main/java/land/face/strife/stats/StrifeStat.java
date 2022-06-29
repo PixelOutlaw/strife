@@ -124,20 +124,25 @@ public enum StrifeStat {
   PVP_ATTACK("PvP Attack"),
   PVP_DEFENCE("PvP Defence"),
 
+  XP_GAIN("Combat XP"),
+  SKILL_XP_GAIN("Skill XP"),
+
+  ITEM_DISCOVERY("Loot Bonus"),
+  ITEM_RARITY("Loot Rarity"),
+  GOLD_FIND("Gold Bonus"),
+
+  FISHING_SPEED("Fishing Speed"),
+  FISHING_TREASURE("Fishing Treasures"),
+
   CRAFT_SKILL("Crafting Skill"),
   ENCHANT_SKILL("Enchanting Skill"),
   SNEAK_SKILL("Sneak Skill"),
 
-  XP_GAIN("Combat XP"),
-  SKILL_XP_GAIN("Skill XP"),
-  ITEM_DISCOVERY("Loot Bonus"),
-  ITEM_RARITY("Loot Rarity"),
-  GOLD_FIND("Gold Bonus"),
-  FISHING_SPEED("Fishing Speed"),
-  FISHING_TREASURE("Fishing Treasures"),
   MINING_GEMS("Mining Gems"),
+
   MONEY_KEPT("Bits Kept On Death"),
   XP_LOST_ON_DEATH("Less XP Loss On Death"),
+
   AIR_JUMPS("Additional Air Jumps"),
 
   DOGE("Doge Chance"),

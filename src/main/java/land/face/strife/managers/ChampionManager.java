@@ -25,16 +25,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
@@ -204,6 +211,38 @@ public class ChampionManager {
     champion.getSaveData().getBoundAbilities().remove(loreAbility);
     mob.getEquipmentCache().recombineAbilities(mob);
     return true;
+  }
+
+  public void updateRecentSkills(Champion champion, LifeSkillType type) {
+    if (!champion.getRecentSkills().contains(type)) {
+      if (champion.getRecentSkills().size() < 3) {
+        champion.getRecentSkills().add(type);
+      } else {
+        champion.getRecentSkills().set(2, champion.getRecentSkills().get(1));
+        champion.getRecentSkills().set(1, champion.getRecentSkills().get(0));
+        champion.getRecentSkills().set(0, type);
+      }
+    }
+  }
+
+  public void pushCloseSkills(Champion champion) {
+    SortedMap<Float, LifeSkillType> map = new TreeMap<>();
+    for (LifeSkillType lifeSkillType : LifeSkillType.types) {
+      int level = champion.getLifeSkillLevel(lifeSkillType);
+      if (level < 2 || level > 98) {
+        continue;
+      }
+      float progress = PlayerDataUtil.getSkillProgress(champion, lifeSkillType);
+      if (map.size() < 3) {
+        map.put(progress, lifeSkillType);
+      } else if (progress > map.firstKey()) {
+        map.remove(map.firstKey());
+        map.put(progress, lifeSkillType);
+      }
+    }
+    for (LifeSkillType val : map.values()) {
+      updateRecentSkills(champion, val);
+    }
   }
 
   private int getTotalChampionStats(Champion champion) {

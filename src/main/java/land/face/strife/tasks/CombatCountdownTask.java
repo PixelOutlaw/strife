@@ -2,14 +2,24 @@ package land.face.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.lang.ref.WeakReference;
+import java.util.List;
+import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
+import land.face.strife.managers.GuiManager;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.DamageUtil;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -17,19 +27,37 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class CombatCountdownTask extends BukkitRunnable {
 
-  private static final int BUMP_TIME_HALF_SECONDS = 24;
+  // TICKS EVERY 4 SERVER TICKS, 0.2s
+  private static final int BUMP_TICKS = 60;
+  private static final int DEATH_TICKS = 8;
   private final WeakReference<StrifeMob> parentMob;
+  private WeakReference<StrifeMob> targetMob;
   private boolean pvp = false;
   private static final ItemStack combatStack = new ItemStack(Material.IRON_SWORD);
   private static final ItemStack exitStack = new ItemStack(Material.OXEYE_DAISY);
-  private int halfSecondsRemaining;
+  private int ticks;
+  private int displayTicks;
+  private boolean targetDead;
 
-  public CombatCountdownTask(StrifeMob parentMob) {
+  private int lastHealthStage = -1;
+  private int lastBarrierStage = -1;
+
+  // 128 8 3
+  private String healthBarBase = "ᛤ";
+  private final Random random = new Random();
+
+  private final Player player;
+
+  public CombatCountdownTask(StrifeMob parentMob, StrifeMob targetMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    halfSecondsRemaining = BUMP_TIME_HALF_SECONDS;
+    this.targetMob = new WeakReference<>(targetMob);
+    targetDead = false;
+    ticks = BUMP_TICKS;
+    displayTicks = BUMP_TICKS;
+    player = parentMob.getEntity() instanceof Player ? (Player) parentMob.getEntity() : null;
     CombatChangeEvent cce = new CombatChangeEvent(parentMob, NewCombatState.ENTER);
-    if (parentMob.getEntity() instanceof Player) {
-      ToastUtils.sendToast(((Player) parentMob.getEntity()).getPlayer(), "Entered Combat!", combatStack, ToastStyle.INFO);
+    if (player != null) {
+      ToastUtils.sendToast(player, "Entered Combat!", combatStack, ToastStyle.INFO);
     }
     Bukkit.getPluginManager().callEvent(cce);
   }
@@ -41,21 +69,74 @@ public class CombatCountdownTask extends BukkitRunnable {
       cancel();
       return;
     }
-    halfSecondsRemaining--;
-    if (halfSecondsRemaining == 0) {
+
+    if (!targetDead && player != null) {
+      if (targetMob.get() == null || targetMob.get().getEntity() == null ||
+          !targetMob.get().getEntity().isValid()) {
+        ticks = Math.max(DEATH_TICKS, ticks);
+        displayTicks = DEATH_TICKS;
+        targetDead = true;
+        String title;
+        if (Math.random() < 0.025) {
+          title = DamageUtil.sillyDeathMsgs.get(random.nextInt(DamageUtil.sillyDeathMsgs.size()));
+        } else {
+          title = DamageUtil.deathMessage;
+        }
+        String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138);
+        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, s);
+        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 3, title);
+        return;
+      }
+    }
+
+    ticks--;
+    displayTicks--;
+
+    if (ticks == 0) {
       CombatChangeEvent cce = new CombatChangeEvent(mob, NewCombatState.EXIT);
-      if (mob.getEntity() instanceof Player) {
-        ToastUtils.sendToast(((Player) mob.getEntity()).getPlayer(), "Exited Combat...", exitStack, ToastStyle.INFO);
+      if (player != null) {
+        ToastUtils.sendToast(player, "Exited Combat...", exitStack, ToastStyle.INFO);
+        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, "");
+        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 3, "");
       }
       Bukkit.getPluginManager().callEvent(cce);
       cancel();
       awardSkillExp(mob);
       mob.endCombat();
+      return;
+    }
+
+    if (player != null) {
+      if (displayTicks <= 0) {
+        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, "");
+        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 3, "");
+      } else if (!targetDead && targetMob.get() != null) {
+        StrifePlugin.getInstance().getBossBarManager()
+            .updateBar(player, 3, createBarTitle(targetMob.get()));
+        int hpState = (int) (138f *
+            (targetMob.get().getEntity().getHealth()) / targetMob.get().getMaxLife());
+        int barrierState = (int) (138f *
+            (targetMob.get().getBarrier()) / targetMob.get().getMaxBarrier());
+        if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
+          lastHealthStage = hpState;
+          lastBarrierStage = barrierState;
+          String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138 - hpState);
+          if (barrierState > 0) {
+            s += GuiManager.BARRIER_BAR_TARGET.get(barrierState);
+          }
+          StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, s);
+        }
+      }
     }
   }
 
-  public void bump() {
-    halfSecondsRemaining = BUMP_TIME_HALF_SECONDS;
+  public void bump(StrifeMob mob) {
+    if (mob != null) {
+      targetMob = new WeakReference<>(mob);
+    }
+    ticks = BUMP_TICKS;
+    displayTicks = BUMP_TICKS;
+    targetDead = false;
   }
 
   public void setPvp() {
@@ -64,6 +145,32 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   public boolean isPvp() {
     return pvp;
+  }
+
+  private String createBarTitle(StrifeMob target) {
+    String name;
+    if (target.getEntity() instanceof Player) {
+      name = (target.getEntity().getName()) + ChatColor.GRAY + " Lv"
+          + ((Player) target.getEntity()).getLevel();
+    } else if (StringUtils.isNotBlank(target.getEntity().getCustomName())) {
+      name = target.getEntity().getCustomName();
+    } else {
+      name = WordUtils.capitalizeFully(
+          target.getEntity().getType().toString().replaceAll("_", " "));
+    }
+    name += "   ";
+    if (target.getStat(StrifeStat.BARRIER) > 0) {
+      name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(target.getBarrier()) + "♡ ";
+    }
+    name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(target.getEntity().getHealth())
+        + "♡";
+    if (target.getFrost() > 100) {
+      name += "  " + ChatColor.AQUA + (target.getFrost() / 100) + "❄";
+    }
+    if (target.getCorruption() > 0.9) {
+      name += "  " + ChatColor.DARK_PURPLE + (int) target.getCorruption() + "\uD83D\uDC80";
+    }
+    return name;
   }
 
   public static void awardSkillExp(StrifeMob mob) {

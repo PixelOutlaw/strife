@@ -19,9 +19,11 @@ import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -90,6 +92,9 @@ public class DamageUtil {
   public static float FLAT_BARRIER_PER_SECOND;
   public static float PERCENT_BARRIER_PER_SECOND;
 
+  public static String deathMessage;
+  public static List<String> sillyDeathMsgs;
+
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
 
@@ -135,6 +140,11 @@ public class DamageUtil {
         .getInt("config.mechanics.barrier.flat-per-second", 4);
     PERCENT_BARRIER_PER_SECOND = (float) plugin.getSettings()
         .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
+
+    deathMessage = StringExtensionsKt.chatColorize(plugin.getSettings()
+        .getString("language.enemy-killed-title"));
+    sillyDeathMsgs = ListExtensionsKt.chatColorize(plugin.getSettings()
+        .getStringList("language.silly-enemy-killed-titles"));
   }
 
   public static boolean isGuildAlly(StrifeMob attacker, StrifeMob defender) {
@@ -181,8 +191,8 @@ public class DamageUtil {
     }
 
     if (attacker != defender) {
-      attacker.bumpCombat();
-      defender.bumpCombat();
+      attacker.bumpCombat(defender);
+      defender.bumpCombat(null);
     }
 
     if (plugin.getCounterManager().executeCounters(attacker.getEntity(), defender.getEntity())) {

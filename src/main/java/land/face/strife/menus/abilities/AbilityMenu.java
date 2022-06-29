@@ -23,8 +23,8 @@ import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class AbilityMenu extends ItemMenu {
 
-  public AbilityMenu(StrifePlugin plugin, String name, List<SubmenuSelectButton> subMenuIcons) {
-    super(StringExtensionsKt.chatColorize(name), Size.fit(36), plugin);
+  public AbilityMenu(StrifePlugin plugin, String name, List<SubmenuSelectButton> subMenuIcons, int size) {
+    super(StringExtensionsKt.chatColorize(name), Size.fit(size), plugin);
     for (SubmenuSelectButton icon : subMenuIcons) {
       setItem(icon.getSlot(), icon);
     }

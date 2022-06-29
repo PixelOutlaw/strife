@@ -87,6 +87,13 @@ public class JoinAndLeaveListener implements Listener {
           () -> plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer()), 10L);
     }
 
+    plugin.getBossBarManager().createBars(event.getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      plugin.getChampionManager().pushCloseSkills(champion);
+      plugin.getBossBarManager().updateBar(event.getPlayer(), 1,
+          plugin.getSkillExperienceManager().updateSkillString(champion));
+    }, 33L);
+
     plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
     //plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
   }
@@ -114,7 +121,7 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
     plugin.getCounterManager().clearCounters(player);
-    plugin.getBossBarManager().disableBars(player);
+    plugin.getBossBarManager().clearBars(player);
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {

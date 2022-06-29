@@ -36,9 +36,11 @@ public class SubmenuSelectButton extends MenuItem {
   private final AbilitySubmenu menu;
   private final int slot;
 
-  public SubmenuSelectButton(AbilitySubmenu menu, Material material, String name, List<String> lore, int slot) {
+  public SubmenuSelectButton(AbilitySubmenu menu, Material material, int modelData,
+      String name, List<String> lore, int slot) {
     super(StringExtensionsKt.chatColorize(name), setNameAndLore(new ItemStack(material),
         StringExtensionsKt.chatColorize(name), ListExtensionsKt.chatColorize(lore)));
+    ItemStackExtensionsKt.setCustomModelData(getIcon(), modelData);
     this.menu = menu;
     this.slot = slot;
   }
@@ -54,12 +56,13 @@ public class SubmenuSelectButton extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    event.setWillClose(true);
+    event.setWillClose(false);
+    event.getPlayer().closeInventory();
     Bukkit.getScheduler().scheduleSyncDelayedTask(StrifePlugin.getInstance(), () -> {
       if (event.getPlayer() != null && event.getPlayer().isValid()) {
         this.menu.open(event.getPlayer());
       }
-    }, 2L);
+    }, 0L);
   }
 
   public int getSlot() {

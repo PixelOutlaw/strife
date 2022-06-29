@@ -151,7 +151,6 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.BoostTickTask;
-import land.face.strife.tasks.BossBarsTask;
 import land.face.strife.tasks.DamageOverTimeTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
@@ -425,7 +424,6 @@ public class StrifePlugin extends FacePlugin {
     SaveTask saveTask = new SaveTask(this);
     StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
     StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
-    BossBarsTask bossBarsTask = new BossBarsTask(bossBarManager);
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     EveryTickTask everyTickTask = new EveryTickTask(this);
@@ -486,10 +484,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(damageOverTimeTask.runTaskTimer(this,
         20L, // Start timer after 11s
         5L // Run it every 5 ticks
-    ));
-    taskList.add(bossBarsTask.runTaskTimer(this,
-        240L, // Start timer after 12s
-        2L // Run it every 1/10th of a second after
     ));
     taskList.add(boostTickTask.runTaskTimer(this,
         20L,
@@ -587,12 +581,14 @@ public class StrifePlugin extends FacePlugin {
       List<String> lore = abilityMenus.getStringList(menuId + ".lore");
       Material material = Material.valueOf(abilityMenus.getString(menuId + ".material", "BARRIER"));
       int slot = abilityMenus.getInt(menuId + ".slot", 0);
-      SubmenuSelectButton subMenuIcon = new SubmenuSelectButton(menu, material, name, lore, slot);
+      int modelData = abilityMenus.getInt(menuId + ".model-data", 0);
+      SubmenuSelectButton subMenuIcon = new SubmenuSelectButton(menu, material, modelData, name, lore, slot);
       pickerItems.add(subMenuIcon);
     }
 
     String pickerName = configYAML.getString("ability-menu-title", "Picker");
-    abilitySubcategoryMenu = new AbilityMenu(this, pickerName, pickerItems);
+    int size = configYAML.getInt("ability-menu-size", 36);
+    abilitySubcategoryMenu = new AbilityMenu(this, pickerName, pickerItems, size);
     levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu(this);
@@ -606,6 +602,7 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.setAllAbilityIcons(player);
       guiManager.setupGui(player);
       attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
+      bossBarManager.createBars(player);
     }
     getChampionManager().updateAll();
 

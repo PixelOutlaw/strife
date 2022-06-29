@@ -66,6 +66,11 @@ public class RageTask extends BukkitRunnable {
   @Override
   public void run() {
     StrifeMob mob = parentMob.get();
+    if (mob == null || !mob.getEntity().isValid()) {
+      cancel();
+      return;
+    }
+
     spawnRageParticles(mob.getEntity(), rage);
 
     graceTicks--;
@@ -78,7 +83,7 @@ public class RageTask extends BukkitRunnable {
 
     if (rage <= 0) {
       LogUtil.printDebug("Rage complete, removing");
-      parentMob.get().endRageTask();
+      mob.endRageTask();
     }
   }
 

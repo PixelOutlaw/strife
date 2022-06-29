@@ -76,9 +76,9 @@ public class DamageManager {
     if (damage >= defender.getEntity().getHealth()) {
       damage = DamageUtil.doPreDeath(defender, damage);
     }
-    boolean death = damage >= defender.getEntity().getHealth();
     if (attacker.getEntity() instanceof Player) {
-      plugin.getBossBarManager().pushBar((Player) attacker.getEntity(), defender, death);
+      attacker.bumpCombat(defender);
+      defender.bumpCombat(null);
       defender.getEntity().setKiller((Player) attacker.getEntity());
     }
     defender.getEntity().damage(damage);

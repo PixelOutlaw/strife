@@ -36,14 +36,6 @@ public class LevelupMenu extends ItemMenu {
     super(StringExtensionsKt.chatColorize("&0&lLevel Up!"),
         Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
 
-    ItemStack lockedPathIcon = new ItemStack(Material.PAPER);
-    ItemStackExtensionsKt.setDisplayName(lockedPathIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
-    ItemStackExtensionsKt.setCustomModelData(lockedPathIcon, 200);
-
-    ItemStack unlockedPathIcon = new ItemStack(Material.PAPER);
-    ItemStackExtensionsKt.setDisplayName(unlockedPathIcon, "Click to choose your path");
-    ItemStackExtensionsKt.setCustomModelData(unlockedPathIcon, 201);
-
     for (StrifeAttribute attribute : attributes) {
       int slot = attribute.getSlot();
       setItem(slot, new LevelupMenuItem(plugin, attribute));
@@ -52,7 +44,7 @@ public class LevelupMenu extends ItemMenu {
     int pathIndex = 45;
     int requirement = 10;
     for (Path path : LevelPath.PATH_VALUES) {
-      setItem(pathIndex, new PathItem(plugin, requirement, lockedPathIcon, unlockedPathIcon, path));
+      setItem(pathIndex, new PathItem(plugin, requirement, path));
       requirement += 10;
       pathIndex++;
     }

@@ -14,6 +14,7 @@ import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.champion.Champion;
+import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -123,11 +124,14 @@ public class GuiManager {
   public static final Map<Integer, TextComponent> BARRIER_BAR_1 = new HashMap<>();
   public static final Map<Integer, TextComponent> BARRIER_BAR_2 = new HashMap<>();
   public static final Map<Integer, TextComponent> BARRIER_BAR_3 = new HashMap<>();
+  public static final Map<Integer, String> HEALTH_BAR_TARGET = new HashMap<>();
+  public static final Map<Integer, String> BARRIER_BAR_TARGET = new HashMap<>();
 
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
     if (HP_BAR.isEmpty()) {
       buildHealthEnergyAndBarrier();
+      buildTargetHealthBars();
     }
   }
 
@@ -319,6 +323,57 @@ public class GuiManager {
       return org.bukkit.ChatColor.GOLD + string;
     }
     return org.bukkit.ChatColor.DARK_RED + string;
+  }
+
+  public static void buildTargetHealthBars() {
+    Bukkit.getLogger().info("[Strife] Building Target GUI missing life/energy");
+    Bukkit.getLogger().info("[Strife] This could take a bit...");
+    for (int i = 0; i <= 138; i++) {
+      int remainder = i;
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder hpBar = new StringBuilder();
+      StringBuilder barrierBar = new StringBuilder();
+      boolean kickBack = false;
+      while (remainder >= 138) {
+        hpBar.append("Ũ\uF801");
+        barrierBar.append("Ù\uF801");
+        prefix.append("\uF80C\uF808\uF802");
+        remainder -= 138;
+      }
+      while (remainder >= 64) {
+        hpBar.append("ũ\uF801");
+        barrierBar.append("ú\uF801");
+        prefix.append("\uF80B");
+        remainder -= 64;
+      }
+      while (remainder >= 32) {
+        hpBar.append("Ū\uF801");
+        barrierBar.append("Ú\uF801");
+        prefix.append("\uF80A");
+        remainder -= 32;
+      }
+      while (remainder >= 16) {
+        hpBar.append("ū\uF801");
+        barrierBar.append("ù\uF801");
+        prefix.append("\uF809");
+        remainder -= 16;
+      }
+      while (remainder >= 8) {
+        hpBar.append("Ŭ\uF801");
+        barrierBar.append("Ҋ\uF801");
+        prefix.append("\uF808");
+        remainder -= 8;
+      }
+      while (remainder > 0) {
+        hpBar.append("ŭ\uF801");
+        barrierBar.append("ҋ\uF801");
+        prefix.append("\uF801");
+        remainder--;
+      }
+      HEALTH_BAR_TARGET.put(i, "\uF801" + prefix + hpBar);
+      BARRIER_BAR_TARGET.put(i, "\uF80C\uF808\uF802" + barrierBar + prefix + "\uF83C\uF838\uF822");
+    }
+    Bukkit.getLogger().info("[Strife] Missing target life/barrier bars built!");
   }
 
   public static void buildHealthEnergyAndBarrier() {

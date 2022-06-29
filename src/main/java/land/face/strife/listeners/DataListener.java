@@ -223,8 +223,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     final Player player = event.getPlayer();
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
     plugin.getStrifeMobManager().getStatMob(entity);
-    plugin.getBossBarManager().pushBar(player,
-        plugin.getStrifeMobManager().getStatMob(entity), false);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
