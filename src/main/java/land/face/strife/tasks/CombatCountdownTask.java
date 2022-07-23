@@ -1,12 +1,10 @@
 package land.face.strife.tasks;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -14,6 +12,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
+import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -24,6 +23,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import scala.concurrent.impl.FutureConvertersImpl.P;
 
 public class CombatCountdownTask extends BukkitRunnable {
 
@@ -36,8 +36,6 @@ public class CombatCountdownTask extends BukkitRunnable {
   private static final ItemStack combatStack = new ItemStack(Material.IRON_SWORD);
   private static final ItemStack exitStack = new ItemStack(Material.OXEYE_DAISY);
   private int ticks;
-  private int displayTicks;
-  private boolean targetDead;
 
   private int lastHealthStage = -1;
   private int lastBarrierStage = -1;
@@ -45,15 +43,18 @@ public class CombatCountdownTask extends BukkitRunnable {
   // 128 8 3
   private String healthBarBase = "ᛤ";
   private final Random random = new Random();
-
   private final Player player;
 
+  private boolean targetWasAlive;
+
+  private final BossBarManager manager;
+
   public CombatCountdownTask(StrifeMob parentMob, StrifeMob targetMob) {
+    manager = StrifePlugin.getInstance().getBossBarManager();
     this.parentMob = new WeakReference<>(parentMob);
     this.targetMob = new WeakReference<>(targetMob);
-    targetDead = false;
     ticks = BUMP_TICKS;
-    displayTicks = BUMP_TICKS;
+    targetWasAlive = targetMob != null;
     player = parentMob.getEntity() instanceof Player ? (Player) parentMob.getEntity() : null;
     CombatChangeEvent cce = new CombatChangeEvent(parentMob, NewCombatState.ENTER);
     if (player != null) {
@@ -70,73 +71,90 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
 
-    if (!targetDead && player != null) {
-      if (targetMob.get() == null || targetMob.get().getEntity() == null ||
-          !targetMob.get().getEntity().isValid()) {
-        ticks = Math.max(DEATH_TICKS, ticks);
-        displayTicks = DEATH_TICKS;
-        targetDead = true;
-        String title;
-        if (Math.random() < 0.025) {
-          title = DamageUtil.sillyDeathMsgs.get(random.nextInt(DamageUtil.sillyDeathMsgs.size()));
-        } else {
-          title = DamageUtil.deathMessage;
-        }
-        String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138);
-        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, s);
-        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 3, title);
-        return;
-      }
-    }
-
     ticks--;
-    displayTicks--;
-
-    if (ticks == 0) {
-      CombatChangeEvent cce = new CombatChangeEvent(mob, NewCombatState.EXIT);
-      if (player != null) {
-        ToastUtils.sendToast(player, "Exited Combat...", exitStack, ToastStyle.INFO);
-        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, "");
-        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 3, "");
-      }
-      Bukkit.getPluginManager().callEvent(cce);
-      cancel();
-      awardSkillExp(mob);
-      mob.endCombat();
+    if (ticks < 1) {
+      endTask(mob);
       return;
     }
 
-    if (player != null) {
-      if (displayTicks <= 0) {
-        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, "");
-        StrifePlugin.getInstance().getBossBarManager().updateBar(player, 3, "");
-      } else if (!targetDead && targetMob.get() != null) {
-        StrifePlugin.getInstance().getBossBarManager()
-            .updateBar(player, 3, createBarTitle(targetMob.get()));
-        int hpState = (int) (138f *
-            (targetMob.get().getEntity().getHealth()) / targetMob.get().getMaxLife());
-        int barrierState = (int) (138f *
-            (targetMob.get().getBarrier()) / targetMob.get().getMaxBarrier());
-        if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
-          lastHealthStage = hpState;
-          lastBarrierStage = barrierState;
-          String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138 - hpState);
-          if (barrierState > 0) {
-            s += GuiManager.BARRIER_BAR_TARGET.get(barrierState);
-          }
-          StrifePlugin.getInstance().getBossBarManager().updateBar(player, 2, s);
+    if (targetMob.get() != null) {
+      if (targetMob.get().getEntity().getWorld() != parentMob.get().getEntity().getWorld()) {
+        if ("Graveyard".equals(targetMob.get().getEntity().getWorld())) {
+          targetWasAlive = false;
+          updateStatus();
+          targetMob = new WeakReference<>(null);
+        } else {
+          clearBars();
+        }
+      } else {
+        updateStatus();
+        if (!targetWasAlive) {
+          targetMob = new WeakReference<>(null);
         }
       }
     }
   }
 
+  private void endTask(StrifeMob parent) {
+    CombatChangeEvent cce = new CombatChangeEvent(parent, NewCombatState.EXIT);
+    if (player != null) {
+      ToastUtils.sendToast(player, "Exited Combat...", exitStack, ToastStyle.INFO);
+      awardSkillExp(parent);
+      if (targetMob.get() != null && targetMob.get().getEntity().isValid()) {
+        clearBars();
+      }
+    }
+    Bukkit.getPluginManager().callEvent(cce);
+    cancel();
+    parent.endCombat();
+  }
+
+  private void updateStatus() {
+    if (player == null || targetMob.get() == null) {
+      return;
+    }
+    if (targetMob.get().getEntity().isValid()) {
+      manager.updateBar(player, 3, 0, createBarTitle(targetMob.get()), 9999999);
+      int hpState = (int) (138f * (targetMob.get().getEntity().getHealth()) / targetMob.get().getMaxLife());
+      int barrierState = (int) (138f * (targetMob.get().getBarrier()) / targetMob.get().getMaxBarrier());
+      if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
+        lastHealthStage = hpState;
+        lastBarrierStage = barrierState;
+        String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138 - hpState);
+        if (barrierState > 0) {
+          s += GuiManager.BARRIER_BAR_TARGET.get(barrierState);
+        }
+        manager.updateBar(player, 2, 0, s, 9999999);
+      }
+    } else if (targetWasAlive) {
+      targetWasAlive = false;
+      ticks = Math.max(DEATH_TICKS, ticks);
+      String title;
+      if (Math.random() < 0.025) {
+        title = DamageUtil.sillyDeathMsgs.get(random.nextInt(DamageUtil.sillyDeathMsgs.size()));
+      } else {
+        title = DamageUtil.deathMessage;
+      }
+      String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138);
+      manager.updateBar(player, 2, 0, s, 60);
+      manager.updateBar(player, 3, 0, title, 60);
+    }
+  }
+
+  private void clearBars() {
+    if (player == null) {
+      return;
+    }
+    manager.updateBar(player, 2, 0, "", 0);
+    manager.updateBar(player, 3, 0, "", 0);
+  }
+
   public void bump(StrifeMob mob) {
     if (mob != null) {
       targetMob = new WeakReference<>(mob);
+      targetWasAlive = mob.getEntity().isValid();
     }
     ticks = BUMP_TICKS;
-    displayTicks = BUMP_TICKS;
-    targetDead = false;
   }
 
   public void setPvp() {
@@ -150,7 +168,7 @@ public class CombatCountdownTask extends BukkitRunnable {
   private String createBarTitle(StrifeMob target) {
     String name;
     if (target.getEntity() instanceof Player) {
-      name = (target.getEntity().getName()) + ChatColor.GRAY + " Lv"
+      name = (target.getEntity().getName()) + FaceColor.LIGHT_GRAY + " Lv"
           + ((Player) target.getEntity()).getLevel();
     } else if (StringUtils.isNotBlank(target.getEntity().getCustomName())) {
       name = target.getEntity().getCustomName();
@@ -160,15 +178,15 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
     name += "   ";
     if (target.getStat(StrifeStat.BARRIER) > 0) {
-      name = name + ChatColor.WHITE + StrifePlugin.INT_FORMAT.format(target.getBarrier()) + "♡ ";
+      name = name + FaceColor.WHITE + StrifePlugin.INT_FORMAT.format(target.getBarrier()) + "♡ ";
     }
-    name = name + ChatColor.RED + StrifePlugin.INT_FORMAT.format(target.getEntity().getHealth())
+    name = name + FaceColor.RED + StrifePlugin.INT_FORMAT.format(target.getEntity().getHealth())
         + "♡";
     if (target.getFrost() > 100) {
-      name += "  " + ChatColor.AQUA + (target.getFrost() / 100) + "❄";
+      name += "  " + FaceColor.CYAN + (target.getFrost() / 100) + "❄";
     }
     if (target.getCorruption() > 0.9) {
-      name += "  " + ChatColor.DARK_PURPLE + (int) target.getCorruption() + "\uD83D\uDC80";
+      name += "  " + FaceColor.PURPLE + (int) target.getCorruption() + "\uD83D\uDC80";
     }
     return name;
   }

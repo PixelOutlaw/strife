@@ -132,8 +132,8 @@ public class Damage extends Effect {
     }
 
     StrifeMob finalTarget = target;
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
-        () -> DamageUtil.postDamage(caster, finalTarget, mods), 0L);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        DamageUtil.postDamage(caster, finalTarget, mods), 0L);
   }
 
   public float getDamageReductionRatio() {

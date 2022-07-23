@@ -35,13 +35,15 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler
   public void OnJoin(PlayerJoinEvent event) {
-    EveryTickTask.recentMoneyMap.put(event.getPlayer(), 10);
-    plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("bits-base",
-        EveryTickTask.moneyBackground.get(1), 72, 170, Alignment.CENTER));
     int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(event.getPlayer().getUniqueId());
     String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.YELLOW);
     plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("money-display",
-        new TextComponent(moneyString), divideAndConquerLength(money) * 5, 193, Alignment.RIGHT));
+        new TextComponent(moneyString), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
+
+    int gems = plugin.getPlayerPointsPlugin().getAPI().look(event.getPlayer().getUniqueId());
+    String gemString = plugin.getGuiManager().convertToGemFont(gems, ChatColor.LIGHT_PURPLE);
+    plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("gem-display",
+        new TextComponent(gemString), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
 
   @EventHandler
@@ -50,13 +52,10 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
     if (player == null || !player.isOnline()) {
       return;
     }
-    EveryTickTask.recentMoneyMap.put(player, 10);
-    plugin.getGuiManager().updateComponent(player, new GUIComponent("bits-base",
-        EveryTickTask.moneyBackground.get(1), 72, 170, Alignment.CENTER));
-    int money = (int) event.getNewValue();
+    int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(player.getUniqueId());
     String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.YELLOW);
     plugin.getGuiManager().updateComponent(player, new GUIComponent("money-display",
-        new TextComponent(moneyString), divideAndConquerLength(money) * 5, 193, Alignment.RIGHT));
+        new TextComponent(moneyString), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
   }
 
   @EventHandler
@@ -65,14 +64,10 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
     if (player == null || !player.isOnline()) {
       return;
     }
-    EveryTickTask.recentGemMap.put(player, 60);
-    plugin.getGuiManager().updateComponent(player, new GUIComponent("bits-base",
-        EveryTickTask.moneyBackground.get(2), 72, 170, Alignment.CENTER));
-    int money = plugin.getPlayerPointsPlugin().getAPI().look(player.getUniqueId());
-    money += event.getChange();
-    String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.LIGHT_PURPLE);
-    plugin.getGuiManager().updateComponent(player, new GUIComponent("money-display",
-        new TextComponent(moneyString), divideAndConquerLength(money) * 5, 193, Alignment.RIGHT));
+    int gems = plugin.getPlayerPointsPlugin().getAPI().look(player.getUniqueId());
+    String gemString = plugin.getGuiManager().convertToGemFont(gems, ChatColor.LIGHT_PURPLE);
+    plugin.getGuiManager().updateComponent(player, new GUIComponent("gem-display",
+        new TextComponent(gemString), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
 
   // This ugly function is surprisingly the most efficient way

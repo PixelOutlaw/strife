@@ -2,13 +2,11 @@ package land.face.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import eu.decentsoftware.holograms.api.DHAPI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.awt.Color;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
@@ -33,7 +31,8 @@ public class SoulManager {
   public SoulManager(StrifePlugin plugin) {
     this.plugin = plugin;
     deathWorlds.addAll(plugin.getSettings().getStringList("config.death-worlds"));
-    reviveMessage = plugin.getSettings().getString("language.generic.revive-exp-message", "");
+    reviveMessage = PaletteUtil.color(
+        plugin.getSettings().getString("language.generic.revive-exp-message", ""));
     soulName = plugin.getSettings().getString("language.generic.soul-name", "");
   }
 

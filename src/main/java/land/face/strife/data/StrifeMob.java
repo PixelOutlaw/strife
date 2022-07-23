@@ -34,6 +34,7 @@ import land.face.strife.tasks.InvincibleTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.tasks.RageTask;
+import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -128,6 +129,13 @@ public class StrifeMob {
     useEquipment = livingEntity instanceof Player;
     statCache.clear();
     statCache.putAll(getFinalStats());
+  }
+
+  public int getLevel() {
+    if (champion == null) {
+      return SpecialStatusUtil.getMobLevel(livingEntity.get());
+    }
+    return ((Player) livingEntity.get()).getLevel();
   }
 
   public boolean canAttack() {

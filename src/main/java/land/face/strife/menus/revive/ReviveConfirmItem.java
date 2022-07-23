@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.revive;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -60,8 +61,8 @@ public class ReviveConfirmItem extends MenuItem {
     }
     String name = StrifePlugin.getInstance().getSettings()
         .getString("language.revive.confirm-name", "dew it");
-    ItemStackExtensionsKt.setDisplayName(stack, StringExtensionsKt.chatColorize(name));
-    TextUtils.setLore(stack, newLore, true);
+    ItemStackExtensionsKt.setDisplayName(stack, PaletteUtil.color(name));
+    TextUtils.setLore(stack, PaletteUtil.color(newLore), false);
     stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     return stack;
   }

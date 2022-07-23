@@ -129,6 +129,7 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
     strifeMob.getEntity().setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
     strifeMob.getEntity().setMaximumAir((int) maxAir);
     StatUtil.getStat(strifeMob, StrifeStat.BARRIER);
+    StatUtil.getStat(strifeMob, StrifeStat.MAXIMUM_RAGE);
   }
 
   @SafeVarargs

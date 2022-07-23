@@ -109,8 +109,9 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    if (event.getAttacker().getEntity() instanceof Player
-        && event.getDefender().getEntity() instanceof Player) {
+    if (event.getAttacker().getEntity() instanceof Player &&
+        event.getDefender().getEntity() instanceof Player &&
+        (event.getAttacker() != event.getDefender())) {
       event.getAttacker().flagPvp();
       event.getDefender().flagPvp();
     }
@@ -334,8 +335,8 @@ public class CombatListener implements Listener {
       DamageUtil.applyBleed(defender, defender, bleed, true);
     }
 
-    Bukkit.getScheduler().runTaskLater(plugin,
-        () -> DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
 
     if (attackEntity instanceof Bee) {
       plugin.getDamageManager().dealDamage(attacker, defender,

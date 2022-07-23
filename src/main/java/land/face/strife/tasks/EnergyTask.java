@@ -94,10 +94,11 @@ public class EnergyTask extends BukkitRunnable {
   }
 
   public void addEnergyOverTime(float amount, int ticks) {
-    amount = (amount * TICKS_PER) / ticks;
+    int regenTicks = (int) Math.floor((float) ticks / TICKS_PER);
+    float regenValue = amount / regenTicks;
     RestoreData restoreData = new RestoreData();
-    restoreData.setAmount(amount);
-    restoreData.setTicks((int) ((float) ticks / TICKS_PER));
+    restoreData.setAmount(regenValue);
+    restoreData.setTicks(regenTicks);
     energyRestore.add(restoreData);
   }
 

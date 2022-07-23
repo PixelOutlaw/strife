@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -379,7 +380,7 @@ public class AbilityManager {
     if (ability.getGlobalCooldownTicks() > 0) {
       caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 50);
     }
-    if (ability.getCooldown() < 1) {
+    if (ability.getCooldown() < 0.5) {
       return;
     }
     if (!cdMap.containsKey(caster.getEntity())) {
@@ -566,8 +567,7 @@ public class AbilityManager {
     if (cs == null) {
       return;
     }
-    String name = StringExtensionsKt
-        .chatColorize(Objects.requireNonNull(cs.getString("name", key)));
+    String name = PaletteUtil.loadString(cs, "name", key);
     TargetType targetType;
     try {
       targetType = TargetType.valueOf(cs.getString("target-type"));
@@ -601,7 +601,8 @@ public class AbilityManager {
     }
     List<Effect> toggleOffEffects = plugin.getEffectManager().getEffects(toggleStrings);
 
-    int cooldown = cs.getInt("cooldown", 0);
+    float cooldown = (float) cs.getDouble("cooldown", 0);
+    float minCooldown = cs.getInt("min-cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);
@@ -628,7 +629,7 @@ public class AbilityManager {
     Ability ability = new Ability(key, name, effects, toggleOffEffects, abilityType, targetType,
         range, cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
         raycastsHitEntities, conditions, passivesOnCooldown, friendly, abilityIconData,
-        cancelStealth, deathUntoggle);
+        cancelStealth, deathUntoggle, minCooldown);
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
         cs.getConfigurationSection("passive-stats")));
@@ -645,10 +646,9 @@ public class AbilityManager {
       return null;
     }
     LogUtil.printDebug("Ability " + key + " has icon!");
-    String format = StringExtensionsKt.chatColorize(
-        Objects.requireNonNull(iconSection.getString("format", "&f&l")));
+    String format = PaletteUtil.loadString(iconSection, "format", "|white||b|");
     Material material = castType.getMaterial();
-    List<String> lore = ListExtensionsKt.chatColorize(iconSection.getStringList("lore"));
+    List<String> lore = PaletteUtil.loadStrings(iconSection, "lore");
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     TextUtils.setLore(icon, lore);

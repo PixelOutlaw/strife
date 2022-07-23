@@ -26,7 +26,7 @@ import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
@@ -80,7 +80,6 @@ import land.face.strife.listeners.DOTListener;
 import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DeluxeEquipListener;
-import land.face.strife.listeners.MountListener;
 import land.face.strife.listeners.DogeListener;
 import land.face.strife.listeners.DoubleJumpListener;
 import land.face.strife.listeners.EndermanListener;
@@ -96,6 +95,7 @@ import land.face.strife.listeners.LaunchAndLandListener;
 import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoneyDropListener;
+import land.face.strife.listeners.MountListener;
 import land.face.strife.listeners.RuneChangeListener;
 import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
@@ -191,6 +191,7 @@ public class StrifePlugin extends FacePlugin {
   private PluginLogger debugPrinter;
   private LogLevel logLevel;
   private MasterConfiguration settings;
+  @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
           pathYAML, abilityYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML;
   private SmartYamlConfiguration spawnerYAML;
@@ -288,8 +289,7 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private PlayerPoints playerPointsPlugin;
   @Getter
-  private com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager effectLibManager =
-      new com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager(this);
+  private com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager effectLibManager;
 
   public static float WALK_COST;
   public static float WALK_COST_PERCENT;
@@ -459,6 +459,8 @@ public class StrifePlugin extends FacePlugin {
     levelingRate = new LevelingRate();
     maxSkillLevel = settings.getInt("config.leveling.max-skill-level", 60);
 
+    effectLibManager = new com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager(this);
+
     Expression normalExpr = new ExpressionBuilder(settings.getString("config.leveling.formula",
         "(5+(2*LEVEL)+(LEVEL^1.2))*LEVEL")).variable("LEVEL").build();
     for (int i = 0; i < 200; i++) {
@@ -573,6 +575,7 @@ public class StrifePlugin extends FacePlugin {
       String title = abilityMenus.getString(menuId + ".title", "CONFIG ME");
       List<Ability> abilityList = abilities.stream().map(a -> abilityManager.getAbility(a))
           .collect(Collectors.toList());
+      abilityList.forEach((a)-> a.setHidden(false));
       AbilitySubmenu menu = new AbilitySubmenu(this, title, abilityList, returnButton);
       menu.setId(menuId);
       abilitySubmenus.put(menuId, menu);
@@ -924,8 +927,8 @@ public class StrifePlugin extends FacePlugin {
           continue;
         }
         String meModel = mountSection.getString("me-model", null);
-        String name = TextUtils.color(mountSection.getString("name", "No Name"));
-        List<String> lore = mountSection.getStringList("lore");
+        String name = PaletteUtil.color(mountSection.getString("name", "No Name"));
+        List<String> lore = PaletteUtil.color(mountSection.getStringList("lore"));
         float speed = (float) mountSection.getDouble("speed");
         float walkAnimationSpeed = (float) mountSection.getDouble("walk-animation-speed", 1.0);
         boolean flying = mountSection.getBoolean("flying", false);

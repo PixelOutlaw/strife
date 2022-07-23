@@ -45,7 +45,8 @@ public class CooldownTracker extends BukkitRunnable {
     this.holder = holder;
     this.ability = ability;
     float cdReduction = (float) Math.max(0.2, 1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
-    maxDuration = (int) (cdReduction * ability.getCooldown() * 20 / TICK_TIME);
+    float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
+    maxDuration = (int) (newCooldown * 20 / TICK_TIME);
     duration = maxDuration;
     chargesLeft = ability.getMaxCharges();
     startTime = System.currentTimeMillis();
@@ -89,7 +90,8 @@ public class CooldownTracker extends BukkitRunnable {
         StrifePlugin.getInstance().getServer().getPluginManager().callEvent(e);
       }
       float cdReduction = (float) Math.max(0.2, 1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
-      maxDuration = (int) (cdReduction * ability.getCooldown() * 20 / TICK_TIME);
+      float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
+      maxDuration = (int) (newCooldown * 20 / TICK_TIME);
       duration += maxDuration;
     }
     updateIcon();

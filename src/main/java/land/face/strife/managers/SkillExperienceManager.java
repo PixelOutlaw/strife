@@ -19,7 +19,9 @@
 package land.face.strife.managers;
 
 import com.comphenix.xp.lookup.LevelingRate;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
 import java.text.DecimalFormat;
@@ -34,9 +36,11 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.SkillExpGainEvent;
 import land.face.strife.events.SkillLevelUpEvent;
+import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class SkillExperienceManager {
@@ -66,19 +70,27 @@ public class SkillExperienceManager {
   public SkillExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
     MAX_SKILL_LEVEL = plugin.getSettings().getInt("config.leveling.max-skill-level", 50);
-    XP_MSG = plugin.getSettings()
-        .getString("language.skills.xp-msg", "{c}Gained &f{n} {c}XP! &f(+{a}XP)");
+    XP_MSG = PaletteUtil.color(plugin.getSettings().getString("language.skills.xp-msg", "{c}Gained |white|{n} {c}XP! |white|(+{a}XP)"));
     setupLevelingRates(plugin);
   }
 
-  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact,
-      boolean forceDisplay) {
-    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, amount, exact,
-        forceDisplay);
+  public void addExperience(Player player, LifeSkillType type, double amount, boolean exact, boolean forceDisplay) {
+    addExperience(player, type, null, amount, exact, forceDisplay);
+  }
+
+  public void addExperience(Player player, LifeSkillType type, Location location, double amount,
+      boolean exact, boolean forceDisplay) {
+    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, location, amount,
+        exact, forceDisplay);
   }
 
   public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact,
       boolean forceDisplay) {
+    addExperience(mob, type, null, amount, exact, forceDisplay);
+  }
+
+  public void addExperience(StrifeMob mob, LifeSkillType type, Location location, double amount,
+      boolean exact, boolean forceDisplay) {
     Player player = (Player) mob.getEntity();
     ChampionSaveData saveData = mob.getChampion().getSaveData();
     if (amount < 0.001) {
@@ -88,9 +100,13 @@ public class SkillExperienceManager {
       return;
     }
     if (!exact) {
-      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player)
-          .getStat(StrifeStat.SKILL_XP_GAIN) / 100;
+      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player).getStat(StrifeStat.SKILL_XP_GAIN) / 100;
       amount *= 1 + skillXpMult;
+    }
+    if (location != null) {
+      plugin.getIndicatorManager().addIndicator(mob.getEntity(), mob.getEntity(),
+          IndicatorStyle.FLOAT_UP_SLOW, 10,
+          type.getColor() + FaceColor.BOLD.s() + "+" + (int) amount + " " + type.getPrettyName() + " XP!");
     }
     if (saveData.isDisplayExp() || forceDisplay) {
       String xp = FORMAT.format(amount);
@@ -122,7 +138,7 @@ public class SkillExperienceManager {
       checkSkillUnlock(player, type);
     }
     saveData.setSkillExp(type, (float) currentExp);
-    plugin.getBossBarManager().updateBar(player, 1, buildSkillString(mob.getChampion(), type));
+    plugin.getBossBarManager().updateBar(player, 1, 0, buildSkillString(mob.getChampion(), type), 0);
   }
 
   private String buildSkillString(Champion champion, LifeSkillType skill) {
@@ -155,6 +171,9 @@ public class SkillExperienceManager {
   public void checkSkillUnlock(Player player, LifeSkillType skill) {
     Champion champion = plugin.getChampionManager().getChampion(player);
     for (Ability ability : plugin.getAbilityManager().getLoadedAbilities().values()) {
+      if (ability.isHidden()) {
+        continue;
+      }
       if (ability.getAbilityIconData() != null) {
         int reqLv = ability.getAbilityIconData().getLifeSkillRequirements().getOrDefault(skill, -1);
         if (reqLv == champion.getLifeSkillLevel(skill)) {

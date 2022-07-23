@@ -19,7 +19,7 @@ public class PopoffUtil {
         location.clone(), false, List.of(""));
     holo.hideAll();
     holo.addPage();
-    DHAPI.setHologramLines(holo, 1, List.of(text));
+    DHAPI.setHologramLines(holo, 1, List.of("\uF80F" + text + "\uF80F"));
     holo.show(player, 1);
 
     DamagePopoff indicator = new DamagePopoff();

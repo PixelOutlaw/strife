@@ -20,6 +20,7 @@ import static land.face.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class StatsOffenseMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
-    super(StringExtensionsKt.chatColorize("&6&lDamage Stats"), new ItemStack(Material.IRON_SWORD));
+    super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", new ItemStack(Material.IRON_SWORD));
     this.statsMenu = statsMenu;
   }
 
@@ -102,19 +103,19 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(addStat("Total Damage: ", total, INT_FORMAT));
     StringBuilder damageDisplay = new StringBuilder();
     if (physical > magical) {
-      addIfApplicable(damageDisplay, physical, ChatColor.RED, "⚔");
-      addIfApplicable(damageDisplay, magical, ChatColor.BLUE, "☄");
+      addIfApplicable(damageDisplay, physical, FaceColor.RED, "⚔");
+      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, "☄");
     } else {
-      addIfApplicable(damageDisplay, magical, ChatColor.BLUE, "☄");
-      addIfApplicable(damageDisplay, physical, ChatColor.RED, "⚔");
+      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, "☄");
+      addIfApplicable(damageDisplay, physical, FaceColor.RED, "⚔");
     }
-    addIfApplicable(damageDisplay, fire, ChatColor.GOLD, "\uD83D\uDD25");
-    addIfApplicable(damageDisplay, ice, ChatColor.AQUA, "❄");
-    addIfApplicable(damageDisplay, lightning, ChatColor.YELLOW, "⚡");
-    addIfApplicable(damageDisplay, earth, ChatColor.DARK_GREEN, "₪");
-    addIfApplicable(damageDisplay, light, ChatColor.WHITE, "❂");
-    addIfApplicable(damageDisplay, shadow, ChatColor.DARK_PURPLE, "☠");
-    addIfApplicable(damageDisplay, trueDmg, ChatColor.GRAY, "Ω");
+    addIfApplicable(damageDisplay, fire, FaceColor.ORANGE, "\uD83D\uDD25");
+    addIfApplicable(damageDisplay, ice, FaceColor.CYAN, "❄");
+    addIfApplicable(damageDisplay, lightning, FaceColor.YELLOW, "⚡");
+    addIfApplicable(damageDisplay, earth, FaceColor.GREEN, "₪");
+    addIfApplicable(damageDisplay, light, FaceColor.WHITE, "❂");
+    addIfApplicable(damageDisplay, shadow, FaceColor.PURPLE, "☠");
+    addIfApplicable(damageDisplay, trueDmg, FaceColor.LIGHT_GRAY, "Ω");
     lore.add(damageDisplay.toString());
     float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
     if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT) || critMult < 0.1) {
@@ -211,19 +212,19 @@ public class StatsOffenseMenuItem extends MenuItem {
     super.onItemClick(event);
   }
 
-  private static void addIfApplicable(StringBuilder builder, float value, ChatColor color, String symbol) {
+  private static void addIfApplicable(StringBuilder builder, float value, FaceColor color, String symbol) {
     if (value < 0.5) {
       return;
     }
-    builder.append(color).append(" ").append((int) value).append(symbol);
+    builder.append(color.s()).append(" ").append((int) value).append(symbol);
   }
 
   private String addStat(String name, double value, DecimalFormat format) {
-    return ChatColor.GOLD + name + ChatColor.WHITE + format.format(value);
+    return FaceColor.ORANGE.getColor() + name + FaceColor.WHITE.getColor() + format.format(value);
   }
 
   private String addStat(String name, double value, String extra, DecimalFormat format) {
-    return ChatColor.GOLD + name + ChatColor.WHITE + format.format(value) + extra;
+    return FaceColor.ORANGE.getColor() + name + FaceColor.WHITE.getColor() + format.format(value) + extra;
   }
 
   private String plus(double num) {

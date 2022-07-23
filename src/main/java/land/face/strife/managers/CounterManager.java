@@ -16,6 +16,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class CounterManager {
     counterSound = Sound.valueOf(plugin.getSettings()
         .getString("config.mechanics.counter.sound", "ENCHANT_THORNS_HIT"));
     pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
-    COUNTER_MESSAGE = StringExtensionsKt.chatColorize(
+    COUNTER_MESSAGE = PaletteUtil.color(
         plugin.getSettings().getString("language.status.counter-message", "&3&lCountered!"));
   }
 

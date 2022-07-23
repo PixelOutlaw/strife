@@ -90,8 +90,8 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getBossBarManager().createBars(event.getPlayer());
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().pushCloseSkills(champion);
-      plugin.getBossBarManager().updateBar(event.getPlayer(), 1,
-          plugin.getSkillExperienceManager().updateSkillString(champion));
+      plugin.getBossBarManager().updateBar(event.getPlayer(), 1, 0,
+          plugin.getSkillExperienceManager().updateSkillString(champion), 0);
     }, 33L);
 
     plugin.getGuiManager().updateLevelDisplay(event.getPlayer());

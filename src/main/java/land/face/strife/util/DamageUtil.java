@@ -19,6 +19,7 @@ import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
@@ -126,9 +127,9 @@ public class DamageUtil {
 
     PVP_MULT = (float) plugin.getSettings()
         .getDouble("config.mechanics.pvp-multiplier", 0.5);
-    ATTACK_BLOCKED = StringExtensionsKt.chatColorize(plugin.getSettings()
+    ATTACK_BLOCKED = PaletteUtil.color(plugin.getSettings()
         .getString("language.status.block-message", "&e&lBlocked!"));
-    ATTACK_DODGED = StringExtensionsKt.chatColorize(plugin.getSettings()
+    ATTACK_DODGED = PaletteUtil.color(plugin.getSettings()
         .getString("language.status.evade-message", "&7&l&oDodge!"));
 
     BASE_RECHARGE_TICKS = plugin.getSettings()
@@ -141,9 +142,9 @@ public class DamageUtil {
     PERCENT_BARRIER_PER_SECOND = (float) plugin.getSettings()
         .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
 
-    deathMessage = StringExtensionsKt.chatColorize(plugin.getSettings()
+    deathMessage = PaletteUtil.color(plugin.getSettings()
         .getString("language.enemy-killed-title"));
-    sillyDeathMsgs = ListExtensionsKt.chatColorize(plugin.getSettings()
+    sillyDeathMsgs = PaletteUtil.color(plugin.getSettings()
         .getStringList("language.silly-enemy-killed-titles"));
   }
 
@@ -1056,7 +1057,7 @@ public class DamageUtil {
           TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER),
           (int) reflectDamage, 0.3, 0.3,
           0.3, 0.1);
-      if (defender.getEntity() instanceof Player) {
+      if (defender.getEntity() instanceof Player && attacker != defender) {
         attacker.flagPvp();
         defender.flagPvp();
       }

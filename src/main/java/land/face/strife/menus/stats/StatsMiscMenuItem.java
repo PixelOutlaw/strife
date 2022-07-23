@@ -21,6 +21,8 @@ import static land.face.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +45,7 @@ public class StatsMiscMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   StatsMiscMenuItem(StatsMenu statsMenu) {
-    super(StringExtensionsKt.chatColorize("&3&lMiscellaneous Stats"), new ItemStack(Material.DIAMOND_BOOTS));
+    super(FaceColor.TEAL.s() + FaceColor.BOLD.getColor() + "Miscellaneous Stats", new ItemStack(Material.DIAMOND_BOOTS));
     this.statsMenu = statsMenu;
   }
 
@@ -60,39 +62,39 @@ public class StatsMiscMenuItem extends MenuItem {
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
-    lore.add(ChatColor.DARK_AQUA + "Maximum Energy: " + ChatColor.WHITE + INT_FORMAT.format(mob.getMaxEnergy()));
+    lore.add(FaceColor.TEAL.getColor() + "Maximum Energy: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(mob.getMaxEnergy()));
     if (!mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
-      lore.add(ChatColor.DARK_AQUA + "Energy Regeneration: " + ChatColor.WHITE + ONE_DECIMAL
+      lore.add(FaceColor.TEAL.getColor() + "Energy Regeneration: " + FaceColor.WHITE.getColor() + ONE_DECIMAL
           .format(mob.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
     }
     if (mob.getStat(StrifeStat.ENERGY_ON_HIT) > 0) {
-      lore.add(ChatColor.DARK_AQUA + "Energy On Hit: " + ChatColor.WHITE + INT_FORMAT.format(
+      lore.add(FaceColor.TEAL.getColor() + "Energy On Hit: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
           mob.getStat(StrifeStat.ENERGY_ON_HIT)));
     }
     if (mob.getStat(StrifeStat.ENERGY_ON_KILL) > 0) {
-      lore.add(ChatColor.DARK_AQUA + "Energy On Kill: " + ChatColor.WHITE + INT_FORMAT.format(
+      lore.add(FaceColor.TEAL.getColor() + "Energy On Kill: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
           mob.getStat(StrifeStat.ENERGY_ON_KILL)));
     }
     if (mob.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0) {
-      lore.add(ChatColor.DARK_AQUA + "Energy When Hit: " + ChatColor.WHITE + INT_FORMAT.format(
+      lore.add(FaceColor.TEAL.getColor() + "Energy When Hit: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
           mob.getStat(StrifeStat.ENERGY_WHEN_HIT)));
     }
     lore.add(breakLine);
-    lore.add(ChatColor.DARK_AQUA + "Movement Speed: " + ChatColor.WHITE + INT_FORMAT.format(
+    lore.add(FaceColor.TEAL.getColor() + "Movement Speed: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         mob.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);
-    lore.add(ChatColor.DARK_AQUA + "Cooldown Reduction: " + ChatColor.WHITE
+    lore.add(FaceColor.TEAL.getColor() + "Cooldown Reduction: " + FaceColor.WHITE.getColor()
         + INT_FORMAT.format(mob.getStat(StrifeStat.COOLDOWN_REDUCTION)) + "%");
-    lore.add(ChatColor.DARK_AQUA + "Effect Duration: " + ChatColor.WHITE + INT_FORMAT.format(
+    lore.add(FaceColor.TEAL.getColor() + "Effect Duration: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.EFFECT_DURATION)) + "%");
-    lore.add(ChatColor.DARK_AQUA + "Healing Power: " + ChatColor.WHITE + INT_FORMAT.format(
+    lore.add(FaceColor.TEAL.getColor() + "Healing Power: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.HEALING_POWER)) + "%");
     lore.add(breakLine);
-    lore.add(ChatColor.DARK_AQUA + "Life From Potions: " + ChatColor.WHITE + INT_FORMAT.format(
+    lore.add(FaceColor.TEAL.getColor() + "Life From Potions: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.LIFE_FROM_POTIONS)) + "%");
-    lore.add(ChatColor.DARK_AQUA + "Energy From Potions: " + ChatColor.WHITE + INT_FORMAT.format(
+    lore.add(FaceColor.TEAL.getColor() + "Energy From Potions: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.ENERGY_FROM_POTIONS)) + "%");
-    lore.add(ChatColor.DARK_AQUA + "Potion Refill Speed: " + ChatColor.WHITE + INT_FORMAT.format(
+    lore.add(FaceColor.TEAL.getColor() + "Potion Refill Speed: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.POTION_REFILL)) + "%");
 
     lore.add(breakLine);
@@ -100,14 +102,14 @@ public class StatsMiscMenuItem extends MenuItem {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
       lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
     }
-    lore.add(ChatColor.DARK_AQUA + "Crafting Skill Bonus: " + ChatColor.WHITE + "+" +
+    lore.add(FaceColor.TEAL.getColor() + "Crafting Skill Bonus: " + FaceColor.WHITE.getColor() + "+" +
         INT_FORMAT.format(mob.getStat(StrifeStat.CRAFT_SKILL)));
-    lore.add(ChatColor.DARK_AQUA + "Enchanting Skill Bonus: " + ChatColor.WHITE + "+" +
+    lore.add(FaceColor.TEAL.getColor() + "Enchanting Skill Bonus: " + FaceColor.WHITE.getColor() + "+" +
         INT_FORMAT.format(mob.getStat(StrifeStat.ENCHANT_SKILL)));
 
     lore.add(breakLine);
 
-    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(PaletteUtil.color("|dgray||i|Use |lgray||i|/help stats |dgray||i|for info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

@@ -20,6 +20,7 @@ package land.face.strife.listeners;
 
 import com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -85,8 +86,8 @@ public class ShootListener implements Listener {
     flintlockFlare = buildFlintlockFlare();
     flintlockHitscan = buildFlintlockHitscan();
 
-    quiverTip = plugin.getSettings().getString("language.shooting.quiver-tip", "need quiver bro");
-    pistolTip = plugin.getSettings().getString("language.shooting.pistol-tip", "need quiver bro");
+    quiverTip = PaletteUtil.color(plugin.getSettings().getString("language.shooting.quiver-tip", "need quiver bro"));
+    pistolTip = PaletteUtil.color(plugin.getSettings().getString("language.shooting.pistol-tip", "need quiver bro"));
   }
 
   @EventHandler(priority = EventPriority.HIGH)
@@ -164,13 +165,19 @@ public class ShootListener implements Listener {
         ((LivingEntity) event.getEntity().getShooter()).swingMainHand();
         ProjectileUtil.shootWand(mob, 1);
         event.setCancelled(true);
+        return;
       } else if (ItemUtil.isPistol(weapon)) {
         doPistolShot(mob, 1f);
         event.setCancelled(true);
+        return;
       } else if (event.getEntity() instanceof Arrow) {
         ProjectileUtil.shootArrow(mob, 1f);
         event.setCancelled(true);
+        return;
       }
+
+      ProjectileUtil.setShotId(event.getEntity());
+      ProjectileUtil.bumpShotId();
     }
   }
 

@@ -23,6 +23,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
@@ -55,7 +56,6 @@ import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.EloUtil;
-import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.TargetingUtil;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -167,11 +167,11 @@ public class StrifeCommand extends BaseCommand {
 
   @Subcommand("notif")
   @CommandCompletion("@players SNEED")
-  @Syntax("<player> <fadeIn> <duration> <fadeOut> <message>")
+  @Syntax("<player> <duration> <priority> <message>")
   @CommandPermission("strife.admin")
-  public void sendNotif(CommandSender sender, OnlinePlayer target, int in, int stay, int out, @Default("sneed") String message) {
-    message = PlayerDataUtil.convertToSuperscript(TextUtils.color(message));
-    target.getPlayer().sendTitle(message, "", in, stay, out);
+  public void sendNotif(CommandSender sender, OnlinePlayer target,
+      @Default("20") int duration, @Default("0") int priority, @Default("sneed") String message) {
+    plugin.getBossBarManager().updateBar(target.getPlayer(), 5, priority, TextUtils.color(message), duration);
   }
 
   @Subcommand("defeat")
@@ -184,8 +184,8 @@ public class StrifeCommand extends BaseCommand {
     ChampionSaveData loseData = plugin.getChampionManager().getChampion(loser.getPlayer())
         .getSaveData();
 
-    EloResponse response = EloUtil
-        .getEloChange(winData.getPvpScore(), loseData.getPvpScore(), (float) weight);
+    EloResponse response = EloUtil.getEloChange(winData.getPvpScore(),
+        loseData.getPvpScore(), (float) weight);
 
     float winDiff = response.getNewWinnerValue() - winData.getPvpScore();
     float loseDiff = response.getNewLoserValue() - loseData.getPvpScore();
@@ -210,8 +210,8 @@ public class StrifeCommand extends BaseCommand {
   @CommandPermission("strife.admin")
   public void reloadCommand(CommandSender sender) {
     for (Player p : Bukkit.getOnlinePlayers()) {
-      MessageUtils.sendMessage(p,
-          "&a&o&lATTENTION GAMER: &a&oThe RPG plugin is being reloaded, maybe to add things, maybe because a GM is being a dingus. Please wait...");
+      MessageUtils.sendMessage(p, FaceColor.LIME + FaceColor.BOLD.s() +
+          "ATTENTION GAMER: &a&oThe RPG plugin is being reloaded, maybe to add things, maybe because a GM is being a dingus. Please wait...");
     }
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       // Save player data before reload continues
@@ -224,8 +224,8 @@ public class StrifeCommand extends BaseCommand {
         plugin.getStatUpdateManager().updateAllAttributes(player);
       }
       for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p,
-            "&a&o&lATTENTION GAMER: &a&oOkay we're back now thanks for waiting :)");
+        MessageUtils.sendMessage(p, FaceColor.LIGHT_GREEN + FaceColor.BOLD.s() +
+            "ATTENTION GAMER: Okay we're back now thanks for waiting :)");
       }
       sendMessage(sender,
           plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
@@ -269,12 +269,13 @@ public class StrifeCommand extends BaseCommand {
           sendMessage(sender, " " + goal.getKey().getNamespacedKey()));
     }
     sendMessage(sender, "Guild: " + targetMob.getAlliedGuild());
-    String statDump = "&aStats: ";
+    StringBuilder statDump = new StringBuilder("&aStats: ");
     for (StrifeStat strifeStat : targetMob.getFinalStats().keySet()) {
-      statDump += "&f[" + ChatColor.DARK_GREEN + strifeStat.toString() +
-          "&7:" + ChatColor.YELLOW + Math.round(targetMob.getFinalStats().get(strifeStat)) + "&f] ";
+      statDump.append("&f[").append(ChatColor.DARK_GREEN).append(strifeStat.toString())
+          .append("&7:").append(ChatColor.YELLOW)
+          .append(Math.round(targetMob.getFinalStats().get(strifeStat))).append("&f] ");
     }
-    sendMessage(sender, statDump);
+    sendMessage(sender, statDump.toString());
     if (targets.get(0).getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
       sendMessage(sender, "&9MoveAttr: " + targets.get(0).getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue());
     }
@@ -553,8 +554,8 @@ public class StrifeCommand extends BaseCommand {
     }
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     plugin.getChampionManager().updateRecentSkills(champion, type);
-    plugin.getBossBarManager().updateBar(target.getPlayer(), 1,
-        plugin.getSkillExperienceManager().updateSkillString(champion));
+    plugin.getBossBarManager().updateBar(target.getPlayer(), 1, 0,
+        plugin.getSkillExperienceManager().updateSkillString(champion), 0);
     MessageUtils.sendMessage(sender, "&aSent recent skill");
   }
 

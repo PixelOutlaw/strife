@@ -8,21 +8,22 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.PlayerMountManager;
 import lombok.Getter;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class MountTask extends BukkitRunnable {
 
   private final PlayerMountManager manager;
   @Getter
-  private final UUID playerUUID;
+  private final WeakReference<Player> player;
   @Getter
   private final WeakReference<StrifeMob> mount;
   @Getter
   private final ActiveModel model;
 
-  public MountTask(PlayerMountManager manager, UUID playerUUID, StrifeMob mount,
+  public MountTask(PlayerMountManager manager, Player player, StrifeMob mount,
       ActiveModel model) {
-    this.playerUUID = playerUUID;
+    this.player = new WeakReference<>(player);
     this.manager = manager;
     this.mount = new WeakReference<>(mount);
     this.model = model;
@@ -31,6 +32,7 @@ public class MountTask extends BukkitRunnable {
 
   @Override
   public void run() {
+    UUID playerUUID = player.get().getUniqueId();
     if (mount.get() == null || mount.get().getEntity() == null || !mount.get().getEntity()
         .isValid()) {
       manager.despawn(playerUUID);
@@ -49,6 +51,11 @@ public class MountTask extends BukkitRunnable {
     }
     Material material = mount.get().getEntity().getLocation().getBlock().getType();
     if (material == Material.WATER || material == Material.LAVA) {
+      manager.despawn(playerUUID);
+      return;
+    }
+    Material material2 = player.get().getEyeLocation().getBlock().getType();
+    if (material2.isSolid()) {
       manager.despawn(playerUUID);
     }
   }

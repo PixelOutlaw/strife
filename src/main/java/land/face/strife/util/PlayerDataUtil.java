@@ -1,5 +1,7 @@
 package land.face.strife.util;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,45 +36,45 @@ public class PlayerDataUtil {
 
   public static LoadedKnowledge loadMobKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
-    String name = TextUtils.color(knowledgeSection.getString("name",
-        ChatColor.GRAY + key + "(WORK IN PROGRESS)"));
-    String lore1 = TextUtils.color("&4&l&nMob Info (Offense)\n\n" +
-        knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    String lore2 = TextUtils.color("&4&l&nMob Info (Defense)\n\n" +
-        knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    String lore3 = TextUtils.color("&4&l&nMob Info (Stats)\n\n" +
-        knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
+    String name = PaletteUtil.color(knowledgeSection.getString("name",
+        FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
+    String lore1 = PaletteUtil.color("|red||b||ul|Mob Info (Offense)\n\n" +
+        knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+    String lore2 = PaletteUtil.color("|red||b||ul|Mob Info (Defense)\n\n" +
+        knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+    String lore3 = PaletteUtil.color("|red||b||ul|Mob Info (Stats)\n\n" +
+        knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
     List<String> desc = new ArrayList<>();
     desc.add("");
-    desc.add("&fKnowledge Type: &cCombat");
-    desc.add("&fEnemy Level: &e" + weight);
+    desc.add("|white|Knowledge Type: |red|Combat");
+    desc.add("|white|Enemy Level: |yellow|" + weight);
     desc.add("");
-    desc.add("&7Click to view what you've");
-    desc.add("&7learned from this enemy!");
+    desc.add("|gray|Click to view what you've");
+    desc.add("|gray|learned from this enemy!");
     desc.add("");
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
     int threshold3 = knowledgeSection.getInt("rank-3", 1000);
     LoadedKnowledge mobKnowledge = new LoadedKnowledge(
         key, name, weight, threshold1, threshold2, threshold3,
-        lore1, lore2, lore3, TextUtils.color(desc));
+        lore1, lore2, lore3, PaletteUtil.color(desc));
     mobKnowledge.setSource("strife");
     return mobKnowledge;
   }
 
   public static LoadedKnowledge loadModKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
-    String name = TextUtils.color(knowledgeSection.getString("name", ChatColor.GRAY + key + "(WORK IN PROGRESS)"));
-    String lore1 = TextUtils.color(knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    String lore2 = TextUtils.color(knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    String lore3 = TextUtils.color(knowledgeSection.getString("lore1", "&0Sadly, there's nothing here!"));
-    List<String> desc = TextUtils.color(knowledgeSection.getStringList("desc"));
+    String name = PaletteUtil.color(knowledgeSection.getString("name", FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
+    String lore1 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+    String lore2 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+    String lore3 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+    List<String> desc = PaletteUtil.color(knowledgeSection.getStringList("desc"));
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
     int threshold3 = knowledgeSection.getInt("rank-3", 1000);
     LoadedKnowledge mobKnowledge = new LoadedKnowledge(
         key, name, weight, threshold1, threshold2, threshold3,
-        lore1, lore2, lore3, TextUtils.color(desc));
+        lore1, lore2, lore3, PaletteUtil.color(desc));
     mobKnowledge.setSource("strife");
     return mobKnowledge;
   }

@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ public class ConfirmationCancelItem extends MenuItem {
   private static final String DISPLAY_NAME = StringExtensionsKt.chatColorize("&c&nDiscard Changes");
   private static final ItemStack DISPLAY_ICON = new ItemStack(Material.BARRIER);
   private static final String[] DISPLAY_LORE = {
-      ChatColor.GRAY + "Click here to discard",
-      ChatColor.GRAY + "your attribute changes"
+      FaceColor.LIGHT_GRAY.getColor() + "Click here to discard",
+      FaceColor.LIGHT_GRAY.getColor() + "your attribute changes"
   };
   private final StrifePlugin plugin;
 

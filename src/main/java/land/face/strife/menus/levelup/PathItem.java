@@ -79,29 +79,28 @@ public class PathItem extends MenuItem {
       event.setWillUpdate(false);
       return;
     }
-    event.setWillClose(true);
-    Bukkit.getScheduler().scheduleSyncDelayedTask(StrifePlugin.getInstance(), () -> {
-      if (event.getPlayer() != null && event.getPlayer().isValid()) {
-        plugin.getPathMenu(path).open(event.getPlayer());
-      }
-    }, 2L);
+    event.setWillClose(false);
+    plugin.getPathMenu(path).open(event.getPlayer());
   }
 
   private void buildPathIcon(Path path) {
     List<String> lore = new ArrayList<>();
-    lore.add(TextUtils.color("&f&oThis choice may be made at level " + levelRequirement));
-    lore.addAll(TextUtils.getLore(plugin.getPathManager().getIcon(path, Choice.OPTION_1)));
-    lore.addAll(TextUtils.getLore(plugin.getPathManager().getIcon(path, Choice.OPTION_2)));
-    lore.addAll(TextUtils.getLore(plugin.getPathManager().getIcon(path, Choice.OPTION_3)));
+    lore.add("&f&oThis choice may be made at level " + levelRequirement);
+    lore.addAll(TextUtils.color(
+        plugin.getPathManager().getLevelPath(path, Choice.OPTION_1).getLore()));
+    lore.addAll(TextUtils.color(
+        plugin.getPathManager().getLevelPath(path, Choice.OPTION_2).getLore()));
+    lore.addAll(TextUtils.color(
+        plugin.getPathManager().getLevelPath(path, Choice.OPTION_3).getLore()));
 
     lockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(lockedIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
     ItemStackExtensionsKt.setCustomModelData(lockedIcon, 200);
-    TextUtils.setLore(lockedIcon, lore);
+    TextUtils.setLore(lockedIcon, TextUtils.color(lore));
 
     unlockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(unlockedIcon, TextUtils.color("&f&l&nClick to choose your path!"));
     ItemStackExtensionsKt.setCustomModelData(unlockedIcon, 201);
-    TextUtils.setLore(unlockedIcon, lore);
+    TextUtils.setLore(unlockedIcon, TextUtils.color(lore));
   }
 }

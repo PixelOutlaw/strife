@@ -18,8 +18,6 @@
  */
 package land.face.strife.tasks;
 
-import static land.face.strife.listeners.CurrencyChangeListener.divideAndConquerLength;
-
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
@@ -30,26 +28,18 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.util.JumpUtil;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.nunnerycode.mint.MintPlugin;
 
 public class EveryTickTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
   public static final Map<Player, Integer> recentMoneyMap = new WeakHashMap<>();
   public static final Map<Player, Integer> recentGemMap = new WeakHashMap<>();
-
-  public static final List<TextComponent> moneyBackground = List.of(
-      new TextComponent("錢"),
-      new TextComponent("₿"),
-      new TextComponent("௹")
-  );
 
   private final List<TextComponent> attackIndication = List.of(
       new TextComponent("码"),
@@ -107,22 +97,6 @@ public class EveryTickTask extends BukkitRunnable {
         String hpString = plugin.getGuiManager().convertToHpDisplay((int) (life + barrier));
         String energyString = plugin.getGuiManager().convertToEnergyDisplayFont((int) mob.getEnergy());
 
-        if (recentGemMap.getOrDefault(p, 0) > 0) {
-          recentGemMap.put(p, recentGemMap.get(p) - 1);
-        } else if (recentMoneyMap.getOrDefault(p, 0) > 0) {
-          recentMoneyMap.put(p, recentMoneyMap.get(p) - 1);
-        } else {
-          if (recentMoneyMap.containsKey(p) || recentGemMap.containsKey(p)) {
-            recentMoneyMap.remove(p);
-            recentGemMap.remove(p);
-            gui.update(new GUIComponent("bits-base", moneyBackground.get(0),
-                72, 170, Alignment.CENTER));
-            int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(p.getUniqueId());
-            String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.YELLOW);
-            plugin.getGuiManager().updateComponent(p, new GUIComponent("money-display",
-                new TextComponent(moneyString), divideAndConquerLength(money) * 5, 193, Alignment.RIGHT));
-          }
-        }
         gui.update(new GUIComponent("life-display", new TextComponent(hpString),
             hpString.length() * 8, 0, Alignment.CENTER));
         gui.update(new GUIComponent("energy-display", new TextComponent(energyString),

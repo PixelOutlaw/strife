@@ -1,6 +1,7 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
@@ -368,8 +369,7 @@ public class UniqueEntityManager {
         }
 
         uniqueEntity.setId(entityNameKey);
-        uniqueEntity.setName(StringExtensionsKt.chatColorize(Objects.requireNonNull(
-            cs.getString("name", "&fSET &cA &9NAME"))));
+        uniqueEntity.setName(PaletteUtil.color(cs.getString("name", "|white|SET |red|A NAME")));
         uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
         uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
         uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
@@ -463,14 +463,14 @@ public class UniqueEntityManager {
           LoadedKnowledge loadedKnowledge = PlayerDataUtil
               .loadMobKnowledge(entityNameKey, uniqueEntity.getBaseLevel(), section);
           loadedKnowledge.getPerkOne().clear();
-          loadedKnowledge.getPerkOne().add("&8◇ -10% Dmg From This Mob");
-          loadedKnowledge.getPerkOne().add("&e◆ -10% Dmg From This Mob");
+          loadedKnowledge.getPerkOne().add(PaletteUtil.color("|dgray|◇ -10% Dmg From This Mob"));
+          loadedKnowledge.getPerkOne().add(PaletteUtil.color("|yellow|◆ -10% Dmg From This Mob"));
           loadedKnowledge.getPerkTwo().clear();
-          loadedKnowledge.getPerkTwo().add("&8◇ +10% Dmg To This Mob");
-          loadedKnowledge.getPerkTwo().add("&e◆ +10% Dmg To This Mob");
+          loadedKnowledge.getPerkTwo().add(PaletteUtil.color("|dgray|◇ +10% Dmg To This Mob"));
+          loadedKnowledge.getPerkTwo().add(PaletteUtil.color("|yellow|◆ +10% Dmg To This Mob"));
           loadedKnowledge.getPerkThree().clear();
-          loadedKnowledge.getPerkThree().add("&8◇ +10% Loot From This Mob");
-          loadedKnowledge.getPerkThree().add("&e◆ +10% Loot From This Mob");
+          loadedKnowledge.getPerkThree().add(PaletteUtil.color("|dgray|◇ +10% Loot From This Mob"));
+          loadedKnowledge.getPerkThree().add(PaletteUtil.color("|yellow|◆ +10% Loot From This Mob"));
           knowledge.add(loadedKnowledge);
         }
         if (loadedUniquesMap.containsKey(entityNameKey)) {

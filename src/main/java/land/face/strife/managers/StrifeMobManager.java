@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 import static org.bukkit.inventory.EquipmentSlot.HAND;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.WeakHashMap;
 import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.ItemDataBundle;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.EquipmentCache;
@@ -47,10 +49,12 @@ public class StrifeMobManager {
     levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
     baseAirTicks = plugin.getSettings().getInt("config.mechanics.base-oxygen-ticks", 300);
     for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
-      levelReqMap.put(slot.toString(), plugin.getSettings().getString("language.level-req." + slot, ""));
+      levelReqMap.put(slot.toString(), PaletteUtil.color(
+          plugin.getSettings().getString("language.level-req." + slot, "")));
     }
     for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
-      levelReqMap.put(slot.toString(), plugin.getSettings().getString("language.level-req." + slot, ""));
+      levelReqMap.put(slot.toString(), PaletteUtil.color(
+          plugin.getSettings().getString("language.level-req." + slot, "")));
     }
   }
 
@@ -134,7 +138,9 @@ public class StrifeMobManager {
     if (!ItemUtil.doesHashMatch(handItem, equipmentCache.getSlotHash("HAND"))) {
       updateItems.put("HAND", handItem);
     }
+    boolean isPlayer = false;
     if (mob.getEntity() instanceof Player) {
+      isPlayer = true;
       invyData = plugin.getDeluxeInvyPlugin().getPlayerManager()
           .getPlayerData(((Player) mob.getEntity()).getPlayer());
       for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
@@ -155,127 +161,88 @@ public class StrifeMobManager {
     } else if (updateItems.containsKey("OFF_HAND")) {
       updateItems.put("HAND", handItem);
     }
-
     for (String slot : updateItems.keySet()) {
       ItemStack item = updateItems.get(slot);
       equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
-      equipmentCache.setSlotStats(slot, getItemStats(slot, equipment, invyData));
-      if (clearStatsIfReqNotMet(mob, slot, equipmentCache)) {
+      ItemDataBundle dataBundle = getItemInfo(slot, equipment, invyData);
+      if (isPlayer && !ItemUtil.meetsLevelRequirement(item, mob.getLevel())) {
+        sendMessage(mob.getEntity(), levelReqMap.get(slot));
+        sendMessage(mob.getEntity(), levelReqGeneric);
+        equipmentCache.clearSlot(slot);
         continue;
       }
-      equipmentCache.setSlotAbilities(slot, getItemAbilities(slot, equipment, invyData));
-      equipmentCache.setSlotTraits(slot, getItemTraits(slot, equipment, invyData));
-      ItemUtil.isTool(item);
+      equipmentCache.setSlotStats(slot, dataBundle.getStats());
+      equipmentCache.setSlotAbilities(slot, dataBundle.getAbilities());
+      equipmentCache.setSlotTraits(slot, dataBundle.getTraits());
     }
-
     if (updateItems.containsKey("HAND") && ItemUtil.isDualWield(equipment)) {
       applyDualWieldStatChanges(equipmentCache, "HAND");
       applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
     }
-
     equipmentCache.recombine(mob);
   }
 
-  private Set<LoreAbility> getItemAbilities(String slot, EntityEquipment equipment,
+  private ItemDataBundle getItemInfo(String slot, EntityEquipment equipment,
       PlayerData invyData) {
+    ItemDataBundle dataBundle = new ItemDataBundle();
     switch (slot) {
       case "HAND" -> {
         if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashSet<>();
+          dataBundle.setStats(new HashMap<>());
+          dataBundle.setTraits(new HashSet<>());
+          dataBundle.setAbilities(new HashSet<>());
+          return dataBundle;
         }
-        return plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand());
+        dataBundle.setStats(plugin.getStatUpdateManager()
+            .getItemStats(equipment.getItemInMainHand()));
+        dataBundle.setAbilities(plugin.getLoreAbilityManager()
+            .getAbilities(equipment.getItemInMainHand()));
+        dataBundle.setTraits(ItemUtil.getTraits(equipment.getItemInMainHand()));
+        return dataBundle;
       }
       case "OFF_HAND" -> {
         if (invyData == null) {
-          return new HashSet<>();
+          dataBundle.setStats(new HashMap<>());
+          dataBundle.setTraits(new HashSet<>());
+          dataBundle.setAbilities(new HashSet<>());
+          return dataBundle;
         }
         ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
         if (offhandItem == null) {
-          return new HashSet<>();
+          dataBundle.setStats(new HashMap<>());
+          dataBundle.setTraits(new HashSet<>());
+          dataBundle.setAbilities(new HashSet<>());
+          return dataBundle;
         }
         if (ItemUtil.isArmor(offhandItem.getType())) {
-          return new HashSet<>();
+          dataBundle.setStats(new HashMap<>());
+          dataBundle.setTraits(new HashSet<>());
+          dataBundle.setAbilities(new HashSet<>());
+          return dataBundle;
         }
         if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
-          return new HashSet<>();
+          dataBundle.setStats(new HashMap<>());
+          dataBundle.setTraits(new HashSet<>());
+          dataBundle.setAbilities(new HashSet<>());
+          return dataBundle;
         }
-        return plugin.getLoreAbilityManager().getAbilities(offhandItem);
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(offhandItem));
+        dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(offhandItem));
+        dataBundle.setTraits(ItemUtil.getTraits(offhandItem));
+        return dataBundle;
       }
       default -> {
         if (invyData == null) {
-          return new HashSet<>();
+          dataBundle.setStats(new HashMap<>());
+          dataBundle.setTraits(new HashSet<>());
+          dataBundle.setAbilities(new HashSet<>());
+          return dataBundle;
         }
-        return plugin.getLoreAbilityManager()
-            .getAbilities(invyData.getEquipmentItem(DeluxeSlot.valueOf(slot)));
-      }
-    }
-  }
-
-  private Map<StrifeStat, Float> getItemStats(String slot, EntityEquipment equipment,
-      PlayerData invyData) {
-    switch (slot) {
-      case "HAND" -> {
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashMap<>();
-        }
-        return plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand());
-      }
-      case "OFF_HAND" -> {
-        if (invyData == null) {
-          return new HashMap<>();
-        }
-        ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
-        if (offhandItem == null) {
-          return new HashMap<>();
-        }
-        if (ItemUtil.isArmor(offhandItem.getType())) {
-          return new HashMap<>();
-        }
-        if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
-          return new HashMap<>();
-        }
-        return plugin.getStatUpdateManager().getItemStats(offhandItem);
-      }
-      default -> {
-        if (invyData == null) {
-          return new HashMap<>();
-        }
-        return plugin.getStatUpdateManager()
-            .getItemStats(invyData.getEquipmentItem(DeluxeSlot.valueOf(slot)));
-      }
-    }
-  }
-
-  private Set<StrifeTrait> getItemTraits(String slot, EntityEquipment equipment,
-      PlayerData invyData) {
-    switch (slot) {
-      case "HAND" -> {
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          return new HashSet<>();
-        }
-        return ItemUtil.getTraits(equipment.getItemInMainHand());
-      }
-      case "OFF_HAND" -> {
-        if (invyData == null) {
-          return new HashSet<>();
-        }
-        ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
-        if (offhandItem == null) {
-          return new HashSet<>();
-        }
-        if (ItemUtil.isArmor(offhandItem.getType())) {
-          return new HashSet<>();
-        }
-        if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
-          return new HashSet<>();
-        }
-        return ItemUtil.getTraits(offhandItem);
-      }
-      default -> {
-        if (invyData == null) {
-          return new HashSet<>();
-        }
-        return ItemUtil.getTraits(invyData.getEquipmentItem(DeluxeSlot.valueOf(slot)));
+        ItemStack stack = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(stack));
+        dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(stack));
+        dataBundle.setTraits(ItemUtil.getTraits(stack));
+        return dataBundle;
       }
     }
   }

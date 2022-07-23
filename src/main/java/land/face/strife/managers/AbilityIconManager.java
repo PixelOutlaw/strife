@@ -2,6 +2,7 @@ package land.face.strife.managers;
 
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.WordUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
@@ -47,12 +48,10 @@ public class AbilityIconManager {
 
   public AbilityIconManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    REQ_STR = plugin.getSettings().getString("language.abilities.picker-requirement-tag");
-    PASS_STR = plugin.getSettings().getString("language.abilities.picker-requirement-met-tag");
-    ABILITY_REQ_NOT_MET = StringExtensionsKt.chatColorize(
-        plugin.getSettings().getString("language.abilities.picker-requirement-message", ""));
-    ABILITY_ON_COOLDOWN = StringExtensionsKt.chatColorize(
-        plugin.getSettings().getString("language.abilities.picker-on-cooldown", ""));
+    REQ_STR = PaletteUtil.color(plugin.getSettings().getString("language.abilities.picker-requirement-tag"));
+    PASS_STR = PaletteUtil.color(plugin.getSettings().getString("language.abilities.picker-requirement-met-tag"));
+    ABILITY_REQ_NOT_MET = PaletteUtil.color(plugin.getSettings().getString("language.abilities.picker-requirement-message", ""));
+    ABILITY_ON_COOLDOWN = PaletteUtil.color(plugin.getSettings().getString("language.abilities.picker-on-cooldown", ""));
   }
 
   public void removeIconItem(Player player, AbilitySlot slot) {
@@ -286,6 +285,6 @@ public class AbilityIconManager {
       strings.add(str.replace("{REQ}",
           ChatColor.stripColor(attr.getName() + " " + data.getAttributeRequirement().get(attr))));
     }
-    return ListExtensionsKt.chatColorize(strings);
+    return strings;
   }
 }

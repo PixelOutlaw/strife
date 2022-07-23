@@ -141,6 +141,9 @@ public class ItemUtil {
     if (mainItem.getType() == Material.BOOK) {
       return isValidMageOffhand(offItem);
     }
+    if (mainItem.getType() == Material.ARROW) {
+      return false;
+    }
     if (mainItem.getType() == Material.BOW) {
       if (isPistol(mainItem)) {
         return isBullets(offItem);
@@ -292,7 +295,7 @@ public class ItemUtil {
       return true;
     }
     String strippedLine = ChatColor.stripColor(lore.get(0));
-    if (strippedLine.contains("Level Requirement: ")) {
+    if (strippedLine.startsWith("Level Requirement: ")) {
       int itemLevel = Integer.parseInt(strippedLine.replace("Level Requirement: ", ""));
       return level >= itemLevel;
     }

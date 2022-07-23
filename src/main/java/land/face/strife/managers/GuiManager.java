@@ -14,7 +14,6 @@ import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.champion.Champion;
-import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -34,13 +33,15 @@ public class GuiManager {
       178, 0, Alignment.CENTER);
   private final GUIComponent levelBase = new GUIComponent("level-base", new TextComponent("⅟"), 27,
       -105, Alignment.CENTER);
-  private final GUIComponent bitsBase = new GUIComponent("bits-base", new TextComponent("錢"), 72, 170, Alignment.CENTER);
+  private final GUIComponent bitsBase = new GUIComponent("bits-base", new TextComponent("₿"), 14, 199, Alignment.CENTER);
+  private final GUIComponent gemsBase = new GUIComponent("gems-base", new TextComponent("௹") , 15, 198, Alignment.CENTER);
 
   private final Map<Integer, String> hpStringNumbers = new HashMap<>();
   private final Map<Integer, String> energyStringNumbers = new HashMap<>();
   private final Map<Integer, String> middleStringNumbers = new HashMap<>();
   private final Map<Integer, String> levelStringNumbers = new HashMap<>();
   private final Map<Integer, String> moneyStringNumbers = new HashMap<>();
+  private final Map<Integer, String> gemStringNumbers = new HashMap<>();
 
   private final ChatColor levelColorBukkit = ChatColor.of("#72D92D");
 
@@ -160,6 +161,7 @@ public class GuiManager {
     gui.putUnderneath(healthBase);
     gui.putUnderneath(levelBase);
     gui.putUnderneath(bitsBase);
+    gui.putUnderneath(gemsBase);
 
     gui.putOnTop(new GUIComponent("missing-life", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("missing-energy", new TextComponent(""), 0, 0, Alignment.CENTER));
@@ -181,6 +183,7 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("air-base", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("energy-display", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("money-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("gem-display", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("level-display", new TextComponent(""), 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("attack-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
@@ -530,17 +533,37 @@ public class GuiManager {
     }
     String s = Integer.toString(i);
     s = s
-        .replaceAll("1", "①")
-        .replaceAll("2", "②")
-        .replaceAll("3", "③")
-        .replaceAll("4", "④")
-        .replaceAll("5", "⑤")
-        .replaceAll("6", "⑥")
-        .replaceAll("7", "⑦")
-        .replaceAll("8", "⑧")
-        .replaceAll("9", "⑨")
-        .replaceAll("0", "⑩");
+        .replaceAll("1", "①\uF801")
+        .replaceAll("2", "②\uF801")
+        .replaceAll("3", "③\uF801")
+        .replaceAll("4", "④\uF801")
+        .replaceAll("5", "⑤\uF801")
+        .replaceAll("6", "⑥\uF801")
+        .replaceAll("7", "⑦\uF801")
+        .replaceAll("8", "⑧\uF801")
+        .replaceAll("9", "⑨\uF801")
+        .replaceAll("0", "⑩\uF801");
     moneyStringNumbers.put(i, s);
+    return color + s + ChatColor.RESET;
+  }
+
+  public String convertToGemFont(int i, ChatColor color) {
+    if (gemStringNumbers.containsKey(i)) {
+      return color + gemStringNumbers.get(i) + ChatColor.RESET;
+    }
+    String s = Integer.toString(i);
+    s = s
+        .replaceAll("1", "⓫\uF801")
+        .replaceAll("2", "⓬\uF801")
+        .replaceAll("3", "⓭\uF801")
+        .replaceAll("4", "⓮\uF801")
+        .replaceAll("5", "⓯\uF801")
+        .replaceAll("6", "⓰\uF801")
+        .replaceAll("7", "⓱\uF801")
+        .replaceAll("8", "⓲\uF801")
+        .replaceAll("9", "⓳\uF801")
+        .replaceAll("0", "⓴\uF801");
+    gemStringNumbers.put(i, s);
     return color + s + ChatColor.RESET;
   }
 }

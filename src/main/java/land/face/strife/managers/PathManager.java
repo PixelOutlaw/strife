@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,10 @@ public class PathManager {
     for (Path path : LevelPath.PATH_VALUES) {
       pathMegaMap.put(path, new HashMap<>());
     }
+  }
+
+  public LevelPath getLevelPath(Path path, Choice choice) {
+    return pathMegaMap.get(path).get(choice);
   }
 
   public ItemStack getIcon(Path path, Choice choice) {
@@ -93,7 +98,11 @@ public class PathManager {
     ItemStack stack = new ItemStack(material);
 
     ItemStackExtensionsKt.setDisplayName(stack,  StringExtensionsKt.chatColorize(itemName));
-    TextUtils.setLore(stack, itemLore, true);
+    List<String> iconLore = new ArrayList<>(itemLore);
+    iconLore.add("&8&oYou may only choose");
+    iconLore.add("&8&oone of these paths...");
+    iconLore.add("&8&oPick wisely!");
+    TextUtils.setLore(stack, iconLore, true);
     ItemStackExtensionsKt.setCustomModelData(stack, choiceSection.getInt("model-data", 0));
 
     Map<StrifeStat, Float> statMap = StatUtil.getStatMapFromSection(choiceSection.getConfigurationSection("stats"));
@@ -109,7 +118,7 @@ public class PathManager {
       }
     }
 
-    return new LevelPath(stack, statMap, traits);
+    return new LevelPath(stack, itemLore, statMap, traits);
   }
 
 }

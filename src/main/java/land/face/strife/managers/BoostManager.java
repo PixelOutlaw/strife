@@ -51,17 +51,17 @@ import org.bukkit.entity.Player;
 
 public class BoostManager {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
   private final Map<DayOfWeek, String> boostSchedule = new HashMap<>();
   private final Map<String, LoadedStatBoost> loadedBoosts = new HashMap<>();
   private final List<Boost> boosts = new CopyOnWriteArrayList<>();
   private LoadedStatBoost dailyBoost = null;
 
-  private Gson gson = new Gson();
+  private final Gson gson = new Gson();
 
-  private Set<UUID> discordBoosters = new HashSet<>();
-  private Set<UUID> contributors = new HashSet<>();
+  private final Set<UUID> discordBoosters = new HashSet<>();
+  private final Set<UUID> contributors = new HashSet<>();
 
   public BoostManager(StrifePlugin plugin) {
     this.plugin = plugin;

@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.Material;
@@ -31,9 +32,11 @@ import org.bukkit.entity.Player;
 public class MountCommand extends BaseCommand {
 
   private final StrifePlugin plugin;
+  private final List<String> bannedWorlds;
 
   public MountCommand(StrifePlugin plugin) {
     this.plugin = plugin;
+    bannedWorlds = plugin.getMountsYAML().getStringList("banned-worlds");
   }
 
   @Default
@@ -42,9 +45,27 @@ public class MountCommand extends BaseCommand {
       return;
     }
     Player sender = getCurrentCommandIssuer().getIssuer();
-    Material material = sender.getLocation().clone().add(-0, -0.1, 0).getBlock().getType();
-    if (material == Material.AIR || material == Material.WATER || material == Material.LAVA) {
+    if (plugin.getPlayerMountManager().isMounted(sender)) {
+      MessageUtils.sendMessage(sender, "&e[!] Listen here you little dingus I don't know what you're trying to pull but I don't like it");
+      return;
+    }
+    if (bannedWorlds.contains((sender.getWorld().getName()))) {
+      MessageUtils.sendMessage(sender, "&e[!] Mounts cannot be summoned here!");
+      return;
+    }
+    Material floorMaterial = sender.getLocation().clone().add(-0, -0.1, 0).getBlock().getType();
+    if (!floorMaterial.isSolid()) {
       MessageUtils.sendMessage(sender, "&e[!] You can only summon mounts while on the ground!");
+      return;
+    }
+    Material eyeMaterial = sender.getEyeLocation().getBlock().getType();
+    if (!(eyeMaterial == Material.AIR || eyeMaterial == Material.CAVE_AIR)) {
+      MessageUtils.sendMessage(sender, "&e[!] You cannot summon a mount here!");
+      return;
+    }
+    Material footMaterial = sender.getLocation().clone().add(-0, 0.1, 0).getBlock().getType();
+    if (footMaterial.isSolid()) {
+      MessageUtils.sendMessage(sender, "&e[!] You cannot summon a mount on this block!");
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(sender);

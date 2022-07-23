@@ -79,8 +79,8 @@ public class LevelupPointsMenuItem extends MenuItem {
     super.onItemClick(event);
     event.setWillClose(true);
     if (plugin.getChampionManager().hasPendingChanges(event.getPlayer())) {
-      Bukkit.getScheduler().runTaskLater(plugin, () ->
-          plugin.getConfirmationMenu().open(event.getPlayer()), 1L);
+      event.setWillClose(false);
+      plugin.getConfirmationMenu().open(event.getPlayer());
     }
   }
 

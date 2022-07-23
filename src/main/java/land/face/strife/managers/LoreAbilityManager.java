@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -17,6 +18,7 @@ import land.face.strife.data.effects.Effect;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -67,7 +69,7 @@ public class LoreAbilityManager {
       return;
     }
 
-    String triggerText = StringExtensionsKt.chatColorize(cs.getString("trigger-text", ""));
+    String triggerText = PaletteUtil.color(cs.getString("trigger-text", ""));
     if (StringUtils.isBlank(triggerText)) {
       LogUtil.printError("Failed to load " + key + ". Must provide trigger-text!");
       return;
@@ -93,12 +95,12 @@ public class LoreAbilityManager {
       LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
     }
-    List<String> description = ListExtensionsKt.chatColorize(cs.getStringList("description"));
+    List<String> description = PaletteUtil.color(cs.getStringList("description"));
     LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);
     }
-    loreStringToAbilityMap.put(triggerText, loreAbility);
+    loreStringToAbilityMap.put(ChatColor.stripColor(triggerText), loreAbility);
     loreIdToAbilityMap.put(key, loreAbility);
     LogUtil.printDebug("Loaded lore ability " + key + " successfully.");
   }
@@ -117,6 +119,7 @@ public class LoreAbilityManager {
   }
 
   private LoreAbility getLoreAbilityFromString(String loreString) {
+    loreString = ChatColor.stripColor(loreString);
     return loreStringToAbilityMap.getOrDefault(loreString, null);
   }
   public LoreAbility getLoreAbilityFromId(String id) {

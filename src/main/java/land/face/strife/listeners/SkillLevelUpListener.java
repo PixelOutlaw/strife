@@ -18,13 +18,14 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.events.SkillLevelUpEvent;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -40,8 +41,8 @@ public class SkillLevelUpListener implements Listener {
   private static String BROADCAST_MESSAGE;
 
   public SkillLevelUpListener(MasterConfiguration settings) {
-    SELF_MESSAGE = settings.getString("language.skills.lvl-up-self");
-    BROADCAST_MESSAGE = settings.getString("language.skills.lvl-up-broadcast");
+    SELF_MESSAGE = PaletteUtil.color(settings.getString("language.skills.lvl-up-self"));
+    BROADCAST_MESSAGE = PaletteUtil.color(settings.getString("language.skills.lvl-up-broadcast"));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -51,7 +52,7 @@ public class SkillLevelUpListener implements Listener {
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
     String lowerTitle =
-        color + "You've reached " + ChatColor.WHITE + name + " Lv" + level + color + "!";
+        color + "You've reached " + FaceColor.WHITE + name + " Lv" + level + color + "!";
 
     TitleUtils.sendTitle(event.getPlayer(), upperTitle, lowerTitle, 20, 5, 5);
     event.getPlayer()
@@ -62,7 +63,7 @@ public class SkillLevelUpListener implements Listener {
           + event.getSkillType().getPrettyName() + " skill level " + event.getNewSkillLevel() + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);
-      String msg = StringExtensionsKt.chatColorize(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
+      String msg = PaletteUtil.color(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p, msg);
       }

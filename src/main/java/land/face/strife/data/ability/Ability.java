@@ -9,12 +9,15 @@ import land.face.strife.data.effects.Effect;
 import land.face.strife.managers.AbilityManager.AbilityType;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 public class Ability {
 
   private final String id;
   private final String name;
+  @Getter @Setter
+  private boolean hidden = true;
   private final TargetType targetType;
   @Getter
   private final AbilityType castType;
@@ -27,7 +30,10 @@ public class Ability {
   private final List<Effect> toggleOffEffects;
   @Getter
   private final boolean deathUntoggle;
-  private final int cooldown;
+  @Getter
+  private final float cooldown;
+  @Getter
+  private final float minCooldown;
   private final int maxCharges;
   private final int globalCooldownTicks;
   private final boolean showMessages;
@@ -42,11 +48,11 @@ public class Ability {
   private final boolean friendly;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
-      AbilityType castType, TargetType targetType, float range, float cost, int cooldown,
+      AbilityType castType, TargetType targetType, float range, float cost, float cooldown,
       int maxCharges, int globalCooldownTicks, boolean showMsgs, boolean requireTarget,
       boolean raycastsTargetEntities, Set<Condition> conditions, boolean passiveStatsOnCooldown,
       boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth,
-      boolean deathUntoggle) {
+      boolean deathUntoggle, float minCooldown) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -67,6 +73,7 @@ public class Ability {
     this.friendly = friendly;
     this.cancelStealth = cancelStealth;
     this.deathUntoggle = deathUntoggle;
+    this.minCooldown = minCooldown;
   }
 
   @NotNull
@@ -104,10 +111,6 @@ public class Ability {
 
   public boolean isRequireTarget() {
     return requireTarget;
-  }
-
-  public double getCooldown() {
-    return cooldown;
   }
 
   public int getMaxCharges() {

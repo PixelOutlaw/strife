@@ -79,10 +79,11 @@ public class LifeTask extends BukkitRunnable {
   }
 
   public void addHealingOverTime(float amount, int ticks) {
-    amount = (amount * REGEN_TICK_RATE) / ticks;
+    int regenTicks = (int) Math.floor((float) ticks / REGEN_TICK_RATE);
+    float regenValue = amount / regenTicks;
     RestoreData restoreData = new RestoreData();
-    restoreData.setAmount(amount);
-    restoreData.setTicks((int) ((float) ticks / REGEN_TICK_RATE));
+    restoreData.setAmount(regenValue);
+    restoreData.setTicks(regenTicks);
     lifeRestore.add(restoreData);
   }
 

@@ -57,12 +57,7 @@ public class SubmenuSelectButton extends MenuItem {
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
     event.setWillClose(false);
-    event.getPlayer().closeInventory();
-    Bukkit.getScheduler().scheduleSyncDelayedTask(StrifePlugin.getInstance(), () -> {
-      if (event.getPlayer() != null && event.getPlayer().isValid()) {
-        this.menu.open(event.getPlayer());
-      }
-    }, 0L);
+    menu.open(event.getPlayer());
   }
 
   public int getSlot() {

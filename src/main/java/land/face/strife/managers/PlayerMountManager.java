@@ -49,11 +49,8 @@ public class PlayerMountManager {
   private final Map<UUID, String> selectedMount = new HashMap<>();
   private final Map<String, LoadedMount> loadedMounts = new HashMap<>();
 
-  private final List<String> bannedWorlds;
-
   public PlayerMountManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    bannedWorlds = plugin.getSettings().getStringList("mounts.banned-worlds");
   }
 
   public boolean isMounted(Player player) {
@@ -68,10 +65,6 @@ public class PlayerMountManager {
   }
 
   public boolean spawnMount(Player player) {
-    if (bannedWorlds.contains((player.getWorld().getName()))) {
-      MessageUtils.sendMessage(player, "&e[!] Mounts cannot be summoned here.");
-      return false;
-    }
     UUID uuid = player.getUniqueId();
     if (ownerMap.containsKey(uuid)) {
       Bukkit.getLogger().info("[Strife] aaaa");
@@ -171,7 +164,7 @@ public class PlayerMountManager {
       pig.addPassenger(player);
     }
 
-    MountTask mountTask = new MountTask(this, player.getUniqueId(), mob, model);
+    MountTask mountTask = new MountTask(this, player, mob, model);
     ownerMap.put(player.getUniqueId(), mountTask);
     Champion champion = plugin.getChampionManager().getChampion(player);
     champion.getSaveData().setOnMount(true);
@@ -190,7 +183,7 @@ public class PlayerMountManager {
       task.getModel().clearModel();
     }
     task.getMount().get().getEntity().remove();
-    ownerMap.remove(task.getPlayerUUID());
+    ownerMap.remove(task.getPlayer().get().getUniqueId());
     if (!task.isCancelled()) {
       task.cancel();
     }
