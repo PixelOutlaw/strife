@@ -22,6 +22,7 @@ public class IndicatorManager {
   private final float bounceGravity;
 
   private final Vector slowFloatVector;
+  private final Vector midFloatVector;
   private final Vector fastFloatVector;
   private final Vector bounceVector;
 
@@ -37,6 +38,8 @@ public class IndicatorManager {
 
     float slowFloatSpeed = (float) plugin.getSettings()
         .getDouble("config.indicators.float-slow-speed", 0.2);
+    float midFloatSpeed = (float) plugin.getSettings()
+        .getDouble("config.indicators.float-mid-speed", 0.2);
     float fastFloatSpeed = (float) plugin.getSettings()
         .getDouble("config.indicators.float-fast-speed", 0.2);
     float bounceSpeed = (float) plugin.getSettings()
@@ -44,6 +47,7 @@ public class IndicatorManager {
 
     bounceVector = new Vector(0, bounceSpeed, 0);
     slowFloatVector = new Vector(0, slowFloatSpeed, 0);
+    midFloatVector = new Vector(0, midFloatSpeed, 0);
     fastFloatVector = new Vector(0, fastFloatSpeed, 0);
   }
 
@@ -80,6 +84,7 @@ public class IndicatorManager {
         gravity = bounceGravity;
       }
       case FLOAT_UP_FAST -> velocity = fastFloatVector.clone();
+      case FLOAT_UP_MEDIUM -> velocity = midFloatVector.clone();
       case FLOAT_UP_SLOW -> velocity = slowFloatVector.clone();
     }
 
@@ -109,6 +114,7 @@ public class IndicatorManager {
     RANDOM_POPOFF,
     BOUNCE,
     FLOAT_UP_FAST,
+    FLOAT_UP_MEDIUM,
     FLOAT_UP_SLOW
   }
 

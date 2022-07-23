@@ -105,8 +105,10 @@ public class SkillExperienceManager {
     }
     if (location != null) {
       plugin.getIndicatorManager().addIndicator(mob.getEntity(), location,
-          IndicatorStyle.FLOAT_UP_SLOW, 10,
-          type.getColor() + FaceColor.BOLD.s() + "+" + (int) amount + " " + type.getPrettyName() + " XP!");
+          IndicatorStyle.FLOAT_UP_SLOW, 12,
+          type.getColor() + FaceColor.BOLD.s() + "+" +
+              FaceColor.WHITE + FaceColor.BOLD.s() + (int) amount +
+              type.getColor() + FaceColor.BOLD.s() + " XP!");
     }
     if (saveData.isDisplayExp() || forceDisplay) {
       String xp = FORMAT.format(amount);

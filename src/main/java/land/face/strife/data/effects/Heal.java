@@ -47,7 +47,7 @@ public class Heal extends Effect {
       if (!healCaster && caster != target) {
         String healText = "&a" + DamageUtil.buildDamageString((int) heal);
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
-            target.getEntity(), IndicatorStyle.FLOAT_UP_SLOW, 8, healText);
+            target.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM, 8, healText);
       }
     }
 
