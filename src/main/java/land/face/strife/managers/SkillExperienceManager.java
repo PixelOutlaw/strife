@@ -104,7 +104,7 @@ public class SkillExperienceManager {
       amount *= 1 + skillXpMult;
     }
     if (location != null) {
-      plugin.getIndicatorManager().addIndicator(mob.getEntity(), mob.getEntity(),
+      plugin.getIndicatorManager().addIndicator(mob.getEntity(), location,
           IndicatorStyle.FLOAT_UP_SLOW, 10,
           type.getColor() + FaceColor.BOLD.s() + "+" + (int) amount + " " + type.getPrettyName() + " XP!");
     }

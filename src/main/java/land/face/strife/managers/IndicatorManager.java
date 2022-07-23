@@ -47,26 +47,21 @@ public class IndicatorManager {
     fastFloatVector = new Vector(0, fastFloatSpeed, 0);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text) {
-    if (!(creator instanceof Player) || creator == target || target.getWorld() != creator.getWorld()) {
+  public void addIndicator(LivingEntity viewer, Location location, IndicatorStyle type, int life, String text) {
+    if (!(viewer instanceof Player) || location.getWorld() != viewer.getWorld()) {
       return;
     }
 
-    Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.BELOW_HEAD);
-    if (!loc.getWorld().getName().equals(target.getEyeLocation().getWorld().getName())) {
-      return;
-    }
-
-    double distance = creator.getLocation().distanceSquared(target.getLocation());
+    double distance = viewer.getLocation().distanceSquared(location);
     if (distance > 1024) {
       return;
     }
 
     Location midway;
     if (distance < 144) {
-      midway = creator.getEyeLocation().clone().add(creator.getEyeLocation().clone().subtract(loc).multiply(-0.65));
+      midway = viewer.getEyeLocation().clone().add(viewer.getEyeLocation().clone().subtract(location).multiply(-0.65));
     } else {
-      midway = creator.getEyeLocation().clone().add(creator.getEyeLocation().clone().subtract(loc).toVector()
+      midway = viewer.getEyeLocation().clone().add(viewer.getEyeLocation().clone().subtract(location).toVector()
           .normalize().multiply(-8));
     }
 
@@ -88,8 +83,16 @@ public class IndicatorManager {
       case FLOAT_UP_SLOW -> velocity = slowFloatVector.clone();
     }
 
-    DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) creator, midway, velocity, gravity, life, text);
+    DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) viewer, midway, velocity, gravity, life, text);
     indicators.add(damagePopoff);
+  }
+
+  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text) {
+    Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.BELOW_HEAD);
+    if (!loc.getWorld().getName().equals(target.getEyeLocation().getWorld().getName())) {
+      return;
+    }
+    addIndicator(creator, loc, type, life, text);
   }
 
   public void tickAllIndicators() {
