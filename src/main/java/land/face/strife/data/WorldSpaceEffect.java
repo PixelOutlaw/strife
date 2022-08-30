@@ -4,9 +4,12 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import land.face.strife.data.effects.AreaEffect;
+import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.Push;
@@ -153,18 +156,31 @@ public class WorldSpaceEffect {
   }
 
   private void applyDirectionToPushEffects(WorldSpaceEffect wse, Effect effect) {
-    if (!(effect instanceof AreaEffect)) {
-      return;
-    }
-    for (Effect areaEffect : ((AreaEffect) effect).getEffects()) {
-      if (areaEffect instanceof Push) {
-        Vector wseVec;
-        if (((Push) areaEffect).getPushType() == PushType.WSE_DIRECTION) {
-          wseVec = wse.getNextLocation().getDirection().clone().normalize();
-        } else {
-          wseVec = wse.getNextLocation().toVector();
+    if (effect instanceof Damage) {
+      Set<Effect> allEffects = new HashSet<>(((Damage) effect).getHitEffects());
+      allEffects.addAll(((Damage) effect).getKillEffects());
+      for (Effect e : allEffects) {
+        if (e instanceof Push) {
+          Vector wseVec;
+          if (((Push) e).getPushType() == PushType.WSE_DIRECTION) {
+            wseVec = wse.getNextLocation().getDirection().clone().normalize();
+          } else {
+            wseVec = wse.getNextLocation().toVector();
+          }
+          ((Push) e).setTempVector(wseVec);
         }
-        ((Push) areaEffect).setTempVector(wseVec);
+      }
+    } else if (effect instanceof AreaEffect) {
+      for (Effect e : ((AreaEffect) effect).getEffects()) {
+        if (e instanceof Push) {
+          Vector wseVec;
+          if (((Push) e).getPushType() == PushType.WSE_DIRECTION) {
+            wseVec = wse.getNextLocation().getDirection().clone().normalize();
+          } else {
+            wseVec = wse.getNextLocation().toVector();
+          }
+          ((Push) e).setTempVector(wseVec);
+        }
       }
     }
   }
