@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class StatsVerboseXP extends MenuItem {
   private final Map<Player, Boolean> selfInspectMap = new WeakHashMap<>();
 
   StatsVerboseXP(StrifePlugin plugin) {
-    super(StringExtensionsKt.chatColorize("&2&lShow XP In Chat"), new ItemStack(Material.EXPERIENCE_BOTTLE));
+    super(PaletteUtil.color("|green||b|Show XP In Chat"), new ItemStack(Material.EXPERIENCE_BOTTLE));
     this.plugin = plugin;
   }
 
@@ -59,11 +59,12 @@ public class StatsVerboseXP extends MenuItem {
 
     Champion champion = plugin.getChampionManager().getChampion(player);
 
-    lore.add(StringExtensionsKt.chatColorize("&7Click this icon to toggle"));
-    lore.add(StringExtensionsKt.chatColorize("&7normal xp gain being shown"));
-    lore.add(StringExtensionsKt.chatColorize("&7in chat!"));
+    lore.add(PaletteUtil.color("|lgray|Click this icon to toggle"));
+    lore.add(PaletteUtil.color("|lgray|normal xp gain being shown"));
+    lore.add(PaletteUtil.color("|lgray|in chat!"));
 
-    lore.add(StringExtensionsKt.chatColorize("&fXP Display: " + (champion.getSaveData().isDisplayExp() ? "&a&lENABLED" : "&e&lDISABLED")));
+    lore.add(PaletteUtil.color("|white|XP Display: " + (champion.getSaveData().isDisplayExp() ?
+        "|lgreen||b|ENABLED" : "|yellow||b|DISABLED")));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

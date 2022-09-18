@@ -2,7 +2,7 @@ package land.face.strife.listeners;
 
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -25,12 +25,22 @@ public class JoinAndLeaveListener implements Listener {
 
   private final StrifePlugin plugin;
 
-  private final static String UNUSED_MESSAGE_1 =
-      "&6&lLevelup! You have &f&l{0} &6&lunused Levelpoints!";
-  private final static String UNUSED_MESSAGE_2 =
-      "&6&lOpen your inventory or use &e&l/levelup &6&lto spend them!";
-  private final static String UNUSED_PATH =
-      "&f&lYou have a choice to make! Use &e&l/levelup &f&lto select a path!";
+  private final static String UNUSED_POINTS = PaletteUtil.color(
+      """
+          |white|
+          |dorange|+-- |orange||b|You Leveled Up! |dorange|--+
+          |yellow| You have |white|{0} |yellow|attribute points to spend!
+          |yellow| Use |white|/levelup |yellow|to spend them!
+          |white|"""
+  );
+  private final static String PATH = PaletteUtil.color(
+      """
+          |white|
+          |pink|+-- |white||b|Choose A Path! |pink|--+
+          |white| You have a a path that needs to be chosen!
+          |white| Use |pink|/levelup |white|to make your choice!
+          |white|"""
+  );
 
   private final Set<UUID> mounted = new HashSet<>();
 
@@ -125,15 +135,13 @@ public class JoinAndLeaveListener implements Listener {
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      MessageUtils.sendMessage(player, UNUSED_MESSAGE_1.replace("{0}", String.valueOf(unused)));
-      MessageUtils.sendMessage(player, UNUSED_MESSAGE_2);
-    }, 20L * 5);
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        player.sendMessage(UNUSED_POINTS.replace("{0}", String.valueOf(unused))), 20L * 15);
   }
 
   private void notifyUnusedPaths(final Player player) {
     Bukkit.getScheduler().runTaskLater(plugin, () ->
-        MessageUtils.sendMessage(player, UNUSED_PATH), 20L * 5 + 1);
+        player.sendMessage(PATH), 20L * 17);
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

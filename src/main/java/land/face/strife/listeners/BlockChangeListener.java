@@ -39,16 +39,16 @@ public class BlockChangeListener implements Listener {
   }
 
   private final List<TextComponent> blockLevels = List.of(
-      new TextComponent("௦"),
-      new TextComponent("௧"),
-      new TextComponent("௨"),
-      new TextComponent("௩"),
-      new TextComponent("௪"),
-      new TextComponent("௫"),
-      new TextComponent("௬"),
-      new TextComponent("௭"),
-      new TextComponent("௮"),
-      new TextComponent("௯")
+      GuiManager.noShadow(new TextComponent("௦")),
+      GuiManager.noShadow(new TextComponent("௧")),
+      GuiManager.noShadow(new TextComponent("௨")),
+      GuiManager.noShadow(new TextComponent("௩")),
+      GuiManager.noShadow(new TextComponent("௪")),
+      GuiManager.noShadow(new TextComponent("௫")),
+      GuiManager.noShadow(new TextComponent("௬")),
+      GuiManager.noShadow(new TextComponent("௭")),
+      GuiManager.noShadow(new TextComponent("௮")),
+      GuiManager.noShadow(new TextComponent("௯"))
   );
 
   @EventHandler

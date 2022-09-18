@@ -200,7 +200,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityA.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-a-charges",
-          new TextComponent(charges), charges.length() * 3, -89, Alignment.LEFT));
+          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -89, Alignment.LEFT));
     }
 
     if (abilityB == null || abilityB.getMaxCharges() < 2) {
@@ -216,7 +216,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityB.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-b-charges",
-          new TextComponent(charges), charges.length() * 3, -69, Alignment.LEFT));
+          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -69, Alignment.LEFT));
     }
 
     if (abilityC == null || abilityC.getMaxCharges() < 2) {
@@ -232,7 +232,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityC.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-c-charges",
-          new TextComponent(charges), charges.length() * 3, -49, Alignment.LEFT));
+          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -49, Alignment.LEFT));
     }
   }
 

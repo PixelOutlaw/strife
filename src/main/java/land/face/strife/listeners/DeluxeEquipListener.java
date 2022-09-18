@@ -18,7 +18,7 @@
  */
 package land.face.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import land.face.dinvy.events.EquipItemEvent;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.ItemUtil;
@@ -26,17 +26,25 @@ import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-public record DeluxeEquipListener(StrifePlugin plugin) implements Listener {
+public class DeluxeEquipListener implements Listener {
+
+  private final StrifePlugin plugin;
+  private final String msg;
+
+  public DeluxeEquipListener(StrifePlugin plugin) {
+    this.plugin = plugin;
+    msg = PaletteUtil.color(plugin.getSettings().getString("language.generic.level-req"));
+  }
 
   @EventHandler
-  public void onEntityDeathEvent(EquipItemEvent event) {
+  public void onItemEquip(EquipItemEvent event) {
     if (plugin.getAbilityIconManager().isAbilityIcon(event.getStack())) {
       event.setCancelled(true);
       return;
     }
     if (!ItemUtil.meetsLevelRequirement(event.getStack(), event.getPlayer().getLevel())) {
       event.setCancelled(true);
-      MessageUtils.sendMessage(event.getPlayer(), "&e[!] You aren't a high enough level to equip this!");
+      PaletteUtil.sendMessage(event.getPlayer(), msg);
       event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.8f);
     }
   }

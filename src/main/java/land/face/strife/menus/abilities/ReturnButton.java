@@ -48,6 +48,7 @@ public class ReturnButton extends MenuItem {
       return BlankIcon.getBlankStack();
     }
     ItemStack stack = getIcon().clone();
+    ItemStackExtensionsKt.setCustomModelData(stack, 997);
     stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     ItemStackExtensionsKt.setDisplayName(stack, getDisplayName());
     return stack;

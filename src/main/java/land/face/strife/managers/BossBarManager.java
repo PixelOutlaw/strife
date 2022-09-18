@@ -31,7 +31,6 @@ import org.bukkit.entity.Player;
 
 public class BossBarManager {
 
-  private final StrifePlugin plugin;
   private final Map<Player, BarState> statusBar1 = new HashMap<>();
   private final Map<Player, BarState> statusBar2 = new HashMap<>();
   private final Map<Player, BarState> statusBar3 = new HashMap<>();
@@ -39,7 +38,6 @@ public class BossBarManager {
   private final Map<Player, BarState> statusBar5 = new HashMap<>();
 
   public BossBarManager(StrifePlugin plugin) {
-    this.plugin = plugin;
     // Ensure bars do not expire from inactivity
     Bukkit.getScheduler().runTaskTimer(plugin, () -> {
       randomizeBars(statusBar1);
@@ -109,7 +107,7 @@ public class BossBarManager {
       if (priority <= state.getPriority() || state.getTicks() < 1) {
         state.setPriority(priority);
         state.setTicks(ticks / 4);
-        state.getBar().setTitle(text);
+        state.getBar().setTitle(GuiManager.NO_SHADOW + text);
       }
     }
   }

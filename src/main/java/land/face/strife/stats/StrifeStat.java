@@ -133,6 +133,8 @@ public enum StrifeStat {
 
   FISHING_SPEED("Fishing Speed"),
   FISHING_TREASURE("Fishing Treasures"),
+  FISH_BAIT_KEEP("Less Bait Consumed"),
+  AUTO_FISH_CHANCE("AutoFish Chance"),
 
   CRAFT_SKILL("Crafting Skill"),
   ENCHANT_SKILL("Enchanting Skill"),

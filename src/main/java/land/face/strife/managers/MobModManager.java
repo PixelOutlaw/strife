@@ -1,15 +1,14 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import java.util.Arrays;
+import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.MobMod;
 import land.face.strife.data.StrifeMob;
@@ -20,7 +19,6 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
@@ -59,7 +57,7 @@ public class MobModManager {
       mob.getMods().add(mod.getId());
     }
     mob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix +
-        ChatColor.WHITE + mob.getEntity().getCustomName());
+        FaceColor.WHITE + mob.getEntity().getCustomName());
   }
 
   public void applyMobMod(StrifeMob strifeMob, MobMod mobMod) {
@@ -128,13 +126,13 @@ public class MobModManager {
     return returnMods;
   }
 
-  private ChatColor getPrefixColor(int modCount) {
+  private FaceColor getPrefixColor(int modCount) {
     return switch (modCount) {
-      case 0 -> ChatColor.WHITE;
-      case 1 -> ChatColor.BLUE;
-      case 2 -> ChatColor.DARK_PURPLE;
-      case 3 -> ChatColor.RED;
-      default -> ChatColor.WHITE;
+      case 0 -> FaceColor.WHITE;
+      case 1 -> FaceColor.BLUE;
+      case 2 -> FaceColor.PURPLE;
+      case 3 -> FaceColor.RED;
+      default -> FaceColor.WHITE;
     };
   }
 

@@ -540,6 +540,23 @@ public class StrifeCommand extends BaseCommand {
         .addExperience(target.getPlayer(), type, amount, exact, !silent);
   }
 
+  @Subcommand("addskillxploc|skillxploc")
+  @CommandCompletion("@players @skills @range:1-100000 x y z true|false true|false")
+  @CommandPermission("strife.admin")
+  public void addSkillXpLoc(CommandSender sender, OnlinePlayer target, String skill, int amount,
+      double x, double y, double z, @Default("true") boolean exact, @Default("false") boolean silent) {
+    String skillName = skill.toUpperCase();
+    LifeSkillType type;
+    try {
+      type = LifeSkillType.valueOf(skillName.toUpperCase());
+    } catch (Exception e) {
+      sendMessage(sender, "&cUnknown skill " + skill + "???");
+      return;
+    }
+    plugin.getSkillExperienceManager().addExperience(target.getPlayer(), type,
+        target.getPlayer().getLocation().clone().set(x, y, z), amount, exact, !silent);
+  }
+
   @Subcommand("recentskill")
   @CommandCompletion("@players @skills")
   @CommandPermission("strife.admin")

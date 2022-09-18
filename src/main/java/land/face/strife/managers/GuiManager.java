@@ -4,6 +4,8 @@ import com.sentropic.guiapi.GUIAPI;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,95 +31,96 @@ public class GuiManager {
   private static final Map<Player, GUI> guiMap = new WeakHashMap<>();
   private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
-  private final GUIComponent healthBase = new GUIComponent("status-base", new TextComponent("➲"),
+  // #FFFFFE
+  public static final ChatColor NO_SHADOW = ChatColor.of(new Color(251, 251, 251));
+
+  private final GUIComponent healthBase = new GUIComponent("status-base", noShadow(new TextComponent("➲")),
       178, 0, Alignment.CENTER);
-  private final GUIComponent levelBase = new GUIComponent("level-base", new TextComponent("⅟"), 27,
+  private final GUIComponent levelBase = new GUIComponent("level-base", noShadow(new TextComponent("⅟")), 27,
       -105, Alignment.CENTER);
-  private final GUIComponent bitsBase = new GUIComponent("bits-base", new TextComponent("₿"), 14, 199, Alignment.CENTER);
-  private final GUIComponent gemsBase = new GUIComponent("gems-base", new TextComponent("௹") , 15, 198, Alignment.CENTER);
+  private final GUIComponent bitsBase = new GUIComponent("bits-base", noShadow(new TextComponent("₿")), 14, 199, Alignment.CENTER);
+  private final GUIComponent gemsBase = new GUIComponent("gems-base", noShadow(new TextComponent("௹")) , 15, 198, Alignment.CENTER);
 
   private final Map<Integer, String> hpStringNumbers = new HashMap<>();
   private final Map<Integer, String> energyStringNumbers = new HashMap<>();
   private final Map<Integer, String> middleStringNumbers = new HashMap<>();
-  private final Map<Integer, String> levelStringNumbers = new HashMap<>();
-  private final Map<Integer, String> moneyStringNumbers = new HashMap<>();
-  private final Map<Integer, String> gemStringNumbers = new HashMap<>();
-
-  private final ChatColor levelColorBukkit = ChatColor.of("#72D92D");
+  private final Map<Integer, TextComponent> levelStringNumbers = new HashMap<>();
+  private final Map<Integer, TextComponent> moneyStringNumbers = new HashMap<>();
+  private final Map<Integer, TextComponent> gemStringNumbers = new HashMap<>();
 
   public static final TextComponent EMPTY = new TextComponent("");
-  public static final TextComponent NOTICE_COOLDOWN = new TextComponent("᳥");
-  public static final TextComponent NOTICE_ENERGY = new TextComponent("᳣");
-  public static final TextComponent NOTICE_REQUIREMENT = new TextComponent("᳤");
-  public static final TextComponent NOTICE_INVALID_TARGET = new TextComponent("᳢");
-  public static final TextComponent WING_TING = new TextComponent("䶰");
-  public static final TextComponent WING_TING_EMPTY = new TextComponent("䎘");
-  public static final TextComponent EARTH_RUNE = new TextComponent("㆞");
-  public static final TextComponent FROST_ICON = new TextComponent("凚");
-  public static final TextComponent CORRUPT_ICON = new TextComponent("黑");
+  public static final TextComponent NOTICE_COOLDOWN = noShadow(new TextComponent("᳥"));
+  public static final TextComponent NOTICE_ENERGY = noShadow(new TextComponent("᳣"));
+  public static final TextComponent NOTICE_REQUIREMENT = noShadow(new TextComponent("᳤"));
+  public static final TextComponent NOTICE_INVALID_TARGET = noShadow(new TextComponent("᳢"));
+  public static final TextComponent WING_TING = noShadow(new TextComponent("䶰"));
+  public static final TextComponent WING_TING_EMPTY = noShadow(new TextComponent("䎘"));
+  public static final TextComponent EARTH_RUNE = noShadow(new TextComponent("㆞"));
+  public static final TextComponent FROST_ICON = noShadow(new TextComponent("凚"));
+  public static final TextComponent CORRUPT_ICON = noShadow(new TextComponent("黑"));
 
-  public static final TextComponent NO_GOD = new TextComponent("᮰");
-  public static final TextComponent GOD_FACEGUY = new TextComponent("᮱");
-  public static final TextComponent GOD_AURORA = new TextComponent("᮲");
-  public static final TextComponent GOD_ZEXIR = new TextComponent("᮳");
-  public static final TextComponent GOD_ANYA = new TextComponent("᮴");
+  public static final TextComponent NO_GOD =  noShadow(new TextComponent("᮰"));
+  public static final TextComponent GOD_FACEGUY =  noShadow(new TextComponent("᮱"));
+  public static final TextComponent GOD_AURORA = noShadow(new TextComponent("᮲"));
+  public static final TextComponent GOD_ZEXIR = noShadow(new TextComponent("᮳"));
+  public static final TextComponent GOD_ANYA = noShadow(new TextComponent("᮴"));
 
   @SuppressWarnings("deprecation")
   private final List<TextComponent> xpBar = List.of(
-      new TextComponent("䷀"),
-      new TextComponent("䷁"),
-      new TextComponent("䷂"),
-      new TextComponent("䷃"),
-      new TextComponent("䷄"),
-      new TextComponent("䷅"),
-      new TextComponent("䷆"),
-      new TextComponent("䷇"),
-      new TextComponent("䷈"),
-      new TextComponent("䷉"),
-      new TextComponent("䷊"),
-      new TextComponent("䷋"),
-      new TextComponent("䷌"),
-      new TextComponent("䷍"),
-      new TextComponent("䷎"),
-      new TextComponent("䷏"),
-      new TextComponent("䷐"),
-      new TextComponent("䷑"),
-      new TextComponent("䷒"),
-      new TextComponent("䷓"),
-      new TextComponent("䷔"),
-      new TextComponent("䷕"),
-      new TextComponent("䷖"),
-      new TextComponent("䷗"),
-      new TextComponent("䷘")
+       noShadow(new TextComponent("䷀")),
+       noShadow(new TextComponent("䷁")),
+       noShadow(new TextComponent("䷂")),
+       noShadow(new TextComponent("䷃")),
+       noShadow(new TextComponent("䷄")),
+       noShadow(new TextComponent("䷅")),
+       noShadow(new TextComponent("䷆")),
+       noShadow(new TextComponent("䷇")),
+       noShadow(new TextComponent("䷈")),
+       noShadow(new TextComponent("䷉")),
+       noShadow(new TextComponent("䷊")),
+       noShadow(new TextComponent("䷋")),
+       noShadow(new TextComponent("䷌")),
+       noShadow(new TextComponent("䷍")),
+       noShadow(new TextComponent("䷎")),
+       noShadow(new TextComponent("䷏")),
+       noShadow(new TextComponent("䷐")),
+       noShadow(new TextComponent("䷑")),
+       noShadow(new TextComponent("䷒")),
+       noShadow(new TextComponent("䷓")),
+       noShadow(new TextComponent("䷔")),
+       noShadow(new TextComponent("䷕")),
+       noShadow(new TextComponent("䷖")),
+       noShadow(new TextComponent("䷗")),
+       noShadow(new TextComponent("䷘"))
   );
 
   @SuppressWarnings("deprecation")
   private final List<TextComponent> oxygenBar = List.of(
-      new TextComponent("䷙"),
-      new TextComponent("䷚"),
-      new TextComponent("䷛"),
-      new TextComponent("䷜"),
-      new TextComponent("䷝"),
-      new TextComponent("䷞"),
-      new TextComponent("䷟"),
-      new TextComponent("䷠"),
-      new TextComponent("䷡"),
-      new TextComponent("䷢"),
-      new TextComponent("䷣"),
-      new TextComponent("䷤"),
-      new TextComponent("䷥"),
-      new TextComponent("䷦"),
-      new TextComponent("䷧"),
-      new TextComponent("䷨"),
-      new TextComponent("䷩"),
-      new TextComponent("䷪"),
-      new TextComponent("䷫"),
-      new TextComponent("䷬"),
-      new TextComponent("䷭"),
-      new TextComponent("䷮"),
-      new TextComponent("䷯"),
-      new TextComponent("䷰"),
-      new TextComponent("䷱")
+       noShadow(new TextComponent("䷙")),
+       noShadow(new TextComponent("䷚")),
+       noShadow(new TextComponent("䷛")),
+       noShadow(new TextComponent("䷜")),
+       noShadow(new TextComponent("䷝")),
+       noShadow(new TextComponent("䷞")),
+       noShadow(new TextComponent("䷟")),
+       noShadow(new TextComponent("䷠")),
+       noShadow(new TextComponent("䷡")),
+       noShadow(new TextComponent("䷢")),
+       noShadow(new TextComponent("䷣")),
+       noShadow(new TextComponent("䷤")),
+       noShadow(new TextComponent("䷥")),
+       noShadow(new TextComponent("䷦")),
+       noShadow(new TextComponent("䷧")),
+       noShadow(new TextComponent("䷨")),
+       noShadow(new TextComponent("䷩")),
+       noShadow(new TextComponent("䷪")),
+       noShadow(new TextComponent("䷫")),
+       noShadow(new TextComponent("䷬")),
+       noShadow(new TextComponent("䷭")),
+       noShadow(new TextComponent("䷮")),
+       noShadow(new TextComponent("䷯")),
+       noShadow(new TextComponent("䷰")),
+       noShadow(new TextComponent("䷱"))
   );
 
   public static final Map<Integer, TextComponent> HP_BAR = new HashMap<>();
@@ -134,6 +137,21 @@ public class GuiManager {
       buildHealthEnergyAndBarrier();
       buildTargetHealthBars();
     }
+  }
+
+  public static TextComponent shadow(TextComponent t) {
+    t.setColor(ChatColor.RESET);
+    return t;
+  }
+
+  public static TextComponent noShadow(TextComponent t) {
+    t.setColor(NO_SHADOW);
+    return t;
+  }
+
+  public static TextComponent color(TextComponent t, ChatColor c) {
+    t.setColor(c);
+    return t;
   }
 
   public void postNotice(Player player, NoticeData data) {
@@ -261,9 +279,8 @@ public class GuiManager {
   public void updateLevelDisplay(Player player) {
     GUI gui = guiMap.get(player);
     String originalLevelString = Integer.toString(player.getLevel());
-    String levelString = plugin.getGuiManager().convertToLevelFont(player.getLevel());
-    gui.update(new GUIComponent("level-display",
-        new TextComponent(levelString), originalLevelString.length() * 12, -106,
+    TextComponent tc = plugin.getGuiManager().convertToLevelFont(player.getLevel());
+    gui.update(new GUIComponent("level-display", tc, originalLevelString.length() * 12, -106,
         Alignment.CENTER));
 
     int xpProgress = (int) (24 * player.getExp());
@@ -437,11 +454,11 @@ public class GuiManager {
         barrierBar3.append("⑶\uF801");
         remainder--;
       }
-      HP_BAR.put(i, new TextComponent(ChatColor.DARK_RED + hpBar.toString() + ChatColor.RESET));
-      ENERGY_BAR.put(i, new TextComponent(ChatColor.GOLD + eBar.toString() + ChatColor.RESET));
-      BARRIER_BAR_1.put(i, new TextComponent(barrierBar1.toString()));
-      BARRIER_BAR_2.put(i, new TextComponent(barrierBar2.toString()));
-      BARRIER_BAR_3.put(i, new TextComponent(barrierBar3.toString()));
+      HP_BAR.put(i, noShadow(new TextComponent(hpBar.toString())));
+      ENERGY_BAR.put(i, noShadow(new TextComponent(eBar.toString())));
+      BARRIER_BAR_1.put(i, noShadow(new TextComponent(barrierBar1.toString())));
+      BARRIER_BAR_2.put(i, noShadow(new TextComponent(barrierBar2.toString())));
+      BARRIER_BAR_3.put(i, noShadow(new TextComponent(barrierBar3.toString())));
     }
     Bukkit.getLogger().info("[Strife] Missing life/energy bars built!");
   }
@@ -506,7 +523,7 @@ public class GuiManager {
     return s;
   }
 
-  public String convertToLevelFont(int i) {
+  public TextComponent convertToLevelFont(int i) {
     if (levelStringNumbers.containsKey(i)) {
       return levelStringNumbers.get(i);
     }
@@ -522,14 +539,14 @@ public class GuiManager {
         .replaceAll("8", "७\uF801")
         .replaceAll("9", "८\uF801")
         .replaceAll("0", "९\uF801");
-    s = ChatColor.GOLD + s + ChatColor.RESET;
-    levelStringNumbers.put(i, s);
-    return s;
+    TextComponent tc = color(new TextComponent(s), ChatColor.of(new Color(255, 172, 21)));
+    levelStringNumbers.put(i, tc);
+    return tc;
   }
 
-  public String convertToMoneyFont(int i, ChatColor color) {
+  public TextComponent convertToMoneyFont(int i) {
     if (moneyStringNumbers.containsKey(i)) {
-      return color + moneyStringNumbers.get(i) + ChatColor.RESET;
+      return moneyStringNumbers.get(i);
     }
     String s = Integer.toString(i);
     s = s
@@ -543,13 +560,14 @@ public class GuiManager {
         .replaceAll("8", "⑧\uF801")
         .replaceAll("9", "⑨\uF801")
         .replaceAll("0", "⑩\uF801");
-    moneyStringNumbers.put(i, s);
-    return color + s + ChatColor.RESET;
+    TextComponent tc = color(new TextComponent(s), FaceColor.YELLOW.getColor());
+    moneyStringNumbers.put(i, tc);
+    return tc;
   }
 
-  public String convertToGemFont(int i, ChatColor color) {
+  public TextComponent convertToGemFont(int i) {
     if (gemStringNumbers.containsKey(i)) {
-      return color + gemStringNumbers.get(i) + ChatColor.RESET;
+      return gemStringNumbers.get(i);
     }
     String s = Integer.toString(i);
     s = s
@@ -563,7 +581,8 @@ public class GuiManager {
         .replaceAll("8", "⓲\uF801")
         .replaceAll("9", "⓳\uF801")
         .replaceAll("0", "⓴\uF801");
-    gemStringNumbers.put(i, s);
-    return color + s + ChatColor.RESET;
+    TextComponent tc = color(new TextComponent(s), FaceColor.PURPLE.getColor());
+    gemStringNumbers.put(i, tc);
+    return tc;
   }
 }

@@ -168,8 +168,10 @@ public class ProjectileUtil {
   public static void createArrow(LivingEntity shooter, double attackMult, float power,
       float pierceChance, double spread, double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
-    Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0),
-        Arrow.class, e -> e.setVelocity(velocity));
+    Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Arrow.class, e -> {
+      e.setVelocity(velocity);
+      e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    });
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     //arrow.getBoundingBox().expand(0.1);
@@ -182,13 +184,12 @@ public class ProjectileUtil {
   public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,
       double spread, double vertBonus, boolean gravity) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
-    Snowball bullet = shooter.getWorld()
-        .spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
-          e.setVelocity(velocity);
-          e.setItem(wandProjectile);
-        });
+    Snowball bullet = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
+      e.setVelocity(velocity);
+      e.setItem(wandProjectile);
+      e.setGravity(gravity);
+    });
     bullet.setShooter(shooter);
-    bullet.setGravity(gravity);
     //bullet.getBoundingBox().expand(0.1);
 
     setAttackMult(bullet, (float) attackMult);

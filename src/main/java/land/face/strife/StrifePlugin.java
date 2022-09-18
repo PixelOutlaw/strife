@@ -35,7 +35,6 @@ import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -172,7 +171,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
@@ -193,7 +191,7 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
-          pathYAML, abilityYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML;
+          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -321,7 +319,6 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(equipmentYAML = defaultSettingsLoad("equipment.yml"));
     configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
     configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
-    configurations.add(abilityYAML = defaultSettingsLoad("abilities.yml"));
     configurations.add(pathYAML = defaultSettingsLoad("paths.yml"));
     configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
     configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
@@ -564,8 +561,8 @@ public class StrifePlugin extends FacePlugin {
     }
     glowEnabled = Bukkit.getPluginManager().getPlugin("GlowApi") != null;
 
-    ReturnButton returnButton = new ReturnButton(this, Material.ARROW,
-        StringExtensionsKt.chatColorize("&e&l<< Go Back"));
+    ReturnButton returnButton = new ReturnButton(this, Material.PAPER,
+        PaletteUtil.color("|yellow||b|<< Go Back"));
     ConfigurationSection abilityMenus = configYAML.getConfigurationSection("ability-menus");
     abilitySubmenus = new HashMap<>();
     List<SubmenuSelectButton> pickerItems = new ArrayList<>();
@@ -573,8 +570,15 @@ public class StrifePlugin extends FacePlugin {
     for (String menuId : abilityMenus.getKeys(false)) {
       List<String> abilities = abilityMenus.getStringList(menuId + ".abilities");
       String title = abilityMenus.getString(menuId + ".title", "CONFIG ME");
-      List<Ability> abilityList = abilities.stream().map(a -> abilityManager.getAbility(a))
-          .collect(Collectors.toList());
+      List<Ability> abilityList = new ArrayList<>();
+      for (String ability : abilities) {
+        Ability loopAbility = abilityManager.getAbility(ability);
+        if (loopAbility == null) {
+          Bukkit.getLogger().warning("[Strife] Ability " + ability + " not in section " + menuId);
+          continue;
+        }
+        abilityList.add(loopAbility);
+      }
       abilityList.forEach((a)-> a.setHidden(false));
       AbilitySubmenu menu = new AbilitySubmenu(this, title, abilityList, returnButton);
       menu.setId(menuId);
@@ -682,8 +686,8 @@ public class StrifePlugin extends FacePlugin {
     LearninBooksPlugin.instance.getKnowledgeManager().purgeKnowledge("strife");
 
     Spawner.SPAWNER_OFFSET = 0;
-    for (ArmorStand stand : CreateModelAnimation.CURRENT_STANDS) {
-      stand.remove();
+    for (Entity e : CreateModelAnimation.CURRENT_MODELS) {
+      e.remove();
     }
 
     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -718,12 +722,25 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void buildAbilities() {
-    for (String key : abilityYAML.getKeys(false)) {
-      if (!abilityYAML.isConfigurationSection(key)) {
-        continue;
+    List<SmartYamlConfiguration> abilityConfigs = new ArrayList<>();
+    File folder = new File(getDataFolder(), "abilities");
+    File[] listOfFiles = folder.listFiles();
+    for (File f : Objects.requireNonNull(listOfFiles)) {
+      abilityConfigs.add(new SmartYamlConfiguration(f));
+    }
+    for (SmartYamlConfiguration abilityYAML : abilityConfigs) {
+      for (String key : abilityYAML.getKeys(false)) {
+        if (!abilityYAML.isConfigurationSection(key)) {
+          continue;
+        }
+        ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
+        try {
+          abilityManager.loadAbility(key, cs);
+        } catch (Exception e) {
+          Bukkit.getLogger().warning("[Strife] Failed to load ability " + key);
+          Bukkit.getLogger().warning(e.toString());
+        }
       }
-      ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
-      abilityManager.loadAbility(key, cs);
     }
   }
 
@@ -932,8 +949,11 @@ public class StrifePlugin extends FacePlugin {
         float speed = (float) mountSection.getDouble("speed");
         float walkAnimationSpeed = (float) mountSection.getDouble("walk-animation-speed", 1.0);
         boolean flying = mountSection.getBoolean("flying", false);
+        String flyani = mountSection.getString("fly-animation", null);
+        String launch = mountSection.getString("launch-animation", null);
+        String land = mountSection.getString("land-animation", null);
         playerMountManager.loadMount(new LoadedMount(key, customModelData, name, lore, meModel,
-            color, style, speed, walkAnimationSpeed, flying));
+            color, style, speed, walkAnimationSpeed, flying, flyani, launch, land));
         Bukkit.getLogger().info("[Strife] (Mounts) Loaded mount " + key);
       }
     } catch (Exception e) {

@@ -29,7 +29,8 @@ public class ChangePart extends Effect {
     if (partEntity == null) {
       return;
     }
-    final ModelBlueprint blueprint = ModelEngineAPI.api.getModelBlueprint(newModelId);
+    final ModelBlueprint blueprint = ModelEngineAPI.api.getModelManager().getModelRegistry()
+        .getModelBlueprint(newModelId);
     if (blueprint == null) {
       return;
     }
@@ -37,6 +38,6 @@ public class ChangePart extends Effect {
     if (id <= 0) {
       return;
     }
-    partEntity.setDataId(id);
+    partEntity.updateDataId(id);
   }
 }

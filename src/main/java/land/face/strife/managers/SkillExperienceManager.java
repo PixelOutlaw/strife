@@ -52,16 +52,26 @@ public class SkillExperienceManager {
   private final int MAX_SKILL_LEVEL;
 
   private final List<String> skillBackground = List.of(
-      "𫝀\uF809\uF802",
-      "𫝁\uF809\uF802",
-      "𫝂\uF809\uF802",
-      "𫝃\uF809\uF802",
-      "𫝄\uF809\uF802",
-      "𫝅\uF809\uF802",
-      "𫝆\uF809\uF802",
-      "𫝇\uF809\uF802",
-      "𫝈\uF809\uF802",
-      "𫝉\uF809\uF802"
+      "𫝀\uF809\uF801",
+      "𫝁\uF809\uF801",
+      "𫝂\uF809\uF801",
+      "𫝃\uF809\uF801",
+      "𫝄\uF809\uF801",
+      "𫝅\uF809\uF801",
+      "𫝆\uF809\uF801",
+      "𫝇\uF809\uF801",
+      "𫝈\uF809\uF801",
+      "𫝉\uF809\uF801",
+      "𫝊\uF809\uF801",
+      "𫝋\uF809\uF801",
+      "𫝌\uF809\uF801",
+      "𫝍\uF809\uF801",
+      "𫝎\uF809\uF801",
+      "𫝏\uF809\uF801",
+      "𫝐\uF809\uF801",
+      "𫝑\uF809\uF801",
+      "𫝒\uF809\uF801",
+      "𫝓\uF809\uF801"
   );
   private final Map<Integer, String> skillLevel = buildSkillLevelStrings();
 
@@ -105,10 +115,10 @@ public class SkillExperienceManager {
     }
     if (location != null) {
       plugin.getIndicatorManager().addIndicator(mob.getEntity(), location,
-          IndicatorStyle.FLOAT_UP_SLOW, 12,
+          IndicatorStyle.FLOAT_UP_SLOW, 10,
           type.getColor() + FaceColor.BOLD.s() + "+" +
               FaceColor.WHITE + FaceColor.BOLD.s() + (int) amount +
-              type.getColor() + FaceColor.BOLD.s() + " XP!");
+              type.getColor() + FaceColor.BOLD.s() + "XP!");
     }
     if (saveData.isDisplayExp() || forceDisplay) {
       String xp = FORMAT.format(amount);
@@ -153,13 +163,18 @@ public class SkillExperienceManager {
 
   public String updateSkillString(Champion champion) {
     String newTitle = "";
+    int skills = 0;
     for (LifeSkillType skillType : champion.getRecentSkills()) {
       float progress = PlayerDataUtil.getSkillProgress(champion, skillType);
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
-        newTitle += skillBackground.get((int) Math.floor(progress * 10));
+        newTitle += skillBackground.get((int) Math.floor(progress * 18));
         newTitle += skillType.getCharacter();
         newTitle += skillLevel.get(level);
+        skills++;
+        if (skills != champion.getRecentSkills().size()) {
+          newTitle += "\uF822";
+        }
       }
     }
     return newTitle;
@@ -230,21 +245,21 @@ public class SkillExperienceManager {
             .replaceAll("7", "𝟟")
             .replaceAll("8", "𝟠")
             .replaceAll("9", "𝟡");
-        s = "\uF808\uF803" + s + "\uF828";
+        s = "\uF808\uF802" + s + "\uF826";
         lvlStrings.put(i, s);
       } else {
         s = s
-            .replaceAll("0", "𝟘")
-            .replaceAll("1", "𝟙")
-            .replaceAll("2", "𝟚")
-            .replaceAll("3", "𝟛")
-            .replaceAll("4", "𝟜")
-            .replaceAll("5", "𝟝")
-            .replaceAll("6", "𝟞")
-            .replaceAll("7", "𝟟")
-            .replaceAll("8", "𝟠")
-            .replaceAll("9", "𝟡");
-        s = "\uF819\uF821" + s + "\uF824";
+            .replaceAll("0", "𝟘\uF801")
+            .replaceAll("1", "𝟙\uF801")
+            .replaceAll("2", "𝟚\uF801")
+            .replaceAll("3", "𝟛\uF801")
+            .replaceAll("4", "𝟜\uF801")
+            .replaceAll("5", "𝟝\uF801")
+            .replaceAll("6", "𝟞\uF801")
+            .replaceAll("7", "𝟟\uF801")
+            .replaceAll("8", "𝟠\uF801")
+            .replaceAll("9", "𝟡\uF801");
+        s = "\uF819\uF822" + s + "\uF824";
         lvlStrings.put(i, s);
       }
     }

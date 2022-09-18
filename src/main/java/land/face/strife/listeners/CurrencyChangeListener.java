@@ -20,7 +20,6 @@ import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.bullion.MoneyChangeEvent;
 import land.face.strife.StrifePlugin;
-import land.face.strife.tasks.EveryTickTask;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.black_ixx.playerpoints.event.PlayerPointsChangeEvent;
@@ -36,14 +35,12 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
   @EventHandler
   public void OnJoin(PlayerJoinEvent event) {
     int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(event.getPlayer().getUniqueId());
-    String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.YELLOW);
     plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("money-display",
-        new TextComponent(moneyString), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
+        plugin.getGuiManager().convertToMoneyFont(money), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
 
     int gems = plugin.getPlayerPointsPlugin().getAPI().look(event.getPlayer().getUniqueId());
-    String gemString = plugin.getGuiManager().convertToGemFont(gems, ChatColor.LIGHT_PURPLE);
     plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("gem-display",
-        new TextComponent(gemString), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
+        plugin.getGuiManager().convertToGemFont(gems), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
 
   @EventHandler
@@ -53,9 +50,8 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
       return;
     }
     int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(player.getUniqueId());
-    String moneyString = plugin.getGuiManager().convertToMoneyFont(money, ChatColor.YELLOW);
     plugin.getGuiManager().updateComponent(player, new GUIComponent("money-display",
-        new TextComponent(moneyString), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
+        plugin.getGuiManager().convertToMoneyFont(money), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
   }
 
   @EventHandler
@@ -65,9 +61,8 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
       return;
     }
     int gems = plugin.getPlayerPointsPlugin().getAPI().look(player.getUniqueId());
-    String gemString = plugin.getGuiManager().convertToGemFont(gems, ChatColor.LIGHT_PURPLE);
     plugin.getGuiManager().updateComponent(player, new GUIComponent("gem-display",
-        new TextComponent(gemString), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
+        plugin.getGuiManager().convertToGemFont(gems), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
 
   // This ugly function is surprisingly the most efficient way

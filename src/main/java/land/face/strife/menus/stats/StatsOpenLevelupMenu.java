@@ -18,7 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class StatsOpenLevelupMenu extends MenuItem {
   private final Map<Player, Boolean> selfInspectMap = new WeakHashMap<>();
 
   StatsOpenLevelupMenu(StrifePlugin plugin) {
-    super(StringExtensionsKt.chatColorize("&f&lLevelup!"), new ItemStack(Material.NETHER_STAR));
+    super(PaletteUtil.color("|white||b|Levelup!"), new ItemStack(Material.NETHER_STAR));
     this.plugin = plugin;
   }
 
@@ -64,9 +64,9 @@ public class StatsOpenLevelupMenu extends MenuItem {
       return BlankIcon.getBlankStack();
     }
 
-    lore.add(StringExtensionsKt.chatColorize("&7You have unspent &flevelpoints&7 or"));
-    lore.add(StringExtensionsKt.chatColorize("&7a &epath &7to choose! Click here to"));
-    lore.add(StringExtensionsKt.chatColorize("&7open the &b/levelup &7menu!"));
+    lore.add(PaletteUtil.color("|lgray|You have unspent |white|levelpoints|lgray| or"));
+    lore.add(PaletteUtil.color("|lgray|a |yellow|path |lgray|to choose! Click here to"));
+    lore.add(PaletteUtil.color("|lgray|open the |cyan|levelup |lgray|menu!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

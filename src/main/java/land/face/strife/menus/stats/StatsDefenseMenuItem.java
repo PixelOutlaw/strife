@@ -23,6 +23,7 @@ import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -33,8 +34,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
-import land.face.strife.util.DamageUtil.AbilityMod;
-import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -103,8 +102,8 @@ public class StatsDefenseMenuItem extends MenuItem {
     String wardReduction = "";
     if (warding > 0.1) {
       float wardMultNumber = 100 * (1 - StatUtil.getWardingMult(warding));
-      wardReduction = " " + ChatColor.GRAY + "(-" + INT_FORMAT.format(wardMultNumber) + "%" +
-          ChatColor.BLUE + "☄" + ChatColor.GRAY + ")";
+      wardReduction = " " + FaceColor.GRAY + "(-" + INT_FORMAT.format(wardMultNumber) + "%" +
+          FaceColor.BLUE + "☄" + FaceColor.GRAY + ")";
     }
     lore.add(addStat("Ward Rating: ", warding, INT_FORMAT) + wardReduction);
 

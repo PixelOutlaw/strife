@@ -64,19 +64,6 @@ public class AbilityManager {
 
   private final Random random = new Random();
 
-  /*
-  private static final String ON_COOLDOWN = StringExtensionsKt
-      .chatColorize("&6&lAbility On Cooldown!");
-  private static final String NO_ENERGY = StringExtensionsKt
-      .chatColorize("&e&lNot enough energy! (&7&l{n1}&e&l/{n2})");
-  private static final String NO_TARGET = StringExtensionsKt
-      .chatColorize("&7&lNo Target Found!");
-  private static final String NO_REQUIRE = StringExtensionsKt
-      .chatColorize("&c&lAbility Requirements Not Met!");
-   */
-  private static final String CAST = StringExtensionsKt
-      .chatColorize("&a&l&oCast &f&l&o{n}&a&l&o!");
-
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
   }

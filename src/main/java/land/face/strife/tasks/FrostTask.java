@@ -119,7 +119,7 @@ public class FrostTask extends BukkitRunnable {
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("frost-display", GuiManager.FROST_ICON, 14, 112, Alignment.CENTER));
     String string = StrifePlugin.getInstance().getGuiManager().convertToHpDisplay(frost);
-    TextComponent aaa = new TextComponent(ChatColor.AQUA + string + ChatColor.RESET);
+    TextComponent aaa =  GuiManager.noShadow(new TextComponent(string));
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("frost-amount", aaa, string.length() * 8, 113, Alignment.CENTER));
   }

@@ -16,10 +16,6 @@
  */
 package land.face.strife.listeners;
 
-import static land.face.strife.managers.GuiManager.NO_GOD;
-
-import com.sentropic.guiapi.gui.Alignment;
-import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;

@@ -18,6 +18,7 @@
  */
 package land.face.strife.data.champion;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +39,6 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class Champion {
@@ -170,10 +170,10 @@ public class Champion {
     int blueSegments = segments;
 
     attributeHeatmap =
-        ChatColor.RED + IntStream.range(0, redSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
-            ChatColor.YELLOW + IntStream.range(0, yellowSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
-            ChatColor.GREEN + IntStream.range(0, greenSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
-            ChatColor.BLUE + IntStream.range(0, blueSegments).mapToObj(i -> "▌").collect(Collectors.joining());
+        FaceColor.RED + IntStream.range(0, redSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
+            FaceColor.YELLOW + IntStream.range(0, yellowSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
+            FaceColor.GREEN + IntStream.range(0, greenSegments).mapToObj(i -> "▌").collect(Collectors.joining()) +
+            FaceColor.BLUE + IntStream.range(0, blueSegments).mapToObj(i -> "▌").collect(Collectors.joining());
   }
 
   public String getAttributeHeatmap() {

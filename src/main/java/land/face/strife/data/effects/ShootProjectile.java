@@ -86,8 +86,12 @@ public class ShootProjectile extends Effect {
       }
 
       assert projectileEntity.getEntityClass() != null;
-      Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation,
-          projectileEntity.getEntityClass(), e -> e.setVelocity(velocity));
+      Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation, projectileEntity.getEntityClass(), e -> {
+        e.setVelocity(velocity);
+        if (!gravity) {
+          e.setGravity(false);
+        }
+      });
       projectile.setShooter(caster.getEntity());
 
       if (silent) {
@@ -99,9 +103,6 @@ public class ShootProjectile extends Effect {
       }
       if (ignite) {
         projectile.setFireTicks(200);
-      }
-      if (!gravity) {
-        projectile.setGravity(false);
       }
       if (projectileEntity == EntityType.ARROW || projectileEntity == EntityType.SPECTRAL_ARROW) {
         if (projectileEntity != EntityType.SPECTRAL_ARROW && arrowColor != null) {

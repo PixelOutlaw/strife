@@ -155,7 +155,7 @@ public class PlayerMountManager {
           modeledEntity.setInvisible(true);
           modeledEntity.getMountHandler().setSteerable(true);
           modeledEntity.getMountHandler().setCanCarryPassenger(true);
-          FacelandMountController c = new FacelandMountController(model, loadedMount.isFlying());
+          FacelandMountController c = new FacelandMountController(model, loadedMount);
           modeledEntity.getMountHandler().setDriver(player, c);
           c.setFlying(modeledEntity);
         }

@@ -2,7 +2,6 @@ package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import com.ticxo.modelengine.api.model.ActiveModel.ModelState;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,7 +50,8 @@ public class Spawner extends BukkitRunnable {
   private double leashRange;
   private transient float squaredLeashRange;
   private long respawnSeconds;
-  private long chunkKey;
+  @Getter
+  private String chunkKey;
   private int startTime;
   private int endTime;
 
@@ -67,7 +67,7 @@ public class Spawner extends BukkitRunnable {
     this.respawnSeconds = respawnSeconds;
     this.leashRange = leashRange;
     squaredLeashRange = (float) Math.pow(leashRange, 2);
-    chunkKey = location.getChunk().getChunkKey();
+    chunkKey = ChunkUtil.buildChunkKey(location.getChunk());
 
     runTaskTimer(StrifePlugin.getInstance(), SPAWNER_OFFSET % 20, 40L);
     SPAWNER_OFFSET++;
@@ -121,7 +121,7 @@ public class Spawner extends BukkitRunnable {
     if (totalMobSlotsInUse >= maxMobs) {
       return;
     }
-    if (!isChuckLoaded(spawner)) {
+    if (!ChunkUtil.canSpawnEntity(spawner.chunkKey)) {
       return;
     }
 
@@ -223,11 +223,6 @@ public class Spawner extends BukkitRunnable {
     }
   }
 
-  private static boolean isChuckLoaded(Spawner spawner) {
-    String chunkId = spawner.getLocation().getWorld().getName() + spawner.getChunkKey();
-    return ChunkUtil.isChuckLoaded(chunkId);
-  }
-
   public void addRespawnTimeIfApplicable(LivingEntity livingEntity) {
     if (entities.contains(livingEntity)) {
       entities.remove(livingEntity);
@@ -269,7 +264,7 @@ public class Spawner extends BukkitRunnable {
 
   public void setLocation(Location location) {
     this.location = location;
-    chunkKey = location.getChunk().getChunkKey();
+    chunkKey = ChunkUtil.buildChunkKey(location.getChunk());
   }
 
   public double getLeashRange() {
@@ -303,10 +298,6 @@ public class Spawner extends BukkitRunnable {
 
   public List<Long> getRespawnTimes() {
     return respawnTimes;
-  }
-
-  public long getChunkKey() {
-    return chunkKey;
   }
 
   public long getSnoozeTime() {

@@ -8,20 +8,21 @@ import com.ticxo.modelengine.api.model.mount.controller.AbstractMountController;
 import com.ticxo.modelengine.api.model.mount.handler.IMountHandler;
 import com.ticxo.modelengine.api.nms.WrapperLookController;
 import com.ticxo.modelengine.api.nms.WrapperMoveController;
+import land.face.strife.data.LoadedMount;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class FacelandMountController extends AbstractMountController {
 
   private final ActiveModel model;
+  private final LoadedMount loadedMount;
   private boolean flying;
-  private final boolean ableToFly;
 
   private long launchStamp = 0L;
 
-  public FacelandMountController(ActiveModel model, boolean ableToFly) {
+  public FacelandMountController(ActiveModel model, LoadedMount loadedMount) {
     this.flying = false;
-    this.ableToFly = ableToFly;
+    this.loadedMount = loadedMount;
     this.model = model;
   }
 
@@ -43,14 +44,19 @@ public class FacelandMountController extends AbstractMountController {
         modeledEntity.getEntity().setGravity(true);
         modeledEntity.setJumping(false);
         flying = false;
-        model.removeState("fly_loop", false);
-        model.addState("fly_end", 2, 5, 3);
+        if (loadedMount.getFlyAnimation() != null) {
+          model.removeState(loadedMount.getFlyAnimation(), false);
+        }
+        if (loadedMount.getLandAnimation() != null) {
+          model.addState(loadedMount.getLandAnimation(), 2, 5, 3);
+        }
         return;
       }
       if (launchStamp < System.currentTimeMillis()) {
-        if (!model.getStates().contains("fly_loop")) {
-          StateProperty flyProp = new StateProperty("fly_loop", model.getBlueprint()
-              .getAnimation("fly_loop"), 5, 5, 1.2f);
+        if (loadedMount.getFlyAnimation() != null &&
+            !model.getStates().contains(loadedMount.getFlyAnimation())) {
+          StateProperty flyProp = new StateProperty(loadedMount.getFlyAnimation(),
+              model.getBlueprint().getAnimation(loadedMount.getFlyAnimation()), 5, 5, 1.2f);
           flyProp.setLoop(true);
           model.addState(flyProp);
         }
@@ -91,19 +97,23 @@ public class FacelandMountController extends AbstractMountController {
       }
       wrapperMoveController.move(n, n2, modeledEntity.getEntity().getMovementSpeed());
     }
-    if (ableToFly && getEntity().getLocation().getPitch() < -60) {
+    if (loadedMount.isFlying() && getEntity().getLocation().getPitch() < -60) {
       wrapperMoveController.addVelocity(0.0, 2, 0.0);
       modeledEntity.getEntity().setGravity(false);
       modeledEntity.setJumping(true);
       flying = true;
       launchStamp = System.currentTimeMillis() + 660;
-      model.addState("fly_start", 2, 5, 3);
+      if (loadedMount.getLaunchAnimation() != null) {
+        model.addState(loadedMount.getLaunchAnimation(), 2, 5, 3);
+      }
       return;
     }
     if (getInput().jump) {
       wrapperMoveController.jump();
       modeledEntity.setJumping(true);
-      model.addState("fly_start", 2, 5, 3);
+      if (loadedMount.getLaunchAnimation() != null) {
+        model.addState(loadedMount.getLaunchAnimation(), 2, 5, 3);
+      }
     }
   }
 
@@ -125,11 +135,11 @@ public class FacelandMountController extends AbstractMountController {
 
   @Override
   public FacelandMountController getInstance() {
-    return new FacelandMountController(model, ableToFly);
+    return new FacelandMountController(model, loadedMount);
   }
 
   public void setFlying(ModeledEntity modeledEntity) {
-    if (!ableToFly || getEntity().isOnGround()) {
+    if (!loadedMount.isFlying() || getEntity().isOnGround()) {
       return;
     }
     modeledEntity.getEntity().setGravity(false);

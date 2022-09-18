@@ -1,5 +1,7 @@
 package land.face.strife.managers;
 
+import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -7,8 +9,13 @@ import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.StrifePlugin;
@@ -22,7 +29,12 @@ import land.face.strife.events.UniqueSpawnEvent;
 import land.face.strife.patch.GoalPatcher;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.ItemPassengerTask;
-import land.face.strife.util.*;
+import land.face.strife.util.DisguiseUtil;
+import land.face.strife.util.ItemUtil;
+import land.face.strife.util.LogUtil;
+import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.SpecialStatusUtil;
+import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
@@ -32,16 +44,33 @@ import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Bee;
+import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Hoglin;
+import org.bukkit.entity.Horse;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Phantom;
+import org.bukkit.entity.Piglin;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Raider;
+import org.bukkit.entity.Shulker;
+import org.bukkit.entity.Slime;
+import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
+import org.bukkit.entity.Vindicator;
+import org.bukkit.entity.Wolf;
+import org.bukkit.entity.Zombie;
+import org.bukkit.entity.ZombieVillager;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import java.util.*;
-
-import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 
 public class UniqueEntityManager {
 
@@ -295,6 +324,12 @@ public class UniqueEntityManager {
           modeledEntity.addActiveModel(model);
           modeledEntity.detectPlayers();
           modeledEntity.setInvisible(true);
+          Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+            if (entity.isValid()) {
+              modeledEntity.getNametagHandler().setCustomNameVisibility("name", true);
+              modeledEntity.getNametagHandler().setCustomName("name", entity.getCustomName());
+            }
+          }, 2L);
           mob.setModelEntity(modeledEntity);
         }
       }

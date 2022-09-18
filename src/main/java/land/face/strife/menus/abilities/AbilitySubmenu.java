@@ -33,12 +33,15 @@ public class AbilitySubmenu extends ItemMenu {
   public AbilitySubmenu(StrifePlugin plugin, String name, List<Ability> abilities, ReturnButton returnButton) {
     super(StringExtensionsKt.chatColorize(name), Size.fit(abilities.size() + 1), plugin);
     int index = 0;
+    if (returnButton != null) {
+      setItem(0, returnButton);
+      index++;
+    }
     abilities.sort(new AbilityComparator());
     for (Ability ability : abilities) {
       setItem(index, new AbilityButton(plugin, ability));
       index++;
     }
-    setItem(getSize().getSize() - 1, returnButton);
     fillEmptySlots(new BlankIcon());
   }
 

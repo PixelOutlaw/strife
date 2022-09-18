@@ -19,9 +19,8 @@ import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +51,6 @@ import me.glaremasters.guilds.api.GuildsAPI;
 import me.glaremasters.guilds.guild.Guild;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -358,11 +356,11 @@ public class DamageUtil {
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
       if (rawDamage == 0) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, ChatColor.AQUA + "０");
+            IndicatorStyle.RANDOM_POPOFF, 9, FaceColor.CYAN + "０");
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
-          damageString = ChatColor.WHITE + "✸" + "\uF809" +
+          damageString = FaceColor.TRUE_WHITE + "✸" + "\uF809" +
               StringUtils.repeat("\uF806", damageString.length()) + damageString;
         }
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),

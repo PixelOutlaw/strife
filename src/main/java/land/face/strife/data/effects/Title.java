@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.data.StrifeMob;
@@ -22,11 +23,11 @@ public class Title extends Effect {
 	}
 
 	public void setTopTitle(String topTitle) {
-		this.topTitle = StringExtensionsKt.chatColorize(topTitle);
+		this.topTitle = PaletteUtil.color(topTitle);
 	}
 
 	public void setLowerTitle(String lowerTitle) {
-		this.lowerTitle = StringExtensionsKt.chatColorize(lowerTitle);
+		this.lowerTitle = PaletteUtil.color(lowerTitle);
 	}
 
 	public void setRange(double range) {

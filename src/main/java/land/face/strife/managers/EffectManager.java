@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import static land.face.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.tuple.Triple;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -71,7 +72,6 @@ import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
-import land.face.strife.events.EventEffectEvent;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AbilityMod;
@@ -701,6 +701,25 @@ public class EffectManager {
         ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
         ((CreateModelAnimation) effect).setTargetLock(cs.getBoolean("target-lock", false));
         ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", true));
+        if (cs.getString("color") != null) {
+          java.awt.Color c = java.awt.Color.decode(cs.getString("color"));
+          ((CreateModelAnimation) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
+        }
+        if (cs.getConfigurationSection("animation") != null) {
+          Map<Integer, List<Triple<String, String, String>>> animationMap = new HashMap<>();
+          Set<String> keys = cs.getConfigurationSection("animation").getKeys(false);
+          for (String s : keys) {
+            int frame = Integer.parseInt(s);
+            List<String> values = cs.getStringList("animation." + s);
+            List<Triple<String, String, String>> triple = new ArrayList<>();
+            for (String input : values) {
+              String[] str = input.split(":");
+              triple.add(Triple.of(str[0], str[1], str[2]));
+            }
+            animationMap.put(frame, triple);
+          }
+          ((CreateModelAnimation) effect).setComplexPart(animationMap);
+        }
       }
       case CHANGE_PART -> {
         effect = new ChangePart();

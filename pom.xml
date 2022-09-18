@@ -34,7 +34,7 @@
   </parent>
 
   <artifactId>strife</artifactId>
-  <version>3.8.1</version>
+  <version>3.8.2</version>
   <packaging>jar</packaging>
 
   <name>strife</name>
@@ -63,10 +63,6 @@
       <url>https://repo.glaremasters.me/repository/public/</url>
     </repository>
     <repository>
-      <id>inventive-repo</id>
-      <url>https://repo.inventivetalent.org/content/groups/public/</url>
-    </repository>
-    <repository>
       <id>eldonexus</id>
       <url>https://eldonexus.de/repository/maven-releases/</url>
     </repository>
@@ -93,7 +89,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>facecore</artifactId>
-      <version>1.19.0.1</version>
+      <version>1.19.0.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -168,12 +164,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.inventivetalent</groupId>
-      <artifactId>glowapi</artifactId>
-      <version>1.5.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.ticxo.modelengine</groupId>
       <artifactId>api</artifactId>
       <version>R2.5.0</version>
@@ -204,7 +194,6 @@
         <configuration>
           <source>17</source>
           <target>17</target>
-          <compilerArgs>--enable-preview</compilerArgs>
         </configuration>
       </plugin>
     </plugins>

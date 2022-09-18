@@ -1,6 +1,7 @@
 package land.face.strife.data.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -24,7 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class Thrall extends Effect {
 
   private int lifeSeconds = 30;
-  private String name = "&8«&7Thrall&8»";
+  private String name = PaletteUtil.color("|dgray|«|lgray|Thrall|dgray|»");
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -45,10 +46,10 @@ public class Thrall extends Effect {
     }
 
     soul.getOwner().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 600, 0));
-    MessageUtils.sendMessage(soul.getOwner(), "&5&oPowerful Black Magics has taken control of your body! Your soul is bound to this grave!");
+    PaletteUtil.sendMessage(soul.getOwner(), "|purple||i|Powerful Black Magic has taken control of your body! Your soul is temporarily bound to this grave!");
 
     mob.setStats(soul.getStatMap());
-    mob.getEntity().setCustomName(StringExtensionsKt.chatColorize(name));
+    mob.getEntity().setCustomName(PaletteUtil.color(name));
     mob.getEntity().setCustomNameVisible(true);
 
     PlayerDisguise disguise = new PlayerDisguise(soul.getOwner());

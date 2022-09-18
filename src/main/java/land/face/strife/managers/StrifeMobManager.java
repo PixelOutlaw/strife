@@ -46,7 +46,8 @@ public class StrifeMobManager {
     this.plugin = plugin;
     dualWieldAttackSpeed =
         (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
-    levelReqGeneric = plugin.getSettings().getString("language.level-req.generic", "");
+    levelReqGeneric = PaletteUtil.color(plugin.getSettings()
+        .getString("language.level-req.generic", ""));
     baseAirTicks = plugin.getSettings().getInt("config.mechanics.base-oxygen-ticks", 300);
     for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
       levelReqMap.put(slot.toString(), PaletteUtil.color(

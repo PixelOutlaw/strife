@@ -16,7 +16,9 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,11 +42,14 @@ public class AttackSpeedManager {
   private final float attackCost;
   private final int warnLevel;
 
+  private final String attackFastMsg;
+
   public AttackSpeedManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.lastAttackMap = new HashMap<>();
     attackCost = (float) plugin.getSettings().getDouble("config.mechanics.energy.attack-cost", 5);
     warnLevel = plugin.getSettings().getInt("config.mechanics.energy.warn-level", 10) + 1;
+    attackFastMsg = plugin.getSettings().getString("language.generic.attack-too-fast");
   }
 
   public void resetAttack(StrifeMob mob, float ratio, boolean override) {
@@ -106,9 +111,8 @@ public class AttackSpeedManager {
     float energyMult = Math.min(1, attacker.getEnergy() / energyCost);
 
     if (resetRatio != -1 && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < warnLevel) {
-      TitleUtils.sendTitle((Player) attacker.getEntity(), "  ", ChatColor.RED + "Low Energy!", 10, 0, 8);
-      MessageUtils.sendMessage(attacker.getEntity(),
-          "&e[!] Your energy is low! Try &fattacking slower &eor &fdrinking an energy potion&e! Your energy is shown where your hunger bar normally would be!");
+      TitleUtils.sendTitle((Player) attacker.getEntity(), "  ", FaceColor.ORANGE + "Low Energy!", 10, 0, 8);
+      PaletteUtil.sendMessage(attacker.getEntity(), attackFastMsg);
     }
 
     StatUtil.changeEnergy(attacker, -energyCost);

@@ -19,6 +19,7 @@
 package land.face.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
@@ -34,9 +35,21 @@ public class MountCommand extends BaseCommand {
   private final StrifePlugin plugin;
   private final List<String> bannedWorlds;
 
+  private final String susActions;
+  private final String bannedWorld;
+  private final String onlyOnGround;
+  private final String invalidLocation;
+  private final String notInCombat;
+
   public MountCommand(StrifePlugin plugin) {
     this.plugin = plugin;
     bannedWorlds = plugin.getMountsYAML().getStringList("banned-worlds");
+
+    susActions = plugin.getSettings().getString("language.generic.sus-actions");
+    bannedWorld = plugin.getSettings().getString("language.mounts.banned-world");
+    onlyOnGround = plugin.getSettings().getString("language.mounts.ground-only");
+    invalidLocation = plugin.getSettings().getString("language.mounts.invalid-location");
+    notInCombat = plugin.getSettings().getString("language.mounts.no-combat");
   }
 
   @Default
@@ -46,31 +59,31 @@ public class MountCommand extends BaseCommand {
     }
     Player sender = getCurrentCommandIssuer().getIssuer();
     if (plugin.getPlayerMountManager().isMounted(sender)) {
-      MessageUtils.sendMessage(sender, "&e[!] Listen here you little dingus I don't know what you're trying to pull but I don't like it");
+      PaletteUtil.sendMessage(sender, susActions);
       return;
     }
     if (bannedWorlds.contains((sender.getWorld().getName()))) {
-      MessageUtils.sendMessage(sender, "&e[!] Mounts cannot be summoned here!");
+      PaletteUtil.sendMessage(sender, bannedWorld);
       return;
     }
     Material floorMaterial = sender.getLocation().clone().add(-0, -0.1, 0).getBlock().getType();
     if (!floorMaterial.isSolid()) {
-      MessageUtils.sendMessage(sender, "&e[!] You can only summon mounts while on the ground!");
+      PaletteUtil.sendMessage(sender, onlyOnGround);
       return;
     }
     Material eyeMaterial = sender.getEyeLocation().getBlock().getType();
     if (!(eyeMaterial == Material.AIR || eyeMaterial == Material.CAVE_AIR)) {
-      MessageUtils.sendMessage(sender, "&e[!] You cannot summon a mount here!");
+      PaletteUtil.sendMessage(sender, invalidLocation);
       return;
     }
     Material footMaterial = sender.getLocation().clone().add(-0, 0.1, 0).getBlock().getType();
     if (footMaterial.isSolid()) {
-      MessageUtils.sendMessage(sender, "&e[!] You cannot summon a mount on this block!");
+      PaletteUtil.sendMessage(sender, invalidLocation);
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(sender);
     if (mob.isInCombat()) {
-      MessageUtils.sendMessage(sender, "&e[!] You cannot summon a mount while in combat!");
+      PaletteUtil.sendMessage(sender, notInCombat);
       return;
     }
     plugin.getPlayerMountManager().spawnMount(sender);

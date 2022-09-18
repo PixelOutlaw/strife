@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
 import com.tealcube.minecraft.bukkit.shade.google.gson.JsonArray;
@@ -171,11 +172,11 @@ public class BoostManager {
       String creator = boost.getString("creator", "SERVER");
       int announceInterval = boost.getInt("announcement-interval", 10);
       int duration = boost.getInt("duration", 60);
-      List<String> announceStart = ListExtensionsKt.chatColorize(
+      List<String> announceStart = PaletteUtil.color(
           boost.getStringList("announcement-start"));
-      List<String> announceRun = ListExtensionsKt.chatColorize(
+      List<String> announceRun = PaletteUtil.color(
           boost.getStringList("announcement-running"));
-      List<String> announceEnd = ListExtensionsKt.chatColorize(
+      List<String> announceEnd = PaletteUtil.color(
           boost.getStringList("announcement-end"));
 
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");

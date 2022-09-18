@@ -85,7 +85,7 @@ public class CorruptionManager {
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("corrupt-display", GuiManager.CORRUPT_ICON, 14, 112, Alignment.CENTER));
     String string = StrifePlugin.getInstance().getGuiManager().convertToEnergyDisplayFont(corruption);
-    TextComponent aaa = new TextComponent(ChatColor.DARK_PURPLE + string + ChatColor.RESET);
+    TextComponent aaa = GuiManager.noShadow(new TextComponent(string));
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("corrupt-amount", aaa, string.length() * 8, 113, Alignment.CENTER));
   }

@@ -83,7 +83,7 @@ public class RuneManager {
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("rune-display", GuiManager.EARTH_RUNE, 14, 127, Alignment.CENTER));
     String string = StrifePlugin.getInstance().getGuiManager().convertToMiddleString(runes);
-    TextComponent aaa = new TextComponent(ChatColor.GREEN + string + ChatColor.RESET);
+    TextComponent aaa = GuiManager.noShadow(new TextComponent(string));
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("rune-amount", aaa, string.length() * 8, 133, Alignment.CENTER));
   }
