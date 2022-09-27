@@ -59,7 +59,7 @@ public class WorldSpaceEffect {
     this.nextLocation = nextLocation;
     this.maxFallTicks = maxFallTicks;
     if (modelEffect != null) {
-      ActiveModel model = ModelEngineAPI.api.getModelManager().createActiveModel(modelEffect);
+      ActiveModel model = ModelEngineAPI.createActiveModel(modelEffect);
       if (model == null) {
         Bukkit.getLogger().warning("[Strife] (WSE) No valid model for " + modelEffect);
       } else {
@@ -68,11 +68,11 @@ public class WorldSpaceEffect {
         stand.setAI(false);
         stand.setInvulnerable(true);
         ChunkUtil.setDespawnOnUnload(stand);
-        modeledEntity = ModelEngineAPI.api.getModelManager().createModeledEntity(stand);
+        modeledEntity = ModelEngineAPI.createModeledEntity(stand);
         if (modeledEntity != null) {
-          modeledEntity.addActiveModel(model);
-          modeledEntity.detectPlayers();
-          modeledEntity.setInvisible(true);
+          modeledEntity.addModel(model, true);
+          //modeledEntity.detectPlayers();
+          modeledEntity.setBaseEntityVisible(false);
         }
       }
     }

@@ -1,14 +1,9 @@
 package land.face.strife.tasks;
 
-import com.sentropic.guiapi.gui.Alignment;
-import com.sentropic.guiapi.gui.GUIComponent;
 import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.GuiManager;
 import land.face.strife.util.DamageUtil;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -20,7 +15,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class FrostTask extends BukkitRunnable {
 
-  private GuiManager guiManager;
   private final WeakReference<StrifeMob> parentMob;
   private int coldCheckTick = 0;
   private boolean isCold;
@@ -28,7 +22,6 @@ public class FrostTask extends BukkitRunnable {
   public FrostTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
     this.runTaskTimer(StrifePlugin.getInstance(), 20L, 1);
-    guiManager = StrifePlugin.getInstance().getGuiManager();
   }
 
   @Override
@@ -53,7 +46,6 @@ public class FrostTask extends BukkitRunnable {
     if (coldCheckTick == 0) {
       Block block = player.getLocation().getBlock();
       isCold = isLocationCold(block);
-      pushRuneGui(mob, mob.getFrost() / 100);
     }
 
     if (isCold) {
@@ -106,21 +98,5 @@ public class FrostTask extends BukkitRunnable {
           || (block.getWorld().getTime() > 13000 && block.getWorld().getTime() < 23000);
     }
     return false;
-  }
-
-  public void pushRuneGui(StrifeMob mob, int frost) {
-    if (frost < 1) {
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("frost-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("frost-amount", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      return;
-    }
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("frost-display", GuiManager.FROST_ICON, 14, 112, Alignment.CENTER));
-    String string = StrifePlugin.getInstance().getGuiManager().convertToHpDisplay(frost);
-    TextComponent aaa =  GuiManager.noShadow(new TextComponent(string));
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("frost-amount", aaa, string.length() * 8, 113, Alignment.CENTER));
   }
 }

@@ -24,12 +24,12 @@ public class ModelAnimation extends Effect {
       return;
     }
     if (lockTicks > 0) {
-      target.getModelEntity().lockYaw(true);
+      target.getModelEntity().setModelRotationLock(true);
       Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
-          target.getModelEntity().lockYaw(false), lockTicks);
+          target.getModelEntity().setBaseEntityVisible(false), lockTicks);
     }
-    for (ActiveModel model : target.getModelEntity().getAllActiveModel().values()) {
-      model.addState(animationId, lerpIn, lerpOut, speed);
+    for (ActiveModel model : target.getModelEntity().getModels().values()) {
+      model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
     }
   }
 }

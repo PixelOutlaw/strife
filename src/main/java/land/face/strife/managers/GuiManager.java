@@ -55,8 +55,6 @@ public class GuiManager {
   public static final TextComponent NOTICE_INVALID_TARGET = noShadow(new TextComponent("᳢"));
   public static final TextComponent WING_TING = noShadow(new TextComponent("䶰"));
   public static final TextComponent WING_TING_EMPTY = noShadow(new TextComponent("䎘"));
-  public static final TextComponent EARTH_RUNE = noShadow(new TextComponent("㆞"));
-  public static final TextComponent FROST_ICON = noShadow(new TextComponent("凚"));
   public static final TextComponent CORRUPT_ICON = noShadow(new TextComponent("黑"));
 
   public static final TextComponent NO_GOD =  noShadow(new TextComponent("᮰"));
@@ -227,12 +225,9 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("food-icon-CARBOHYDRATE", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("food-icon-VITAMINS", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("frost-display", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("corrupt-display", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("rune-display", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("rune-amount", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("frost-amount", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("corrupt-amount", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("slot-a-charges", EMPTY, 0, 0, Alignment.CENTER));
@@ -550,16 +545,16 @@ public class GuiManager {
     }
     String s = Integer.toString(i);
     s = s
-        .replaceAll("1", "①\uF801")
-        .replaceAll("2", "②\uF801")
-        .replaceAll("3", "③\uF801")
-        .replaceAll("4", "④\uF801")
-        .replaceAll("5", "⑤\uF801")
-        .replaceAll("6", "⑥\uF801")
-        .replaceAll("7", "⑦\uF801")
-        .replaceAll("8", "⑧\uF801")
-        .replaceAll("9", "⑨\uF801")
-        .replaceAll("0", "⑩\uF801");
+        .replaceAll("1", "①")
+        .replaceAll("2", "②")
+        .replaceAll("3", "③")
+        .replaceAll("4", "④")
+        .replaceAll("5", "⑤")
+        .replaceAll("6", "⑥")
+        .replaceAll("7", "⑦")
+        .replaceAll("8", "⑧")
+        .replaceAll("9", "⑨")
+        .replaceAll("0", "⑩");
     TextComponent tc = color(new TextComponent(s), FaceColor.YELLOW.getColor());
     moneyStringNumbers.put(i, tc);
     return tc;
@@ -571,16 +566,16 @@ public class GuiManager {
     }
     String s = Integer.toString(i);
     s = s
-        .replaceAll("1", "⓫\uF801")
-        .replaceAll("2", "⓬\uF801")
-        .replaceAll("3", "⓭\uF801")
-        .replaceAll("4", "⓮\uF801")
-        .replaceAll("5", "⓯\uF801")
-        .replaceAll("6", "⓰\uF801")
-        .replaceAll("7", "⓱\uF801")
-        .replaceAll("8", "⓲\uF801")
-        .replaceAll("9", "⓳\uF801")
-        .replaceAll("0", "⓴\uF801");
+        .replaceAll("1", "⓫")
+        .replaceAll("2", "⓬")
+        .replaceAll("3", "⓭")
+        .replaceAll("4", "⓮")
+        .replaceAll("5", "⓯")
+        .replaceAll("6", "⓰")
+        .replaceAll("7", "⓱")
+        .replaceAll("8", "⓲")
+        .replaceAll("9", "⓳")
+        .replaceAll("0", "⓴");
     TextComponent tc = color(new TextComponent(s), FaceColor.PURPLE.getColor());
     gemStringNumbers.put(i, tc);
     return tc;

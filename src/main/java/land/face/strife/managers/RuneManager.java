@@ -20,6 +20,7 @@ package land.face.strife.managers;
 
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -76,15 +77,9 @@ public class RuneManager {
     if (runes < 1) {
       StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
           new GUIComponent("rune-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("rune-amount", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
       return;
     }
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-display", GuiManager.EARTH_RUNE, 14, 127, Alignment.CENTER));
-    String string = StrifePlugin.getInstance().getGuiManager().convertToMiddleString(runes);
-    TextComponent aaa = GuiManager.noShadow(new TextComponent(string));
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-amount", aaa, string.length() * 8, 133, Alignment.CENTER));
+        new GUIComponent("rune-display", GuiManager.noShadow(new TextComponent(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
   }
 }

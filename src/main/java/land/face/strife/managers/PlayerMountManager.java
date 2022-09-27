@@ -142,21 +142,18 @@ public class PlayerMountManager {
 
     ActiveModel model = null;
     if (loadedMount.getModelId() != null) {
-      model = ModelEngineAPI.api.getModelManager().createActiveModel(
-          loadedMount.getModelId());
+      model = ModelEngineAPI.createActiveModel(loadedMount.getModelId());
       if (model == null) {
         Bukkit.getLogger().warning("[Strife] (Mounts) No valid model for " + loadedMount.getId());
       } else {
-        ModeledEntity modeledEntity = ModelEngineAPI.api.getModelManager()
-            .createModeledEntity(pig);
+        ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(pig);
         if (modeledEntity != null) {
-          modeledEntity.addActiveModel(model);
-          modeledEntity.detectPlayers();
-          modeledEntity.setInvisible(true);
-          modeledEntity.getMountHandler().setSteerable(true);
-          modeledEntity.getMountHandler().setCanCarryPassenger(true);
+          modeledEntity.addModel(model, true);
+          modeledEntity.setBaseEntityVisible(false);
+          modeledEntity.getMountManager().setCanSteer(true);
+          modeledEntity.getMountManager().setCanRide(true);
           FacelandMountController c = new FacelandMountController(model, loadedMount);
-          modeledEntity.getMountHandler().setDriver(player, c);
+          modeledEntity.getMountManager().setDriver(player, c);
           c.setFlying(modeledEntity);
         }
       }
@@ -179,8 +176,8 @@ public class PlayerMountManager {
     champion.getSaveData().setOnMount(false);
     task.getMount().get().getEntity().eject();
     if (task.getModel() != null) {
-      task.getModel().getModeledEntity().getMountHandler().dismountAllPassengers();
-      task.getModel().clearModel();
+      task.getModel().getModeledEntity().getMountManager().dismountAllPassengers();
+      task.getModel().destroy();
     }
     task.getMount().get().getEntity().remove();
     ownerMap.remove(task.getPlayer().get().getUniqueId());
@@ -192,7 +189,7 @@ public class PlayerMountManager {
   public void clearAll() {
     for (MountTask task : ownerMap.values()) {
       if (task.getModel() != null) {
-        task.getModel().clearModel();
+        task.getModel().destroy();
       }
       task.getMount().get().getEntity().remove();
       task.cancel();

@@ -18,12 +18,16 @@
  */
 package land.face.strife.timers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
@@ -35,8 +39,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 public class RuneTimer extends BukkitRunnable {
 
@@ -44,6 +50,9 @@ public class RuneTimer extends BukkitRunnable {
   private final UUID savedUUID;
   private final RuneManager runeManager;
   private final Set<Hologram> runeHolograms = new HashSet<>();
+  private final Random random = new Random();
+
+  private static final Map<Integer, Map<Integer, List<Vector>>> gigaMap = cacheRuneLocations();
 
   private static final ItemStack RUNE_STACK = new ItemStack(Material.COARSE_DIRT);
 
@@ -97,8 +106,11 @@ public class RuneTimer extends BukkitRunnable {
       }
     } else if (currentRunes > visualRunes) {
       while (currentRunes > runeHolograms.size() && runeHolograms.size() < 6) {
-        Hologram holo = DHAPI.createHologram(UUID.randomUUID().toString(), mob.getEntity()
-            .getEyeLocation().clone(), List.of("#ICON: COARSE_DIRT"));
+        Hologram holo = DHAPI.createHologram(
+            UUID.randomUUID().toString(),
+            mob.getEntity().getEyeLocation().clone(),
+            List.of("#ICON: IRON_NUGGET {CustomModelData:" + (100 + random.nextInt(5) + "}"))
+        );
         runeHolograms.add(holo);
       }
     }
@@ -111,14 +123,37 @@ public class RuneTimer extends BukkitRunnable {
     runeHolograms.clear();
   }
 
+  private static Map<Integer, Map<Integer, List<Vector>>> cacheRuneLocations() {
+    Map<Integer, Map<Integer, List<Vector>>> runeTickMap = new HashMap<>();
+    for (int tickIndex = 1; tickIndex <= 360; tickIndex++) {
+      Map<Integer, List<Vector>> runeMap = new HashMap<>();
+      for (int numRunes = 1; numRunes <= 10; numRunes++) {
+        float step = 360f / numRunes;
+        float start = (float) tickIndex;
+        int currentRuneIndex = 0;
+        List<Vector> displacements = new ArrayList<>();
+        while (currentRuneIndex < numRunes) {
+          float radian1 = (float) Math.toRadians(start + step * currentRuneIndex);
+          displacements.add(new Vector(0.7 * Math.cos(radian1), 0,  0.7 * Math.sin(radian1)));
+          currentRuneIndex++;
+        }
+        runeMap.put(numRunes, displacements);
+      }
+      runeTickMap.put(tickIndex, runeMap);
+    }
+    return runeTickMap;
+  }
+
   public void orbitRunes(Location center, Set<Hologram> runeHolograms) {
-    float step = 360f / runeHolograms.size();
-    float start = ParticleTask.getCurrentTick();
+    if (runeHolograms.size() == 0) {
+      return;
+    }
+    int total = Math.min(runeHolograms.size(), 10);
     int index = 0;
     for (Hologram holo : runeHolograms) {
-      float radian1 = (float) Math.toRadians(start + step * index);
       Location loc = center.clone();
-      loc.add(Math.cos(radian1), 0, Math.sin(radian1));
+      Vector offset = gigaMap.get(ParticleTask.getCurrentTick()).get(total).get(index);
+      loc.add(offset);
       DHAPI.moveHologram(holo, loc);
       index++;
     }

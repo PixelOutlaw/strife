@@ -1,9 +1,10 @@
 package land.face.strife.data.effects;
 
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
+import com.ticxo.modelengine.api.generator.model.BlueprintBone;
+import com.ticxo.modelengine.api.generator.model.ModelBlueprint;
 import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.model.PartEntity;
+import com.ticxo.modelengine.api.model.bone.ModelBone;
 import land.face.strife.data.StrifeMob;
 import lombok.Setter;
 
@@ -24,20 +25,25 @@ public class ChangePart extends Effect {
       return;
     }
     // Might only work on things with one active model? can you have two...?
-    ActiveModel currentModel = target.getModelEntity().getActiveModel(oldModelId);
-    final PartEntity partEntity = currentModel.getPartEntity(oldPartId);
+    ActiveModel currentModel = target.getModelEntity().getModels().get(oldModelId);
+    final ModelBone partEntity = currentModel.getBone(oldPartId);
     if (partEntity == null) {
       return;
     }
-    final ModelBlueprint blueprint = ModelEngineAPI.api.getModelManager().getModelRegistry()
-        .getModelBlueprint(newModelId);
+    final ModelBlueprint blueprint = ModelEngineAPI.getBlueprint(newModelId);
     if (blueprint == null) {
       return;
     }
-    final int id = blueprint.getItemId(newPartId);
-    if (id <= 0) {
+    BlueprintBone bpBone = blueprint.getBones().get(newPartId);
+    if (bpBone == null) {
       return;
     }
-    partEntity.updateDataId(id);
+    if (partEntity.getParent() == null) {
+      currentModel.removeBone(oldPartId);
+      currentModel.forceGenerateBone(null, bpBone);
+    } else {
+      currentModel.removeBone(oldPartId);
+      currentModel.forceGenerateBone(partEntity.getParent().getBoneId(), bpBone);
+    }
   }
 }

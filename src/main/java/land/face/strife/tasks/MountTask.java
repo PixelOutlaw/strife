@@ -44,7 +44,7 @@ public class MountTask extends BukkitRunnable {
         return;
       }
     } else {
-      if (model.getModeledEntity().getMountHandler().getDriver() == null) {
+      if (model.getModeledEntity().getMountManager().getDriver() == null) {
         manager.despawn(playerUUID);
         return;
       }

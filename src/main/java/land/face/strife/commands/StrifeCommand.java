@@ -301,8 +301,8 @@ public class StrifeCommand extends BaseCommand {
     targets.sort(TargetingUtil.DISTANCE_COMPARATOR);
     StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(targets.get(0));
     if (targetMob.getEntity() instanceof Mob && targetMob.getModelEntity() != null) {
-      for (ActiveModel model : targetMob.getModelEntity().getAllActiveModel().values()) {
-        model.addState(id, lerpIn, lerpOut, speed);
+      for (ActiveModel model : targetMob.getModelEntity().getModels().values()) {
+        model.getAnimationHandler().playAnimation(id, lerpIn, lerpOut, speed, true);
       }
     } else {
       MessageUtils.sendMessage(sender, "&eInvalid target");

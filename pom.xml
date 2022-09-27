@@ -166,7 +166,7 @@
     <dependency>
       <groupId>com.ticxo.modelengine</groupId>
       <artifactId>api</artifactId>
-      <version>R2.5.0</version>
+      <version>R3.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
