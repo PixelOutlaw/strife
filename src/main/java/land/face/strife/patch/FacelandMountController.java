@@ -19,10 +19,16 @@ public class FacelandMountController extends AbstractMountController {
   private final LoadedMount loadedMount;
   private boolean flying;
 
+  private float landSpeed;
+  private float airSpeed;
+
   public FacelandMountController(ActiveModel model, LoadedMount loadedMount) {
     this.flying = false;
     this.loadedMount = loadedMount;
     this.model = model;
+
+    landSpeed = 0.0025f + (loadedMount.getSpeed() / 100);
+    airSpeed = 0.15f * (0.75f * loadedMount.getSpeed() / 100);
   }
 
   public FacelandMountController getInstance() {
@@ -55,7 +61,7 @@ public class FacelandMountController extends AbstractMountController {
           flying = false;
           return;
         }
-        direction.multiply(0.5);
+        direction.multiply(airSpeed);
         controller.addVelocity(direction.getX(), direction.getY(), direction.getZ());
         MoveUtil.setLastMoved((Player) getEntity());
       }
@@ -82,7 +88,7 @@ public class FacelandMountController extends AbstractMountController {
         return;
       }
 
-      controller.move(input.getSide(), input.getFront(), 0.6f);
+      controller.move(input.getSide() * landSpeed, input.getFront() * landSpeed, 1);
       if (input.getSide() != 0 || input.getFront() != 0) {
         MoveUtil.setLastMoved((Player) getEntity());
         model.setState(ModelState.WALK);
