@@ -88,7 +88,7 @@ public class DisguiseUtil {
     if (type == DisguiseType.PLAYER) {
       String disguisePlayer = section.getString("disguise-player");
       if (StringUtils.isBlank(disguisePlayer)) {
-        disguisePlayer = "Pur3p0w3r";
+        disguisePlayer = "Faceguy";
       }
       PlayerDisguise playerDisguise = new PlayerDisguise(name, disguisePlayer);
       playerDisguise.setReplaceSounds(true);
