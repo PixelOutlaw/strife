@@ -10,7 +10,6 @@ import land.face.strife.data.AgilityLocationContainer;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
@@ -72,8 +71,6 @@ public class LaunchAndLandListener implements Listener {
     Vector oldVelocity = event.getPlayer().getVelocity().clone()
         .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
     event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
-    plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY,
-        2, false, false);
     event.getPlayer().getWorld()
         .spawnParticle(Particle.CRIT_MAGIC, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
     event.getPlayer().getWorld()

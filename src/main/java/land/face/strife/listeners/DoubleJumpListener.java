@@ -10,7 +10,6 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
@@ -262,7 +261,6 @@ public class DoubleJumpListener implements Listener {
     jumps--;
     JumpUtil.setJumps(mob, jumps);
 
-    plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 3, false, false);
     flingParticle(player);
     player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
   }
@@ -289,8 +287,6 @@ public class DoubleJumpListener implements Listener {
 
     velocity.setY(0);
     player.setVelocity(velocity.add(bonusVelocity));
-
-    plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.AGILITY, 2, false, false);
     player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
   }
 

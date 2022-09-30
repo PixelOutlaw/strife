@@ -72,15 +72,6 @@ public class FallListener implements Listener {
       damage *= 1 - (0.1 * (level + 1));
     }
 
-    if (damage < player.getHealth()) {
-      float xp = Math.min(2 + (float) event.getDamage(DamageModifier.BASE) / 3, 10);
-      if (rollBonus) {
-        xp *= 1.8;
-      }
-      plugin.getSkillExperienceManager().addExperience((Player) event.getEntity(),
-          LifeSkillType.AGILITY, xp, false, false);
-    }
-
     if (damage <= 0) {
       event.setCancelled(true);
       return;
