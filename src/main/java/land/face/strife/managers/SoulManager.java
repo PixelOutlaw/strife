@@ -11,6 +11,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
+import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.timers.SoulTimer;
 import land.face.strife.util.SoulUtil;
@@ -115,6 +116,11 @@ public class SoulManager {
       return;
     }
     plugin.getExperienceManager().addExperience(player, xpRestored, true);
+    if (xpRestored > 0) {
+      Champion champion = plugin.getChampionManager().getChampion(player);
+      // Remove gained catchup XP from this death
+      champion.getSaveData().setCatchupExpUsed(champion.getSaveData().getCatchupExpUsed() + ((float) xpRestored * 0.5));
+    }
     sendMessage(player, reviveMessage.replace("{n}", String.valueOf(xpRestored)));
     player.teleport(soul.getLocation());
     removeSoul(soul);

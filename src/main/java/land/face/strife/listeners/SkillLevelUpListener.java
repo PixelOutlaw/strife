@@ -26,10 +26,15 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
+import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.events.SkillLevelUpEvent;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.sound.Sound.Source;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,6 +44,10 @@ public class SkillLevelUpListener implements Listener {
 
   private static String SELF_MESSAGE;
   private static String BROADCAST_MESSAGE;
+
+  private final net.kyori.adventure.sound.Sound skillXpSound = Sound.sound(Key.key("minecraft:custom.skill_up"), Source.MASTER, 1f, 1f);
+  private final Map<Player, Long> xpSoundMercyMap = new WeakHashMap<>();
+
 
   public SkillLevelUpListener(MasterConfiguration settings) {
     SELF_MESSAGE = PaletteUtil.color(settings.getString("language.skills.lvl-up-self"));
@@ -55,8 +64,13 @@ public class SkillLevelUpListener implements Listener {
         color + "You've reached " + FaceColor.WHITE + name + " Lv" + level + color + "!";
 
     TitleUtils.sendTitle(event.getPlayer(), upperTitle, lowerTitle, 20, 5, 5);
-    event.getPlayer()
-        .playSound(event.getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1.3f);
+
+    if (!xpSoundMercyMap.containsKey(event.getPlayer()) ||
+        xpSoundMercyMap.get(event.getPlayer()) < System.currentTimeMillis()) {
+      Audience audience = Audience.audience(event.getPlayer());
+      audience.playSound(skillXpSound);
+      xpSoundMercyMap.put(event.getPlayer(), System.currentTimeMillis() + 500);
+    }
 
     if (event.getNewSkillLevel() % 5 == 0) {
       String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached "

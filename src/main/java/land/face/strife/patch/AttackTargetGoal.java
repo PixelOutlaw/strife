@@ -37,6 +37,10 @@ public class AttackTargetGoal implements Goal<Mob> {
     if (mob.getTarget() == null || attackTimestamp > System.currentTimeMillis()) {
       return false;
     }
+    if (!mob.getTarget().isValid()) {
+      mob.setTarget(null);
+      return false;
+    }
     if (mob.getTarget().getLocation().distanceSquared(mob.getLocation()) > attackRange) {
       return false;
     }

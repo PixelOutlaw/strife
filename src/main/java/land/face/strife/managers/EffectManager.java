@@ -687,16 +687,16 @@ public class EffectManager {
       case MODEL_ANIMATION -> {
         effect = new ModelAnimation();
         ((ModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
-        ((ModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 5));
-        ((ModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 5));
+        ((ModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 0));
+        ((ModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 0));
         ((ModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
       }
       case CREATE_MODEL -> {
         effect = new CreateModelAnimation();
         ((CreateModelAnimation) effect).setModelId(cs.getString("model-id"));
         ((CreateModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
-        ((CreateModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 5));
-        ((CreateModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 5));
+        ((CreateModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 0));
+        ((CreateModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 0));
         ((CreateModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
         ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
         ((CreateModelAnimation) effect).setTargetLock(cs.getBoolean("target-lock", false));

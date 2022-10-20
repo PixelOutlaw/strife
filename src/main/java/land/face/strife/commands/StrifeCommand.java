@@ -330,6 +330,12 @@ public class StrifeCommand extends BaseCommand {
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
+  @Subcommand("calcCatchup")
+  @CommandPermission("strife.admin")
+  public void catchupCommand(CommandSender sender) {
+    plugin.getExperienceManager().refreshCatchupXp();
+  }
+
   @Subcommand("clear|wipe")
   @CommandCompletion("@players")
   @CommandPermission("strife.admin")
@@ -579,11 +585,19 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("addxp")
   @CommandCompletion("@players @range:1-10")
   @CommandPermission("strife.admin")
-  public void addXpCommand(CommandSender sender, OnlinePlayer player, double amount) {
+  public void addXpCommand(CommandSender sender, OnlinePlayer player, double amount, @Default("true") boolean exact) {
     plugin.getExperienceManager().addExperience(player.getPlayer(), amount, true);
     sendMessage(player.player, "&aYou gained &f" + (int) amount + " &aXP!");
-    sendMessage(sender,
-        "&a&oAwarded " + amount + " xp to " + player.getPlayer().getName() + " via command");
+    sendMessage(sender, "&a&oAwarded " + amount + " xp to " + player.getPlayer().getName() + " via command");
+  }
+
+  @Subcommand("catchupxp")
+  @CommandCompletion("@players @range:1-10")
+  @CommandPermission("strife.admin")
+  public void catchupXpCommand(CommandSender sender, OnlinePlayer player, double amount) {
+    Champion champion = plugin.getChampionManager().getChampion(player.getPlayer());
+    champion.getSaveData().setCatchupExpUsed(amount);
+    sendMessage(sender, "Set catchup XP used for " + player.getPlayer().getName() + " to " + amount);
   }
 
   @Subcommand("boost")

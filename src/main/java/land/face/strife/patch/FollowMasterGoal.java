@@ -11,6 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class FollowMasterGoal implements Goal<Mob> {

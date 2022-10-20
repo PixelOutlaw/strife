@@ -97,6 +97,15 @@ public class StrifeMobManager {
     }
   }
 
+  public void despawnMinions(Player player) {
+    if (trackedEntities.containsKey(player)) {
+      StrifeMob mob = trackedEntities.get(player);
+      for (StrifeMob m : mob.getMinions()) {
+        m.getEntity().remove();
+      }
+    }
+  }
+
   public void updateCollisions(Player player) {
     for (StrifeMob strifeMob : trackedEntities.values()) {
       if (strifeMob.getUniqueEntityId() == null) {

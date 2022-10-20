@@ -6,6 +6,7 @@ import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import java.awt.Color;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -22,6 +24,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MainHand;
+import scala.Int;
 
 public class GuiManager {
 
@@ -31,7 +34,8 @@ public class GuiManager {
   private static final Map<Player, GUI> guiMap = new WeakHashMap<>();
   private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
-  // #FFFFFE
+  private static final DecimalFormat XP_FORMAT = new DecimalFormat("0.0");
+  // #FBFBFB
   public static final ChatColor NO_SHADOW = ChatColor.of(new Color(251, 251, 251));
 
   private final GUIComponent healthBase = new GUIComponent("status-base", noShadow(new TextComponent("➲")),
@@ -63,62 +67,92 @@ public class GuiManager {
   public static final TextComponent GOD_ZEXIR = noShadow(new TextComponent("᮳"));
   public static final TextComponent GOD_ANYA = noShadow(new TextComponent("᮴"));
 
+  private final Map<Integer, GUIComponent> builtXpFont = buildXpFont();
+
   @SuppressWarnings("deprecation")
-  private final List<TextComponent> xpBar = List.of(
-       noShadow(new TextComponent("䷀")),
-       noShadow(new TextComponent("䷁")),
-       noShadow(new TextComponent("䷂")),
-       noShadow(new TextComponent("䷃")),
-       noShadow(new TextComponent("䷄")),
-       noShadow(new TextComponent("䷅")),
-       noShadow(new TextComponent("䷆")),
-       noShadow(new TextComponent("䷇")),
-       noShadow(new TextComponent("䷈")),
-       noShadow(new TextComponent("䷉")),
-       noShadow(new TextComponent("䷊")),
-       noShadow(new TextComponent("䷋")),
-       noShadow(new TextComponent("䷌")),
-       noShadow(new TextComponent("䷍")),
-       noShadow(new TextComponent("䷎")),
-       noShadow(new TextComponent("䷏")),
-       noShadow(new TextComponent("䷐")),
-       noShadow(new TextComponent("䷑")),
-       noShadow(new TextComponent("䷒")),
-       noShadow(new TextComponent("䷓")),
-       noShadow(new TextComponent("䷔")),
-       noShadow(new TextComponent("䷕")),
-       noShadow(new TextComponent("䷖")),
-       noShadow(new TextComponent("䷗")),
-       noShadow(new TextComponent("䷘"))
+  private final List<GUIComponent> xpBar = List.of(
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷀")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷁")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷂")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷃")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷄")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷅")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷆")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷇")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷈")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷉")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷊")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷋")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷌")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷍")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷎")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷏")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷐")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷑")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷒")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷓")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷔")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷕")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷖")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷗")),25, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷘")),25, 104, Alignment.CENTER)
   );
 
   @SuppressWarnings("deprecation")
-  private final List<TextComponent> oxygenBar = List.of(
-       noShadow(new TextComponent("䷙")),
-       noShadow(new TextComponent("䷚")),
-       noShadow(new TextComponent("䷛")),
-       noShadow(new TextComponent("䷜")),
-       noShadow(new TextComponent("䷝")),
-       noShadow(new TextComponent("䷞")),
-       noShadow(new TextComponent("䷟")),
-       noShadow(new TextComponent("䷠")),
-       noShadow(new TextComponent("䷡")),
-       noShadow(new TextComponent("䷢")),
-       noShadow(new TextComponent("䷣")),
-       noShadow(new TextComponent("䷤")),
-       noShadow(new TextComponent("䷥")),
-       noShadow(new TextComponent("䷦")),
-       noShadow(new TextComponent("䷧")),
-       noShadow(new TextComponent("䷨")),
-       noShadow(new TextComponent("䷩")),
-       noShadow(new TextComponent("䷪")),
-       noShadow(new TextComponent("䷫")),
-       noShadow(new TextComponent("䷬")),
-       noShadow(new TextComponent("䷭")),
-       noShadow(new TextComponent("䷮")),
-       noShadow(new TextComponent("䷯")),
-       noShadow(new TextComponent("䷰")),
-       noShadow(new TextComponent("䷱"))
+  private final List<GUIComponent> catchupXpBar = List.of(
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷙")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷚")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷛")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷜")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷝")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷞")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷟")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷠")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷡")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷢")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷣")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷤")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷥")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷦")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷧")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷨")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷩")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷪")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷫")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷬")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷭")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷮")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷯")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷰")), 25, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷱")), 25, 104, Alignment.CENTER)
+  );
+
+  @SuppressWarnings("deprecation")
+  private final List<GUIComponent> oxygenBar = List.of(
+      new GUIComponent("air-bar", noShadow(new TextComponent("懀")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懁")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懂")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懃")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懄")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懅")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懆")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懇")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懈")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("應")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懊")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懋")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懌")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懍")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懎")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懏")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懐")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懑")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懒")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懓")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懔")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懕")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懖")), 25, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懗")), 25, 104, Alignment.CENTER)
   );
 
   public static final Map<Integer, TextComponent> HP_BAR = new HashMap<>();
@@ -135,6 +169,29 @@ public class GuiManager {
       buildHealthEnergyAndBarrier();
       buildTargetHealthBars();
     }
+  }
+
+  private Map<Integer, GUIComponent> buildXpFont() {
+    Map<Integer, GUIComponent> values = new HashMap<>();
+    for (int i = 0; i < 1000; i++) {
+      int width = i < 100 ? 18 : 23;
+      String s = XP_FORMAT.format(((double) i) / 10);
+      s = s.replaceAll("1", "懠\uF802");
+      s = s.replaceAll("2", "懡\uF802");
+      s = s.replaceAll("3", "懢\uF802");
+      s = s.replaceAll("4", "懣\uF802");
+      s = s.replaceAll("5", "懤\uF802");
+      s = s.replaceAll("6", "懥\uF802");
+      s = s.replaceAll("7", "懦\uF802");
+      s = s.replaceAll("8", "懧\uF802");
+      s = s.replaceAll("9", "懨\uF802");
+      s = s.replaceAll("0", "懩\uF802");
+      s = s.replaceAll("\\.", "懫\uF802");
+      s += "懪";
+      GUIComponent component = new GUIComponent("xp-text", noShadow(new TextComponent(s)), width, 105, Alignment.CENTER);
+      values.put(i, component);
+    }
+    return values;
   }
 
   public static TextComponent shadow(TextComponent t) {
@@ -195,8 +252,11 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("invincible", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("life-display", new TextComponent(""), 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("xp-base", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("air-base", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("xp-base", noShadow(new TextComponent("懚")), 27, 104, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("cxp-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("xp-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("xp-text", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("air-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("energy-display", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("money-display", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("gem-display", new TextComponent(""), 0, 0, Alignment.CENTER));
@@ -271,26 +331,46 @@ public class GuiManager {
     guiMap.get(player).update(component);
   }
 
-  public void updateLevelDisplay(Player player) {
+  public void updateLevelDisplay(StrifeMob playerMob) {
+    Player player = (Player) playerMob.getEntity();
     GUI gui = guiMap.get(player);
     String originalLevelString = Integer.toString(player.getLevel());
     TextComponent tc = plugin.getGuiManager().convertToLevelFont(player.getLevel());
     gui.update(new GUIComponent("level-display", tc, originalLevelString.length() * 12, -106,
         Alignment.CENTER));
 
-    int xpProgress = (int) (24 * player.getExp());
-    gui.update(new GUIComponent("xp-base", xpBar.get(xpProgress), 11, 96, Alignment.CENTER));
+    // Normal green XP bar
+    int xpProgress = (int) Math.floor(24f * player.getExp());
+    gui.update(xpBar.get(xpProgress));
+
+    // Purple catchup underlay
+    float catchupXpRemaining = (float) plugin.getExperienceManager()
+        .getRemainingCatchupXp(playerMob.getChampion().getSaveData().getCatchupExpUsed());
+    if (catchupXpRemaining > 0) {
+      float nuPercent = catchupXpRemaining / plugin.getExperienceManager().getMaxFaceExp(player.getLevel());
+      nuPercent *= 2;
+      int catchupProgress = xpProgress + (int) (26f * nuPercent);
+      if (catchupProgress >= 24) {
+        gui.update(catchupXpBar.get(24));
+      } else {
+        gui.update(catchupXpBar.get(catchupProgress));
+      }
+    } else {
+      gui.update(catchupXpBar.get(0));
+    }
+
+    gui.update(builtXpFont.get((int) Math.floor(1000 * player.getExp())));
   }
 
   public void updateAir(GUI gui, Player player) {
     if (player.getRemainingAir() == player.getMaximumAir()) {
-      gui.update(new GUIComponent("air-base", EMPTY, 0, 0, Alignment.CENTER));
+      gui.update(new GUIComponent("air-bar", EMPTY, 0, 0, Alignment.CENTER));
     } else if (player.getRemainingAir() < 1) {
-      gui.update(new GUIComponent("air-base", oxygenBar.get(0), 11, 96, Alignment.CENTER));
+      gui.update(oxygenBar.get(0));
     } else {
-      int progress = (int) Math.ceil(
-          24 * ((float) player.getRemainingAir()) / player.getMaximumAir());
-      gui.update(new GUIComponent("air-base", oxygenBar.get(progress), 11, 96, Alignment.CENTER));
+      int progress = (int) Math.ceil(23 * (
+          (float) player.getRemainingAir()) / player.getMaximumAir());
+      gui.update(oxygenBar.get(progress));
     }
   }
 
@@ -524,17 +604,17 @@ public class GuiManager {
     }
     String s = Integer.toString(i);
     s = s
-        .replaceAll("1", "०\uF801")
-        .replaceAll("2", "१\uF801")
-        .replaceAll("3", "२\uF801")
-        .replaceAll("4", "३\uF801")
-        .replaceAll("5", "४\uF801")
-        .replaceAll("6", "५\uF801")
-        .replaceAll("7", "६\uF801")
-        .replaceAll("8", "७\uF801")
-        .replaceAll("9", "८\uF801")
-        .replaceAll("0", "९\uF801");
-    TextComponent tc = color(new TextComponent(s), ChatColor.of(new Color(255, 172, 21)));
+        .replaceAll("1", "慠\uF801")
+        .replaceAll("2", "慡\uF801")
+        .replaceAll("3", "慢\uF801")
+        .replaceAll("4", "慣\uF801")
+        .replaceAll("5", "慤\uF801")
+        .replaceAll("6", "慥\uF801")
+        .replaceAll("7", "慦\uF801")
+        .replaceAll("8", "慧\uF801")
+        .replaceAll("9", "慨\uF801")
+        .replaceAll("0", "慩\uF801");
+    TextComponent tc = noShadow(new TextComponent(s));
     levelStringNumbers.put(i, tc);
     return tc;
   }

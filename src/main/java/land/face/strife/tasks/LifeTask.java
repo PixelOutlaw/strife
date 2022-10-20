@@ -23,7 +23,7 @@ public class LifeTask extends BukkitRunnable {
   private static final long REGEN_TICK_RATE = 10L;
   private static final float REGEN_PERCENT_PER_SECOND = 0.1F;
   private static final float POTION_REGEN_FLAT_PER_LEVEL = 2f;
-  private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.05f;
+  private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.005f;
   private final WeakReference<StrifeMob> parentMob;
   private final List<RestoreData> lifeRestore = new ArrayList<>();
 

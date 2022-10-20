@@ -49,7 +49,6 @@ import java.util.stream.Stream;
 import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
-import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
 import land.face.strife.commands.InspectCommand;
@@ -205,7 +204,7 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private IndicatorManager indicatorManager;
   @Getter
-  private StrifeExperienceManager experienceManager;
+  private ExperienceManager experienceManager;
   @Getter
   private SkillExperienceManager skillExperienceManager;
   @Getter
@@ -695,6 +694,7 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_C);
       strifeMobManager.saveEnergy(player);
+      strifeMobManager.despawnMinions(player);
     }
 
     ShootBlock.clearTimers();

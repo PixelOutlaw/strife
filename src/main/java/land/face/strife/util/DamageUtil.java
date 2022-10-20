@@ -651,7 +651,7 @@ public class DamageUtil {
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-        plugin.getCorruptionManager().addCorruption(defender, 10 + baseDarkDamage / 4, true);
+        plugin.getCorruptionManager().addCorruption(defender, 12 + baseDarkDamage / 5, true);
       }
       case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);

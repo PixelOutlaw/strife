@@ -67,6 +67,10 @@ public class ChaseTargetGoal implements Goal<Mob> {
       }
       return;
     }
+    if (!mob.getTarget().isValid()) {
+      mob.setTarget(null);
+      return;
+    }
     if (mob.getTarget().getWorld() != mob.getWorld()) {
       mob.setTarget(null);
       return;

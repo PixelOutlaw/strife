@@ -104,7 +104,7 @@ public class JoinAndLeaveListener implements Listener {
           plugin.getSkillExperienceManager().updateSkillString(champion), 0);
     }, 33L);
 
-    plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
+    plugin.getGuiManager().updateLevelDisplay(playerMob);
     //plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
   }
 
@@ -125,6 +125,7 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getPlayerMountManager().despawn(player.getUniqueId());
     plugin.getAbilityManager().unToggleAll(player);
     plugin.getStrifeMobManager().saveEnergy(player);
+    plugin.getStrifeMobManager().despawnMinions(player);
     plugin.getBoostManager().removeBooster(player.getUniqueId());
     plugin.getAbilityManager().savePlayerCooldowns(player);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);

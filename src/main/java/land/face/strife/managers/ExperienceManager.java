@@ -25,24 +25,49 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import land.face.strife.StrifePlugin;
-import land.face.strife.api.StrifeExperienceManager;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
+import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class ExperienceManager implements StrifeExperienceManager {
+public class ExperienceManager {
 
   private final StrifePlugin plugin;
   private static final String EXP_MESSAGE = " &a&l+&f&l{0}&a&lXP";
   private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
 
+  private final Date catchupStartDate;
+  private final double catchupXpPerDay;
+  @Getter
+  private double globalCatchupXp;
+
+  @SneakyThrows
   public ExperienceManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH);
+    catchupStartDate = sdf.parse(plugin.getSettings().getString("config.catchup-xp-date"));
+    catchupXpPerDay = plugin.getSettings().getDouble("config.catchup-xp-per-day");
+    refreshCatchupXp();
+  }
+
+  public void refreshCatchupXp() {
+    Date currentDate = new Date();
+    long diffInMillies = Math.abs(currentDate.getTime() - catchupStartDate.getTime());
+    long daysSinceStartTime = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+    globalCatchupXp = daysSinceStartTime * catchupXpPerDay;
+    Bukkit.getLogger().info("[Strife] Global catchup recalculated!");
+    Bukkit.getLogger().info("[Strife]  - Per Day: " + catchupXpPerDay);
+    Bukkit.getLogger().info("[Strife]  - Days Since: " + daysSinceStartTime);
+    Bukkit.getLogger().info("[Strife]  - Total: " + globalCatchupXp);
   }
 
   public void addExperience(Player player, double amount, boolean exact) {
@@ -56,9 +81,17 @@ public class ExperienceManager implements StrifeExperienceManager {
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
 
     if (!exact) {
+      double original = amount;
       double statsMult = pStats.getStat(StrifeStat.XP_GAIN) / 100;
       pStats.getChampion().getDetailsContainer().addExp((float) amount);
       amount *= 1 + statsMult;
+      double catchupDiff = globalCatchupXp - pStats.getChampion().getSaveData().getCatchupExpUsed();
+      if (catchupDiff > 0) {
+        double bonusXp = Math.min(original, catchupDiff);
+        amount += bonusXp;
+        pStats.getChampion().getSaveData()
+            .setCatchupExpUsed(pStats.getChampion().getSaveData().getCatchupExpUsed() + bonusXp);
+      }
     }
 
     if (exact || pStats.getChampion().getSaveData().isDisplayExp()) {
@@ -73,7 +106,7 @@ public class ExperienceManager implements StrifeExperienceManager {
       player.setExp(0);
       amount -= faceExpToLevel;
       currentExpPercent = 0;
-      Champion champion = plugin.getChampionManager().getChampion(player);
+      Champion champion = pStats.getChampion();
       if (player.getLevel() < 100) {
         player.setLevel(player.getLevel() + 1);
         pushLevelUpSpam(player, player.getLevel() % 5 == 0, !levelUp);
@@ -89,7 +122,11 @@ public class ExperienceManager implements StrifeExperienceManager {
     double newExpPercent = currentExpPercent + amount / maxFaceExp;
 
     player.setExp((float) newExpPercent);
-    plugin.getGuiManager().updateLevelDisplay(player);
+    plugin.getGuiManager().updateLevelDisplay(pStats);
+  }
+
+  public double getRemainingCatchupXp(double catchupXpUsed) {
+    return globalCatchupXp - catchupXpUsed;
   }
 
   public Integer getMaxFaceExp(int level) {

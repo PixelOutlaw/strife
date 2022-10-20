@@ -171,7 +171,7 @@ public class ExperienceListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeath(PlayerDeathEvent event) {
     event.setKeepLevel(true);
-    event.setDroppedExp(5 + event.getEntity().getLevel() / 2);
+    event.setDroppedExp(0);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -199,13 +199,18 @@ public class ExperienceListener implements Listener {
     } else if (hadSoulShard(inv)) {
       sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
     } else {
-      double xpToLevel = plugin.getLevelingRate().get(p.getLevel());
-      lostXP = Math.min(xpToLevel * 0.01, p.getExp() * xpToLevel);
-      lostXP *= 1 - lossReduction / 100;
+      double currentLevelMaxXP = plugin.getExperienceManager().getMaxFaceExp(p.getLevel());
+      float xpLossPercent = 0.03f;
+      xpLossPercent *= 1 - lossReduction / 100;
+      lostXP = Math.min(currentLevelMaxXP * xpLossPercent, p.getExp() * currentLevelMaxXP);
       sendMessage(p, "&cAlas! You lost &f" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP &cfrom dying!");
-      p.setExp(Math.max(p.getExp() - 0.01f, 0.00001f));
+      p.setExp(Math.max(p.getExp() - xpLossPercent, 0.00001f));
     }
-    plugin.getGuiManager().updateLevelDisplay(event.getPlayer());
+    if (lostXP > 0) {
+      playerMob.getChampion().getSaveData().setCatchupExpUsed(
+          playerMob.getChampion().getSaveData().getCatchupExpUsed() - lostXP * 0.5);
+    }
+    plugin.getGuiManager().updateLevelDisplay(playerMob);
     plugin.getSoulManager().setLostExp(p, lostXP);
   }
 

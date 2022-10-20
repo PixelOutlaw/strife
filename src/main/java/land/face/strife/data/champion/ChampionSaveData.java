@@ -38,6 +38,7 @@ public class ChampionSaveData {
   private int bonusLevels;
 
   private float pvpScore = 700;
+  private double catchupExpUsed;
 
   private boolean onMount;
   private boolean glowEnabled;
@@ -73,6 +74,10 @@ public class ChampionSaveData {
     unusedStatPoints = pendingUnusedStatPoints;
     levelMap.clear();
     levelMap.putAll(pendingStats);
+  }
+
+  public void setCatchupExpUsed(double catchupExpUsed) {
+    this.catchupExpUsed = Math.max(catchupExpUsed, -750000000);
   }
 
   public Player getPlayer() {
