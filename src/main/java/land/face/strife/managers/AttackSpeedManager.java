@@ -16,20 +16,20 @@
  */
 package land.face.strife.managers;
 
+import com.comphenix.protocol.PacketType.Play;
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.LastAttackTracker;
+import land.face.strife.data.AttackTracker;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -38,7 +38,8 @@ import org.bukkit.entity.Player;
 public class AttackSpeedManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, LastAttackTracker> lastAttackMap;
+
+  private final Map<UUID, AttackTracker> lastAttackMap;
   private final float attackCost;
   private final int warnLevel;
 
@@ -52,39 +53,38 @@ public class AttackSpeedManager {
     attackFastMsg = plugin.getSettings().getString("language.generic.attack-too-fast");
   }
 
-  public void resetAttack(StrifeMob mob, float ratio, boolean override) {
+  public void resetAttack(StrifeMob mob, float ratio) {
+    resetAttack(mob, ratio, 0);
+  }
+
+  public void resetAttack(StrifeMob mob, float ratio, float delaySeconds) {
     if (mob.getEntity().getType() != EntityType.PLAYER) {
       return;
     }
     float attackSeconds = StatUtil.getAttackTime(mob) * ratio;
-    setAttackTime(mob.getEntity().getUniqueId(), (long) (1000 * attackSeconds), override);
-    int ticks = (int) (attackSeconds * 14);
+    setAttackTime(
+        mob.getEntity().getUniqueId(),
+        (long) (1000 * attackSeconds),
+        (long) delaySeconds * 1000
+    );
+    int ticks = (int) Math.max(5, attackSeconds * 20 - 5);
     if (((Player) mob.getEntity()).getCooldown(Material.DIAMOND_CHESTPLATE) < ticks) {
       ((Player) mob.getEntity()).setCooldown(Material.DIAMOND_CHESTPLATE, ticks);
     }
   }
 
-  public void setAttackTime(UUID uuid, long fullAttackMillis, boolean override) {
+  public void setAttackTime(UUID uuid, long fullAttackMillis, long delay) {
     if (!lastAttackMap.containsKey(uuid)) {
-      lastAttackMap.put(uuid, new LastAttackTracker(System.currentTimeMillis(), fullAttackMillis));
+      lastAttackMap.put(uuid, new AttackTracker(fullAttackMillis + delay, fullAttackMillis));
       return;
     }
-    long lastAttackStamp = lastAttackMap.get(uuid).getLastAttackStamp();
-    long lastAttackTime = lastAttackMap.get(uuid).getFullAttackMs();
-    boolean attackRefreshed = System.currentTimeMillis() > lastAttackStamp + lastAttackTime;
-    if (override || attackRefreshed) {
-      lastAttackMap.get(uuid).setFullAttackMs(fullAttackMillis);
-    } else {
-      long newAttackTime = Math.max(fullAttackMillis, (lastAttackStamp + lastAttackTime) - System.currentTimeMillis());
-      lastAttackMap.get(uuid).setFullAttackMs(newAttackTime);
-    }
-    lastAttackMap.get(uuid).setLastAttackStamp(System.currentTimeMillis());
+    lastAttackMap.get(uuid).reset(fullAttackMillis, delay);
   }
 
-  public float getAttackRecharge(StrifeMob attacker) {
-    long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
-    long fullAttackMillis = getFullAttackMillis(attacker.getEntity().getUniqueId());
-    return Math.min(1, (float) millisPassed / fullAttackMillis);
+  public void wipeAttackRecord(Player player) {
+    plugin.getGuiManager().updateComponent(player,
+        new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    lastAttackMap.remove(player.getUniqueId());
   }
 
   public float getAttackMultiplier(StrifeMob attacker, float resetRatio) {
@@ -92,16 +92,20 @@ public class AttackSpeedManager {
         || ((Player) attacker.getEntity()).getGameMode() == GameMode.CREATIVE) {
       return 1f;
     }
+    long finalAttackTime = (long) (StatUtil.getAttackTime(attacker) * resetRatio * 1000);
+    AttackTracker attackTracker;
+    float attackMult;
     if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
-      lastAttackMap.put(attacker.getEntity().getUniqueId(), new LastAttackTracker(1L, 1L));
-    }
-    long millisPassed = getMillisPassed(attacker.getEntity().getUniqueId());
-    long fullAttackMillis = getFullAttackMillis(attacker.getEntity().getUniqueId());
-    if (resetRatio != -1) {
-      resetAttack(attacker, resetRatio, false);
+      attackTracker = new AttackTracker(finalAttackTime, 0L);
+      lastAttackMap.put(attacker.getEntity().getUniqueId(), attackTracker);
+      attackMult = 1f;
+    } else {
+      attackTracker = lastAttackMap.get(attacker.getEntity().getUniqueId());
+      attackMult = attackTracker.getRechargePercent();
     }
 
-    float attackMult = Math.min(1, (float) millisPassed / fullAttackMillis);
+    attackTracker.reset(finalAttackTime, 0L);
+    resetAttack(attacker, resetRatio);
 
     if (attacker.hasTrait(StrifeTrait.NO_ENERGY_BASICS)) {
       return attackMult;
@@ -120,11 +124,10 @@ public class AttackSpeedManager {
     return attackMult * energyMult;
   }
 
-  private long getFullAttackMillis(UUID uuid) {
-    return lastAttackMap.get(uuid).getFullAttackMs();
-  }
-
-  private long getMillisPassed(UUID uuid) {
-    return System.currentTimeMillis() - lastAttackMap.get(uuid).getLastAttackStamp();
+  public float getRawMultiplier(UUID uuid) {
+    if (lastAttackMap.containsKey(uuid)) {
+      return lastAttackMap.get(uuid).getRechargePercent();
+    }
+    return 1f;
   }
 }

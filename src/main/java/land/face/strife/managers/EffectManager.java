@@ -45,6 +45,7 @@ import land.face.strife.data.conditions.FactionCondition;
 import land.face.strife.data.conditions.FlyingCondition;
 import land.face.strife.data.conditions.FrostCondition;
 import land.face.strife.data.conditions.GroundedCondition;
+import land.face.strife.data.conditions.HasMinionCondition;
 import land.face.strife.data.conditions.HealthCondition;
 import land.face.strife.data.conditions.HeightCondition;
 import land.face.strife.data.conditions.InCombatCondition;
@@ -227,6 +228,7 @@ public class EffectManager {
         ((Heal) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Heal) effect).setUseHealingPower(cs.getBoolean("use-healing-power", false));
         ((Heal) effect).setHealCaster(cs.getBoolean("heal-caster", false));
+        ((Heal) effect).setSelfHealPenalty(cs.getBoolean("self-heal-penalty", false));
       }
       case SET_FALL -> {
         effect = new SetFall();
@@ -625,7 +627,8 @@ public class EffectManager {
       case COOLDOWN_REDUCTION -> {
         effect = new CooldownReduction();
         ((CooldownReduction) effect).setAbilityString(cs.getString("ability-id"));
-        ((CooldownReduction) effect).setSeconds(cs.getDouble("seconds"));
+        ((CooldownReduction) effect).setPercent(cs.getBoolean("percent", false));
+        ((CooldownReduction) effect).setAmount((float) cs.getDouble("seconds"));
         String slot = cs.getString("ability-slot");
         if (StringUtils.isNotBlank(slot)) {
           ((CooldownReduction) effect).setSlot(AbilitySlot.valueOf(slot));
@@ -655,14 +658,19 @@ public class EffectManager {
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
       }
       case SUMMON -> {
-        effect = new Summon();
-        ((Summon) effect).setAmount(cs.getInt("amount", 1));
-        ((Summon) effect).setUniqueEntity(cs.getString("unique-entity"));
-        ((Summon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
-        ((Summon) effect).setLifeMult((float) cs.getDouble("life-multiplier", 1.0));
-        ((Summon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
-        ((Summon) effect).setMount(cs.getBoolean("mount", false));
-        ((Summon) effect).setClone(cs.getBoolean("clone", false));
+        effect = new MinionSummon();
+        ((MinionSummon) effect).setAmount(cs.getInt("amount", 1));
+        ((MinionSummon) effect).setUniqueEntity(cs.getString("unique-entity"));
+        ((MinionSummon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
+        ((MinionSummon) effect).setLifeMult((float) cs.getDouble("life-multiplier", 1.0));
+        ((MinionSummon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
+        ((MinionSummon) effect).setMount(cs.getBoolean("mount", false));
+        ((MinionSummon) effect).setClone(cs.getBoolean("clone", false));
+      }
+      case MINION_BANISH -> {
+        effect = new MinionRemove();
+        ((MinionRemove) effect).setAmount(cs.getInt("amount", 1));
+        ((MinionRemove) effect).setUniqueEntity(cs.getString("unique-entity", null));
       }
       case CHARM -> {
         effect = new Charm();
@@ -1031,6 +1039,9 @@ public class EffectManager {
         break;
       case MINION:
         condition = new MinionCondition(cs.getBoolean("is-owner", false));
+        break;
+      case HAS_MINIONS:
+        condition = new HasMinionCondition(cs.getString("minion-id", null));
         break;
       case NEARBY_ENTITIES:
         int range = cs.getInt("range", 1);

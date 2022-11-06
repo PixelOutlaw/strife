@@ -93,7 +93,7 @@ public class PlayerMountManager {
     if (stack == null || stack.getType() != Material.SADDLE) {
       selectedMount.remove(player.getUniqueId());
       if (ownerMap.containsKey(player.getUniqueId())) {
-        despawn(player.getUniqueId());
+        despawn(player);
       }
       return;
     }
@@ -102,7 +102,7 @@ public class PlayerMountManager {
     if (mount == null) {
       selectedMount.remove(player.getUniqueId());
       if (ownerMap.containsKey(player.getUniqueId())) {
-        despawn(player.getUniqueId());
+        despawn(player);
       }
       return;
     }
@@ -153,6 +153,7 @@ public class PlayerMountManager {
           modeledEntity.getMountManager().setCanSteer(true);
           modeledEntity.getMountManager().setCanRide(true);
           FacelandMountController c = new FacelandMountController(model, loadedMount);
+          player.leaveVehicle();
           modeledEntity.getMountManager().setDriver(player, c);
           c.setFlying(modeledEntity);
         }
@@ -167,16 +168,18 @@ public class PlayerMountManager {
     champion.getSaveData().setOnMount(true);
   }
 
-  public void despawn(UUID uuid) {
+  public void despawn(Player player) {
+    UUID uuid = player.getUniqueId();
     MountTask task = ownerMap.get(uuid);
     if (task == null) {
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(Bukkit.getPlayer(uuid));
+    Champion champion = plugin.getChampionManager().getChampion(player);
     champion.getSaveData().setOnMount(false);
+    player.leaveVehicle();
     task.getMount().get().getEntity().eject();
     if (task.getModel() != null) {
-      task.getModel().getModeledEntity().getMountManager().dismountAllPassengers();
+      task.getModel().getModeledEntity().getMountManager().dismountAll();
       task.getModel().destroy();
     }
     task.getMount().get().getEntity().remove();
@@ -189,6 +192,7 @@ public class PlayerMountManager {
   public void clearAll() {
     for (MountTask task : ownerMap.values()) {
       if (task.getModel() != null) {
+        task.getModel().getModeledEntity().getMountManager().dismountAll();
         task.getModel().destroy();
       }
       task.getMount().get().getEntity().remove();

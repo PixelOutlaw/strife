@@ -18,12 +18,10 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import scala.concurrent.impl.FutureConvertersImpl.P;
 
 public class CombatCountdownTask extends BukkitRunnable {
 
@@ -103,6 +101,7 @@ public class CombatCountdownTask extends BukkitRunnable {
       if (targetMob.get() != null && targetMob.get().getEntity().isValid()) {
         clearBars();
       }
+      StrifePlugin.getInstance().getAttackSpeedManager().wipeAttackRecord(player);
     }
     Bukkit.getPluginManager().callEvent(cce);
     cancel();

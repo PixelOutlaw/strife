@@ -41,6 +41,7 @@ import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
+import land.face.strife.events.StrifeEarlyDamageEvent;
 import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
@@ -204,7 +205,7 @@ public class DamageUtil {
       float evadeMult = DamageUtil.determineEvasion(attacker, defender, mods.getAbilityMods());
       if (evadeMult == -1) {
         if (mods.isBasicAttack() && mods.getAttackType() == AttackType.MELEE) {
-          plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f, true);
+          plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f);
         }
         return false;
       }
@@ -214,13 +215,13 @@ public class DamageUtil {
     if (mods.isCanBeBlocked()) {
       if (plugin.getBlockManager().attemptBlock(attacker, defender, attackMult,
           mods.getAttackType(), mods.isBlocking(), mods.isGuardBreak())) {
-        DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
+        DamageUtil.doReflectedDamage(defender, attacker);
         return false;
       }
     }
 
-    StrifePreDamageEvent preDamageEvent = new StrifePreDamageEvent(attacker, defender, mods);
-    Bukkit.getPluginManager().callEvent(preDamageEvent);
+    StrifeEarlyDamageEvent earlyDamageEvent = new StrifeEarlyDamageEvent(attacker, defender, mods);
+    Bukkit.getPluginManager().callEvent(earlyDamageEvent);
 
     if (defender.isInvincible()) {
       return false;
@@ -386,7 +387,7 @@ public class DamageUtil {
         mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
     DamageUtil.applyEnergyOnHit(attacker, ratio, mods.getHealMultiplier());
 
-    DamageUtil.doReflectedDamage(defender, attacker, mods.getAttackType());
+    DamageUtil.doReflectedDamage(defender, attacker);
 
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
       attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
@@ -1034,8 +1035,10 @@ public class DamageUtil {
     defender.addFrost((int) amount);
   }
 
-  public static void doReflectedDamage(StrifeMob defender, StrifeMob attacker,
-      AttackType damageType) {
+  public static void doReflectedDamage(StrifeMob defender, StrifeMob attacker) {
+    if (!defender.canReflectAt(attacker.getEntity().getUniqueId())) {
+      return;
+    }
     if (defender.getStat(StrifeStat.DAMAGE_REFLECT) < 0.1) {
       return;
     }
@@ -1045,11 +1048,14 @@ public class DamageUtil {
     if (defender.isInvincible()) {
       return;
     }
-    float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
-    reflectDamage = damageType == AttackType.MELEE ? reflectDamage : reflectDamage * 0.6f;
-    defender.getEntity().getWorld()
-        .playSound(defender.getEntity().getLocation(), Sound.BLOCK_LANTERN_STEP,
-            SoundCategory.HOSTILE, 1f, 1.5f);
+    float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT) * 1.15f;
+    float warding = StatUtil.getStat(defender, StrifeStat.WARDING);
+    reflectDamage *= StatUtil.getWardingMult(warding);
+    if (reflectDamage <= 0.1) {
+      return;
+    }
+    defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
+        Sound.BLOCK_LANTERN_STEP, SoundCategory.HOSTILE, 2f, 1.5f);
     if (attacker.getEntity() instanceof Player) {
       ((Player) attacker.getEntity()).spawnParticle(Particle.DAMAGE_INDICATOR,
           TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER),
@@ -1061,6 +1067,7 @@ public class DamageUtil {
       }
     }
     DamageUtil.dealRawDamage(attacker, reflectDamage);
+    defender.cacheReflect(attacker.getEntity().getUniqueId());
   }
 
   public static void callCritEvent(StrifeMob attacker, StrifeMob victim) {

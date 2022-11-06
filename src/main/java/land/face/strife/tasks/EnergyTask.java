@@ -55,11 +55,17 @@ public class EnergyTask extends BukkitRunnable {
     }
 
     float energyChange = 0;
-    boolean noRegen = mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN);
-    if (!noRegen) {
-      energyChange = mob.getStat(StrifeStat.ENERGY_REGEN) + mob.getRage() / 10;
+    if (!mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
+      energyChange = mob.getStat(StrifeStat.ENERGY_REGEN);
       energyChange *= TICK_MULT * 0.1f;
       energyChange *= getHungerPotionMult(mob.getEntity());
+    } else {
+      if (!mob.isInCombat()) {
+        energyChange = mob.getStat(StrifeStat.ENERGY_REGEN);
+        // Slight penalty, even when out of combat
+        energyChange *= TICK_MULT * 0.08f;
+        energyChange *= getHungerPotionMult(mob.getEntity());
+      }
     }
 
     if (player != null) {
@@ -77,9 +83,7 @@ public class EnergyTask extends BukkitRunnable {
         }
       } else if (MoveUtil.hasMoved(player)) {
         energyChange *= StrifePlugin.WALK_COST_PERCENT;
-        if (!noRegen) {
-          energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
-        }
+        energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
         player.setFoodLevel(19);
       }
     }

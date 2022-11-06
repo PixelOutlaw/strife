@@ -23,7 +23,7 @@ public class MountListener implements Listener {
   @EventHandler
   public void entityDismountEvent(EntityDismountEvent event) {
     if (event.getEntity() instanceof Player) {
-      plugin.getPlayerMountManager().despawn(event.getEntity().getUniqueId());
+      plugin.getPlayerMountManager().despawn((Player) event.getEntity());
     }
   }
 

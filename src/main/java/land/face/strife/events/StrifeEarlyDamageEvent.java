@@ -18,15 +18,13 @@
  */
 package land.face.strife.events;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
+import land.face.strife.data.DamageModifiers;
+import land.face.strife.data.StrifeMob;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class StrifePreDamageEvent extends Event implements Cancellable {
+public class StrifeEarlyDamageEvent extends Event implements Cancellable {
 
   private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -34,21 +32,32 @@ public class StrifePreDamageEvent extends Event implements Cancellable {
     return HANDLER_LIST;
   }
 
-  @Getter
-  private final LivingEntity attacker;
-  @Getter
-  private final Entity defender;
-  @Getter @Setter
+  private final StrifeMob attacker;
+  private final StrifeMob defender;
+  private final DamageModifiers damageModifiers;
   private boolean cancel;
 
-  public StrifePreDamageEvent(LivingEntity attacker, Entity defender) {
+  public StrifeEarlyDamageEvent(StrifeMob attacker, StrifeMob defender, DamageModifiers damageModifiers) {
     this.attacker = attacker;
     this.defender = defender;
+    this.damageModifiers = damageModifiers;
   }
 
   @Override
   public HandlerList getHandlers() {
     return HANDLER_LIST;
+  }
+
+  public StrifeMob getAttacker() {
+    return attacker;
+  }
+
+  public StrifeMob getDefender() {
+    return defender;
+  }
+
+  public DamageModifiers getDamageModifiers() {
+    return damageModifiers;
   }
 
   public void setCancelled(boolean cancel) {

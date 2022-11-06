@@ -104,6 +104,7 @@ public abstract class Condition {
     BLOCKING,
     MOVING,
     MINION,
+    HAS_MINIONS,
     NEARBY_ENTITIES,
     IN_COMBAT,
     CHANCE,

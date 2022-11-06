@@ -94,6 +94,7 @@ import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoneyDropListener;
 import land.face.strife.listeners.MountListener;
+import land.face.strife.listeners.PotionListener;
 import land.face.strife.listeners.RuneChangeListener;
 import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
@@ -538,6 +539,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new MountListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new PotionListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FishingListener(this), this);

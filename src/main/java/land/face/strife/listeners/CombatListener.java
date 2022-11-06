@@ -30,6 +30,7 @@ import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.events.StrifeDamageEvent;
+import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
@@ -122,6 +123,7 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
+
     if (event.getCause() == DamageCause.THORNS) {
       event.setCancelled(true);
       return;
@@ -147,13 +149,21 @@ public class CombatListener implements Listener {
       return;
     }
 
+    StrifePreDamageEvent preDamageEvent = new StrifePreDamageEvent(attackEntity, event.getEntity());
+    Bukkit.getPluginManager().callEvent(preDamageEvent);
+
+    if (preDamageEvent.isCancelled()) {
+      event.setCancelled(true);
+      return;
+    }
+
     boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) ||
         (defendEntity instanceof Shulker && event.isApplicable(ARMOR) && event.getDamage(ARMOR) != 0);
 
     DamageUtil.removeDamageModifiers(event);
 
     if (attackEntity instanceof Player) {
-      plugin.getPlayerMountManager().despawn(attackEntity.getUniqueId());
+      plugin.getPlayerMountManager().despawn((Player) attackEntity);
       if (FRIENDLY_PLAYER_CHECKER.contains(attackEntity)) {
         FRIENDLY_PLAYER_CHECKER.remove(attackEntity);
         event.setCancelled(true);
@@ -335,8 +345,10 @@ public class CombatListener implements Listener {
       DamageUtil.applyBleed(defender, defender, bleed, true);
     }
 
-    Bukkit.getScheduler().runTaskLater(plugin, () ->
-        DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
+    if (damageModifiers.isApplyOnHitEffects()) {
+      Bukkit.getScheduler().runTaskLater(plugin, () ->
+          DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
+    }
 
     if (attackEntity instanceof Bee) {
       plugin.getDamageManager().dealDamage(attacker, defender,

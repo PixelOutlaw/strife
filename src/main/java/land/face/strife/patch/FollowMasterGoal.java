@@ -24,6 +24,7 @@ public class FollowMasterGoal implements Goal<Mob> {
   private final Mob mob;
   private LivingEntity master;
   private long masterCheck = 0;
+  private int teleportTicks = 0;
 
   public FollowMasterGoal(Mob mob) {
     this.mob = mob;
@@ -51,13 +52,20 @@ public class FollowMasterGoal implements Goal<Mob> {
 
   @Override
   public boolean shouldStayActive() {
-    if (mob.getTarget() != null && mob.getTarget().isValid()) {
-      return false;
-    }
     if (masterCheck > System.currentTimeMillis()) {
       return true;
     }
-    masterCheck = System.currentTimeMillis() + 700;
+    masterCheck = System.currentTimeMillis() + 500;
+    if (mob.getTarget() != null && mob.getTarget().isValid()) {
+      teleportTicks = 0;
+      return false;
+    }
+    teleportTicks++;
+    if (teleportTicks > 8) {
+      mob.teleport(master.getLocation());
+      teleportTicks = 0;
+      return false;
+    }
     return master.getLocation().distanceSquared(mob.getLocation()) > 28;
   }
 
@@ -76,7 +84,7 @@ public class FollowMasterGoal implements Goal<Mob> {
     if (master == null || !master.isValid() || master.getWorld() != mob.getWorld()) {
       return;
     }
-    mob.getPathfinder().moveTo(master.getLocation(), 1.8D);
+    mob.getPathfinder().moveTo(master.getLocation(), 1.35D);
   }
 
   @Override

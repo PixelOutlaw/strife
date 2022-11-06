@@ -109,9 +109,9 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
         }
         event.setCancelled(true);
       } else if (ItemUtil.isMeleeWeapon(event.getMaterial())) {
-        plugin.getAttackSpeedManager().resetAttack(mob, 0.5f, false);
+        plugin.getAttackSpeedManager().resetAttack(mob, 0.5f);
       } else {
-        plugin.getAttackSpeedManager().resetAttack(mob, 1, false);
+        plugin.getAttackSpeedManager().resetAttack(mob, 1);
       }
     }
   }

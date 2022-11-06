@@ -65,6 +65,7 @@ public class StrifeMob {
   private boolean charmImmune = false;
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
+  private final Set<UUID> reflectedTargets = new HashSet<>();
 
   private float energy = 0;
   private float maxEnergy = 0;
@@ -521,6 +522,20 @@ public class StrifeMob {
 
   public Champion getChampion() {
     return champion == null ? null : champion.get();
+  }
+
+  public boolean isPlayer() {
+    return getChampion() != null;
+  }
+
+  public boolean canReflectAt(UUID uuid) {
+    return !reflectedTargets.contains(uuid);
+  }
+
+  public void cacheReflect(UUID uuid) {
+    reflectedTargets.add(uuid);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> reflectedTargets.remove(uuid), 30L);
   }
 
   public Set<Buff> getBuffs() {

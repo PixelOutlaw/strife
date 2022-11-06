@@ -25,6 +25,8 @@ public class Heal extends Effect {
   private boolean useHealingPower;
   @Setter
   private boolean healCaster;
+  @Setter
+  private boolean selfHealPenalty;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -41,6 +43,10 @@ public class Heal extends Effect {
 
     if (useHealingPower) {
       heal *= 1 + caster.getStat(StrifeStat.HEALING_POWER) / 100;
+    }
+
+    if (selfHealPenalty && caster == target) {
+      heal *= 0.5;
     }
 
     if (tickDuration == -1 && caster.getEntity() instanceof Player) {

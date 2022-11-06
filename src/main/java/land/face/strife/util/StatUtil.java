@@ -7,8 +7,11 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
@@ -235,6 +238,35 @@ public class StatUtil {
     return statMap;
   }
 
+  public static Set<StrifeTrait> getTraitsFromSection(ConfigurationSection traitSection) {
+    Set<StrifeTrait> traits = new HashSet<>();
+    if (traitSection == null) {
+      return traits;
+    }
+    for (String s : traitSection.getKeys(false)) {
+      try {
+        traits.add(StrifeTrait.valueOf(s));
+      } catch (Exception e) {
+        LogUtil.printWarning("Invalid trait " + s + ". Skipping...");
+      }
+    }
+    return traits;
+  }
+
+  public static Set<LoreAbility> getLoreAbilitiesFromSection(ConfigurationSection laSection) {
+    Set<LoreAbility> abilities = new HashSet<>();
+    if (laSection == null) {
+      return abilities;
+    }
+    for (String s : laSection.getKeys(false)) {
+      LoreAbility la = StrifePlugin.getInstance().getLoreAbilityManager().getLoreAbilityFromId(s);
+      if (la != null) {
+        abilities.add(la);
+      }
+    }
+    return abilities;
+  }
+
   public static Map<LifeSkillType, Float> getSkillMapFromSection(
       ConfigurationSection skillSection) {
     Map<LifeSkillType, Float> skillMap = new HashMap<>();
@@ -289,9 +321,5 @@ public class StatUtil {
       return level;
     }
     return level;
-  }
-
-  private static double getElementalMult(StrifeMob pStats) {
-    return 1 + (pStats.getStat(StrifeStat.ELEMENTAL_MULT) / 100);
   }
 }

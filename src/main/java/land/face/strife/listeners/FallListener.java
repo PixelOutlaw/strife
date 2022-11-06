@@ -3,6 +3,7 @@ package land.face.strife.listeners;
 import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 import static org.bukkit.potion.PotionEffectType.SLOW;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
@@ -80,6 +81,9 @@ public class FallListener implements Listener {
     DamageUtil.removeDamageModifiers(event);
     if (damage >= player.getHealth()) {
       damage = DamageUtil.doPreDeath(playerMob, (float) damage);
+    }
+    if (damage >= player.getHealth()) {
+      plugin.getDamageManager().getSourceOfDeath().put(player.getUniqueId(), FaceColor.YELLOW + "falling damage");
     }
     event.setDamage(DamageModifier.BASE, damage);
   }

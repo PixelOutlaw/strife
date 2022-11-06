@@ -21,6 +21,7 @@ package land.face.strife.listeners;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,6 +178,11 @@ public class ExperienceListener implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerRespawn(PlayerRespawnEvent event) {
     Player p = event.getPlayer();
+    if (plugin.getDamageManager().getSourceOfDeath().containsKey(p.getUniqueId())) {
+      PaletteUtil.sendMessage(p, "|none|\uD83D\uDC80 |gray|You have been slain by " +
+          plugin.getDamageManager().getSourceOfDeath().get(p.getUniqueId()) + "|gray|!");
+      plugin.getDamageManager().getSourceOfDeath().remove(p.getUniqueId());
+    }
     if (penaltyFreeWorlds.contains(p.getWorld().getName())) {
       return;
     }

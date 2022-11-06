@@ -32,7 +32,8 @@ public class MinionTask extends BukkitRunnable {
       return;
     }
     StrifeMob minionMob = minion.get();
-    if (minionMob == null || minionMob.getEntity() == null || !minionMob.getEntity().isValid()) {
+    if (minionMob == null || minionMob.getEntity() == null || !minionMob.getEntity().isValid()
+        || minionMob.getEntity().getWorld() != master.get().getEntity().getWorld()) {
       Objects.requireNonNull(master.get()).removeMinion(minionMob);
       cancel();
       return;

@@ -97,7 +97,7 @@ public class ShootListener implements Listener {
       return;
     }
 
-    plugin.getPlayerMountManager().despawn(player.getUniqueId());
+    plugin.getPlayerMountManager().despawn(player);
 
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 

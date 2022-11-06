@@ -122,7 +122,8 @@ public class JoinAndLeaveListener implements Listener {
     if (plugin.getPlayerMountManager().isMounted(player)) {
       mounted.add(player.getUniqueId());
     }
-    plugin.getPlayerMountManager().despawn(player.getUniqueId());
+    plugin.getAttackSpeedManager().wipeAttackRecord(player);
+    plugin.getPlayerMountManager().despawn(player);
     plugin.getAbilityManager().unToggleAll(player);
     plugin.getStrifeMobManager().saveEnergy(player);
     plugin.getStrifeMobManager().despawnMinions(player);

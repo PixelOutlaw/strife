@@ -4,12 +4,16 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.LogUtil;
+import lombok.Setter;
 
 public class CooldownReduction extends Effect {
 
   private String abilityString;
   private AbilitySlot slot;
-  private int milliseconds;
+  @Setter
+  private float amount;
+  @Setter
+  private boolean percent;
 
   public void apply(StrifeMob caster, StrifeMob target) {
     String selectedAbility = abilityString;
@@ -24,12 +28,17 @@ public class CooldownReduction extends Effect {
       }
       selectedAbility = caster.getChampion().getSaveData().getAbility(slot).getId();
     }
-    StrifePlugin.getInstance().getAbilityManager()
-        .reduceCooldowns(caster.getEntity(), selectedAbility, milliseconds);
+    if (percent) {
+      StrifePlugin.getInstance().getAbilityManager().reduceCooldownPercent(caster.getEntity(),
+          selectedAbility, amount);
+    } else {
+      StrifePlugin.getInstance().getAbilityManager().reduceCooldownMillis(caster.getEntity(),
+          selectedAbility, (int) (amount * 1000));
+    }
   }
 
-  public void setSeconds(double seconds) {
-    this.milliseconds = (int) (seconds * 1000);
+  public void setAmount(float amount) {
+    this.amount = amount;
   }
 
   public void setAbilityString(String abilityString) {

@@ -202,8 +202,8 @@ public class Spawner extends BukkitRunnable {
       if (diff.lengthSquared() < 6400) {
         p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.8F);
         TextComponent text = new TextComponent(StringExtensionsKt.chatColorize(
-            "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby! "));
-        TextComponent waypointButton = new TextComponent("<º>");
+            "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!\n "));
+        TextComponent waypointButton = new TextComponent("[Click For Waypoint]");
         waypointButton.setColor(ChatColor.AQUA);
         waypointButton.setClickEvent(
             new ClickEvent(Action.RUN_COMMAND,

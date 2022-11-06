@@ -45,8 +45,7 @@ public class BuffManager {
   }
 
   public void loadBuff(String key, ConfigurationSection cs) {
-    ConfigurationSection statsSection = cs.getConfigurationSection("stats");
-    Map<StrifeStat, Float> statsMap = StatUtil.getStatMapFromSection(statsSection);
+    Map<StrifeStat, Float> statsMap = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stats"));
     int maxStacks = cs.getInt("max-stacks", 1);
     int durationSeconds = cs.getInt("duration-seconds", 10);
     String tag = cs.getString("action-bar-tag", "");

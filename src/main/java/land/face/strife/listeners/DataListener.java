@@ -113,7 +113,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAbilityCast(final AbilityCastEvent event) {
-    plugin.getPlayerMountManager().despawn(event.getCaster().getEntity().getUniqueId());
+    if (event.getCaster().getChampion() != null) {
+      plugin.getPlayerMountManager().despawn((Player) event.getCaster().getEntity());
+    }
     if (event.getCaster().getChampion() != null) {
       event.getCaster().getChampion().recombineCache();
     }
@@ -129,7 +131,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onItemPickupEvent(EntityPickupItemEvent event) {
-    if (event.getItem().getItemStack().getType() == Material.SUNFLOWER
+    if (event.getItem().getItemStack().getType() == Material.BLAZE_POWDER
         && event.getEntity() instanceof Player) {
       if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
         event.setCancelled(true);
@@ -233,7 +235,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerTeleport(PlayerTeleportEvent event) {
-    plugin.getPlayerMountManager().despawn(event.getPlayer().getUniqueId());
+    plugin.getPlayerMountManager().despawn(event.getPlayer());
     Riptide.sendCancelPacket(event.getPlayer());
     if (event.getTo().getWorld() != event.getTo().getWorld()) {
       ensureAbilitiesDontInstantCast(event.getPlayer());
@@ -247,7 +249,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerWorldChance(PlayerChangedWorldEvent event) {
-    plugin.getPlayerMountManager().despawn(event.getPlayer().getUniqueId());
+    plugin.getPlayerMountManager().despawn(event.getPlayer());
     ensureAbilitiesDontInstantCast(event.getPlayer());
   }
 

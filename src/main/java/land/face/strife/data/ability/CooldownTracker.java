@@ -67,6 +67,14 @@ public class CooldownTracker extends BukkitRunnable {
     reduce(1);
   }
 
+  public void reduce(float percent) {
+    if (percent > 0) {
+      reduce((int) ((float) maxDuration * percent));
+    } else {
+      reduce((int) ((float) duration * -percent));
+    }
+  }
+
   public void reduce(long milliseconds) {
     double seconds = (double) milliseconds / 1000;
     reduce((int) (seconds * 20 / TICK_TIME));

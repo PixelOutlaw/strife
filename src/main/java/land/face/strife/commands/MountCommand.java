@@ -62,6 +62,7 @@ public class MountCommand extends BaseCommand {
       PaletteUtil.sendMessage(sender, susActions);
       return;
     }
+    plugin.getPlayerMountManager().despawn(sender);
     if (bannedWorlds.contains((sender.getWorld().getName()))) {
       PaletteUtil.sendMessage(sender, bannedWorld);
       return;

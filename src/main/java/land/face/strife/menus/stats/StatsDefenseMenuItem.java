@@ -109,7 +109,9 @@ public class StatsDefenseMenuItem extends MenuItem {
 
     float evasion = StatUtil.getEvasion(mob);
     float dodgeChance = StatUtil.getStat(mob, StrifeStat.DODGE_CHANCE);
-    lore.add(addStat("Evasion Rating: ", evasion, INT_FORMAT));
+    if (evasion > 0.1) {
+      lore.add(addStat("Evasion Rating: ", evasion, INT_FORMAT));
+    }
     if (evasion > 10 || dodgeChance > 0.5) {
       Map<StrifeStat, Float> normalMobStats = StrifePlugin.getInstance()
           .getMonsterManager().getBaseStats(EntityType.ZOMBIE, player.getLevel());

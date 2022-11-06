@@ -41,25 +41,6 @@ public class ItemUtil {
   public static Set<String> axeDestroyKeys = new HashSet<>();
   public static Set<String> shearsDestroyKeys = new HashSet<>();
 
-  // This is for integrations with Loot. It assumes default
-  // settings for enchantments, and is kinda shitty
-  public static Map<StrifeStat, Float> getEnchantmentStats(Player player) {
-    Map<StrifeStat, Float> total = new HashMap<>();
-    return total;
-  }
-
-  private static Map<StrifeStat, Float> getStats(ItemStack stack) {
-    Map<StrifeStat, Float> total = new HashMap<>();
-    if (stack.getLore() == null) {
-      return total;
-    }
-    List<String> lore = stack.getLore();
-    for (String s : lore) {
-
-    }
-    return null;
-  }
-
   public static ItemStack withBase64(ItemStack item, String base64) {
     UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());
     return Bukkit.getUnsafe().modifyItemStack(item,
@@ -231,6 +212,7 @@ public class ItemUtil {
       return traits;
     }
     for (String s : lore) {
+      s = splitOnOffset(s);
       StrifeTrait trait = StrifeTrait.fromName(ChatColor.stripColor(s));
       if (trait != null) {
         LogUtil.printDebug("Added Trait: " + s);
@@ -238,6 +220,11 @@ public class ItemUtil {
       }
     }
     return traits;
+  }
+
+  public static String splitOnOffset(String s) {
+    String[] split = s.split("\uF804\uF824");
+    return split.length == 1 ? s : split[1];
   }
 
   public static void equipMob(Map<EquipmentSlot, ItemStack> items, LivingEntity entity,

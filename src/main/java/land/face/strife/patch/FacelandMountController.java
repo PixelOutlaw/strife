@@ -44,7 +44,7 @@ public class FacelandMountController extends AbstractMountController {
       controller.setVelocity(original.getX(), 0, original.getZ());
 
       if (input.isSneak()) {
-        model.getMountManager().removeDriver();
+        model.getMountManager().dismountAll();
         controller.move(0, 0, 0);
         return;
       }

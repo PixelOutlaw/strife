@@ -152,6 +152,7 @@ public abstract class Effect {
     TARGET,
     FORCE_STAT,
     SUMMON,
+    MINION_BANISH,
     CHARM,
     SWING,
     DISGUISE,

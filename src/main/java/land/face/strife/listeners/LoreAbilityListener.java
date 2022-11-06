@@ -31,7 +31,7 @@ import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeDamageEvent;
-import land.face.strife.events.StrifePreDamageEvent;
+import land.face.strife.events.StrifeEarlyDamageEvent;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StrifeMobManager;
 import org.bukkit.entity.LivingEntity;
@@ -164,7 +164,7 @@ public class LoreAbilityListener implements Listener {
   }
 
   @EventHandler
-  public void onPreDamage(StrifePreDamageEvent event) {
+  public void earlyDamage(StrifeEarlyDamageEvent event) {
     if (event.isCancelled() || !event.getDamageModifiers().isApplyOnHitEffects()) {
       return;
     }

@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import static land.face.strife.data.champion.EquipmentCache.EQUIPMENT_SLOTS;
-import static land.face.strife.data.champion.EquipmentCache.ITEM_SLOTS;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -25,7 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 import org.bukkit.inventory.EquipmentSlot;
 
-public class Summon extends LocationEffect {
+public class MinionSummon extends LocationEffect {
 
   private String uniqueEntity;
   private String soundEffect;
@@ -44,7 +43,12 @@ public class Summon extends LocationEffect {
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
 
-    double lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
+    double lifespan;
+    if (lifespanSeconds == -1) {
+      lifespan = Integer.MAX_VALUE;
+    } else {
+      lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
+    }
 
     for (int i = 0; i < amount; i++) {
       StrifeMob summonedEntity = StrifePlugin.getInstance().getUniqueEntityManager()

@@ -7,6 +7,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.PlayerMountManager;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,36 +28,46 @@ public class MountTask extends BukkitRunnable {
     this.manager = manager;
     this.mount = new WeakReference<>(mount);
     this.model = model;
-    this.runTaskTimer(StrifePlugin.getInstance(), 1L, 4L);
+    this.runTaskTimer(StrifePlugin.getInstance(), 10L, 4L);
   }
 
   @Override
   public void run() {
-    UUID playerUUID = player.get().getUniqueId();
+    Player player = getPlayer().get();
+    if (player == null) {
+      Bukkit.getLogger().warning("[Strife] Mount task cancelled due to null player?!");
+      cancel();
+      return;
+    }
     if (mount.get() == null || mount.get().getEntity() == null || !mount.get().getEntity()
-        .isValid()) {
-      manager.despawn(playerUUID);
+        .isValid() || player.isSneaking() || player.isSwimming()) {
+      player.leaveVehicle();
+      manager.despawn(player);
       return;
     }
     if (model == null) {
       if (mount.get().getEntity().getPassengers().isEmpty()) {
-        manager.despawn(playerUUID);
+        player.leaveVehicle();
+        manager.despawn(player);
         return;
       }
     } else {
       if (model.getModeledEntity().getMountManager().getDriver() == null) {
-        manager.despawn(playerUUID);
+        player.leaveVehicle();
+        manager.despawn(player);
         return;
       }
     }
     Material material = mount.get().getEntity().getLocation().getBlock().getType();
     if (material == Material.WATER || material == Material.LAVA) {
-      manager.despawn(playerUUID);
+      player.leaveVehicle();
+      manager.despawn(player);
       return;
     }
-    Material material2 = player.get().getEyeLocation().getBlock().getType();
+    Material material2 = player.getEyeLocation().getBlock().getType();
     if (material2.isSolid()) {
-      manager.despawn(playerUUID);
+      player.leaveVehicle();
+      manager.despawn(player);
     }
   }
 }

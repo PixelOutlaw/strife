@@ -139,7 +139,7 @@ public class AbilityManager {
     return true;
   }
 
-  public void reduceCooldowns(LivingEntity livingEntity, String abilityId, long msReduction) {
+  public void reduceCooldownMillis(LivingEntity livingEntity, String abilityId, long msReduction) {
     if (!cdMap.containsKey(livingEntity)) {
       return;
     }
@@ -148,6 +148,17 @@ public class AbilityManager {
       return;
     }
     tracker.reduce(msReduction);
+  }
+
+  public void reduceCooldownPercent(LivingEntity livingEntity, String abilityId, float percent) {
+    if (!cdMap.containsKey(livingEntity)) {
+      return;
+    }
+    CooldownTracker tracker = getCooldownTracker(livingEntity, abilityId);
+    if (tracker == null) {
+      return;
+    }
+    tracker.reduce(percent);
   }
 
   public void unToggleAll(LivingEntity livingEntity) {

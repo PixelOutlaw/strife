@@ -80,7 +80,7 @@ public class BlockManager {
   public boolean attemptBlock(StrifeMob attacker, StrifeMob defender, float attackMult,
       AttackType attackType, boolean isBlocking, boolean guardBreak) {
     if (rollBlock(defender, attackMult, isBlocking, attackType == AttackType.PROJECTILE, guardBreak)) {
-      DamageUtil.doReflectedDamage(defender, attacker, attackType);
+      DamageUtil.doReflectedDamage(defender, attacker);
       BlockEvent ev = new BlockEvent(defender, attacker);
       Bukkit.getPluginManager().callEvent(ev);
       if (attacker.getEntity() instanceof Player) {

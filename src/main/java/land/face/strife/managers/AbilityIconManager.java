@@ -151,7 +151,7 @@ public class AbilityIconManager {
     if (cooldownTracker != null) {
       toggledOn = cooldownTracker.isToggleState();
     }
-    if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 0) {
+    if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 2) {
       return;
     }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(ability,
@@ -162,11 +162,13 @@ public class AbilityIconManager {
       return;
     }
     if (ability.getCastType() == AbilityType.ATTACK) {
-      plugin.getAbilityManager().setGlobalCooldown(player, ability, (int) (StatUtil.getAttackTime(mob) * 14));
-      plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
-    } else {
-      plugin.getAbilityManager().setGlobalCooldown(player, ability, ability.getGlobalCooldownTicks());
+      if (ability.getGlobalCooldownTicks() > 5) {
+        plugin.getAttackSpeedManager().resetAttack(mob, 1f, (float) ability.getGlobalCooldownTicks() / 20f);
+      } else {
+        plugin.getAttackSpeedManager().resetAttack(mob, 1f);
+      }
     }
+    plugin.getAbilityManager().setGlobalCooldown(player, ability.getGlobalCooldownTicks());
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
     updateIconProgress(player, ability);
   }

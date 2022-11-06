@@ -12,6 +12,7 @@ import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.events.StrifeDamageEvent;
+import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -51,6 +52,13 @@ public class Damage extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
 
     if (!target.getEntity().isValid()) {
+      return;
+    }
+
+    StrifePreDamageEvent preDamageEvent = new StrifePreDamageEvent(caster.getEntity(), target.getEntity());
+    Bukkit.getPluginManager().callEvent(preDamageEvent);
+
+    if (preDamageEvent.isCancelled()) {
       return;
     }
 
@@ -132,8 +140,10 @@ public class Damage extends Effect {
     }
 
     StrifeMob finalTarget = target;
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        DamageUtil.postDamage(caster, finalTarget, mods), 0L);
+    if (mods.isApplyOnHitEffects()) {
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          DamageUtil.postDamage(caster, finalTarget, mods), 0L);
+    }
   }
 
   public float getDamageReductionRatio() {

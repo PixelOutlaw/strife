@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -60,6 +61,7 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
     List<String> strippedLore = stripColor(lore);
 
     for (String s : strippedLore) {
+      s = ItemUtil.splitOnOffset(s);
       float amount = 0;
       String retained = CharMatcher.forPredicate(Character::isLetter).or(CharMatcher.is(' '))
           .retainFrom(s).trim();

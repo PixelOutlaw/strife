@@ -5,7 +5,6 @@ import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +23,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MainHand;
-import scala.Int;
 
 public class GuiManager {
 
@@ -36,7 +34,7 @@ public class GuiManager {
 
   private static final DecimalFormat XP_FORMAT = new DecimalFormat("0.0");
   // #FBFBFB
-  public static final ChatColor NO_SHADOW = ChatColor.of(new Color(251, 251, 251));
+  public static final ChatColor NO_SHADOW = FaceColor.NO_SHADOW.getColor();
 
   private final GUIComponent healthBase = new GUIComponent("status-base", noShadow(new TextComponent("➲")),
       178, 0, Alignment.CENTER);

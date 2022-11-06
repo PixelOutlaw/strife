@@ -28,6 +28,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -35,6 +36,8 @@ public class DamageManager {
 
   private final StrifePlugin plugin;
   private final Map<UUID, Double> handledDamages = new HashMap<>();
+  @Getter
+  private final Map<UUID, String> sourceOfDeath = new HashMap<>();
 
   public DamageManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -80,6 +83,9 @@ public class DamageManager {
       attacker.bumpCombat(defender);
       defender.bumpCombat(null);
       defender.getEntity().setKiller((Player) attacker.getEntity());
+    }
+    if (damage >= defender.getEntity().getHealth() && defender.isPlayer()) {
+      sourceOfDeath.put(defender.getEntity().getUniqueId(), attacker.getEntity().getCustomName());
     }
     defender.getEntity().damage(damage);
     handledDamages.remove(attacker.getEntity().getUniqueId());

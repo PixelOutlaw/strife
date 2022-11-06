@@ -66,6 +66,15 @@ public class EveryTickTask extends BukkitRunnable {
         GUI gui = plugin.getGuiManager().getGui(p);
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
 
+        if (mob.isInCombat()) {
+          int attackProgress = (int) (10f * plugin.getAttackSpeedManager().getRawMultiplier(p.getUniqueId()));
+          if (attackProgress != 10) {
+            gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 22, 0, Alignment.CENTER));
+          } else {
+            gui.update(new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+          }
+        }
+
         float life = (float) p.getHealth();
         if (dead) {
           life = 0;
@@ -101,13 +110,6 @@ public class EveryTickTask extends BukkitRunnable {
             hpString.length() * 8, 0, Alignment.CENTER));
         gui.update(new GUIComponent("energy-display", new TextComponent(energyString),
             energyString.length() * 8, 0, Alignment.CENTER));
-
-        int attackProgress = (int) (10 * plugin.getAttackSpeedManager().getAttackRecharge(mob));
-        if (attackProgress != 10) {
-          gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 22, 0, Alignment.CENTER));
-        } else {
-          gui.update(new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-        }
 
         plugin.getGuiManager().updateAir(gui, p);
 

@@ -120,6 +120,7 @@ public class LoreAbilityManager {
 
   private LoreAbility getLoreAbilityFromString(String loreString) {
     loreString = ChatColor.stripColor(loreString);
+    loreString = ItemUtil.splitOnOffset(loreString);
     return loreStringToAbilityMap.getOrDefault(loreString, null);
   }
   public LoreAbility getLoreAbilityFromId(String id) {
