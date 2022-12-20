@@ -9,6 +9,7 @@ import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
+import me.libraryaddict.disguise.disguisetypes.MetaIndex;
 import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
@@ -17,6 +18,7 @@ import me.libraryaddict.disguise.disguisetypes.watchers.AgeableWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.MushroomCowWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.PandaWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ParrotWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.RabbitWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SheepWatcher;
@@ -31,6 +33,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MushroomCow.Variant;
+import org.bukkit.entity.Panda.Gene;
 import org.bukkit.entity.Parrot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -143,6 +146,11 @@ public class DisguiseUtil {
               break;
             case SLIME:
               ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
+              break;
+            case PANDA:
+              Gene gene = Gene.valueOf(typeData);
+              ((PandaWatcher) watcher).setMainGene(gene);
+              ((PandaWatcher) watcher).setHiddenGene(gene);
               break;
             case SNOWMAN:
               ((SnowmanWatcher) watcher).setDerp(Boolean.parseBoolean(typeData));

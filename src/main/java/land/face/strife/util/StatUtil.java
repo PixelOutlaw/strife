@@ -15,10 +15,8 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
-import land.face.strife.events.PropertyUpdateEvent;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -44,25 +42,19 @@ public class StatUtil {
       case HEALTH -> {
         float amount = stats.getOrDefault(StrifeStat.HEALTH, 1f) *
             (1 + stats.getOrDefault(StrifeStat.HEALTH_MULT, 0f) / 100);
-        PropertyUpdateEvent event = new PropertyUpdateEvent(mob, "life", amount);
-        Bukkit.getPluginManager().callEvent(event);
-        mob.setMaxLife(event.getAppliedValue());
-        return event.getAppliedValue();
+        mob.setMaxLife(amount);
+        return amount;
       }
       case ENERGY -> {
         float amount = stats.getOrDefault(StrifeStat.ENERGY, 0f) *
             (1 + stats.getOrDefault(StrifeStat.ENERGY_MULT, 0f) / 100);
-        PropertyUpdateEvent event = new PropertyUpdateEvent(mob, "energy", amount);
-        Bukkit.getPluginManager().callEvent(event);
-        mob.setMaxEnergy(event.getAppliedValue());
-        return event.getAppliedValue();
+        mob.setMaxEnergy(amount);
+        return amount;
       }
       case MAXIMUM_RAGE -> {
         float amount = stats.getOrDefault(StrifeStat.MAXIMUM_RAGE, 0f);
-        PropertyUpdateEvent event = new PropertyUpdateEvent(mob, "rage", amount);
-        Bukkit.getPluginManager().callEvent(event);
-        mob.setMaxRage(event.getAppliedValue());
-        return event.getAppliedValue();
+        mob.setMaxRage(amount);
+        return amount;
       }
       case MAX_EARTH_RUNES -> {
         float amount = stats.getOrDefault(StrifeStat.MAX_EARTH_RUNES, 0f);

@@ -37,7 +37,7 @@ public class Ignite extends Effect {
   }
 
   public static boolean setFlames(StrifeMob mob, int ticks) {
-    int frost = mob.getFrost();
+    int frost = (int) mob.getFrost();
     if (frost == 0) {
       mob.getEntity().setFireTicks(ticks);
       return true;
@@ -46,7 +46,7 @@ public class Ignite extends Effect {
       mob.removeFrost(ticks);
       return false;
     }
-    mob.removeFrost(1000000);
+    mob.removeFrost(100);
     mob.getEntity().setFireTicks(ticks - frost);
     return true;
   }

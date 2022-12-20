@@ -80,6 +80,7 @@ public class StrifeMobManager {
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);
       mob.restoreBarrier(200000);
+      entity.lockFreezeTicks(true);
       trackedEntities.put(entity, mob);
       if (entity instanceof Player) {
         mob.setEnergy(mob.getMaxEnergy() * ((Player) entity).getFoodLevel() / 20);

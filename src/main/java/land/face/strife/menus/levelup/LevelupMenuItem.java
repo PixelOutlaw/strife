@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -92,7 +93,7 @@ public class LevelupMenuItem extends MenuItem {
     lore.add(breakLine);
 
     if (pendingPoints > actualPoints) {
-      String pendingPlus = ChatColor.WHITE + "(+" + (pendingPoints - actualPoints) + " Pending)";
+      String pendingPlus = FaceColor.WHITE + "(+" + (pendingPoints - actualPoints) + " Pending)";
       ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + pendingPoints + "/" + statCap + "]" + pendingPlus);
     } else {
       ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + actualPoints + "/" + statCap + "]");

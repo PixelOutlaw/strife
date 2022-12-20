@@ -16,12 +16,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class FrostTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
-  private int coldCheckTick = 0;
-  private boolean isCold;
 
   public FrostTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, 1);
+    this.runTaskTimer(StrifePlugin.getInstance(), 20L, 10L);
   }
 
   @Override
@@ -41,24 +39,19 @@ public class FrostTask extends BukkitRunnable {
       return;
     }
 
-    coldCheckTick++;
-    coldCheckTick = coldCheckTick % 20;
-    if (coldCheckTick == 0) {
-      Block block = player.getLocation().getBlock();
-      isCold = isLocationCold(block);
-    }
+    Block block = player.getLocation().getBlock();
+    boolean isCold = isLocationCold(block);
 
     if (isCold) {
-      mob.addFrost(5);
+      mob.addFrost(1);
       playFrostParticles(mob.getEntity());
-      if (mob.getFrost() > 9900) {
+      if (mob.getFrost() > 99) {
         if (!mob.isInvincible()) {
-          DamageUtil.dealRawDamage(mob, 1);
+          DamageUtil.dealRawDamage(mob, 10);
         }
       }
       return;
     }
-
     lowerFrostNormally(mob);
   }
 
@@ -66,19 +59,17 @@ public class FrostTask extends BukkitRunnable {
     if (mob.getFrost() > 0) {
       if (mob.getFrostGraceTicks() > 0) {
         mob.setFrostGraceTicks(mob.getFrostGraceTicks() - 1);
-        mob.removeFrost(1);
       } else {
-        mob.removeFrost(25);
+        mob.removeFrost(2);
       }
       playFrostParticles(mob.getEntity());
     }
   }
 
-
   private static void playFrostParticles(LivingEntity livingEntity) {
     livingEntity.getWorld().spawnParticle(Particle.SNOWFLAKE,
         livingEntity.getEyeLocation(),
-        1,
+        1 + livingEntity.getFreezeTicks() / 25,
         0.5, 0.8, 0.5,
         0);
   }

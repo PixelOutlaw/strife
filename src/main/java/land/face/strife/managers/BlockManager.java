@@ -80,7 +80,6 @@ public class BlockManager {
   public boolean attemptBlock(StrifeMob attacker, StrifeMob defender, float attackMult,
       AttackType attackType, boolean isBlocking, boolean guardBreak) {
     if (rollBlock(defender, attackMult, isBlocking, attackType == AttackType.PROJECTILE, guardBreak)) {
-      DamageUtil.doReflectedDamage(defender, attacker);
       BlockEvent ev = new BlockEvent(defender, attacker);
       Bukkit.getPluginManager().callEvent(ev);
       if (attacker.getEntity() instanceof Player) {
@@ -90,6 +89,7 @@ public class BlockManager {
       if (!blockTimers.containsKey(defender.getEntity().getUniqueId())) {
         blockTimers.put(defender.getEntity().getUniqueId(), new BlockTimer(this, defender));
       }
+      DamageUtil.doWhenHit(attacker, defender);
       return true;
     }
     return false;

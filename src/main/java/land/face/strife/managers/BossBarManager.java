@@ -50,21 +50,7 @@ public class BossBarManager {
   }
 
   public void createBars(Player player) {
-    if (statusBar1.containsKey(player)) {
-      statusBar1.get(player).getBar().removeAll();
-    }
-    if (statusBar2.containsKey(player)) {
-      statusBar2.get(player).getBar().removeAll();
-    }
-    if (statusBar3.containsKey(player)) {
-      statusBar3.get(player).getBar().removeAll();
-    }
-    if (statusBar4.containsKey(player)) {
-      statusBar4.get(player).getBar().removeAll();
-    }
-    if (statusBar5.containsKey(player)) {
-      statusBar5.get(player).getBar().removeAll();
-    }
+    removeBarViewers(player);
     statusBar1.put(player, buildBar(player));
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
         statusBar2.put(player, buildBar(player)), 1L);
@@ -123,16 +109,30 @@ public class BossBarManager {
   }
 
   public void clearBars(Player p) {
-    statusBar1.get(p).getBar().removeAll();
-    statusBar2.get(p).getBar().removeAll();
-    statusBar3.get(p).getBar().removeAll();
-    statusBar4.get(p).getBar().removeAll();
-    statusBar5.get(p).getBar().removeAll();
+    removeBarViewers(p);
     statusBar1.remove(p);
     statusBar2.remove(p);
     statusBar3.remove(p);
     statusBar4.remove(p);
     statusBar5.remove(p);
+  }
+
+  private void removeBarViewers(Player p) {
+    if (statusBar1.containsKey(p)) {
+      statusBar1.get(p).getBar().removeAll();
+    }
+    if (statusBar2.containsKey(p)) {
+      statusBar2.get(p).getBar().removeAll();
+    }
+    if (statusBar3.containsKey(p)) {
+      statusBar3.get(p).getBar().removeAll();
+    }
+    if (statusBar4.containsKey(p)) {
+      statusBar4.get(p).getBar().removeAll();
+    }
+    if (statusBar5.containsKey(p)) {
+      statusBar5.get(p).getBar().removeAll();
+    }
   }
 
   public void clearBars() {

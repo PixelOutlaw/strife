@@ -41,6 +41,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -94,6 +95,9 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (event.getNewState() == NewCombatState.EXIT) {
       event.getTarget().clearMultishot();
       event.getTarget().setBlock(event.getTarget().getMaxBlock());
+      if (event.getTarget().getEntity() instanceof Mob) {
+        ((Mob) event.getTarget().getEntity()).setTarget(null);
+      }
     }
   }
 

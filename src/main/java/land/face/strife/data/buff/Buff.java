@@ -12,8 +12,10 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class Buff extends BukkitRunnable {
@@ -46,6 +48,10 @@ public class Buff extends BukkitRunnable {
   @Setter
   private float secondsRemaining;
 
+  @Getter
+  @Setter
+  private boolean rebuildBarrier;
+
   public Buff(String id, StrifeMob owner, UUID source, float duration, String actionBarTag,
       Map<StrifeStat, Float> buffStats, Set<StrifeTrait> traits, Set<LoreAbility> loreAbilities,
       Set<TriggerType> consumeTriggers, int maxStacks, boolean stacksMultiplyStats) {
@@ -61,6 +67,10 @@ public class Buff extends BukkitRunnable {
     this.maxStacks = maxStacks;
     this.stacksMultiplyStats = stacksMultiplyStats;
     this.secondsRemaining = duration;
+    if (rebuildBarrier) {
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          StatUtil.getStat(owner, StrifeStat.BARRIER), 1L);
+    }
     runTaskTimer(StrifePlugin.getInstance(), 2L, 4L);
   }
 

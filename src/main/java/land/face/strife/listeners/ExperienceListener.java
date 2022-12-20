@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -38,6 +39,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -59,6 +61,8 @@ public class ExperienceListener implements Listener {
   private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
 
   private static final Map<Integer, String> xpString = new HashMap<>();
+  private static final Map<Player, Location> lastKillLocation = new WeakHashMap<>();
+  private static final Map<Player, Integer> violationLevel = new WeakHashMap<>();
 
   private final List<String> penaltyFreeWorlds;
 
@@ -72,14 +76,15 @@ public class ExperienceListener implements Listener {
     if (event.getDroppedExp() == 0 || SpecialStatusUtil.isSpawnerMob(event.getEntity())) {
       return;
     }
-
     if (!plugin.getStrifeMobManager().isTrackedEntity(event.getEntity())) {
       return;
     }
-
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
-
     Set<Player> killers = StrifeMob.getKillers(mob);
+    if (killers.isEmpty()) {
+      event.setDroppedExp(0);
+      return;
+    }
 
     UniqueKillEvent ev = new UniqueKillEvent(mob, killers);
     Bukkit.getPluginManager().callEvent(ev);
@@ -112,29 +117,18 @@ public class ExperienceListener implements Listener {
     float droppedXp = event.getDroppedExp();
     event.setDroppedExp(0);
 
-    int mobLevel = StatUtil.getMobLevel(event.getEntity());
-    int highestPlayerLevel = mobLevel;
-    int lowestPlayerLevel = mobLevel;
+    float expMultiplier = 1f / killers.size();
+    expMultiplier += (killers.size() - 1) * 0.2f;
+
+    expMultiplier = calculateLevelPenalty(expMultiplier, StatUtil.getMobLevel(event.getEntity()), killers);
 
     for (Player player : killers) {
-      if (player.getLevel() > highestPlayerLevel) {
-        highestPlayerLevel = player.getLevel();
+      float xpPenalty = calculateSafespotViolationMult(player, event.getEntity().getLocation());
+      //Bukkit.getLogger().info("[xxxxx] safespotpenalty " + xpPenalty);
+      float finalXp = (droppedXp * expMultiplier * xpPenalty);
+      if (finalXp < 1) {
+        continue;
       }
-      if (player.getLevel() < lowestPlayerLevel) {
-        lowestPlayerLevel = player.getLevel();
-      }
-    }
-
-    int levelDiff = Math.max(Math.abs(mobLevel - highestPlayerLevel),
-        Math.abs(mobLevel - lowestPlayerLevel));
-
-    float expMultiplier = 1f / killers.size() + ((killers.size() - 1) * 0.2f);
-    if (levelDiff > 8) {
-      expMultiplier *= Math.max(0.1, 1 - ((levelDiff - 8) * 0.015));
-    }
-
-    for (Player player : killers) {
-      float finalXp = (droppedXp * expMultiplier);
       StrifeCombatXpEvent xpEvent = new StrifeCombatXpEvent(player, event.getEntity(), finalXp);
       Bukkit.getPluginManager().callEvent(xpEvent);
       if (xpEvent.isCancelled()) {
@@ -145,6 +139,89 @@ public class ExperienceListener implements Listener {
         plugin.getExperienceManager().addExperience(player, finalXp, false);
       }
     }
+  }
+
+  private float calculateLevelPenalty(float baseXpMult, int mobLevel, Set<Player> partyMembers) {
+    int levelDiff;
+    int maximumDifference;
+    if (partyMembers.size() == 1) {
+      // Bukkit.getLogger().info("[XPDEBUG] No party");
+      // Bukkit.getLogger().info("[XPDEBUG] mob level: " + mobLevel);
+      Player player = partyMembers.stream().findFirst().get();
+      levelDiff = Math.abs(player.getLevel() - mobLevel);
+      // Bukkit.getLogger().info("[XPDEBUG] level diff: " + levelDiff);
+      if (mobLevel < player.getLevel()) {
+        maximumDifference = 8;
+      } else {
+        maximumDifference = (int) Math.max(13, ((float) player.getLevel()) / 4.5f);
+      }
+      // Bukkit.getLogger().info("[XPDEBUG] max level diff: " + maximumDifference);
+    } else {
+      // Bukkit.getLogger().info("[XPDEBUG] Yes party");
+      // Bukkit.getLogger().info("[XPDEBUG] mob level: " + mobLevel);
+      int highestPlayerLevel = 0;
+      int lowestPlayerLevel = 1000;
+      for (Player player : partyMembers) {
+        if (player.getLevel() > highestPlayerLevel) {
+          highestPlayerLevel = player.getLevel();
+        }
+        if (player.getLevel() < lowestPlayerLevel) {
+          lowestPlayerLevel = player.getLevel();
+        }
+      }
+      // Bukkit.getLogger().info("[XPDEBUG] Highest level: " + highestPlayerLevel);
+      // Bukkit.getLogger().info("[XPDEBUG] Lowest level: " + highestPlayerLevel);
+      int highestDiff = Math.abs(mobLevel - highestPlayerLevel);
+      int lowestDiff = Math.abs(mobLevel - lowestPlayerLevel);
+      levelDiff = Math.max(lowestDiff, highestDiff);
+      // Bukkit.getLogger().info("[XPDEBUG] level diff: " + levelDiff);
+      if (mobLevel < highestPlayerLevel) {
+        maximumDifference = 8;
+      } else {
+        maximumDifference = (int) Math.max(13, (float) lowestPlayerLevel / 4.5f);
+      }
+      // Bukkit.getLogger().info("[XPDEBUG] max level diff: " + maximumDifference);
+    }
+
+    if (levelDiff > maximumDifference) {
+      baseXpMult *= Math.pow(0.85, levelDiff - maximumDifference);
+      //Bukkit.getLogger().info("[XPDEBUG] PENALTY - FINAL RESULT: " + baseXpMult);
+    }
+
+    return baseXpMult;
+  }
+
+  private float calculateSafespotViolationMult(Player player, Location location) {
+    float mult = 1.0f;
+    if (lastKillLocation.containsKey(player)) {
+      if (location.getWorld() != lastKillLocation.get(player).getWorld()) {
+        violationLevel.put(player, 0);
+        lastKillLocation.put(player, location);
+        return mult;
+      }
+      int amount = violationLevel.getOrDefault(player, 0);
+      double distance = lastKillLocation.get(player).distanceSquared(player.getLocation());
+      if (distance < 1) {
+        amount += 6;
+      } else if (distance < 2) {
+        amount += 3;
+      } else if (distance < 4) {
+        amount += 1;
+      } else if (distance > 2500) {
+        amount = 0;
+      } else if (distance > 16) {
+        amount -= 25;
+      } else {
+        amount -= 5;
+      }
+      amount = Math.min(100, Math.max(amount, 0));
+      violationLevel.put(player, amount);
+      if (amount > 25) {
+        mult = (100f - amount) / 100f;
+      }
+    }
+    lastKillLocation.put(player, location);
+    return mult;
   }
 
   // TODO: xp popoff

@@ -14,9 +14,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Pose;
 import org.bukkit.scheduler.BukkitTask;
 
 public class Riptide extends Effect {
@@ -50,20 +48,14 @@ public class Riptide extends Effect {
   }
 
   private static void tickRiptide() {
-    Set<LivingEntity> loopMobs = new HashSet<>(RIPTIDE_MAP.keySet());
-    for (LivingEntity le : loopMobs) {
-      if (!le.isValid()) {
+    Iterator<LivingEntity> iterator = RIPTIDE_MAP.keySet().iterator();
+    while (iterator.hasNext()) {
+      LivingEntity le = iterator.next();
+      if (!le.isValid() || RIPTIDE_MAP.get(le) < 1 ||
+          (le.getVelocity().getY() < 0.1 && le.isOnGround())) {
         sendCancelPacket(le);
         RIPTIDE_MAP.remove(le);
-        continue;
-      }
-      if (le.getVelocity().getY() < 0.1 && le.isOnGround()) {
-        RIPTIDE_MAP.remove(le);
-        continue;
-      }
-      if (RIPTIDE_MAP.get(le) < 1) {
-        sendCancelPacket(le);
-        RIPTIDE_MAP.remove(le);
+        iterator.remove();
         continue;
       }
       RIPTIDE_MAP.put(le, RIPTIDE_MAP.get(le) - 1);

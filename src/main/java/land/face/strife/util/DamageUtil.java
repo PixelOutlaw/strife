@@ -215,7 +215,6 @@ public class DamageUtil {
     if (mods.isCanBeBlocked()) {
       if (plugin.getBlockManager().attemptBlock(attacker, defender, attackMult,
           mods.getAttackType(), mods.isBlocking(), mods.isGuardBreak())) {
-        DamageUtil.doReflectedDamage(defender, attacker);
         return false;
       }
     }
@@ -353,6 +352,15 @@ public class DamageUtil {
       rawDamage = 0;
     }
 
+    if (defender.getChampion() == null) {
+      int attackerLevel = StatUtil.getMobLevel(attacker.getEntity());
+      int defenderLevel = StatUtil.getMobLevel(defender.getEntity());
+      int diffCap = (int) Math.max(9f, (float) attackerLevel / 5);
+      if (attackerLevel + diffCap < defenderLevel) {
+        rawDamage *= Math.pow(0.875, defenderLevel - (attackerLevel + diffCap));
+      }
+    }
+
     String damageString;
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
       if (rawDamage == 0) {
@@ -392,13 +400,16 @@ public class DamageUtil {
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
       attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
+    doWhenHit(attacker, defender);
+  }
+
+  public static void doWhenHit(StrifeMob attacker, StrifeMob defender) {
     if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
       defender.changeRage(defender.getStat(StrifeStat.RAGE_WHEN_HIT));
     }
     if (defender.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0.1) {
       StatUtil.changeEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
     }
-
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
   }
 
@@ -642,7 +653,7 @@ public class DamageUtil {
       }
       case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
-        attemptFreeze(attacker, defender, damageMap.get(finalElementType));
+        attemptFreeze(attacker, defender);
         damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.2f);
       }
       case LIGHTNING -> {
@@ -831,12 +842,13 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static void attemptFreeze(StrifeMob attacker, StrifeMob defender, float damage) {
+  public static void attemptFreeze(StrifeMob attacker, StrifeMob defender) {
     LivingEntity defendEntity = defender.getEntity();
     defendEntity.getWorld().playSound(defendEntity.getEyeLocation(),
         Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
-    int ticks = 500 + (int) (1000f * (damage / defendEntity.getMaxHealth()));
-    DamageUtil.addFrost(attacker, defender, ticks);
+    float frost = 15;
+    frost *= 1 - defender.getStat(StrifeStat.ICE_RESIST) / 100;
+    DamageUtil.addFrost(attacker, defender, frost);
   }
 
   public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {

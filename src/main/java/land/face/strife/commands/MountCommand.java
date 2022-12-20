@@ -18,7 +18,6 @@
  */
 package land.face.strife.commands;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
@@ -26,7 +25,9 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 @CommandAlias("mount|mounts")
@@ -72,21 +73,39 @@ public class MountCommand extends BaseCommand {
       PaletteUtil.sendMessage(sender, onlyOnGround);
       return;
     }
-    Material eyeMaterial = sender.getEyeLocation().getBlock().getType();
-    if (!(eyeMaterial == Material.AIR || eyeMaterial == Material.CAVE_AIR)) {
-      PaletteUtil.sendMessage(sender, invalidLocation);
-      return;
-    }
-    Material footMaterial = sender.getLocation().clone().add(-0, 0.1, 0).getBlock().getType();
-    if (footMaterial.isSolid()) {
-      PaletteUtil.sendMessage(sender, invalidLocation);
-      return;
-    }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(sender);
     if (mob.isInCombat()) {
       PaletteUtil.sendMessage(sender, notInCombat);
       return;
     }
+    if (!isLocationSafeForMounts(sender.getLocation().clone().add(0, 0.1, 0))) {
+      PaletteUtil.sendMessage(sender, invalidLocation);
+      return;
+    }
     plugin.getPlayerMountManager().spawnMount(sender);
+  }
+
+  private boolean isLocationSafeForMounts(Location location) {
+    for (int x = -1; x <= 1; x++) {
+      for (int y = 0; y <= 2; y++) {
+        for (int z = -1; z <= 1; z++) {
+          Block block = location.getWorld().getBlockAt(
+              location.getBlockX() + x,
+              location.getBlockY() + y,
+              location.getBlockZ() + z
+          );
+          Material material = block.getType();
+          switch (material) {
+            case AIR, CAVE_AIR, VOID_AIR, TALL_GRASS, GRASS -> {
+              // Nothing
+            }
+            default -> {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
   }
 }

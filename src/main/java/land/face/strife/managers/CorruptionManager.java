@@ -18,8 +18,6 @@
  */
 package land.face.strife.managers;
 
-import com.sentropic.guiapi.gui.Alignment;
-import com.sentropic.guiapi.gui.GUIComponent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -29,13 +27,9 @@ import land.face.strife.timers.CorruptionTimer;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.TargetingUtil;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 
 public class CorruptionManager {
 
@@ -67,10 +61,11 @@ public class CorruptionManager {
     if (!corruptMap.containsKey(mob.getEntity().getUniqueId())) {
       corruptMap.put(mob.getEntity().getUniqueId(), new CorruptionTimer(this, mob));
     }
-    pushRuneGui(mob, (int) mob.getCorruption());
+    // pushRuneGui(mob, (int) mob.getCorruption());
     return true;
   }
 
+  /*
   public void pushRuneGui(StrifeMob mob, int corruption) {
     if (mob.getEntity().getType() != EntityType.PLAYER) {
       return;
@@ -89,6 +84,7 @@ public class CorruptionManager {
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
         new GUIComponent("corrupt-amount", aaa, string.length() * 8, 113, Alignment.CENTER));
   }
+  */
 
   public float getCorruptionMultiplier(StrifeMob mob) {
     return mob.getCorruption() > 0 ? 1 + 0.01f * mob.getCorruption() : 1;
@@ -99,7 +95,7 @@ public class CorruptionManager {
     newCorruption -= flatCorruptPerTick;
     mob.setCorruption(newCorruption);
     spawnCorruptionParticles(mob.getEntity(), mob.getCorruption());
-    pushRuneGui(mob, (int) newCorruption);
+    // pushRuneGui(mob, (int) newCorruption);
   }
 
   public void spawnCorruptionParticles(LivingEntity target, float corruption) {

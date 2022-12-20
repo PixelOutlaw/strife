@@ -129,12 +129,12 @@ public class PlayerDataUtil {
       SwingListener.spoofSwing(entity.getUniqueId());
       entity.swingMainHand();
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-          SwingListener.removeSwing(entity.getUniqueId()), 0L);
+          SwingListener.removeSwing(entity.getUniqueId()), 1L);
     } else if (slot == EquipmentSlot.OFF_HAND) {
       SwingListener.spoofSwing(entity.getUniqueId());
       entity.swingOffHand();
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-          SwingListener.removeSwing(entity.getUniqueId()), 0L);
+          SwingListener.removeSwing(entity.getUniqueId()), 1L);
     }
   }
 

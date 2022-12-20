@@ -167,7 +167,7 @@ public class CombatCountdownTask extends BukkitRunnable {
   private String createBarTitle(StrifeMob target) {
     String name;
     if (target.getEntity() instanceof Player) {
-      name = (target.getEntity().getName()) + FaceColor.LIGHT_GRAY + " Lv"
+      name = FaceColor.WHITE + target.getEntity().getName() + FaceColor.LIGHT_GRAY + " Lv"
           + ((Player) target.getEntity()).getLevel();
     } else if (StringUtils.isNotBlank(target.getEntity().getCustomName())) {
       name = target.getEntity().getCustomName();

@@ -63,7 +63,7 @@ public class CreeperExplodeListener implements Listener {
       victim.addCorruption(mob.getCorruption() * 0.5f + 20);
     }
     if (mob.getFrost() > 0) {
-      victim.addFrost((int) (mob.getFrost() * 0.5f + 2000));
+      victim.addFrost((int) (10 + mob.getFrost() * 0.5f));
     }
     if (event.getDamager().getFireTicks() > 0) {
       int ticks = event.getDamager().getFireTicks();

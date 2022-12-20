@@ -83,7 +83,7 @@ public class StrifeMob {
   @Getter
   private float maxBlock = 1000;
   @Getter
-  private int frost;
+  private float frost;
   @Getter @Setter
   private int frostGraceTicks;
   @Getter
@@ -193,20 +193,24 @@ public class StrifeMob {
     }
   }
 
-  public void addFrost(int added) {
-    frostGraceTicks = 20;
-    frost = Math.min(frost + added, 10000);
-    getEntity().setFreezeTicks((int) ((float) frost / 72f));
+  private void updateFrostDisplay() {
+    getEntity().setFreezeTicks((int) (140f * frost / 100f));
   }
 
-  public void removeFrost(int subbed) {
+  public void addFrost(float added) {
+    frostGraceTicks = 2;
+    added *= 1 - getStat(StrifeStat.ICE_RESIST) / 100;
+    setFrost(frost + added);
+  }
+
+  public void removeFrost(float subbed) {
     frost = Math.max(frost - subbed, 0);
-    getEntity().setFreezeTicks((int) ((float) frost / 72f));
+    updateFrostDisplay();
   }
 
-  public void setFrost(int value) {
-    frost = Math.max(0, Math.min(value, 10000));
-    getEntity().setFreezeTicks((int) ((float) frost / 72f));
+  public void setFrost(float value) {
+    frost = Math.max(0, Math.min(value, 100));
+    updateFrostDisplay();
   }
 
   public float addCorruption(float amount) {
@@ -625,6 +629,10 @@ public class StrifeMob {
       return;
     }
     oldBuff.bumpBuff(duration);
+    if (buff.getBuffStats().containsKey(StrifeStat.BARRIER)) {
+      getStat(StrifeStat.BARRIER);
+      StatUtil.getStat(this, StrifeStat.BARRIER);
+    }
   }
 
   public void removeBuff(String buffId, UUID source) {
@@ -647,6 +655,11 @@ public class StrifeMob {
     buff.cancel();
     runningBuffs.remove(buff);
     buffsChanged = true;
+    if (buff.getBuffStats().containsKey(StrifeStat.BARRIER)) {
+      getStat(StrifeStat.BARRIER);
+      StatUtil.getStat(this, StrifeStat.BARRIER);
+
+    }
   }
 
   public void removeBuff(Buff buff, int stacks) {

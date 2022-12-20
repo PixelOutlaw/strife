@@ -21,8 +21,6 @@ import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.bullion.MoneyChangeEvent;
 import land.face.strife.StrifePlugin;
 import land.face.strife.managers.GuiManager;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.black_ixx.playerpoints.event.PlayerPointsChangeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -40,14 +38,8 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
         plugin.getGuiManager().convertToMoneyFont(money), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
 
     int gems = plugin.getPlayerPointsPlugin().getAPI().look(event.getPlayer().getUniqueId());
-    if (gems > 24) {
-      plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("gem-display",
-          plugin.getGuiManager().convertToGemFont(gems), divideAndConquerLength(gems) * 7, 189,
-          Alignment.RIGHT));
-    } else {
-      plugin.getGuiManager().updateComponent(event.getPlayer(),
-          new GUIComponent("gem-display", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-    }
+    plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("gem-display",
+        plugin.getGuiManager().convertToGemFont(gems), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
 
   @EventHandler
@@ -68,11 +60,7 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
       return;
     }
     int gems = plugin.getPlayerPointsPlugin().getAPI().look(player.getUniqueId());
-    if (gems < 25) {
-      plugin.getGuiManager().updateComponent(player,
-          new GUIComponent("gem-display", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-      return;
-    }
+    gems += event.getChange();
     plugin.getGuiManager().updateComponent(player, new GUIComponent("gem-display",
         plugin.getGuiManager().convertToGemFont(gems), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
