@@ -41,9 +41,9 @@ public class PlayerDataUtil {
     String lore1 = PaletteUtil.color("|red||b||ul|Mob Info (Offense)\n\n" +
         knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
     String lore2 = PaletteUtil.color("|red||b||ul|Mob Info (Defense)\n\n" +
-        knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+        knowledgeSection.getString("lore2", "|black|Sadly, there's nothing here!"));
     String lore3 = PaletteUtil.color("|red||b||ul|Mob Info (Stats)\n\n" +
-        knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+        knowledgeSection.getString("lore3", "|black|Sadly, there's nothing here!"));
     List<String> desc = new ArrayList<>();
     desc.add("");
     desc.add("|white|Knowledge Type: |red|Combat");
@@ -66,8 +66,8 @@ public class PlayerDataUtil {
       ConfigurationSection knowledgeSection) {
     String name = PaletteUtil.color(knowledgeSection.getString("name", FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
     String lore1 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
-    String lore2 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
-    String lore3 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
+    String lore2 = PaletteUtil.color(knowledgeSection.getString("lore2", "|black|Sadly, there's nothing here!"));
+    String lore3 = PaletteUtil.color(knowledgeSection.getString("lore3", "|black|Sadly, there's nothing here!"));
     List<String> desc = PaletteUtil.color(knowledgeSection.getStringList("desc"));
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
