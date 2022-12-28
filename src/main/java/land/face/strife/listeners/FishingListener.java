@@ -61,26 +61,28 @@ public class FishingListener implements Listener {
 
   private void consumeBait(StrifeMob mob) {
     if (mob.getEntity().getEquipment().getItemInOffHand() == null ||
-        mob.getEntity().getEquipment().getItemInOffHand().getType() == Material.AIR) {
+        mob.getEntity().getEquipment().getItemInOffHand().getType() != Material.WHEAT_SEEDS) {
       return;
     }
     if (Math.random() < mob.getStat(StrifeStat.FISH_BAIT_KEEP) / 100) {
       return;
     }
-    PlayerData data = DeluxeInvyPlugin.getInstance()
-        .getPlayerManager().getPlayerData((Player) mob.getEntity());
-    ItemStack stack = data.getEquipmentItem(DeluxeSlot.OFF_HAND);
+    PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager()
+        .getPlayerData((Player) mob.getEntity());
     if (data == null) {
       return;
     }
-    if (stack.getType() == Material.WHEAT_SEEDS) {
-      if (stack.getAmount() == 1) {
-        data.setEquipmentItem(DeluxeSlot.OFF_HAND, new ItemStack(Material.AIR));
-      } else {
-        stack.setAmount(stack.getAmount() - 1);
-        mob.getEntity().getEquipment().getItemInOffHand().setAmount(stack.getAmount());
-      }
+    ItemStack stack = data.getEquipmentItem(DeluxeSlot.OFF_HAND);
+    if (stack == null) {
+      return;
     }
+    if (stack.getAmount() == 1) {
+      data.setEquipmentItem(DeluxeSlot.OFF_HAND, new ItemStack(Material.AIR));
+    } else {
+      stack.setAmount(stack.getAmount() - 1);
+      mob.getEntity().getEquipment().getItemInOffHand().setAmount(stack.getAmount());
+    }
+
   }
 
   private void degradeRod(ItemStack stack) {
@@ -119,7 +121,8 @@ public class FishingListener implements Listener {
 
   private void applyWaitTime(StrifeMob mob, ItemStack fishingRod, FishHook hook) {
 
-    boolean damaged = (fishingRod == null || fishingRod.getType() != Material.FISHING_ROD || fishingRod.getDurability() == 63);
+    boolean damaged = (fishingRod == null || fishingRod.getType() != Material.FISHING_ROD
+        || fishingRod.getDurability() == 63);
 
     float speedBonus = mob.getStat(StrifeStat.FISHING_SPEED) +
         mob.getChampion().getLifeSkillLevel(LifeSkillType.FISHING);
