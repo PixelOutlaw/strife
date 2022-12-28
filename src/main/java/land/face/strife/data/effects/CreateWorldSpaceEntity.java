@@ -28,6 +28,8 @@ public class CreateWorldSpaceEntity extends LocationEffect {
   private String modelEffect;
   @Setter
   private int maxFallTicks;
+  @Setter
+  private boolean destroyOnContact;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -43,7 +45,7 @@ public class CreateWorldSpaceEntity extends LocationEffect {
     cacheEffects();
     getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction,
         maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
-        zeroVerticalAxis, modelEffect, maxFallTicks);
+        zeroVerticalAxis, modelEffect, maxFallTicks, destroyOnContact);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {

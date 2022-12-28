@@ -185,6 +185,11 @@ public class AbilityIconManager {
 
   public void updateChargesGui(Player player) {
     Champion champion = plugin.getStrifeMobManager().getStatMob(player).getChampion();
+    updateChargesGui(champion);
+  }
+
+  public void updateChargesGui(Champion champion) {
+    Player player = champion.getPlayer();
     Ability abilityA = champion.getSaveData().getAbility(AbilitySlot.SLOT_A);
     Ability abilityB = champion.getSaveData().getAbility(AbilitySlot.SLOT_B);
     Ability abilityC = champion.getSaveData().getAbility(AbilitySlot.SLOT_C);

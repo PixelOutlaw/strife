@@ -51,15 +51,16 @@ public record MoneyDropListener(StrifePlugin plugin) implements Listener {
       event.setCancelled(true);
       return;
     }
-    if (SpecialStatusUtil.isGuildMob(event.getLivingEntity())) {
+    if (SpecialStatusUtil.isGuildMob(event.getLivingEntity()) || event.getKiller() == null) {
       event.setCancelled(true);
       return;
     }
-    if (event.getKiller() == null) {
+    StrifeMob victimMob = plugin.getStrifeMobManager().getStatMob(event.getLivingEntity());
+    if (victimMob.getMaster() != null) {
+      event.setCancelled(true);
       return;
     }
     StrifeMob killerMob = plugin.getStrifeMobManager().getStatMob(event.getKiller());
-    StrifeMob victimMob = plugin.getStrifeMobManager().getStatMob(event.getLivingEntity());
     float bonus = victimMob.getStat(StrifeStat.GOLD_FIND) + killerMob.getStat(StrifeStat.GOLD_FIND);
     event.setAmount(event.getAmount() * (1 + bonus / 100));
   }

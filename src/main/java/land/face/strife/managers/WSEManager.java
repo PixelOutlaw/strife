@@ -23,7 +23,7 @@ public class WSEManager {
 
   public void createAtTarget(StrifeMob caster, Location location, int lifespan, float gravity, float friction,
       int maxTicks, double speed, float maxDisplacement, Map<Integer, List<Effect>> effects, boolean strictDuration,
-      boolean zeroVertical, String modelEffect, int maxFallTicks) {
+      boolean zeroVertical, String modelEffect, int maxFallTicks, boolean destroyOnContact) {
     LogUtil.printDebug(" Creating world space entity with effects " + effects);
     double newLifeSpan = lifespan;
     if (!strictDuration) {
@@ -36,7 +36,7 @@ public class WSEManager {
     }
     direction.multiply(speed);
     WorldSpaceEffect entity = new WorldSpaceEffect(caster, effects, location, direction, gravity,
-        friction, maxDisplacement, maxTicks, (int) newLifeSpan, modelEffect, maxFallTicks);
+        friction, maxDisplacement, maxTicks, (int) newLifeSpan, modelEffect, maxFallTicks, destroyOnContact);
     addWorldSpaceEffectEntity(entity);
   }
 

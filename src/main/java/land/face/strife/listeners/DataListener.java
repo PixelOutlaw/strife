@@ -21,11 +21,7 @@ import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Riptide;
-import land.face.strife.events.AbilityCastEvent;
-import land.face.strife.events.AbilityChangeEvent;
-import land.face.strife.events.AbilityCooldownEvent;
-import land.face.strife.events.AbilityGainChargeEvent;
-import land.face.strife.events.CombatChangeEvent;
+import land.face.strife.events.*;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.stats.StrifeStat;
@@ -33,11 +29,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
@@ -46,25 +38,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityCombustByBlockEvent;
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent.Cause;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedMainHandEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerItemDamageEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.MainHand;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -73,7 +51,16 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler
   public void onAbilityChange(final AbilityChangeEvent event) {
-    plugin.getAbilityIconManager().updateChargesGui(event.getChampion().getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer()));
+      plugin.getChampionManager().update(event.getChampion());
+      plugin.getStatUpdateManager().updateAllAttributes(event.getChampion().getPlayer());
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer());
+      StatUtil.getStat(mob, StrifeStat.BARRIER);
+      StatUtil.getStat(mob, StrifeStat.MAXIMUM_RAGE);
+      StatUtil.getStat(mob, StrifeStat.MAX_EARTH_RUNES);
+      plugin.getAbilityIconManager().updateChargesGui(event.getChampion());
+    }, 1L);
   }
 
   @EventHandler

@@ -319,6 +319,7 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
+        ((CreateWorldSpaceEntity) effect).setDestroyOnContact(cs.getBoolean("destroy-on-contact", false));
       }
       case CHASER -> {
         effect = new ChaserEffect();

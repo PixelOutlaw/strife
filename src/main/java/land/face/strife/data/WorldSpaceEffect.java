@@ -43,11 +43,12 @@ public class WorldSpaceEffect {
   private int lifespan;
   private int currentTick = 0;
   private int currentFallTicks = 0;
+  private boolean destroyOnContact;
 
   public WorldSpaceEffect(final StrifeMob caster, final Map<Integer, List<Effect>> effectSchedule,
       Location nextLocation, final Vector velocity, final float gravity, final float friction,
       final float maxDisplacement, final int maxTicks, final int lifespan, String modelEffect,
-      int maxFallTicks) {
+      int maxFallTicks, boolean destroyOnContact) {
     this.caster = caster;
     this.effectSchedule = effectSchedule;
     this.maxDisplacement = maxDisplacement;
@@ -58,6 +59,7 @@ public class WorldSpaceEffect {
     this.lifespan = lifespan;
     this.nextLocation = nextLocation;
     this.maxFallTicks = maxFallTicks;
+    this.destroyOnContact = destroyOnContact;
     if (modelEffect != null) {
       ActiveModel model = ModelEngineAPI.createActiveModel(modelEffect);
       if (model == null) {
@@ -108,6 +110,10 @@ public class WorldSpaceEffect {
           return false;
         }
       } else {
+        if (destroyOnContact) {
+          LogUtil.printDebug("WSE destroyed on contact! Removing...");
+          return false;
+        }
         velocity.setY(0);
         if (currentFallTicks != 0) {
           currentFallTicks = 0;
