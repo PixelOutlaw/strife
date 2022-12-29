@@ -18,8 +18,11 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.List;
 import land.face.dinvy.events.EquipmentUpdateEvent;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
@@ -70,7 +73,11 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
         LoadedMount loadedMount = plugin.getPlayerMountManager().getLoadedMountFromData(data);
         if (loadedMount != null) {
           ItemStackExtensionsKt.setDisplayName(mountStack, loadedMount.getName());
-          TextUtils.setLore(mountStack, loadedMount.getLore());
+          List<String> lore = new ArrayList<>(loadedMount.getLore());
+          if (!loadedMount.isCanBeTraded()) {
+            lore.add(FaceColor.TRUE_WHITE + "傝");
+          }
+          TextUtils.setLore(mountStack, lore);
         }
       }
     }

@@ -954,8 +954,12 @@ public class StrifePlugin extends FacePlugin {
         String flyani = mountSection.getString("fly-animation", null);
         String launch = mountSection.getString("launch-animation", null);
         String land = mountSection.getString("land-animation", null);
-        playerMountManager.loadMount(new LoadedMount(key, customModelData, name, lore, meModel,
-            color, style, speed, walkAnimationSpeed, flying, flyani, launch, land));
+        playerMountManager.loadMount(
+            new LoadedMount(key, customModelData, name, lore, meModel, color, style, speed,
+                walkAnimationSpeed, flying, flyani, launch, land, true));
+        playerMountManager.loadMount(
+            new LoadedMount("untrad-" + key, 1000 + customModelData, name, lore, meModel,
+                color, style, speed, walkAnimationSpeed, flying, flyani, launch, land, false));
         Bukkit.getLogger().info("[Strife] (Mounts) Loaded mount " + key);
       }
     } catch (Exception e) {

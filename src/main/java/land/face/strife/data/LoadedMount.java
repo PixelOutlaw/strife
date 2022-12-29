@@ -34,10 +34,13 @@ public class LoadedMount {
   private final String launchAnimation;
   @Getter
   private final String landAnimation;
+  @Getter
+  private final boolean canBeTraded;
 
   public LoadedMount(String id, int customModelData, String name, List<String> lore,
       String modelId, Color color, Style style, float speed, float walkAnimationSpeed,
-      boolean flying, String flyAnimation, String launchAnimation, String landAnimation) {
+      boolean flying, String flyAnimation, String launchAnimation, String landAnimation,
+      boolean canBeTraded) {
     this.id = id;
     this.name= name;
     this.lore = TextUtils.color(lore);
@@ -51,6 +54,7 @@ public class LoadedMount {
     this.flyAnimation = flyAnimation;
     this.launchAnimation = launchAnimation;
     this.landAnimation = landAnimation;
+    this.canBeTraded = canBeTraded;
   }
 
 }
