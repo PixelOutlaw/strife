@@ -75,6 +75,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
           ItemStackExtensionsKt.setDisplayName(mountStack, loadedMount.getName());
           List<String> lore = new ArrayList<>(loadedMount.getLore());
           if (!loadedMount.isCanBeTraded()) {
+            lore.add("");
             lore.add(FaceColor.TRUE_WHITE + "傝");
           }
           TextUtils.setLore(mountStack, lore);
