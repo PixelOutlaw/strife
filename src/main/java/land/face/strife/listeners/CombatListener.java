@@ -123,7 +123,6 @@ public class CombatListener implements Listener {
     if (event.isCancelled()) {
       return;
     }
-
     if (event.getCause() == DamageCause.THORNS) {
       event.setCancelled(true);
       return;
@@ -142,9 +141,7 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
-
     LivingEntity attackEntity = DamageUtil.getAttacker(event.getDamager());
-
     if (attackEntity == null) {
       return;
     }
@@ -185,6 +182,12 @@ public class CombatListener implements Listener {
         isAbilityProjectile = true;
       }
     }
+
+    if (projectile == null && !canMonsterHit(attackEntity)) {
+      event.setCancelled(true);
+      return;
+    }
+    putMonsterHit(attackEntity);
 
     StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
 
@@ -252,12 +255,6 @@ public class CombatListener implements Listener {
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
       healMultiplier = 0.3f;
     }
-
-    if (attackType == AttackType.MELEE && !canMonsterHit(attackEntity)) {
-      event.setCancelled(true);
-      return;
-    }
-    putMonsterHit(attackEntity);
 
     if (projectile != null) {
       attackMultiplier *= multishotRatio;
@@ -388,7 +385,7 @@ public class CombatListener implements Listener {
 
   public static void putMonsterHit(LivingEntity livingEntity) {
     if (!(livingEntity instanceof Player)) {
-      MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 650);
+      MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 1000);
     }
   }
 

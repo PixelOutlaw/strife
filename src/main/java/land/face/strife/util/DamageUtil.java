@@ -42,7 +42,6 @@ import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
-import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
@@ -83,8 +82,8 @@ public class DamageUtil {
   public static float BASE_ATTACK_SECONDS = 1.6f;
 
   public static float EVASION_THRESHOLD = 0.5f;
-  public static float EVASION_FLAT_DENOMINATOR = 10;
-  public static float EVASION_SCALED_DENOMINATOR = 0.4f;
+  public static float EVASION_PER_REDUCTION = 50f;
+  public static float EVASION_PER_BONUS = 35f;
 
   public static int BASE_RECHARGE_TICKS;
   public static long TICK_RATE;
@@ -119,10 +118,10 @@ public class DamageUtil {
 
     EVASION_THRESHOLD = (float) plugin.getSettings()
         .getDouble("config.mechanics.evasion.evade-threshold", 0.5);
-    EVASION_FLAT_DENOMINATOR = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.flat-accuracy-denom", 10);
-    EVASION_SCALED_DENOMINATOR = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.scaled-accuracy-denom", 0.45);
+    EVASION_PER_REDUCTION = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.evasion-denominator", 50);
+    EVASION_PER_BONUS = (float) plugin.getSettings()
+        .getDouble("config.mechanics.evasion.accuracy-denominator", 35);
 
     PVP_MULT = (float) plugin.getSettings()
         .getDouble("config.mechanics.pvp-multiplier", 0.5);
@@ -867,12 +866,10 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static float getFullEvasionMult(StrifeMob attacker, StrifeMob defender,
+  public static float calculateEvasionMultiplier(StrifeMob attacker, StrifeMob defender,
       Map<AbilityMod, Float> mods) {
-
     float totalEvasion = StatUtil.getEvasion(defender);
     float totalAccuracy = StatUtil.getAccuracy(attacker);
-
     if (mods != null) {
       totalAccuracy *= 1 + mods.getOrDefault(AbilityMod.ACCURACY_MULT, 0f) / 100;
       totalAccuracy += mods.getOrDefault(AbilityMod.ACCURACY, 0f);
@@ -881,22 +878,25 @@ public class DamageUtil {
         totalEvasion *= 0.8;
       }
     }
-
-    float minimumDamage = getMinimumEvasionMult(totalEvasion, totalAccuracy);
-    return minimumDamage + ((1.1f - minimumDamage) * rollDouble());
+    float evasionAdvantage = Math.round(totalEvasion - totalAccuracy);
+    if (evasionAdvantage >= EVASION_PER_REDUCTION) {
+      if (Math.random() < getDodgeChanceFromEvasion(evasionAdvantage)) {
+        return 0;
+      } else {
+        return 1f - 0.5f * (float) Math.random();
+      }
+    } else if (evasionAdvantage > 0) {
+      return 1f - (float) Math.random() * (0.15f + 0.35f * (evasionAdvantage / EVASION_PER_REDUCTION));
+    } else if (evasionAdvantage == 0) {
+      return 1f - (0.15f * (float) Math.random());
+    } else {
+      return 1f - (0.15f * (float) Math.random()) / (-evasionAdvantage / EVASION_PER_BONUS);
+    }
   }
 
-  public static float getMinimumEvasionMult(float evasion, float accuracy) {
-    float evasionAdvantage = evasion - accuracy;
-    float advantageDenominator = EVASION_FLAT_DENOMINATOR + accuracy * EVASION_SCALED_DENOMINATOR;
-    if (evasionAdvantage > 0) {
-      return 0.8f / (1 + (evasionAdvantage / advantageDenominator));
-    } else if (evasionAdvantage < 0) {
-      float rangeRatio = 0.2f / (1 + (-evasionAdvantage / (advantageDenominator * 0.5f)));
-      return 0.8f + (0.2f - rangeRatio);
-    } else {
-      return 0.8f;
-    }
+  public static float getDodgeChanceFromEvasion(float evasionAdvantage) {
+    evasionAdvantage -= EVASION_PER_REDUCTION;
+    return evasionAdvantage / (evasionAdvantage + EVASION_PER_REDUCTION);
   }
 
   // returns -1 for true, and an evasion multiplier above 0 if false.
@@ -906,7 +906,7 @@ public class DamageUtil {
       DamageUtil.doEvasion(attacker, defender);
       return -1;
     }
-    float evasionMultiplier = getFullEvasionMult(attacker, defender, attackModifiers);
+    float evasionMultiplier = calculateEvasionMultiplier(attacker, defender, attackModifiers);
     if (evasionMultiplier < EVASION_THRESHOLD) {
       DamageUtil.doEvasion(attacker, defender);
       return -1;

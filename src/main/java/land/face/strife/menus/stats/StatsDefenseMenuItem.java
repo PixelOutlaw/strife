@@ -93,8 +93,8 @@ public class StatsDefenseMenuItem extends MenuItem {
     String physReduction = "";
     if (armor > 0.1) {
       float armorMultNumber = 100 * (1 - StatUtil.getArmorMult(armor));
-      physReduction = " " + ChatColor.GRAY + "(-" + INT_FORMAT.format(armorMultNumber) + "%" +
-          ChatColor.RED + "⚔" + ChatColor.GRAY + ")";
+      physReduction = " " + FaceColor.GRAY + "(-" + INT_FORMAT.format(armorMultNumber) + "%" +
+          FaceColor.RED + "⚔" + FaceColor.GRAY + ")";
     }
     lore.add(addStat("Armor Rating: ", armor, INT_FORMAT) + physReduction);
 
@@ -115,26 +115,26 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (evasion > 10 || dodgeChance > 0.5) {
       Map<StrifeStat, Float> normalMobStats = StrifePlugin.getInstance()
           .getMonsterManager().getBaseStats(EntityType.ZOMBIE, player.getLevel());
-      float accForLevel =normalMobStats.get(StrifeStat.ACCURACY) *
+      float accForLevel = normalMobStats.get(StrifeStat.ACCURACY) *
           (1 + normalMobStats.get(StrifeStat.ACCURACY_MULT) / 100);
-      float minEvasion = DamageUtil.getMinimumEvasionMult(evasion, accForLevel);
+      float evasionAdvantage = evasion - accForLevel;
       float evasionRate = 0;
-      if (minEvasion < 0.5) {
-        evasionRate = (100 - dodgeChance) * (0.5f - minEvasion) / 0.5f;
+      if (evasionAdvantage > DamageUtil.EVASION_PER_REDUCTION) {
+        evasionRate = (100 - dodgeChance) * DamageUtil.getDodgeChanceFromEvasion(evasionAdvantage);
       }
       lore.add(addStat("Chance To Avoid Hits: ", evasionRate + dodgeChance, INT_FORMAT) + "%");
       if (dodgeChance > 0.5) {
-        lore.add(ChatColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
+        lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
       }
-      if (minEvasion < 0.5) {
-        lore.add(ChatColor.GRAY + " +" + INT_FORMAT.format(evasionRate) + "% From Evasion (Estimated)");
+      if (evasionAdvantage > DamageUtil.EVASION_PER_REDUCTION) {
+        lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(evasionRate) + "% From Evasion (Estimated)");
       }
     }
     if (mob.getStat(StrifeStat.BLOCK) > 0) {
       lore.add(addStat("Block Rating: ", mob.getStat(StrifeStat.BLOCK), INT_FORMAT));
       float blockRecovery = mob.getStat(StrifeStat.BLOCK_RECOVERY);
       if (blockRecovery != 0) {
-        String plus = blockRecovery >= 0 ? ChatColor.WHITE + "+" : "";
+        String plus = blockRecovery >= 0 ? FaceColor.WHITE + "+" : "";
         lore.add(addStat("Block Recovery: " + plus,
             mob.getStat(StrifeStat.BLOCK_RECOVERY), INT_FORMAT) + "%");
       }
@@ -144,27 +144,27 @@ public class StatsDefenseMenuItem extends MenuItem {
           INT_FORMAT));
     }
     lore.add(breakLine);
-    lore.add(ChatColor.YELLOW + "Elemental Resistances:");
+    lore.add(FaceColor.YELLOW + "Elemental Resistances:");
     StringBuilder resistDisplay = new StringBuilder();
     resistDisplay.append(" ");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), ChatColor.GOLD, "\uD83D\uDD25");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.ICE_RESIST), ChatColor.AQUA, "❄");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), ChatColor.YELLOW, "⚡");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), ChatColor.DARK_GREEN, "₪");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), FaceColor.ORANGE, "\uD83D\uDD25");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.ICE_RESIST), FaceColor.CYAN, "❄");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), FaceColor.YELLOW, "⚡");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), FaceColor.GREEN, "₪");
     lore.add(resistDisplay.toString());
     StringBuilder resistDisplay2 = new StringBuilder();
     resistDisplay2.append(" ");
-    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), ChatColor.WHITE, "❂");
-    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.DARK_RESIST), ChatColor.DARK_PURPLE, "☠");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), FaceColor.WHITE, "❂");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.DARK_RESIST), FaceColor.PURPLE, "☠");
 
     lore.add(resistDisplay2.toString());
-    lore.add(ChatColor.YELLOW + "Status Resistances:");
+    lore.add(FaceColor.YELLOW + "Status Resistances:");
     StringBuilder resistDisplay3 = new StringBuilder();
     resistDisplay3.append(" ");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BLEED_RESIST), ChatColor.DARK_RED, "\uD83D\uDCA7");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.POISON_RESIST), ChatColor.DARK_GREEN, "\uD83D\uDCA7");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.WITHER_RESIST), ChatColor.DARK_GRAY, "☠");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), ChatColor.RED, "\uD83D\uDD25");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BLEED_RESIST), FaceColor.RED, "\uD83D\uDCA7");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.POISON_RESIST), FaceColor.GREEN, "\uD83D\uDCA7");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.WITHER_RESIST), FaceColor.DARK_GRAY, "☠");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), FaceColor.RED, "\uD83D\uDD25");
     lore.add(resistDisplay3.toString());
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
@@ -174,7 +174,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     return itemStack;
   }
 
-  private static void addResist(StringBuilder builder, float value, ChatColor color, String symbol) {
+  private static void addResist(StringBuilder builder, float value, FaceColor color, String symbol) {
     builder.append(color).append((int) value).append("%").append(symbol).append("  ");
   }
 
@@ -184,10 +184,10 @@ public class StatsDefenseMenuItem extends MenuItem {
   }
 
   private String addStat(String name, double value, DecimalFormat format) {
-    return ChatColor.YELLOW + name + ChatColor.WHITE + format.format(value);
+    return FaceColor.YELLOW + name + FaceColor.WHITE + format.format(value);
   }
 
   private String addStat(String name, double value, String extra, DecimalFormat format) {
-    return ChatColor.YELLOW + name + ChatColor.WHITE + format.format(value) + extra;
+    return FaceColor.YELLOW + name + FaceColor.WHITE + format.format(value) + extra;
   }
 }
