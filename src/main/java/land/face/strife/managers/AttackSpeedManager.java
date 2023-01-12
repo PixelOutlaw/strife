@@ -16,7 +16,6 @@
  */
 package land.face.strife.managers;
 
-import com.comphenix.protocol.PacketType.Play;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;

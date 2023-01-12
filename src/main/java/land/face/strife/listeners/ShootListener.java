@@ -407,7 +407,7 @@ public class ShootListener implements Listener {
     AreaEffect hitscan = new AreaEffect();
     hitscan.setAreaType(AreaType.CONE);
     hitscan.setPriority(TargetingPriority.CLOSEST);
-    hitscan.setScaleTargetsWithMultishot(false);
+    hitscan.setMultishotScaling(false);
     hitscan.setRange((float) plugin.getSettings().getDouble("config.flintlock.range", 16f));
     hitscan.setLineOfSight(LineOfSight.CASTER);
     hitscan.setMaxTargets(1);

@@ -886,11 +886,13 @@ public class DamageUtil {
         return 1f - 0.5f * (float) Math.random();
       }
     } else if (evasionAdvantage > 0) {
-      return 1f - (float) Math.random() * (0.15f + 0.35f * (evasionAdvantage / EVASION_PER_REDUCTION));
+      float evasionBonus = 0.15f + (0.35f * evasionAdvantage / EVASION_PER_REDUCTION);
+      return 1f + ((float) Math.random() * evasionBonus);
     } else if (evasionAdvantage == 0) {
       return 1f - (0.15f * (float) Math.random());
     } else {
-      return 1f - (0.15f * (float) Math.random()) / (-evasionAdvantage / EVASION_PER_BONUS);
+      float evasionBonus = 0.15f / (1 + (-evasionAdvantage / EVASION_PER_BONUS));
+      return 1f - ((float) Math.random() * evasionBonus);
     }
   }
 

@@ -18,7 +18,10 @@ import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
@@ -32,13 +35,18 @@ public class AreaEffect extends LocationEffect {
   private final List<Effect> effects = new ArrayList<>();
   private final Set<Condition> filterConditions = new HashSet<>();
 
+  private final Map<Integer, Float> circleMathCache = new HashMap<>();
+
   private AreaType areaType;
   private TargetingPriority priority;
   private LineOfSight lineOfSight;
   private float range;
   private float radius;
+  private float area;
   private int maxTargets;
-  private boolean scaleTargetsWithMultishot;
+  @Getter @Setter
+  private boolean areaScaling;
+  private boolean multishotScaling;
   private boolean canBeEvaded;
   private boolean canBeBlocked;
   private boolean canBeCountered;
@@ -87,26 +95,40 @@ public class AreaEffect extends LocationEffect {
         range = 16;
       }
     }
+
+    float searchRadius = range;
+    float rangeModifier = 0f;
+    if (multishotScaling) {
+      rangeModifier += StatUtil.getStat(caster, StrifeStat.MULTISHOT) / 2;
+    }
+    if (areaScaling) {
+      rangeModifier += StatUtil.getStat(caster, StrifeStat.AREA_OF_EFFECT);
+    }
+    if (rangeModifier != 0) {
+      int bonus = (int) (rangeModifier - (rangeModifier % 5));
+      if (!circleMathCache.containsKey(bonus)) {
+        float newArea = area * (1 + (float) bonus / 100);
+        float newRadius = (float) Math.sqrt(newArea / Math.PI);
+        circleMathCache.put(bonus, newRadius);
+      }
+      circleMathCache.get(bonus);
+    }
+
     Set<LivingEntity> areaTargets = new HashSet<>();
     switch (areaType) {
-      case RADIUS:
-        areaTargets.addAll(TargetingUtil.getEntitiesInArea(location, range));
-        break;
-      case LINE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, range, radius));
-        break;
-      case CONE:
-        areaTargets.addAll(TargetingUtil.getEntitiesInCone(location, location.getDirection(), range,
-            radius));
-        break;
-      case PARTY:
+      case RADIUS -> areaTargets.addAll(TargetingUtil.getEntitiesInArea(location, searchRadius));
+      case LINE -> areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, searchRadius, radius));
+      case CONE -> areaTargets.addAll(TargetingUtil
+          .getEntitiesInCone(location, location.getDirection(), searchRadius, radius));
+      case PARTY -> {
         if (caster.getEntity() instanceof Player) {
           areaTargets.addAll(StrifePlugin.getInstance().getSnazzyPartiesHook()
-              .getNearbyPartyMembers((Player) caster.getEntity(), location, range));
+              .getNearbyPartyMembers((Player) caster.getEntity(), location, searchRadius));
         } else {
-          areaTargets.addAll(TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), range));
+          areaTargets.addAll(
+              TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), searchRadius));
         }
-        break;
+      }
     }
     TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
     areaTargets.removeIf(e -> !PlayerDataUtil
@@ -123,7 +145,7 @@ public class AreaEffect extends LocationEffect {
     }
     if (maxTargets > 0) {
       int numTargets = maxTargets;
-      if (scaleTargetsWithMultishot) {
+      if (multishotScaling) {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.15);
         numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult);
       }
@@ -217,6 +239,7 @@ public class AreaEffect extends LocationEffect {
 
   public void setRadius(float radius) {
     this.radius = radius;
+    this.area = (float) (Math.PI * Math.pow(radius, 2));
   }
 
   public int getMaxTargets() {
@@ -227,12 +250,12 @@ public class AreaEffect extends LocationEffect {
     this.maxTargets = maxTargets;
   }
 
-  public boolean isScaleTargetsWithMultishot() {
-    return scaleTargetsWithMultishot;
+  public boolean isMultishotScaling() {
+    return multishotScaling;
   }
 
-  public void setScaleTargetsWithMultishot(boolean scaleTargetsWithMultishot) {
-    this.scaleTargetsWithMultishot = scaleTargetsWithMultishot;
+  public void setMultishotScaling(boolean multishotScaling) {
+    this.multishotScaling = multishotScaling;
   }
 
   public Map<AbilityMod, Float> getAttackModifiers() {

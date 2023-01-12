@@ -372,7 +372,7 @@ public class EffectManager {
         delayedSetEffects(((AreaEffect) effect).getEffects(), areaEffects, key, false);
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
-        ((AreaEffect) effect).setScaleTargetsWithMultishot(
+        ((AreaEffect) effect).setMultishotScaling(
             cs.getBoolean("scale-targets-with-multishot", false));
         ((AreaEffect) effect).setLineOfSight(
             LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));

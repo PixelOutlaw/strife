@@ -118,6 +118,8 @@ public enum StrifeStat {
   MINION_SPEED("Minion Move Speed"),
   MAX_MINIONS("Maximum Minions"),
 
+  AREA_OF_EFFECT("Area Of Effect"),
+
   MOVEMENT_SPEED("Movement Speed"),
   TRUE_DAMAGE("True Damage"),
 
