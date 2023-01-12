@@ -119,20 +119,28 @@ public class StatUtil {
 
   public static float getAttackTime(StrifeMob ae) {
 
-    float attackTime = DamageUtil.BASE_ATTACK_SECONDS * (1f + ae.getFrost() / 10000f);
+    float attackTime = DamageUtil.BASE_ATTACK_SECONDS;
+    int potionAmp = 0;
+    if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
+      potionAmp += ae.getEntity().getPotionEffect(FAST_DIGGING).getAmplifier() + 1;
+    }
+    if (ae.getEntity().hasPotionEffect(SLOW_DIGGING)) {
+      potionAmp -= ae.getEntity().getPotionEffect(SLOW_DIGGING).getAmplifier() + 1;
+    }
+    if (potionAmp > 0) {
+      attackTime += Math.pow(0.9, potionAmp);
+    } else if (potionAmp < 0) {
+      attackTime += Math.pow(1.1, -potionAmp);
+    }
+
+    attackTime *= (1f + ae.getFrost() / 10000f);
+
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
       attackBonus += ae.getRage();
     } else {
       attackBonus += ae.getRage() * 0.4f;
-    }
-
-    if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
-      attackBonus += 10 * (1 + ae.getEntity().getPotionEffect(FAST_DIGGING).getAmplifier());
-    }
-    if (ae.getEntity().hasPotionEffect(SLOW_DIGGING)) {
-      attackBonus -= 10 * (1 + ae.getEntity().getPotionEffect(SLOW_DIGGING).getAmplifier());
     }
 
     if (attackBonus > 0) {
