@@ -86,11 +86,18 @@ public class StealthManager {
 
   public float getSneakAttackExp(LivingEntity victim, float sneakLevel, boolean finishingBlow) {
     float victimLevel = StatUtil.getMobLevel(victim);
-    victimLevel = Math.min(sneakLevel + 5, victimLevel);
-    float levelPenaltyMult = Math.min(1.0f, (float) Math.pow(victimLevel / sneakLevel, 2));
+    float levelDiff = victimLevel - sneakLevel;
+    float levelPenaltyMult = 1;
+    if (levelDiff < 0) {
+      levelPenaltyMult = Math.max(0f, 1f - (-levelDiff * 0.1f));
+    } else {
+      victimLevel = Math.min(victimLevel, sneakLevel + 8);
+    }
     float gainedXp = BASE_SNEAK_ATTACK_EXP + victimLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
+    gainedXp *= levelPenaltyMult;
+
     if (finishingBlow) {
-      gainedXp *= 2;
+      gainedXp *= 2.5;
     }
     return gainedXp * levelPenaltyMult;
   }
