@@ -47,7 +47,7 @@ public class LevelupMenuItem extends MenuItem {
   private static final String breakLine = StringExtensionsKt.chatColorize("&7&m---------------------------");
 
   LevelupMenuItem(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
-    super(StringExtensionsKt.chatColorize(strifeAttribute.getName()), new ItemStack(Material.MAGMA_CREAM));
+    super(strifeAttribute.getName(), new ItemStack(Material.MAGMA_CREAM));
     this.plugin = plugin;
     this.attribute = strifeAttribute;
   }
@@ -88,7 +88,7 @@ public class LevelupMenuItem extends MenuItem {
     lore.addAll(reqList);
     lore.add(breakLine);
     for (String desc : attribute.getDescription()) {
-      lore.add(StringExtensionsKt.chatColorize(desc));
+      lore.add(desc);
     }
     lore.add(breakLine);
 

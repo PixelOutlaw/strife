@@ -54,8 +54,7 @@ public class LevelupPointsMenuItem extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    ItemStack itemStack = super.getFinalIcon(player);
-    List<String> lore = new ArrayList<>(itemStack.getLore());
+    List<String> lore = new ArrayList<>(List.of(DISPLAY_LORE));
 
     Champion champion = plugin.getChampionManager().getChampion(player);
     int stacks = champion.getPendingUnusedStatPoints();
@@ -66,21 +65,27 @@ public class LevelupPointsMenuItem extends MenuItem {
       lore.add(CLICK_TO_SAVE_TEXT);
     }
 
-    ItemStackExtensionsKt.setDisplayName(itemStack, name);
-    TextUtils.setLore(itemStack, lore);
+    ItemStack stack;
+    if (stacks < 1) {
+      stack = new ItemStack(Material.BARRIER, 1);
+      ItemStackExtensionsKt.setCustomModelData(stack, 50);
+    } else {
+      stack = new ItemStack(Material.NETHER_STAR, Math.min(64, stacks));
+      ItemStackExtensionsKt.setCustomModelData(stack, 200);
+    }
 
-    stacks = Math.min(stacks, 64);
-    itemStack.setAmount(Math.max(1, stacks));
-    return itemStack;
+    ItemStackExtensionsKt.setDisplayName(stack, name);
+    TextUtils.setLore(stack, lore);
+
+    return stack;
   }
 
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    event.setWillClose(true);
+    event.setWillClose(false);
     if (plugin.getChampionManager().hasPendingChanges(event.getPlayer())) {
-      event.setWillClose(false);
-      plugin.getConfirmationMenu().open(event.getPlayer());
+      plugin.getChampionManager().promptSaveAttributes(event.getPlayer());
     }
   }
 

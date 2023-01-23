@@ -1,25 +1,35 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.events.*;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
@@ -29,6 +39,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import ninja.amp.ampmenus.menus.common.ConfirmationMenu;
 import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
@@ -52,7 +63,8 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   @EventHandler
   public void onAbilityChange(final AbilityChangeEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer()));
+      plugin.getStrifeMobManager().updateEquipmentStats(
+          plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer()));
       plugin.getChampionManager().update(event.getChampion());
       plugin.getStatUpdateManager().updateAllAttributes(event.getChampion().getPlayer());
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer());
@@ -275,8 +287,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (!plugin.getChampionManager().hasPendingChanges((Player) event.getPlayer())) {
       return;
     }
-    Bukkit.getScheduler().runTaskLater(plugin, () ->
-        plugin.getConfirmationMenu().open((Player) event.getPlayer()), 1L);
+    plugin.getChampionManager().promptSaveAttributes((Player) event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -300,7 +311,8 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onHandChange(PlayerChangedMainHandEvent event) {
-    plugin.getGuiManager().updateGodDisplay(event.getPlayer(), event.getMainHand() == MainHand.LEFT);
+    plugin.getGuiManager()
+        .updateGodDisplay(event.getPlayer(), event.getMainHand() == MainHand.LEFT);
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

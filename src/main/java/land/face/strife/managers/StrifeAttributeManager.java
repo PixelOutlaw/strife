@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -138,8 +139,8 @@ public class StrifeAttributeManager {
 
   public void loadStat(String key, ConfigurationSection cs) {
     StrifeAttribute stat = new StrifeAttribute(key);
-    stat.setName(cs.getString("name"));
-    stat.setDescription(cs.getStringList("description"));
+    stat.setName(PaletteUtil.color(cs.getString("name")));
+    stat.setDescription(PaletteUtil.color(cs.getStringList("description")));
     stat.setCustomData(cs.getInt("custom-data", -1));
     stat.setClickSound(Sound.valueOf(cs.getString("sounds.click-sound", "ENTITY_CAT_HISS")));
     stat.setClickPitch((float) cs.getDouble("sounds.click-pitch", 1));

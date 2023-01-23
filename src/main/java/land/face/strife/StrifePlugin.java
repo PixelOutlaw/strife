@@ -142,7 +142,6 @@ import land.face.strife.menus.abilities.AbilityMenu;
 import land.face.strife.menus.abilities.AbilitySubmenu;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.menus.abilities.SubmenuSelectButton;
-import land.face.strife.menus.levelup.ConfirmationMenu;
 import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.menus.stats.StatsMenu;
@@ -275,7 +274,6 @@ public class StrifePlugin extends FacePlugin {
   private Map<String, AbilitySubmenu> abilitySubmenus;
   private LevelupMenu levelupMenu;
   private final Map<Path, PathMenu> pathMenus = new HashMap<>();
-  private ConfirmationMenu confirmMenu;
   private StatsMenu statsMenu;
   private PaperCommandManager commandManager;
 
@@ -599,7 +597,6 @@ public class StrifePlugin extends FacePlugin {
     abilitySubcategoryMenu = new AbilityMenu(this, pickerName, pickerItems, size);
     String title = PaletteUtil.color(getSettings().getString("language.attribute-menu.title", "Level Up!"));
     levelupMenu = new LevelupMenu(this, title, getAttributeManager().getAttributes());
-    confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu(this);
     for (Path path : LevelPath.PATH_VALUES) {
       pathMenus.put(path, new PathMenu(this, path));
@@ -1022,10 +1019,6 @@ public class StrifePlugin extends FacePlugin {
 
   public LevelupMenu getLevelupMenu() {
     return levelupMenu;
-  }
-
-  public ConfirmationMenu getConfirmationMenu() {
-    return confirmMenu;
   }
 
   public AbilityMenu getAbilityPicker() {

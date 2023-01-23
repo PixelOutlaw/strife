@@ -18,7 +18,9 @@ package land.face.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +40,9 @@ import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import ninja.amp.ampmenus.menus.common.ConfirmationMenu;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -243,6 +247,38 @@ public class ChampionManager {
     for (LifeSkillType val : map.values()) {
       updateRecentSkills(champion, val);
     }
+  }
+
+  public void promptSaveAttributes(Player player) {
+    Champion champion = getChampion(player);
+    List<String> changesLore = new ArrayList<>(List.of(
+        FaceColor.LIGHT_GRAY + "Do you want to raise the",
+        FaceColor.LIGHT_GRAY + "following attributes?",
+        FaceColor.LIGHT_GRAY + ""
+    ));
+    for (StrifeAttribute strifeAttribute : plugin.getAttributeManager().getAttributes()) {
+      int initial = champion.getAttributeLevel(strifeAttribute);
+      int newValue = champion.getPendingLevel(strifeAttribute);
+      if (initial < newValue) {
+        changesLore.add(strifeAttribute.getName() + " Lv" + initial + " -> Lv" + newValue);
+      }
+    }
+    ConfirmationMenu confirmationMenu = new ConfirmationMenu(
+        FaceColor.BLACK + "Confirm Attributes!",
+        FaceColor.GREEN + FaceColor.BOLD.s() + "Confirm Changes!",
+        changesLore,
+        FaceColor.RED + FaceColor.BOLD.s() + "No thanks",
+        List.of(FaceColor.LIGHT_GRAY + "I changed my mind..."),
+        true,
+        true,
+        () -> {
+          plugin.getChampionManager().savePendingStats(champion);
+          plugin.getChampionManager().update(champion);
+          plugin.getStatUpdateManager().updateAllAttributes(player);
+        },
+        null
+    );
+    Bukkit.getScheduler().runTaskLater(plugin, () -> confirmationMenu.open(player), 1L);
   }
 
   private int getTotalChampionStats(Champion champion) {
