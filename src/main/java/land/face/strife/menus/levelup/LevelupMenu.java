@@ -18,23 +18,17 @@
  */
 package land.face.strife.menus.levelup;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.champion.StrifeAttribute;
-import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 public class LevelupMenu extends ItemMenu {
 
-  public LevelupMenu(StrifePlugin plugin, List<StrifeAttribute> attributes) {
-    super(StringExtensionsKt.chatColorize("&0&lLevel Up!"),
-        Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
+  public LevelupMenu(StrifePlugin plugin, String title, List<StrifeAttribute> attributes) {
+    super(title, Size.fit(plugin.getSettings().getInt("config.menu.num-of-rows") * 9), plugin);
 
     for (StrifeAttribute attribute : attributes) {
       int slot = attribute.getSlot();
@@ -51,7 +45,6 @@ public class LevelupMenu extends ItemMenu {
 
     int slot = plugin.getSettings().getInt("config.menu.unused-slot");
     setItem(slot, new LevelupPointsMenuItem(plugin));
-    fillEmptySlots(new BlankIcon());
   }
 
 }

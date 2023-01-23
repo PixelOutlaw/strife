@@ -597,7 +597,8 @@ public class StrifePlugin extends FacePlugin {
     String pickerName = configYAML.getString("ability-menu-title", "Picker");
     int size = configYAML.getInt("ability-menu-size", 36);
     abilitySubcategoryMenu = new AbilityMenu(this, pickerName, pickerItems, size);
-    levelupMenu = new LevelupMenu(this, getAttributeManager().getAttributes());
+    String title = PaletteUtil.color(getSettings().getString("language.attribute-menu.title", "Level Up!"));
+    levelupMenu = new LevelupMenu(this, title, getAttributeManager().getAttributes());
     confirmMenu = new ConfirmationMenu(this);
     statsMenu = new StatsMenu(this);
     for (Path path : LevelPath.PATH_VALUES) {

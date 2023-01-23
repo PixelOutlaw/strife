@@ -144,7 +144,7 @@ public class ProjectileUtil {
           randomWandOffset(projectiles), 0.22, true);
     }
 
-    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_HURT, 0.7f, 2f);
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 1f);
     shotId++;
   }
 

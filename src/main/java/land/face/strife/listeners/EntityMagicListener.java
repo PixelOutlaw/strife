@@ -68,7 +68,7 @@ public class EntityMagicListener implements Listener {
     }
     Witch witch = (Witch) e.getEntity().getShooter();
     e.setCancelled(true);
-    witch.getWorld().playSound(witch.getLocation(), Sound.ENTITY_BLAZE_HURT, 0.9f, 2f);
+    witch.getWorld().playSound(witch.getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 2f);
     StrifeMob witchMob = plugin.getStrifeMobManager().getStatMob(witch);
     float speedMult = 1 + witchMob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
     plugin.getChaserManager().createChaser(witchMob, WITCH_SPELL_ID, new Vector(0,0,0),
@@ -105,7 +105,7 @@ public class EntityMagicListener implements Listener {
     }
     e.setCancelled(true);
     Skeleton skelly = (Skeleton) e.getEntity().getShooter();
-    skelly.getWorld().playSound(skelly.getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
+    skelly.getWorld().playSound(skelly.getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 2f);
     ShulkerBullet magicProj = skelly.getWorld()
         .spawn(skelly.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
     magicProj.setShooter(skelly);
