@@ -22,10 +22,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -45,7 +43,7 @@ public class ReturnButton extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     if (noUseMap.containsKey(player)) {
-      return BlankIcon.getBlankStack();
+      return new ItemStack(Material.AIR);
     }
     ItemStack stack = getIcon().clone();
     ItemStackExtensionsKt.setCustomModelData(stack, 997);

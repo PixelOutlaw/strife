@@ -19,9 +19,7 @@
 package land.face.strife.menus.revive;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
-import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class ReviveMenu extends ItemMenu {
@@ -33,8 +31,6 @@ public class ReviveMenu extends ItemMenu {
 
     setItem(12, new ReviveConfirmItem(reviverName, (int) restoreXp));
     setItem(14, new ReviveRejectItem());
-
-    fillEmptySlots(new BlankIcon());
   }
 
 }

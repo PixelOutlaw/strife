@@ -2,8 +2,13 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.events.EquipmentUpdateEvent;
 import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
@@ -23,10 +28,12 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 public class FishingListener implements Listener {
 
   private final StrifePlugin plugin;
+  private final Map<Player, ItemStack> equippedRods = new WeakHashMap<>();
 
   private static final Pattern pattern = Pattern.compile("[^/d.-]");
 
@@ -34,9 +41,46 @@ public class FishingListener implements Listener {
     this.plugin = plugin;
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void updateStatsOnCatch(PlayerFishEvent event) {
+    if (event.getState() != State.CAUGHT_FISH) {
+      return;
+    }
+    if (!isRodCached(event.getPlayer())) {
+      event.setCancelled(true);
+      event.getHook().remove();
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    plugin.getStrifeMobManager().updateEquipmentStats(mob);
+    plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void updateStatsOnCast(PlayerFishEvent event) {
+    if (event.getState() != State.FISHING) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    plugin.getStrifeMobManager().updateEquipmentStats(mob);
+    plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void cancelFishingOnEquipmentChange(EquipmentUpdateEvent event) {
+    if (event.getPlayer().getFishHook() != null) {
+      event.getPlayer().getFishHook().remove();
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onBite(PlayerFishEvent event) {
     if (event.getState() != State.BITE) {
+      return;
+    }
+    if (!isRodCached(event.getPlayer())) {
+      event.setCancelled(true);
+      event.getHook().remove();
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
@@ -57,6 +101,54 @@ public class FishingListener implements Listener {
     }
     consumeBait(plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     degradeRod(event.getPlayer().getEquipment().getItemInMainHand());
+  }
+
+  @EventHandler
+  public void onCastFishingRod(PlayerFishEvent event) {
+    if (event.getState() != State.FISHING) {
+      return;
+    }
+    equippedRods.put(event.getPlayer(), event.getPlayer().getEquipment().getItemInMainHand());
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+
+    event.getHook().setCustomName(StringExtensionsKt.chatColorize("&b&l<><"));
+    event.getHook().setCustomNameVisible(true);
+
+    Vector bobberVelocity = event.getHook().getVelocity().clone();
+    bobberVelocity.multiply(0.65f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
+    event.getHook().setVelocity(bobberVelocity);
+
+    applyWaitTime(mob, event.getPlayer().getEquipment().getItemInMainHand(), event.getHook());
+  }
+
+  private void applyWaitTime(StrifeMob mob, ItemStack fishingRod, FishHook hook) {
+
+    boolean damaged = (fishingRod == null || fishingRod.getType() != Material.FISHING_ROD
+        || fishingRod.getDurability() == 63);
+
+    float speedBonus = mob.getStat(StrifeStat.FISHING_SPEED) +
+        mob.getChampion().getLifeSkillLevel(LifeSkillType.FISHING);
+    speedBonus = Math.max(-75, speedBonus);
+    float fishDivisor = 1f + (speedBonus / 100f);
+    int minFishTime = 20 + (int) (180f / fishDivisor);
+    int maxFishTime = minFishTime + (int) (Math.random() * (200f / fishDivisor));
+
+    if (damaged) {
+      minFishTime *= 4;
+      maxFishTime *= 4;
+    }
+
+    // Reset hook values because spigot is stupid
+    hook.setMinWaitTime(0);
+    hook.setMaxWaitTime(100000);
+
+    // Actually set hook values
+    hook.setMinWaitTime(minFishTime);
+    hook.setMaxWaitTime(maxFishTime);
+    hook.setApplyLure(false);
+
+    //event.getHook().setWaitTime((int)
+    //    (minFishTime + (Math.random() * (maxFishTime - minFishTime))));
   }
 
   private void consumeBait(StrifeMob mob) {
@@ -102,50 +194,15 @@ public class FishingListener implements Listener {
     }
   }
 
-  @EventHandler
-  public void onCastFishingRod(PlayerFishEvent event) {
-    if (event.getState() != State.FISHING) {
-      return;
+  public boolean isRodCached(Player player) {
+    ItemStack rod1 = equippedRods.get(player);
+    ItemStack rod2 = player.getEquipment().getItemInMainHand();
+    if (rod1 == rod2) {
+      return true;
     }
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-
-    event.getHook().setCustomName(StringExtensionsKt.chatColorize("&b&l<><"));
-    event.getHook().setCustomNameVisible(true);
-
-    Vector bobberVelocity = event.getHook().getVelocity().clone();
-    bobberVelocity.multiply(0.65f * (1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
-    event.getHook().setVelocity(bobberVelocity);
-
-    applyWaitTime(mob, event.getPlayer().getEquipment().getItemInMainHand(), event.getHook());
-  }
-
-  private void applyWaitTime(StrifeMob mob, ItemStack fishingRod, FishHook hook) {
-
-    boolean damaged = (fishingRod == null || fishingRod.getType() != Material.FISHING_ROD
-        || fishingRod.getDurability() == 63);
-
-    float speedBonus = mob.getStat(StrifeStat.FISHING_SPEED) +
-        mob.getChampion().getLifeSkillLevel(LifeSkillType.FISHING);
-    speedBonus = Math.max(-75, speedBonus);
-    float fishDivisor = 1f + (speedBonus / 100f);
-    int minFishTime = 20 + (int) (180f / fishDivisor);
-    int maxFishTime = minFishTime + (int) (Math.random() * (200f / fishDivisor));
-
-    if (damaged) {
-      minFishTime *= 4;
-      maxFishTime *= 4;
+    if (rod1.getType() != rod2.getType()) {
+      return false;
     }
-
-    // Reset hook values because spigot is stupid
-    hook.setMinWaitTime(0);
-    hook.setMaxWaitTime(100000);
-
-    // Actually set hook values
-    hook.setMinWaitTime(minFishTime);
-    hook.setMaxWaitTime(maxFishTime);
-    hook.setApplyLure(false);
-
-    //event.getHook().setWaitTime((int)
-    //    (minFishTime + (Math.random() * (maxFishTime - minFishTime))));
+    return Arrays.deepEquals(TextUtils.getLore(rod1).toArray(), TextUtils.getLore(rod2).toArray());
   }
 }

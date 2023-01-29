@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -49,7 +48,7 @@ public class StatsVerboseXP extends MenuItem {
     Player player = plugin.getStatsMenu().getInspectionTargetMap().get(commandSender);
     if (!player.isValid() || commandSender != player) {
       selfInspectMap.put(commandSender, false);
-      return BlankIcon.getBlankStack();
+      return new ItemStack(Material.AIR);
     }
     selfInspectMap.put(commandSender, true);
     ItemStack itemStack = new ItemStack(Material.EXPERIENCE_BOTTLE);

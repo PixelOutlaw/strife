@@ -59,7 +59,11 @@ public class PathItem extends MenuItem {
     if (!champion.getSaveData().getPathMap().containsKey(path)) {
       return unlockedIcon;
     }
-    return plugin.getPathManager().getIcon(path, champion.getSaveData().getPathMap().get(path));
+    ItemStack stack = plugin.getPathManager().getIcon(path,
+        champion.getSaveData().getPathMap().get(path)).clone();
+    stack.setType(Material.PAPER);
+    ItemStackExtensionsKt.setCustomModelData(stack, 202);
+    return stack;
   }
 
   @Override

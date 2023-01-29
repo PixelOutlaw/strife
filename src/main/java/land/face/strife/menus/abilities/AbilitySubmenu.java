@@ -23,7 +23,6 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.effects.TargetingComparators.AbilityComparator;
-import land.face.strife.menus.BlankIcon;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class AbilitySubmenu extends ItemMenu {
@@ -42,7 +41,6 @@ public class AbilitySubmenu extends ItemMenu {
       setItem(index, new AbilityButton(plugin, ability));
       index++;
     }
-    fillEmptySlots(new BlankIcon());
   }
 
   public String getId() {

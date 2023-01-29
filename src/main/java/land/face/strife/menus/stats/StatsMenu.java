@@ -25,7 +25,6 @@ import java.util.WeakHashMap;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.menus.BlankIcon;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.menus.ItemMenu;
@@ -60,8 +59,6 @@ public class StatsMenu extends ItemMenu {
     setItem(42, new StatsOpenLevelupMenu(plugin));
     setItem(43, new StatsToggleGlow(plugin));
     setItem(44, new StatsVerboseXP(plugin));
-
-    fillEmptySlots(new BlankIcon());
   }
 
   public Map<Player, Player> getInspectionTargetMap() {

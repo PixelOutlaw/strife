@@ -43,6 +43,7 @@ import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.menus.common.ConfirmationMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.SoundCategory;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -152,7 +153,8 @@ public class ChampionManager {
     for (StrifeAttribute stat : champion.getPendingLevelMap().keySet()) {
       if (champion.getPendingLevel(stat) > champion.getAttributeLevel(stat)) {
         sendMessage(champion.getPlayer(), stat.getName() + " increased to " + champion.getPendingLevel(stat) + "!");
-        champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(), 1f, stat.getLevelPitch());
+        champion.getPlayer().playSound(champion.getPlayer().getLocation(), stat.getLevelSound(),
+            SoundCategory.MASTER, 1f, stat.getLevelPitch());
       }
     }
     champion.getSaveData().savePendingStats();
