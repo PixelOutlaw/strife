@@ -155,7 +155,7 @@ public class StealthManager {
         particles *= SPRINT_PARTICLE_MULT;
       }
     }
-    double sneakSkill = PlayerDataUtil.getEffectiveLifeSkill(player, LifeSkillType.SNEAK, false);
+    double sneakSkill = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, false).getLevelWithBonus();
     particles -= sneakSkill / SNEAK_SKILL_PARTICLE_REDUCTION;
     particles = Math.min(Math.round(particles), MAX_STEALTH_PARTICLES);
     for (int i = 0; i < particles; i++) {

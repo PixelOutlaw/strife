@@ -37,8 +37,13 @@ import land.face.strife.tasks.MountTask;
 import land.face.strife.util.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Cow;
+import org.bukkit.entity.Horse;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Llama;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SkeletonHorse;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerMountManager {
@@ -120,14 +125,16 @@ public class PlayerMountManager {
 
   private void createMount(Player player, LoadedMount loadedMount) {
 
-    Pig pig = player.getWorld().spawn(player.getLocation(), Pig.class);
-    pig.setAdult();
-    pig.setBreed(false);
-    pig.setSilent(true);
-    pig.setCustomName(player.getName() + "'s Mount");
-    pig.setCustomNameVisible(false);
+    Cow mountEntity = player.getWorld().spawn(player.getLocation(), Cow.class);
+    mountEntity.setAdult();
+    mountEntity.setBreed(false);
+    mountEntity.setSilent(true);
+    mountEntity.setCustomName(player.getName() + "'s Mount");
+    mountEntity.setCustomNameVisible(false);
 
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(pig);
+    ignorePlayerCollisions(mountEntity);
+
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(mountEntity);
     mob.setOwner(plugin.getStrifeMobManager().getStatMob(player));
     mob.forceSetStat(StrifeStat.MOVEMENT_SPEED, loadedMount.getSpeed());
     mob.forceSetStat(StrifeStat.HEALTH, 20 + player.getLevel());
@@ -138,7 +145,7 @@ public class PlayerMountManager {
     mob.forceSetStat(StrifeStat.ALL_RESIST, 80);
     mob.forceSetStat(StrifeStat.DAMAGE_REDUCTION, -5);
     plugin.getStatUpdateManager().updateAllAttributes(mob);
-    ChunkUtil.setDespawnOnUnload(pig);
+    ChunkUtil.setDespawnOnUnload(mountEntity);
 
     ActiveModel model = null;
     if (loadedMount.getModelId() != null) {
@@ -146,12 +153,13 @@ public class PlayerMountManager {
       if (model == null) {
         Bukkit.getLogger().warning("[Strife] (Mounts) No valid model for " + loadedMount.getId());
       } else {
-        ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(pig);
+        ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(mountEntity);
         if (modeledEntity != null) {
           modeledEntity.addModel(model, true);
           modeledEntity.setBaseEntityVisible(false);
           modeledEntity.getMountManager().setCanSteer(true);
           modeledEntity.getMountManager().setCanRide(true);
+          modeledEntity.setStepHeight(1);
           FacelandMountController c = new FacelandMountController(model, loadedMount);
           player.leaveVehicle();
           modeledEntity.getMountManager().setDriver(player, c);
@@ -159,13 +167,31 @@ public class PlayerMountManager {
         }
       }
     } else {
-      pig.addPassenger(player);
+      mountEntity.addPassenger(player);
     }
 
     MountTask mountTask = new MountTask(this, player, mob, model);
     ownerMap.put(player.getUniqueId(), mountTask);
     Champion champion = plugin.getChampionManager().getChampion(player);
     champion.getSaveData().setOnMount(true);
+  }
+
+  public void updateAllMountCollisions() {
+    for (MountTask task : ownerMap.values()) {
+      if (task.getMount().get() == null || !task.getMount().get().getEntity().isValid()) {
+        continue;
+      }
+      ignorePlayerCollisions(task.getMount().get().getEntity());
+    }
+  }
+
+  private void ignorePlayerCollisions(LivingEntity mount) {
+    mount.setCollidable(true);
+    mount.getCollidableExemptions().clear();
+    mount.getCollidableExemptions().addAll(Bukkit.getOnlinePlayers()
+        .stream().parallel().map(Player::getUniqueId).toList());
+    mount.getCollidableExemptions().addAll(ownerMap.values()
+        .stream().parallel().map(m -> m.getMount().get().getEntity().getUniqueId()).toList());
   }
 
   public void despawn(Player player) {

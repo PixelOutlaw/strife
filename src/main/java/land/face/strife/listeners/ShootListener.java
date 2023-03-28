@@ -73,18 +73,14 @@ public class ShootListener implements Listener {
   private final StrifePlugin plugin;
   private final StrifeParticle flintlockSmoke;
   private final StrifeParticle flintlockFlare;
-  private final AreaEffect flintlockHitscan;
-  private final Damage flintlockDamage;
 
   private final String quiverTip;
   private final String pistolTip;
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    flintlockDamage = buildStandardDamage();
     flintlockSmoke = buildFlintlockSmoke();
     flintlockFlare = buildFlintlockFlare();
-    flintlockHitscan = buildFlintlockHitscan();
 
     quiverTip = PaletteUtil.color(plugin.getSettings().getString("language.shooting.quiver-tip", "need quiver bro"));
     pistolTip = PaletteUtil.color(plugin.getSettings().getString("language.shooting.pistol-tip", "need quiver bro"));
@@ -124,7 +120,9 @@ public class ShootListener implements Listener {
         event.setCancelled(true);
         return;
       }
-      doPistolShot(mob, attackMultiplier);
+      ProjectileUtil.shootBullet(mob, attackMultiplier);
+      flintlockSmoke.apply(mob, mob);
+      flintlockFlare.apply(mob, mob);
       return;
     }
 
@@ -145,6 +143,13 @@ public class ShootListener implements Listener {
       }
 
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(shooter);
+
+      if (!ProjectileUtil.isAbilityProjectile(event.getEntity())) {
+        if (!mob.canAttack()) {
+          event.setCancelled(true);
+          return;
+        }
+      }
 
       if (shooter instanceof Mob && ((Mob) shooter).getTarget() != null) {
         StrifeMob target = plugin.getStrifeMobManager().getStatMob(((Mob) shooter).getTarget());
@@ -167,7 +172,9 @@ public class ShootListener implements Listener {
         event.setCancelled(true);
         return;
       } else if (ItemUtil.isPistol(weapon)) {
-        doPistolShot(mob, 1f);
+        ProjectileUtil.shootBullet(mob, 1f);
+        flintlockSmoke.apply(mob, mob);
+        flintlockFlare.apply(mob, mob);
         event.setCancelled(true);
         return;
       } else if (event.getEntity() instanceof Arrow) {
@@ -211,7 +218,9 @@ public class ShootListener implements Listener {
       ProjectileUtil.shootWand(mob, 1);
       event.setCancelled(true);
     } else if (ItemUtil.isPistol(weapon)) {
-      doPistolShot(mob, 1f);
+      ProjectileUtil.shootBullet(mob, 1f);
+      flintlockSmoke.apply(mob, mob);
+      flintlockFlare.apply(mob, mob);
       event.setCancelled(true);
     } else if (event.getEntity() instanceof Arrow) {
       ProjectileUtil.shootArrow(mob, 1f);
@@ -324,39 +333,6 @@ public class ShootListener implements Listener {
     event.getEntity().remove();
   }
 
-  private void doPistolShot(StrifeMob mob, float attackMultiplier) {
-    if (mob.getEntity() instanceof Player) {
-      if (((Player) mob.getEntity()).getCooldown(Material.BOW) > 0) {
-        return;
-      }
-      ((Player) mob.getEntity()).setCooldown(Material.BOW,
-          (int) (StatUtil.getAttackTime(mob) * 20));
-    }
-    if (mob.getStat(StrifeStat.MULTISHOT) > 0.05) {
-      double randomMultishot = 0.15 + Math.random() * 0.85;
-      int projectiles = ProjectileUtil.getTotalProjectiles(1,
-          mob.getStat(StrifeStat.MULTISHOT) * randomMultishot);
-      flintlockHitscan.setMaxTargets(projectiles);
-      flintlockHitscan.setRadius(0.4f * projectiles);
-    } else {
-      flintlockHitscan.setMaxTargets(1);
-      flintlockHitscan.setRadius(0.4f);
-    }
-    flintlockDamage.setAttackMultiplier(attackMultiplier);
-    flintlockDamage.setApplyOnHitEffects(attackMultiplier > 0.5);
-    flintlockDamage.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
-
-    Set<LivingEntity> entities = new HashSet<>();
-    entities.add(mob.getEntity());
-    TargetResponse response = new TargetResponse(entities);
-
-    plugin.getEffectManager().execute(flintlockHitscan, mob, response);
-    flintlockSmoke.apply(mob, mob);
-    flintlockFlare.apply(mob, mob);
-    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
-        Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
-  }
-
   private StrifeParticle buildFlintlockSmoke() {
     StrifeParticle particle = new StrifeParticle();
     particle.setFriendly(true);
@@ -374,18 +350,6 @@ public class ShootListener implements Listener {
     return particle;
   }
 
-  private Damage buildStandardDamage() {
-    Damage damage = new Damage();
-    damage.setAttackMultiplier(1.0f);
-    damage.setHealMultiplier(1.0f);
-    damage.setAttackType(AttackType.PROJECTILE);
-    damage.setCanBeBlocked(true);
-    damage.setCanBeEvaded(true);
-    damage.setCanSneakAttack(true);
-    damage.setShowPopoffs(true);
-    return damage;
-  }
-
   private StrifeParticle buildFlintlockFlare() {
     StrifeParticle particle = new StrifeParticle();
     particle.setFriendly(true);
@@ -401,23 +365,6 @@ public class ShootListener implements Listener {
     particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.flare-speed", 1f));
     particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.flare-spread", 1f));
     return particle;
-  }
-
-  private AreaEffect buildFlintlockHitscan() {
-    AreaEffect hitscan = new AreaEffect();
-    hitscan.setAreaType(AreaType.CONE);
-    hitscan.setPriority(TargetingPriority.CLOSEST);
-    hitscan.setMultishotScaling(false);
-    hitscan.setRange((float) plugin.getSettings().getDouble("config.flintlock.range", 16f));
-    hitscan.setLineOfSight(LineOfSight.CASTER);
-    hitscan.setMaxTargets(1);
-    hitscan.setCanBeBlocked(false);
-    hitscan.setCanBeEvaded(false);
-    hitscan.setOrigin(OriginLocation.BELOW_HEAD);
-
-    hitscan.getEffects().add(flintlockDamage);
-
-    return hitscan;
   }
 
 }

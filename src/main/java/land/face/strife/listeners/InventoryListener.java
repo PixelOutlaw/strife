@@ -2,7 +2,6 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import ninja.amp.ampmenus.menus.MenuHolder;

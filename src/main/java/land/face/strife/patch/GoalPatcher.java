@@ -40,6 +40,18 @@ public class GoalPatcher {
           Bukkit.getMobGoals().addGoal(mob, 2, goal);
         }
       }
+      case "strife:watch_target" -> {
+        WatchTargetGoal goal = new WatchTargetGoal(mob);
+        if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
+          Bukkit.getMobGoals().addGoal(mob, 3, goal);
+        }
+      }
+      case "strife:origin_lock" -> {
+        OriginLockGoal goal = new OriginLockGoal(mob);
+        if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
+          Bukkit.getMobGoals().addGoal(mob, 3, goal);
+        }
+      }
       case "strife:follow_master" -> {
         FollowMasterGoal goal = new FollowMasterGoal(mob);
         if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {

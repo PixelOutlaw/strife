@@ -9,6 +9,7 @@ import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.ModelBone;
 import com.ticxo.modelengine.api.model.bone.Renderer;
+import com.ticxo.modelengine.api.model.vfx.VFX;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,8 @@ public class CreateModelAnimation extends LocationEffect {
   @Setter
   private String modelId;
   @Setter
+  private String boneId;
+  @Setter
   private String animationId;
   @Setter
   private int lerpIn;
@@ -44,6 +47,8 @@ public class CreateModelAnimation extends LocationEffect {
   private int lifespan;
   @Setter
   private boolean targetLock;
+  @Setter
+  private boolean randomRotation;
   @Setter
   private boolean rotationLock;
   @Setter
@@ -60,10 +65,14 @@ public class CreateModelAnimation extends LocationEffect {
     }
     Location loc = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
 
-    if (rotationLock) {
-      loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+    if (randomRotation) {
+      loc.setYaw((float) (Math.random() * 360));
     } else {
-      loc.setYaw((float) (Math.random() * 180));
+      if (rotationLock) {
+        loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+      } else {
+        loc.setYaw((float) (Math.random() * 360));
+      }
     }
 
     Tadpole stand = loc.getWorld().spawn(loc, Tadpole.class, e -> {
@@ -75,21 +84,7 @@ public class CreateModelAnimation extends LocationEffect {
       e.setSilent(true);
       ChunkUtil.setDespawnOnUnload(e);
     });
-
     CURRENT_MODELS.add(stand);
-
-    ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
-    if (modeledEntity == null) {
-      Bukkit.getLogger().warning("Failed to create modelled entity");
-    } else {
-      modeledEntity.addModel(model, true);
-      //modeledEntity.getBodyRotationController().isPlayerMode()detectPlayers();
-      modeledEntity.setBaseEntityVisible(false);
-    }
-
-    if (animationId != null) {
-      model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
-    }
 
     if (targetLock) {
       Vector relativePos = loc.subtract(target.getEntity().getLocation()).toVector();
@@ -111,51 +106,12 @@ public class CreateModelAnimation extends LocationEffect {
       runnable.runTaskTimer(getPlugin(), 1L, 1L);
     }
 
-    if (color != null) {
-      for (Renderer bone : model.getRendererHandler().getBones().values()) {
-        bone.getRenderer().setColor(color);
-      }
-    }
-
     Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
       stand.remove();
       CURRENT_MODELS.remove(stand);
     }, lifespan);
 
-    if (complexPart != null) {
-      for (int i : complexPart.keySet()) {
-        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-          if (!stand.isValid()) {
-            return;
-          }
-          for (Triple<String, String, String> triple : complexPart.get(i)) {
-            String base = triple.getLeft();
-            String targetPartId = triple.getMiddle();
-            String newPartId = triple.getRight();
-
-            ModelBlueprint blueprint;
-            if (cachedAnimationModels.containsKey(base)) {
-              blueprint = cachedAnimationModels.get(base);
-            } else {
-              blueprint = ModelEngineAPI.getBlueprint(base);
-              cachedAnimationModels.put(base, blueprint);
-            }
-            final ModelBone bone = model.getBone(targetPartId);
-            BlueprintBone bpBone = blueprint.getBones().get(newPartId);
-            if (bpBone == null) {
-              continue;
-            }
-            if (bone.getParent() == null) {
-              model.removeBone(targetPartId);
-              model.forceGenerateBone(null, bpBone);
-            } else {
-              model.removeBone(targetPartId);
-              model.forceGenerateBone(bone.getParent().getBoneId(), bpBone);
-            }
-          }
-        }, i);
-      }
-    }
+    applyModelStuff(stand, model, loc.getYaw());
   }
 
   @Override
@@ -166,10 +122,14 @@ public class CreateModelAnimation extends LocationEffect {
       return;
     }
 
-    if (rotationLock) {
-      loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+    if (randomRotation) {
+      loc.setYaw((float) (Math.random() * 360));
     } else {
-      loc.setYaw((float) (Math.random() * 180));
+      if (rotationLock) {
+        loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+      } else {
+        loc.setYaw((float) (Math.random() * 360));
+      }
     }
 
     Tadpole stand = loc.getWorld().spawn(loc, Tadpole.class, e -> {
@@ -182,66 +142,70 @@ public class CreateModelAnimation extends LocationEffect {
       e.setSilent(true);
       ChunkUtil.setDespawnOnUnload(e);
     });
-
     CURRENT_MODELS.add(stand);
-
-    ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
-    if (modeledEntity == null) {
-      Bukkit.getLogger().warning("Failed to create modelled entity");
-    } else {
-      modeledEntity.addModel(model, true);
-      modeledEntity.setBaseEntityVisible(false);
-      modeledEntity.getBodyRotationController().setMaxBodyAngle(0);
-    }
-
-    if (animationId != null) {
-      model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
-    }
-
-    if (color != null) {
-      for (Renderer bone : model.getRendererHandler().getBones().values()) {
-        bone.getRenderer().setColor(color);
-      }
-    }
 
     Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
       stand.remove();
       CURRENT_MODELS.remove(stand);
     }, lifespan);
 
-    if (complexPart != null) {
-      for (int i : complexPart.keySet()) {
-        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-          if (!stand.isValid()) {
-            return;
-          }
-          for (Triple<String, String, String> triple : complexPart.get(i)) {
-            String base = triple.getLeft();
-            String targetPartId = triple.getMiddle();
-            String newPartId = triple.getRight();
+    applyModelStuff(stand, model, loc.getYaw());
+  }
 
-            ModelBlueprint blueprint;
-            if (cachedAnimationModels.containsKey(base)) {
-              blueprint = cachedAnimationModels.get(base);
-            } else {
-              blueprint = ModelEngineAPI.getBlueprint(base);
-              cachedAnimationModels.put(base, blueprint);
-            }
-            final ModelBone bone = model.getBone(targetPartId);
-            BlueprintBone bpBone = blueprint.getBones().get(newPartId);
-            if (bpBone == null) {
-              continue;
-            }
-            if (bone.getParent() == null) {
-              model.removeBone(targetPartId);
-              model.forceGenerateBone(null, bpBone);
-            } else {
-              model.removeBone(targetPartId);
-              model.forceGenerateBone(bone.getParent().getBoneId(), bpBone);
-            }
-          }
-        }, i);
+  private void applyModelStuff(Tadpole stand, ActiveModel model, float yaw) {
+    Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+      ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
+      if (modeledEntity == null) {
+        Bukkit.getLogger().warning("Failed to create modelled entity");
+      } else {
+        modeledEntity.addModel(model, true);
+        modeledEntity.setBaseEntityVisible(false);
       }
-    }
+
+      if (animationId != null) {
+        model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
+      }
+
+      if (color != null) {
+        for (Renderer bone : model.getRendererHandler().getBones().values()) {
+          bone.getRenderer().setColor(color);
+        }
+      }
+
+      if (complexPart != null) {
+        for (int i : complexPart.keySet()) {
+          Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+            if (!stand.isValid()) {
+              return;
+            }
+            for (Triple<String, String, String> triple : complexPart.get(i)) {
+              String base = triple.getLeft();
+              String targetPartId = triple.getMiddle();
+              String newPartId = triple.getRight();
+
+              ModelBlueprint blueprint;
+              if (cachedAnimationModels.containsKey(base)) {
+                blueprint = cachedAnimationModels.get(base);
+              } else {
+                blueprint = ModelEngineAPI.getBlueprint(base);
+                cachedAnimationModels.put(base, blueprint);
+              }
+              final ModelBone bone = model.getBone(targetPartId);
+              BlueprintBone bpBone = blueprint.getBones().get(newPartId);
+              if (bpBone == null) {
+                continue;
+              }
+              if (bone.getParent() == null) {
+                model.removeBone(targetPartId);
+                model.forceGenerateBone(null, bpBone);
+              } else {
+                model.removeBone(targetPartId);
+                model.forceGenerateBone(bone.getParent().getBoneId(), bpBone);
+              }
+            }
+          }, i);
+        }
+      }
+    }, 0L);
   }
 }

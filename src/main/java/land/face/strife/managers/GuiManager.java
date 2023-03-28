@@ -36,12 +36,16 @@ public class GuiManager {
   // #FBFBFB
   public static final ChatColor NO_SHADOW = FaceColor.NO_SHADOW.getColor();
 
-  private final GUIComponent healthBase = new GUIComponent("status-base", noShadow(new TextComponent("➲")),
-      178, 0, Alignment.CENTER);
-  private final GUIComponent levelBase = new GUIComponent("level-base", noShadow(new TextComponent("⅟")), 27,
-      -105, Alignment.CENTER);
-  private final GUIComponent bitsBase = new GUIComponent("bits-base", noShadow(new TextComponent("₿")), 14, 199, Alignment.CENTER);
-  private final GUIComponent gemsBase = new GUIComponent("gems-base", noShadow(new TextComponent("௹")) , 15, 198, Alignment.CENTER);
+  private final GUIComponent healthBase = new GUIComponent("status-base",
+      noShadow(new TextComponent("➲")), 178, 0, Alignment.CENTER);
+  private final GUIComponent levelBase = new GUIComponent("level-base",
+      noShadow(new TextComponent("⅟")), 27, -105, Alignment.CENTER);
+  private final GUIComponent bitsBase = new GUIComponent("bits-base",
+      noShadow(new TextComponent("₿")), 14, 199, Alignment.CENTER);
+  private final GUIComponent gemsBase = new GUIComponent("gems-base",
+      noShadow(new TextComponent("௹")) , 15, 198, Alignment.CENTER);
+  private final GUIComponent notifsBase = new GUIComponent("notifs-base",
+      noShadow(new TextComponent("偀")) , 53, -181, Alignment.CENTER);
 
   private final Map<Integer, String> hpStringNumbers = new HashMap<>();
   private final Map<Integer, String> energyStringNumbers = new HashMap<>();
@@ -55,9 +59,6 @@ public class GuiManager {
   public static final TextComponent NOTICE_ENERGY = noShadow(new TextComponent("᳣"));
   public static final TextComponent NOTICE_REQUIREMENT = noShadow(new TextComponent("᳤"));
   public static final TextComponent NOTICE_INVALID_TARGET = noShadow(new TextComponent("᳢"));
-  public static final TextComponent WING_TING = noShadow(new TextComponent("䶰"));
-  public static final TextComponent WING_TING_EMPTY = noShadow(new TextComponent("䎘"));
-  public static final TextComponent CORRUPT_ICON = noShadow(new TextComponent("黑"));
 
   public static final TextComponent NO_GOD =  noShadow(new TextComponent("᮰"));
   public static final TextComponent GOD_FACEGUY =  noShadow(new TextComponent("᮱"));
@@ -161,6 +162,11 @@ public class GuiManager {
   public static final Map<Integer, String> HEALTH_BAR_TARGET = new HashMap<>();
   public static final Map<Integer, String> BARRIER_BAR_TARGET = new HashMap<>();
 
+  public static final TextComponent notifMail = noShadow(new TextComponent("偁"));
+  public static final TextComponent notifMarket = noShadow(new TextComponent("偂"));
+  public static final TextComponent notifDaily = noShadow(new TextComponent("偃"));
+  public static final TextComponent notifVote = noShadow(new TextComponent("偄"));
+
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
     if (HP_BAR.isEmpty()) {
@@ -210,7 +216,7 @@ public class GuiManager {
   public void postNotice(Player player, NoticeData data) {
     noticeMap.put(player, data);
     guiMap.get(player).update(
-        new GUIComponent("notices", data.getTextComponent(), data.getWidth(), 0, Alignment.CENTER));
+        new GUIComponent("notices", data.getTextComponent(), 171, 0, Alignment.CENTER));
   }
 
   public void tickNotices(Player player) {
@@ -233,19 +239,11 @@ public class GuiManager {
     gui.putUnderneath(levelBase);
     gui.putUnderneath(bitsBase);
     gui.putUnderneath(gemsBase);
+    gui.putUnderneath(notifsBase);
 
     gui.putOnTop(new GUIComponent("missing-life", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("missing-energy", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("barrier-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-
-    /*
-    gui.putOnTop(new GUIComponent("dura-helmet", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("dura-body", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("dura-legs", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("dura-boots", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("dura-weapon", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("dura-offhand", new TextComponent(""), 0, 0, Alignment.CENTER));
-    */
 
     gui.putOnTop(new GUIComponent("invincible", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("life-display", new TextComponent(""), 0, 0, Alignment.CENTER));
@@ -261,32 +259,19 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("level-display", new TextComponent(""), 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("attack-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("notices", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("rage-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("block-ind", new TextComponent(""), 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("wing-1", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("wing-2", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("wing-3", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("wing-4", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("wing-5", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("food-bar-1", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-bar-2", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-bar-3", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-bar-4", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-bar-5", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("jump-wings", EMPTY, 0, 0, Alignment.LEFT));
 
-    gui.putOnTop(new GUIComponent("food-icon-FULLNESS", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-icon-PROTEIN", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-icon-FAT", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-icon-CARBOHYDRATE", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("food-icon-VITAMINS", EMPTY, 0, 0, Alignment.CENTER));
-
-    gui.putOnTop(new GUIComponent("corrupt-display", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("rune-display", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("corrupt-amount", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("notices", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("slot-a-charges", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("slot-b-charges", EMPTY, 0, 0, Alignment.CENTER));
@@ -399,6 +384,38 @@ public class GuiManager {
           new TextComponent(duraString(player.getEquipment().getItemInOffHand(), "৫")),
           45, 233, Alignment.RIGHT));
     }
+  }
+
+  public void updateMailNotif(Player player, boolean enabled) {
+    if (!enabled) {
+      getGui(player).update(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
+      return;
+    }
+    getGui(player).update(new GUIComponent("notif-mail", notifMail, 12, -202, Alignment.CENTER));
+  }
+
+  public void updateMarketNotif(Player player, boolean enabled) {
+    if (!enabled) {
+      getGui(player).update(new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER));
+      return;
+    }
+    getGui(player).update(new GUIComponent("notif-market", notifMarket, 13, -188, Alignment.CENTER));
+  }
+
+  public void updateVoteNotif(Player player, boolean enabled) {
+    if (!enabled) {
+      getGui(player).update(new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER));
+      return;
+    }
+    getGui(player).update(new GUIComponent("notif-vote", notifVote, 12, -174, Alignment.CENTER));
+  }
+
+  public void updateDailyNotif(Player player, boolean enabled) {
+    if (!enabled) {
+      getGui(player).update(new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER));
+      return;
+    }
+    getGui(player).update(new GUIComponent("notif-daily", notifDaily, 12, -161, Alignment.CENTER));
   }
 
   public static String duraString(ItemStack stack, String string) {

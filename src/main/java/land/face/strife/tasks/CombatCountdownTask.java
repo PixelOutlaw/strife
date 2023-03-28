@@ -113,7 +113,7 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
     if (targetMob.get().getEntity().isValid()) {
-      manager.updateBar(player, 3, 0, createBarTitle(targetMob.get()), 9999999);
+      manager.updateBar(player, 2, 0, createBarTitle(targetMob.get()), 9999999);
       int hpState = (int) (138f * (targetMob.get().getEntity().getHealth()) / targetMob.get().getMaxLife());
       int barrierState = (int) (138f * (targetMob.get().getBarrier()) / targetMob.get().getMaxBarrier());
       if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
@@ -123,7 +123,7 @@ public class CombatCountdownTask extends BukkitRunnable {
         if (barrierState > 0) {
           s += GuiManager.BARRIER_BAR_TARGET.get(barrierState);
         }
-        manager.updateBar(player, 2, 0, s, 9999999);
+        manager.updateBar(player, 3, 0, s, 9999999);
       }
     } else if (targetWasAlive) {
       targetWasAlive = false;
@@ -135,8 +135,8 @@ public class CombatCountdownTask extends BukkitRunnable {
         title = DamageUtil.deathMessage;
       }
       String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138);
-      manager.updateBar(player, 2, 0, s, 60);
-      manager.updateBar(player, 3, 0, title, 60);
+      manager.updateBar(player, 3, 0, s, 60);
+      manager.updateBar(player, 2, 0, title, 60);
     }
   }
 

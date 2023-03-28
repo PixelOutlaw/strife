@@ -339,6 +339,10 @@ public class UniqueEntityManager {
     ChunkUtil.setDespawnOnUnload(mob.getEntity());
     mob.setCharmImmune(uniqueEntity.isCharmImmune());
 
+    if (uniqueEntity.getBoundingBonus() != -1) {
+      entity.getBoundingBox().expand(uniqueEntity.getBoundingBonus());
+    }
+
     if (uniqueEntity.isBurnImmune()) {
       SpecialStatusUtil.setBurnImmune(le);
     }
@@ -419,6 +423,7 @@ public class UniqueEntityManager {
         uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
         uniqueEntity.setSaddled(cs.getBoolean("saddled", false));
         uniqueEntity.setCanTarget(cs.getBoolean("can-target", true));
+        uniqueEntity.setBoundingBonus(cs.getDouble("bounding-bonus", -1));
         uniqueEntity.setMaxMods(cs.getInt("max-mods", 3));
         uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
         if (uniqueEntity.getType() == EntityType.CREEPER) {

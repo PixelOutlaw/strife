@@ -108,6 +108,11 @@ public class JoinAndLeaveListener implements Listener {
     //plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
   }
 
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onPlayerJoinLater(final PlayerJoinEvent event) {
+    plugin.getPlayerMountManager().updateAllMountCollisions();
+  }
+
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(final PlayerQuitEvent event) {
     doPlayerLeave(event.getPlayer());

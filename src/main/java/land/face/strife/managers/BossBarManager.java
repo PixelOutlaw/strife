@@ -35,7 +35,6 @@ public class BossBarManager {
   private final Map<Player, BarState> statusBar2 = new HashMap<>();
   private final Map<Player, BarState> statusBar3 = new HashMap<>();
   private final Map<Player, BarState> statusBar4 = new HashMap<>();
-  private final Map<Player, BarState> statusBar5 = new HashMap<>();
 
   public BossBarManager(StrifePlugin plugin) {
     // Ensure bars do not expire from inactivity
@@ -44,7 +43,6 @@ public class BossBarManager {
       randomizeBars(statusBar2);
       randomizeBars(statusBar3);
       randomizeBars(statusBar4);
-      randomizeBars(statusBar5);
     },20L * 5, 100L);
     Bukkit.getScheduler().runTaskTimer(plugin, this::tickBars,20L * 10, 4L);
   }
@@ -58,8 +56,6 @@ public class BossBarManager {
         statusBar3.put(player, buildBar(player)), 2L);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
         statusBar4.put(player, buildBar(player)), 3L);
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        statusBar5.put(player, buildBar(player)), 4L);
   }
 
   public void tickBars() {
@@ -67,7 +63,6 @@ public class BossBarManager {
     iterateTicks(statusBar2.values());
     iterateTicks(statusBar3.values());
     iterateTicks(statusBar4.values());
-    iterateTicks(statusBar5.values());
   }
   private void iterateTicks(Collection<BarState> stateSet) {
     for (BarState state : stateSet) {
@@ -104,7 +99,6 @@ public class BossBarManager {
       case 2 -> updateBarTitleIfPossible(statusBar2.get(player), priority, ticks, text);
       case 3 -> updateBarTitleIfPossible(statusBar3.get(player), priority, ticks, text);
       case 4 -> updateBarTitleIfPossible(statusBar4.get(player), priority, ticks, text);
-      case 5 -> updateBarTitleIfPossible(statusBar5.get(player), priority, ticks, text);
     }
   }
 
@@ -114,7 +108,6 @@ public class BossBarManager {
     statusBar2.remove(p);
     statusBar3.remove(p);
     statusBar4.remove(p);
-    statusBar5.remove(p);
   }
 
   private void removeBarViewers(Player p) {
@@ -130,9 +123,6 @@ public class BossBarManager {
     if (statusBar4.containsKey(p)) {
       statusBar4.get(p).getBar().removeAll();
     }
-    if (statusBar5.containsKey(p)) {
-      statusBar5.get(p).getBar().removeAll();
-    }
   }
 
   public void clearBars() {
@@ -141,7 +131,6 @@ public class BossBarManager {
       statusBar2.get(p).getBar().removeAll();
       statusBar3.get(p).getBar().removeAll();
       statusBar4.get(p).getBar().removeAll();
-      statusBar5.get(p).getBar().removeAll();
     }
     for (Player p : statusBar2.keySet()) {
       statusBar2.get(p).getBar().removeAll();
@@ -152,14 +141,10 @@ public class BossBarManager {
     for (Player p : statusBar4.keySet()) {
       statusBar4.get(p).getBar().removeAll();
     }
-    for (Player p : statusBar5.keySet()) {
-      statusBar5.get(p).getBar().removeAll();
-    }
     statusBar1.clear();
     statusBar2.clear();
     statusBar3.clear();
     statusBar4.clear();
-    statusBar5.clear();
   }
 
   private static BarState buildBar(Player player) {

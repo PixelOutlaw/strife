@@ -22,8 +22,10 @@ import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
@@ -37,6 +39,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -48,10 +51,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsOffenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
+  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
-    super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", new ItemStack(Material.IRON_SWORD));
+    super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", new ItemStack(Material.BARRIER));
     this.statsMenu = statsMenu;
+    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
   }
 
   @Override
@@ -60,27 +65,26 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (!player.isValid()) {
       return getIcon();
     }
+    if (cachedIcon.containsKey(player)) {
+      return cachedIcon.get(player);
+    }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
     Map<StrifeStat, Float> bases = StrifePlugin.getInstance().getMonsterManager()
         .getBaseStats(EntityType.PLAYER, player.getLevel());
 
-    Material material;
     AttackType type;
     if (player.getEquipment().getItemInMainHand().getType() == Material.BOW) {
       type = AttackType.PROJECTILE;
-      material = Material.BOW;
     } else if (ItemUtil.isWandOrStaff(player.getEquipment().getItemInMainHand())) {
       type = AttackType.PROJECTILE;
-      material = Material.BLAZE_ROD;
     } else {
       type = AttackType.MELEE;
-      material = Material.IRON_SWORD;
     }
 
     Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(mob, null, null);
     DamageUtil.applyAttackTypeMods(mob, type, damageMap);
 
-    ItemStack itemStack = new ItemStack(material);
+    ItemStack itemStack = getIcon().clone();
     ItemMeta itemMeta = itemStack.getItemMeta();
     itemMeta.setDisplayName(getDisplayName());
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
@@ -203,6 +207,10 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
+
+    cachedIcon.put(player, itemStack);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> cachedIcon.remove(player), 2);
     return itemStack;
   }
 

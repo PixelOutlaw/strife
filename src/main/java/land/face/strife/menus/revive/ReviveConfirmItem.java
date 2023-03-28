@@ -23,10 +23,13 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -34,6 +37,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class ReviveConfirmItem extends MenuItem {
 
+  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
   private final String reviverName;
   private final int restoreXP;
 
@@ -45,6 +49,9 @@ public class ReviveConfirmItem extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
+    if (cachedIcon.containsKey(player)) {
+      return cachedIcon.get(player);
+    }
     Material material = Material.getMaterial(StrifePlugin.getInstance().getSettings()
         .getString("config.revive.confirm-material", "TOTEM_OF_UNDYING"));
     ItemStack stack;
@@ -64,6 +71,10 @@ public class ReviveConfirmItem extends MenuItem {
     ItemStackExtensionsKt.setDisplayName(stack, PaletteUtil.color(name));
     TextUtils.setLore(stack, PaletteUtil.color(newLore), false);
     stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+    cachedIcon.put(player, stack);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> cachedIcon.remove(player), 2);
     return stack;
   }
 

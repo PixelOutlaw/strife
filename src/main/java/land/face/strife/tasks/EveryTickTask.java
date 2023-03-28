@@ -22,8 +22,6 @@ import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
@@ -38,20 +36,18 @@ import org.bukkit.util.Vector;
 public class EveryTickTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
-  public static final Map<Player, Integer> recentMoneyMap = new WeakHashMap<>();
-  public static final Map<Player, Integer> recentGemMap = new WeakHashMap<>();
 
   private final List<TextComponent> attackIndication = List.of(
-      new TextComponent("码"),
-      new TextComponent("੧"),
-      new TextComponent("੨"),
-      new TextComponent("੩"),
-      new TextComponent("੪"),
-      new TextComponent("੫"),
-      new TextComponent("੬"),
-      new TextComponent("੭"),
-      new TextComponent("੮"),
-      new TextComponent("੯")
+      GuiManager.noShadow(new TextComponent("码")),
+      GuiManager.noShadow(new TextComponent("੧")),
+      GuiManager.noShadow(new TextComponent("੨")),
+      GuiManager.noShadow(new TextComponent("੩")),
+      GuiManager.noShadow(new TextComponent("੪")),
+      GuiManager.noShadow(new TextComponent("੫")),
+      GuiManager.noShadow(new TextComponent("੬")),
+      GuiManager.noShadow(new TextComponent("੭")),
+      GuiManager.noShadow(new TextComponent("੮")),
+      GuiManager.noShadow(new TextComponent("੯"))
   );
 
   public EveryTickTask(StrifePlugin plugin) {
@@ -69,7 +65,7 @@ public class EveryTickTask extends BukkitRunnable {
         if (mob.isInCombat()) {
           int attackProgress = (int) (10f * plugin.getAttackSpeedManager().getRawMultiplier(p.getUniqueId()));
           if (attackProgress != 10) {
-            gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 22, 0, Alignment.CENTER));
+            gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 41, 0, Alignment.CENTER));
           } else {
             gui.update(new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
           }

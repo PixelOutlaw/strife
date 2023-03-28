@@ -76,7 +76,7 @@ public class RuneManager {
   public void pushRuneGui(StrifeMob mob, int runes) {
     if (runes < 1) {
       StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("rune-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
+          new GUIComponent("rune-display", GuiManager.EMPTY, 0, 0, Alignment.LEFT));
       return;
     }
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),

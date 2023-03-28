@@ -49,7 +49,6 @@ import land.face.strife.stats.StrifeTrait;
 import me.glaremasters.guilds.Guilds;
 import me.glaremasters.guilds.api.GuildsAPI;
 import me.glaremasters.guilds.guild.Guild;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -82,7 +81,7 @@ public class DamageUtil {
   public static float BASE_ATTACK_SECONDS = 1.6f;
 
   public static float EVASION_THRESHOLD = 0.5f;
-  public static float EVASION_PER_REDUCTION = 50f;
+  public static float EVASION_DENOMINATOR = 50f;
   public static float EVASION_PER_BONUS = 35f;
 
   public static int BASE_RECHARGE_TICKS;
@@ -118,7 +117,7 @@ public class DamageUtil {
 
     EVASION_THRESHOLD = (float) plugin.getSettings()
         .getDouble("config.mechanics.evasion.evade-threshold", 0.5);
-    EVASION_PER_REDUCTION = (float) plugin.getSettings()
+    EVASION_DENOMINATOR = (float) plugin.getSettings()
         .getDouble("config.mechanics.evasion.evasion-denominator", 50);
     EVASION_PER_BONUS = (float) plugin.getSettings()
         .getDouble("config.mechanics.evasion.accuracy-denominator", 35);
@@ -243,16 +242,16 @@ public class DamageUtil {
   public static String buildDamageString(int i) {
     String str = Integer.toString(i);
     return str
-        .replaceAll("0", "０")
-        .replaceAll("1", "１")
-        .replaceAll("2", "２")
-        .replaceAll("3", "３")
-        .replaceAll("4", "４")
-        .replaceAll("5", "５")
-        .replaceAll("6", "６")
-        .replaceAll("7", "７")
-        .replaceAll("8", "８")
-        .replaceAll("9", "９");
+        .replaceAll("0", "０\uF801")
+        .replaceAll("1", "１\uF801")
+        .replaceAll("2", "２\uF801")
+        .replaceAll("3", "３\uF801")
+        .replaceAll("4", "４\uF801")
+        .replaceAll("5", "５\uF801")
+        .replaceAll("6", "６\uF801")
+        .replaceAll("7", "７\uF801")
+        .replaceAll("8", "８\uF801")
+        .replaceAll("9", "９\uF801");
   }
 
   public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender,
@@ -368,8 +367,7 @@ public class DamageUtil {
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
-          damageString = FaceColor.TRUE_WHITE + "✸" + "\uF809" +
-              StringUtils.repeat("\uF806", damageString.length()) + damageString;
+          damageString += "\uF802✸";
         }
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
             IndicatorStyle.RANDOM_POPOFF, 9, damageString);
@@ -879,14 +877,14 @@ public class DamageUtil {
       }
     }
     float evasionAdvantage = Math.round(totalEvasion - totalAccuracy);
-    if (evasionAdvantage >= EVASION_PER_REDUCTION) {
+    if (evasionAdvantage >= EVASION_DENOMINATOR) {
       if (Math.random() < getDodgeChanceFromEvasion(evasionAdvantage)) {
         return 0;
       } else {
         return 1f - 0.5f * (float) Math.random();
       }
     } else if (evasionAdvantage > 0) {
-      float evasionBonus = 0.15f + (0.35f * evasionAdvantage / EVASION_PER_REDUCTION);
+      float evasionBonus = 0.15f + (0.35f * evasionAdvantage / EVASION_DENOMINATOR);
       return 1f + ((float) Math.random() * evasionBonus);
     } else if (evasionAdvantage == 0) {
       return 1f - (0.15f * (float) Math.random());
@@ -897,8 +895,8 @@ public class DamageUtil {
   }
 
   public static float getDodgeChanceFromEvasion(float evasionAdvantage) {
-    evasionAdvantage -= EVASION_PER_REDUCTION;
-    return evasionAdvantage / (evasionAdvantage + EVASION_PER_REDUCTION);
+    evasionAdvantage -= EVASION_DENOMINATOR;
+    return evasionAdvantage / (evasionAdvantage + EVASION_DENOMINATOR);
   }
 
   // returns -1 for true, and an evasion multiplier above 0 if false.

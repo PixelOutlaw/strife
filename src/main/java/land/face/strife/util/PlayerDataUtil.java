@@ -2,7 +2,6 @@ package land.face.strife.util;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,9 +19,10 @@ import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionUser;
+import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.listeners.SwingListener;
+import land.face.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -59,6 +59,7 @@ public class PlayerDataUtil {
         key, name, weight, threshold1, threshold2, threshold3,
         lore1, lore2, lore3, PaletteUtil.color(desc));
     mobKnowledge.setSource("strife");
+    mobKnowledge.setCategory("mobs");
     return mobKnowledge;
   }
 
@@ -76,6 +77,7 @@ public class PlayerDataUtil {
         key, name, weight, threshold1, threshold2, threshold3,
         lore1, lore2, lore3, PaletteUtil.color(desc));
     mobKnowledge.setSource("strife");
+    mobKnowledge.setCategory("mods");
     return mobKnowledge;
   }
 
@@ -226,15 +228,23 @@ public class PlayerDataUtil {
         : livingEntity.getCustomName();
   }
 
-  public static double getEffectiveLifeSkill(Player player, LifeSkillType type,
-      Boolean updateEquipment) {
-    return getEffectiveLifeSkill(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player), type, updateEquipment);
-  }
-
-  public static double getEffectiveLifeSkill(Champion champion, LifeSkillType type,
-      Boolean updateEquipment) {
-    return champion.getEffectiveLifeSkillLevel(type, updateEquipment);
+  public static SkillLevelData getSkillLevels(Player player, LifeSkillType type, boolean forceUpdate) {
+    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
+    if (forceUpdate) {
+      mob.getChampion().recombineCache();
+    }
+    SkillLevelData data = new SkillLevelData();
+    data.setLevel(mob.getChampion().getLifeSkillLevel(type));
+    switch (type) {
+      case SNEAK -> data.setLevelWithBonus(
+          (int) (data.getLevel() + mob.getStat(StrifeStat.SNEAK_SKILL)));
+      case CRAFTING -> data.setLevelWithBonus(
+          (int) (data.getLevel() + mob.getStat(StrifeStat.CRAFT_SKILL)));
+      case ENCHANTING -> data.setLevelWithBonus(
+          (int) (data.getLevel() + mob.getStat(StrifeStat.ENCHANT_SKILL)));
+      default -> data.setLevelWithBonus(data.getLevel());
+    }
+    return data;
   }
 
   public static int getLifeSkillLevel(Player player, LifeSkillType type) {

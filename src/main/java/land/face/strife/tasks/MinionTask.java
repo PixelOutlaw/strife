@@ -8,6 +8,7 @@ import java.util.Objects;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -32,10 +33,15 @@ public class MinionTask extends BukkitRunnable {
       return;
     }
     StrifeMob minionMob = minion.get();
-    if (minionMob == null || minionMob.getEntity() == null || !minionMob.getEntity().isValid()
-        || minionMob.getEntity().getWorld() != master.get().getEntity().getWorld()) {
+    if (minionMob == null || minionMob.getEntity() == null || !minionMob.getEntity().isValid()) {
       Objects.requireNonNull(master.get()).removeMinion(minionMob);
       cancel();
+    }
+    if (minionMob.getEntity().getWorld() != master.get().getEntity().getWorld()) {
+      if (lifespan > 5) {
+        lifespan = 5;
+      }
+      tickLife(minionMob.getEntity());;
       return;
     }
     if (!minionMob.getEntity().getPassengers().isEmpty()) {
@@ -44,14 +50,18 @@ public class MinionTask extends BukkitRunnable {
     if (((Mob) minionMob.getEntity()).getTarget() == mob.getEntity()) {
       ((Mob) minionMob.getEntity()).setTarget(null);
     }
+    tickLife(minionMob.getEntity());
+  }
+
+  private void tickLife(LivingEntity minionMob) {
     lifespan--;
     if (lifespan > 0) {
       return;
     }
-    if (lifespan <= -15) {
-      minionMob.getEntity().damage(minionMob.getEntity().getMaxHealth() * 10);
+    if (lifespan <= -8) {
+      minionMob.damage(minionMob.getMaxHealth() * 10);
     } else {
-      minionMob.getEntity().damage(minionMob.getEntity().getMaxHealth() / 10);
+      minionMob.damage(minionMob.getMaxHealth() / 10);
     }
   }
 

@@ -132,7 +132,7 @@ public class DoubleJumpListener implements Listener {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     if (mob.getEnergy() < 20) {
       plugin.getGuiManager()
-          .postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 49, 10));
+          .postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 10));
       event.getPlayer()
           .playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
       return;
@@ -193,7 +193,7 @@ public class DoubleJumpListener implements Listener {
 
     if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
       if (mob.getEnergy() < currentCost) {
-        plugin.getGuiManager().postNotice(player, new NoticeData(GuiManager.NOTICE_ENERGY, 49, 10));
+        plugin.getGuiManager().postNotice(player, new NoticeData(GuiManager.NOTICE_ENERGY, 10));
         player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
         return;
       }

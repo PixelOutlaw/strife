@@ -171,7 +171,7 @@ public class StrifeCommand extends BaseCommand {
   @CommandPermission("strife.admin")
   public void sendNotif(CommandSender sender, OnlinePlayer target,
       @Default("20") int duration, @Default("0") int priority, @Default("sneed") String message) {
-    plugin.getBossBarManager().updateBar(target.getPlayer(), 5, priority, TextUtils.color(message), duration);
+    plugin.getBossBarManager().updateBar(target.getPlayer(), 4, priority, TextUtils.color(message), duration);
   }
 
   @Subcommand("defeat")

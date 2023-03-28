@@ -26,8 +26,10 @@ import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class PathMenu extends ItemMenu {
 
+  public static String MENU_NAME = StringExtensionsKt.chatColorize("&f砡&0&oChoose...");
+
   public PathMenu(StrifePlugin plugin, Path path) {
-    super(StringExtensionsKt.chatColorize("&f砡&0&oChoose..."), Size.THREE_LINE, plugin);
+    super(MENU_NAME, Size.THREE_LINE, plugin);
 
     setItem(11, new ChoiceButton(plugin, path, Choice.OPTION_1));
     setItem(13, new ChoiceButton(plugin, path, Choice.OPTION_2));

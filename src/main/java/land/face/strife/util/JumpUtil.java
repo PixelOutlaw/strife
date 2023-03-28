@@ -12,6 +12,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -28,24 +29,26 @@ public class JumpUtil {
   public static void setJumps(StrifeMob mob, int amount) {
     if (amount == 0) {
       JUMP_MAP.remove(mob.getEntity().getUniqueId());
+      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
+          new GUIComponent("jump-wings", GuiManager.EMPTY, 0, 0, Alignment.LEFT));
     }
     JUMP_MAP.put(mob.getEntity().getUniqueId(), amount);
-    amount = Math.min(amount, 5);
-    int offset = 85 + mob.getMaxAirJumps() * 4;
-    for (int i = 1; i <= 5; i++) {
-      if (i > mob.getMaxAirJumps()) {
-        StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-            new GUIComponent("wing-" + i, GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      } else if (amount >= i) {
-        StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-            new GUIComponent("wing-" + i, GuiManager.WING_TING, 13, offset, Alignment.RIGHT));
-        offset -= 13;
-      } else {
-        StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-            new GUIComponent("wing-" + i, GuiManager.WING_TING_EMPTY, 13, offset, Alignment.RIGHT));
-        offset -= 13;
-      }
+    amount = Math.min(5, amount);
+    int maxAmount = Math.min(5, mob.getMaxAirJumps());
+    int empty = maxAmount - amount;
+    int totalElements = amount + empty;
+    StringBuilder str = new StringBuilder();
+    while (amount > 0) {
+      str.append("䶰"); // Wing yes
+      amount--;
     }
+    while (empty > 0) {
+      str.append("䎘"); // wing no
+      empty--;
+    }
+    TextComponent textComponent = GuiManager.noShadow(new TextComponent(str.toString()));
+    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
+        new GUIComponent("jump-wings", textComponent, totalElements * 13, 86, Alignment.CENTER));
   }
 
   public static int getJumps(Player player) {

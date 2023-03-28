@@ -7,19 +7,15 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ItemDataBundle;
-import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.ItemUtil;
-import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import org.bukkit.entity.EntityType;
@@ -121,7 +117,8 @@ public class StrifeMobManager {
 
   public void despawnAllTempEntities() {
     for (StrifeMob strifeMob : trackedEntities.values()) {
-      if (strifeMob.getEntity().getType() != EntityType.PLAYER && strifeMob.getEntity().isValid()) {
+      if (strifeMob.getEntity().getType() != EntityType.PLAYER && strifeMob.getEntity().isValid() &&
+          !strifeMob.getEntity().hasMetadata("NPC")) {
         strifeMob.getEntity().remove();
       }
     }

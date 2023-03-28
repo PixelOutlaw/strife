@@ -30,6 +30,7 @@ import land.face.strife.events.AbilityGainChargeEvent;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.managers.UniqueEntityManager;
+import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
@@ -292,7 +293,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler
   public void onInvyClose(InventoryCloseEvent event) {
     if (!plugin.getLevelupMenu().getName().equals(event.getView().getTitle())) {
       return;
@@ -303,7 +304,16 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getChampionManager().promptSaveAttributes((Player) event.getPlayer());
   }
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler
+  public void onPathClose(InventoryCloseEvent event) {
+    if (!PathMenu.MENU_NAME.equals(event.getView().getTitle())) {
+      return;
+    }
+    Bukkit.getScheduler().runTaskLater(plugin, () ->
+        plugin.getLevelupMenu().open((Player) event.getPlayer()), 1L);
+  }
+
+  @EventHandler
   public void onRespawn(PlayerRespawnEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());

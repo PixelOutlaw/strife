@@ -19,8 +19,11 @@
 package land.face.strife.menus.stats;
 
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
@@ -36,10 +39,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsBonusMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
+  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
 
   StatsBonusMenuItem(StatsMenu statsMenu) {
-    super(StringExtensionsKt.chatColorize("&a&lDrop Modifiers"), new ItemStack(Material.GOLD_INGOT));
+    super(StringExtensionsKt.chatColorize("&a&lDrop Modifiers"), new ItemStack(Material.BARRIER));
     this.statsMenu = statsMenu;
+    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
   }
 
   @Override
@@ -48,9 +53,12 @@ public class StatsBonusMenuItem extends MenuItem {
     if (!player.isValid()) {
       return getIcon();
     }
+    if (cachedIcon.containsKey(player)) {
+      return cachedIcon.get(player);
+    }
     StrifeMob pStats = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
-    ItemStack itemStack = new ItemStack(Material.GOLD_INGOT);
-    ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+    ItemStack itemStack = getIcon().clone();
+    ItemMeta itemMeta = itemStack.getItemMeta();
     itemMeta.setDisplayName(getDisplayName());
     List<String> lore = new ArrayList<>();
 
@@ -124,6 +132,10 @@ public class StatsBonusMenuItem extends MenuItem {
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
+
+    cachedIcon.put(player, itemStack);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> cachedIcon.remove(player), 2);
     return itemStack;
   }
 

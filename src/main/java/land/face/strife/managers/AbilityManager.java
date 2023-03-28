@@ -523,7 +523,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_INVALID_TARGET, 60,10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_INVALID_TARGET, 10));
     ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
   }
 
@@ -532,7 +532,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_REQUIREMENT, 90,10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_REQUIREMENT, 10));
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
@@ -543,7 +543,7 @@ public class AbilityManager {
       return;
     }
     plugin.getGuiManager().postNotice((Player) caster.getEntity(),
-        new NoticeData(GuiManager.NOTICE_COOLDOWN, 54,10));
+        new NoticeData(GuiManager.NOTICE_COOLDOWN, 10));
     ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(),
         Sound.UI_BUTTON_CLICK, 1f, 1.6f);
     Bukkit.getScheduler().runTaskLater(plugin, () -> ((Player) caster.getEntity())
@@ -556,7 +556,7 @@ public class AbilityManager {
       return;
     }
     plugin.getGuiManager().postNotice((Player) caster.getEntity(),
-        new NoticeData(GuiManager.NOTICE_ENERGY, 49,10));
+        new NoticeData(GuiManager.NOTICE_ENERGY, 10));
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
   }

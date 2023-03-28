@@ -1,8 +1,8 @@
 package land.face.strife.patch;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
-import com.ticxo.modelengine.api.animation.AnimationProperty;
 import com.ticxo.modelengine.api.animation.blueprint.LoopMode;
+import com.ticxo.modelengine.api.animation.property.SimpleProperty;
 import com.ticxo.modelengine.api.animation.state.ModelState;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
@@ -19,8 +19,8 @@ public class FacelandMountController extends AbstractMountController {
   private final LoadedMount loadedMount;
   private boolean flying;
 
-  private float landSpeed;
-  private float airSpeed;
+  private final float landSpeed;
+  private final float airSpeed;
 
   public FacelandMountController(ActiveModel model, LoadedMount loadedMount) {
     this.flying = false;
@@ -80,8 +80,13 @@ public class FacelandMountController extends AbstractMountController {
         controller.jump();
         if (loadedMount.getFlyAnimation() != null) {
           this.model.getAnimationHandler().forceStopAllAnimations();
-          AnimationProperty anim = new AnimationProperty(this.model.getBlueprint().getAnimations()
-              .get(loadedMount.getFlyAnimation()), 0.25, 0.25, 1);
+          SimpleProperty anim = new SimpleProperty(
+              this.model,
+              this.model.getBlueprint().getAnimations().get(loadedMount.getFlyAnimation()),
+              0.25,
+              0.25,
+              1
+          );
           anim.setForceLoopMode(LoopMode.LOOP);
           this.model.getAnimationHandler().playAnimation(anim, true);
         }

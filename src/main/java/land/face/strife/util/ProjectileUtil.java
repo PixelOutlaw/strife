@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.WeakHashMap;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.stats.StrifeStat;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow;
@@ -35,6 +38,7 @@ public class ProjectileUtil {
   private static final Map<Projectile, Boolean> ABILITY_PROJECTILE = new WeakHashMap<>();
 
   private static final ItemStack wandProjectile = buildWandProjectile();
+  private static final ItemStack bulletProjectile = buildBulletProjectile();
 
   private static final Random RANDOM = new Random(System.currentTimeMillis());
 
@@ -136,15 +140,39 @@ public class ProjectileUtil {
     int projectiles = ProjectileUtil.getTotalProjectiles(1,
         mob.getStat(StrifeStat.MULTISHOT) * attackMult);
 
-    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0.03, 0.22, true);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0.03);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
       ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed,
-          randomWandOffset(projectiles), 0.22, true);
+          randomWandOffset(projectiles));
     }
 
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 1f);
+    shotId++;
+  }
+
+  public static void shootBullet(StrifeMob mob, double attackMult) {
+    if (mob.getEntity() instanceof Player) {
+      if (((Player) mob.getEntity()).getCooldown(Material.BOW) > 0) {
+        return;
+      }
+      ((Player) mob.getEntity()).setCooldown(Material.BOW,
+          (int) (StatUtil.getAttackTime(mob) * 20));
+    }
+    float projectileSpeed = 4.5f + 1.8F * mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult);
+
+    ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, 0.03);
+    projectiles--;
+
+    for (int i = projectiles; i > 0; i--) {
+      ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed,
+          randomBulletOffset(projectiles));
+    }
+
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
+        Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
     shotId++;
   }
 
@@ -174,23 +202,47 @@ public class ProjectileUtil {
     });
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    //arrow.getBoundingBox().expand(0.1);
+    arrow.getBoundingBox().expand(0.1);
 
     setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
     setShotId(arrow);
   }
 
-  public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,
-      double spread, double vertBonus, boolean gravity) {
-    Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
+  public static void createMagicMissile(LivingEntity shooter, double attackMult, float power, double spread) {
+    Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
     Snowball bullet = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
       e.setVelocity(velocity);
       e.setItem(wandProjectile);
-      e.setGravity(gravity);
+      e.setGravity(false);
     });
     bullet.setShooter(shooter);
-    //bullet.getBoundingBox().expand(0.1);
+    bullet.getBoundingBox().expand(0.1);
+
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      if (bullet.isValid()) {
+        bullet.remove();
+      }
+    }, 30);
+
+    setAttackMult(bullet, (float) attackMult);
+    setShotId(bullet);
+  }
+
+  public static void createBullet(LivingEntity shooter, double attackMult, float power, double spread) {
+    Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
+    Snowball bullet = shooter.getWorld().spawn(shooter.getEyeLocation().clone(), Snowball.class, e -> {
+      e.setVelocity(velocity);
+      e.setItem(bulletProjectile);
+      e.setGravity(false);
+    });
+    bullet.setShooter(shooter);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      if (bullet.isValid()) {
+        bullet.remove();
+      }
+    }, 6);
+    bullet.getBoundingBox().expand(0.1);
 
     setAttackMult(bullet, (float) attackMult);
     setShotId(bullet);
@@ -198,7 +250,7 @@ public class ProjectileUtil {
 
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
       double verticalBonus) {
-    return getProjectileVelocity(shooter.getEyeLocation().getDirection(), speed, spread,
+    return getProjectileVelocity(shooter.getLocation().getDirection(), speed, spread,
         verticalBonus, false);
   }
 
@@ -244,8 +296,18 @@ public class ProjectileUtil {
     return 0.12f + magnitude * 0.01f;
   }
 
+  private static float randomBulletOffset(float magnitude) {
+    return 0.25f + magnitude * 0.035f;
+  }
+
   private static ItemStack buildWandProjectile() {
     ItemStack stack = new ItemStack(Material.NETHER_STAR);
+    ItemStackExtensionsKt.setCustomModelData(stack, 100);
+    return stack;
+  }
+
+  private static ItemStack buildBulletProjectile() {
+    ItemStack stack = new ItemStack(Material.POLISHED_BLACKSTONE_BUTTON);
     ItemStackExtensionsKt.setCustomModelData(stack, 100);
     return stack;
   }

@@ -27,6 +27,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.Snowball;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
@@ -87,6 +88,9 @@ public class ShootProjectile extends Effect {
 
       assert projectileEntity.getEntityClass() != null;
       Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation, projectileEntity.getEntityClass(), e -> {
+        if (projectileEntity == EntityType.SNOWBALL) {
+          ((Snowball) e).setItem(thrownStack);
+        }
         e.setVelocity(velocity);
         if (!gravity) {
           e.setGravity(false);
@@ -96,10 +100,6 @@ public class ShootProjectile extends Effect {
 
       if (silent) {
         projectile.setSilent(true);
-      }
-
-      if (projectile instanceof ThrowableProjectile && thrownStack != null) {
-        ((ThrowableProjectile) projectile).setItem(thrownStack);
       }
       if (ignite) {
         projectile.setFireTicks(200);

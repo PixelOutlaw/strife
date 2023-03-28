@@ -61,13 +61,15 @@ public class IndicatorManager {
       return;
     }
 
+    Vector diff = viewer.getEyeLocation().toVector().subtract(location.toVector());
     Location midway;
-    if (distance < 144) {
-      midway = viewer.getEyeLocation().clone().add(viewer.getEyeLocation().clone().subtract(location).multiply(-0.65));
+    if (distance < 64) {
+      diff.multiply(-0.5);
     } else {
-      midway = viewer.getEyeLocation().clone().add(viewer.getEyeLocation().clone().subtract(location).toVector()
-          .normalize().multiply(-8));
+      diff.normalize();
+      diff.multiply(-4);
     }
+    midway = viewer.getEyeLocation().clone().add(diff);
 
     Vector velocity = null;
     double gravity = 0;

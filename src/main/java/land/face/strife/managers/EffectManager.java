@@ -709,7 +709,8 @@ public class EffectManager {
         ((CreateModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
         ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
         ((CreateModelAnimation) effect).setTargetLock(cs.getBoolean("target-lock", false));
-        ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", true));
+        ((CreateModelAnimation) effect).setRandomRotation(cs.getBoolean("random-rotation", true));
+        ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", false));
         if (cs.getString("color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("color"));
           ((CreateModelAnimation) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));

@@ -8,10 +8,8 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class FollowMasterGoal implements Goal<Mob> {
@@ -56,6 +54,9 @@ public class FollowMasterGoal implements Goal<Mob> {
       return true;
     }
     masterCheck = System.currentTimeMillis() + 500;
+    if (master.getWorld() != mob.getWorld()) {
+      return false;
+    }
     if (mob.getTarget() != null && mob.getTarget().isValid()) {
       teleportTicks = 0;
       return false;

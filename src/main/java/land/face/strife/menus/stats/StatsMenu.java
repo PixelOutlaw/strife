@@ -22,15 +22,9 @@ import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.WeakHashMap;
-import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.StrifeMob;
-import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.menus.ItemMenu;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 
 public class StatsMenu extends ItemMenu {
 
@@ -41,49 +35,6 @@ public class StatsMenu extends ItemMenu {
 
   private final Map<Player, Player> inspectionTargetMap = new WeakHashMap<>();
 
-  public StatsMenu(StrifePlugin plugin) {
-    super(StringExtensionsKt.chatColorize("&0&lStats!"), Size.fit(45), plugin);
-    setItem(0, new StatsDeluxeEquipmentItem(this, DeluxeSlot.HELMET, "&eNo Helmet"));
-    setItem(9, new StatsDeluxeEquipmentItem(this, DeluxeSlot.BODY, "&eNo Chest Armor"));
-    setItem(18, new StatsDeluxeEquipmentItem(this, DeluxeSlot.LEGS, "&eNo... pants?"));
-    setItem(27, new StatsDeluxeEquipmentItem(this, DeluxeSlot.BOOTS, "&eNo Boots"));
-    setItem(1, new StatsEquipmentItem(this, EquipmentSlot.HAND, "&eNo Weapon"));
-    setItem(10, new StatsDeluxeEquipmentItem(this, DeluxeSlot.OFF_HAND, "&eNo offhand Item"));
-
-    setItem(12, new StatsOffenseMenuItem(this));
-    setItem(14, new StatsDefenseMenuItem(this));
-    setItem(16, new StatsMiscMenuItem(this));
-    setItem(22, new StatsBonusMenuItem(this));
-    setItem(24, new StatsEffectMenuItem(this));
-
-    setItem(42, new StatsOpenLevelupMenu(plugin));
-    setItem(43, new StatsToggleGlow(plugin));
-    setItem(44, new StatsVerboseXP(plugin));
-  }
-
-  public Map<Player, Player> getInspectionTargetMap() {
-    return inspectionTargetMap;
-  }
-
-  public static String printStatWithoutPlus(String name, ChatColor color,
-      StrifeMob mob, StrifeStat stat, DecimalFormat format) {
-    float value = StatUtil.getStat(mob, stat);
-    if (value < -0.4) {
-      return ChatColor.RED + format.format(value);
-    }
-    return ChatColor.WHITE + format.format(value);
-  }
-
-  public static String printStatWithPlus(String name, ChatColor color,
-      StrifeMob mob, StrifeStat stat, DecimalFormat format) {
-    float value = StatUtil.getStat(mob, stat);
-    if (value < -0.4) {
-      return ChatColor.RED + format.format(value);
-    }
-    return ChatColor.WHITE + format.format(value);
-  }
-}
-
 /*
 00 01 02 03 04 05 06 07 08
 09 10 11 12 13 14 15 16 17
@@ -92,3 +43,32 @@ public class StatsMenu extends ItemMenu {
 36 37 38 39 40 41 42 43 44
 45 46 47 48 49 50 51 52 53
 */
+
+  public StatsMenu(StrifePlugin plugin) {
+    super(StringExtensionsKt.chatColorize("&f\uF808砙\uF80C\uF80A\uF808\uF804&0Stats"), Size.fit(45), plugin);
+
+    setItem(10, new StatsOffenseMenuItem(this));
+    setItem(11, new StatsOffenseMenuItem(this));
+    setItem(12, new StatsOffenseMenuItem(this));
+
+    setItem(14, new StatsDefenseMenuItem(this));
+    setItem(15, new StatsDefenseMenuItem(this));
+    setItem(16, new StatsDefenseMenuItem(this));
+
+    setItem(19, new StatsMiscMenuItem(this));
+    setItem(20, new StatsMiscMenuItem(this));
+    setItem(21, new StatsMiscMenuItem(this));
+
+    setItem(23, new StatsEffectMenuItem(this));
+    setItem(24, new StatsEffectMenuItem(this));
+    setItem(25, new StatsEffectMenuItem(this));
+
+    setItem(30, new StatsBonusMenuItem(this));
+    setItem(31, new StatsBonusMenuItem(this));
+    setItem(32, new StatsBonusMenuItem(this));
+  }
+
+  public Map<Player, Player> getInspectionTargetMap() {
+    return inspectionTargetMap;
+  }
+}

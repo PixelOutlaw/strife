@@ -57,6 +57,8 @@ public class UniqueEntity {
   @Getter @Setter
   private boolean attackDisabledOnGlobalCooldown;
   private double displaceMultiplier;
+  @Getter @Setter
+  private double boundingBonus;
   private String mount;
   private Map<EquipmentSlot, String> equipment = new HashMap<>();
   private ItemStack itemPassenger = null;

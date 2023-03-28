@@ -54,7 +54,7 @@ public class LaunchAndLandListener implements Listener {
     }
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
       if (mob.getEnergy() < 12) {
-        plugin.getGuiManager().postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 49, 10));
+        plugin.getGuiManager().postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 10));
         event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
         return;
       }

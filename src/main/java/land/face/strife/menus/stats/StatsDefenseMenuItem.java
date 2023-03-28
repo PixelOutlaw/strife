@@ -25,8 +25,10 @@ import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
@@ -50,10 +52,12 @@ public class StatsDefenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
   public static final String PER_TEN = ChatColor.GRAY + "/10s";
+  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
 
   StatsDefenseMenuItem(StatsMenu statsMenu) {
-    super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), new ItemStack(Material.IRON_CHESTPLATE));
+    super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), new ItemStack(Material.BARRIER));
     this.statsMenu = statsMenu;
+    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
   }
 
   @Override
@@ -62,9 +66,12 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (!player.isValid()) {
       return getIcon();
     }
+    if (cachedIcon.containsKey(player)) {
+      return cachedIcon.get(player);
+    }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
-    ItemStack itemStack = new ItemStack(Material.IRON_CHESTPLATE);
-    ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+    ItemStack itemStack = getIcon().clone();
+    ItemMeta itemMeta = itemStack.getItemMeta();
     itemMeta.setDisplayName(getDisplayName());
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
@@ -119,14 +126,14 @@ public class StatsDefenseMenuItem extends MenuItem {
           (1 + normalMobStats.get(StrifeStat.ACCURACY_MULT) / 100);
       float evasionAdvantage = evasion - accForLevel;
       float evasionRate = 0;
-      if (evasionAdvantage > DamageUtil.EVASION_PER_REDUCTION) {
+      if (evasionAdvantage > DamageUtil.EVASION_DENOMINATOR) {
         evasionRate = (100 - dodgeChance) * DamageUtil.getDodgeChanceFromEvasion(evasionAdvantage);
       }
       lore.add(addStat("Chance To Avoid Hits: ", evasionRate + dodgeChance, INT_FORMAT) + "%");
       if (dodgeChance > 0.5) {
         lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
       }
-      if (evasionAdvantage > DamageUtil.EVASION_PER_REDUCTION) {
+      if (evasionAdvantage > DamageUtil.EVASION_DENOMINATOR) {
         lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(evasionRate) + "% From Evasion (Estimated)");
       }
     }
@@ -171,6 +178,10 @@ public class StatsDefenseMenuItem extends MenuItem {
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
+
+    cachedIcon.put(player, itemStack);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+        () -> cachedIcon.remove(player), 2);
     return itemStack;
   }
 

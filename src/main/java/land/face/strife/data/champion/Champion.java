@@ -60,12 +60,6 @@ public class Champion {
   @Getter @Setter
   private long lastChanged = System.currentTimeMillis();
 
-  private static final Map<LifeSkillType, StrifeStat> SKILL_TO_ATTR_MAP = ImmutableMap.<LifeSkillType, StrifeStat>builder()
-      .put(LifeSkillType.CRAFTING, StrifeStat.CRAFT_SKILL)
-      .put(LifeSkillType.ENCHANTING, StrifeStat.ENCHANT_SKILL)
-      .put(LifeSkillType.SNEAK, StrifeStat.SNEAK_SKILL)
-      .build();
-
   public Champion(Player player, ChampionSaveData saveData) {
     this.player = player;
     this.saveData = saveData;
@@ -196,12 +190,13 @@ public class Champion {
     return saveData.getSkillExp(type);
   }
 
+  // Literally doesn't work
+  @Deprecated
   public float getEffectiveLifeSkillLevel(LifeSkillType type, boolean updateEquipment) {
     if (updateEquipment) {
       recombineCache();
     }
-    return saveData.getSkillLevel(type) +
-        combinedStatMap.getOrDefault(SKILL_TO_ATTR_MAP.get(type), 0f);
+    return saveData.getSkillLevel(type);
   }
 
   public int getUnusedStatPoints() {

@@ -107,11 +107,14 @@ public class AreaEffect extends LocationEffect {
     if (rangeModifier != 0) {
       int bonus = (int) (rangeModifier - (rangeModifier % 5));
       if (!circleMathCache.containsKey(bonus)) {
-        float newArea = area * (1 + (float) bonus / 100);
+        float bonusMult = 1 + ((float) bonus / 100);
+        float newArea = area * bonusMult;
         float newRadius = (float) Math.sqrt(newArea / Math.PI);
         circleMathCache.put(bonus, newRadius);
+        searchRadius = newRadius;
+      } else {
+        searchRadius = circleMathCache.get(bonus);
       }
-      circleMathCache.get(bonus);
     }
 
     Set<LivingEntity> areaTargets = new HashSet<>();
@@ -235,11 +238,11 @@ public class AreaEffect extends LocationEffect {
 
   public void setRange(double range) {
     this.range = (float) range;
+    this.area = (float) (Math.PI * Math.pow(range, 2));
   }
 
   public void setRadius(float radius) {
     this.radius = radius;
-    this.area = (float) (Math.PI * Math.pow(radius, 2));
   }
 
   public int getMaxTargets() {
@@ -248,10 +251,6 @@ public class AreaEffect extends LocationEffect {
 
   public void setMaxTargets(int maxTargets) {
     this.maxTargets = maxTargets;
-  }
-
-  public boolean isMultishotScaling() {
-    return multishotScaling;
   }
 
   public void setMultishotScaling(boolean multishotScaling) {
