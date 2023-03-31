@@ -25,7 +25,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 public record DOTListener(StrifePlugin plugin) implements Listener {
 
@@ -37,34 +36,16 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
     if (!(event.getEntity() instanceof LivingEntity le)) {
       return;
     }
-    if (event.getCause() == DamageCause.STARVATION) {
-      event.setCancelled(true);
-      return;
-    }
     switch (event.getCause()) {
       case LAVA, FIRE -> {
-        le.setFireTicks(Math.max(le.getFireTicks(), 80));
-        plugin.getDamageOverTimeTask().trackBurning(le);
+        le.setFireTicks(Math.max(le.getFireTicks(), 17));
         event.setCancelled(true);
       }
       case HOT_FLOOR -> {
-        le.setFireTicks(40);
-        plugin.getDamageOverTimeTask().trackBurning(le);
+        le.setFireTicks(9);
         event.setCancelled(true);
       }
-      case FIRE_TICK -> {
-        plugin.getDamageOverTimeTask().trackBurning(le);
-        event.setCancelled(true);
-      }
-      case POISON -> {
-        plugin.getDamageOverTimeTask().trackPoison(le);
-        event.setCancelled(true);
-      }
-      case WITHER -> {
-        plugin.getDamageOverTimeTask().trackWither(le);
-        event.setCancelled(true);
-      }
-      case CONTACT, SUFFOCATION -> event.setCancelled(true);
+      case FIRE_TICK, POISON, WITHER, CONTACT, SUFFOCATION -> event.setCancelled(true);
       case DROWNING -> {
         DamageUtil.dealRawDamage(plugin.getStrifeMobManager().getStatMob(le),
             5 + (float) le.getMaxHealth() * 0.2f);

@@ -24,17 +24,13 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
@@ -91,7 +87,6 @@ public class DeathListener implements Listener {
   @EventHandler(priority = EventPriority.LOW)
   public void onEntityDeathClearIconsAndStrifeMobs(final EntityDeathEvent event) {
     plugin.getAbilityManager().unToggleAll(event.getEntity());
-    plugin.getDamageOverTimeTask().clearAllDoT(event.getEntity());
     if (event.getEntity() instanceof Player) {
       plugin.getAbilityManager().savePlayerCooldowns((Player) event.getEntity());
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);

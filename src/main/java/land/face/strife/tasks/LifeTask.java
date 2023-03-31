@@ -12,6 +12,8 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.DOTUtil;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.attribute.Attribute;
@@ -63,18 +65,40 @@ public class LifeTask extends BukkitRunnable {
       lifeAmount += potionIntensity * POTION_REGEN_FLAT_PER_LEVEL;
       lifeAmount += potionIntensity * maxLife * POTION_REGEN_PERCENT_PER_LEVEL;
     }
+
+    float lifeMult = 1.0f;
+    float damage = 0;
     if (mob.getEntity().hasPotionEffect(WITHER)) {
-      lifeAmount *= 0.33f;
+      damage += DOTUtil.getWitherDamage(mob);
+      lifeMult *= 0.33f;
     }
     if (mob.getEntity().hasPotionEffect(POISON)) {
-      lifeAmount *= 0.33f;
+      damage += DOTUtil.getPoisonDamage(mob);
+      lifeMult *= 0.33f;
     }
     if (mob.getEntity().getFireTicks() > 0) {
-      lifeAmount *= 0.4f;
+      lifeMult *= 0.4f;
     }
+
+    lifeAmount *= lifeMult;
+    lifeAmount -= damage;
     lifeAmount *= tickMultiplier;
 
-    mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));
+    if (mob.getEntity().getFireTicks() > 0) {
+      lifeAmount -= mob.damageBarrier(DOTUtil.getFireDamage(mob) * tickMultiplier);
+    }
+    // Bleed is after the multiplier because we want to deal
+    // damage equal to lost bleed
+    if (mob.isBleeding()) {
+      lifeAmount -= DOTUtil.tickBleedDamage(mob);
+    }
+
+    if (lifeAmount < 0) {
+      StrifePlugin.getInstance().getDamageManager().doEnergyAbsorb(mob, damage);
+      DamageUtil.dealRawDamage(mob, damage);
+    } else {
+      mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));
+    }
   }
 
   public void addHealingOverTime(float amount, int ticks) {

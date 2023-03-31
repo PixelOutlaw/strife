@@ -26,7 +26,6 @@ import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.tasks.BarrierTask;
-import land.face.strife.tasks.BleedTask;
 import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.FrostTask;
@@ -34,6 +33,7 @@ import land.face.strife.tasks.InvincibleTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.tasks.RageTask;
+import land.face.strife.tasks.ThreatTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
@@ -67,6 +67,11 @@ public class StrifeMob {
   private final Map<UUID, Float> takenDamage = new HashMap<>();
   private final Set<UUID> reflectedTargets = new HashSet<>();
 
+  @Getter @Setter
+  private float threatLevel = 0;
+  @Getter
+  private final Map<UUID, Float> threatTargets = new HashMap<>();
+
   private float energy = 0;
   private float maxEnergy = 0;
   @Getter @Setter
@@ -88,6 +93,8 @@ public class StrifeMob {
   private int frostGraceTicks;
   @Getter
   private float corruption;
+  @Getter @Setter
+  private float bleed;
   @Getter
   private int maxAirJumps;
   private boolean shielded;
@@ -100,9 +107,9 @@ public class StrifeMob {
   private LifeTask lifeTask = new LifeTask(this);
   private EnergyTask energyTask = new EnergyTask(this);
   private FrostTask frostTask = new FrostTask(this);
+  private ThreatTask threatTask = new ThreatTask(this);
   @Getter
   private RageTask rageTask = null;
-  private BleedTask bleedTask = null;
   private InvincibleTask invincibleTask = null;
   private MinionTask minionTask = null;
 
@@ -314,7 +321,7 @@ public class StrifeMob {
       if (rageTask == null) {
         rageTask = new RageTask(this);
       }
-      if (hasTrait(StrifeTrait.BLOOD_BOIL) && bleedTask != null) {
+      if (hasTrait(StrifeTrait.BLOOD_BOIL) && bleed > 0) {
         amount *= 1.3;
       }
       rageTask.bumpRage(amount);
@@ -327,40 +334,22 @@ public class StrifeMob {
   }
 
   public boolean isBleeding() {
-    return bleedTask != null;
+    return bleed > 0;
   }
 
-  public float getBleed() {
-    if (bleedTask == null) {
-      return 0;
-    }
-    return bleedTask.getBleed();
+  public void addBleed(float amount) {
+    addBleed(amount, false);
   }
 
-  public boolean addBleed(float amount) {
-    return addBleed(amount, false);
-  }
-
-  public boolean addBleed(float amount, boolean overrideBarrier) {
-    if (amount < 0.5) {
-      return false;
-    }
+  public void addBleed(float amount, boolean overrideBarrier) {
     if (!overrideBarrier && barrier > 0.9) {
-      return false;
+      return;
     }
-    if (bleedTask == null) {
-      bleedTask = new BleedTask(this, amount);
-    } else {
-      bleedTask.bumpBleed(amount);
-    }
-    return true;
+    bleed += amount;
   }
 
   public void clearBleed() {
-    if (bleedTask != null && !bleedTask.isCancelled()) {
-      bleedTask.cancel();
-      bleedTask = null;
-    }
+    bleed = 0;
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
@@ -832,14 +821,14 @@ public class StrifeMob {
     }
     frostTask = new FrostTask(this);
 
+    if (threatTask != null && !threatTask.isCancelled()) {
+      threatTask.cancel();
+    }
+    threatTask = new ThreatTask(this);
+
     if (rageTask != null) {
       rageTask.reduceRage(1000000);
       rageTask.cancel();
-    }
-
-    if (bleedTask != null) {
-      bleedTask.cancel();
-      bleedTask = null;
     }
   }
 

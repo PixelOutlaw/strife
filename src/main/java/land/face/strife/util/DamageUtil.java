@@ -8,6 +8,9 @@ import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
 import static land.face.strife.util.StatUtil.getWardingMult;
+import static org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE;
+import static org.bukkit.potion.PotionEffectType.POISON;
+import static org.bukkit.potion.PotionEffectType.WITHER;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.World;
@@ -23,8 +26,10 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -36,6 +41,7 @@ import land.face.strife.data.DamageModifiers.ElementalStatus;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.CriticalEvent;
@@ -814,9 +820,6 @@ public class DamageUtil {
     );
     boolean igniteSuccess = Ignite.setFlames(defender,
         Math.max(25 + (int) damage, defender.getEntity().getFireTicks()));
-    if (igniteSuccess) {
-      StrifePlugin.getInstance().getDamageOverTimeTask().trackBurning(defendEntity);
-    }
   }
 
   public static float attemptShock(float damage, LivingEntity defender) {

@@ -149,7 +149,6 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.BoostTickTask;
-import land.face.strife.tasks.DamageOverTimeTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.IndicatorTask;
@@ -158,6 +157,7 @@ import land.face.strife.tasks.SaveTask;
 import land.face.strife.tasks.StealthParticleTask;
 import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
+import land.face.strife.util.DOTUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
@@ -266,7 +266,6 @@ public class StrifePlugin extends FacePlugin {
 
   private final List<BukkitTask> taskList = new ArrayList<>();
   private ParticleTask particleTask;
-  private DamageOverTimeTask damageOverTimeTask;
 
   private LevelingRate levelingRate;
 
@@ -423,7 +422,6 @@ public class StrifePlugin extends FacePlugin {
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
     EveryTickTask everyTickTask = new EveryTickTask(this);
     IndicatorTask indicatorTask = new IndicatorTask(this);
-    damageOverTimeTask = new DamageOverTimeTask(this);
     particleTask = new ParticleTask();
     //regenTask = new RegenTask(this);
 
@@ -477,10 +475,6 @@ public class StrifePlugin extends FacePlugin {
     taskList.add(stealthParticleTask.runTaskTimer(this,
         20L * 3, // Start timer after 10s
         3L
-    ));
-    taskList.add(damageOverTimeTask.runTaskTimer(this,
-        20L, // Start timer after 11s
-        5L // Run it every 5 ticks
     ));
     taskList.add(boostTickTask.runTaskTimer(this,
         20L,
@@ -613,6 +607,7 @@ public class StrifePlugin extends FacePlugin {
     getChampionManager().updateAll();
 
     DamageUtil.refresh();
+    DOTUtil.refresh();
 
     ItemUtil.pickDestroyKeys.clear();
     ItemUtil.hoeDestroyKeys.clear();
@@ -1035,10 +1030,6 @@ public class StrifePlugin extends FacePlugin {
 
   public PathMenu getPathMenu(Path path) {
     return pathMenus.get(path);
-  }
-
-  public DamageOverTimeTask getDamageOverTimeTask() {
-    return damageOverTimeTask;
   }
 
   public LevelingRate getLevelingRate() {

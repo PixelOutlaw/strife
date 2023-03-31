@@ -23,16 +23,12 @@ public class Ignite extends Effect {
     if (!strictDuration) {
       trueDuration *= 1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
     }
-    boolean trackBurning;
     if (override) {
-      trackBurning = setFlames(target, (int) trueDuration);
+      setFlames(target, (int) trueDuration);
     } else if (addDuration) {
-      trackBurning = setFlames(target, target.getEntity().getFireTicks() + (int) trueDuration);
+      setFlames(target, target.getEntity().getFireTicks() + (int) trueDuration);
     } else {
-      trackBurning = setFlames(target, Math.max(target.getEntity().getFireTicks(), (int) trueDuration));
-    }
-    if (trackBurning) {
-      StrifePlugin.getInstance().getDamageOverTimeTask().trackBurning(target.getEntity());
+      setFlames(target, Math.max(target.getEntity().getFireTicks(), (int) trueDuration));
     }
   }
 
