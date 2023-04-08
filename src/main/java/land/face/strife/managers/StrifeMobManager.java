@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.WeakHashMap;
-import land.face.dinvy.pojo.PlayerData;
+import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ItemDataBundle;
@@ -151,10 +151,12 @@ public class StrifeMobManager {
       isPlayer = true;
       invyData = plugin.getDeluxeInvyPlugin().getPlayerManager()
           .getPlayerData(((Player) mob.getEntity()).getPlayer());
-      for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
-        ItemStack item = ItemUtil.getItem(invyData, slot);
-        if (!ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot.toString()))) {
-          updateItems.put(slot.toString(), item);
+      if (invyData != null) {
+        for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
+          ItemStack item = ItemUtil.getItem(invyData, slot);
+          if (!ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot.toString()))) {
+            updateItems.put(slot.toString(), item);
+          }
         }
       }
     }

@@ -41,13 +41,13 @@ public class DOTUtil {
     plugin = StrifePlugin.getInstance();
 
     BURN_FLAT_DAMAGE = (float) plugin.getSettings()
-        .getDouble("config.mechanics.burn-flat-damage", 6) / 4;
+        .getDouble("config.mechanics.burn-flat-damage", 6);
     WITHER_FLAT_DAMAGE = (float) plugin.getSettings()
         .getDouble("config.mechanics.wither-flat-damage");
     POISON_FLAT_DAMAGE = (float) plugin.getSettings()
         .getDouble("config.mechanics.poison-flat-damage");
     BURN_LEVEL_DAMAGE = (float) plugin.getSettings()
-        .getDouble("config.mechanics.burn-level-damage", 6) / 4;
+        .getDouble("config.mechanics.burn-level-damage", 6);
     WITHER_LEVEL_DAMAGE = (float) plugin.getSettings()
         .getDouble("config.mechanics.wither-level-damage");
     POISON_LEVEL_DAMAGE = (float) plugin.getSettings()
@@ -70,12 +70,12 @@ public class DOTUtil {
   }
 
   public static float tickBleedDamage(StrifeMob mob) {
-    float amount = BLEED_FLAT + mob.getBleed() * BLEED_PERCENT;
-    spawnBleedParticles(mob.getEntity(), amount);
+    float amount = mob.getBleed() * BLEED_PERCENT + BLEED_FLAT;
     mob.setBleed(Math.max(0, mob.getBleed() - amount));
     if (mob.isInvincible()) {
       return 0;
     }
+    spawnBleedParticles(mob.getEntity(), amount);
     return amount;
   }
 

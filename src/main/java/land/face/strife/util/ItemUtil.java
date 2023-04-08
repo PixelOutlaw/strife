@@ -4,21 +4,20 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.destroystokyo.paper.Namespaced;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import land.face.dinvy.pojo.PlayerData;
+import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.data.champion.EquipmentCache;
-import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -50,9 +49,9 @@ public class ItemUtil {
 
   public static boolean isArmor(Material material) {
     String name = material.name();
-    return name.endsWith("HELMET") || name.endsWith("CHESTPLATE") || name.endsWith("LEGGINGS")
-        || name.endsWith("BOOTS")
-        || name.endsWith("SKULL") || name.endsWith("HEAD");
+    return material == Material.SHEARS || name.endsWith("HELMET") || name.endsWith("CHESTPLATE") ||
+        name.endsWith("LEGGINGS") || name.endsWith("BOOTS") || name.endsWith("SKULL") ||
+        name.endsWith("HEAD");
   }
 
   public static boolean isMeleeWeapon(Material material) {
@@ -252,14 +251,9 @@ public class ItemUtil {
     }
   }
 
+  @Deprecated
   public static int getCustomData(ItemStack stack) {
-    if (stack.getItemMeta() == null) {
-      return -1;
-    }
-    if (!stack.getItemMeta().hasCustomModelData()) {
-      return -1;
-    }
-    return stack.getItemMeta().getCustomModelData();
+    return ItemUtils.getModelData(stack);
   }
 
   public static int hashItem(ItemStack itemStack) {

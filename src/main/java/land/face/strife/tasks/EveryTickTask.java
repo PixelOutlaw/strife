@@ -21,7 +21,10 @@ package land.face.strife.tasks;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
@@ -36,6 +39,8 @@ import org.bukkit.util.Vector;
 public class EveryTickTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
+  private final Map<Integer, GUIComponent> lifeSeparators = new HashMap<>();
+  private final Map<Integer, GUIComponent> energySeparators = new HashMap<>();
 
   private final List<TextComponent> attackIndication = List.of(
       GuiManager.noShadow(new TextComponent("码")),
@@ -52,6 +57,9 @@ public class EveryTickTask extends BukkitRunnable {
 
   public EveryTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
+    buildLifeSegments();
+    buildEnergySegments();
+    runTaskTimer(plugin, 20L, 1L);
   }
 
   @Override
@@ -99,13 +107,25 @@ public class EveryTickTask extends BukkitRunnable {
             GuiManager.BARRIER_BAR_2.get(barrierSegments) : GuiManager.BARRIER_BAR_3.get(barrierSegments);
         gui.update(new GUIComponent("barrier-bar", barrierText, barrierSegments, -90, Alignment.LEFT));
 
-        String hpString = plugin.getGuiManager().convertToHpDisplay((int) (life + barrier));
-        String energyString = plugin.getGuiManager().convertToEnergyDisplayFont((int) mob.getEnergy());
+        if (maxLife >= 105) {
+          gui.update(lifeSeparators.get((int) maxLife));
+        } else {
+          gui.update(new GUIComponent("life-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+        }
 
-        gui.update(new GUIComponent("life-display", new TextComponent(hpString),
-            hpString.length() * 8, 0, Alignment.CENTER));
-        gui.update(new GUIComponent("energy-display", new TextComponent(energyString),
-            energyString.length() * 8, 0, Alignment.CENTER));
+        if (mob.getMaxEnergy() >= 105) {
+          gui.update(energySeparators.get((int) mob.getMaxEnergy()));
+        } else {
+          gui.update(new GUIComponent("energy-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+        }
+
+        //int energySeperators = (int) Math.floor(maxLife / 100);
+
+        //String hpString = plugin.getGuiManager().convertToHpDisplay((int) (life + barrier));
+        //String energyString = plugin.getGuiManager().convertToEnergyDisplayFont((int) mob.getEnergy());
+
+        //gui.update(new GUIComponent("life-display", new TextComponent(hpString), hpString.length() * 8, 0, Alignment.CENTER));
+        //gui.update(new GUIComponent("energy-display", new TextComponent(energyString), energyString.length() * 8, 0, Alignment.CENTER));
 
         plugin.getGuiManager().updateAir(gui, p);
 
@@ -118,6 +138,44 @@ public class EveryTickTask extends BukkitRunnable {
 
         plugin.getGuiManager().tickNotices(p);
       }
+    }
+  }
+
+  public void buildLifeSegments() {
+    lifeSeparators.clear();
+    for (int i = 105; i < 1000; i++) {
+      float lifeSeparation = (float) (Math.floor(i) / 100);
+      int pixelDiff = (int) (178f / lifeSeparation);
+      int lineSeparators = (int) Math.floor(lifeSeparation);
+      int size = lineSeparators * pixelDiff;
+      if (size > 178 - 4) {
+        lineSeparators--;
+        size -= pixelDiff;
+      }
+      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "拾\uF803";
+      sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
+      GUIComponent component = new GUIComponent("life-segments",
+          GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
+      lifeSeparators.put(i, component);
+    }
+  }
+
+  public void buildEnergySegments() {
+    energySeparators.clear();
+    for (int i = 105; i < 1000; i++) {
+      float energySeparation = (float) (Math.floor(i) / 100);
+      int pixelDiff = (int) (178f / energySeparation);
+      int lineSeparators = (int) Math.floor(energySeparation);
+      int size = lineSeparators * pixelDiff;
+      if (size > 178 - 4) {
+        lineSeparators--;
+        size -= pixelDiff;
+      }
+      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "拿\uF803";
+      sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
+      GUIComponent component = new GUIComponent("energy-segments",
+          GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
+      energySeparators.put(i, component);
     }
   }
 }

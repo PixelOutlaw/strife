@@ -7,13 +7,18 @@ import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.StatUtil;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class Bleed extends Effect {
 
   private float amount;
   private boolean applyBleedMods;
   private DamageScale damageScale;
   private boolean ignoreArmor;
+  private boolean ignoreResist;
   private boolean bypassBarrier;
 
   @Override
@@ -27,26 +32,7 @@ public class Bleed extends Effect {
     if (!ignoreArmor) {
       bleedAmount *= StatUtil.getArmorMult(caster, target);
     }
-    DamageUtil.applyBleed(caster, target, applyMultipliers(caster, bleedAmount), bypassBarrier);
-  }
-
-  public void setDamageScale(DamageScale damageScale) {
-    this.damageScale = damageScale;
-  }
-
-  public void setAmount(float amount) {
-    this.amount = amount;
-  }
-
-  public void setIgnoreArmor(boolean ignoreArmor) {
-    this.ignoreArmor = ignoreArmor;
-  }
-
-  public void setBypassBarrier(boolean bypassBarrier) {
-    this.bypassBarrier = bypassBarrier;
-  }
-
-  public void setApplyBleedMods(boolean applyBleedMods) {
-    this.applyBleedMods = applyBleedMods;
+    DamageUtil.applyBleed(caster, target,
+        applyMultipliers(caster, bleedAmount), bypassBarrier, ignoreResist);
   }
 }

@@ -51,11 +51,11 @@ public class BossBarManager {
     removeBarViewers(player);
     statusBar1.put(player, buildBar(player));
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        statusBar2.put(player, buildBar(player)), 1L);
+        statusBar2.put(player, buildBar(player)), 2L);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        statusBar3.put(player, buildBar(player)), 2L);
+        statusBar3.put(player, buildBar(player)), 4L);
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        statusBar4.put(player, buildBar(player)), 3L);
+        statusBar4.put(player, buildBar(player)), 6L);
   }
 
   public void tickBars() {

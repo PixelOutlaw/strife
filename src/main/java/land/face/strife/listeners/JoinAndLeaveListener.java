@@ -48,10 +48,14 @@ public class JoinAndLeaveListener implements Listener {
     this.plugin = plugin;
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.LOW)
+  public void onPlayerJoinLow(final PlayerJoinEvent event) {
+    plugin.getGuiManager().setupGui(event.getPlayer());
+  }
+
+  @EventHandler(priority = EventPriority.NORMAL)
   public void onPlayerJoin(final PlayerJoinEvent event) {
     event.getPlayer().setGravity(true);
-    plugin.getGuiManager().setupGui(event.getPlayer());
 
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     Champion champion = playerMob.getChampion();

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.dinvy.DeluxeInvyPlugin;
-import land.face.dinvy.pojo.PlayerData;
+import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
@@ -65,6 +65,9 @@ public class GuiManager {
   public static final TextComponent GOD_AURORA = noShadow(new TextComponent("᮲"));
   public static final TextComponent GOD_ZEXIR = noShadow(new TextComponent("᮳"));
   public static final TextComponent GOD_ANYA = noShadow(new TextComponent("᮴"));
+
+  public static final TextComponent LIFE_SEPERATOR = noShadow(new TextComponent("拾"));
+  public static final TextComponent ENERGY_SEPERATOR = noShadow(new TextComponent("拿"));
 
   private final Map<Integer, GUIComponent> builtXpFont = buildXpFont();
 
@@ -235,32 +238,37 @@ public class GuiManager {
       return;
     }
     GUI gui = GUIAPI.getGUIManager().getGUI(p);
+
     gui.putUnderneath(healthBase);
     gui.putUnderneath(levelBase);
     gui.putUnderneath(bitsBase);
     gui.putUnderneath(gemsBase);
     gui.putUnderneath(notifsBase);
 
-    gui.putOnTop(new GUIComponent("missing-life", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("missing-energy", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("barrier-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("life-segments", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("energy-segments", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("invincible", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("life-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("missing-life", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("missing-energy", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("barrier-bar", EMPTY, 0, 0, Alignment.CENTER));
+
+    gui.putOnTop(new GUIComponent("invincible", EMPTY, 0, 0, Alignment.CENTER));
+
+    // gui.putOnTop(new GUIComponent("life-display", EMPTY, 0, 0, Alignment.CENTER));
+    // gui.putOnTop(new GUIComponent("energy-display", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("xp-base", noShadow(new TextComponent("懚")), 27, 104, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("cxp-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("xp-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("xp-text", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("air-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("energy-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("money-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("gem-display", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("level-display", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("cxp-bar", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("xp-bar", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("xp-text", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("air-bar", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("money-display", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("gem-display", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("level-display", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("attack-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("rage-bar", new TextComponent(""), 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("block-ind", new TextComponent(""), 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("attack-bar", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("rage-bar", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("block-ind", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER));

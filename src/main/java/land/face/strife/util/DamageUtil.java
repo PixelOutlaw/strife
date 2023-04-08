@@ -1023,20 +1023,23 @@ public class DamageUtil {
       float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) + mods.getAbilityMods()
           .getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
       damage *= 1 + (bleedDamage / 100);
-      applyBleed(attacker, defender, damage, bypassBarrier);
+      applyBleed(attacker, defender, damage, bypassBarrier, false);
     }
     return false;
   }
 
-  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount, boolean bypassBarrier) {
+  public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount,
+      boolean bypassBarrier, boolean bypassMultipliers) {
     if (amount < 0.2) {
       return;
     }
-    if (attacker != null && defender.getFrost() > 0
-        && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE)) {
-      amount *= 1.3;
+    if (!bypassMultipliers) {
+      if (attacker != null && defender.getFrost() > 0
+          && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE)) {
+        amount *= 1.3;
+      }
+      amount *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
     }
-    amount *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
     defender.addBleed(amount, bypassBarrier);
   }
 

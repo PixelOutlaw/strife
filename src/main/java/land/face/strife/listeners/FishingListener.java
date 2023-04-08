@@ -2,14 +2,13 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.events.EquipmentUpdateEvent;
-import land.face.dinvy.pojo.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -28,7 +27,6 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
 
 public class FishingListener implements Listener {
 

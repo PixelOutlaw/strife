@@ -561,6 +561,7 @@ public class EffectManager {
         ((Bleed) effect).setAmount((float) cs.getDouble("amount", 10));
         ((Bleed) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((Bleed) effect).setIgnoreArmor(cs.getBoolean("ignore-armor", true));
+        ((Bleed) effect).setIgnoreResist(cs.getBoolean("ignore-resist", false));
         ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
       }

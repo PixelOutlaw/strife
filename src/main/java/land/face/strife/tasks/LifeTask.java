@@ -47,11 +47,6 @@ public class LifeTask extends BukkitRunnable {
 
     double maxLife = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
 
-    if (mob.getEntity().getHealth() >= maxLife) {
-      getBonusHealth();
-      return;
-    }
-
     PlayerDataUtil.restoreHealth(mob.getEntity(), getBonusHealth());
 
     float lifeAmount = StatUtil.getStat(mob, StrifeStat.REGENERATION);
@@ -77,7 +72,7 @@ public class LifeTask extends BukkitRunnable {
       lifeMult *= 0.33f;
     }
     if (mob.getEntity().getFireTicks() > 0) {
-      lifeMult *= 0.4f;
+      lifeMult *= 0.5f;
     }
 
     lifeAmount *= lifeMult;
@@ -94,7 +89,7 @@ public class LifeTask extends BukkitRunnable {
     }
 
     if (lifeAmount < 0) {
-      StrifePlugin.getInstance().getDamageManager().doEnergyAbsorb(mob, damage);
+      damage = StrifePlugin.getInstance().getDamageManager().doEnergyAbsorb(mob, -lifeAmount);
       DamageUtil.dealRawDamage(mob, damage);
     } else {
       mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));

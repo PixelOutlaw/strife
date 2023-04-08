@@ -140,10 +140,10 @@ public class StrifeMob {
   }
 
   public int getLevel() {
-    if (champion == null) {
-      return SpecialStatusUtil.getMobLevel(livingEntity.get());
+    if (livingEntity.get() instanceof Player) {
+      return ((Player) livingEntity.get()).getLevel();
     }
-    return ((Player) livingEntity.get()).getLevel();
+    return SpecialStatusUtil.getMobLevel(livingEntity.get());
   }
 
   public boolean canAttack() {

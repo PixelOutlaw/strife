@@ -88,7 +88,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       plugin.getAbilityIconManager().updateChargesGui(event.getChampion());
     }, 1L);
   }
-
   @EventHandler
   public void onCast(AbilityCastEvent event) {
     if (event.getCaster().getEntity().getType() == EntityType.PLAYER) {
@@ -200,6 +199,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
       plugin.getAbilityIconManager().setAllAbilityIcons(event.getPlayer());
     }
+    plugin.getStrifeMobManager().updateEquipmentStats(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
