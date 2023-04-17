@@ -12,7 +12,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent.Action;
+import org.bukkit.event.entity.EntityPotionEffectEvent.Cause;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class PotionListener implements Listener {
 
@@ -78,6 +80,21 @@ public class PotionListener implements Listener {
         if (mob.hasTrait(StrifeTrait.ANTI_POISON)) {
           event.setCancelled(true);
         }
+      }
+    }
+  }
+
+  @EventHandler
+  public void onEffectExpire(EntityPotionEffectEvent event) {
+    if (!(event.getCause() == Cause.EXPIRATION && event.getAction() == Action.REMOVED)) {
+      return;
+    }
+    if ("POISON".equals(event.getOldEffect().getType().getName())) {
+      if (event.getOldEffect().getAmplifier() > 0) {
+        int newAmp = event.getOldEffect().getAmplifier() - 1;
+        Bukkit.getScheduler().runTaskLater(plugin, () ->
+            ((LivingEntity) event.getEntity()).addPotionEffect(
+                new PotionEffect(PotionEffectType.POISON, 100, newAmp, false, true)), 0L);
       }
     }
   }

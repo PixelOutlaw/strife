@@ -24,7 +24,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import land.face.strife.StrifePlugin;
 import org.bukkit.entity.Player;
 
-@CommandAlias("levelup|lvl|lpoints")
+@CommandAlias("levelup|level|lvl|lpoints")
 public class LevelUpCommand extends BaseCommand {
 
   private final StrifePlugin plugin;

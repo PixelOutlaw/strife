@@ -8,9 +8,6 @@ import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
 import static land.face.strife.util.StatUtil.getDefenderWarding;
 import static land.face.strife.util.StatUtil.getWardingMult;
-import static org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE;
-import static org.bukkit.potion.PotionEffectType.POISON;
-import static org.bukkit.potion.PotionEffectType.WITHER;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.World;
@@ -23,13 +20,12 @@ import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.ShaderStyle;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -41,7 +37,6 @@ import land.face.strife.data.DamageModifiers.ElementalStatus;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
-import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Ignite;
 import land.face.strife.events.CriticalEvent;
@@ -105,6 +100,8 @@ public class DamageUtil {
   private static final float BLEED_PERCENT = 0.5f;
 
   private static float PVP_MULT;
+
+  private static String POSION_TEXT = FaceColor.LIGHT_GREEN.shaded(ShaderStyle.OUTLINE) + "Poison!";
 
   private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
   private static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -695,6 +692,9 @@ public class DamageUtil {
       Map<AbilityMod, Float> modDoubleMap) {
     switch (type) {
       case PHYSICAL -> {
+        if (defend.getTraits().contains(StrifeTrait.INCORPOREAL)) {
+          return 0;
+        }
         float armor = getDefenderArmor(attack, defend);
         armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0f);
         armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0f);
@@ -704,6 +704,9 @@ public class DamageUtil {
         return getArmorMult(armor);
       }
       case MAGICAL -> {
+        if (defend.getTraits().contains(StrifeTrait.ANTI_MAGIC)) {
+          return 0;
+        }
         float warding = getDefenderWarding(attack, defend);
         warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0f);
         warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
@@ -1028,6 +1031,54 @@ public class DamageUtil {
     return false;
   }
 
+  public static boolean attemptPoison(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
+    if (mods.getAttackType() == AttackType.BONUS) {
+      return false;
+    }
+    if (defender.getStat(StrifeStat.POISON_RESIST) > 99) {
+      return false;
+    }
+    float chance = (attacker.getStat(StrifeStat.POISON_CHANCE) +
+        mods.getAbilityMods().getOrDefault(AbilityMod.POISON_CHANCE, 0f)) / 100;
+    if (mods.isScaleChancesWithAttack()) {
+      chance *= mods.getDamageReductionRatio();
+    }
+    if (chance >= rollDouble()) {
+      PotionEffect potionEffect = defender.getEntity().getPotionEffect(PotionEffectType.POISON);
+      int amp;
+      if (potionEffect == null) {
+        amp = 0;
+      } else {
+        int maxAmount = attacker.hasTrait(StrifeTrait.DEADLY_POISON) ? 6 : 4;
+        int currentAmount = potionEffect.getAmplifier();
+        if (currentAmount > maxAmount) {
+          return false;
+        }
+        amp = Math.min(maxAmount, potionEffect.getAmplifier() + 1);
+      }
+      float totalTicks = 100;
+      float durationBonus = attacker.getStat(StrifeStat.EFFECT_DURATION) +
+          attacker.getStat(StrifeStat.POISON_DURATION) +
+          mods.getAbilityMods().getOrDefault(AbilityMod.POISON_DURATION, 0f);
+      totalTicks *= (1 + durationBonus / 100);
+      PotionEffect newPoisonEffect = new PotionEffect(
+          PotionEffectType.POISON,
+          (int) totalTicks,
+          amp,
+          false,
+          true
+      );
+      defender.getEntity().removePotionEffect(PotionEffectType.POISON);
+      defender.getEntity().addPotionEffect(newPoisonEffect);
+      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+          IndicatorStyle.BOUNCE, 5, POSION_TEXT);
+      attacker.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
+          Sound.ENTITY_SILVERFISH_DEATH, 1, 2.0f);
+      return true;
+    }
+    return false;
+  }
+
   public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount,
       boolean bypassBarrier, boolean bypassMultipliers) {
     if (amount < 0.2) {
@@ -1263,6 +1314,8 @@ public class DamageUtil {
     HEALTH_ON_HIT,
     BLEED_CHANCE,
     BLEED_DAMAGE,
+    POISON_CHANCE,
+    POISON_DURATION,
     STATUS_CHANCE,
     BACK_ATTACK,
     MAX_DAMAGE

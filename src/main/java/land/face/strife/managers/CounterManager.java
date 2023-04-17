@@ -17,7 +17,6 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +78,7 @@ public class CounterManager {
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-            IndicatorStyle.BOUNCE, 7, "&3⛨&lCounter");
+            IndicatorStyle.BOUNCE, 7, COUNTER_MESSAGE);
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);

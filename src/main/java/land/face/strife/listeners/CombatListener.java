@@ -334,6 +334,7 @@ public class CombatListener implements Listener {
         DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL),
             damageModifiers, false);
       }
+      DamageUtil.attemptPoison(attacker, defender, damageModifiers);
     }
 
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {

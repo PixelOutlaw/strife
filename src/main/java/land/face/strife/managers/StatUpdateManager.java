@@ -1,15 +1,15 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
  * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all copies or
  * substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
  * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -21,12 +21,15 @@ package land.face.strife.managers;
 import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
 import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
@@ -38,7 +41,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public record StatUpdateManager(StrifeMobManager strifeMobManager) {
+public class StatUpdateManager {
+
+  private final StrifePlugin plugin;
+
+  public StatUpdateManager(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
 
   public Map<StrifeStat, Float> getItemStats(ItemStack stack) {
     return getItemStats(stack, 1.0f);
@@ -120,18 +129,37 @@ public record StatUpdateManager(StrifeMobManager strifeMobManager) {
   }
 
   public void updateAllAttributes(Player player) {
-    updateAllAttributes(strifeMobManager.getStatMob(player));
+    updateAllAttributes(plugin.getStrifeMobManager().getStatMob(player));
   }
 
   public void updateAllAttributes(StrifeMob strifeMob) {
     updateMovementSpeed(strifeMob);
     updateHealth(strifeMob);
     updateWeight(strifeMob);
-    float maxAir = strifeMobManager.getBaseAirTicks() * (1 + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
-    strifeMob.getEntity().setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
+    float maxAir = plugin.getStrifeMobManager().getBaseAirTicks() * (1
+        + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
+    strifeMob.getEntity()
+        .setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
     strifeMob.getEntity().setMaximumAir((int) maxAir);
     StatUtil.getStat(strifeMob, StrifeStat.BARRIER);
     StatUtil.getStat(strifeMob, StrifeStat.MAXIMUM_RAGE);
+    if (strifeMob.getEntity() instanceof Player) {
+      Player p = (Player) strifeMob.getEntity();
+      if (strifeMob.getMaxLife() >= 105) {
+        plugin.getGuiManager().updateComponent(p,
+            plugin.getGuiManager().getLifeSeparators().get((int) strifeMob.getMaxLife()));
+      } else {
+        plugin.getGuiManager().updateComponent(p,
+            new GUIComponent("life-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+      }
+      if (strifeMob.getMaxEnergy() >= 105) {
+        plugin.getGuiManager().updateComponent(p,
+            plugin.getGuiManager().getEnergySeparators().get((int) strifeMob.getMaxEnergy()));
+      } else {
+        plugin.getGuiManager().updateComponent(p,
+            new GUIComponent("energy-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+      }
+    }
   }
 
   @SafeVarargs

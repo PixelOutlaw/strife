@@ -163,6 +163,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
+import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import ninja.amp.ampmenus.MenuListener;
 import org.black_ixx.playerpoints.PlayerPoints;
@@ -361,7 +362,7 @@ public class StrifePlugin extends FacePlugin {
     buildEquipment();
     boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
-    statUpdateManager = new StatUpdateManager(strifeMobManager);
+    statUpdateManager = new StatUpdateManager(this);
     monsterManager = new MonsterManager(championManager);
     stealthManager = new StealthManager(this);
     effectManager = new EffectManager(this);
@@ -605,6 +606,7 @@ public class StrifePlugin extends FacePlugin {
     getChampionManager().updateAll();
 
     DamageUtil.refresh();
+    StatUtil.refreshPlugin(this);
     DOTUtil.refresh();
 
     ItemUtil.pickDestroyKeys.clear();

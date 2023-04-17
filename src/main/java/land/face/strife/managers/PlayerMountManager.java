@@ -17,12 +17,11 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import land.face.dinvy.DeluxeInvyPlugin;
@@ -34,16 +33,11 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.patch.FacelandMountController;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.MountTask;
-import land.face.strife.util.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Cow;
-import org.bukkit.entity.Horse;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Llama;
-import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.SkeletonHorse;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerMountManager {
@@ -102,7 +96,7 @@ public class PlayerMountManager {
       }
       return;
     }
-    int mountData = ItemUtil.getCustomData(stack);
+    int mountData = ItemUtils.getModelData(stack);
     LoadedMount mount = getLoadedMountFromData(mountData);
     if (mount == null) {
       selectedMount.remove(player.getUniqueId());

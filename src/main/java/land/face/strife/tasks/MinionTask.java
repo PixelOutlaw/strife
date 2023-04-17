@@ -36,6 +36,7 @@ public class MinionTask extends BukkitRunnable {
     if (minionMob == null || minionMob.getEntity() == null || !minionMob.getEntity().isValid()) {
       Objects.requireNonNull(master.get()).removeMinion(minionMob);
       cancel();
+      return;
     }
     if (minionMob.getEntity().getWorld() != master.get().getEntity().getWorld()) {
       if (lifespan > 5) {

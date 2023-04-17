@@ -19,7 +19,7 @@ public class FrostTask extends BukkitRunnable {
 
   public FrostTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, 10L);
+    this.runTaskTimer(StrifePlugin.getInstance(), 20L, 13L);
   }
 
   @Override
@@ -44,15 +44,11 @@ public class FrostTask extends BukkitRunnable {
 
     if (isCold) {
       mob.addFrost(1);
+      mob.setFrostGraceTicks(4);
       playFrostParticles(mob.getEntity());
-      if (mob.getFrost() > 99) {
-        if (!mob.isInvincible()) {
-          DamageUtil.dealRawDamage(mob, 10);
-        }
-      }
-      return;
+    } else {
+      lowerFrostNormally(mob);
     }
-    lowerFrostNormally(mob);
   }
 
   private void lowerFrostNormally(StrifeMob mob) {

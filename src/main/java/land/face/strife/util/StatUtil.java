@@ -24,6 +24,12 @@ import org.bukkit.entity.Player;
 
 public class StatUtil {
 
+  public static StrifePlugin plugin;
+
+  public static void refreshPlugin(StrifePlugin strifePlugin) {
+    plugin = strifePlugin;
+  }
+
   public static float getStat(StrifeMob mob, StrifeStat stat) {
     Map<StrifeStat, Float> stats = mob.getStatCache();
     switch (stat) {

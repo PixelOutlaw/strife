@@ -87,12 +87,17 @@ public class LifeTask extends BukkitRunnable {
     if (mob.isBleeding()) {
       lifeAmount -= DOTUtil.tickBleedDamage(mob);
     }
+    if (mob.getFrost() > 99.5 && mob.getFrostGraceTicks() > 2) {
+      lifeAmount -= 10;
+    }
 
-    if (lifeAmount < 0) {
+    if (lifeAmount > 0) {
+      mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));
+      return;
+    }
+    if (!mob.isInvincible()) {
       damage = StrifePlugin.getInstance().getDamageManager().doEnergyAbsorb(mob, -lifeAmount);
       DamageUtil.dealRawDamage(mob, damage);
-    } else {
-      mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));
     }
   }
 

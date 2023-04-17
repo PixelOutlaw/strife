@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class CombatCountdownTask extends BukkitRunnable {
@@ -75,17 +76,18 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
 
-    if (targetMob.get() != null) {
-      if (targetMob.get().getEntity().getWorld() != parentMob.get().getEntity().getWorld()) {
-        if ("Graveyard".equals(targetMob.get().getEntity().getWorld())) {
+    StrifeMob strifeMob = targetMob.get();
+    if (strifeMob != null) {
+      if (strifeMob.getEntity().getWorld() != parentMob.get().getEntity().getWorld()) {
+        if ("Graveyard".equals(strifeMob.getEntity().getWorld())) {
           targetWasAlive = false;
-          updateStatus();
+          updateStatus(strifeMob);
           targetMob = new WeakReference<>(null);
         } else {
           clearBars();
         }
       } else {
-        updateStatus();
+        updateStatus(strifeMob);
         if (!targetWasAlive) {
           targetMob = new WeakReference<>(null);
         }
@@ -108,14 +110,14 @@ public class CombatCountdownTask extends BukkitRunnable {
     parent.endCombat();
   }
 
-  private void updateStatus() {
-    if (player == null || targetMob.get() == null) {
+  private void updateStatus(StrifeMob strifeMob) {
+    if (player == null) {
       return;
     }
-    if (targetMob.get().getEntity().isValid()) {
-      manager.updateBar(player, 2, 0, createBarTitle(targetMob.get()), 9999999);
-      int hpState = (int) (138f * (targetMob.get().getEntity().getHealth()) / targetMob.get().getMaxLife());
-      int barrierState = (int) (138f * (targetMob.get().getBarrier()) / targetMob.get().getMaxBarrier());
+    if (strifeMob.getEntity().isValid()) {
+      manager.updateBar(player, 2, 0, createBarTitle(strifeMob), 9999999);
+      int hpState = (int) (138f * (strifeMob.getEntity().getHealth()) / strifeMob.getMaxLife());
+      int barrierState = (int) (138f * (strifeMob.getBarrier()) / strifeMob.getMaxBarrier());
       if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
         lastHealthStage = hpState;
         lastBarrierStage = barrierState;
@@ -186,6 +188,10 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
     if (target.getCorruption() > 0.9) {
       name += "  " + FaceColor.PURPLE + (int) target.getCorruption() + "\uD83D\uDC80";
+    }
+    if (target.getEntity().hasPotionEffect(PotionEffectType.POISON)) {
+      name += "  " + FaceColor.GREEN +
+          (target.getEntity().getPotionEffect(PotionEffectType.POISON).getAmplifier() + 1) + "☠";
     }
     return name;
   }

@@ -59,6 +59,12 @@ public enum StrifeTrait {
       " |yellow|Grants immunity to |white|Weakness"),
   ANTI_POISON("|orange||ul|Passive Effect - Anti-poison",
       " |yellow|Grants immunity to |white|Poison"),
+  INCORPOREAL("|orange||ul|Passive Effect - Incorporeal",
+      " |yellow|Grants immunity to |white|Physical Damage"),
+  ANTI_MAGIC("|orange||ul|Passive Effect - Anti-Magic",
+      " |yellow|Grants immunity to |white|Magical Damage"),
+  DEADLY_POISON("|orange||ul|Passive Effect - Deadly Poison",
+      " |yellow|Poison can be applied up to VII"),
   SOUL_FLAME("|orange||ul|Passive Effect - Blue Flame");
 
   // TODO: We map String to StrifeStat, why not let the user

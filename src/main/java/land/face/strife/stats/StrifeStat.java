@@ -108,6 +108,9 @@ public enum StrifeStat {
   BLEED_DAMAGE("Bleed Damage"),
   BLEED_RESIST("Bleed Resistance"),
 
+  POISON_CHANCE("Poison Chance"),
+  POISON_DURATION("Poison Duration"),
+
   LIFE_STEAL("Life Steal"),
   HP_ON_HIT("Life On Hit"),
   HP_ON_KILL("Life On Kill"),

@@ -107,7 +107,10 @@ public class MinionListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void onMasterAttack(final StrifeDamageEvent event) {
-    if (event.isCancelled() || event.getDamageModifiers().getAttackMultiplier() < 0.55) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (!event.getDamageModifiers().isApplyOnHitEffects()) {
       return;
     }
     Bukkit.getScheduler().runTaskLater(plugin, () -> {

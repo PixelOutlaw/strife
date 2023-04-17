@@ -5,6 +5,7 @@ import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
+import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -37,9 +39,7 @@ public class GuiManager {
   public static final ChatColor NO_SHADOW = FaceColor.NO_SHADOW.getColor();
 
   private final GUIComponent healthBase = new GUIComponent("status-base",
-      noShadow(new TextComponent("➲")), 178, 0, Alignment.CENTER);
-  private final GUIComponent levelBase = new GUIComponent("level-base",
-      noShadow(new TextComponent("⅟")), 27, -105, Alignment.CENTER);
+      noShadow(new TextComponent("➲")), 236, 0, Alignment.CENTER);
   private final GUIComponent bitsBase = new GUIComponent("bits-base",
       noShadow(new TextComponent("₿")), 14, 199, Alignment.CENTER);
   private final GUIComponent gemsBase = new GUIComponent("gems-base",
@@ -53,6 +53,11 @@ public class GuiManager {
   private final Map<Integer, TextComponent> levelStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> moneyStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> gemStringNumbers = new HashMap<>();
+
+  @Getter
+  private final Map<Integer, GUIComponent> lifeSeparators = new HashMap<>();
+  @Getter
+  private final Map<Integer, GUIComponent> energySeparators = new HashMap<>();
 
   public static final TextComponent EMPTY = new TextComponent("");
   public static final TextComponent NOTICE_COOLDOWN = noShadow(new TextComponent("᳥"));
@@ -176,6 +181,10 @@ public class GuiManager {
       buildHealthEnergyAndBarrier();
       buildTargetHealthBars();
     }
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      buildLifeSegments();
+      buildEnergySegments();
+    }, 10L);
   }
 
   private Map<Integer, GUIComponent> buildXpFont() {
@@ -240,7 +249,6 @@ public class GuiManager {
     GUI gui = GUIAPI.getGUIManager().getGUI(p);
 
     gui.putUnderneath(healthBase);
-    gui.putUnderneath(levelBase);
     gui.putUnderneath(bitsBase);
     gui.putUnderneath(gemsBase);
     gui.putUnderneath(notifsBase);
@@ -257,7 +265,6 @@ public class GuiManager {
     // gui.putOnTop(new GUIComponent("life-display", EMPTY, 0, 0, Alignment.CENTER));
     // gui.putOnTop(new GUIComponent("energy-display", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("xp-base", noShadow(new TextComponent("懚")), 27, 104, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("cxp-bar", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("xp-bar", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("xp-text", EMPTY, 0, 0, Alignment.CENTER));
@@ -391,6 +398,44 @@ public class GuiManager {
       gui.update(new GUIComponent("dura-offhand",
           new TextComponent(duraString(player.getEquipment().getItemInOffHand(), "৫")),
           45, 233, Alignment.RIGHT));
+    }
+  }
+
+  public void buildLifeSegments() {
+    lifeSeparators.clear();
+    for (int i = 105; i < 1000; i++) {
+      float lifeSeparation = (float) (Math.floor(i) / 100);
+      int pixelDiff = (int) (178f / lifeSeparation);
+      int lineSeparators = (int) Math.floor(lifeSeparation);
+      int size = lineSeparators * pixelDiff;
+      if (size > 178 - 4) {
+        lineSeparators--;
+        size -= pixelDiff;
+      }
+      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "拾\uF803";
+      sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
+      GUIComponent component = new GUIComponent("life-segments",
+          GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
+      lifeSeparators.put(i, component);
+    }
+  }
+
+  public void buildEnergySegments() {
+    energySeparators.clear();
+    for (int i = 105; i < 1000; i++) {
+      float energySeparation = (float) (Math.floor(i) / 100);
+      int pixelDiff = (int) (178f / energySeparation);
+      int lineSeparators = (int) Math.floor(energySeparation);
+      int size = lineSeparators * pixelDiff;
+      if (size > 178 - 4) {
+        lineSeparators--;
+        size -= pixelDiff;
+      }
+      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "拿\uF803";
+      sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
+      GUIComponent component = new GUIComponent("energy-segments",
+          GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
+      energySeparators.put(i, component);
     }
   }
 

@@ -52,11 +52,18 @@ public class StatsOffenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
   private Map<Player, ItemStack> cachedIcon = new HashMap<>();
+  private float POISON_FLAT_DAMAGE;
+  private float POISON_LEVEL_DAMAGE;
+
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
     super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", new ItemStack(Material.BARRIER));
     this.statsMenu = statsMenu;
     ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
+    POISON_FLAT_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.mechanics.poison-flat-damage");
+    POISON_LEVEL_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.mechanics.poison-level-damage");
   }
 
   @Override
@@ -136,6 +143,12 @@ public class StatsOffenseMenuItem extends MenuItem {
       bleedBonus *= mob.getStat(StrifeStat.BLEED_CHANCE) / 100;
       total += (physical + physical * (1 + critMult)) * bleedBonus;
     }
+    if (mob.getStat(StrifeStat.POISON_CHANCE) > 0) {
+      float poisonDmg = POISON_FLAT_DAMAGE + mob.getLevel() * POISON_LEVEL_DAMAGE;
+      poisonDmg *= 5;
+      poisonDmg *= Math.pow(mob.getStat(StrifeStat.POISON_CHANCE) / 100, 2);
+      total += poisonDmg;
+    }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
       total *= 1 + (0.3 * (mob.getStat(StrifeStat.MULTISHOT) / 100));
     }
@@ -173,6 +186,10 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (mob.getStat(StrifeStat.BLEED_DAMAGE) > 0) {
       loreSection.add(addStat("Bleed Damage: " + ChatColor.WHITE + "+",
           mob.getStat(StrifeStat.BLEED_DAMAGE), "%", INT_FORMAT));
+    }
+    if (mob.getStat(StrifeStat.POISON_CHANCE) > 0) {
+      loreSection.add(addStat("Poison Chance: ", mob.getStat(StrifeStat.POISON_CHANCE), "%", INT_FORMAT));
+      loreSection.add(addStat("Poison Duration: " + ChatColor.WHITE + "+", mob.getStat(StrifeStat.POISON_DURATION), "%", INT_FORMAT));
     }
     if (mob.getStat(StrifeStat.RAGE_ON_HIT) > 0 || mob.getStat(StrifeStat.RAGE_ON_KILL) > 0
         || mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {

@@ -138,6 +138,7 @@ public class Damage extends Effect {
     if (damage.containsKey(DamageType.PHYSICAL)) {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
     }
+    DamageUtil.attemptPoison(caster, target, mods);
 
     StrifeMob finalTarget = target;
     if (mods.isApplyOnHitEffects()) {
