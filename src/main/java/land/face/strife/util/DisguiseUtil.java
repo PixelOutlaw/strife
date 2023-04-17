@@ -16,6 +16,7 @@ import me.libraryaddict.disguise.disguisetypes.RabbitType;
 import me.libraryaddict.disguise.disguisetypes.watchers.AgeableWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.FrogWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.MushroomCowWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.PandaWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ParrotWatcher;
@@ -25,11 +26,13 @@ import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.WolfWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
+import net.minecraft.world.entity.animal.FrogVariant;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Fox;
+import org.bukkit.entity.Frog;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MushroomCow.Variant;
 import org.bukkit.entity.Panda.Gene;
@@ -117,43 +120,45 @@ public class DisguiseUtil {
       if (StringUtils.isNotBlank(typeData)) {
         try {
           switch (type) {
-            case MUSHROOM_COW:
+            case MUSHROOM_COW -> {
               if (typeData.equalsIgnoreCase("BROWN")) {
                 ((MushroomCowWatcher) watcher).setVariant(Variant.BROWN);
               } else {
                 ((MushroomCowWatcher) watcher).setVariant(Variant.RED);
               }
-              break;
-            case FOX:
+            }
+            case FOX -> {
               Fox.Type foxType = Fox.Type.valueOf(typeData);
               ((FoxWatcher) watcher).setType(foxType);
-              break;
-            case WOLF:
-              ((WolfWatcher) watcher).setAngry(Boolean.parseBoolean(typeData));
-              break;
-            case PARROT:
+            }
+            case WOLF -> ((WolfWatcher) watcher).setAngry(Boolean.parseBoolean(typeData));
+            case PARROT -> {
               Parrot.Variant parrotType = Parrot.Variant.valueOf(typeData);
               ((ParrotWatcher) watcher).setVariant(parrotType);
-              break;
-            case SHEEP:
+            }
+            case SHEEP -> {
               DyeColor color = DyeColor.valueOf(typeData.toUpperCase());
               ((SheepWatcher) watcher).setColor(color);
-              break;
-            case RABBIT:
+            }
+            case RABBIT -> {
               RabbitType rabbitType = RabbitType.valueOf(typeData);
               ((RabbitWatcher) watcher).setType(rabbitType);
-              break;
-            case SLIME:
-              ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
-              break;
-            case PANDA:
+            }
+            case FROG -> {
+              Frog.Variant variant = switch (typeData) {
+                case "temperate" -> Frog.Variant.TEMPERATE;
+                case "warm" -> Frog.Variant.WARM;
+                default -> Frog.Variant.COLD;
+              };
+              ((FrogWatcher) watcher).setVariant(variant);
+            }
+            case SLIME -> ((SlimeWatcher) watcher).setSize(Integer.parseInt(typeData));
+            case PANDA -> {
               Gene gene = Gene.valueOf(typeData);
               ((PandaWatcher) watcher).setMainGene(gene);
               ((PandaWatcher) watcher).setHiddenGene(gene);
-              break;
-            case SNOWMAN:
-              ((SnowmanWatcher) watcher).setDerp(Boolean.parseBoolean(typeData));
-              break;
+            }
+            case SNOWMAN -> ((SnowmanWatcher) watcher).setDerp(Boolean.parseBoolean(typeData));
           }
         } catch (Exception e) {
           LogUtil.printWarning("Cannot load type " + typeData + " for " + name);
