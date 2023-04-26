@@ -26,6 +26,7 @@ public enum AbilitySlot {
   SLOT_A(0),
   SLOT_B(1),
   SLOT_C(2),
+  SLOT_D(3),
   PASSIVE_A(-1),
   PASSIVE_B(-1),
   INVALID(-1);

@@ -141,6 +141,7 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_A);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_B);
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_C);
+    plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_D);
     plugin.getCounterManager().clearCounters(player);
     plugin.getBossBarManager().clearBars(player);
   }

@@ -291,6 +291,7 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("slot-a-charges", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("slot-b-charges", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("slot-c-charges", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("slot-d-charges", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("god-slot", NO_GOD, 0, 0, Alignment.CENTER));
 

@@ -18,30 +18,44 @@
  */
 package land.face.strife.menus.abilities;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import java.util.List;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
-import land.face.strife.data.effects.TargetingComparators.AbilityComparator;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.stats.AbilitySlot;
+import lombok.Getter;
 import ninja.amp.ampmenus.menus.ItemMenu;
+import org.bukkit.entity.Player;
 
-public class AbilitySubmenu extends ItemMenu {
+public class SlotThreeChoiceMenu extends ItemMenu {
 
-  private String id;
+  @Getter
+  private final StrifePlugin plugin;
+  @Getter
+  private final Player player;
+  @Getter
+  private final Ability newAbility;
+  @Getter
+  private final Champion champion;
+  @Getter
+  private final String subMenu;
 
-  public AbilitySubmenu(StrifePlugin plugin, String id, String name, List<Ability> abilities, ReturnButton returnButton) {
-    super(StringExtensionsKt.chatColorize(name), Size.fit(abilities.size() + 1), plugin);
-    this.id = id;
-    int index = 0;
-    if (returnButton != null) {
-      setItem(0, returnButton);
-      index++;
-    }
-    abilities.sort(new AbilityComparator());
-    for (Ability ability : abilities) {
-      setItem(index, new AbilityButton(plugin, id, ability));
-      index++;
-    }
+  public SlotThreeChoiceMenu(StrifePlugin plugin, Player player, Champion champion, Ability newAbility, String subMenu) {
+    super(PaletteUtil.color(plugin.getConfig()
+        .getString("ability-choice-title", "Picker")), Size.THREE_LINE, plugin);
+    this.plugin = plugin;
+    this.player = player;
+    this.champion = champion;
+    this.newAbility = newAbility;
+    this.subMenu = subMenu;
+
+    setItem(4, new SlotThreeNewChoiceIcon(this));
+
+    setItem(11, new SlotThreeOldChoiceIcon(this, AbilitySlot.SLOT_C));
+    setItem(15, new SlotThreeOldChoiceIcon(this, AbilitySlot.SLOT_D));
+
+    setItem(20, new SlotThreeConfirmIcon(this, AbilitySlot.SLOT_C));
+    setItem(24, new SlotThreeConfirmIcon(this, AbilitySlot.SLOT_D));
   }
 }
 

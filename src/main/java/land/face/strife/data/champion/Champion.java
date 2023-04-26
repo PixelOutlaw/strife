@@ -19,7 +19,6 @@
 package land.face.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.shade.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,6 +88,7 @@ public class Champion {
         getAbilityStats(AbilitySlot.SLOT_A),
         getAbilityStats(AbilitySlot.SLOT_B),
         getAbilityStats(AbilitySlot.SLOT_C),
+        getAbilityStats(AbilitySlot.SLOT_D),
         StrifePlugin.getInstance().getBoostManager().getStats()
     ));
     lastChanged = System.currentTimeMillis();

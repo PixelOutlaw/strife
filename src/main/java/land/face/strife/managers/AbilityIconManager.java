@@ -5,18 +5,16 @@ import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.WordUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
-import land.face.strife.data.ability.Ability.TargetType;
-import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.ability.AbilityIconData;
+import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
@@ -26,7 +24,6 @@ import land.face.strife.managers.AbilityManager.AbilityType;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
-import land.face.strife.util.StatUtil;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -72,19 +69,22 @@ public class AbilityIconManager {
     }
     Champion champion = plugin.getChampionManager().getChampion(player);
     ChampionSaveData data = champion.getSaveData();
-    for (Ability ability : data.getAbilities().values()) {
-      setAbilityIcon(player, ability.getAbilityIconData());
-      AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, ability);
+    player.getInventory().setHeldItemSlot(4);
+    for (Entry<AbilitySlot, Ability> entry : data.getAbilities().entrySet()) {
+      setAbilityIcon(player, entry.getValue().getAbilityIconData(), entry.getKey());
+      AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, entry.getValue());
       Bukkit.getPluginManager().callEvent(abilityChangeEvent);
     }
     plugin.getAbilityIconManager().updateChargesGui(player);
   }
 
-  public void setAbilityIcon(Player player, AbilityIconData abilityIconData) {
+  public void setAbilityIcon(Player player, AbilityIconData abilityIconData, AbilitySlot slot) {
     if (abilityIconData == null || abilityIconData.getAbilitySlot() == AbilitySlot.INVALID) {
       return;
     }
-    AbilitySlot slot = abilityIconData.getAbilitySlot();
+    if (slot == null) {
+      slot = abilityIconData.getAbilitySlot();
+    }
     if (slot.getSlotIndex() == -1) {
       return;
     }
@@ -97,8 +97,9 @@ public class AbilityIconManager {
       }
     }
     plugin.getChampionManager().getChampion(player).setLastChanged(1);
+    AbilitySlot finalSlot = slot;
     Bukkit.getScheduler().runTaskLater(plugin, () ->
-        plugin.getAbilityIconManager().updateIconProgress(player, slot), 2L);
+        plugin.getAbilityIconManager().updateIconProgress(player, finalSlot), 2L);
   }
 
   public boolean playerHasAbility(Player player, Ability ability) {
@@ -121,6 +122,8 @@ public class AbilityIconManager {
     Ability abilityA = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_A);
     Ability abilityB = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_B);
     Ability abilityC = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_C);
+    Ability abilityD = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_D);
+
     if (abilityA != null && abilityA.isDeathUntoggle()) {
       plugin.getAbilityManager().unToggleAbility(mob, abilityA.getId());
     }
@@ -129,6 +132,9 @@ public class AbilityIconManager {
     }
     if (abilityC != null && abilityC.isDeathUntoggle()) {
       plugin.getAbilityManager().unToggleAbility(mob, abilityC.getId());
+    }
+    if (abilityD != null && abilityD.isDeathUntoggle()) {
+      plugin.getAbilityManager().unToggleAbility(mob, abilityD.getId());
     }
   }
 
@@ -154,8 +160,13 @@ public class AbilityIconManager {
     if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 2) {
       return;
     }
-    boolean abilitySucceeded = plugin.getAbilityManager().execute(ability,
-        plugin.getStrifeMobManager().getStatMob(player), null, toggledOn);
+    boolean abilitySucceeded = plugin.getAbilityManager().execute(
+        ability,
+        plugin.getStrifeMobManager().getStatMob(player),
+        null,
+        AbilitySlot.cachedValues[slotNumber],
+        toggledOn
+    );
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       plugin.getAbilityManager().setGlobalCooldown(player, 5);
@@ -181,6 +192,8 @@ public class AbilityIconManager {
         champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
     setIconDamage(plugin.getChampionManager().getChampion(player),
         champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
+    setIconDamage(plugin.getChampionManager().getChampion(player),
+        champion.getSaveData().getAbility(AbilitySlot.SLOT_D));
   }
 
   public void updateChargesGui(Player player) {
@@ -193,6 +206,7 @@ public class AbilityIconManager {
     Ability abilityA = champion.getSaveData().getAbility(AbilitySlot.SLOT_A);
     Ability abilityB = champion.getSaveData().getAbility(AbilitySlot.SLOT_B);
     Ability abilityC = champion.getSaveData().getAbility(AbilitySlot.SLOT_C);
+    Ability abilityD = champion.getSaveData().getAbility(AbilitySlot.SLOT_D);
 
     if (abilityA == null || abilityA.getMaxCharges() < 2) {
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-a-charges",
@@ -240,6 +254,22 @@ public class AbilityIconManager {
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-c-charges",
           GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -49, Alignment.LEFT));
+    }
+
+    if (abilityD == null || abilityD.getMaxCharges() < 2) {
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-d-charges",
+          GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    } else {
+      String charges = "";
+      CooldownTracker cd = plugin.getAbilityManager().getCooldownTracker(player, abilityD.getId());
+      if (cd == null) {
+        charges = charges + StringUtils.repeat("☊", abilityD.getMaxCharges());
+      } else {
+        charges = charges + StringUtils.repeat("☊", cd.getChargesLeft());
+        charges = charges + StringUtils.repeat("☋", abilityD.getMaxCharges() - cd.getChargesLeft());
+      }
+      plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-d-charges",
+          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -29, Alignment.LEFT));
     }
   }
 

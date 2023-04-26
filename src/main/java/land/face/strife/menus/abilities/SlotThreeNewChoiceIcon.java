@@ -18,38 +18,31 @@
  */
 package land.face.strife.menus.abilities;
 
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import java.util.List;
-import land.face.strife.StrifePlugin;
-import land.face.strife.data.ability.Ability;
-import land.face.strife.data.effects.TargetingComparators.AbilityComparator;
-import ninja.amp.ampmenus.menus.ItemMenu;
+import ninja.amp.ampmenus.events.ItemClickEvent;
+import ninja.amp.ampmenus.items.MenuItem;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
-public class AbilitySubmenu extends ItemMenu {
+public class SlotThreeNewChoiceIcon extends MenuItem {
 
-  private String id;
+  private final SlotThreeChoiceMenu menu;
 
-  public AbilitySubmenu(StrifePlugin plugin, String id, String name, List<Ability> abilities, ReturnButton returnButton) {
-    super(StringExtensionsKt.chatColorize(name), Size.fit(abilities.size() + 1), plugin);
-    this.id = id;
-    int index = 0;
-    if (returnButton != null) {
-      setItem(0, returnButton);
-      index++;
-    }
-    abilities.sort(new AbilityComparator());
-    for (Ability ability : abilities) {
-      setItem(index, new AbilityButton(plugin, id, ability));
-      index++;
-    }
+  public SlotThreeNewChoiceIcon(SlotThreeChoiceMenu menu) {
+    super("dum", new ItemStack(Material.BARRIER), "");
+    this.menu = menu;
+  }
+
+  @Override
+  public ItemStack getFinalIcon(Player player) {
+    return menu.getNewAbility().getAbilityIconData().getStack().clone();
+  }
+
+  @Override
+  public void onItemClick(ItemClickEvent event) {
+    super.onItemClick(event);
+    event.setWillClose(false);
+    event.setWillUpdate(false);
+    event.setWillGoBack(false);
   }
 }
-
-/*
-00 01 02 03 04 05 06 07 08
-09 10 11 12 13 14 15 16 17
-18 19 20 21 22 23 24 25 26
-27 28 29 30 31 32 33 34 35
-36 37 38 39 40 41 42 43 44
-45 46 47 48 49 50 51 52 53
-*/

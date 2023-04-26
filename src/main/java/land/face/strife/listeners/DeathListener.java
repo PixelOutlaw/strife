@@ -92,6 +92,7 @@ public class DeathListener implements Listener {
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_A);
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_B);
       plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_C);
+      plugin.getAbilityIconManager().removeIconItem((Player) event.getEntity(), AbilitySlot.SLOT_D);
     } else {
       Bukkit.getScheduler().runTaskLater(plugin,
           () -> plugin.getStrifeMobManager().removeStrifeMob(event.getEntity()), 2L);

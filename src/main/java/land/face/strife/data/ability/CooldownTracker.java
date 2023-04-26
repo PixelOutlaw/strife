@@ -20,8 +20,11 @@ public class CooldownTracker extends BukkitRunnable {
   @Getter
   private final Ability ability;
   @Getter
+  private final AbilitySlot slot;
+  @Getter
   private final StrifeMob holder;
-  @Getter @Setter
+  @Getter
+  @Setter
   private long startTime;
 
   @Getter
@@ -41,10 +44,12 @@ public class CooldownTracker extends BukkitRunnable {
   @Setter
   private long logoutTime;
 
-  public CooldownTracker(StrifeMob holder, Ability ability) {
+  public CooldownTracker(StrifeMob holder, Ability ability, AbilitySlot slot) {
     this.holder = holder;
     this.ability = ability;
-    float cdReduction = (float) Math.max(0.2, 1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
+    this.slot = slot;
+    float cdReduction = (float) Math.max(0.2,
+        1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
     float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
     maxDuration = (int) (newCooldown * 20 / TICK_TIME);
     duration = maxDuration;
@@ -97,7 +102,8 @@ public class CooldownTracker extends BukkitRunnable {
         AbilityGainChargeEvent e = new AbilityGainChargeEvent(holder, this);
         StrifePlugin.getInstance().getServer().getPluginManager().callEvent(e);
       }
-      float cdReduction = (float) Math.max(0.2, 1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
+      float cdReduction = (float) Math.max(0.2,
+          1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
       float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
       maxDuration = (int) (newCooldown * 20 / TICK_TIME);
       duration += maxDuration;
@@ -106,24 +112,23 @@ public class CooldownTracker extends BukkitRunnable {
   }
 
   public void updateIcon() {
-    if (!(holder.getEntity() instanceof Player)) {
+    if (!(holder.getEntity() instanceof Player player)) {
       return;
     }
     if (ability.getAbilityIconData() == null) {
       return;
     }
-    AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
-    if (slot == AbilitySlot.SLOT_A || slot == AbilitySlot.SLOT_B || slot == AbilitySlot.SLOT_C) {
-      Player player = (Player) holder.getEntity();
+    if (slot == AbilitySlot.SLOT_A || slot == AbilitySlot.SLOT_B || slot == AbilitySlot.SLOT_C
+        || slot == AbilitySlot.SLOT_D) {
       if (toggleState) {
         ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(),
-            player, ability.getAbilityIconData().getAbilitySlot().getSlotIndex(),
+            player, slot.getSlotIndex(),
             1, 1, toggleState);
         return;
       }
       double percent = (double) duration / maxDuration;
       ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(),
-          player, ability.getAbilityIconData().getAbilitySlot().getSlotIndex(),
+          player, slot.getSlotIndex(),
           percent, 1, toggleState);
     }
   }

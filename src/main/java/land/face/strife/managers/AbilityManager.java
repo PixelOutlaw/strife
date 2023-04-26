@@ -2,20 +2,16 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
@@ -80,12 +76,12 @@ public class AbilityManager {
     return null;
   }
 
-  public boolean execute(final Ability ability, final StrifeMob caster, StrifeMob target) {
-    return execute(ability, caster, target, false);
+  public boolean execute(final Ability ability, final StrifeMob caster, StrifeMob target, AbilitySlot slot) {
+    return execute(ability, caster, target, slot, false);
   }
 
   public boolean execute(final Ability ability, final StrifeMob caster,
-      final StrifeMob target, boolean ignoreReqs) {
+      final StrifeMob target, AbilitySlot slot, boolean ignoreReqs) {
     if (!ignoreReqs) {
       if (ability.getCooldown() != 0 && !canBeCast(caster, ability)) {
         doOnCooldownPrompt(caster, ability);
@@ -107,12 +103,12 @@ public class AbilityManager {
       return false;
     }
     if (ability.getTargetType() == TargetType.TOGGLE) {
-      boolean toggledOn = toggleAbility(caster, ability);
+      boolean toggledOn = toggleAbility(caster, ability, slot);
       if (!toggledOn) {
         return true;
       }
     } else {
-      coolDownAbility(caster, ability);
+      coolDownAbility(caster, ability, slot);
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       caster.getChampion().getDetailsContainer().addWeights(ability);
@@ -166,7 +162,7 @@ public class AbilityManager {
       return;
     }
     for (CooldownTracker cooldownContainer : cdMap.get(livingEntity)) {
-      doToggleOff(cooldownContainer, plugin.getStrifeMobManager().getStatMob(livingEntity));
+      doToggleOff(cooldownContainer, plugin.getStrifeMobManager().getStatMob(livingEntity), cooldownContainer.getSlot());
     }
   }
 
@@ -175,16 +171,16 @@ public class AbilityManager {
     if (container == null) {
       return;
     }
-    doToggleOff(container, mob);
+    doToggleOff(container, mob, container.getSlot());
   }
 
-  private void doToggleOff(CooldownTracker tracker, StrifeMob mob) {
+  private void doToggleOff(CooldownTracker tracker, StrifeMob mob, AbilitySlot slot) {
     if (!tracker.isToggleState()) {
       return;
     }
     tracker.setToggleState(false);
     Ability ability = tracker.getAbility();
-    coolDownAbility(mob, ability);
+    coolDownAbility(mob, ability, slot);
 
     Set<LivingEntity> targets = new HashSet<>();
     targets.add(mob.getEntity());
@@ -327,7 +323,7 @@ public class AbilityManager {
 
     if (type == TriggerAbilityType.PHASE_SHIFT) {
       for (Ability a : abilities) {
-        execute(a, caster, caster);
+        execute(a, caster, caster, null);
       }
       return true;
     }
@@ -349,7 +345,7 @@ public class AbilityManager {
       return false;
     }
     Ability ability = selectorList.get(random.nextInt(selectorList.size()));
-    return execute(ability, caster, target, true);
+    return execute(ability, caster, target, null, true);
   }
 
   public void setGlobalCooldown(Player player, Ability ability, int ticks) {
@@ -374,7 +370,7 @@ public class AbilityManager {
           .getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
   }
 
-  private void coolDownAbility(StrifeMob caster, Ability ability) {
+  private void coolDownAbility(StrifeMob caster, Ability ability, AbilitySlot slot) {
     if (ability.getGlobalCooldownTicks() > 0) {
       caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 50);
     }
@@ -386,7 +382,7 @@ public class AbilityManager {
     }
     CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
     if (tracker == null) {
-      tracker = new CooldownTracker(caster, ability);
+      tracker = new CooldownTracker(caster, ability, slot);
       cdMap.get(caster.getEntity()).add(tracker);
       if (ability.getTargetType() == TargetType.TOGGLE) {
         tracker.setToggleState(true);
@@ -396,10 +392,10 @@ public class AbilityManager {
   }
 
   /*
-    Returns true with the toggle state of the ability afterwards.
+    Returns true with the toggle state of the ability afterward.
     Illegal state if it isn't a toggle ability at all...
    */
-  private boolean toggleAbility(StrifeMob caster, Ability ability) {
+  private boolean toggleAbility(StrifeMob caster, Ability ability, AbilitySlot slot) {
     if (ability.getTargetType() != TargetType.TOGGLE) {
       throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
@@ -408,14 +404,14 @@ public class AbilityManager {
     }
     CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
     if (tracker == null) {
-      tracker = new CooldownTracker(caster, ability);
+      tracker = new CooldownTracker(caster, ability, slot);
       tracker.setToggleState(true);
       cdMap.get(caster.getEntity()).add(tracker);
       return true;
     }
     if (tracker.isToggleState()) {
       tracker.setToggleState(false);
-      coolDownAbility(caster, ability);
+      coolDownAbility(caster, ability, slot);
 
       Set<LivingEntity> entities = new HashSet<>();
       entities.add(caster.getEntity());

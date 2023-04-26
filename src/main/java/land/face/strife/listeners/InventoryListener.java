@@ -2,8 +2,10 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
+import land.face.strife.menus.abilities.SlotThreeChoiceMenu;
 import ninja.amp.ampmenus.menus.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,6 +16,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -34,8 +37,8 @@ public class InventoryListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerItemHeldEvent event) {
     if (isIcon(event.getPlayer().getInventory().getItem(event.getNewSlot()))) {
-      Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getAbilityIconManager().triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
+      Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getAbilityIconManager()
+          .triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
       event.setCancelled(true);
       return;
     }
@@ -65,6 +68,18 @@ public class InventoryListener implements Listener {
       MessageUtils.sendMessage(event.getWhoClicked(), NO_MOVE_ABILITY);
       event.setCancelled(true);
     }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void closeWindow(InventoryCloseEvent event) {
+    if (!(event.getInventory().getHolder() instanceof MenuHolder holder)) {
+      return;
+    }
+    if (!(((MenuHolder) event.getInventory().getHolder()).getMenu() instanceof SlotThreeChoiceMenu)) {
+      return;
+    }
+    SlotThreeChoiceMenu choiceMenu = (SlotThreeChoiceMenu) holder.getMenu();
+    choiceMenu.destroy();
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

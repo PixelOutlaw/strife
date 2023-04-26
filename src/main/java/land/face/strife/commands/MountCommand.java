@@ -18,6 +18,8 @@
  */
 package land.face.strife.commands;
 
+import static org.bukkit.Material.*;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
@@ -41,6 +43,11 @@ public class MountCommand extends BaseCommand {
   private final String onlyOnGround;
   private final String invalidLocation;
   private final String notInCombat;
+
+  private final List<Material> mountIgnoreMats = List.of(
+      AIR, CAVE_AIR, VOID_AIR, TALL_GRASS, GRASS, FERN, LARGE_FERN, CORNFLOWER, POPPY, DANDELION,
+      SUNFLOWER, OXEYE_DAISY, AZURE_BLUET, SNOW
+  );
 
   public MountCommand(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -95,13 +102,8 @@ public class MountCommand extends BaseCommand {
               location.getBlockZ() + z
           );
           Material material = block.getType();
-          switch (material) {
-            case AIR, CAVE_AIR, VOID_AIR, TALL_GRASS, GRASS -> {
-              // Nothing
-            }
-            default -> {
-              return false;
-            }
+          if (!mountIgnoreMats.contains(material)) {
+            return false;
           }
         }
       }

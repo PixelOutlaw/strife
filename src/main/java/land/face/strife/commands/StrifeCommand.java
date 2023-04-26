@@ -375,9 +375,9 @@ public class StrifeCommand extends BaseCommand {
   }
 
   @Subcommand("ability set")
-  @CommandCompletion("@players @abilities")
+  @CommandCompletion("@players SLOT_(1-D) @abilities")
   @CommandPermission("strife.admin")
-  public void setAbilityCommand(CommandSender sender, OnlinePlayer target, String abilityId) {
+  public void setAbilityCommand(CommandSender sender, OnlinePlayer target, AbilitySlot slot, String abilityId) {
     Ability ability = plugin.getAbilityManager().getAbility(abilityId.replace("_", " "));
     if (ability == null) {
       sendMessage(sender, "&cInvalid ability ID: " + abilityId);
@@ -395,8 +395,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
-        .setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
+    plugin.getChampionManager().getChampion(target.getPlayer())
+        .getSaveData().setAbility(slot, ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 

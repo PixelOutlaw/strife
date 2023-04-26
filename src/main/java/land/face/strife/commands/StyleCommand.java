@@ -51,8 +51,8 @@ public class StyleCommand extends BaseCommand {
       return;
     }
     if (abilitySlot != AbilitySlot.SLOT_A && abilitySlot != AbilitySlot.SLOT_B
-        && abilitySlot != AbilitySlot.SLOT_C) {
-      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
+        && abilitySlot != AbilitySlot.SLOT_C && abilitySlot != AbilitySlot.SLOT_D) {
+      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C SLOT_D");
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion((Player) player.getPlayer());
@@ -71,8 +71,8 @@ public class StyleCommand extends BaseCommand {
       return;
     }
     if (abilitySlot != AbilitySlot.SLOT_A && abilitySlot != AbilitySlot.SLOT_B
-        && abilitySlot != AbilitySlot.SLOT_C) {
-      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C");
+        && abilitySlot != AbilitySlot.SLOT_C && abilitySlot != AbilitySlot.SLOT_D) {
+      sendMessage(player.getPlayer(), "&cValid slots are: SLOT_A, SLOT_B, SLOT_C SLOT_D");
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(player.getPlayer());

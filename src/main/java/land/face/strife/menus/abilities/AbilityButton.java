@@ -35,6 +35,7 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.ItemUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
+import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -45,9 +46,11 @@ public class AbilityButton extends MenuItem {
 
   private final StrifePlugin plugin;
   private final Ability ability;
+  private final String subMenu;
 
-  AbilityButton(StrifePlugin plugin, Ability ability) {
+  AbilityButton(StrifePlugin plugin, String subMenu, Ability ability) {
     super("", new ItemStack(ability.getCastType().getMaterial()));
+    this.subMenu = subMenu;
     this.plugin = plugin;
     this.ability = ability;
   }
@@ -81,29 +84,33 @@ public class AbilityButton extends MenuItem {
       return;
     }
     AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
-    Ability oldAbility = champion.getSaveData().getAbility(slot);
-    if (oldAbility == null) {
+    boolean abilityMatches = false;
+    for (Ability a : champion.getSaveData().getAbilities().values()) {
+      if (ability == a) {
+        abilityMatches = true;
+        break;
+      }
+    }
+    if (abilityMatches) {
+      return;
+    }
+    if (slot == AbilitySlot.SLOT_C) {
+      SlotThreeChoiceMenu slotThreeChoiceMenu = new SlotThreeChoiceMenu(plugin, event.getPlayer(), champion, ability, subMenu);
+      slotThreeChoiceMenu.open(event.getPlayer());
+    } else {
+      Ability oldAbility = champion.getSaveData().getAbility(slot);
+      if (plugin.getAbilityManager().getCooldownTracker(event.getPlayer(), oldAbility.getId()) != null) {
+        sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_ON_COOLDOWN);
+        return;
+      }
       champion.getSaveData().setAbility(slot, ability);
       plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(),
-          ability.getAbilityIconData());
+          ability.getAbilityIconData(), ability.getAbilityIconData().getAbilitySlot());
+
+      AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, ability);
+      Bukkit.getPluginManager().callEvent(abilityChangeEvent);
+      plugin.getAbilityIconManager().updateChargesGui(event.getPlayer());
       event.setWillUpdate(true);
-      return;
     }
-    if (plugin.getAbilityManager()
-        .getCooldownTracker(event.getPlayer(), oldAbility.getId()) != null) {
-      sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_ON_COOLDOWN);
-      return;
-    }
-    if (oldAbility == ability) {
-      //plugin.getAbilityIconManager().clearAbilityIcon(event.getPlayer(), slot);
-      event.setWillUpdate(false);
-      return;
-    }
-    champion.getSaveData().setAbility(slot, ability);
-    plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), ability.getAbilityIconData());
-    AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, ability);
-    Bukkit.getPluginManager().callEvent(abilityChangeEvent);
-    plugin.getAbilityIconManager().updateChargesGui(event.getPlayer());
-    event.setWillUpdate(true);
   }
 }

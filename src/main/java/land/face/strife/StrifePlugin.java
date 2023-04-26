@@ -572,8 +572,7 @@ public class StrifePlugin extends FacePlugin {
         abilityList.add(loopAbility);
       }
       abilityList.forEach((a)-> a.setHidden(false));
-      AbilitySubmenu menu = new AbilitySubmenu(this, title, abilityList, returnButton);
-      menu.setId(menuId);
+      AbilitySubmenu menu = new AbilitySubmenu(this, menuId, title, abilityList, returnButton);
       abilitySubmenus.put(menuId, menu);
 
       String name = abilityMenus.getString(menuId + ".name", "CONFIGURE ME");
@@ -688,6 +687,7 @@ public class StrifePlugin extends FacePlugin {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_B);
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_C);
+      abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_D);
       strifeMobManager.saveEnergy(player);
       strifeMobManager.despawnMinions(player);
     }
