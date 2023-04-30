@@ -97,6 +97,11 @@ public class StatsMiscMenuItem extends MenuItem {
     lore.add(FaceColor.TEAL.getColor() + "Healing Power: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.HEALING_POWER)) + "%");
     lore.add(breakLine);
+    lore.add(FaceColor.TEAL.getColor() + "Minion Max. Life: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
+        100 + mob.getStat(StrifeStat.MINION_LIFE)) + "%");
+    lore.add(FaceColor.TEAL.getColor() + "Minion Damage: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
+        100 + mob.getStat(StrifeStat.MINION_DAMAGE)) + "%");
+    lore.add(breakLine);
     lore.add(FaceColor.TEAL.getColor() + "Life From Potions: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.LIFE_FROM_POTIONS)) + "%");
     lore.add(FaceColor.TEAL.getColor() + "Energy From Potions: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(

@@ -1,10 +1,13 @@
 package land.face.strife.data.ability;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.conditions.Condition;
+import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.managers.AbilityManager.AbilityType;
 import land.face.strife.stats.StrifeStat;
@@ -22,6 +25,7 @@ public class Ability {
   @Getter
   private final AbilityType castType;
   private final boolean raycastsTargetEntities;
+  @Getter
   private final boolean requireTarget;
   private final boolean cancelStealth;
   private final float range;
@@ -38,6 +42,8 @@ public class Ability {
   private final int globalCooldownTicks;
   private final boolean showMessages;
   private final Set<Condition> conditions;
+  @Getter
+  private final Set<Condition> filterConditions = new HashSet<>();
   private final AbilityIconData abilityIconData;
   @Getter
   private final Map<StrifeStat, Float> passiveStats = new HashMap<>();
@@ -46,6 +52,10 @@ public class Ability {
   @Getter
   private final boolean passiveStatsOnCooldown;
   private final boolean friendly;
+  @Getter @Setter
+  private TargetingPriority targetingPriority;
+  @Getter @Setter
+  private int maxTargets = 1;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
       AbilityType castType, TargetType targetType, float range, float cost, float cooldown,
@@ -93,10 +103,6 @@ public class Ability {
     return range;
   }
 
-  public float getCost() {
-    return cost;
-  }
-
   public List<Effect> getEffects() {
     return effects;
   }
@@ -107,10 +113,6 @@ public class Ability {
 
   public boolean isCancelStealth() {
     return cancelStealth;
-  }
-
-  public boolean isRequireTarget() {
-    return requireTarget;
   }
 
   public int getMaxCharges() {
@@ -141,7 +143,27 @@ public class Ability {
     return raycastsTargetEntities;
   }
 
+  public float calcRealEnergyCost(StrifeMob mob) {
+    if (cost >= 0) {
+      return cost;
+    } else {
+      float percentCost = -cost % 1;
+      return (cost - percentCost) + (mob.getMaxEnergy() * percentCost);
+    }
+  }
+
   public enum TargetType {
-    SELF, TOGGLE, MASTER, MINIONS, PARTY, SINGLE_OTHER, TARGET_AREA, TARGET_GROUND, NEAREST_SOUL, NONE
+    SELF,
+    TOGGLE,
+    MASTER,
+    MINIONS,
+    PARTY,
+    NEARBY_ENEMIES,
+    NEARBY_ALLIES,
+    SINGLE_OTHER,
+    TARGET_AREA,
+    TARGET_GROUND,
+    NEAREST_SOUL,
+    NONE
   }
 }

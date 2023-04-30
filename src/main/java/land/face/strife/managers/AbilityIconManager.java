@@ -143,6 +143,7 @@ public class AbilityIconManager {
     if (slot == AbilitySlot.INVALID) {
       return;
     }
+
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     Ability ability = mob.getChampion().getSaveData().getAbility(slot);
     if (ability == null) {
@@ -151,6 +152,11 @@ public class AbilityIconManager {
       }
       return;
     }
+    // Absolutely stupid fix for clientside armor equip nonsense
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      updateAllIconProgress(player);
+      player.updateInventory();
+    }, 0L);
     boolean toggledOn = false;
     CooldownTracker cooldownTracker = plugin.getAbilityManager()
         .getCooldownTracker(player, ability.getId());

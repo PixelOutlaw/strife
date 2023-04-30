@@ -27,6 +27,7 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
+import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.stats.AbilitySlot;
@@ -115,7 +116,7 @@ public class AbilityManager {
     }
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
-        caster.setEnergy(caster.getEnergy() - ability.getCost());
+        caster.setEnergy(caster.getEnergy() - ability.calcRealEnergyCost(caster));
       }
     }
 
@@ -240,7 +241,7 @@ public class AbilityManager {
       if (((Player) caster.getEntity()).getGameMode() == GameMode.CREATIVE) {
         return true;
       }
-      return caster.getEnergy() >= ability.getCost();
+      return caster.getEnergy() >= ability.calcRealEnergyCost(caster);
     }
     return true;
   }
@@ -456,6 +457,18 @@ public class AbilityManager {
         }
         return new TargetResponse(targets, true);
       }
+      case NEARBY_ALLIES -> {
+        targets = TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
+        TargetingUtil.filterFriendlyEntities(targets, caster, true);
+        TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
+        return new TargetResponse(targets, true);
+      }
+      case NEARBY_ENEMIES -> {
+        targets = TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
+        TargetingUtil.filterFriendlyEntities(targets, caster, false);
+        TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
+        return new TargetResponse(targets, true);
+      }
       case MASTER -> {
         if (caster.getMaster() != null) {
           targets.add(caster.getMaster().getEntity());
@@ -627,8 +640,18 @@ public class AbilityManager {
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
         cs.getConfigurationSection("passive-stats")));
-    ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
+    ability.getTogglePassiveStats().putAll(StatUtil.getStatMapFromSection(
         cs.getConfigurationSection("passive-toggle-stats")));
+    ability.setTargetingPriority(TargetingPriority.valueOf(
+        cs.getString("target-priority", "RANDOM")));
+    ability.setMaxTargets(cs.getInt("max-targets", 10));
+
+    List<String> filterConditions = cs.getStringList("filter-conditions");
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      for (String s : filterConditions) {
+        ability.getFilterConditions().add(plugin.getEffectManager().getConditions().get(s));
+      }
+    }, 5L);
 
     loadedAbilities.put(key, ability);
     LogUtil.printDebug("Loaded ability " + key + " successfully.");

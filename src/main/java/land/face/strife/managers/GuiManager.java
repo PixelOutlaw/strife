@@ -181,10 +181,8 @@ public class GuiManager {
       buildHealthEnergyAndBarrier();
       buildTargetHealthBars();
     }
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      buildLifeSegments();
-      buildEnergySegments();
-    }, 10L);
+    buildLifeSegments();
+    buildEnergySegments();
   }
 
   private Map<Integer, GUIComponent> buildXpFont() {
@@ -227,7 +225,7 @@ public class GuiManager {
 
   public void postNotice(Player player, NoticeData data) {
     noticeMap.put(player, data);
-    guiMap.get(player).update(
+    updateComponent(player,
         new GUIComponent("notices", data.getTextComponent(), 171, 0, Alignment.CENTER));
   }
 
@@ -236,7 +234,7 @@ public class GuiManager {
       NoticeData data = noticeMap.get(player);
       data.setDurationTicks(data.getDurationTicks() - 1);
       if (data.getDurationTicks() == 0) {
-        guiMap.get(player).update(new GUIComponent("notices", EMPTY, 0, 0, Alignment.CENTER));
+        updateComponent(player, new GUIComponent("notices", EMPTY, 0, 0, Alignment.CENTER));
         noticeMap.remove(player);
       }
     }
@@ -327,7 +325,8 @@ public class GuiManager {
   }
 
   public void updateComponent(Player player, GUIComponent component) {
-    guiMap.get(player).update(component);
+    GUI gui = guiMap.get(player);
+    gui.update(component);
   }
 
   public void updateLevelDisplay(StrifeMob playerMob) {
@@ -379,24 +378,23 @@ public class GuiManager {
   }
 
   public void updateEquipmentDisplay(Player player, PlayerData data) {
-    GUI gui = guiMap.get(player);
     if (data != null) {
-      gui.update(new GUIComponent("dura-helmet",
+      updateComponent(player, new GUIComponent("dura-helmet",
           new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.HELMET), "০")),
           45, 233, Alignment.RIGHT));
-      gui.update(new GUIComponent("dura-body",
+      updateComponent(player, new GUIComponent("dura-body",
           new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.BODY), "১")),
           45, 233, Alignment.RIGHT));
-      gui.update(new GUIComponent("dura-legs",
+      updateComponent(player, new GUIComponent("dura-legs",
           new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.LEGS), "২")),
           45, 233, Alignment.RIGHT));
-      gui.update(new GUIComponent("dura-boots",
+      updateComponent(player, new GUIComponent("dura-boots",
           new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.BOOTS), "৩")),
           45, 233, Alignment.RIGHT));
-      gui.update(new GUIComponent("dura-weapon",
+      updateComponent(player, new GUIComponent("dura-weapon",
           new TextComponent(duraString(player.getEquipment().getItemInMainHand(), "৪")),
           45, 233, Alignment.RIGHT));
-      gui.update(new GUIComponent("dura-offhand",
+      updateComponent(player, new GUIComponent("dura-offhand",
           new TextComponent(duraString(player.getEquipment().getItemInOffHand(), "৫")),
           45, 233, Alignment.RIGHT));
     }

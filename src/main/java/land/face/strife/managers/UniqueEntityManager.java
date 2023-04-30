@@ -445,6 +445,8 @@ public class UniqueEntityManager {
         uniqueEntity.setModelId(cs.getString("model-id", null));
         uniqueEntity.setAttackDisabledOnGlobalCooldown(
             cs.getBoolean("disable-attacks-on-global-cooldown", false));
+        uniqueEntity.setAlwaysRunTimer(
+            cs.getBoolean("always-run-timer", false));
         uniqueEntity.setGravity(cs.getBoolean("gravity", true));
         uniqueEntity.setCollidable(cs.getBoolean("collidable", true));
         uniqueEntity.setVagabondAllowed(cs.getBoolean("vagabond-allowed", true));

@@ -501,6 +501,10 @@ public class StrifeMob {
     return uniqueEntity.get().getId();
   }
 
+  public UniqueEntity getUniqueEntity() {
+    return uniqueEntity == null ? null : uniqueEntity.get();
+  }
+
   public Set<String> getMods() {
     return mods;
   }

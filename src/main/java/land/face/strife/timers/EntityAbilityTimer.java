@@ -15,11 +15,15 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class EntityAbilityTimer extends BukkitRunnable {
 
   private final StrifeMob strifeMob;
+  private boolean alwaysRun;
   private StrifePlugin plugin = StrifePlugin.getInstance();
 
   public EntityAbilityTimer(StrifeMob strifeMob) {
     this.strifeMob = strifeMob;
-    runTaskTimer(StrifePlugin.getInstance(), 20L, 9L);
+    if (strifeMob.getUniqueEntity() != null) {
+      alwaysRun = strifeMob.getUniqueEntity().isAlwaysRunTimer();
+    }
+    runTaskTimer(StrifePlugin.getInstance(), 20L, 5L);
     LogUtil.printDebug("Created EntityAbilityTimer with id " + getTaskId());
   }
 
@@ -28,6 +32,11 @@ public class EntityAbilityTimer extends BukkitRunnable {
     if (strifeMob == null || strifeMob.getEntity() == null || !strifeMob.getEntity().isValid()) {
       LogUtil.printDebug("Cancelled EntityAbilityTimer  due to null entity");
       cancel();
+      return;
+    }
+    if (alwaysRun) {
+      LogUtil.printDebug("Timer for " + PlayerDataUtil.getName(strifeMob.getEntity()) + " running");
+      plugin.getAbilityManager().abilityCast(strifeMob, TriggerAbilityType.TIMER);
       return;
     }
     LivingEntity target = TargetingUtil.getMobTarget(strifeMob);

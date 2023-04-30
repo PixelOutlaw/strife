@@ -277,7 +277,7 @@ public class CombatListener implements Listener {
     damageModifiers.setAttackType(attackType);
     damageModifiers.setAttackMultiplier(attackMultiplier);
     damageModifiers.setHealMultiplier(healMultiplier);
-    damageModifiers.setDamageReductionRatio(Math.min(attackMultiplier, 1.0f));
+    damageModifiers.setDamageReductionRatio(1.0f);
     damageModifiers.setScaleChancesWithAttack(true);
     damageModifiers.setApplyOnHitEffects(attackMultiplier > Math.random());
     damageModifiers.setSneakAttack(isSneakAttack);

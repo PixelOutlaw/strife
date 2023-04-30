@@ -152,7 +152,7 @@ public class AreaEffect extends LocationEffect {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(Math.random(), 1.15);
         numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult);
       }
-      TargetingUtil.filterByTargetPriority(areaTargets, this, caster, Math.min(numTargets, areaTargets.size()));
+      TargetingUtil.filterByTargetPriority(areaTargets, getPriority(), caster, Math.min(numTargets, areaTargets.size()));
     }
     return areaTargets;
   }

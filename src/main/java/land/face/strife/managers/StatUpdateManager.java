@@ -143,21 +143,22 @@ public class StatUpdateManager {
     strifeMob.getEntity().setMaximumAir((int) maxAir);
     StatUtil.getStat(strifeMob, StrifeStat.BARRIER);
     StatUtil.getStat(strifeMob, StrifeStat.MAXIMUM_RAGE);
-    if (strifeMob.getEntity() instanceof Player) {
-      Player p = (Player) strifeMob.getEntity();
-      if (strifeMob.getMaxLife() >= 105) {
-        plugin.getGuiManager().updateComponent(p,
-            plugin.getGuiManager().getLifeSeparators().get((int) strifeMob.getMaxLife()));
-      } else {
-        plugin.getGuiManager().updateComponent(p,
-            new GUIComponent("life-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-      }
-      if (strifeMob.getMaxEnergy() >= 105) {
-        plugin.getGuiManager().updateComponent(p,
-            plugin.getGuiManager().getEnergySeparators().get((int) strifeMob.getMaxEnergy()));
-      } else {
-        plugin.getGuiManager().updateComponent(p,
-            new GUIComponent("energy-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    if (strifeMob.getEntity() instanceof Player p) {
+      if (plugin.getGuiManager().getLifeSeparators().get(105) != null) {
+        if (strifeMob.getMaxLife() >= 105) {
+          plugin.getGuiManager().updateComponent(p,
+              plugin.getGuiManager().getLifeSeparators().get((int) strifeMob.getMaxLife()));
+        } else {
+          plugin.getGuiManager().updateComponent(p,
+              new GUIComponent("life-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+        }
+        if (strifeMob.getMaxEnergy() >= 105) {
+          plugin.getGuiManager().updateComponent(p,
+              plugin.getGuiManager().getEnergySeparators().get((int) strifeMob.getMaxEnergy()));
+        } else {
+          plugin.getGuiManager().updateComponent(p,
+              new GUIComponent("energy-segments", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+        }
       }
     }
   }

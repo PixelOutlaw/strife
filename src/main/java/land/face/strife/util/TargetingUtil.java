@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.AreaEffect;
+import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.TargetingComparators.DistanceComparator;
 import land.face.strife.data.effects.TargetingComparators.FlatHealthComparator;
 import land.face.strife.data.effects.TargetingComparators.PercentHealthComparator;
@@ -66,13 +67,13 @@ public class TargetingUtil {
     }
   }
 
-  public static void filterByTargetPriority(Set<LivingEntity> areaTargets, AreaEffect effect,
-      StrifeMob caster, int maxTargets) {
+  public static void filterByTargetPriority(Set<LivingEntity> areaTargets,
+      TargetingPriority priority, StrifeMob caster, int maxTargets) {
     if (areaTargets.isEmpty()) {
       return;
     }
     List<LivingEntity> targetList = new ArrayList<>(areaTargets);
-    switch (effect.getPriority()) {
+    switch (priority) {
       case RANDOM -> {
         Collections.shuffle(targetList);
         areaTargets.retainAll(targetList.subList(0, maxTargets));
@@ -365,19 +366,23 @@ public class TargetingUtil {
       return null;
     }
     switch (origin) {
-      case HEAD:
+      case HEAD -> {
         return le.getEyeLocation();
-      case BELOW_HEAD:
+      }
+      case BELOW_HEAD -> {
         return le.getEyeLocation().clone().add(0, -0.4, 0);
-      case ABOVE_HEAD:
+      }
+      case ABOVE_HEAD -> {
         return le.getEyeLocation().clone().add(0, 0.4, 0);
-      case CENTER:
+      }
+      case CENTER -> {
         Vector vec = le.getEyeLocation().toVector().subtract(le.getLocation().toVector())
             .multiply(0.5);
         return le.getLocation().clone().add(vec);
-      case GROUND:
-      default:
+      }
+      default -> {
         return le.getLocation();
+      }
     }
   }
 }

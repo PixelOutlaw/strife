@@ -56,6 +56,8 @@ public class UniqueEntity {
   private boolean powered;
   @Getter @Setter
   private boolean attackDisabledOnGlobalCooldown;
+  @Getter @Setter
+  private boolean alwaysRunTimer;
   private double displaceMultiplier;
   @Getter @Setter
   private double boundingBonus;
