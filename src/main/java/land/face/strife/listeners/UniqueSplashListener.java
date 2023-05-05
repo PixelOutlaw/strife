@@ -9,7 +9,6 @@ import land.face.strife.data.TargetResponse;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ProjectileUtil;
-import land.face.strife.util.StatUtil;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -41,7 +40,7 @@ public class UniqueSplashListener implements Listener {
       }
       StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
-      if (DamageUtil.determineEvasion(attacker, defender, null) == -1) {
+      if (DamageUtil.isEvaded(attacker, defender, null)) {
         DamageUtil.doEvasion(attacker, defender);
         event.setCancelled(true);
         return;

@@ -16,13 +16,21 @@ import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.AnimalTamer;
+import org.bukkit.entity.Camel;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SkeletonHorse;
 import org.bukkit.entity.Tameable;
+import org.bukkit.entity.ZombieHorse;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 public class MinionSummon extends LocationEffect {
 
@@ -103,6 +111,16 @@ public class MinionSummon extends LocationEffect {
       }
 
       if (mount) {
+        switch (summon.getType()) {
+          case HORSE -> {
+            ((Horse) summon).getInventory().setSaddle(new ItemStack(Material.SADDLE));
+            ((Horse) summon).setTamed(true);
+          }
+          case ZOMBIE_HORSE -> ((ZombieHorse) summon).setTamed(true);
+          case SKELETON_HORSE -> ((SkeletonHorse) summon).setTamed(true);
+          case CAMEL -> ((Camel) summon).getInventory().setSaddle(new ItemStack(Material.SADDLE));
+          case PIG -> ((Pig) summon).setSaddle(true);
+        }
         summon.addPassenger(caster.getEntity());
       }
       double maxHealth = summon.getMaxHealth() *

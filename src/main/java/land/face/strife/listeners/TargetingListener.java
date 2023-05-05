@@ -181,7 +181,7 @@ public class TargetingListener implements Listener {
       }
       int playerLevel = StatUtil.getMobLevel(event.getTarget());
       int mobLevel = StatUtil.getMobLevel((Mob) event.getEntity());
-      if (playerLevel - mobLevel > 20) {
+      if (playerLevel - mobLevel >= 15) {
         event.setCancelled(true);
       }
     }

@@ -158,7 +158,8 @@ public class AreaEffect extends LocationEffect {
   }
 
   private boolean isDeflected(StrifeMob caster, StrifeMob target) {
-    if (canBeEvaded && DamageUtil.determineEvasion(caster, target, attackModifiers) == -1) {
+    if (canBeEvaded && DamageUtil.isEvaded(caster, target, attackModifiers)) {
+      DamageUtil.doEvasion(caster, target);
       return true;
     }
     if (canBeCountered && getPlugin().getCounterManager()

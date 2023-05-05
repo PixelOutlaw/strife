@@ -124,16 +124,16 @@ public class StatsDefenseMenuItem extends MenuItem {
           .getMonsterManager().getBaseStats(EntityType.ZOMBIE, player.getLevel());
       float accForLevel = normalMobStats.get(StrifeStat.ACCURACY) *
           (1 + normalMobStats.get(StrifeStat.ACCURACY_MULT) / 100);
-      float evasionAdvantage = evasion - accForLevel;
+      float dodgeFromEvasion = DamageUtil.getDodgeChanceFromEvasion(evasion, accForLevel);
       float evasionRate = 0;
-      if (evasionAdvantage > DamageUtil.EVASION_DENOMINATOR) {
-        evasionRate = (100 - dodgeChance) * DamageUtil.getDodgeChanceFromEvasion(evasionAdvantage);
+      if (dodgeFromEvasion > 0) {
+        evasionRate = (100 - dodgeChance) * dodgeFromEvasion;
       }
       lore.add(addStat("Chance To Avoid Hits: ", evasionRate + dodgeChance, INT_FORMAT) + "%");
       if (dodgeChance > 0.5) {
         lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
       }
-      if (evasionAdvantage > DamageUtil.EVASION_DENOMINATOR) {
+      if (dodgeFromEvasion > 0) {
         lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(evasionRate) + "% From Evasion (Estimated)");
       }
     }

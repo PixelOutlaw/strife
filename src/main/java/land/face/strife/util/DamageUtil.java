@@ -81,10 +81,6 @@ public class DamageUtil {
 
   public static float BASE_ATTACK_SECONDS = 1.6f;
 
-  public static float EVASION_THRESHOLD = 0.5f;
-  public static float EVASION_DENOMINATOR = 50f;
-  public static float EVASION_PER_BONUS = 35f;
-
   public static int BASE_RECHARGE_TICKS;
   public static long TICK_RATE;
   public static int DELAY_TICKS;
@@ -117,13 +113,6 @@ public class DamageUtil {
 
     BASE_ATTACK_SECONDS = (float) plugin.getSettings()
         .getDouble("config.mechanics.attack-speed.base-attack-time", 1.6);
-
-    EVASION_THRESHOLD = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.evade-threshold", 0.5);
-    EVASION_DENOMINATOR = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.evasion-denominator", 50);
-    EVASION_PER_BONUS = (float) plugin.getSettings()
-        .getDouble("config.mechanics.evasion.accuracy-denominator", 35);
 
     PVP_MULT = (float) plugin.getSettings()
         .getDouble("config.mechanics.pvp-multiplier", 0.5);
@@ -203,14 +192,12 @@ public class DamageUtil {
     float attackMult = mods.getAttackMultiplier();
 
     if (mods.isCanBeEvaded()) {
-      float evadeMult = DamageUtil.determineEvasion(attacker, defender, mods.getAbilityMods());
-      if (evadeMult == -1) {
+      if (DamageUtil.isEvaded(attacker, defender, mods.getAbilityMods())) {
         if (mods.isBasicAttack() && mods.getAttackType() == AttackType.MELEE) {
           plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f);
         }
         return false;
       }
-      mods.setAttackMultiplier(attackMult * evadeMult);
     }
 
     if (mods.isCanBeBlocked()) {
@@ -649,7 +636,7 @@ public class DamageUtil {
     switch (finalElementType) {
       case FIRE -> {
         mods.getElementalStatuses().add(ElementalStatus.IGNITE);
-        doIgnite(defender, damageMap.get(DamageType.FIRE));
+        doIgnite(attacker, defender, damageMap.get(DamageType.FIRE));
       }
       case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
@@ -811,7 +798,7 @@ public class DamageUtil {
     return null;
   }
 
-  private static void doIgnite(StrifeMob defender, float damage) {
+  private static void doIgnite(StrifeMob attacker, StrifeMob defender, float damage) {
     LivingEntity defendEntity = defender.getEntity();
     defendEntity.getWorld().playSound(defendEntity.getEyeLocation(),
         Sound.ITEM_FLINTANDSTEEL_USE, 1f, 0.8f);
@@ -821,8 +808,9 @@ public class DamageUtil {
         6 + (int) damage / 2,
         0.3, 0.3, 0.3, 0.03
     );
+    float duration = (50 + damage / 2) * (1 + attacker.getStat(StrifeStat.EFFECT_DURATION) / 100);
     boolean igniteSuccess = Ignite.setFlames(defender,
-        Math.max(25 + (int) damage, defender.getEntity().getFireTicks()));
+        Math.max((int) duration, defender.getEntity().getFireTicks()));
   }
 
   public static float attemptShock(float damage, LivingEntity defender) {
@@ -870,54 +858,40 @@ public class DamageUtil {
     return damage * multiplier;
   }
 
-  public static float calculateEvasionMultiplier(StrifeMob attacker, StrifeMob defender,
+  public static boolean rollDodgeFromEvasion(StrifeMob attacker, StrifeMob defender,
       Map<AbilityMod, Float> mods) {
     float totalEvasion = StatUtil.getEvasion(defender);
     float totalAccuracy = StatUtil.getAccuracy(attacker);
     if (mods != null) {
       totalAccuracy *= 1 + mods.getOrDefault(AbilityMod.ACCURACY_MULT, 0f) / 100;
       totalAccuracy += mods.getOrDefault(AbilityMod.ACCURACY, 0f);
-
       if (mods.containsKey(AbilityMod.BACK_ATTACK)) {
         totalEvasion *= 0.8;
       }
     }
-    float evasionAdvantage = Math.round(totalEvasion - totalAccuracy);
-    if (evasionAdvantage >= EVASION_DENOMINATOR) {
-      if (Math.random() < getDodgeChanceFromEvasion(evasionAdvantage)) {
-        return 0;
-      } else {
-        return 1f - 0.5f * (float) Math.random();
-      }
-    } else if (evasionAdvantage > 0) {
-      float evasionBonus = 0.15f + (0.35f * evasionAdvantage / EVASION_DENOMINATOR);
-      return 1f + ((float) Math.random() * evasionBonus);
-    } else if (evasionAdvantage == 0) {
-      return 1f - (0.15f * (float) Math.random());
-    } else {
-      float evasionBonus = 0.15f / (1 + (-evasionAdvantage / EVASION_PER_BONUS));
-      return 1f - ((float) Math.random() * evasionBonus);
+    float dodgeChance = getDodgeChanceFromEvasion(totalEvasion, totalAccuracy);
+    return Math.random() < dodgeChance;
+  }
+
+  public static float getDodgeChanceFromEvasion(float evasion, float accuracy) {
+    if (accuracy >= evasion) {
+      return 0;
     }
+    float advantage = evasion - accuracy;
+    return 1f - (float) Math.pow(0.9f, advantage / 20);
   }
 
-  public static float getDodgeChanceFromEvasion(float evasionAdvantage) {
-    evasionAdvantage -= EVASION_DENOMINATOR;
-    return evasionAdvantage / (evasionAdvantage + EVASION_DENOMINATOR);
-  }
-
-  // returns -1 for true, and an evasion multiplier above 0 if false.
-  public static float determineEvasion(StrifeMob attacker, StrifeMob defender,
+  public static boolean isEvaded(StrifeMob attacker, StrifeMob defender,
       Map<AbilityMod, Float> attackModifiers) {
     if (Math.random() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
       DamageUtil.doEvasion(attacker, defender);
-      return -1;
+      return true;
     }
-    float evasionMultiplier = calculateEvasionMultiplier(attacker, defender, attackModifiers);
-    if (evasionMultiplier < EVASION_THRESHOLD) {
+    if (rollDodgeFromEvasion(attacker, defender, attackModifiers)) {
       DamageUtil.doEvasion(attacker, defender);
-      return -1;
+      return true;
     }
-    return evasionMultiplier;
+    return false;
   }
 
   public static void doEvasion(StrifeMob attacker, StrifeMob defender) {
