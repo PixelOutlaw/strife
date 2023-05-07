@@ -318,9 +318,8 @@ public class AbilityIconManager {
     for (LifeSkillType type : data.getLifeSkillRequirements().keySet()) {
       String str = champion.getLifeSkillLevel(type) < data.getLifeSkillRequirements().get(type) ?
           REQ_STR : PASS_STR;
-      strings.add(str.replace("{REQ}", ChatColor.stripColor(
-          WordUtils.capitalize(type.name().toLowerCase().replaceAll("_", " ")) + " "
-              + data.getLifeSkillRequirements().get(type))));
+      strings.add(str.replace("{REQ}", ChatColor.stripColor(type.getPrettyName()) + " "
+              + data.getLifeSkillRequirements().get(type)));
     }
     for (StrifeAttribute attr : data.getAttributeRequirement().keySet()) {
       String str = champion.getAttributeLevel(attr) < data.getAttributeRequirement().get(attr) ?
