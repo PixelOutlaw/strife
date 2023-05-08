@@ -8,6 +8,8 @@ import land.face.strife.listeners.SpawnListener;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.ItemUtil;
+import land.face.strife.util.SpecialStatusUtil;
+import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
@@ -127,8 +129,8 @@ public class MinionSummon extends LocationEffect {
           (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
       summon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
       summon.setHealth(maxHealth);
+      SpecialStatusUtil.setMobLevel(summon, StatUtil.getMobLevel(caster.getEntity()));
     }
-
     MinionTask.expireMinions(caster);
   }
 
