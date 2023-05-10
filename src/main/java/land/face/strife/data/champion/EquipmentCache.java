@@ -124,6 +124,7 @@ public class EquipmentCache {
         slotStatMap.get("EARRING_1"),
         slotStatMap.get("EARRING_2"),
         slotStatMap.get("COSMETIC_HAT"),
+        slotStatMap.get("PET"),
         slotStatMap.get("SOUL_GEM_1"),
         slotStatMap.get("SOUL_GEM_2"),
         slotStatMap.get("SOUL_GEM_3"),
