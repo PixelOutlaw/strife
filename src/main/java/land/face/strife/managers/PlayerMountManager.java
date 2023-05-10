@@ -18,6 +18,7 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
@@ -48,8 +49,13 @@ public class PlayerMountManager {
   private final Map<UUID, String> selectedMount = new HashMap<>();
   private final Map<String, LoadedMount> loadedMounts = new HashMap<>();
 
+  private String noMount;
+  private String invalidMount;
+
   public PlayerMountManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    noMount = PaletteUtil.color(plugin.getSettings().getString("language.mounts.no-mount"));
+    invalidMount = PaletteUtil.color(plugin.getSettings().getString("language.mounts.invalid"));
   }
 
   public boolean isMounted(Player player) {
@@ -71,12 +77,12 @@ public class PlayerMountManager {
     }
     String mountId = selectedMount.get(uuid);
     if (mountId == null) {
-      Bukkit.getLogger().info("[Strife] bbb");
+      player.sendMessage(noMount);
       return false;
     }
     LoadedMount loadedMount = loadedMounts.get(mountId);
     if (loadedMount == null) {
-      Bukkit.getLogger().info("[Strife] cccc");
+      player.sendMessage(invalidMount);
       return false;
     }
     createMount(player, loadedMount);
