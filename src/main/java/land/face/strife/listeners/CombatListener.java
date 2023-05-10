@@ -340,7 +340,7 @@ public class CombatListener implements Listener {
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
       eventDamage *= 0.5;
       float bleed = eventDamage;
-      DamageUtil.applyBleed(defender, defender, bleed, true, false);
+      DamageUtil.applyBleed(defender, defender, bleed, true, true, false);
     }
 
     if (damageModifiers.isApplyOnHitEffects()) {

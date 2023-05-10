@@ -210,7 +210,7 @@ public class StatUtil {
   }
 
   public static float getArmorMult(float armor) {
-    return (float) Math.pow(0.5f, armor / 100f);
+    return (float) Math.pow(0.5f, armor / 120f);
   }
 
   public static float getWardingMult(StrifeMob attacker, StrifeMob defender) {
@@ -223,7 +223,7 @@ public class StatUtil {
   }
 
   public static float getWardingMult(float warding) {
-    return (float) Math.pow(0.5f, warding / 100f);
+    return (float) Math.pow(0.5f, warding / 120f);
   }
 
   public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {

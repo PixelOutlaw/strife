@@ -29,10 +29,7 @@ public class Bleed extends Effect {
     if (applyBleedMods) {
       bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;
     }
-    if (!ignoreArmor) {
-      bleedAmount *= StatUtil.getArmorMult(caster, target);
-    }
-    DamageUtil.applyBleed(caster, target,
-        applyMultipliers(caster, bleedAmount), bypassBarrier, ignoreResist);
+    DamageUtil.applyBleed(caster, target, applyMultipliers(caster, bleedAmount),
+        bypassBarrier, ignoreArmor, ignoreResist);
   }
 }

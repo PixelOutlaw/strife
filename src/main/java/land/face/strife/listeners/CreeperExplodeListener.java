@@ -57,7 +57,7 @@ public class CreeperExplodeListener implements Listener {
     StrifeMob victim = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
     if (mob.isBleeding()) {
       float amount = mob.getBleed();
-      DamageUtil.applyBleed(mob, victim, amount + 5, false, false);
+      DamageUtil.applyBleed(mob, victim, amount + 5, false, false, false);
     }
     if (mob.getCorruption() > 0) {
       victim.addCorruption(mob.getCorruption() * 0.5f + 20);
