@@ -953,7 +953,6 @@ public class StrifePlugin extends FacePlugin {
         playerMountManager.loadMount(
             new LoadedMount("untrad-" + key, 1000 + customModelData, name, lore, meModel,
                 color, style, speed, walkAnimationSpeed, flying, flyani, launch, land, false));
-        Bukkit.getLogger().info("[Strife] (Mounts) Loaded mount " + key);
       }
     } catch (Exception e) {
       e.printStackTrace();
