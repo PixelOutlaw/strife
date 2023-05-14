@@ -45,6 +45,10 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
         le.setFireTicks(9);
         event.setCancelled(true);
       }
+      case FREEZE -> {
+        event.setDamage(0);
+        event.setCancelled(true);
+      }
       case FIRE_TICK, POISON, WITHER, CONTACT, SUFFOCATION -> event.setCancelled(true);
       case DROWNING -> {
         DamageUtil.dealRawDamage(plugin.getStrifeMobManager().getStatMob(le),
