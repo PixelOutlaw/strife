@@ -1,5 +1,7 @@
 package land.face.strife.data;
 
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.lang.ref.WeakReference;
@@ -21,6 +23,7 @@ import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.events.RuneChangeEvent;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
@@ -311,6 +314,10 @@ public class StrifeMob {
 
   public void endRageTask() {
     if (rageTask != null) {
+      if (getEntity() instanceof Player) {
+        StrifePlugin.getInstance().getGuiManager().getGui((Player) getEntity()).update(
+                new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+      }
       rageTask.cancel();
       rageTask = null;
     }
