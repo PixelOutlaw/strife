@@ -55,11 +55,16 @@ public class PlayerDataUtil {
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
     int threshold3 = knowledgeSection.getInt("rank-3", 1000);
+    String category = knowledgeSection.getString("type", "");
     LoadedKnowledge mobKnowledge = new LoadedKnowledge(
         key, name, weight, threshold1, threshold2, threshold3,
         lore1, lore2, lore3, PaletteUtil.color(desc));
     mobKnowledge.setSource("strife");
-    mobKnowledge.setCategory("mobs");
+    switch (category) {
+      case "boss" -> mobKnowledge.setCategory("bosses");
+      case "elite" -> mobKnowledge.setCategory("elites");
+      default -> mobKnowledge.setCategory("mobs");
+    }
     return mobKnowledge;
   }
 
