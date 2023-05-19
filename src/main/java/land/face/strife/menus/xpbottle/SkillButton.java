@@ -23,6 +23,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.text.DecimalFormat;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.champion.LifeSkillType;
@@ -36,12 +37,13 @@ import org.bukkit.inventory.ItemStack;
 
 public class SkillButton extends MenuItem {
 
+  static final DecimalFormat INT_FORMAT = new DecimalFormat("###,###,###");
+
   private final StrifePlugin plugin;
   private final LifeSkillType lifeSkillType;
   private final int amount;
+  private final int modelData;
   private final int bowlId;
-
-  private final ItemStack icon;
 
   public SkillButton(StrifePlugin plugin, LifeSkillType lifeSkillType,
       int bowlId, int modelData, int amount) {
@@ -50,12 +52,22 @@ public class SkillButton extends MenuItem {
     this.lifeSkillType = lifeSkillType;
     this.amount = amount;
     this.bowlId = bowlId;
-    icon = buildIcon(modelData);
+    this.modelData = modelData;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    return icon;
+    int lvl =  PlayerDataUtil.getSkillLevels(player, lifeSkillType, false).getLevel();
+    ItemStack stack = new ItemStack(Material.PAPER);
+    ItemStackExtensionsKt.setCustomModelData(stack, modelData);
+    ItemStackExtensionsKt.setDisplayName(stack, FaceColor.GREEN + "Gain " +
+        lifeSkillType.getColor() + lifeSkillType.getPrettyName() + FaceColor.GREEN + " XP!");
+    TextUtils.setLore(stack, PaletteUtil.color(List.of(
+        "|white|Current Level: " + lvl,
+        "|gray|Click to gain |white|" + INT_FORMAT.format(amount) + " XP |gray|in",
+        "|gray|the skill " + lifeSkillType.getColor() + lifeSkillType.getPrettyName() + "|gray|!"
+    )), false);
+    return stack;
   }
 
   @Override
@@ -74,19 +86,6 @@ public class SkillButton extends MenuItem {
       event.getPlayer().closeInventory(Reason.PLUGIN);
     }
   }
-
-  private ItemStack buildIcon(int modelData) {
-    ItemStack stack = new ItemStack(Material.PAPER);
-    ItemStackExtensionsKt.setCustomModelData(stack, modelData);
-    ItemStackExtensionsKt.setDisplayName(stack, FaceColor.GREEN + "Gain " +
-        lifeSkillType.getColor() + lifeSkillType.getPrettyName() + FaceColor.GREEN + " XP!");
-    TextUtils.setLore(stack, PaletteUtil.color(List.of(
-        "|gray|Click to gain |white|" + amount + " XP |gray|in",
-        "|gray|the skill " + lifeSkillType.getColor() + lifeSkillType.getPrettyName() + "|gray|!"
-    )), false);
-    return stack;
-  }
-
   private static boolean getAndRemoveMatch(Player player, int bowlId) {
     for (ItemStack item : player.getInventory().getContents()) {
       if (item == null || item.getType() != Material.BOWL || !item.hasItemMeta()

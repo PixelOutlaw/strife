@@ -21,8 +21,12 @@ package land.face.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import land.face.strife.StrifePlugin;
 import org.bukkit.Material;
+import org.bukkit.entity.Cow;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -49,6 +53,13 @@ public class XpBottleListener implements Listener {
           case 2003 -> plugin.getGiantBottleMenu().open(event.getPlayer());
         }
       }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onPlayerClick(PlayerInteractEntityEvent event) {
+    if (event.getRightClicked() instanceof Cow) {
+      event.setCancelled(true);
     }
   }
 }
