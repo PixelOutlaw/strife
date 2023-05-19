@@ -29,6 +29,8 @@ import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.ForceTarget;
+import land.face.strife.data.effects.LookAt;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -46,6 +48,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -346,6 +349,12 @@ public class AbilityManager {
       return false;
     }
     Ability ability = selectorList.get(random.nextInt(selectorList.size()));
+    if (caster.getEntity() instanceof Mob) {
+      LivingEntity le = ((Mob) caster.getEntity()).getTarget();
+      if (le != null && le.isValid()) {
+        LookAt.forceLook(caster.getEntity(), le);
+      }
+    }
     return execute(ability, caster, target, null, true);
   }
 

@@ -111,7 +111,7 @@ public class FacelandMountController extends AbstractMountController {
 
   @Override
   public void updatePassengerMovement(MoveController controller, ModeledEntity model) {
-    if(input.isSneak()) {
+    if (input.isSneak()) {
       model.getMountManager().removePassengers(entity);
     }
   }
@@ -121,7 +121,18 @@ public class FacelandMountController extends AbstractMountController {
       return;
     }
     ((Entity) modeledEntity.getBase().getOriginal()).setGravity(false);
-    modeledEntity.setState(ModelState.WALK);
     flying = true;
+    if (loadedMount.getFlyAnimation() != null) {
+      this.model.getAnimationHandler().forceStopAllAnimations();
+      SimpleProperty anim = new SimpleProperty(
+          this.model,
+          this.model.getBlueprint().getAnimations().get(loadedMount.getFlyAnimation()),
+          0.25,
+          0.25,
+          1
+      );
+      anim.setForceLoopMode(LoopMode.LOOP);
+      this.model.getAnimationHandler().playAnimation(anim, true);
+    }
   }
 }

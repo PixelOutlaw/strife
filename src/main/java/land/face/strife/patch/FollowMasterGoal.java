@@ -43,7 +43,7 @@ public class FollowMasterGoal implements Goal<Mob> {
       if (!master.isValid() || master.getWorld() != mob.getWorld()) {
         return false;
       }
-      return master.getLocation().distanceSquared(mob.getLocation()) > 200;
+      return master.getLocation().distanceSquared(mob.getLocation()) > 64;
     }
     return false;
   }

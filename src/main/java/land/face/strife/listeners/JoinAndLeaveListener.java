@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.LoadedMount;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.AbilitySlot;
@@ -80,7 +81,7 @@ public class JoinAndLeaveListener implements Listener {
     }
 
     Bukkit.getScheduler().runTaskLater(plugin, () ->
-        plugin.getStrifeMobManager().updateCollisions(event.getPlayer()), 20L);
+        plugin.getStrifeMobManager().updateCollisions(event.getPlayer()), 15L);
 
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getPlayerMountManager().updateSelectedMount(event.getPlayer());
@@ -88,7 +89,7 @@ public class JoinAndLeaveListener implements Listener {
         plugin.getPlayerMountManager().spawnMount(event.getPlayer());
         mounted.remove(event.getPlayer().getUniqueId());
       }
-    }, 40L);
+    }, 20L);
 
     event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
     event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);

@@ -5,6 +5,7 @@ import java.util.*;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.DyeColor;
@@ -13,6 +14,7 @@ import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+@Data
 public class UniqueEntity {
 
   private String id;
@@ -20,6 +22,7 @@ public class UniqueEntity {
   private String name;
   private int bonusExperience;
   private float experienceMultiplier;
+  private float minLevelClampMult;
   private Map<StrifeStat, Float> attributeMap;
   private final Set<String> factions = new HashSet<>();
   private EntityAbilitySet abilitySet;
@@ -31,17 +34,13 @@ public class UniqueEntity {
   private boolean armsRaised;
   private boolean hasAI;
   private boolean gravity;
-  @Getter @Setter
   private boolean collidable;
-  @Getter @Setter
   private boolean guildMob;
   private Profession profession;
   private boolean invisible;
-  @Getter @Setter
   private boolean silent;
   private int size;
   private int followRange = -1;
-  @Getter @Setter
   private DyeColor color;
   private boolean pushImmune;
   private boolean charmImmune;
@@ -49,35 +48,24 @@ public class UniqueEntity {
   private boolean fallImmune;
   private boolean ignoreSneak;
   private boolean saddled;
-  @Getter @Setter
   private boolean canTarget;
   private int maxMods;
   private boolean removeFollowMods;
   private boolean powered;
-  @Getter @Setter
   private boolean attackDisabledOnGlobalCooldown;
-  @Getter @Setter
   private boolean alwaysRunTimer;
   private double displaceMultiplier;
-  @Getter @Setter
   private double boundingBonus;
   private String mount;
   private Map<EquipmentSlot, String> equipment = new HashMap<>();
   private ItemStack itemPassenger = null;
   private StrifeParticle strifeParticle;
-  @Getter @Setter
   private boolean customAi;
-  @Getter @Setter
   private boolean aggressiveAi;
-  @Getter @Setter
   private List<String> removeGoals;
-  @Getter @Setter
   private List<String> addGoals;
-  @Getter
   private final List<String> bonusKnowledge = new ArrayList<>();
-  @Getter @Setter
   private String modelId;
-  @Getter @Setter
   private boolean vagabondAllowed;
 
   public String getId() {

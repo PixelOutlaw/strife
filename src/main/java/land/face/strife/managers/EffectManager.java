@@ -458,11 +458,13 @@ public class EffectManager {
         ((ShootProjectile) effect).setOriginType(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
+        ((ShootProjectile) effect).setModelId(cs.getString("model-id", null));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
         ((ShootProjectile) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
         ((ShootProjectile) effect).setMaxDuration(cs.getInt("max-duration", -1));
+        ((ShootProjectile) effect).setPierceTargets(cs.getInt("pierce-targets", 0));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
         ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
@@ -545,7 +547,6 @@ public class EffectManager {
         effect = new Frost();
         ((Frost) effect).setDuration(cs.getInt("duration", 20));
         ((Frost) effect).setOverride(cs.getBoolean("override", false));
-        ((Frost) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
       }
       case INVINCIBLE -> {
         effect = new Invincible();
@@ -742,7 +743,11 @@ public class EffectManager {
       case TARGET -> {
         effect = new ForceTarget();
         ((ForceTarget) effect).setOverwrite(cs.getBoolean("overwrite", true));
-        ((ForceTarget) effect).setCasterTargetsTarget(cs.getBoolean("caster-targets-target", true));
+        ((ForceTarget) effect).setCasterToTarget(cs.getBoolean("caster-targets-target", true));
+      }
+      case LOOK -> {
+        effect = new LookAt();
+        ((LookAt) effect).setCasterToTarget(cs.getBoolean("caster-to-target", true));
       }
       case FORCE_STAT -> {
         effect = new ForceStat();

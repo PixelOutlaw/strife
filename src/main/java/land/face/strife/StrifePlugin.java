@@ -26,6 +26,8 @@ import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.ShaderStyle;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -103,6 +105,7 @@ import land.face.strife.listeners.StatUpdateListener;
 import land.face.strife.listeners.SwingListener;
 import land.face.strife.listeners.TargetingListener;
 import land.face.strife.listeners.UniqueSplashListener;
+import land.face.strife.listeners.XpBottleListener;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
 import land.face.strife.managers.AgilityManager;
@@ -145,6 +148,7 @@ import land.face.strife.menus.abilities.SubmenuSelectButton;
 import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.menus.stats.StatsMenu;
+import land.face.strife.menus.xpbottle.XpBottleMenu;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
@@ -165,6 +169,7 @@ import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
+import lombok.Setter;
 import ninja.amp.ampmenus.MenuListener;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
@@ -275,6 +280,10 @@ public class StrifePlugin extends FacePlugin {
   private LevelupMenu levelupMenu;
   private final Map<Path, PathMenu> pathMenus = new HashMap<>();
   private StatsMenu statsMenu;
+
+  @Getter @Setter
+  private XpBottleMenu smallBottleMenu, mediumBottleMenu, bigBottleMenu, giantBottleMenu;
+
   private PaperCommandManager commandManager;
 
   private int maxSkillLevel;
@@ -509,6 +518,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
     Bukkit.getPluginManager().registerEvents(new UniqueSplashListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new XpBottleListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
@@ -583,6 +593,15 @@ public class StrifePlugin extends FacePlugin {
       SubmenuSelectButton subMenuIcon = new SubmenuSelectButton(menu, material, modelData, name, lore, slot);
       pickerItems.add(subMenuIcon);
     }
+
+    smallBottleMenu = new XpBottleMenu(this,
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Small Xp Bottle", 2000, 50);
+    mediumBottleMenu = new XpBottleMenu(this,
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Medium Xp Bottle", 2001, 200);
+    bigBottleMenu = new XpBottleMenu(this,
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Big Xp Bottle", 2002, 1000);
+    giantBottleMenu = new XpBottleMenu(this,
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Huge Xp Bottle", 2003, 10000);
 
     String pickerName = configYAML.getString("ability-menu-title", "Picker");
     int size = configYAML.getInt("ability-menu-size", 36);

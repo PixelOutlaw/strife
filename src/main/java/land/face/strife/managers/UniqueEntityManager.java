@@ -77,7 +77,7 @@ public class UniqueEntityManager {
 
   private final StrifePlugin plugin;
   private final Map<String, UniqueEntity> loadedUniquesMap;
-  private final Map<UniqueEntity, Disguise> cachedDisguises;
+  private final Map<String, Disguise> cachedDisguises;
 
   public static ItemStack DEV_SADDLE;
 
@@ -123,6 +123,7 @@ public class UniqueEntityManager {
     LogUtil.printDebug("Spawning unique entity " + uniqueEntity.getId());
 
     assert uniqueEntity.getType().getEntityClass() != null;
+
     Entity entity = location.getWorld().spawn(location,
         uniqueEntity.getType().getEntityClass(), e -> lambdaSetup(e, uniqueEntity, location));
 
@@ -156,10 +157,8 @@ public class UniqueEntityManager {
 
   private void lambdaSetup(Entity entity, UniqueEntity uniqueEntity, Location location) {
     SpecialStatusUtil.setUniqueId(entity, uniqueEntity.getId());
-    if (cachedDisguises.containsKey(uniqueEntity)) {
-      //System.out.println(DisguiseParser.parseToString(cachedDisguises.get(uniqueEntity)));
-      DisguiseAPI.disguiseToAll(entity, cachedDisguises.get(uniqueEntity));
-      //System.out.println(DisguiseParser.parseToString(DisguiseAPI.getDisguise(e)));
+    if (cachedDisguises.containsKey(uniqueEntity.getId())) {
+      DisguiseAPI.disguiseToAll(entity, cachedDisguises.get(uniqueEntity.getId()).clone());
     }
 
     LivingEntity le = (LivingEntity) entity;
@@ -387,7 +386,7 @@ public class UniqueEntityManager {
   }
 
   public void cacheDisguise(UniqueEntity uniqueEntity, Disguise disguise) {
-    cachedDisguises.put(uniqueEntity, disguise);
+    cachedDisguises.put(uniqueEntity.getId(), disguise);
   }
 
   public void loadUniques(List<SmartYamlConfiguration> files) {
@@ -450,6 +449,7 @@ public class UniqueEntityManager {
         uniqueEntity.setGravity(cs.getBoolean("gravity", true));
         uniqueEntity.setCollidable(cs.getBoolean("collidable", true));
         uniqueEntity.setVagabondAllowed(cs.getBoolean("vagabond-allowed", true));
+        uniqueEntity.setMinLevelClampMult((float) cs.getDouble("min-level-clamp-mult", 0));
         uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
         uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
         uniqueEntity.setSilent(cs.getBoolean("silent", false));

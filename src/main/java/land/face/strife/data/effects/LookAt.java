@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.util.TargetingUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.bukkit.Location;
@@ -12,25 +11,29 @@ import org.bukkit.util.Vector;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ForceTarget extends Effect {
+public class LookAt extends Effect {
 
   private boolean casterToTarget;
-  private boolean overwrite;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     LivingEntity fromTarget = casterToTarget ? caster.getEntity() : target.getEntity();
     LivingEntity toTarget = casterToTarget ? target.getEntity() : caster.getEntity();
-    if (fromTarget instanceof Mob) {
-      if (overwrite) {
-        ((Mob) fromTarget).setTarget(toTarget);
-        return;
-      }
-      LivingEntity mobTarget = TargetingUtil.getMobTarget(fromTarget);
-      if (mobTarget == null) {
-        ((Mob) fromTarget).setTarget(toTarget);
-      }
+    forceLook(fromTarget, toTarget);
+  }
+
+  public static void forceLook(LivingEntity fromTarget, LivingEntity toTarget) {
+    if (fromTarget == toTarget) {
+      return;
     }
-    LookAt.forceLook(fromTarget, toTarget);
+    Location newLoc = fromTarget.getLocation().clone();
+    Vector savedVelocity = fromTarget.getVelocity();
+    newLoc.setDirection(toTarget.getLocation()
+        .subtract(fromTarget.getLocation()).toVector().normalize());
+    fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
+    fromTarget.setVelocity(savedVelocity);
+    if (fromTarget instanceof Mob) {
+      ((Mob) fromTarget).lookAt(fromTarget);
+    }
   }
 }

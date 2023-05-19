@@ -18,6 +18,7 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;

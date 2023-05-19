@@ -67,6 +67,10 @@ public class ProjectileUtil {
   }
 
   public static void setPierce(AbstractArrow arrow, float chance) {
+    setPierce(arrow, chance, 0);
+  }
+
+  public static void setPierce(AbstractArrow arrow, float chance, int flatBonus) {
     if (chance > 0) {
       int maxPuncture = 0;
       while (maxPuncture < 3) {
@@ -75,6 +79,7 @@ public class ProjectileUtil {
         }
         maxPuncture++;
       }
+      maxPuncture += flatBonus;
       if (maxPuncture > 0) {
         arrow.setShotFromCrossbow(true);
         arrow.setPierceLevel(maxPuncture);

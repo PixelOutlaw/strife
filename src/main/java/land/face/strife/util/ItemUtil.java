@@ -17,7 +17,9 @@ import java.util.UUID;
 
 import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.EquipmentCache;
+import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -270,7 +272,7 @@ public class ItemUtil {
     return itemStack.hashCode() == hash;
   }
 
-  public static boolean meetsLevelRequirement(ItemStack stack, int level) {
+  public static boolean meetsRequirements(ItemStack stack, StrifeMob mob) {
     if (stack == null || stack.getType() == Material.AIR) {
       return true;
     }
@@ -281,7 +283,18 @@ public class ItemUtil {
     String strippedLine = ChatColor.stripColor(lore.get(0));
     if (strippedLine.startsWith("Level Requirement: ")) {
       int itemLevel = Integer.parseInt(strippedLine.replace("Level Requirement: ", ""));
-      return level >= itemLevel;
+      return mob.getLevel() >= itemLevel;
+    } else if (strippedLine.startsWith("Skill Requirement: ")) {
+      int itemLevel = Integer.parseInt(strippedLine.replace("Skill Requirement: ", ""));
+      String mat = stack.getType().toString();
+      if (mat.endsWith("_HOE")) {
+        return mob.getChampion().getLifeSkillLevel(LifeSkillType.FARMING) >= itemLevel;
+      } else if (mat.endsWith("_PICKAXE")) {
+        return mob.getChampion().getLifeSkillLevel(LifeSkillType.MINING) >= itemLevel;
+      } else if (mat.endsWith("_AXE")) {
+        return mob.getChampion().getLifeSkillLevel(LifeSkillType.FARMING) >= itemLevel;
+      }
+      return false;
     }
     return true;
   }

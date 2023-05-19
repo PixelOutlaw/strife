@@ -31,29 +31,30 @@ public class Push extends Effect {
     }
     Vector direction;
     switch (pushType) {
-      case AWAY_FROM_CASTER:
-        direction = getEffectVelocity(caster.getEntity().getLocation().toVector(), target.getEntity());
-        break;
-      case CASTER_DIRECTION:
-        direction = caster.getEntity().getLocation().getDirection();
+      case AWAY_FROM_CASTER ->
+          direction = getEffectVelocity(caster.getEntity().getLocation().toVector(),
+              target.getEntity());
+      case CASTER_DIRECTION -> {
+        direction = caster.getEntity().getEyeLocation().getDirection();
         if (!uncheckedHeight) {
           direction.setY(0.001);
         }
         direction.normalize().multiply(power / 10);
-        break;
-      case TEMP_DIRECTION:
+      }
+      case TEMP_DIRECTION -> {
         LogUtil.printDebug(tempVector.getX() + " " + tempVector.getY() + " " + tempVector.getZ());
         direction = getEffectVelocity(tempVector, target.getEntity());
-        break;
-      case WSE_DIRECTION:
+      }
+      case WSE_DIRECTION -> {
         direction = tempVector.clone();
         if (!uncheckedHeight) {
           direction.setY(0.001);
         }
         direction.normalize().multiply(power / 10);
-        break;
-      default:
+      }
+      default -> {
         return;
+      }
     }
     Vector oldVelocity = target.getEntity().getVelocity().clone();
     Vector newVelocity = oldVelocity.clone();

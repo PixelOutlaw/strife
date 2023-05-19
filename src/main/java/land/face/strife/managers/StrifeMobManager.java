@@ -175,7 +175,7 @@ public class StrifeMobManager {
       ItemStack item = updateItems.get(slot);
       equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
       ItemDataBundle dataBundle = getItemInfo(slot, equipment, invyData);
-      if (isPlayer && !ItemUtil.meetsLevelRequirement(item, mob.getLevel())) {
+      if (isPlayer && !ItemUtil.meetsRequirements(item, mob)) {
         sendMessage(mob.getEntity(), levelReqMap.get(slot));
         sendMessage(mob.getEntity(), levelReqGeneric);
         equipmentCache.clearSlot(slot);
@@ -257,10 +257,6 @@ public class StrifeMobManager {
     }
   }
 
-  private boolean meetsLevelRequirement(Player player, Map<StrifeStat, Float> statMap) {
-    return Math.round(statMap.getOrDefault(StrifeStat.LEVEL_REQUIREMENT, 0f)) <= player.getLevel();
-  }
-
   public void updateEquipmentStats(LivingEntity le) {
     updateEquipmentStats(getStatMob(le));
   }
@@ -278,19 +274,5 @@ public class StrifeMobManager {
     }
     cache.getSlotStats(slot).put(StrifeStat.ATTACK_SPEED,
         cache.getSlotStats(slot).getOrDefault(StrifeStat.ATTACK_SPEED, 0f) + dualWieldAttackSpeed);
-  }
-
-  private boolean clearStatsIfReqNotMet(StrifeMob mob, String slot, EquipmentCache cache) {
-    if (mob.getChampion() == null) {
-      return false;
-    }
-    Player p = mob.getChampion().getPlayer();
-    if (!meetsLevelRequirement(p, cache.getSlotStats(slot))) {
-      sendMessage(p, levelReqMap.get(slot));
-      sendMessage(p, levelReqGeneric);
-      cache.clearSlot(slot);
-      return true;
-    }
-    return false;
   }
 }

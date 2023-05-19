@@ -82,7 +82,7 @@ public class StatUpdateManager {
       if (amount == 0) {
         continue;
       }
-      if (attribute != StrifeStat.LEVEL_REQUIREMENT) {
+      if (attribute != StrifeStat.LEVEL_REQUIREMENT && attribute != StrifeStat.SKILL_REQUIREMENT) {
         amount *= multiplier;
       }
       if (itemStats.containsKey(attribute)) {

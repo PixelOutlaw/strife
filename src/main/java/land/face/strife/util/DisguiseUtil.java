@@ -105,8 +105,7 @@ public class DisguiseUtil {
         playerDisguise.setDynamicName(false);
       }
       disguise = playerDisguise;
-    }
-    if (type.isMob()) {
+    } else if (type.isMob()) {
       String typeData = section.getString("disguise-type-data", "");
       boolean babyData = section.getBoolean("baby", false);
       MobDisguise mobDisguise = new MobDisguise(type);
@@ -166,8 +165,7 @@ public class DisguiseUtil {
       }
       mobDisguise.setReplaceSounds(true);
       disguise = mobDisguise;
-    }
-    if (type.isMisc()) {
+    } else if (type.isMisc()) {
       MiscDisguise miscDisguise = new MiscDisguise(type);
       miscDisguise.setReplaceSounds(true);
       FlagWatcher watcher = miscDisguise.getWatcher();

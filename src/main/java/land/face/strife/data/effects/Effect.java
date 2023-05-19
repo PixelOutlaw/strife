@@ -152,6 +152,7 @@ public abstract class Effect {
     MODIFY_PROJECTILE,
     POTION,
     TARGET,
+    LOOK,
     FORCE_STAT,
     SUMMON,
     MINION_BANISH,

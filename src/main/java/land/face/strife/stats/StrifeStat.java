@@ -24,6 +24,7 @@ import java.util.Map;
 public enum StrifeStat {
 
   LEVEL_REQUIREMENT("Level Requirement"),
+  SKILL_REQUIREMENT("Skill Requirement"),
 
   WEIGHT("Weight"),
 
@@ -145,7 +146,10 @@ public enum StrifeStat {
   ENCHANT_SKILL("Enchanting Skill"),
   SNEAK_SKILL("Sneak Skill"),
 
+  MINING_SPEED("Mining Speed"),
   MINING_GEMS("Mining Gems"),
+
+  GATHERING_SPEED("Gathering Speed"),
 
   MONEY_KEPT("Bits Kept On Death"),
   XP_LOST_ON_DEATH("Less XP Loss On Death"),

@@ -120,7 +120,7 @@ public class ExperienceListener implements Listener {
     float expMultiplier = 1f / killers.size();
     expMultiplier += (killers.size() - 1) * 0.2f;
 
-    expMultiplier = calculateLevelPenalty(expMultiplier, StatUtil.getMobLevel(event.getEntity()), killers);
+    expMultiplier = calculateLevelPenalty(expMultiplier, StatUtil.getMobLevel(event.getEntity()), killers, ue);
 
     for (Player player : killers) {
       float xpPenalty = calculateSafespotViolationMult(player, event.getEntity().getLocation());
@@ -141,7 +141,8 @@ public class ExperienceListener implements Listener {
     }
   }
 
-  private float calculateLevelPenalty(float baseXpMult, int mobLevel, Set<Player> partyMembers) {
+  private float calculateLevelPenalty(float baseXpMult, int mobLevel, Set<Player> partyMembers,
+      UniqueEntity uniqueEntity) {
     int levelDiff;
     int maximumDifference;
     if (partyMembers.size() == 1) {
@@ -187,8 +188,7 @@ public class ExperienceListener implements Listener {
       baseXpMult *= Math.pow(0.85, levelDiff - maximumDifference);
       //Bukkit.getLogger().info("[XPDEBUG] PENALTY - FINAL RESULT: " + baseXpMult);
     }
-
-    return baseXpMult;
+    return Math.max(uniqueEntity.getMinLevelClampMult(), baseXpMult);
   }
 
   private float calculateSafespotViolationMult(Player player, Location location) {

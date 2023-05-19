@@ -4,6 +4,10 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.Nameable;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
@@ -12,6 +16,8 @@ import land.face.strife.tasks.ThrownItemTask;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
@@ -33,15 +39,19 @@ import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class ShootProjectile extends Effect {
 
   private EntityType projectileEntity;
   private OriginLocation originType;
   private Color arrowColor;
+  private String modelId;
   private double attackMultiplier;
   private boolean targeted;
   private boolean seeking;
   private int quantity;
+  private int pierceTargets;
   private float speed;
   private double spread;
   private double radialAngle;
@@ -109,7 +119,8 @@ public class ShootProjectile extends Effect {
           ((Arrow) projectile).setColor(arrowColor);
         }
         ((AbstractArrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
-        ProjectileUtil.setPierce((AbstractArrow) projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100);
+        ProjectileUtil.setPierce((AbstractArrow) projectile,
+            caster.getStat(StrifeStat.PIERCE_CHANCE) / 100, pierceTargets);
       } else if (projectileEntity == EntityType.FIREBALL || projectileEntity == EntityType.DRAGON_FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
@@ -164,6 +175,21 @@ public class ShootProjectile extends Effect {
           }
         }
         new ThrownItemTask(projectile, stack, originLocation, throwSpin).runTaskTimer(getPlugin(), 0L, 1L);
+      }
+
+      if (modelId != null) {
+        ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
+        if (model == null) {
+          Bukkit.getLogger().warning("Failed to load projectile model: " + modelId);
+        } else {
+          ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(projectile);
+          if (modeledEntity == null) {
+            Bukkit.getLogger().warning("Failed to create projectile modelled entity");
+          } else {
+            modeledEntity.addModel(model, false);
+            modeledEntity.setBaseEntityVisible(false);
+          }
+        }
       }
     }
     ProjectileUtil.bumpShotId();
