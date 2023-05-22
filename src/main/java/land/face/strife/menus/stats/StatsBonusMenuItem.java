@@ -113,19 +113,6 @@ public class StatsBonusMenuItem extends MenuItem {
     lore.add(ChatColor.GREEN + "Gold Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
         .format(pStats.getStat(StrifeStat.GOLD_FIND)) + "%");
 
-    if (pStats.getStat(StrifeStat.FISHING_SPEED) > 0F) {
-      lore.add(ChatColor.GREEN + "Fishing Speed: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-          .format(pStats.getStat(StrifeStat.FISHING_SPEED)) + "%");
-    }
-    if (pStats.getStat(StrifeStat.FISHING_TREASURE) > 0F) {
-      lore.add(ChatColor.GREEN + "Fishing Treasures: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-          .format(pStats.getStat(StrifeStat.FISHING_TREASURE)) + "%");
-    }
-    if (pStats.getStat(StrifeStat.MINING_GEMS) > 0F) {
-      lore.add(ChatColor.GREEN + "Mining Gems: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-          .format(pStats.getStat(StrifeStat.MINING_GEMS)) + "%");
-    }
-
     lore.add(StatsMenu.breakLine);
 
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));

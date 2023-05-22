@@ -71,6 +71,9 @@ public class StrifeMob {
   private final Set<UUID> reflectedTargets = new HashSet<>();
 
   @Getter @Setter
+  private boolean flaggedForDeletion;
+
+  @Getter @Setter
   private float threatLevel = 0;
   @Getter
   private final Map<UUID, Float> threatTargets = new HashMap<>();

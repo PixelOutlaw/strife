@@ -114,6 +114,16 @@ public class StatsMiscMenuItem extends MenuItem {
       lore.add(ChatColor.AQUA + "wow " + ChatColor.RED + "such stats " + ChatColor.GREEN + "many levels");
       lore.add(ChatColor.GREEN + "    amazing " + ChatColor.LIGHT_PURPLE + "    dang");
     }
+    lore.add(FaceColor.TEAL + "Mining Speed: " + FaceColor.WHITE + "+" +
+        StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.MINING_SPEED)) + "%");
+    lore.add(FaceColor.TEAL+ "Mining Gems: " + FaceColor.WHITE + "+" +
+        StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.MINING_GEMS)) + "%");
+    lore.add(FaceColor.TEAL + "Gathering Speed: " + FaceColor.WHITE + "+" +
+        StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.GATHERING_SPEED)) + "%");
+    lore.add(FaceColor.TEAL + "Fishing Speed: " + FaceColor.WHITE + "+" +
+        StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.FISHING_SPEED)) + "%");
+    lore.add(FaceColor.TEAL + "Fishing Treasures: " + FaceColor.WHITE + "+" +
+        StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.FISHING_TREASURE)) + "%");
     lore.add(FaceColor.TEAL.getColor() + "Crafting Skill Bonus: " + FaceColor.WHITE.getColor() + "+" +
         INT_FORMAT.format(mob.getStat(StrifeStat.CRAFT_SKILL)));
     lore.add(FaceColor.TEAL.getColor() + "Enchanting Skill Bonus: " + FaceColor.WHITE.getColor() + "+" +

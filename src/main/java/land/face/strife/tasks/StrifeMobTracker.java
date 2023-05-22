@@ -18,14 +18,12 @@
  */
 package land.face.strife.tasks;
 
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class StrifeMobTracker extends BukkitRunnable {
@@ -40,31 +38,19 @@ public class StrifeMobTracker extends BukkitRunnable {
   public void run() {
     int size = plugin.getStrifeMobManager().getMobs().size();
     LogUtil.printInfo("Current StrifeMobs: " + size);
-    int valid = 0;
-    int random = 0;
-    Map<String, Integer> unique = new HashMap<>();
-    for (LivingEntity le : plugin.getStrifeMobManager().getMobs().keySet()) {
-      if (le.isValid()) {
-        valid += 1;
-      } else {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-          if (plugin.getStrifeMobManager().isTrackedEntity(le)) {
-            plugin.getStrifeMobManager().getMobs().remove(le);
-          }
-        }, 200L);
+    for (Entry<UUID, StrifeMob> entry : plugin.getStrifeMobManager().getMobs().entrySet()) {
+      if (entry.getValue().getEntity() == null) {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->
+            plugin.getStrifeMobManager().getMobs().remove(entry.getKey()), 500L);
+        continue;
       }
-      StrifeMob mob = plugin.getStrifeMobManager().getMobs().get(le);
-      if (StringUtils.isNotBlank(mob.getUniqueEntityId())) {
-        unique.put(mob.getUniqueEntityId(), unique.getOrDefault(mob.getUniqueEntityId(), 0) + 1);
-      } else {
-        random += 1;
+      if (entry.getValue().isFlaggedForDeletion()) {
+        continue;
       }
-    }
-    LogUtil.printDebug("-- Expired entity keys: " + (size - valid));
-    LogUtil.printDebug("-- Randomized mobs: " + random);
-    LogUtil.printDebug("-- Unique Map:");
-    for (String uniqueId : unique.keySet()) {
-      LogUtil.printDebug("---- Unique:" + uniqueId + " amount:" + unique.get(uniqueId));
+      if (!entry.getValue().getEntity().isValid()) {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->
+            plugin.getStrifeMobManager().getMobs().remove(entry.getKey()), 2000L);
+      }
     }
   }
 }

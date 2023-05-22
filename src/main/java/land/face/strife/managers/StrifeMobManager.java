@@ -7,6 +7,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
@@ -19,7 +20,6 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
@@ -29,7 +29,7 @@ import org.bukkit.inventory.ItemStack;
 public class StrifeMobManager {
 
   private final StrifePlugin plugin;
-  private final Map<LivingEntity, StrifeMob> trackedEntities = new WeakHashMap<>();
+  private final Map<UUID, StrifeMob> trackedEntities = new WeakHashMap<>();
 
   private final String levelReqGeneric;
   private final float dualWieldAttackSpeed;
@@ -55,7 +55,7 @@ public class StrifeMobManager {
     }
   }
 
-  public Map<LivingEntity, StrifeMob> getMobs() {
+  public Map<UUID, StrifeMob> getMobs() {
     return trackedEntities;
   }
 
@@ -63,7 +63,7 @@ public class StrifeMobManager {
     if (entity == null) {
       return null;
     }
-    if (!trackedEntities.containsKey(entity)) {
+    if (!trackedEntities.containsKey(entity.getUniqueId())) {
       StrifeMob mob;
       if (entity.getType() == EntityType.PLAYER) {
         mob = new StrifeMob(plugin.getChampionManager().getChampion((Player) entity));
@@ -77,26 +77,26 @@ public class StrifeMobManager {
       StatUtil.getStat(mob, StrifeStat.ENERGY);
       mob.restoreBarrier(200000);
       entity.lockFreezeTicks(true);
-      trackedEntities.put(entity, mob);
+      trackedEntities.put(entity.getUniqueId(), mob);
       if (entity instanceof Player) {
         mob.setEnergy(mob.getMaxEnergy() * ((Player) entity).getFoodLevel() / 20);
       }
     }
     entity.setMaximumNoDamageTicks(0);
-    return trackedEntities.get(entity);
+    return trackedEntities.get(entity.getUniqueId());
   }
 
   public void saveEnergy(Player player) {
-    if (trackedEntities.containsKey(player)) {
-      StrifeMob mob = trackedEntities.get(player);
+    if (trackedEntities.containsKey(player.getUniqueId())) {
+      StrifeMob mob = trackedEntities.get(player.getUniqueId());
       float value = 20f * mob.getEnergy();
       player.setFoodLevel((int) (value / mob.getMaxEnergy()));
     }
   }
 
   public void despawnMinions(Player player) {
-    if (trackedEntities.containsKey(player)) {
-      StrifeMob mob = trackedEntities.get(player);
+    if (trackedEntities.containsKey(player.getUniqueId())) {
+      StrifeMob mob = trackedEntities.get(player.getUniqueId());
       for (StrifeMob m : mob.getMinions()) {
         m.getEntity().remove();
       }
@@ -125,14 +125,11 @@ public class StrifeMobManager {
   }
 
   public void removeStrifeMob(LivingEntity entity) {
-    if (entity.getPassengers().size() > 0 && entity.getPassengers().get(0) instanceof Item) {
-      entity.getPassengers().get(0).remove();
-    }
-    trackedEntities.remove(entity);
+    trackedEntities.remove(entity.getUniqueId());
   }
 
   public boolean isTrackedEntity(LivingEntity entity) {
-    return trackedEntities.containsKey(entity);
+    return trackedEntities.containsKey(entity.getUniqueId());
   }
 
   private void buildEquipmentAttributes(StrifeMob mob) {
@@ -185,9 +182,12 @@ public class StrifeMobManager {
       equipmentCache.setSlotAbilities(slot, dataBundle.getAbilities());
       equipmentCache.setSlotTraits(slot, dataBundle.getTraits());
     }
-    if (updateItems.containsKey("HAND") && ItemUtil.isDualWield(equipment)) {
-      applyDualWieldStatChanges(equipmentCache, "HAND");
-      applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
+    if (updateItems.containsKey("HAND")) {
+      assert equipment != null;
+      if (ItemUtil.isDualWield(equipment)) {
+        applyDualWieldStatChanges(equipmentCache, "HAND");
+        applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
+      }
     }
     equipmentCache.recombine(mob);
   }
