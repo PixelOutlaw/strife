@@ -188,6 +188,9 @@ public class ExperienceListener implements Listener {
       baseXpMult *= Math.pow(0.85, levelDiff - maximumDifference);
       //Bukkit.getLogger().info("[XPDEBUG] PENALTY - FINAL RESULT: " + baseXpMult);
     }
+    if (uniqueEntity == null) {
+      return baseXpMult;
+    }
     return Math.max(uniqueEntity.getMinLevelClampMult(), baseXpMult);
   }
 
