@@ -287,7 +287,9 @@ public class ItemUtil {
     } else if (strippedLine.startsWith("Skill Requirement: ")) {
       int itemLevel = Integer.parseInt(strippedLine.replace("Skill Requirement: ", ""));
       String mat = stack.getType().toString();
-      if (mat.endsWith("_HOE")) {
+      if (stack.getType() == Material.FISHING_ROD) {
+        return mob.getChampion().getLifeSkillLevel(LifeSkillType.FISHING) >= itemLevel;
+      } else if (mat.endsWith("_HOE")) {
         return mob.getChampion().getLifeSkillLevel(LifeSkillType.FARMING) >= itemLevel;
       } else if (mat.endsWith("_PICKAXE")) {
         return mob.getChampion().getLifeSkillLevel(LifeSkillType.MINING) >= itemLevel;
