@@ -45,7 +45,7 @@ public class GuiManager {
   private final GUIComponent gemsBase = new GUIComponent("gems-base",
       noShadow(new TextComponent("௹")) , 15, 198, Alignment.CENTER);
   private final GUIComponent notifsBase = new GUIComponent("notifs-base",
-      noShadow(new TextComponent("偀")) , 53, -181, Alignment.CENTER);
+      noShadow(new TextComponent("偀")) , 67, -181, Alignment.CENTER);
 
   private final Map<Integer, String> hpStringNumbers = new HashMap<>();
   private final Map<Integer, String> energyStringNumbers = new HashMap<>();
@@ -174,6 +174,7 @@ public class GuiManager {
   public static final TextComponent notifMarket = noShadow(new TextComponent("偂"));
   public static final TextComponent notifDaily = noShadow(new TextComponent("偃"));
   public static final TextComponent notifVote = noShadow(new TextComponent("偄"));
+  public static final TextComponent notifFriend = noShadow(new TextComponent("偄"));
 
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -372,34 +373,6 @@ public class GuiManager {
     }
   }
 
-  public void updateEquipmentDisplay(Player player) {
-    updateEquipmentDisplay(player,
-        DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData(player));
-  }
-
-  public void updateEquipmentDisplay(Player player, PlayerData data) {
-    if (data != null) {
-      updateComponent(player, new GUIComponent("dura-helmet",
-          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.HELMET), "০")),
-          45, 233, Alignment.RIGHT));
-      updateComponent(player, new GUIComponent("dura-body",
-          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.BODY), "১")),
-          45, 233, Alignment.RIGHT));
-      updateComponent(player, new GUIComponent("dura-legs",
-          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.LEGS), "২")),
-          45, 233, Alignment.RIGHT));
-      updateComponent(player, new GUIComponent("dura-boots",
-          new TextComponent(duraString(data.getEquipmentItem(DeluxeSlot.BOOTS), "৩")),
-          45, 233, Alignment.RIGHT));
-      updateComponent(player, new GUIComponent("dura-weapon",
-          new TextComponent(duraString(player.getEquipment().getItemInMainHand(), "৪")),
-          45, 233, Alignment.RIGHT));
-      updateComponent(player, new GUIComponent("dura-offhand",
-          new TextComponent(duraString(player.getEquipment().getItemInOffHand(), "৫")),
-          45, 233, Alignment.RIGHT));
-    }
-  }
-
   public void buildLifeSegments() {
     lifeSeparators.clear();
     for (int i = 105; i < 1000; i++) {
@@ -438,6 +411,14 @@ public class GuiManager {
     }
   }
 
+  public void updateFriendNotif(Player player, boolean enabled) {
+    if (!enabled) {
+      getGui(player).update(new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER));
+      return;
+    }
+    getGui(player).update(new GUIComponent("notif-friend", notifFriend, 12, -216, Alignment.CENTER));
+  }
+
   public void updateMailNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
@@ -468,23 +449,6 @@ public class GuiManager {
       return;
     }
     getGui(player).update(new GUIComponent("notif-daily", notifDaily, 12, -161, Alignment.CENTER));
-  }
-
-  public static String duraString(ItemStack stack, String string) {
-    if (stack == null || stack.getType().getMaxDurability() < 5) {
-      return org.bukkit.ChatColor.GRAY + string;
-    }
-    float percent = 1 - ((float) stack.getDurability() / stack.getType().getMaxDurability());
-    if (percent > 0.6) {
-      return org.bukkit.ChatColor.WHITE + string;
-    }
-    if (percent > 0.4) {
-      return org.bukkit.ChatColor.YELLOW + string;
-    }
-    if (percent > 0.2) {
-      return org.bukkit.ChatColor.GOLD + string;
-    }
-    return org.bukkit.ChatColor.DARK_RED + string;
   }
 
   public static void buildTargetHealthBars() {
