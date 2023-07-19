@@ -174,7 +174,7 @@ public class GuiManager {
   public static final TextComponent notifMarket = noShadow(new TextComponent("偂"));
   public static final TextComponent notifDaily = noShadow(new TextComponent("偃"));
   public static final TextComponent notifVote = noShadow(new TextComponent("偄"));
-  public static final TextComponent notifFriend = noShadow(new TextComponent("偄"));
+  public static final TextComponent notifFriend = noShadow(new TextComponent("偅"));
 
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -276,6 +276,7 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("rage-bar", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("block-ind", EMPTY, 0, 0, Alignment.CENTER));
 
+    gui.putOnTop(new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER));
@@ -410,21 +411,20 @@ public class GuiManager {
       energySeparators.put(i, component);
     }
   }
+  public void updateMailNotif(Player player, boolean enabled) {
+    if (!enabled) {
+      getGui(player).update(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
+      return;
+    }
+    getGui(player).update(new GUIComponent("notif-mail", notifMail, 12, -209, Alignment.CENTER));
+  }
 
   public void updateFriendNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER));
       return;
     }
-    getGui(player).update(new GUIComponent("notif-friend", notifFriend, 12, -216, Alignment.CENTER));
-  }
-
-  public void updateMailNotif(Player player, boolean enabled) {
-    if (!enabled) {
-      getGui(player).update(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
-      return;
-    }
-    getGui(player).update(new GUIComponent("notif-mail", notifMail, 12, -202, Alignment.CENTER));
+    getGui(player).update(new GUIComponent("notif-friend", notifFriend, 12, -195, Alignment.CENTER));
   }
 
   public void updateMarketNotif(Player player, boolean enabled) {
@@ -432,7 +432,7 @@ public class GuiManager {
       getGui(player).update(new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER));
       return;
     }
-    getGui(player).update(new GUIComponent("notif-market", notifMarket, 13, -188, Alignment.CENTER));
+    getGui(player).update(new GUIComponent("notif-market", notifMarket, 13, -181, Alignment.CENTER));
   }
 
   public void updateVoteNotif(Player player, boolean enabled) {
@@ -440,7 +440,7 @@ public class GuiManager {
       getGui(player).update(new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER));
       return;
     }
-    getGui(player).update(new GUIComponent("notif-vote", notifVote, 12, -174, Alignment.CENTER));
+    getGui(player).update(new GUIComponent("notif-vote", notifVote, 12, -167, Alignment.CENTER));
   }
 
   public void updateDailyNotif(Player player, boolean enabled) {
@@ -448,7 +448,7 @@ public class GuiManager {
       getGui(player).update(new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER));
       return;
     }
-    getGui(player).update(new GUIComponent("notif-daily", notifDaily, 12, -161, Alignment.CENTER));
+    getGui(player).update(new GUIComponent("notif-daily", notifDaily, 12, -154, Alignment.CENTER));
   }
 
   public static void buildTargetHealthBars() {

@@ -1,6 +1,11 @@
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.StringUtils;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.WordUtils;
+import java.util.List;
 import java.util.Random;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.StrifeMobManager;
@@ -17,10 +22,34 @@ public class DogeListener implements Listener {
   private final StrifeMobManager strifeMobManager;
   private final Random random;
 
-  private static final String[] DOGE_MEMES =
-      {"<aqua>wow", "<green>wow", "<light purple>wow", "<aqua>much pain", "<green>much pain",
-          "<light purple>much pain", "<aqua>many disrespects", "<green>many disrespects",
-          "<light purple>many disrespects", "<red>no u", "<red>2damage4me"};
+  private static final List<String> DOGE_MEMES = List.of(
+      FaceColor.ORANGE + "2 the moon??",
+      FaceColor.CYAN + "wow",
+      FaceColor.LIGHT_GREEN + "wow",
+      FaceColor.PINK + "wow",
+      FaceColor.PURPLE + "wow",
+      FaceColor.CYAN + "oof",
+      FaceColor.LIGHT_GREEN + "oof",
+      FaceColor.PINK + "oof",
+      FaceColor.PURPLE + "oof",
+      FaceColor.CYAN + "much pain",
+      FaceColor.LIGHT_GREEN + "much pain",
+      FaceColor.PINK + "much pain",
+      FaceColor.PURPLE + "much pain",
+      FaceColor.CYAN + "many ouch",
+      FaceColor.LIGHT_GREEN + "many ouch",
+      FaceColor.PINK + "many ouch",
+      FaceColor.PURPLE + "many ouch",
+      FaceColor.CYAN + "no u",
+      FaceColor.LIGHT_GREEN + "no u",
+      FaceColor.PINK + "no u",
+      FaceColor.PURPLE + "no u",
+      FaceColor.RED + "no u",
+      FaceColor.CYAN + "2damage4me",
+      FaceColor.LIGHT_GREEN + "2damage4me",
+      FaceColor.PINK + "2damage4me",
+      FaceColor.PURPLE + "2damage4me"
+  );
 
   public DogeListener(StrifeMobManager strifeMobManager) {
     this.strifeMobManager = strifeMobManager;
@@ -34,7 +63,8 @@ public class DogeListener implements Listener {
     }
     StrifeMob attacker = strifeMobManager.getStatMob((LivingEntity) event.getEntity());
     if (random.nextDouble() <= attacker.getStat(StrifeStat.DOGE) / 100) {
-      MessageUtils.sendMessage(event.getEntity(), DOGE_MEMES[random.nextInt(DOGE_MEMES.length)]);
+      event.getEntity().sendMessage(StringUtils.repeat(" ", random.nextInt(5)) +
+          DOGE_MEMES.get(random.nextInt(DOGE_MEMES.size())));
     }
   }
 }

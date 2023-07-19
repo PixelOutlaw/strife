@@ -111,6 +111,11 @@ public class ItemUtil {
     if (mainItem.getType() == Material.FISHING_ROD && offItem.getType() == Material.WHEAT_SEEDS) {
       return true;
     }
+    if (mainItem.getType() == Material.BOOK ||
+        mainItem.getType() == Material.SHIELD ||
+        mainItem.getType() == Material.ARROW) {
+      return false;
+    }
     if (isTool(mainItem)) {
       return false;
     }

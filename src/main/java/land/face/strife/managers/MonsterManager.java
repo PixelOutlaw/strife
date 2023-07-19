@@ -106,13 +106,6 @@ public class MonsterManager {
         data.putPerLevel(attr, (float) attrCS.getDouble(k));
       }
     }
-    if (cs.isConfigurationSection("per-bonus-level")) {
-      ConfigurationSection attrCS = cs.getConfigurationSection("per-bonus-level");
-      for (String k : attrCS.getKeys(false)) {
-        StrifeStat attr = StrifeStat.valueOf(k);
-        data.putPerBonusLevel(attr, (float) attrCS.getDouble(k));
-      }
-    }
     if ("default".equalsIgnoreCase(key)) {
       defaultData = data;
     } else {

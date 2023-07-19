@@ -75,9 +75,7 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
       }
       if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
         float attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob, 1);
-        if (attackMult > 0.1f) {
-          ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.25f));
-        }
+        ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.25f));
       } else if (ItemUtil.isMeleeWeapon(event.getPlayer().getEquipment()
           .getItemInMainHand().getType())) {
         plugin.getAttackSpeedManager().resetAttack(mob, 0.5f);

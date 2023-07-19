@@ -3,6 +3,8 @@ package land.face.strife.util;
 import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
 import static org.bukkit.potion.PotionEffectType.SLOW_DIGGING;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
 import com.tealcube.minecraft.bukkit.shade.google.common.base.CharMatcher;
@@ -25,9 +27,13 @@ import org.bukkit.entity.Player;
 public class StatUtil {
 
   public static StrifePlugin plugin;
+  public static String COMBAT_ENTER_TOAST;
+  public static String COMBAT_EXIT_TOAST;
 
   public static void refreshPlugin(StrifePlugin strifePlugin) {
     plugin = strifePlugin;
+    COMBAT_ENTER_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_enter_combat>");
+    COMBAT_EXIT_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_exit_combat>");
   }
 
   public static float getStat(StrifeMob mob, StrifeStat stat) {
@@ -210,7 +216,7 @@ public class StatUtil {
   }
 
   public static float getArmorMult(float armor) {
-    return (float) Math.pow(0.5f, armor / 120f);
+    return (float) Math.pow(0.5f, armor / 105f);
   }
 
   public static float getWardingMult(StrifeMob attacker, StrifeMob defender) {
@@ -223,7 +229,7 @@ public class StatUtil {
   }
 
   public static float getWardingMult(float warding) {
-    return (float) Math.pow(0.5f, warding / 120f);
+    return (float) Math.pow(0.5f, warding / 105f);
   }
 
   public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {

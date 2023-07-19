@@ -2,7 +2,11 @@ package land.face.strife.listeners;
 
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -148,13 +152,16 @@ public class JoinAndLeaveListener implements Listener {
   }
 
   private void notifyUnusedPoints(final Player player, final int unused) {
-    Bukkit.getScheduler().runTaskLater(plugin, () ->
-        player.sendMessage(UNUSED_POINTS.replace("{0}", String.valueOf(unused))), 20L * 15);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      ToastUtils.sendToast(player, FaceColor.NO_SHADOW +
+          UnicodeUtil.unicodePlacehold("<toast_unused_points>"), ItemUtils.BLANK);
+      player.sendMessage(UNUSED_POINTS.replace("{0}", String.valueOf(unused)));
+    }, 20L * 30);
   }
 
   private void notifyUnusedPaths(final Player player) {
     Bukkit.getScheduler().runTaskLater(plugin, () ->
-        player.sendMessage(PATH), 20L * 17);
+        player.sendMessage(PATH), 20L * 35);
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

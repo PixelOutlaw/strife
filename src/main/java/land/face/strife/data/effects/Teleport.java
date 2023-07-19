@@ -6,6 +6,8 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 
@@ -36,6 +38,10 @@ public class Teleport extends LocationEffect {
     getPlugin().getEffectManager().executeEffectList(caster, response, originEffects);
 
     Location finalLocation = location;
+    if (finalLocation.getBlock().isSolid() ||
+        finalLocation.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR) {
+      return;
+    }
     caster.getEntity().setVelocity(new Vector(0, 0, 0));
     caster.getEntity().setFallDistance(0);
     if (targeted) {

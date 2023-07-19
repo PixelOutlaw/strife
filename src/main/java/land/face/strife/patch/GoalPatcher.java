@@ -69,6 +69,9 @@ public class GoalPatcher {
   }
 
   public static void removeGoals(Mob mob, List<String> removeKeys) {
+    if (removeKeys.size() == 0) {
+      return;
+    }
     Bukkit.getMobGoals().getAllGoals(mob).forEach(goal -> {
       String goalName = goal.getKey().getNamespacedKey().toString();
       if (removeKeys.contains(goalName)) {

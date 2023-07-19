@@ -2,6 +2,7 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +30,6 @@ import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.ForceTarget;
 import land.face.strife.data.effects.LookAt;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.stats.AbilitySlot;
@@ -674,7 +674,7 @@ public class AbilityManager {
     LogUtil.printDebug("Ability " + key + " has icon!");
     String format = PaletteUtil.loadString(iconSection, "format", "|white||b|");
     Material material = castType.getMaterial();
-    List<String> lore = PaletteUtil.loadStrings(iconSection, "lore");
+    List<String> lore = UnicodeUtil.unicodePlacehold(PaletteUtil.loadStrings(iconSection, "lore"));
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     TextUtils.setLore(icon, lore);
@@ -687,7 +687,6 @@ public class AbilityManager {
     data.setAbilitySlot(AbilitySlot.valueOf(iconSection.getString("trigger-slot")));
     data.setLevelRequirement(iconSection.getInt("level-requirement", -1));
     data.setTotalSkillRequirement(iconSection.getInt("total-skill-requirement", -1));
-    data.setBonusLevelRequirement(iconSection.getInt("bonus-level-requirement", -1));
 
     Map<StrifeAttribute, Integer> attrReqs = new HashMap<>();
     ConfigurationSection attrSection = iconSection

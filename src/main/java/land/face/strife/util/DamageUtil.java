@@ -185,25 +185,26 @@ public class DamageUtil {
       defender.bumpCombat(null);
     }
 
+    float attackMult = mods.getAttackMultiplier();
+
     if (plugin.getCounterManager().executeCounters(attacker.getEntity(), defender.getEntity())) {
       return false;
     }
 
-    float attackMult = mods.getAttackMultiplier();
-
-    if (mods.isCanBeEvaded()) {
-      if (DamageUtil.isEvaded(attacker, defender, mods.getAbilityMods())) {
-        if (mods.isBasicAttack() && mods.getAttackType() == AttackType.MELEE) {
-          plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f);
+    if (!mods.isSneakAttack()) {
+      if (mods.isCanBeEvaded()) {
+        if (DamageUtil.isEvaded(attacker, defender, mods.getAbilityMods())) {
+          if (mods.isBasicAttack() && mods.getAttackType() == AttackType.MELEE) {
+            plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f);
+          }
+          return false;
         }
-        return false;
       }
-    }
-
-    if (mods.isCanBeBlocked()) {
-      if (plugin.getBlockManager().attemptBlock(attacker, defender, attackMult,
-          mods.getAttackType(), mods.isBlocking(), mods.isGuardBreak())) {
-        return false;
+      if (mods.isCanBeBlocked()) {
+        if (plugin.getBlockManager().attemptBlock(attacker, defender, attackMult,
+            mods.getAttackType(), mods.isBlocking(), mods.isGuardBreak())) {
+          return false;
+        }
       }
     }
 
@@ -285,11 +286,13 @@ public class DamageUtil {
     }
 
     float generalDamageMultiplier = StatUtil.getDamageMult(attacker);
+    float minionDamageMultiplier = DamageUtil.getMinionMult(attacker);
 
     standardDamage += standardDamage * critMult;
     standardDamage *= potionMult;
     standardDamage *= generalDamageMultiplier;
     standardDamage *= pvpMult;
+    standardDamage *= minionDamageMultiplier;
 
     DamageUtil.applyLifeSteal(attacker, Math.min(standardDamage, defender.getEntity().getHealth()),
         mods.getHealMultiplier(), mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f));
@@ -300,9 +303,10 @@ public class DamageUtil {
     elementalDamage *= potionMult;
     elementalDamage *= generalDamageMultiplier;
     elementalDamage *= pvpMult;
+    elementalDamage += minionDamageMultiplier;
 
-    float damageReduction =
-        defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio() * pvpMult;
+    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) *
+        mods.getDamageReductionRatio() * pvpMult;
     float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
@@ -310,9 +314,8 @@ public class DamageUtil {
     }
 
     rawDamage *= DamageUtil.getTenacityMult(defender);
-    rawDamage *= DamageUtil.getMinionMult(attacker);
 
-    if (attacker.getEntity().getFreezeTicks() > 0 && attacker.getEntity() instanceof Player) {
+    if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
       rawDamage *= 1 - 0.3 * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity()
           .getMaxFreezeTicks());
     }
@@ -350,7 +353,7 @@ public class DamageUtil {
     }
 
     String damageString;
-    if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player) {
+    if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
       if (rawDamage == 0) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
             IndicatorStyle.RANDOM_POPOFF, 9, FaceColor.CYAN + "０");
@@ -362,8 +365,7 @@ public class DamageUtil {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
             IndicatorStyle.RANDOM_POPOFF, 9, damageString);
       }
-    }
-    if (mods.isShowPopoffs() && attacker.getMaster() != null &&
+    } else if (mods.isShowPopoffs() && attacker.getMaster() != null &&
         attacker.getMaster().getEntity() instanceof Player) {
       damageString = buildDamageString(Math.round(rawDamage));
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
@@ -531,6 +533,9 @@ public class DamageUtil {
     if (modsEnabled) {
       for (BonusDamage bd : mods.getBonusDamages()) {
         float bonus = applyDamageScale(attacker, target, bd);
+        if (bd.isNegateMinionDamage()) {
+          bonus /= DamageUtil.getMinionMult(attacker);
+        }
         damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
       }
     }
@@ -748,7 +753,7 @@ public class DamageUtil {
     return 1;
   }
 
-  public static double getMinionMult(StrifeMob mob) {
+  public static float getMinionMult(StrifeMob mob) {
     return 1 + mob.getStat(StrifeStat.MINION_MULT_INTERNAL) / 100;
   }
 

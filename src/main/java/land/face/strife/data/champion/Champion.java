@@ -174,14 +174,6 @@ public class Champion {
     return attributeHeatmap;
   }
 
-  public void setBonusLevels(int bonusLevels) {
-    saveData.setBonusLevels(bonusLevels);
-  }
-
-  public int getBonusLevels() {
-    return saveData.getBonusLevels();
-  }
-
   public int getLifeSkillLevel(LifeSkillType type) {
     return saveData.getSkillLevel(type);
   }

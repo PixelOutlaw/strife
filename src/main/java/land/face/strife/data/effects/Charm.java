@@ -37,15 +37,7 @@ public class Charm extends Effect {
     }
 
     float lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
-    caster.addMinion(target, (int) lifespan);
-
-    float damageRatio = 1 + caster.getStat(StrifeStat.MINION_DAMAGE) / 1000;
-    float lifeRatio = 1 + caster.getStat(StrifeStat.MINION_LIFE) / 1000;
-
-    target.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, damageRatio);
-    double maxHealth = target.getEntity().getMaxHealth() * lifeRatio;
-    target.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-    target.getEntity().setHealth(maxHealth);
+    caster.addMinion(target, (int) lifespan, true);
 
     getPlugin().getSpawnerManager().addRespawnTime(target.getEntity());
 

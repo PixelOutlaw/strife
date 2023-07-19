@@ -21,14 +21,13 @@ package land.face.strife.listeners;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
-import static org.bukkit.potion.PotionEffectType.INVISIBILITY;
-import static org.bukkit.potion.PotionEffectType.registerPotionEffectType;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.util.DamageUtil;
@@ -38,6 +37,7 @@ import land.face.strife.util.ProjectileUtil.IgnoreState;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
@@ -66,11 +66,14 @@ public class TargetingListener implements Listener {
   private final float MAX_EXP_RANGE_SQUARED;
   private final int SNEAK_EFFECTIVENESS;
 
-  private static final float MAX_DIST_SQUARED = 1500;
+  private static final float MAX_DIST_SQUARED = 256;
+
+  private static Set<String> SNEAK_KEYS;
 
   public TargetingListener(StrifePlugin plugin) {
     this.plugin = plugin;
     this.random = new Random();
+    SNEAK_KEYS = new HashSet<>();
 
     DETECTION_THRESHOLD = (float) plugin.getSettings()
         .getDouble("config.mechanics.sneak.detection-threshold");
@@ -192,18 +195,31 @@ public class TargetingListener implements Listener {
     if (event.getTarget() == null || event.getTarget().getType() != EntityType.PLAYER) {
       return;
     }
+    if (event.getEntity().getType() == EntityType.HOGLIN ||
+        event.getEntity().getType() == EntityType.ZOGLIN) {
+      return;
+    }
     if (event.getReason() == CLOSEST_PLAYER && event.getEntity() instanceof LivingEntity mob) {
       Player player = (Player) event.getTarget();
       if (!plugin.getStealthManager().isStealthed(player)) {
         return;
       }
-      float mobLevel = StatUtil.getMobLevel(mob);
-
-      LogUtil.printDebug("Sneak calc for " + player.getName() +
-          " from lvl " + mobLevel + " " + mob.getType());
-
+      String sneakKey = event.getEntity().getUniqueId() + "-" + event.getTarget().getUniqueId();
+      if (SNEAK_KEYS.contains(sneakKey)) {
+        event.setCancelled(true);
+        return;
+      }
       Location playerLoc = player.getLocation();
       Location entityLoc = mob.getLocation();
+      double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
+
+      if (distSquared >= MAX_DIST_SQUARED) {
+        event.setCancelled(true);
+        return;
+      }
+
+      float mobLevel = StatUtil.getMobLevel(mob);
+
       Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
       Vector entitySightVector = entityLoc.getDirection();
 
@@ -211,7 +227,6 @@ public class TargetingListener implements Listener {
       float angle = entitySightVector.angle(playerDifferenceVector);
       float stealthLevel = champion.getLifeSkillLevel(LifeSkillType.SNEAK);
       float stealthSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
-      double distSquared = Math.min(MAX_DIST_SQUARED, entityLoc.distanceSquared(playerLoc));
       float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
       float lightMult = (float) Math.max(0.15,
           (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock()
@@ -219,9 +234,6 @@ public class TargetingListener implements Listener {
 
       stealthSkill = Math.max(stealthSkill, 10);
 
-      if (player.hasPotionEffect(INVISIBILITY)) {
-        stealthSkill += 5 + stealthSkill * 0.1;
-      }
       if (!player.isSneaking()) {
         stealthSkill *= 0.75;
       }
@@ -245,6 +257,9 @@ public class TargetingListener implements Listener {
           float difficultyLevel = Math.min(stealthLevel + 10, mobLevel);
           float xp = plugin.getStealthManager().getSneakActionExp(difficultyLevel, stealthLevel);
           xp *= distanceMult;
+          SNEAK_KEYS.add(sneakKey);
+          Bukkit.getScheduler().runTaskLater(plugin,
+              () -> SNEAK_KEYS.remove(sneakKey), 40L);
           plugin.getSkillExperienceManager().addExperience(player,
               LifeSkillType.SNEAK, xp, false, false);
         }

@@ -94,7 +94,6 @@ public class FlatfileStorage implements DataStorage {
 
     config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
-    config.set(champUuid + ".bonus-levels", champion.getBonusLevels());
     config.set(champUuid + ".pvp-score", (int) champion.getPvpScore());
 
     for (LifeSkillType type : LifeSkillType.types) {
@@ -170,7 +169,6 @@ public class FlatfileStorage implements DataStorage {
       saveData.setGlowEnabled(section.getBoolean("glow-enabled", true));
 
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
-      saveData.setBonusLevels(section.getInt("bonus-levels"));
 
       saveData.setSelectedGod(SelectedGod.valueOf(section.getString("god", "NONE")));
       saveData.setGodXp(SelectedGod.FACEGUY, section.getInt("FACEGUY-xp", 0));

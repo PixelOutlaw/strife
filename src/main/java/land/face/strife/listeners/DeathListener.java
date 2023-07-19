@@ -17,6 +17,10 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
@@ -27,6 +31,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -51,6 +56,11 @@ public class DeathListener implements Listener {
       plugin.getSoulManager().createSoul(mob);
       EndlessEffect.cancelEffects(event.getEntity());
       return;
+    }
+
+    if (event.getEntity().getType() == EntityType.VILLAGER && event.getEntity().getKiller() != null) {
+      ToastUtils.sendToast(event.getEntity().getKiller(), FaceColor.NO_SHADOW +
+          UnicodeUtil.unicodePlacehold("<toast_karma_down>"), ItemUtils.BLANK);
     }
 
     if (SpecialStatusUtil.isSpawnerMob(event.getEntity())) {

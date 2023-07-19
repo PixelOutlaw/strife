@@ -311,10 +311,6 @@ public class AbilityIconManager {
           champion.getPlayer().getLevel() < data.getLevelRequirement() ? REQ_STR : PASS_STR;
       strings.add(str.replace("{REQ}", "Level " + data.getLevelRequirement()));
     }
-    if (data.getBonusLevelRequirement() != -1) {
-      String str = champion.getBonusLevels() < data.getBonusLevelRequirement() ? REQ_STR : PASS_STR;
-      strings.add(str.replace("{REQ}", "Bonus Level " + data.getBonusLevelRequirement()));
-    }
     for (LifeSkillType type : data.getLifeSkillRequirements().keySet()) {
       String str = champion.getLifeSkillLevel(type) < data.getLifeSkillRequirements().get(type) ?
           REQ_STR : PASS_STR;

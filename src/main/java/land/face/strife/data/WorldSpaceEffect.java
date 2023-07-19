@@ -13,7 +13,6 @@ import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.Push;
-import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,8 +35,7 @@ public class WorldSpaceEffect {
   private ModeledEntity modeledEntity = null;
   @Getter
   private ArmorStand stand = null;
-  @Getter
-  @Setter
+  @Getter @Setter
   private Location nextLocation;
   private Vector velocity;
   private int lifespan;
@@ -167,25 +165,15 @@ public class WorldSpaceEffect {
       allEffects.addAll(((Damage) effect).getKillEffects());
       for (Effect e : allEffects) {
         if (e instanceof Push) {
-          Vector wseVec;
-          if (((Push) e).getPushType() == PushType.WSE_DIRECTION) {
-            wseVec = wse.getNextLocation().getDirection().clone().normalize();
-          } else {
-            wseVec = wse.getNextLocation().toVector();
-          }
-          ((Push) e).setTempVector(wseVec);
+          ((Push) e).setTempOrigin(wse.getNextLocation());
+          ((Push) e).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
         }
       }
     } else if (effect instanceof AreaEffect) {
       for (Effect e : ((AreaEffect) effect).getEffects()) {
         if (e instanceof Push) {
-          Vector wseVec;
-          if (((Push) e).getPushType() == PushType.WSE_DIRECTION) {
-            wseVec = wse.getNextLocation().getDirection().clone().normalize();
-          } else {
-            wseVec = wse.getNextLocation().toVector();
-          }
-          ((Push) e).setTempVector(wseVec);
+          ((Push) e).setTempOrigin(wse.getNextLocation());
+          ((Push) e).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
         }
       }
     }

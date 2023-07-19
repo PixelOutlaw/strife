@@ -42,6 +42,7 @@ import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -339,7 +340,7 @@ public class StrifeMob {
       if (rageTask == null) {
         return;
       }
-      rageTask.reduceRage(amount);
+      rageTask.reduceRage(-amount);
     }
   }
 
@@ -741,11 +742,24 @@ public class StrifeMob {
     return new HashSet<>(minions);
   }
 
-  public void addMinion(StrifeMob minion, int lifespan) {
+  public void addMinion(StrifeMob minion, int lifespan, boolean thrall) {
     minions.add(minion);
-    minion.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
+    float newMaxLife = minion.getStat(StrifeStat.HEALTH);
+    if (thrall) {
+      minion.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE) / 10);
+      newMaxLife = newMaxLife * (1 + getStat(StrifeStat.MINION_LIFE) / 1000);
+    } else {
+      minion.forceSetStat(StrifeStat.MINION_MULT_INTERNAL, getStat(StrifeStat.MINION_DAMAGE));
+      newMaxLife = newMaxLife * (1 + getStat(StrifeStat.MINION_LIFE) / 100);
+    }
+    minion.forceSetStat(StrifeStat.HEALTH, newMaxLife);
+    minion.forceSetStat(StrifeStat.HEALTH_MULT, 0);
+    minion.setMaxLife(newMaxLife);
+    minion.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(newMaxLife);
+    minion.getEntity().setHealth(newMaxLife);
     minion.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
     minion.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
+    SpecialStatusUtil.setMobLevel(minion.getEntity(), getLevel());
     ChunkUtil.setDespawnOnUnload(minion.getEntity());
     minion.setMaster(this, lifespan);
   }

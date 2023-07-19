@@ -26,7 +26,7 @@ public class ModelAnimation extends Effect {
     if (lockTicks > 0) {
       target.getModelEntity().setModelRotationLock(true);
       Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
-          target.getModelEntity().setBaseEntityVisible(false), lockTicks);
+          target.getModelEntity().setModelRotationLock(false), lockTicks);
     }
     for (ActiveModel model : target.getModelEntity().getModels().values()) {
       model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);

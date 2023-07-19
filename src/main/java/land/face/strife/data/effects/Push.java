@@ -4,6 +4,7 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.LogUtil;
 import lombok.Setter;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
@@ -17,7 +18,10 @@ public class Push extends Effect {
   @Setter
   private boolean uncheckedHeight;
   private PushType pushType;
-  private Vector tempVector;
+  @Setter
+  private Location tempOrigin;
+  @Setter
+  private Vector tempDirection;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -34,6 +38,8 @@ public class Push extends Effect {
       case AWAY_FROM_CASTER ->
           direction = getEffectVelocity(caster.getEntity().getLocation().toVector(),
               target.getEntity());
+      case AWAY_FROM_CENTER ->
+          direction = getEffectVelocity(tempOrigin.toVector(), target.getEntity());
       case CASTER_DIRECTION -> {
         direction = caster.getEntity().getEyeLocation().getDirection();
         if (!uncheckedHeight) {
@@ -42,15 +48,8 @@ public class Push extends Effect {
         direction.normalize().multiply(power / 10);
       }
       case TEMP_DIRECTION -> {
-        LogUtil.printDebug(tempVector.getX() + " " + tempVector.getY() + " " + tempVector.getZ());
-        direction = getEffectVelocity(tempVector, target.getEntity());
-      }
-      case WSE_DIRECTION -> {
-        direction = tempVector.clone();
-        if (!uncheckedHeight) {
-          direction.setY(0.001);
-        }
-        direction.normalize().multiply(power / 10);
+        LogUtil.printDebug(tempDirection.getX() + " " + tempDirection.getY() + " " + tempDirection.getZ());
+        direction = getEffectVelocity(tempDirection, target.getEntity());
       }
       default -> {
         return;
@@ -96,10 +95,6 @@ public class Push extends Effect {
     }
   }
 
-  public void setTempVector(Vector vector) {
-    tempVector = vector;
-  }
-
   public PushType getPushType() {
     return pushType;
   }
@@ -137,8 +132,8 @@ public class Push extends Effect {
 
   public enum PushType {
     AWAY_FROM_CASTER,
+    AWAY_FROM_CENTER,
     CASTER_DIRECTION,
-    TEMP_DIRECTION,
-    WSE_DIRECTION
+    TEMP_DIRECTION
   }
 }

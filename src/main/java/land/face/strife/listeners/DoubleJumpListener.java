@@ -159,8 +159,7 @@ public class DoubleJumpListener implements Listener {
     if (event.isSneaking() || event.isCancelled() || event.getPlayer().isSprinting()) {
       return;
     }
-    if (event.getPlayer().hasPotionEffect(PotionEffectType.JUMP)
-        && event.getPlayer().getPotionEffect(PotionEffectType.JUMP).getAmplifier() < 0) {
+    if (JumpUtil.isRooted(event.getPlayer())) {
       return;
     }
     if (event.getPlayer().hasPotionEffect(PotionEffectType.SLOW)) {

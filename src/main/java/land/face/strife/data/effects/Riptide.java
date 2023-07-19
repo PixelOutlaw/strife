@@ -52,7 +52,7 @@ public class Riptide extends Effect {
     while (iterator.hasNext()) {
       LivingEntity le = iterator.next();
       if (!le.isValid() || RIPTIDE_MAP.get(le) < 1 ||
-          (le.getVelocity().getY() < 0.1 && le.isOnGround())) {
+          (le.getVelocity().getY() < 0.01 && le.isOnGround())) {
         sendCancelPacket(le);
         RIPTIDE_MAP.remove(le);
         iterator.remove();

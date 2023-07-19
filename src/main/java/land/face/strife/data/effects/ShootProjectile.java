@@ -8,6 +8,7 @@ import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.Nameable;
+import com.ticxo.modelengine.api.model.vfx.VFX;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
@@ -37,6 +38,7 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 @EqualsAndHashCode(callSuper = true)
@@ -47,6 +49,7 @@ public class ShootProjectile extends Effect {
   private OriginLocation originType;
   private Color arrowColor;
   private String modelId;
+  private String vfxBone;
   private double attackMultiplier;
   private boolean targeted;
   private boolean seeking;
@@ -134,6 +137,7 @@ public class ShootProjectile extends Effect {
       }
       projectile.setBounce(bounce);
       ProjectileUtil.setAttackMult(projectile, (float) attackMultiplier);
+      ProjectileUtil.setApplyOnHit(projectile, true);
       ProjectileUtil.setAbilityProjectile(projectile);
       if (blockHitEffects) {
         ProjectileUtil.setContactTrigger(projectile);
@@ -177,110 +181,24 @@ public class ShootProjectile extends Effect {
         new ThrownItemTask(projectile, stack, originLocation, throwSpin).runTaskTimer(getPlugin(), 0L, 1L);
       }
 
-      if (modelId != null) {
-        ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
-        if (model == null) {
-          Bukkit.getLogger().warning("Failed to load projectile model: " + modelId);
-        } else {
-          ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(projectile);
-          if (modeledEntity == null) {
-            Bukkit.getLogger().warning("Failed to create projectile modelled entity");
-          } else {
-            modeledEntity.addModel(model, false);
-            modeledEntity.setBaseEntityVisible(false);
+      if (modelId != null && vfxBone != null) {
+        VFX vfx = ModelEngineAPI.createVFX(projectile);
+        vfx.useModel(modelId, vfxBone);
+        vfx.setColor(Color.WHITE);
+        vfx.setBaseEntityVisible(false);
+        vfx.setVisible(true);
+        vfx.create();
+        Bukkit.getScheduler().runTaskTimer(getPlugin(), new BukkitRunnable() {
+          @Override
+          public void run() {
+            vfx.setPosition(projectile.getLocation().toVector());
+            vfx.point(projectile.getVelocity(), true);
+            vfx.tick();
           }
-        }
+        }, 0L, 1L);
       }
     }
     ProjectileUtil.bumpShotId();
-  }
-
-  public void setProjectileEntity(EntityType projectileEntity) {
-    this.projectileEntity = projectileEntity;
-  }
-
-  public void setQuantity(int quantity) {
-    this.quantity = quantity;
-  }
-
-  public void setSpeed(float speed) {
-    this.speed = speed;
-  }
-
-  public void setSpread(double spread) {
-    this.spread = spread;
-  }
-
-  public void setRadialAngle(double radialAngle) {
-    this.radialAngle = radialAngle;
-  }
-
-  public void setVerticalBonus(double verticalBonus) {
-    this.verticalBonus = verticalBonus;
-  }
-
-  public void setIgnoreMultishot(boolean ignoreMultishot) {
-    this.ignoreMultishot = ignoreMultishot;
-  }
-
-  public void setBounce(boolean bounce) {
-    this.bounce = bounce;
-  }
-
-  public void setIgnite(boolean ignite) {
-    this.ignite = ignite;
-  }
-
-  public void setYield(float yield) {
-    this.yield = yield;
-  }
-
-  public void setMaxDuration(int maxDuration) {
-    this.maxDuration = maxDuration;
-  }
-
-  public void setTargeted(boolean targeted) {
-    this.targeted = targeted;
-  }
-
-  public void setSeeking(boolean seeking) {
-    this.seeking = seeking;
-  }
-
-  public void setThrowItem(boolean throwItem) {
-    this.throwItem = throwItem;
-  }
-
-  public void setZeroPitch(boolean zeroPitch) {
-    this.zeroPitch = zeroPitch;
-  }
-
-  public void setBlockHitEffects(boolean blockHitEffects) {
-    this.blockHitEffects = blockHitEffects;
-  }
-
-  public void setSilent(boolean silent) {
-    this.silent = silent;
-  }
-
-  public void setGravity(boolean gravity) {
-    this.gravity = gravity;
-  }
-
-  public void setOriginType(OriginLocation originType) {
-    this.originType = originType;
-  }
-
-  public void setArrowColor(Color arrowColor) {
-    this.arrowColor = arrowColor;
-  }
-
-  public void setAttackMultiplier(double attackMultiplier) {
-    this.attackMultiplier = attackMultiplier;
-  }
-
-  public void setThrowSpin(boolean throwSpin) {
-    this.throwSpin = throwSpin;
   }
 
   private Vector getCastDirection(LivingEntity caster, LivingEntity target) {

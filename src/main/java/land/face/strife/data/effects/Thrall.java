@@ -83,16 +83,7 @@ public class Thrall extends Effect {
 
     float durationSeconds =
         (float) lifeSeconds * (1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
-    caster.addMinion(mob, (int) durationSeconds);
-
-    // force override damage and health. Minion stats 10% as effective
-    // hence divided by 1000
-    mob.forceSetStat(StrifeStat.MINION_MULT_INTERNAL,
-        caster.getStat(StrifeStat.MINION_DAMAGE) / 1000);
-    double maxHealth = entity.getMaxHealth() *
-        (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 1000));
-    entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-    entity.setHealth(maxHealth);
+    caster.addMinion(mob, (int) durationSeconds, true);
 
     getPlugin().getSoulManager().removeSoul(soul);
 

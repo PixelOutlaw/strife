@@ -1,20 +1,15 @@
 package land.face.strife.tasks;
 
-import com.comphenix.protocol.PacketType.Play;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.PlayerMountManager;
+import land.face.strife.util.JumpUtil;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class MountTask extends BukkitRunnable {
@@ -45,7 +40,7 @@ public class MountTask extends BukkitRunnable {
       return;
     }
     if (mount.get() == null || mount.get().getEntity() == null || !mount.get().getEntity()
-        .isValid() || player.isSneaking() || player.isSwimming() || isEscaping(player)) {
+        .isValid() || player.isSneaking() || player.isSwimming() || JumpUtil.isRooted(player)) {
       player.leaveVehicle();
       manager.despawn(player);
       return;
@@ -74,10 +69,5 @@ public class MountTask extends BukkitRunnable {
       player.leaveVehicle();
       manager.despawn(player);
     }
-  }
-
-  public static boolean isEscaping(Player p) {
-    return  p.hasPotionEffect(PotionEffectType.JUMP) &&
-        p.getPotionEffect(PotionEffectType.JUMP).getAmplifier() > 100;
   }
 }

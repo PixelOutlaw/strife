@@ -26,14 +26,15 @@ public class LookAt extends Effect {
     if (fromTarget == toTarget) {
       return;
     }
-    Location newLoc = fromTarget.getLocation().clone();
-    Vector savedVelocity = fromTarget.getVelocity();
-    newLoc.setDirection(toTarget.getLocation()
-        .subtract(fromTarget.getLocation()).toVector().normalize());
-    fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
-    fromTarget.setVelocity(savedVelocity);
     if (fromTarget instanceof Mob) {
-      ((Mob) fromTarget).lookAt(fromTarget);
+      ((Mob) fromTarget).lookAt(toTarget);
+    } else {
+      Location newLoc = fromTarget.getLocation().clone();
+      Vector savedVelocity = fromTarget.getVelocity();
+      newLoc.setDirection(toTarget.getLocation()
+          .subtract(fromTarget.getLocation()).toVector().normalize());
+      fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
+      fromTarget.setVelocity(savedVelocity);
     }
   }
 }

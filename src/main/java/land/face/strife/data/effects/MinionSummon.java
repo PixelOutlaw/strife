@@ -69,7 +69,7 @@ public class MinionSummon extends LocationEffect {
       }
 
       LivingEntity summon = summonedEntity.getEntity();
-      caster.addMinion(summonedEntity, (int) lifespan);
+      caster.addMinion(summonedEntity, (int) lifespan, false);
 
       if (clone) {
         Disguise disguise;
@@ -125,11 +125,6 @@ public class MinionSummon extends LocationEffect {
         }
         summon.addPassenger(caster.getEntity());
       }
-      double maxHealth = summon.getMaxHealth() *
-          (1 + (caster.getStat(StrifeStat.MINION_LIFE) / 100));
-      summon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
-      summon.setHealth(maxHealth);
-      SpecialStatusUtil.setMobLevel(summon, StatUtil.getMobLevel(caster.getEntity()));
     }
     MinionTask.expireMinions(caster);
   }

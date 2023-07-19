@@ -14,7 +14,6 @@ speaky-talk-move:
     material: DIAMOND_CHESTPLATE
     trigger-slot: SLOT_A
     level-requirement: 10
-    bonus-level-requirement: 20
     skill-requirements:
       FISHING: 20
     attribute-requirements:

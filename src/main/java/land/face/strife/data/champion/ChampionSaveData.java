@@ -35,7 +35,6 @@ public class ChampionSaveData {
   private int unusedStatPoints;
   private int pendingUnusedStatPoints;
   private int highestReachedLevel;
-  private int bonusLevels;
 
   private float pvpScore = 700;
   private double catchupExpUsed;

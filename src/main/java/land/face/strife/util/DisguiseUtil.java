@@ -26,7 +26,6 @@ import me.libraryaddict.disguise.disguisetypes.watchers.SlimeWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowmanWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.WolfWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
-import net.minecraft.world.entity.animal.FrogVariant;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -55,7 +54,7 @@ public class DisguiseUtil {
       }
     }
     task = Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(),
-        DisguiseUtil::checkTempDisguises, 5L, 10L);
+        DisguiseUtil::checkTempDisguises, 5L, 3L);
   }
 
   private static void checkTempDisguises() {
@@ -90,6 +89,7 @@ public class DisguiseUtil {
       return null;
     }
     Disguise disguise = null;
+    boolean shivering = section.getBoolean("shivering", false);
     if (type == DisguiseType.PLAYER) {
       String disguisePlayer = section.getString("disguise-player");
       if (StringUtils.isBlank(disguisePlayer)) {
@@ -104,6 +104,9 @@ public class DisguiseUtil {
         playerDisguise.setName(name);
         playerDisguise.setDynamicName(false);
       }
+      if (shivering) {
+        playerDisguise.getWatcher().setTicksFrozen(140);
+      }
       disguise = playerDisguise;
     } else if (type.isMob()) {
       String typeData = section.getString("disguise-type-data", "");
@@ -115,6 +118,9 @@ public class DisguiseUtil {
       }
       if (watcher instanceof AgeableWatcher) {
         ((AgeableWatcher) watcher).setBaby(babyData);
+      }
+      if (shivering) {
+        watcher.setTicksFrozen(140);
       }
       if (StringUtils.isNotBlank(typeData)) {
         try {

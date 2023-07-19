@@ -78,6 +78,7 @@ public class UniqueEntityManager {
   private final StrifePlugin plugin;
   private final Map<String, UniqueEntity> loadedUniquesMap;
   private final Map<String, Disguise> cachedDisguises;
+  private final List<String> globalRemoveGoals;
 
   public static ItemStack DEV_SADDLE;
 
@@ -87,6 +88,7 @@ public class UniqueEntityManager {
     this.cachedDisguises = new HashMap<>();
     DEV_SADDLE = new ItemStack(Material.SADDLE);
     ItemStackExtensionsKt.setCustomModelData(DEV_SADDLE, 3000);
+    globalRemoveGoals = plugin.getConfig().getStringList("global-blocked-ai-goals");
   }
 
   public UniqueEntity getUnique(String uniqueId) {
@@ -200,12 +202,9 @@ public class UniqueEntityManager {
     }
 
     if (le instanceof Mob) {
-      if (!uniqueEntity.getRemoveGoals().isEmpty()) {
-        GoalPatcher.removeGoals((Mob) le, uniqueEntity.getRemoveGoals());
-      }
-      if (!uniqueEntity.getAddGoals().isEmpty()) {
-        GoalPatcher.addGoals((Mob) le, uniqueEntity);
-      }
+      GoalPatcher.removeGoals((Mob) le, globalRemoveGoals);
+      GoalPatcher.removeGoals((Mob) le, uniqueEntity.getRemoveGoals());
+      GoalPatcher.addGoals((Mob) le, uniqueEntity);
     }
 
     if (le instanceof Raider) {
@@ -356,7 +355,7 @@ public class UniqueEntityManager {
         StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
         if (mountMob != null) {
           mountMob.getEntity().addPassenger(mob.getEntity());
-          mob.addMinion(mountMob, 0);
+          mob.addMinion(mountMob, 0, false);
         }
       }, 2L);
     }

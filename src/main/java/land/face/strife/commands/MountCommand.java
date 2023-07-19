@@ -28,6 +28,7 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.tasks.MountTask;
+import land.face.strife.util.JumpUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -82,7 +83,7 @@ public class MountCommand extends BaseCommand {
       PaletteUtil.sendMessage(sender, onlyOnGround);
       return;
     }
-    if (MountTask.isEscaping(sender)) {
+    if (JumpUtil.isRooted(sender)) {
       PaletteUtil.sendMessage(sender, invalidLocation);
       return;
     }

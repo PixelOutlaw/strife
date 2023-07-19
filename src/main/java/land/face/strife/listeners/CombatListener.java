@@ -217,8 +217,8 @@ public class CombatListener implements Listener {
       return;
     }
 
+    float onHitChance = 1f;
     float attackMultiplier = 1f;
-    float multishotRatio = 1f;
     float healMultiplier = 1f;
     boolean backAttack = false;
 
@@ -231,33 +231,34 @@ public class CombatListener implements Listener {
         return;
       }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
+      onHitChance = attackMultiplier;
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
     } else if (attackType == AttackType.PROJECTILE) {
       attackMultiplier = ProjectileUtil.getAttackMult(projectile);
+      onHitChance = ProjectileUtil.getApplyOnHit(projectile) ? 1.0f : attackMultiplier;
       assert projectile != null;
       if (attackMultiplier < 0.05) {
         event.setCancelled(true);
         removeIfExisting(projectile);
         return;
       }
-      multishotRatio = defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
+      float multishotRatio = defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
       if (multishotRatio < 0.05) {
         event.setCancelled(true);
         removeIfExisting(projectile);
         return;
       }
+      attackMultiplier *= multishotRatio;
+      onHitChance *= multishotRatio;
       //double angle = projectile.getVelocity().angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
     } else if (attackType == AttackType.AREA) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
+      onHitChance = attackMultiplier;
       healMultiplier = 0.3f;
-    }
-
-    if (projectile != null) {
-      attackMultiplier *= multishotRatio;
     }
 
     if (attackMultiplier < 0.05) {
@@ -279,7 +280,7 @@ public class CombatListener implements Listener {
     damageModifiers.setHealMultiplier(healMultiplier);
     damageModifiers.setDamageReductionRatio(1.0f);
     damageModifiers.setScaleChancesWithAttack(true);
-    damageModifiers.setApplyOnHitEffects(attackMultiplier > Math.random());
+    damageModifiers.setApplyOnHitEffects(Math.random() < onHitChance);
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
     damageModifiers.setGuardBreak(false);

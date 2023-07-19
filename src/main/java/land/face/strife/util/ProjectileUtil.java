@@ -32,6 +32,7 @@ public class ProjectileUtil {
 
   private static final Map<Projectile, Boolean> CONTACT_TRIGGER = new WeakHashMap<>();
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
+  private static final Map<Projectile, Boolean> APPLY_ON_HIT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, List<Integer>> IGNORED_IDS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
@@ -64,6 +65,14 @@ public class ProjectileUtil {
 
   public static float getAttackMult(Projectile projectile) {
     return ATTACK_MULT.getOrDefault(projectile, 1f);
+  }
+
+  public static void setApplyOnHit(Projectile projectile, boolean applyOnHit) {
+    APPLY_ON_HIT.put(projectile, applyOnHit);
+  }
+
+  public static boolean getApplyOnHit(Projectile projectile) {
+    return APPLY_ON_HIT.getOrDefault(projectile, false);
   }
 
   public static void setPierce(AbstractArrow arrow, float chance) {
@@ -141,7 +150,11 @@ public class ProjectileUtil {
   }
 
   public static void shootWand(StrifeMob mob, double attackMult) {
-    float projectileSpeed = 0.85f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
+    if (attackMult < 0.15D) {
+      return;
+    }
+    // x / 117.647 = 0.85
+    float projectileSpeed = 0.85f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 117.65f;
     int projectiles = ProjectileUtil.getTotalProjectiles(1,
         mob.getStat(StrifeStat.MULTISHOT) * attackMult);
 
@@ -165,7 +178,8 @@ public class ProjectileUtil {
       ((Player) mob.getEntity()).setCooldown(Material.BOW,
           (int) (StatUtil.getAttackTime(mob) * 20));
     }
-    float projectileSpeed = 4.5f + 1.8F * mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
+    // Divided by 50 instead of 4.5f*X/100, because TOO MUCH SPEED
+    float projectileSpeed = 4.5f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 50;
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult);
 
     ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, 0.03);
@@ -207,7 +221,7 @@ public class ProjectileUtil {
     });
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    arrow.getBoundingBox().expand(0.1);
+    arrow.getBoundingBox().expand(0.35);
 
     setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
@@ -222,13 +236,13 @@ public class ProjectileUtil {
       e.setGravity(false);
     });
     bullet.setShooter(shooter);
-    bullet.getBoundingBox().expand(0.1);
+    bullet.getBoundingBox().expand(0.35);
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       if (bullet.isValid()) {
         bullet.remove();
       }
-    }, 30);
+    }, 10 + (int) (18f * attackMult));
 
     setAttackMult(bullet, (float) attackMult);
     setShotId(bullet);
@@ -247,7 +261,7 @@ public class ProjectileUtil {
         bullet.remove();
       }
     }, 6);
-    bullet.getBoundingBox().expand(0.1);
+    bullet.getBoundingBox().expand(0.35);
 
     setAttackMult(bullet, (float) attackMult);
     setShotId(bullet);

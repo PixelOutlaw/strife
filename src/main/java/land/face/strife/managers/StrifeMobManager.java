@@ -117,8 +117,8 @@ public class StrifeMobManager {
 
   public void despawnAllTempEntities() {
     for (StrifeMob strifeMob : trackedEntities.values()) {
-      if (strifeMob.getEntity().getType() != EntityType.PLAYER && strifeMob.getEntity().isValid() &&
-          !strifeMob.getEntity().hasMetadata("NPC")) {
+      if (strifeMob.getEntity() != null && strifeMob.getEntity().getType() != EntityType.PLAYER &&
+          strifeMob.getEntity().isValid() && !strifeMob.getEntity().hasMetadata("NPC")) {
         strifeMob.getEntity().remove();
       }
     }

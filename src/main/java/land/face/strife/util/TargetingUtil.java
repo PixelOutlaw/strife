@@ -27,6 +27,7 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -148,6 +149,9 @@ public class TargetingUtil {
       }
     }
     if (attacker.getMaster() != null) {
+      if (attacker.getMaster() == defender.getMaster()) {
+        return true;
+      }
       return isFriendly(attacker.getMaster(), defender);
     }
     if (defender.getMaster() != null) {
@@ -253,7 +257,7 @@ public class TargetingUtil {
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range,
       boolean friendly) {
     RayTraceResult result = caster.getWorld().rayTrace(caster.getEyeLocation(), caster.getEyeLocation().getDirection(),
-        range, FluidCollisionMode.NEVER, true, 0.2, entity -> isValidRaycastTarget(caster, entity)
+        range, FluidCollisionMode.NEVER, true, 0.35, entity -> isValidRaycastTarget(caster, entity)
             && friendly == isFriendly(caster, (LivingEntity) entity));
     if (result == null || result.getHitEntity() == null) {
       return null;
@@ -339,7 +343,26 @@ public class TargetingUtil {
     }
     if (result.getHitBlock() != null) {
       LogUtil.printDebug(" - Using BLOCK location calculation");
-      return result.getHitBlock().getLocation().add(0.5, 0.8, 0.5).add(result.getHitBlockFace().getDirection());
+      switch (result.getHitBlockFace()) {
+        case DOWN -> {
+          return result.getHitBlock().getLocation().add(0.5, -1.2, 0.5);
+        }
+        case UP -> {
+          return result.getHitBlock().getLocation().add(0.5, 1.5, 0.5);
+        }
+        default -> {
+          Block targetBlock = result.getHitBlock();
+          Block hitBlockSpace = result.getHitBlock().getRelative(result.getHitBlockFace());
+          if (targetBlock.getRelative(BlockFace.UP, 1).isEmpty() &&
+              targetBlock.getRelative(BlockFace.UP, 2).isEmpty() &&
+              hitBlockSpace.getRelative(BlockFace.UP, 1).isEmpty() &&
+              hitBlockSpace.getRelative(BlockFace.UP, 2).isEmpty()) {
+            return result.getHitBlock().getLocation().add(0.5, 1.5, 0.5);
+          }
+          return result.getHitBlock().getLocation().add(0.5, 0.8, 0.5)
+              .add(result.getHitBlockFace().getDirection());
+        }
+      }
     }
     LogUtil.printDebug(" - Using HIT RANGE location calculation");
     return new Location(caster.getWorld(), result.getHitPosition().getX(), result.getHitPosition().getBlockY(),

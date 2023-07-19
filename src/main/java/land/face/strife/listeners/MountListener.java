@@ -1,7 +1,6 @@
 package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.LoadedMount;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,7 +8,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 public class MountListener implements Listener {

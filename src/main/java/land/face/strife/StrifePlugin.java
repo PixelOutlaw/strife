@@ -62,6 +62,7 @@ import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoadedMount;
 import land.face.strife.data.Spawner;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
@@ -104,7 +105,6 @@ import land.face.strife.listeners.SpawnListener;
 import land.face.strife.listeners.StatUpdateListener;
 import land.face.strife.listeners.SwingListener;
 import land.face.strife.listeners.TargetingListener;
-import land.face.strife.listeners.UniqueSplashListener;
 import land.face.strife.listeners.XpBottleListener;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
@@ -153,6 +153,7 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.BoostTickTask;
+import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.IndicatorTask;
@@ -517,7 +518,6 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new UniqueSplashListener(this), this);
     Bukkit.getPluginManager().registerEvents(new XpBottleListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
@@ -582,7 +582,7 @@ public class StrifePlugin extends FacePlugin {
         abilityList.add(loopAbility);
       }
       abilityList.forEach((a)-> a.setHidden(false));
-      AbilitySubmenu menu = new AbilitySubmenu(this, menuId, title, abilityList, returnButton);
+      AbilitySubmenu menu = new AbilitySubmenu(this, menuId, "&f扚&0" + title, abilityList, returnButton);
       abilitySubmenus.put(menuId, menu);
 
       String name = abilityMenus.getString(menuId + ".name", "CONFIGURE ME");
@@ -654,7 +654,7 @@ public class StrifePlugin extends FacePlugin {
                 StructureModifier<List<WrappedWatchableObject>> watcher = event.getPacket()
                     .getWatchableCollectionModifier();
                 for (WrappedWatchableObject watch : watcher.read(0)) {
-                  if (watch.getIndex() == 6) {
+                  if (watch.getIndex() == 5) {
                     watch.setValue(Riptide.RIPTIDE_POSE_ENUM);
                   }
                   if (watch.getIndex() == 7) {
@@ -676,6 +676,12 @@ public class StrifePlugin extends FacePlugin {
 
   @Override
   public void disable() {
+    for (StrifeMob mob : strifeMobManager.getMobs().values()) {
+      if (mob == null) {
+        continue;
+      }
+      CombatCountdownTask.awardSkillExp(mob);
+    }
     commandManager.unregisterCommands();
     saveSpawners();
     boostManager.saveBoosts();

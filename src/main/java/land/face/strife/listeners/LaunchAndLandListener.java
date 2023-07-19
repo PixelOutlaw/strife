@@ -13,6 +13,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.JumpUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.GameMode;
@@ -40,8 +41,7 @@ public class LaunchAndLandListener implements Listener {
     if (!event.getPlayer().isSprinting() || MoveUtil.timeOffGround(event.getPlayer()) > 65) {
       return;
     }
-    if (event.getPlayer().hasPotionEffect(PotionEffectType.JUMP)
-        && event.getPlayer().getPotionEffect(PotionEffectType.JUMP).getAmplifier() < 0) {
+    if (JumpUtil.isRooted(event.getPlayer())) {
       return;
     }
     int lastSneak = MoveUtil.getLastSneak(event.getPlayer());

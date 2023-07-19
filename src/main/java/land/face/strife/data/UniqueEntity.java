@@ -46,6 +46,7 @@ public class UniqueEntity {
   private boolean charmImmune;
   private boolean burnImmune;
   private boolean fallImmune;
+  private boolean knockbackImmune;
   private boolean ignoreSneak;
   private boolean saddled;
   private boolean canTarget;

@@ -15,7 +15,6 @@ public class AbilityIconData {
   private AbilitySlot abilitySlot;
   private int totalSkillRequirement = 0;
   private int levelRequirement = 0;
-  private int bonusLevelRequirement = 0;
   private final Map<LifeSkillType, Integer> lifeSkillRequirements = new HashMap<>();
   private final Map<StrifeAttribute, Integer> attributeRequirement = new HashMap<>();
   private final Map<LifeSkillType, Float> expWeights = new HashMap<>();
@@ -52,14 +51,6 @@ public class AbilityIconData {
     this.levelRequirement = levelRequirement;
   }
 
-  public int getBonusLevelRequirement() {
-    return bonusLevelRequirement;
-  }
-
-  public void setBonusLevelRequirement(int bonusLevelRequirement) {
-    this.bonusLevelRequirement = bonusLevelRequirement;
-  }
-
   public Map<LifeSkillType, Integer> getLifeSkillRequirements() {
     return lifeSkillRequirements;
   }
@@ -77,9 +68,6 @@ public class AbilityIconData {
       return false;
     }
     if (champion.getPlayer().getLevel() < levelRequirement) {
-      return false;
-    }
-    if (champion.getBonusLevels() < bonusLevelRequirement) {
       return false;
     }
     for (LifeSkillType type : lifeSkillRequirements.keySet()) {

@@ -19,11 +19,9 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,7 +29,6 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -71,7 +68,7 @@ public class ExperienceManager {
   }
 
   public void addExperience(Player player, double amount, boolean exact) {
-    if (amount < 0.001) {
+    if (amount < 0.001 || player.getLevel() > 99) {
       return;
     }
     // Get all the values!
@@ -89,8 +86,8 @@ public class ExperienceManager {
       if (catchupDiff > 0) {
         double bonusXp = Math.min(original, catchupDiff);
         amount += bonusXp;
-        pStats.getChampion().getSaveData()
-            .setCatchupExpUsed(pStats.getChampion().getSaveData().getCatchupExpUsed() + bonusXp);
+        pStats.getChampion().getSaveData().setCatchupExpUsed(
+            pStats.getChampion().getSaveData().getCatchupExpUsed() + bonusXp);
       }
     }
 
@@ -106,13 +103,9 @@ public class ExperienceManager {
       player.setExp(0);
       amount -= faceExpToLevel;
       currentExpPercent = 0;
-      Champion champion = pStats.getChampion();
       if (player.getLevel() < 100) {
         player.setLevel(player.getLevel() + 1);
         pushLevelUpSpam(player, player.getLevel() % 5 == 0, !levelUp);
-      } else {
-        champion.setBonusLevels(champion.getBonusLevels() + 1);
-        pushBonusLevelUpSpam(player, champion.getBonusLevels(), champion.getBonusLevels() % 10 == 0);
       }
       maxFaceExp = (double) getMaxFaceExp(player.getLevel());
       faceExpToLevel = maxFaceExp;
@@ -151,23 +144,6 @@ public class ExperienceManager {
       String chatMessage = "&a&lLevelup! &f" + player.getDisplayName() + " &ahas reached level &f" + player.getLevel() + "&a!";
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p, chatMessage);
-      }
-    }
-  }
-
-  private void pushBonusLevelUpSpam(Player player, int bonusLevel, boolean announce) {
-    MessageUtils.sendMessage(player,
-        "&a&lCongratulations! You have reached bonus level &f" + bonusLevel + "&e!");
-    MessageUtils.sendMessage(player,
-        "&eYour stats have slightly increased!");
-    String upperTitle = StringExtensionsKt.chatColorize("&eBONUS LEVEL UP!");
-    String lowerTitle = StringExtensionsKt.chatColorize("&eOh dang, you got stronger!");
-    TitleUtils.sendTitle(player, upperTitle, lowerTitle, 40, 2, 2);
-    if (announce) {
-      for (Player p : Bukkit.getOnlinePlayers()) {
-        MessageUtils.sendMessage(p,
-            "&e&lLevelup! &f" + player.getDisplayName() + " &ehas reached bonus level &f"
-                + bonusLevel + "&e!");
       }
     }
   }

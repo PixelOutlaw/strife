@@ -14,6 +14,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 public class JumpUtil {
 
@@ -85,6 +86,14 @@ public class JumpUtil {
 
   public static double distanceFromHoverGround(Player player, HoverData data) {
     return player.getLocation().getY() - data.getGroundBlockY();
+  }
+
+  public static boolean isRooted(Player p) {
+    if (p.hasPotionEffect(PotionEffectType.JUMP)) {
+      int amp = p.getPotionEffect(PotionEffectType.JUMP).getAmplifier();
+      return amp < 0 || amp > 100;
+    }
+    return false;
   }
 
 }

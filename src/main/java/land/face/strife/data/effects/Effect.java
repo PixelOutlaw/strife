@@ -150,6 +150,7 @@ public abstract class Effect {
     PUSH,
     LIGHTNING,
     MODIFY_PROJECTILE,
+    ORDER_ENTITY,
     POTION,
     TARGET,
     LOOK,

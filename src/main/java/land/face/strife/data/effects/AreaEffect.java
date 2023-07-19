@@ -37,19 +37,33 @@ public class AreaEffect extends LocationEffect {
 
   private final Map<Integer, Float> circleMathCache = new HashMap<>();
 
+  @Getter @Setter
   private AreaType areaType;
+  @Getter @Setter
   private TargetingPriority priority;
+  @Getter @Setter
   private LineOfSight lineOfSight;
+  @Getter @Setter
+  private boolean excludeCaster;
+  @Getter
   private float range;
+  @Getter @Setter
   private float radius;
+  @Getter @Setter
   private float area;
+  @Getter @Setter
   private int maxTargets;
   @Getter @Setter
   private boolean areaScaling;
+  @Getter @Setter
   private boolean multishotScaling;
+  @Getter @Setter
   private boolean canBeEvaded;
+  @Getter @Setter
   private boolean canBeBlocked;
+  @Getter @Setter
   private boolean canBeCountered;
+  @Getter @Setter
   private long targetingCooldown;
 
   private long lastApplication = System.currentTimeMillis();
@@ -62,6 +76,9 @@ public class AreaEffect extends LocationEffect {
   public void applyAtLocation(StrifeMob caster, Location location) {
 
     Set<LivingEntity> targets = getAreaEffectTargets(caster, location);
+    if (excludeCaster) {
+      targets.remove(caster.getEntity());
+    }
     targets.removeIf(target -> ignoreEntity(caster, target));
 
     TargetResponse response = new TargetResponse(targets);
@@ -134,8 +151,8 @@ public class AreaEffect extends LocationEffect {
       }
     }
     TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
-    areaTargets.removeIf(e -> !PlayerDataUtil
-        .areConditionsMet(caster, getPlugin().getStrifeMobManager().getStatMob(e), filterConditions));
+    areaTargets.removeIf(e -> !PlayerDataUtil.areConditionsMet(caster,
+        getPlugin().getStrifeMobManager().getStatMob(e), filterConditions));
     if (areaTargets.size() == 0) {
       return areaTargets;
     }
@@ -197,65 +214,9 @@ public class AreaEffect extends LocationEffect {
     return effects;
   }
 
-  public AreaType getAreaType() {
-    return areaType;
-  }
-
-  public void setAreaType(AreaType areaType) {
-    this.areaType = areaType;
-  }
-
-  public TargetingPriority getPriority() {
-    return priority;
-  }
-
-  public void setPriority(TargetingPriority priority) {
-    this.priority = priority;
-  }
-
-  public void setCanBeEvaded(boolean canBeEvaded) {
-    this.canBeEvaded = canBeEvaded;
-  }
-
-  public void setCanBeBlocked(boolean canBeBlocked) {
-    this.canBeBlocked = canBeBlocked;
-  }
-
-  public void setCanBeCountered(boolean canBeCountered) {
-    this.canBeCountered = canBeCountered;
-  }
-
-  public LineOfSight getLineOfSight() {
-    return lineOfSight;
-  }
-
-  public void setLineOfSight(LineOfSight lineOfSight) {
-    this.lineOfSight = lineOfSight;
-  }
-
-  public double getRange() {
-    return range;
-  }
-
   public void setRange(double range) {
     this.range = (float) range;
     this.area = (float) (Math.PI * Math.pow(range, 2));
-  }
-
-  public void setRadius(float radius) {
-    this.radius = radius;
-  }
-
-  public int getMaxTargets() {
-    return maxTargets;
-  }
-
-  public void setMaxTargets(int maxTargets) {
-    this.maxTargets = maxTargets;
-  }
-
-  public void setMultishotScaling(boolean multishotScaling) {
-    this.multishotScaling = multishotScaling;
   }
 
   public Map<AbilityMod, Float> getAttackModifiers() {
@@ -264,10 +225,6 @@ public class AreaEffect extends LocationEffect {
 
   public Set<Condition> getFilterConditions() {
     return filterConditions;
-  }
-
-  public void setTargetingCooldown(long targetingCooldown) {
-    this.targetingCooldown = targetingCooldown;
   }
 
   public enum LineOfSight {

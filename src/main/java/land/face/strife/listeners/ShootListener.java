@@ -47,6 +47,7 @@ import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.ProjectileUtil.IgnoreState;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -294,6 +295,13 @@ public class ShootListener implements Listener {
     if (ProjectileUtil.getHitEffects(event.getEntity()) == null) {
       return;
     }
+    if (event.getHitEntity() != null) {
+      if (ProjectileUtil.getIgnoreStatus(event.getEntity(),
+          event.getHitEntity().getEntityId()) == IgnoreState.IGNORED) {
+        event.setCancelled(true);
+        return;
+      }
+    }
     TargetResponse response;
     if (!ProjectileUtil.isContactTrigger(event.getEntity())) {
       if ((!(event.getHitEntity() instanceof LivingEntity)
@@ -330,7 +338,9 @@ public class ShootListener implements Listener {
 
     plugin.getEffectManager().processEffectList(caster, response, hitEffects,
         ProjectileUtil.getShotId(event.getEntity()));
-    event.getEntity().remove();
+    if (event.getHitBlock() != null) {
+      event.getEntity().remove();
+    }
   }
 
   private StrifeParticle buildFlintlockSmoke() {

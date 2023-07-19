@@ -34,9 +34,6 @@ PLAYER:
   per-level:
       HEALTH: 1
       BASE-REGEN: 0.04
-  per-bonus-level:
-      HEALTH: 0.01
-      BASE-REGEN: 0.04
 ZOMBIE:
   exp-expression: 6 - LEVEL + (LEVEL^1.7)
   base-values:

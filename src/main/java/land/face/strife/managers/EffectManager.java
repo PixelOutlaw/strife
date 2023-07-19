@@ -27,7 +27,6 @@ import land.face.strife.data.conditions.AttributeCondition;
 import land.face.strife.data.conditions.BarrierCondition;
 import land.face.strife.data.conditions.BleedingCondition;
 import land.face.strife.data.conditions.BlockingCondition;
-import land.face.strife.data.conditions.BonusLevelCondition;
 import land.face.strife.data.conditions.BuffCondition;
 import land.face.strife.data.conditions.BurningCondition;
 import land.face.strife.data.conditions.ChanceCondition;
@@ -55,10 +54,13 @@ import land.face.strife.data.conditions.LoreCondition;
 import land.face.strife.data.conditions.MinionCondition;
 import land.face.strife.data.conditions.MovingCondition;
 import land.face.strife.data.conditions.NearbyEntitiesCondition;
+import land.face.strife.data.conditions.OrderEntityExistsCondition;
+import land.face.strife.data.conditions.OrderEntityCanOrderCondition;
 import land.face.strife.data.conditions.PotionCondition;
 import land.face.strife.data.conditions.RageCondition;
 import land.face.strife.data.conditions.RangeCondition;
 import land.face.strife.data.conditions.SizeCondition;
+import land.face.strife.data.conditions.SneakCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.StealthCondition;
 import land.face.strife.data.conditions.TimeCondition;
@@ -178,6 +180,21 @@ public class EffectManager {
       }
       assert effect instanceof LocationEffect;
       LocationEffect locEffect = (LocationEffect) effect;
+      if (locEffect instanceof AreaEffect) {
+        for (Effect e : ((AreaEffect) effect).getEffects()) {
+          if (e instanceof Push) {
+            ((Push) e).setTempOrigin(response.getLocation());
+          } else if (e instanceof Damage) {
+            Set<Effect> allEffects = new HashSet<>(((Damage) e).getHitEffects());
+            allEffects.addAll(((Damage) e).getKillEffects());
+            for (Effect ef : allEffects) {
+              if (ef instanceof Push) {
+                ((Push) ef).setTempOrigin(response.getLocation());
+              }
+            }
+          }
+        }
+      }
       locEffect.applyAtLocation(caster, response.getLocation());
       return;
     }
@@ -370,6 +387,7 @@ public class EffectManager {
           }
         }, 5L);
         delayedSetEffects(((AreaEffect) effect).getEffects(), areaEffects, key, false);
+        ((AreaEffect) effect).setExcludeCaster(cs.getBoolean("exclude-caster", false));
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
         ((AreaEffect) effect).setMultishotScaling(
@@ -426,7 +444,7 @@ public class EffectManager {
       }
       case RIPTIDE -> {
         effect = new Riptide();
-        ((Riptide) effect).setTicks(cs.getInt("ticks", 40) / 2);
+        ((Riptide) effect).setTicks(cs.getInt("ticks", 40));
       }
       case EVENT -> {
         effect = new Event();
@@ -459,6 +477,7 @@ public class EffectManager {
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootProjectile) effect).setModelId(cs.getString("model-id", null));
+        ((ShootProjectile) effect).setVfxBone(cs.getString("vfx-bone", null));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
         ((ShootProjectile) effect).setSpeed((float) cs.getDouble("speed", 1));
@@ -701,6 +720,7 @@ public class EffectManager {
         ((ModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 0));
         ((ModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 0));
         ((ModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
+        ((ModelAnimation) effect).setLockTicks(cs.getInt("lock-ticks", 0));
       }
       case CREATE_MODEL -> {
         effect = new CreateModelAnimation();
@@ -713,6 +733,7 @@ public class EffectManager {
         ((CreateModelAnimation) effect).setTargetLock(cs.getBoolean("target-lock", false));
         ((CreateModelAnimation) effect).setRandomRotation(cs.getBoolean("random-rotation", true));
         ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", false));
+        ((CreateModelAnimation) effect).setForceGrounded(cs.getBoolean("force-grounded", false));
         if (cs.getString("color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("color"));
           ((CreateModelAnimation) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
@@ -775,6 +796,22 @@ public class EffectManager {
         ((ModifyProjectile) effect).setRange(cs.getDouble("range", 1));
         ((ModifyProjectile) effect).setRemove(cs.getBoolean("remove", true));
         ((ModifyProjectile) effect).setSpeedMult(cs.getDouble("speed-mult", 0.5));
+      }
+      case ORDER_ENTITY -> {
+        effect = new OrderEntityEffect();
+        List<String> idleEffects = cs.getStringList("idle-effects");
+        delayedSetEffects(((OrderEntityEffect) effect).getIdleEffects(), idleEffects, key, false);
+        List<String> impactEffects = cs.getStringList("impact-effects");
+        delayedSetEffects(((OrderEntityEffect) effect).getImpactEffects(), impactEffects, key, false);
+        List<String> moveEffects = cs.getStringList("move-effects");
+        delayedSetEffects(((OrderEntityEffect) effect).getMoveEffects(), moveEffects, key, false);
+        List<String> stopEffects = cs.getStringList("stop-effects");
+        delayedSetEffects(((OrderEntityEffect) effect).getStopEffects(), stopEffects, key, false);
+        List<String> riseEffects = cs.getStringList("rise-effects");
+        delayedSetEffects(((OrderEntityEffect) effect).getRiseEffects(), riseEffects, key, false);
+        ((OrderEntityEffect) effect).setModel(cs.getString("model-id"));
+        ((OrderEntityEffect) effect).setTravelTime(cs.getInt("travel-time-ticks", 20));
+        ((OrderEntityEffect) effect).setMinimumSpeed((float) cs.getDouble("min-blocks-per-tick", 0.2));
       }
       case POTION -> {
         effect = new PotionEffectAction();
@@ -1024,6 +1061,20 @@ public class EffectManager {
         int potionIntensity = cs.getInt("intensity", 0);
         condition = new PotionCondition(potionEffectType, potionIntensity);
         break;
+      case ORDER_ENTITY_EXISTS:
+        String effectId = cs.getString("effect-id");
+        condition = new OrderEntityExistsCondition();
+        Condition finalCondition1 = condition;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> ((OrderEntityExistsCondition) finalCondition1)
+            .setEffect((OrderEntityEffect) plugin.getEffectManager().getEffect(effectId)), 40L);
+        break;
+      case ORDER_ENTITY_READY:
+        String effectId2 = cs.getString("effect-id");
+        condition = new OrderEntityCanOrderCondition();
+        Condition finalCondition2 = condition;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> ((OrderEntityCanOrderCondition) finalCondition2)
+            .setEffect((OrderEntityEffect) plugin.getEffectManager().getEffect(effectId2)), 40L);
+        break;
       case WEAPONS:
         Set<EquipmentItemData> equipmentItemData = new HashSet<>();
         ConfigurationSection ms = cs.getConfigurationSection("item-info");
@@ -1066,9 +1117,6 @@ public class EffectManager {
       case LEVEL:
         condition = new LevelCondition();
         break;
-      case BONUS_LEVEL:
-        condition = new BonusLevelCondition();
-        break;
       case ITS_OVER_ANAKIN:
         condition = new HeightCondition();
         break;
@@ -1084,6 +1132,9 @@ public class EffectManager {
         break;
       case SIZE:
         condition = new SizeCondition();
+        break;
+      case SNEAK:
+        condition = new SneakCondition();
         break;
       case STEALTHED:
         condition = new StealthCondition();

@@ -10,19 +10,16 @@ public class EntityStatData {
   private Expression baseExpExpr;
   private Map<StrifeStat, Float> baseValueMap;
   private Map<StrifeStat, Float> perLevelMap;
-  private Map<StrifeStat, Float> perBonusLevelMap;
 
   public EntityStatData() {
     baseValueMap = new HashMap<>();
     perLevelMap = new HashMap<>();
-    perBonusLevelMap = new HashMap<>();
   }
 
   public EntityStatData(EntityStatData entityStatData) {
     baseExpExpr = entityStatData.getBaseExpExpr();
     baseValueMap = new HashMap<>(entityStatData.getBaseValueMap());
     perLevelMap = new HashMap<>(entityStatData.getPerLevelMap());
-    perBonusLevelMap = new HashMap<>(entityStatData.getPerBonusLevelMap());
   }
 
   public Expression getBaseExpExpr() {
@@ -41,19 +38,11 @@ public class EntityStatData {
     return perLevelMap;
   }
 
-  public Map<StrifeStat, Float> getPerBonusLevelMap() {
-    return perBonusLevelMap;
-  }
-
   public void putBaseValue(StrifeStat attribute, float value) {
     baseValueMap.put(attribute, value);
   }
 
   public void putPerLevel(StrifeStat attribute, float value) {
     perLevelMap.put(attribute, value);
-  }
-
-  public void putPerBonusLevel(StrifeStat attribute, float value) {
-    perBonusLevelMap.put(attribute, value);
   }
 }

@@ -9,7 +9,6 @@ import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.ModelBone;
 import com.ticxo.modelengine.api.model.bone.Renderer;
-import com.ticxo.modelengine.api.model.vfx.VFX;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +20,7 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Tadpole;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -52,6 +52,8 @@ public class CreateModelAnimation extends LocationEffect {
   @Setter
   private boolean rotationLock;
   @Setter
+  private boolean forceGrounded;
+  @Setter
   private Color color = null;
   @Setter
   private Map<Integer, List<Triple<String, String, String>>> complexPart = null;
@@ -74,14 +76,29 @@ public class CreateModelAnimation extends LocationEffect {
         loc.setYaw((float) (Math.random() * 360));
       }
     }
+    loc.setPitch(0);
 
-    Tadpole stand = loc.getWorld().spawn(loc, Tadpole.class, e -> {
+    int tries = 20;
+    if (forceGrounded) {
+      while (tries > 0) {
+        if (loc.getBlock().getType().isSolid()) {
+          loc.setY(loc.getBlockY() + loc.getBlock().getBoundingBox().getHeight() + 0.05);
+          break;
+        }
+        loc.setY(loc.getY() - 0.5);
+        tries--;
+      }
+    }
+
+    ArmorStand stand = loc.getWorld().spawn(loc, ArmorStand.class, e -> {
       e.setInvisible(true);
       e.setInvulnerable(true);
       e.setCollidable(false);
       e.setAI(false);
       e.setGravity(false);
       e.setSilent(true);
+      e.setMarker(true);
+      e.setCanTick(false);
       ChunkUtil.setDespawnOnUnload(e);
     });
     CURRENT_MODELS.add(stand);
@@ -95,6 +112,8 @@ public class CreateModelAnimation extends LocationEffect {
           if (stand.isValid()) {
             Location newLoc = target.getEntity().getLocation().clone();
             if (rotationLock) {
+              newLoc.setDirection(stand.getLocation().getDirection());
+            } else {
               newLoc.setDirection(direction);
             }
             stand.teleport(newLoc.add(relativePos));
@@ -131,15 +150,29 @@ public class CreateModelAnimation extends LocationEffect {
         loc.setYaw((float) (Math.random() * 360));
       }
     }
+    loc.setPitch(0);
 
-    Tadpole stand = loc.getWorld().spawn(loc, Tadpole.class, e -> {
+    int tries = 20;
+    if (forceGrounded) {
+      while (tries > 0) {
+        if (loc.getBlock().getType().isSolid()) {
+          loc.setY(loc.getBlockY() + loc.getBlock().getBoundingBox().getHeight() + 0.05);
+          break;
+        }
+        loc.setY(loc.getY() - 0.5);
+        tries--;
+      }
+    }
+
+    ArmorStand stand = loc.getWorld().spawn(loc, ArmorStand.class, e -> {
       e.setInvisible(true);
       e.setInvulnerable(true);
       e.setCollidable(false);
       e.setAI(false);
-      e.setInvisible(true);
       e.setGravity(false);
       e.setSilent(true);
+      e.setMarker(true);
+      e.setCanTick(false);
       ChunkUtil.setDespawnOnUnload(e);
     });
     CURRENT_MODELS.add(stand);
@@ -152,13 +185,14 @@ public class CreateModelAnimation extends LocationEffect {
     applyModelStuff(stand, model, loc.getYaw());
   }
 
-  private void applyModelStuff(Tadpole stand, ActiveModel model, float yaw) {
+  private void applyModelStuff(ArmorStand stand, ActiveModel model, float yaw) {
     Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
       ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
       if (modeledEntity == null) {
         Bukkit.getLogger().warning("Failed to create modelled entity");
       } else {
         modeledEntity.addModel(model, true);
+        modeledEntity.setModelRotationLock(rotationLock);
         modeledEntity.setBaseEntityVisible(false);
       }
 

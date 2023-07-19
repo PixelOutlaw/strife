@@ -45,6 +45,9 @@ public class FacelandMountController extends AbstractMountController {
 
       if (input.isSneak()) {
         model.getMountManager().dismountAll();
+        if (getEntity().getLocation().getBlock().getType().isSolid()) {
+          getEntity().teleport(model.getBase().getLocation());
+        }
         controller.move(0, 0, 0);
         return;
       }
@@ -70,7 +73,10 @@ public class FacelandMountController extends AbstractMountController {
       }
     } else {
       if (input.isSneak()) {
-        model.getMountManager().removeDriver();
+        model.getMountManager().dismountAll();
+        if (getEntity().getLocation().getBlock().getType().isSolid()) {
+          getEntity().teleport(model.getBase().getLocation());
+        }
         controller.move(0, 0, 0);
         return;
       }

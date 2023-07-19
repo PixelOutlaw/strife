@@ -167,22 +167,22 @@ public class SkillExperienceManager {
   }
 
   public String updateSkillString(Champion champion) {
-    String newTitle = "";
+    StringBuilder newTitle = new StringBuilder();
     int skills = 0;
     for (LifeSkillType skillType : champion.getRecentSkills()) {
       float progress = PlayerDataUtil.getSkillProgress(champion, skillType);
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
-        newTitle += skillBackground.get((int) Math.floor(progress * 18));
-        newTitle += skillType.getCharacter();
-        newTitle += skillLevel.get(level);
+        newTitle.append(skillBackground.get((int) Math.floor(progress * 18)));
+        newTitle.append(skillType.getCharacter());
+        newTitle.append(skillLevel.get(level));
         skills++;
         if (skills != champion.getRecentSkills().size()) {
-          newTitle += "\uF822";
+          newTitle.append("\uF824");
         }
       }
     }
-    return newTitle;
+    return newTitle.toString();
   }
 
 
