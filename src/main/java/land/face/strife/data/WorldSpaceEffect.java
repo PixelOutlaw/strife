@@ -161,20 +161,26 @@ public class WorldSpaceEffect {
 
   private void applyDirectionToPushEffects(WorldSpaceEffect wse, Effect effect) {
     if (effect instanceof Damage) {
-      Set<Effect> allEffects = new HashSet<>(((Damage) effect).getHitEffects());
-      allEffects.addAll(((Damage) effect).getKillEffects());
-      for (Effect e : allEffects) {
-        if (e instanceof Push) {
-          ((Push) e).setTempOrigin(wse.getNextLocation());
-          ((Push) e).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
-        }
-      }
+      modifyDamageEffect(wse, (Damage) effect);
     } else if (effect instanceof AreaEffect) {
       for (Effect e : ((AreaEffect) effect).getEffects()) {
         if (e instanceof Push) {
           ((Push) e).setTempOrigin(wse.getNextLocation());
           ((Push) e).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
+        } else if (e instanceof Damage) {
+          modifyDamageEffect(wse, (Damage) e);
         }
+      }
+    }
+  }
+
+  private void modifyDamageEffect(WorldSpaceEffect wse, Damage e) {
+    Set<Effect> allEffects = new HashSet<>(e.getHitEffects());
+    allEffects.addAll(e.getKillEffects());
+    for (Effect e2 : allEffects) {
+      if (e2 instanceof Push) {
+        ((Push) e2).setTempOrigin(wse.getNextLocation());
+        ((Push) e2).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
       }
     }
   }
