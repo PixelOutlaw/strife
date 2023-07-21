@@ -88,6 +88,10 @@ public class EndlessEffectTimer extends BukkitRunnable {
     return mob;
   }
 
+  public String getId() {
+    return endlessEffect.getId();
+  }
+
   public EndlessEffect getEndlessEffect() {
     return endlessEffect;
   }

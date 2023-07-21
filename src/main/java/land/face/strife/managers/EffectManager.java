@@ -67,6 +67,7 @@ import land.face.strife.data.conditions.TimeCondition;
 import land.face.strife.data.conditions.UniqueCondition;
 import land.face.strife.data.conditions.VelocityCondition;
 import land.face.strife.data.conditions.VelocityCondition.VelocityType;
+import land.face.strife.data.conditions.WaterCondition;
 import land.face.strife.data.conditions.WeaponsCondition;
 import land.face.strife.data.effects.*;
 import land.face.strife.data.effects.AreaEffect.AreaType;
@@ -1149,7 +1150,13 @@ public class EffectManager {
         condition = new BlockingCondition(cs.getBoolean("state", true));
         break;
       case GROUNDED:
-        condition = new GroundedCondition(cs.getBoolean("strict", false));
+        condition = new GroundedCondition(cs.getBoolean("strict", false), cs.getBoolean("ignore-liquids", false));
+        break;
+      case WATER:
+        condition = new WaterCondition(
+            cs.getBoolean("surface-only", false),
+            cs.getBoolean("check-head", false)
+        );
         break;
       case ENTITY_TYPE:
         List<String> entityTypes = cs.getStringList("types");

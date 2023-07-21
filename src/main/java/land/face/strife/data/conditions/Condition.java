@@ -127,6 +127,7 @@ public abstract class Condition {
     FLYING,
     VELOCITY,
     GROUNDED,
+    WATER,
     BLEEDING,
     DARKNESS,
     RANGE,
