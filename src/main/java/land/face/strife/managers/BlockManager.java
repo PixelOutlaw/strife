@@ -95,6 +95,12 @@ public class BlockManager {
     return false;
   }
 
+  public void setGraceTicks(UUID uuid) {
+    if (blockTimers.containsKey(uuid)) {
+      blockTimers.get(uuid).setGraceTicks(3);
+    }
+  }
+
   public void tickBlock(StrifeMob mob) {
     float blockGain = FLAT_BLOCK_S + PERCENT_BLOCK_S * mob.getMaxBlock();
     mob.setBlock(mob.getBlock() + (BLOCK_TICK_MULT * blockGain));

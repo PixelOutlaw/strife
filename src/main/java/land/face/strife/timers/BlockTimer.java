@@ -24,6 +24,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.CorruptionManager;
+import lombok.Setter;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BlockTimer extends BukkitRunnable {
@@ -31,6 +32,8 @@ public class BlockTimer extends BukkitRunnable {
   private final WeakReference<StrifeMob> target;
   private final UUID savedUUID;
   private final BlockManager blockManager;
+  @Setter
+  private int graceTicks = 0;
 
   public BlockTimer(BlockManager blockManager, StrifeMob mob) {
     this.target = new WeakReference<>(mob);
@@ -44,6 +47,10 @@ public class BlockTimer extends BukkitRunnable {
     StrifeMob mob = target.get();
     if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
       blockManager.clearBlock(savedUUID);
+      return;
+    }
+    if (graceTicks > 0) {
+      graceTicks--;
       return;
     }
     blockManager.tickBlock(mob);

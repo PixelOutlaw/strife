@@ -60,6 +60,7 @@ public class AttackSpeedManager {
     if (mob.getEntity().getType() != EntityType.PLAYER) {
       return;
     }
+    plugin.getBlockManager().setGraceTicks(mob.getEntity().getUniqueId());
     float attackSeconds = StatUtil.getAttackTime(mob) * ratio;
     setAttackTime(
         mob.getEntity().getUniqueId(),

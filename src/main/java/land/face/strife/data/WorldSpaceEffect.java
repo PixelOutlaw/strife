@@ -37,6 +37,7 @@ public class WorldSpaceEffect {
   private ArmorStand stand = null;
   @Getter @Setter
   private Location nextLocation;
+  @Getter
   private Vector velocity;
   private int lifespan;
   private int currentTick = 0;
@@ -166,7 +167,7 @@ public class WorldSpaceEffect {
       for (Effect e : ((AreaEffect) effect).getEffects()) {
         if (e instanceof Push) {
           ((Push) e).setTempOrigin(wse.getNextLocation());
-          ((Push) e).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
+          ((Push) e).setTempDirection(wse.getVelocity().clone().setY(0.001).normalize());
         } else if (e instanceof Damage) {
           modifyDamageEffect(wse, (Damage) e);
         }
@@ -180,7 +181,7 @@ public class WorldSpaceEffect {
     for (Effect e2 : allEffects) {
       if (e2 instanceof Push) {
         ((Push) e2).setTempOrigin(wse.getNextLocation());
-        ((Push) e2).setTempDirection(wse.getNextLocation().getDirection().clone().normalize());
+        ((Push) e2).setTempDirection(wse.getVelocity().clone().setY(0.001).normalize());
       }
     }
   }
