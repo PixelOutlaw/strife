@@ -10,8 +10,11 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
+import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,6 +23,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Vector;
 
 public class FallListener implements Listener {
 
@@ -48,14 +52,33 @@ public class FallListener implements Listener {
     int msSinceLastSneak = MoveUtil.getLastSneak(player);
     boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= fallMs;
 
-    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(player);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
+
+    if (player.getEyeLocation().getPitch() > 75 && player.isBlocking() && mob.hasTrait(StrifeTrait.SHIELD_BOUNCE)) {
+      Location location = player.getLocation().clone();
+      location.setPitch(0);
+      Vector newMovement = location.getDirection().setY(0.00001);
+      newMovement.normalize();
+      double intensity = Math.min(2, event.getDamage() / 10);
+      newMovement.multiply(1.5 + intensity * 0.65);
+      newMovement.setY(0.625 + intensity * 0.3);
+      event.getEntity().setVelocity(newMovement);
+      player.getWorld().playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1, 1.3f);
+      event.setCancelled(true);
+      return;
+    }
+    if (mob.hasTrait(StrifeTrait.SOFT_LANDING)) {
+      player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRASS_STEP, 1.2f, 1f);
+      event.setCancelled(true);
+      return;
+    }
 
     double damage = event.getDamage(DamageModifier.BASE) - 1;
-    double maxHealth = playerMob.getMaxLife();
+    double maxHealth = mob.getMaxLife();
     damage += damage * maxHealth * 0.055;
     damage = Math.max(damage, 0);
 
-    Champion champion = playerMob.getChampion();
+    Champion champion = mob.getChampion();
     if (rollBonus) {
       damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
     } else {
@@ -63,7 +86,7 @@ public class FallListener implements Listener {
       player.addPotionEffect(new PotionEffect(SLOW, 100, 0, true, false));
     }
 
-    if (playerMob.isInvincible()) {
+    if (mob.isInvincible()) {
       event.setCancelled(true);
       return;
     }
@@ -80,7 +103,7 @@ public class FallListener implements Listener {
 
     DamageUtil.removeDamageModifiers(event);
     if (damage >= player.getHealth()) {
-      damage = DamageUtil.doPreDeath(playerMob, (float) damage);
+      damage = DamageUtil.doPreDeath(mob, (float) damage);
     }
     if (damage >= player.getHealth()) {
       plugin.getDamageManager().getSourceOfDeath().put(player.getUniqueId(), FaceColor.YELLOW + "falling damage");

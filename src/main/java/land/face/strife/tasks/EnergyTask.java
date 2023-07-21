@@ -73,7 +73,7 @@ public class EnergyTask extends BukkitRunnable {
         return;
       }
 
-      if (player.isSprinting()) {
+      if (player.isSprinting() && !mob.hasTrait(StrifeTrait.RUNNER)) {
         if (mob.getEnergy() < 0.5) {
           player.setSprinting(false);
           player.setFoodLevel(4);
