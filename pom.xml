@@ -34,7 +34,7 @@
   </parent>
 
   <artifactId>strife</artifactId>
-  <version>3.10.2</version>
+  <version>3.10.3</version>
   <packaging>jar</packaging>
 
   <name>strife</name>
@@ -78,6 +78,14 @@
     <repository>
       <id>sk89q-repo</id>
       <url>https://maven.enginehub.org/repo/</url>
+    </repository>
+    <repository>
+      <id>citizens-repo</id>
+      <url>https://maven.citizensnpcs.co/repo</url>
+    </repository>
+    <repository>
+      <id>rosewood-repo</id>
+      <url>https://repo.rosewooddev.io/repository/public/</url>
     </repository>
   </repositories>
 
@@ -147,14 +155,21 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.Mitsugaru</groupId>
-      <artifactId>PlayerPoints</artifactId>
-      <version>master-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>com.github.shynixn.headdatabase</groupId>
       <artifactId>hdb-api</artifactId>
       <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.citizensnpcs</groupId>
+      <artifactId>citizens-main</artifactId>
+      <version>2.0.30-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.black_ixx</groupId>
+      <artifactId>playerpoints</artifactId>
+      <version>3.2.6</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

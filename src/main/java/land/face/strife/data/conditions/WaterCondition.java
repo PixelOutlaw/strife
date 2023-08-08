@@ -29,7 +29,8 @@ public class WaterCondition extends Condition {
         return le.getEyeLocation().getBlock().getType() == Material.WATER;
       }
       if (surfaceOnly) {
-        return le.getLocation().getBlock().getRelative(BlockFace.UP).getType() != Material.WATER;
+        return le.getLocation().getBlock().getRelative(BlockFace.UP, 1).getType() != Material.WATER ||
+            le.getLocation().getBlock().getRelative(BlockFace.UP, 2).getType() != Material.WATER;
       }
       return true;
     }

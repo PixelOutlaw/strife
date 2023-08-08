@@ -13,6 +13,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.events.StrifePreDamageEvent;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;

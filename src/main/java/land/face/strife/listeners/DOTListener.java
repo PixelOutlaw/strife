@@ -49,7 +49,7 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
         event.setDamage(0);
         event.setCancelled(true);
       }
-      case FIRE_TICK, POISON, WITHER, CONTACT, SUFFOCATION -> event.setCancelled(true);
+      case FIRE_TICK, POISON, WITHER, CONTACT, SUFFOCATION, STARVATION -> event.setCancelled(true);
       case DROWNING -> {
         DamageUtil.dealRawDamage(plugin.getStrifeMobManager().getStatMob(le),
             5 + (float) le.getMaxHealth() * 0.2f);

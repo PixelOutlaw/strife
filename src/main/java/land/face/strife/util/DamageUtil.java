@@ -45,6 +45,7 @@ import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import me.glaremasters.guilds.Guilds;
@@ -352,6 +353,13 @@ public class DamageUtil {
       }
     }
 
+    if (plugin.getPrayerManager().isPrayerActive(attacker.getEntity(), Prayer.TWO)) {
+      rawDamage *= 1.05;
+    }
+    if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.ONE)) {
+      rawDamage *= 0.9;
+    }
+
     String damageString;
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
       if (rawDamage == 0) {
@@ -390,6 +398,10 @@ public class DamageUtil {
       attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
     doWhenHit(attacker, defender);
+    if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.TEN)) {
+      float prayerMinus = (float) defender.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER) * 0.05f;
+      attacker.setPrayer(Math.max(0, attacker.getPrayer() - prayerMinus));
+    }
   }
 
   public static void doWhenHit(StrifeMob attacker, StrifeMob defender) {

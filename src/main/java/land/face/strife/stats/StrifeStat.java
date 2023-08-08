@@ -117,6 +117,9 @@ public enum StrifeStat {
   HP_ON_KILL("Life On Kill"),
   HEALING_POWER("Healing Power"),
 
+  MAX_PRAYER_POINTS("Maximum Faith"),
+  PRAYER_COST("Piety"),
+
   MINION_DAMAGE("Minion Damage"),
   MINION_LIFE("Minion Max Life"),
   MINION_SPEED("Minion Move Speed"),

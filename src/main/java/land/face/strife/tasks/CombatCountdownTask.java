@@ -50,6 +50,7 @@ public class CombatCountdownTask extends BukkitRunnable {
   private boolean targetWasAlive;
 
   private final BossBarManager manager;
+  private int prayerYes = 0, prayerNo = 1;
 
   public CombatCountdownTask(StrifeMob parentMob, StrifeMob targetMob) {
     manager = StrifePlugin.getInstance().getBossBarManager();
@@ -71,6 +72,14 @@ public class CombatCountdownTask extends BukkitRunnable {
     if (mob == null || mob.getEntity() == null) {
       cancel();
       return;
+    }
+
+    if (ticks % 5 == 0) {
+      if (StrifePlugin.getInstance().getPrayerManager().isPrayerActive(mob.getEntity())) {
+        prayerYes++;
+      } else {
+        prayerNo++;
+      }
     }
 
     ticks--;
@@ -200,13 +209,24 @@ public class CombatCountdownTask extends BukkitRunnable {
     return name;
   }
 
-  public static void awardSkillExp(StrifeMob mob) {
+  public void awardSkillExp(StrifeMob mob) {
     Champion champion = mob.getChampion();
     if (champion == null) {
       return;
     }
     if (champion.getDetailsContainer().getExpValues() == null) {
       return;
+    }
+    float xpTotal = 0;
+    for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
+      xpTotal += champion.getDetailsContainer().getExpValues().get(type);
+    }
+    xpTotal *= 0.12;
+    xpTotal += Math.pow(champion.getDetailsContainer().getTotalExp(), 0.6);
+    xpTotal *= (float) prayerYes / (prayerYes + prayerNo);
+    if (xpTotal > 1) {
+      StrifePlugin.getInstance().getSkillExperienceManager().addExperience(
+          (Player) mob.getEntity(), LifeSkillType.PRAYER, xpTotal, false, false);
     }
     for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
       StrifePlugin.getInstance().getSkillExperienceManager().addExperience((Player) mob.getEntity(), type,

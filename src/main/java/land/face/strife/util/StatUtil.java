@@ -17,6 +17,7 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.ChatColor;
@@ -48,8 +49,23 @@ public class StatUtil {
             (1 + stats.getOrDefault(StrifeStat.WARD_MULT, 0f) / 100);
       }
       case REGENERATION -> {
-        return stats.getOrDefault(StrifeStat.REGENERATION, 0f) *
+        float amount = stats.getOrDefault(StrifeStat.REGENERATION, 0f) *
             (1 + stats.getOrDefault(StrifeStat.REGEN_MULT, 0f) / 100);
+        if (!mob.isInCombat() && plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
+          amount += 10;
+        }
+        if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SIX)) {
+          amount += 50;
+          amount += mob.getMaxLife() - mob.getEntity().getHealth();
+        }
+        return amount;
+      }
+      case ENERGY_REGEN -> {
+        float amount = stats.getOrDefault(StrifeStat.ENERGY_REGEN, 0f);
+        if (!mob.isInCombat() && plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
+          amount += 10;
+        }
+        return amount;
       }
       case HEALTH -> {
         float amount = stats.getOrDefault(StrifeStat.HEALTH, 1f) *
@@ -89,6 +105,42 @@ public class StatUtil {
           mob.setBlock(amount);
         }
         return amount;
+      }
+      case MAX_PRAYER_POINTS -> {
+        if (mob.getChampion() != null) {
+          float maxPrayer = stats.getOrDefault(StrifeStat.MAX_PRAYER_POINTS, 10F) +
+              mob.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER) * 5.102f;
+          mob.setMaxPrayer(maxPrayer);
+          mob.setPrayer(Math.min(mob.getChampion().getSaveData().getPrayerPoints(), maxPrayer));
+          return maxPrayer;
+        } else {
+          mob.setMaxPrayer(1);
+          return 1;
+        }
+      }
+      case ATTACK_SPEED -> {
+        return stats.getOrDefault(StrifeStat.ATTACK_SPEED, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.NINE) ? 10 : 0);
+      }
+      case COOLDOWN_REDUCTION -> {
+        return stats.getOrDefault(StrifeStat.COOLDOWN_REDUCTION, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.NINE) ? 10 : 0);
+      }
+      case DODGE_CHANCE -> {
+        return stats.getOrDefault(StrifeStat.DODGE_CHANCE, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SEVEN) ? 2 : 0);
+      }
+      case CRITICAL_RATE -> {
+        return stats.getOrDefault(StrifeStat.CRITICAL_RATE, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SEVEN) ? 2 : 0);
+      }
+      case HP_ON_KILL -> {
+        return stats.getOrDefault(StrifeStat.HP_ON_KILL, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.FIVE) ? 4 : 0);
+      }
+      case ENERGY_ON_KILL -> {
+        return stats.getOrDefault(StrifeStat.ENERGY_ON_KILL, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.FIVE) ? 2 : 0);
       }
       case FIRE_RESIST, ICE_RESIST, LIGHTNING_RESIST, LIGHT_RESIST, DARK_RESIST, EARTH_RESIST -> {
         float amount = stats.getOrDefault(stat, 0f) + stats.getOrDefault(StrifeStat.ALL_RESIST, 0f);
@@ -203,7 +255,11 @@ public class StatUtil {
   }
 
   public static float getAccuracy(StrifeMob ae) {
-    return ae.getStat(StrifeStat.ACCURACY) * (1f + (ae.getStat(StrifeStat.ACCURACY_MULT) / 100f));
+    float amount = ae.getStat(StrifeStat.ACCURACY) * (1f + (ae.getStat(StrifeStat.ACCURACY_MULT) / 100f));
+    if (plugin.getPrayerManager().isPrayerActive(ae.getEntity(), Prayer.FOUR)) {
+      amount *= 1.06;
+    }
+    return amount;
   }
 
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {

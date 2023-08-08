@@ -1,9 +1,8 @@
 package land.face.strife.listeners;
 
-import java.util.ArrayList;
-import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -19,15 +18,10 @@ import org.bukkit.potion.PotionEffectType;
 public class PotionListener implements Listener {
 
   private final StrifePlugin plugin;
-  private final List<PotionEffect> ignoreEffects = new ArrayList<>();
+  private boolean ignorePotion = false;
 
   public PotionListener(StrifePlugin plugin) {
     this.plugin = plugin;
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onPotionMonitor(EntityPotionEffectEvent event) {
-    ignoreEffects.remove(event.getNewEffect());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -38,45 +32,50 @@ public class PotionListener implements Listener {
     if (!(event.getAction() == Action.ADDED || event.getAction() == Action.CHANGED)) {
       return;
     }
-    if (event.isCancelled() || !(event.getEntity() instanceof LivingEntity)) {
+    if (event.isCancelled() || ignorePotion) {
       return;
     }
-    if (ignoreEffects.contains(event.getNewEffect())) {
+    if (!(event.getEntity() instanceof LivingEntity livingEntity)) {
       return;
     }
     switch (event.getNewEffect().getType().getName()) {
       case "SLOW" -> {
-        StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+        StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
         if (mob.hasTrait(StrifeTrait.UNSTOPPABLE)) {
           event.setCancelled(true);
           return;
         }
-        if (mob.hasTrait(StrifeTrait.STRIDE)) {
-          if (event.getNewEffect().getAmplifier() == 0) {
-            event.setCancelled(true);
-            return;
-          }
+        if (mob.hasTrait(StrifeTrait.STRIDE) || plugin.getPrayerManager().isPrayerActive(livingEntity, Prayer.EIGHT)) {
           event.setCancelled(true);
-          PotionEffect newEffect = event.getNewEffect()
-              .withAmplifier(event.getNewEffect().getAmplifier() - 1);
-          ignoreEffects.add(newEffect);
-          newEffect.apply((LivingEntity) event.getEntity());
+          reduceEffect(event.getNewEffect(), livingEntity);
         }
       }
       case "UNLUCK" -> {
-        StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+        StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
         if (mob.hasTrait(StrifeTrait.TOXIC_MASCULINITY)) {
           event.setCancelled(true);
+        } else if (plugin.getPrayerManager().isPrayerActive(livingEntity, Prayer.EIGHT)) {
+          event.setCancelled(true);
+          reduceEffect(event.getNewEffect(), livingEntity);
         }
       }
       case "WEAKNESS" -> {
-        StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+        StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
         if (mob.hasTrait(StrifeTrait.HIGHLY_MOTIVATED)) {
           event.setCancelled(true);
+        } else if (plugin.getPrayerManager().isPrayerActive(livingEntity, Prayer.EIGHT)) {
+          event.setCancelled(true);
+          reduceEffect(event.getNewEffect(), livingEntity);
+        }
+      }
+      case "HUNGER" -> {
+        if (plugin.getPrayerManager().isPrayerActive(livingEntity, Prayer.EIGHT)) {
+          event.setCancelled(true);
+          reduceEffect(event.getNewEffect(), livingEntity);
         }
       }
       case "POISON" -> {
-        StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+        StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
         if (mob.hasTrait(StrifeTrait.ANTI_POISON)) {
           event.setCancelled(true);
         }
@@ -97,5 +96,15 @@ public class PotionListener implements Listener {
                 new PotionEffect(PotionEffectType.POISON, 100, newAmp, false, true)), 0L);
       }
     }
+  }
+
+  private void reduceEffect(PotionEffect potionEffect, LivingEntity livingEntity) {
+    if (potionEffect.getAmplifier() == 0) {
+      return;
+    }
+    PotionEffect newEffect = potionEffect.withAmplifier(potionEffect.getAmplifier() - 1);
+    ignorePotion = true;
+    newEffect.apply(livingEntity);
+    ignorePotion = false;
   }
 }

@@ -18,6 +18,7 @@ public enum LifeSkillType {
   AGILITY("Agility", "agility", "\uD86D\uDF5D", FaceColor.TEAL.getColor()),
   TRADING("Trading", "trading", "\uD86D\uDF68", FaceColor.GREEN.getColor()),
   FLYING("Flying", "flying", "\uD86D\uDF58", ChatColor.of(new Color(114, 187, 255))),
+  PRAYER("Prayer", "prayer", "\uD86D\uDF6A", ChatColor.of(new Color(202, 255, 245))),
 
   SWORDSMANSHIP("Swordsmanship", "sword", "\uD86D\uDF54", FaceColor.ORANGE.getColor(), true),
   DAGGER_MASTERY("Dagger Mastery", "dagger", "", ChatColor.of(new Color(204, 246, 102)), true),

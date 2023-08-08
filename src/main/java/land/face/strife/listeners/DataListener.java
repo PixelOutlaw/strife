@@ -217,6 +217,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     StatUtil.getStat(mob, StrifeStat.BARRIER);
     StatUtil.getStat(mob, StrifeStat.HEALTH);
     StatUtil.getStat(mob, StrifeStat.ENERGY);
+    StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
 
     mob.restoreBarrier(mob.getMaxBarrier());
     mob.setEnergy(mob.getMaxEnergy());
@@ -334,8 +335,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onHandChange(PlayerChangedMainHandEvent event) {
-    plugin.getGuiManager()
-        .updateGodDisplay(event.getPlayer(), event.getMainHand() == MainHand.LEFT);
+    plugin.getPrayerManager().sendPrayerUpdate(event.getPlayer(), 0, false);
   }
 
   private void ensureAbilitiesDontInstantCast(Player player) {

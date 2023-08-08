@@ -207,6 +207,9 @@ public class ChampionManager {
   }
 
   public boolean removeBoundLoreAbility(StrifeMob mob, LoreAbility loreAbility) {
+    if (loreAbility == null) {
+      return false;
+    }
     Champion champion = mob.getChampion();
     if (champion == null) {
       return false;

@@ -12,6 +12,8 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.stats.AbilitySlot;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -19,6 +21,7 @@ import org.bukkit.entity.Player;
 public class ChampionSaveData {
 
   private final UUID uniqueId;
+
   private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
   private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
   private final Map<LifeSkillType, Float> skillExpMap = new HashMap<>();
@@ -30,13 +33,18 @@ public class ChampionSaveData {
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
 
   private SelectedGod selectedGod;
+  @Getter
   private Map<SelectedGod, Integer> godXp = new HashMap<>();
+  @Getter
+  private Map<SelectedGod, Integer> godLevel = new HashMap<>();
 
   private int unusedStatPoints;
   private int pendingUnusedStatPoints;
   private int highestReachedLevel;
 
   private float pvpScore = 700;
+  @Getter @Setter
+  private float prayerPoints = 0;
   private double catchupExpUsed;
 
   private boolean onMount;
@@ -89,6 +97,10 @@ public class ChampionSaveData {
 
   public void setGodXp(SelectedGod selectedGod, int amount) {
     godXp.put(selectedGod, amount);
+  }
+
+  public void setGodLevel(SelectedGod selectedGod, int amount) {
+    godLevel.put(selectedGod, amount);
   }
 
   public void setSkillExp(LifeSkillType type, float amount) {

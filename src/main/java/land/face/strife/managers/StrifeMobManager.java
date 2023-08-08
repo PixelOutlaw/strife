@@ -75,6 +75,7 @@ public class StrifeMobManager {
       StatUtil.getStat(mob, StrifeStat.BARRIER);
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);
+      StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
       mob.restoreBarrier(200000);
       entity.lockFreezeTicks(true);
       trackedEntities.put(entity.getUniqueId(), mob);

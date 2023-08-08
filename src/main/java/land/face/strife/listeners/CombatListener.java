@@ -31,6 +31,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.events.StrifePreDamageEvent;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
@@ -317,6 +318,13 @@ public class CombatListener implements Listener {
       return;
     }
 
+    if (attackEntity instanceof Bee) {
+      plugin.getDamageManager().dealDamage(attacker, defender,
+          (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
+      event.setCancelled(true);
+      return;
+    }
+
     defender.trackDamage(attacker, (float) strifeDamageEvent.getFinalDamage());
     float eventDamage = (float) strifeDamageEvent.getFinalDamage();
     if (defender.getBarrier() > 0) {
@@ -328,7 +336,7 @@ public class CombatListener implements Listener {
       defender.damageBarrier(0);
     }
 
-    if (finalDamage > 0) {
+    if (eventDamage > 0) {
       eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
       if (damage.containsKey(DamageType.PHYSICAL)) {
@@ -349,18 +357,11 @@ public class CombatListener implements Listener {
           DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
     }
 
-    if (attackEntity instanceof Bee) {
-      plugin.getDamageManager().dealDamage(attacker, defender,
-          (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
-      event.setCancelled(true);
-      return;
-    }
-
     if (eventDamage >= defendEntity.getHealth()) {
       eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
     }
 
-    event.setDamage(BASE, Math.max(eventDamage, 0.001));
+    event.setDamage(BASE, Math.max(eventDamage, 0));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

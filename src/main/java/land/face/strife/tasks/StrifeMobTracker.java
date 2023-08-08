@@ -37,7 +37,7 @@ public class StrifeMobTracker extends BukkitRunnable {
   @Override
   public void run() {
     int size = plugin.getStrifeMobManager().getMobs().size();
-    LogUtil.printInfo("Current StrifeMobs: " + size);
+    //LogUtil.printInfo("Current StrifeMobs: " + size);
     for (Entry<UUID, StrifeMob> entry : plugin.getStrifeMobManager().getMobs().entrySet()) {
       if (entry.getValue().getEntity() == null) {
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->

@@ -24,6 +24,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
@@ -63,6 +64,7 @@ public class DamageManager {
     } else {
       defender.damageBarrier(0);
     }
+
     damage = doEnergyAbsorb(defender, damage);
     if (attacker == defender) {
       DamageUtil.dealRawDamage(defender, damage);

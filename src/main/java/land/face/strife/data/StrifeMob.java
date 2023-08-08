@@ -54,7 +54,7 @@ public class StrifeMob {
   @Getter
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
-  private final WeakReference<Champion> champion;
+  private WeakReference<Champion> champion;
   private final WeakReference<LivingEntity> livingEntity;
   private WeakReference<UniqueEntity> uniqueEntity = null;
   private WeakReference<Spawner> spawner = new WeakReference<>(null);
@@ -62,10 +62,13 @@ public class StrifeMob {
   private WeakReference<StrifeMob> owner = new WeakReference<>(null);
 
   private EntityAbilitySet abilitySet;
+  @Getter
   private final Set<String> mods = new HashSet<>();
+  @Getter @Setter
   private Set<String> factions = new HashSet<>();
   @Getter @Setter
   private UUID alliedGuild;
+  @Getter @Setter
   private boolean charmImmune = false;
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
@@ -79,6 +82,8 @@ public class StrifeMob {
   @Getter
   private final Map<UUID, Float> threatTargets = new HashMap<>();
 
+  @Getter @Setter
+  private float maxPrayer;
   private float energy = 0;
   private float maxEnergy = 0;
   @Getter @Setter
@@ -87,10 +92,13 @@ public class StrifeMob {
   private int maxEarthRunes = 3;
   @Getter
   private int earthRunes = 0;
+  @Getter
   private float barrier = 0;
   @Getter @Setter
   private float maxLife = 1;
+  @Getter
   private float maxBarrier = 0;
+  @Getter
   private float block = 0;
   @Getter
   private float maxBlock = 1000;
@@ -173,18 +181,6 @@ public class StrifeMob {
 
   public boolean isGlobalCooldownReady() {
     return globalCooldownStamp < System.currentTimeMillis();
-  }
-
-  public float getBarrier() {
-    return barrier;
-  }
-
-  public float getMaxBarrier() {
-    return maxBarrier;
-  }
-
-  public float getBlock() {
-    return block;
   }
 
   public void setBlock(float block) {
@@ -307,6 +303,20 @@ public class StrifeMob {
 
   public void setMaxEnergy(float maxEnergy) {
     this.maxEnergy = maxEnergy;
+  }
+
+  public float getPrayer() {
+    if (champion.get() == null) {
+      return 0;
+    }
+    return champion.get().getSaveData().getPrayerPoints();
+  }
+
+  public void setPrayer(float amount) {
+    if (champion.get() == null) {
+      return;
+    }
+    champion.get().getSaveData().setPrayerPoints(Math.min(maxPrayer, amount));
   }
 
   public float getRage() {
@@ -516,20 +526,14 @@ public class StrifeMob {
     return uniqueEntity == null ? null : uniqueEntity.get();
   }
 
-  public Set<String> getMods() {
-    return mods;
-  }
-
-  public Set<String> getFactions() {
-    return factions;
-  }
-
-  public void setFactions(Set<String> factions) {
-    this.factions = factions;
-  }
-
   public Champion getChampion() {
-    return champion == null ? null : champion.get();
+    Champion result = champion == null ? null : champion.get();
+    if (result == null && getEntity() instanceof Player) {
+      Bukkit.getLogger().warning("[Strife] Invalid champion for " + getEntity().getName()+ "... Resolving...");
+      champion = new WeakReference<>(StrifePlugin.getInstance().getChampionManager().getChampion((Player) getEntity()));
+      return champion.get();
+    }
+    return result;
   }
 
   public boolean isPlayer() {
@@ -782,14 +786,6 @@ public class StrifeMob {
 
   public void addEnergyOverTime(float amount, int ticks) {
     energyTask.addEnergyOverTime(amount, ticks);
-  }
-
-  public boolean isCharmImmune() {
-    return charmImmune;
-  }
-
-  public void setCharmImmune(boolean charmImmune) {
-    this.charmImmune = charmImmune;
   }
 
   public void minionDeath() {

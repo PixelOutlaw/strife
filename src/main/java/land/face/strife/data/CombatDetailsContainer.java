@@ -5,15 +5,17 @@ import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
+import lombok.Getter;
 
 public class CombatDetailsContainer {
 
   private final Map<LifeSkillType, Float> skillWeight = new HashMap<>();
+  @Getter
   private float totalExp = 0;
 
-  private static float EXP_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
+  private static final float EXP_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.leveling.exp-converted-to-combat-skill-exp", 0.05);
-  private static float WEIGHT_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
+  private static final float WEIGHT_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.leveling.combat-skill-exp-weight", 0.1);
 
   public void addWeights(Ability ability) {

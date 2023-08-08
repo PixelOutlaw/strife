@@ -1,8 +1,8 @@
 package land.face.strife.data.effects;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.util.LogUtil;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -11,13 +11,18 @@ import org.bukkit.util.Vector;
 
 public class Push extends Effect {
 
-  private double power;
-  private double height;
-  private boolean cancelFall;
-  private boolean clamp;
   @Setter
-  private boolean uncheckedHeight;
   private PushType pushType;
+  @Setter
+  private double power;
+  @Setter
+  private double height;
+  @Setter
+  private boolean zeroFall;
+  @Setter
+  private boolean horizontalClamp;
+  @Setter
+  private boolean verticalClamp;
   @Setter
   private Location tempOrigin;
   @Setter
@@ -36,52 +41,55 @@ public class Push extends Effect {
     Vector direction;
     switch (pushType) {
       case AWAY_FROM_CASTER ->
-          direction = getEffectVelocity(caster.getEntity().getLocation().toVector(),
-              target.getEntity());
+          direction = getLocationDiff(caster.getEntity().getLocation().toVector(), target.getEntity());
+      case TARGET_DIRECTION ->
+          direction = target.getEntity().getEyeLocation().getDirection();
       case AWAY_FROM_CENTER ->
-          direction = getEffectVelocity(tempOrigin.toVector(), target.getEntity());
-      case CASTER_DIRECTION -> {
-        direction = caster.getEntity().getEyeLocation().getDirection();
-        if (!uncheckedHeight) {
-          direction.setY(0.001);
-        }
-        direction.normalize().multiply(power / 10);
-      }
-      case TEMP_DIRECTION -> {
-        LogUtil.printDebug(tempDirection.getX() + " " + tempDirection.getY() + " " + tempDirection.getZ());
-        direction = getEffectVelocity(tempDirection, target.getEntity());
-      }
-      default -> {
-        return;
-      }
+          direction = getLocationDiff(tempOrigin.toVector(), target.getEntity());
+      case CASTER_DIRECTION ->
+          direction = caster.getEntity().getEyeLocation().getDirection();
+      case TEMP_DIRECTION ->
+          direction = getLocationDiff(tempDirection, target.getEntity());
+      default -> { return; }
     }
-    Vector oldVelocity = target.getEntity().getVelocity().clone();
-    Vector newVelocity = oldVelocity.clone();
-    if (cancelFall) {
-      if (oldVelocity.getY() < 0) {
-        oldVelocity.setY(0);
+
+    Vector currentVelocity = MoveUtil.getVelocity(target.getEntity());
+
+    Vector horizontalPush = direction.clone();
+    horizontalPush.setY(0.0001);
+    horizontalPush.normalize().multiply(power / 10);
+
+    if (zeroFall) {
+      if (currentVelocity.getY() < 0) {
+        currentVelocity.setY(0.0001);
+        currentVelocity.normalize();
       }
       target.getEntity().setFallDistance(0);
     }
-    if (uncheckedHeight) {
-      if (clamp) {
-        newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
-        newVelocity.setY(clampRay(oldVelocity.getY(), direction.getY()));
-        newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
-      } else {
-        newVelocity.add(direction);
-      }
+
+    Vector newVelocity = currentVelocity.clone();
+
+    if (verticalClamp) {
+      newVelocity.setY(clampRay(currentVelocity.getY(), height / 10));
     } else {
-      if (clamp) {
-        newVelocity.setX(clampRay(oldVelocity.getX(), direction.getX()));
-        newVelocity.setY(clampRay(oldVelocity.getY(), height / 10));
-        newVelocity.setZ(clampRay(oldVelocity.getZ(), direction.getZ()));
-      } else {
-        newVelocity.add(direction);
-        newVelocity.add(new Vector(0, height / 10, 0));
-      }
+      newVelocity.setY(newVelocity.getY() + height / 10);
     }
+
+    if (horizontalClamp) {
+      newVelocity.setX(clampRay(currentVelocity.getX(), horizontalPush.getX()));
+      newVelocity.setZ(clampRay(currentVelocity.getZ(), horizontalPush.getZ()));
+    } else {
+      newVelocity.add(horizontalPush);
+    }
+
     target.getEntity().setVelocity(newVelocity);
+  }
+
+  private Vector getLocationDiff(Vector originLocation, Entity to) {
+    if (originLocation.equals(to.getLocation().toVector())) {
+      return new Vector(0, 1, 0);
+    }
+    return to.getLocation().toVector().subtract(originLocation).normalize();
   }
 
   private double clampRay(double old, double change) {
@@ -95,43 +103,9 @@ public class Push extends Effect {
     }
   }
 
-  public PushType getPushType() {
-    return pushType;
-  }
-
-  private Vector getEffectVelocity(Vector originLocation, Entity to) {
-    if (originLocation.equals(to.getLocation().toVector())) {
-      return new Vector(0, power / 10, 0);
-    }
-    Vector velocity = to.getLocation().toVector().subtract(originLocation);
-    if (!uncheckedHeight) {
-      velocity.setY(0.001);
-    }
-    return velocity.normalize().multiply(power / 10);
-  }
-
-  public void setPower(double power) {
-    this.power = power;
-  }
-
-  public void setHeight(double height) {
-    this.height = height;
-  }
-
-  public void setCancelFall(boolean cancelFall) {
-    this.cancelFall = cancelFall;
-  }
-
-  public void setClamp(boolean clamp) {
-    this.clamp = clamp;
-  }
-
-  public void setPushType(PushType pushType) {
-    this.pushType = pushType;
-  }
-
   public enum PushType {
     AWAY_FROM_CASTER,
+    TARGET_DIRECTION,
     AWAY_FROM_CENTER,
     CASTER_DIRECTION,
     TEMP_DIRECTION

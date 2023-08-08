@@ -20,22 +20,27 @@ package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.StatUtil;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Cow;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-public class XpBottleListener implements Listener {
+public class ConsumeItemListener implements Listener {
 
   private final StrifePlugin plugin;
 
-  public XpBottleListener(StrifePlugin plugin) {
+  public ConsumeItemListener(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
@@ -52,6 +57,38 @@ public class XpBottleListener implements Listener {
           case 2002 -> plugin.getBigBottleMenu().open(event.getPlayer());
           case 2003 -> plugin.getGiantBottleMenu().open(event.getPlayer());
         }
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onBoneConsume(PlayerInteractEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getHand() == EquipmentSlot.HAND) {
+      if (event.getPlayer().getCooldown(Material.BONE) > 0) {
+        return;
+      }
+      if (!event.getPlayer().hasPermission("prayer.enabled")) {
+        return;
+      }
+      if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        ItemStack stack = event.getPlayer().getEquipment().getItemInMainHand();
+        if (stack.getType() != Material.BONE) {
+          return;
+        }
+        event.setCancelled(true);
+        StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+        StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
+        mob.setPrayer(Math.min(mob.getMaxPrayer(), mob.getPrayer() + (mob.getMaxPrayer() * 0.1f)));
+        stack.setAmount(stack.getAmount() - 1);
+        event.getPlayer().updateInventory();
+        plugin.getPrayerManager().sendPrayerUpdate(event.getPlayer(), mob.getPrayer() / mob.getMaxPrayer(),
+            plugin.getPrayerManager().isPrayerActive(event.getPlayer()));
+        plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.PRAYER, 30, false, false);
+        event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.ENTITY_TURTLE_EGG_CRACK, 1, 1.25f);
+        event.getPlayer().setCooldown(Material.BONE, 6000);
       }
     }
   }

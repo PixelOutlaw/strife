@@ -96,6 +96,18 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
     config.set(champUuid + ".pvp-score", (int) champion.getPvpScore());
 
+    config.set(champUuid + ".prayer", (int) champion.getPrayerPoints());
+
+    config.set(champUuid + ".FACEGUY-xp", champion.getGodXp().getOrDefault(SelectedGod.FACEGUY, 0));
+    config.set(champUuid + ".AURORA-xp", champion.getGodXp().getOrDefault(SelectedGod.AURORA, 0));
+    config.set(champUuid + ".ZEXIR-xp", champion.getGodXp().getOrDefault(SelectedGod.ZEXIR, 0));
+    config.set(champUuid + ".ANYA-xp", champion.getGodXp().getOrDefault(SelectedGod.ANYA, 0));
+
+    config.set(champUuid + ".FACEGUY-level", champion.getGodLevel().getOrDefault(SelectedGod.FACEGUY, 1));
+    config.set(champUuid + ".AURORA-level", champion.getGodLevel().getOrDefault(SelectedGod.AURORA, 1));
+    config.set(champUuid + ".ZEXIR-level", champion.getGodLevel().getOrDefault(SelectedGod.ZEXIR, 1));
+    config.set(champUuid + ".ANYA-level", champion.getGodLevel().getOrDefault(SelectedGod.ANYA, 1));
+
     for (LifeSkillType type : LifeSkillType.types) {
       config.set(champUuid + "." + type.getDataName() + "-level", champion.getSkillLevel(type));
       config.set(champUuid + "." + type.getDataName() + "-exp", champion.getSkillExp(type));
@@ -103,8 +115,7 @@ public class FlatfileStorage implements DataStorage {
 
     config.set(champUuid + ".catchup-xp-used", champion.getCatchupExpUsed());
 
-    config.set(champUuid + "." + "god", champion.getSelectedGod() == null ?
-        "NONE" : champion.getSelectedGod().toString());
+    config.set(champUuid + ".god", champion.getSelectedGod() == null ? "NONE" : champion.getSelectedGod().toString());
     for (SelectedGod g : SelectedGod.values()) {
       if (g == SelectedGod.NONE) {
         continue;
@@ -171,10 +182,16 @@ public class FlatfileStorage implements DataStorage {
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
 
       saveData.setSelectedGod(SelectedGod.valueOf(section.getString("god", "NONE")));
+
       saveData.setGodXp(SelectedGod.FACEGUY, section.getInt("FACEGUY-xp", 0));
       saveData.setGodXp(SelectedGod.ZEXIR, section.getInt("ZEXIR-xp", 0));
       saveData.setGodXp(SelectedGod.AURORA, section.getInt("AURORA-xp", 0));
       saveData.setGodXp(SelectedGod.ANYA, section.getInt("ANYA-xp", 0));
+
+      saveData.setGodLevel(SelectedGod.FACEGUY, section.getInt("FACEGUY-level", 1));
+      saveData.setGodLevel(SelectedGod.ZEXIR, section.getInt("ZEXIR-level", 1));
+      saveData.setGodLevel(SelectedGod.AURORA, section.getInt("AURORA-level", 1));
+      saveData.setGodLevel(SelectedGod.ANYA, section.getInt("ANYA-level", 1));
 
       saveData.setCatchupExpUsed(section.getDouble("catchup-xp-used"));
 
@@ -275,6 +292,7 @@ public class FlatfileStorage implements DataStorage {
         }
       }
       saveData.setPvpScore((float) section.getDouble("pvp-score", 700));
+      saveData.setPrayerPoints((float) section.getDouble("prayer", 0));
     }
     return saveData;
   }

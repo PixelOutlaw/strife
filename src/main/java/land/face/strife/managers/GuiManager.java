@@ -11,20 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import land.face.dinvy.DeluxeInvyPlugin;
-import land.face.dinvy.entity.PlayerData;
-import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.MainHand;
 
 public class GuiManager {
 
@@ -64,15 +58,6 @@ public class GuiManager {
   public static final TextComponent NOTICE_ENERGY = noShadow(new TextComponent("᳣"));
   public static final TextComponent NOTICE_REQUIREMENT = noShadow(new TextComponent("᳤"));
   public static final TextComponent NOTICE_INVALID_TARGET = noShadow(new TextComponent("᳢"));
-
-  public static final TextComponent NO_GOD =  noShadow(new TextComponent("᮰"));
-  public static final TextComponent GOD_FACEGUY =  noShadow(new TextComponent("᮱"));
-  public static final TextComponent GOD_AURORA = noShadow(new TextComponent("᮲"));
-  public static final TextComponent GOD_ZEXIR = noShadow(new TextComponent("᮳"));
-  public static final TextComponent GOD_ANYA = noShadow(new TextComponent("᮴"));
-
-  public static final TextComponent LIFE_SEPERATOR = noShadow(new TextComponent("拾"));
-  public static final TextComponent ENERGY_SEPERATOR = noShadow(new TextComponent("拿"));
 
   private final Map<Integer, GUIComponent> builtXpFont = buildXpFont();
 
@@ -293,37 +278,13 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("slot-c-charges", EMPTY, 0, 0, Alignment.CENTER));
     gui.putOnTop(new GUIComponent("slot-d-charges", EMPTY, 0, 0, Alignment.CENTER));
 
-    gui.putOnTop(new GUIComponent("god-slot", NO_GOD, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("god-slot", EMPTY, 0, 0, Alignment.CENTER));
 
     guiMap.put(p, gui);
-
-    updateGodDisplay(p, p.getMainHand() == MainHand.RIGHT);
   }
 
   public GUI getGui(Player p) {
     return guiMap.get(p);
-  }
-
-  public void updateGodDisplay(Player player, boolean right) {
-    Champion champion = plugin.getChampionManager().getChampion(player);
-
-    TextComponent gc;
-    if (champion.getSaveData().getSelectedGod() == null) {
-      gc = NO_GOD;
-    } else {
-      gc = switch (champion.getSaveData().getSelectedGod()) {
-        case NONE -> NO_GOD;
-        case FACEGUY -> GOD_FACEGUY;
-        case AURORA -> GOD_AURORA;
-        case ZEXIR -> GOD_ZEXIR;
-        case ANYA -> GOD_ANYA;
-      };
-    }
-    if (right) {
-      updateComponent(player, new GUIComponent("god-slot", gc, 19, 99, Alignment.LEFT));
-    } else {
-      updateComponent(player, new GUIComponent("god-slot", gc, 19, -100, Alignment.RIGHT));
-    }
   }
 
   public void updateComponent(Player player, GUIComponent component) {

@@ -674,9 +674,9 @@ public class EffectManager {
         effect = new Push();
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
-        ((Push) effect).setCancelFall(cs.getBoolean("cancel-fall", false));
-        ((Push) effect).setClamp(cs.getBoolean("clamp", true));
-        ((Push) effect).setUncheckedHeight(cs.getBoolean("unchecked-height", false));
+        ((Push) effect).setZeroFall(cs.getBoolean("zero-fall", false));
+        ((Push) effect).setHorizontalClamp(cs.getBoolean("horizontal-clamp", true));
+        ((Push) effect).setVerticalClamp(cs.getBoolean("vertical-clamp", true));
         ((Push) effect).setPushType(
             PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
       }

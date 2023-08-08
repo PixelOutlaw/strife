@@ -56,6 +56,7 @@ import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.EloUtil;
+import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -114,6 +115,12 @@ public class StrifeCommand extends BaseCommand {
     plugin.getVagabondManager().spawnVagabond(level, className, sender.getLocation());
   }
 
+  @Subcommand("citizen-reload")
+  @CommandPermission("strife.admin")
+  public void fuckMeg(CommandSender sender) {
+    plugin.getCitizenModelListener().reloadModels(plugin.getConfig().getConfigurationSection("npc-model-data-fuck-model-engine"));
+  }
+
   @Subcommand("invincible")
   @CommandPermission("strife.admin")
   public void invincible(Player sender, int ticks) {
@@ -131,12 +138,12 @@ public class StrifeCommand extends BaseCommand {
       MessageUtils.sendMessage(sender, "Invalid god name: " + godString);
       return;
     }
-    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
-    champion.setGod(god);
-    MessageUtils.sendMessage(sender,
-        "Set god of " + target.getPlayer().getName() + " to " + godString);
-    plugin.getGuiManager().updateGodDisplay(target.getPlayer(),
-        target.getPlayer().getMainHand() == MainHand.RIGHT);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
+    StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
+    mob.setPrayer(mob.getMaxPrayer());
+    mob.getChampion().setGod(god);
+    MessageUtils.sendMessage(sender, "Set god of " + target.getPlayer().getName() + " to " + godString);
+    plugin.getPrayerManager().sendPrayerUpdate(target.getPlayer(), 1, false);
   }
 
   @Subcommand("toast")

@@ -53,16 +53,17 @@ import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.AgilityCommand;
+import land.face.strife.commands.GodCommand;
 import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.MountCommand;
+import land.face.strife.commands.PrayerCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoadedMount;
 import land.face.strife.data.Spawner;
-import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
@@ -74,6 +75,7 @@ import land.face.strife.data.effects.Wait;
 import land.face.strife.hooks.SnazzyPartiesHook;
 import land.face.strife.listeners.BlockChangeListener;
 import land.face.strife.listeners.ChatListener;
+import land.face.strife.listeners.CitizenModelListener;
 import land.face.strife.listeners.CombatListener;
 import land.face.strife.listeners.CreeperExplodeListener;
 import land.face.strife.listeners.CurrencyChangeListener;
@@ -105,7 +107,7 @@ import land.face.strife.listeners.SpawnListener;
 import land.face.strife.listeners.StatUpdateListener;
 import land.face.strife.listeners.SwingListener;
 import land.face.strife.listeners.TargetingListener;
-import land.face.strife.listeners.XpBottleListener;
+import land.face.strife.listeners.ConsumeItemListener;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
 import land.face.strife.managers.AgilityManager;
@@ -130,6 +132,7 @@ import land.face.strife.managers.MobModManager;
 import land.face.strife.managers.MonsterManager;
 import land.face.strife.managers.PathManager;
 import land.face.strife.managers.PlayerMountManager;
+import land.face.strife.managers.PrayerManager;
 import land.face.strife.managers.RuneManager;
 import land.face.strife.managers.SkillExperienceManager;
 import land.face.strife.managers.SoulManager;
@@ -153,7 +156,6 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.BoostTickTask;
-import land.face.strife.tasks.CombatCountdownTask;
 import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.IndicatorTask;
@@ -197,7 +199,7 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
-          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML;
+          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -210,6 +212,8 @@ public class StrifePlugin extends FacePlugin {
   private ChampionManager championManager;
   @Getter
   private IndicatorManager indicatorManager;
+  @Getter
+  private PrayerManager prayerManager;
   @Getter
   private ExperienceManager experienceManager;
   @Getter
@@ -268,6 +272,8 @@ public class StrifePlugin extends FacePlugin {
   private WSEManager wseManager;
   @Getter
   private AgilityManager agilityManager;
+  @Getter
+  private CitizenModelListener citizenModelListener;
 
   private DataStorage storage;
 
@@ -333,6 +339,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
     configurations.add(mountsYAML = defaultSettingsLoad("mounts.yml"));
+    configurations.add(prayerYAML = defaultSettingsLoad("prayer.yml"));
 
     SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(
         new File(getDataFolder(), "agility-locations.yml"));
@@ -368,6 +375,7 @@ public class StrifePlugin extends FacePlugin {
     corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager(this);
+    prayerManager = new PrayerManager(this);
     equipmentManager = new EntityEquipmentManager();
     buildEquipment();
     boostManager = new BoostManager(this);
@@ -425,6 +433,7 @@ public class StrifePlugin extends FacePlugin {
     buildMobMods();
     loadSpawners();
     loadMounts();
+    prayerManager.setupGodPrayers();
 
     SaveTask saveTask = new SaveTask(this);
     StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
@@ -441,6 +450,8 @@ public class StrifePlugin extends FacePlugin {
     commandManager.registerCommand(new InspectCommand(this));
     commandManager.registerCommand(new LevelUpCommand(this));
     commandManager.registerCommand(new MountCommand(this));
+    commandManager.registerCommand(new PrayerCommand(this));
+    commandManager.registerCommand(new GodCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
     commandManager.registerCommand(new SpawnerCommand(this));
     commandManager.registerCommand(new AbilityMacroCommand(this));
@@ -518,7 +529,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new HealingListener(), this);
     Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CreeperExplodeListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new XpBottleListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new ConsumeItemListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
@@ -547,6 +558,12 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
+    citizenModelListener = new CitizenModelListener(this);
+    Bukkit.getPluginManager().registerEvents(citizenModelListener, this);
+
+    Bukkit.getScheduler().runTaskLater(this, () ->
+        citizenModelListener.reloadModels(configYAML.getConfigurationSection("npc-model-data-fuck-model-engine")),
+        200L);
 
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
       Bukkit.getPluginManager().registerEvents(new MoneyDropListener(this), this);
@@ -676,12 +693,6 @@ public class StrifePlugin extends FacePlugin {
 
   @Override
   public void disable() {
-    for (StrifeMob mob : strifeMobManager.getMobs().values()) {
-      if (mob == null) {
-        continue;
-      }
-      CombatCountdownTask.awardSkillExp(mob);
-    }
     commandManager.unregisterCommands();
     saveSpawners();
     boostManager.saveBoosts();

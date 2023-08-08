@@ -78,14 +78,16 @@ public class JoinAndLeaveListener implements Listener {
     ensureAbilitiesDontInstantCast(event.getPlayer());
 
     plugin.getChampionManager().verifyStatValues(champion);
-    plugin.getChampionManager().update(event.getPlayer());
 
     if (champion.getSaveData().isOnMount()) {
       plugin.getPlayerMountManager().spawnMount(event.getPlayer());
     }
 
-    Bukkit.getScheduler().runTaskLater(plugin, () ->
-        plugin.getStrifeMobManager().updateCollisions(event.getPlayer()), 15L);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      plugin.getStrifeMobManager().updateCollisions(event.getPlayer());
+      plugin.getPrayerManager().sendPrayerUpdate(event.getPlayer(),
+          playerMob.getPrayer() / playerMob.getMaxPrayer(), false);
+    }, 15L);
 
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getPlayerMountManager().updateSelectedMount(event.getPlayer());
@@ -97,6 +99,8 @@ public class JoinAndLeaveListener implements Listener {
 
     event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
     event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
+
+    plugin.getChampionManager().update(event.getPlayer());
     plugin.getAttackSpeedManager().getAttackMultiplier(playerMob, 1);
 
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
