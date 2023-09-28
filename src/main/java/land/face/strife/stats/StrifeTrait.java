@@ -71,6 +71,13 @@ public enum StrifeTrait {
       " |yellow|Grants immunity to |teal|Fall Damage"),
   RUNNER("|orange||ul|Passive Effect - Runner",
       " |yellow|Sprinting costs no energy"),
+  SLURP("|orange||ul|Passive Effect - Super Slurper",
+      " |yellow|Drink potions twice as quickly"),
+  FAST_ACTING("|orange||ul|Passive Effect - Fast Acting",
+      " |yellow| Life/Energy from potions",
+      " |yellow| that applies over time is",
+      " |yellow| instead applied instantly"
+  ),
   SOUL_FLAME("|orange||ul|Passive Effect - Blue Flame");
 
   // TODO: We map String to StrifeStat, why not let the user

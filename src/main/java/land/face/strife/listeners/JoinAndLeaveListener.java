@@ -100,7 +100,8 @@ public class JoinAndLeaveListener implements Listener {
     event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
     event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
 
-    plugin.getChampionManager().update(event.getPlayer());
+    champion.recombineCache();
+    plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     plugin.getAttackSpeedManager().getAttackMultiplier(playerMob, 1);
 
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {

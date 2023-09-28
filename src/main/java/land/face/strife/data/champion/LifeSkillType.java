@@ -14,11 +14,11 @@ public enum LifeSkillType {
   FARMING("Gathering", "farming", "\uD86D\uDF57", FaceColor.ORANGE.getColor()),
   COOKING("Cooking", "cooking", "\uD86D\uDF67", FaceColor.BROWN.getColor()),
   ALCHEMY("Alchemy", "alchemy", "\uD86D\uDF66", FaceColor.TEAL.getColor()),
-  SNEAK("Sneak", "sneak", "\uD86D\uDF69", FaceColor.GRAY.getColor()),
+  SNEAK("Sneak", "sneak", "\uD86D\uDF6A", FaceColor.GRAY.getColor()),
   AGILITY("Agility", "agility", "\uD86D\uDF5D", FaceColor.TEAL.getColor()),
   TRADING("Trading", "trading", "\uD86D\uDF68", FaceColor.GREEN.getColor()),
   FLYING("Flying", "flying", "\uD86D\uDF58", ChatColor.of(new Color(114, 187, 255))),
-  PRAYER("Prayer", "prayer", "\uD86D\uDF6A", ChatColor.of(new Color(202, 255, 245))),
+  PRAYER("Prayer", "prayer", "\uD86D\uDF69", ChatColor.of(new Color(202, 255, 245))),
 
   SWORDSMANSHIP("Swordsmanship", "sword", "\uD86D\uDF54", FaceColor.ORANGE.getColor(), true),
   DAGGER_MASTERY("Dagger Mastery", "dagger", "", ChatColor.of(new Color(204, 246, 102)), true),

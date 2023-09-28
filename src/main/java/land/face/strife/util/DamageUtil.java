@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -98,7 +99,7 @@ public class DamageUtil {
 
   private static float PVP_MULT;
 
-  private static String POSION_TEXT = FaceColor.LIGHT_GREEN.shaded(ShaderStyle.OUTLINE) + "Poison!";
+  private static String POSION_TEXT = "彣";
 
   private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
   private static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -213,6 +214,12 @@ public class DamageUtil {
     Bukkit.getPluginManager().callEvent(earlyDamageEvent);
 
     if (defender.isInvincible()) {
+      if (attacker.getEntity() instanceof Player) {
+        plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+            IndicatorStyle.FLOAT_UP_MEDIUM, 4, "彡", 1.0f, 1.0f, 1.0f);
+      }
+      defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
+          Sound.BLOCK_ANVIL_FALL, 1.0f, 2.0f);
       return false;
     }
 
@@ -224,6 +231,28 @@ public class DamageUtil {
     Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, defender, mods);
     applyAttackTypeMods(attacker, mods.getAttackType(), damageMap);
     return damageMap;
+  }
+
+  public static FaceColor getColorFromDamages(Map<DamageType, Float> damages) {
+    DamageType selected = DamageType.TRUE_DAMAGE;
+    float max = 0;
+    for (Entry<DamageType, Float> e : damages.entrySet()) {
+      if (e.getValue() > max) {
+        selected = e.getKey();
+        max = e.getValue();
+      }
+    }
+    return switch (selected) {
+      case PHYSICAL -> FaceColor.RED;
+      case MAGICAL -> FaceColor.BLUE;
+      case FIRE -> FaceColor.ORANGE;
+      case ICE -> FaceColor.CYAN;
+      case LIGHTNING -> FaceColor.YELLOW;
+      case EARTH -> FaceColor.BROWN;
+      case LIGHT -> FaceColor.WHITE;
+      case DARK -> FaceColor.PURPLE;
+      default -> FaceColor.TRUE_WHITE;
+    };
   }
 
   public static void reduceDamage(StrifeMob attacker, StrifeMob defender,
@@ -246,7 +275,7 @@ public class DamageUtil {
         .replaceAll("9", "９\uF801");
   }
 
-  public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender,
+  public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender, AttackType attackType,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
 
     double standardDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f) +
@@ -258,26 +287,28 @@ public class DamageUtil {
         damageMap.getOrDefault(DamageType.EARTH, 0f) +
         damageMap.getOrDefault(DamageType.LIGHT, 0f);
 
-    float potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
+    float potionMult = 1;
     float critMult = 0;
+    boolean criticalHit = false;
 
-    boolean criticalHit = standardDamage > 0.9 && !attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2)
-        && isCriticalHit(attacker, defender, mods);
-
-    if (criticalHit && !attacker.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
-      critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
-          mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
-      if (attacker.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
-        float chance = attacker.getStat(StrifeStat.CRITICAL_RATE) +
-            mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f);
-        if (chance > 100) {
-          if (DamageUtil.isLethalHit(attacker, defender, chance - 100)) {
-            critMult *= 2;
+    if (attackType != AttackType.BONUS) {
+      potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
+      criticalHit = isCriticalHit(attacker, defender, mods) && !attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2);
+      if (criticalHit && !attacker.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
+        critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
+            mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
+        if (attacker.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
+          float chance = attacker.getStat(StrifeStat.CRITICAL_RATE) +
+              mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f);
+          if (chance > 100) {
+            if (DamageUtil.isLethalHit(attacker, defender, chance - 100)) {
+              critMult *= 2f;
+            }
           }
         }
-      }
-      if (defender.hasTrait(StrifeTrait.IRON_SCARS)) {
-        critMult += 0.4;
+        if (defender.hasTrait(StrifeTrait.IRON_SCARS)) {
+          critMult += 0.4F;
+        }
       }
     }
 
@@ -304,7 +335,7 @@ public class DamageUtil {
     elementalDamage *= potionMult;
     elementalDamage *= generalDamageMultiplier;
     elementalDamage *= pvpMult;
-    elementalDamage += minionDamageMultiplier;
+    elementalDamage *= minionDamageMultiplier;
 
     float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) *
         mods.getDamageReductionRatio() * pvpMult;
@@ -364,20 +395,20 @@ public class DamageUtil {
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
       if (rawDamage == 0) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, FaceColor.CYAN + "０");
+            IndicatorStyle.RANDOM_POPOFF, 9,  "<aqua>０", 0.65f, 1.1f, 0.75f);
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
           damageString += "\uF802✸";
         }
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, damageString);
+            IndicatorStyle.RANDOM_POPOFF, 9, damageString, 0.65f, 1.1f, 0.75f);
       }
     } else if (mods.isShowPopoffs() && attacker.getMaster() != null &&
         attacker.getMaster().getEntity() instanceof Player) {
       damageString = buildDamageString(Math.round(rawDamage));
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
-          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "&7" + damageString);
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.65f, 1.1f, 0.75f);
     }
     return rawDamage;
   }
@@ -436,7 +467,7 @@ public class DamageUtil {
     }
     if (mods.isShowPopoffs()) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 4, "&7Sneak Attack!");
+          defender.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM, 5, "彤", 1.0f, 1.1f, 0.75f);
     }
     defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
         Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
@@ -457,10 +488,6 @@ public class DamageUtil {
       DamageUtil.callCritEvent(attacker, defender);
       defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
           Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.75f);
-      //if (attacker.getEntity() instanceof Player) {
-      //  StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-      //      defender.getEntity(), IndicatorStyle.FLOAT_UP_FAST, 3, "&c&lCRIT!");
-      //}
     }
     return success;
   }
@@ -601,8 +628,7 @@ public class DamageUtil {
     }
   }
 
-  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender,
-      Map<DamageType, Float> damageMap,
+  public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender, Map<DamageType, Float> damageMap,
       DamageModifiers mods) {
     if (mods.getAttackType() == AttackType.BONUS) {
       return;
@@ -615,7 +641,7 @@ public class DamageUtil {
     float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
         attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
     if (mods.isScaleChancesWithAttack()) {
-      chance *= Math.min(1.0, mods.getAttackMultiplier());
+      chance *= (float) Math.min(1.0, mods.getAttackMultiplier());
     }
     if (!DamageUtil.rollBool(chance, true)) {
       if (!attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2) ||
@@ -917,7 +943,7 @@ public class DamageUtil {
         Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "&7&oMiss");
+          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 1f, 1f, 1f);
     }
   }
 
@@ -1062,7 +1088,7 @@ public class DamageUtil {
       defender.getEntity().removePotionEffect(PotionEffectType.POISON);
       defender.getEntity().addPotionEffect(newPoisonEffect);
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          IndicatorStyle.BOUNCE, 5, POSION_TEXT);
+          IndicatorStyle.FLOAT_UP_MEDIUM, 5, POSION_TEXT, 1.0f, 1.0f, 1.0f);
       attacker.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
           Sound.ENTITY_SILVERFISH_DEATH, 1, 2.0f);
       return true;
@@ -1076,12 +1102,12 @@ public class DamageUtil {
       return;
     }
     if (!bypassArmor) {
-      amount *= StatUtil.getArmorMult(attacker, defender);
+      amount *= (float) StatUtil.getArmorMult(attacker, defender);
     }
     if (!bypassMultipliers) {
       if (attacker != null && defender.getFrost() > 0
           && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE)) {
-        amount *= 1.3;
+        amount *= 1.3F;
       }
       amount *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
     }
@@ -1090,7 +1116,7 @@ public class DamageUtil {
 
   public static void addFrost(StrifeMob attacker, StrifeMob defender, float amount) {
     if (attacker != null && attacker.hasTrait(StrifeTrait.BLOOD_AND_ICE) && defender.isBleeding()) {
-      amount *= 1.3;
+      amount *= 1.3F;
     }
     if (amount < 0.1) {
       return;

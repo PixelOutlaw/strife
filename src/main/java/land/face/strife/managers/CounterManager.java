@@ -47,7 +47,7 @@ public class CounterManager {
         .getString("config.mechanics.counter.sound", "ENCHANT_THORNS_HIT"));
     pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
     COUNTER_MESSAGE = PaletteUtil.color(
-        plugin.getSettings().getString("language.status.counter-message", "&3&lCountered!"));
+        plugin.getSettings().getString("language.status.counter-message", "形"));
   }
 
   public void clearCounters(LivingEntity livingEntity) {
@@ -78,7 +78,7 @@ public class CounterManager {
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-            IndicatorStyle.BOUNCE, 7, COUNTER_MESSAGE);
+            IndicatorStyle.BOUNCE, 7, COUNTER_MESSAGE, 1.0f, 1.0f, 1.0f);
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);

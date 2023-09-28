@@ -1,10 +1,25 @@
 package land.face.strife.data.effects;
 
-import eu.decentsoftware.holograms.api.holograms.Hologram;
+import de.oliver.fancyholograms.api.Hologram;
+import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class DamagePopoff {
 
+  @Getter @Setter
+  private Player viewer;
+  @Getter @Setter
+  private float startScale = 1;
+  @Getter @Setter
+  private float midScale = 1;
+  @Getter @Setter
+  private float endScale = 1;
+  @Getter
+  private int maxLife;
+  @Getter
+  private int midLife;
   private Hologram hologram;
   private Vector velocity;
   private double gravity;
@@ -40,6 +55,11 @@ public class DamagePopoff {
 
   public void setLife(int life) {
     this.life = life;
+  }
+
+  public void setMaxLife(int amount) {
+    this.maxLife = amount;
+    this.midLife = amount / 2;
   }
 
 }

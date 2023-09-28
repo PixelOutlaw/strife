@@ -103,6 +103,9 @@ public class PlayerDataUtil {
   }
 
   public static void restoreEnergy(LivingEntity le, float amount) {
+    if (amount < 0.1) {
+      return;
+    }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
     if (mob != null) {
       StatUtil.changeEnergy(mob, amount);
@@ -110,6 +113,9 @@ public class PlayerDataUtil {
   }
 
   public static void restoreHealthOverTime(LivingEntity le, float amount, int ticks) {
+    if (amount < 0.1) {
+      return;
+    }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
     if (mob != null) {
       mob.addHealingOverTime(amount, ticks);
@@ -117,6 +123,9 @@ public class PlayerDataUtil {
   }
 
   public static void restoreEnergyOverTime(LivingEntity le, float amount, int ticks) {
+    if (amount <= 0.1) {
+      return;
+    }
     StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
     if (mob != null) {
       mob.addEnergyOverTime(amount, ticks);

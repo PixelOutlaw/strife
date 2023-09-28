@@ -19,20 +19,35 @@
 package land.face.strife.menus.revive;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.tuple.Pair;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import lombok.Getter;
 import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class ReviveMenu extends ItemMenu {
 
-  public ReviveMenu(String reviverName, double restoreXp) {
-    super(PaletteUtil.color(StrifePlugin.getInstance().getSettings()
-            .getString("language.revive.menu-name", "NAME MENU LOL")), Size.fit(27),
-        StrifePlugin.getInstance());
+  private final StrifePlugin plugin;
+  @Getter
+  private Map<UUID, Pair<String, Integer>> dataMap = new HashMap<>();
 
-    setItem(12, new ReviveConfirmItem(reviverName, (int) restoreXp));
-    setItem(14, new ReviveRejectItem());
+  public ReviveMenu(StrifePlugin plugin) {
+    super(PaletteUtil.color(StrifePlugin.getInstance().getSettings()
+        .getString("language.revive.menu-name", "NAME MENU LOL")), Size.FOUR_LINE, plugin);
+    this.plugin = plugin;
+    for (int i=0; i<=26; i++) {
+      setItem(i, new ReviveConfirmItem(this));
+    }
+    for (int i=27; i<=35; i++) {
+      setItem(i, new ReviveRejectItem(this));
+    }
   }
 
+  public void postNewReviveData(UUID deadGuy, String name, int amount) {
+    dataMap.put(deadGuy, Pair.of(name, amount));
+  }
 }
 
 /*

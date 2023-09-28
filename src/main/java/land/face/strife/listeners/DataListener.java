@@ -79,7 +79,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getStrifeMobManager().updateEquipmentStats(
           plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer()));
-      plugin.getChampionManager().update(event.getChampion());
+      event.getChampion().recombineCache();
       plugin.getStatUpdateManager().updateAllAttributes(event.getChampion().getPlayer());
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer());
       StatUtil.getStat(mob, StrifeStat.BARRIER);
@@ -236,7 +236,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (TargetingUtil.isInvalidTarget(event.getRightClicked())) {
       return;
     }
-    final Player player = event.getPlayer();
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
     plugin.getStrifeMobManager().getStatMob(entity);
   }
@@ -318,6 +317,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   public void onRespawn(PlayerRespawnEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    mob.endCombat();
     mob.endRageTask();
     mob.setBlock(mob.getMaxBlock());
     mob.restartTimers();

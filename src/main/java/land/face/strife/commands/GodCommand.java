@@ -108,9 +108,9 @@ public class GodCommand extends BaseCommand {
   public void addxp(CommandSender sender, OnlinePlayer target, int amount) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
     SelectedGod selectedGod = mob.getChampion().getSaveData().getSelectedGod();
-    int currentXp = mob.getChampion().getSaveData().getGodXp().get(selectedGod);
+    int currentXp = mob.getChampion().getSaveData().getGodXp().getOrDefault(selectedGod, 0);
     int newXp = currentXp + amount;
-    int currentGodLevel = mob.getChampion().getSaveData().getGodLevel().get(selectedGod);
+    int currentGodLevel = mob.getChampion().getSaveData().getGodLevel().getOrDefault(selectedGod, 1);
     int xpToLevel = switch (currentGodLevel) {
       case 1 -> plugin.getPrayerManager().getGodLevelXpTwo();
       case 2 -> plugin.getPrayerManager().getGodLevelXpThree();

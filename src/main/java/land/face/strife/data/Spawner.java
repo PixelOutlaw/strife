@@ -89,7 +89,7 @@ public class Spawner extends BukkitRunnable {
             .getNearbyEntitiesByType(Player.class, 15));
         for (Player p : players) {
           StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, le,
-              IndicatorStyle.FLOAT_UP_MEDIUM, 30, "&4&lOUT OF RANGE");
+              IndicatorStyle.FLOAT_UP_MEDIUM, 30, "<red><bold>OUT OF RANGE", 1.0f, 1.0f, 1.0f);
         }
         if (StrifePlugin.getInstance().getStrifeMobManager().isTrackedEntity(le)) {
           StrifePlugin.getInstance().getStrifeMobManager().removeStrifeMob(le);

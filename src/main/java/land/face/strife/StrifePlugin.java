@@ -60,6 +60,7 @@ import land.face.strife.commands.MountCommand;
 import land.face.strife.commands.PrayerCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
+import land.face.strife.commands.ToggleXpCommand;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoadedMount;
@@ -68,6 +69,7 @@ import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.CreateModelAnimation;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.data.effects.ShootBlock;
 import land.face.strife.data.effects.TriggerLoreAbility;
@@ -99,6 +101,7 @@ import land.face.strife.listeners.LoreAbilityListener;
 import land.face.strife.listeners.MinionListener;
 import land.face.strife.listeners.MoneyDropListener;
 import land.face.strife.listeners.MountListener;
+import land.face.strife.listeners.PlayerInputListener;
 import land.face.strife.listeners.PotionListener;
 import land.face.strife.listeners.RuneChangeListener;
 import land.face.strife.listeners.ShootListener;
@@ -121,6 +124,7 @@ import land.face.strife.managers.ChaserManager;
 import land.face.strife.managers.CorruptionManager;
 import land.face.strife.managers.CounterManager;
 import land.face.strife.managers.DamageManager;
+import land.face.strife.managers.DisplayManager;
 import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
@@ -150,6 +154,7 @@ import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.menus.abilities.SubmenuSelectButton;
 import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.levelup.PathMenu;
+import land.face.strife.menus.revive.ReviveMenu;
 import land.face.strife.menus.stats.StatsMenu;
 import land.face.strife.menus.xpbottle.XpBottleMenu;
 import land.face.strife.stats.AbilitySlot;
@@ -199,7 +204,7 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
-          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML;
+          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -247,6 +252,8 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private EntityEquipmentManager equipmentManager;
   @Getter
+  private DisplayManager displayManager;
+  @Getter
   private EffectManager effectManager;
   @Getter
   private AbilityManager abilityManager;
@@ -284,9 +291,13 @@ public class StrifePlugin extends FacePlugin {
 
   private AbilityMenu abilitySubcategoryMenu;
   private Map<String, AbilitySubmenu> abilitySubmenus;
+  @Getter
   private LevelupMenu levelupMenu;
   private final Map<Path, PathMenu> pathMenus = new HashMap<>();
+  @Getter
   private StatsMenu statsMenu;
+  @Getter
+  private ReviveMenu reviveMenu;
 
   @Getter @Setter
   private XpBottleMenu smallBottleMenu, mediumBottleMenu, bigBottleMenu, giantBottleMenu;
@@ -322,6 +333,12 @@ public class StrifePlugin extends FacePlugin {
   public void enable() {
     instance = this;
     debugPrinter = new PluginLogger(this);
+    try {
+      logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
+    } catch (Exception e) {
+      logLevel = LogLevel.ERROR;
+      LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
+    }
 
     List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();
     VersionedSmartYamlConfiguration configYAML;
@@ -340,6 +357,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
     configurations.add(mountsYAML = defaultSettingsLoad("mounts.yml"));
     configurations.add(prayerYAML = defaultSettingsLoad("prayer.yml"));
+    configurations.add(displaysYaml = defaultSettingsLoad("display-vfx.yml"));
 
     SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(
         new File(getDataFolder(), "agility-locations.yml"));
@@ -357,6 +375,12 @@ public class StrifePlugin extends FacePlugin {
     storage = new FlatfileStorage(this);
     commandManager = new PaperCommandManager(this);
 
+    attributeManager = new StrifeAttributeManager(attributesYAML);
+
+    effectManager = new EffectManager(this);
+    abilityManager = new AbilityManager(this);
+    loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
+
     championManager = new ChampionManager(this);
     uniqueEntityManager = new UniqueEntityManager(this);
     vagabondManager = new VagabondManager(this);
@@ -367,8 +391,6 @@ public class StrifePlugin extends FacePlugin {
     experienceManager = new ExperienceManager(this);
     skillExperienceManager = new SkillExperienceManager(this);
     strifeMobManager = new StrifeMobManager(this);
-    abilityManager = new AbilityManager(this);
-    attributeManager = new StrifeAttributeManager();
     blockManager = new BlockManager(this);
     runeManager = new RuneManager(this);
     counterManager = new CounterManager(this);
@@ -378,17 +400,16 @@ public class StrifePlugin extends FacePlugin {
     prayerManager = new PrayerManager(this);
     equipmentManager = new EntityEquipmentManager();
     buildEquipment();
+    displayManager = new DisplayManager(this);
     boostManager = new BoostManager(this);
     soulManager = new SoulManager(this);
     statUpdateManager = new StatUpdateManager(this);
     monsterManager = new MonsterManager(championManager);
     stealthManager = new StealthManager(this);
-    effectManager = new EffectManager(this);
     wseManager = new WSEManager();
     agilityManager = new AgilityManager(this, agilityYAML);
     spawnerManager = new SpawnerManager(this);
     mobModManager = new MobModManager(settings, equipmentManager);
-    loreAbilityManager = new LoreAbilityManager(abilityManager, effectManager);
     abilityIconManager = new AbilityIconManager(this);
     guiManager = new GuiManager(this);
     buffManager = new BuffManager();
@@ -398,14 +419,6 @@ public class StrifePlugin extends FacePlugin {
 
     snazzyPartiesHook = new SnazzyPartiesHook();
 
-    try {
-      logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
-    } catch (Exception e) {
-      logLevel = LogLevel.ERROR;
-      LogUtil.printError(
-          "DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
-    }
-
     WALK_COST = (float) settings.getDouble("config.mechanics.energy.walk-cost-flat", 3)
         * EnergyTask.TICK_MULT;
     WALK_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.walk-regen-percent",
@@ -414,19 +427,16 @@ public class StrifePlugin extends FacePlugin {
         * EnergyTask.TICK_MULT;
     RUN_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.run-regen-percent",
         0.25);
-
-    buildBuffs();
-    buildEquipment();
-    buildLevelpointStats();
-    buildBaseStats();
-    loadBoosts();
-    loadScheduledBoosts();
-
     buildConditions();
     buildEffects();
     buildAbilities();
-    buildPaths();
     buildLoreAbilities();
+
+    buildBuffs();
+    buildBaseStats();
+    loadBoosts();
+    loadScheduledBoosts();
+    buildPaths();
 
     uniqueEntityManager.loadUniques(uniques);
     vagabondManager.loadClasses(configYAML.getConfigurationSection("vagabonds"));
@@ -453,6 +463,7 @@ public class StrifePlugin extends FacePlugin {
     commandManager.registerCommand(new PrayerCommand(this));
     commandManager.registerCommand(new GodCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
+    commandManager.registerCommand(new ToggleXpCommand(this));
     commandManager.registerCommand(new SpawnerCommand(this));
     commandManager.registerCommand(new AbilityMacroCommand(this));
     commandManager.registerCommand(new AgilityCommand(this));
@@ -551,6 +562,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new TargetingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
     Bukkit.getPluginManager().registerEvents(new MountListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new PlayerInputListener(this), this);
     Bukkit.getPluginManager().registerEvents(new PotionListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
@@ -629,16 +641,19 @@ public class StrifePlugin extends FacePlugin {
     for (Path path : LevelPath.PATH_VALUES) {
       pathMenus.put(path, new PathMenu(this, path));
     }
-
+    reviveMenu = new ReviveMenu(this);
+    Bukkit.getLogger().info("99999999999999999999");
     for (Player player : Bukkit.getOnlinePlayers()) {
+      championManager.getChampion(player).recombineCache();
       statUpdateManager.updateAllAttributes(player);
+      boostManager.updateGlobalBoostStatus(player);
       abilityManager.loadPlayerCooldowns(player);
-      abilityIconManager.setAllAbilityIcons(player);
       guiManager.setupGui(player);
       attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
       bossBarManager.createBars(player);
+      Bukkit.getScheduler().runTaskLater(this,
+          () -> abilityIconManager.setAllAbilityIcons(player), 10L);
     }
-    getChampionManager().updateAll();
 
     DamageUtil.refresh();
     StatUtil.refreshPlugin(this);
@@ -693,10 +708,10 @@ public class StrifePlugin extends FacePlugin {
 
   @Override
   public void disable() {
+    storage.saveAll();
     commandManager.unregisterCommands();
     saveSpawners();
     boostManager.saveBoosts();
-    storage.saveAll();
 
     HandlerList.unregisterAll(this);
     Bukkit.getScheduler().cancelTasks(this);
@@ -787,6 +802,7 @@ public class StrifePlugin extends FacePlugin {
 
   private void buildEffects() {
     LogUtil.printDebug("Starting effect load!");
+    Effect.setPlugin(this);
     for (int i = 1; i <= 100; i++) {
       Wait wait = new Wait();
       wait.setTickDelay(i);
@@ -853,17 +869,6 @@ public class StrifePlugin extends FacePlugin {
       ConfigurationSection cs = buffsYAML.getConfigurationSection(buffId);
       assert cs != null;
       buffManager.loadBuff(buffId, cs);
-    }
-  }
-
-  private void buildLevelpointStats() {
-    for (String key : attributesYAML.getKeys(false)) {
-      if (!attributesYAML.isConfigurationSection(key)) {
-        continue;
-      }
-      ConfigurationSection cs = attributesYAML.getConfigurationSection(key);
-      assert cs != null;
-      attributeManager.loadStat(key, cs);
     }
   }
 
@@ -1047,20 +1052,12 @@ public class StrifePlugin extends FacePlugin {
     return settings;
   }
 
-  public LevelupMenu getLevelupMenu() {
-    return levelupMenu;
-  }
-
   public AbilityMenu getAbilityPicker() {
     return abilitySubcategoryMenu;
   }
 
   public AbilitySubmenu getSubmenu(String name) {
     return abilitySubmenus.get(name);
-  }
-
-  public StatsMenu getStatsMenu() {
-    return statsMenu;
   }
 
   public PathMenu getPathMenu(Path path) {

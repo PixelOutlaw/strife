@@ -19,6 +19,7 @@
 package land.face.strife.listeners;
 
 import com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.Collections;
@@ -167,7 +168,8 @@ public class ShootListener implements Listener {
       }
 
       ItemStack weapon = shooter.getEquipment().getItemInMainHand();
-      if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
+      int bowData = ItemUtils.getModelData(weapon);
+      if (weapon.getType() == Material.BOW && bowData > 0 && bowData < 9000) {
         ((LivingEntity) event.getEntity().getShooter()).swingMainHand();
         ProjectileUtil.shootWand(mob, 1);
         event.setCancelled(true);
@@ -214,7 +216,8 @@ public class ShootListener implements Listener {
     }
 
     ItemStack weapon = entity.getEquipment().getItemInMainHand();
-    if (weapon.getType() == Material.BOW && ItemUtil.getCustomData(weapon) == 4000) {
+    int bowData = ItemUtils.getModelData(weapon);
+    if (weapon.getType() == Material.BOW && bowData > 0 && bowData < 9000) {
       entity.swingMainHand();
       ProjectileUtil.shootWand(mob, 1);
       event.setCancelled(true);
@@ -349,9 +352,9 @@ public class ShootListener implements Listener {
     particle.setParticle(Particle.CAMPFIRE_COSY_SMOKE);
     particle.setOrigin(OriginLocation.BELOW_HEAD);
     particle.setStyle(ParticleStyle.LINE);
-    particle.setSize(2);
+    particle.setSize(1);
     particle.setRadius(0);
-    particle.setLineIncrement(0.25f);
+    particle.setLineIncrement(0.2f);
     particle.setQuantity(plugin.getSettings().getInt("config.flintlock.smoke-quantity", 1));
     particle.setLineOffset(
         (float) plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));

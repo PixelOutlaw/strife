@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
@@ -37,14 +38,14 @@ import org.bukkit.inventory.ItemStack;
 
 public class ReviveConfirmItem extends MenuItem {
 
-  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
-  private final String reviverName;
-  private final int restoreXP;
+  private final ReviveMenu reviveMenu;
 
-  ReviveConfirmItem(String reviverName, int restoreXP) {
-    super("", new ItemStack(Material.TOTEM_OF_UNDYING));
-    this.reviverName = reviverName;
-    this.restoreXP = restoreXP;
+  private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
+
+  ReviveConfirmItem(ReviveMenu reviveMenu) {
+    super("", new ItemStack(Material.BARRIER));
+    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
+    this.reviveMenu = reviveMenu;
   }
 
   @Override
@@ -52,14 +53,11 @@ public class ReviveConfirmItem extends MenuItem {
     if (cachedIcon.containsKey(player)) {
       return cachedIcon.get(player);
     }
-    Material material = Material.getMaterial(StrifePlugin.getInstance().getSettings()
-        .getString("config.revive.confirm-material", "TOTEM_OF_UNDYING"));
-    ItemStack stack;
-    if (material == null || material == Material.AIR) {
-      stack = this.getIcon().clone();
-    } else {
-      stack = new ItemStack(material);
-    }
+
+    String reviverName = reviveMenu.getDataMap().get(player.getUniqueId()).getLeft();
+    int restoreXP = reviveMenu.getDataMap().get(player.getUniqueId()).getRight();
+
+    ItemStack stack = getIcon().clone();
     List<String> baseLore = StrifePlugin.getInstance().getSettings()
         .getStringList("language.revive.confirm-lore");
     List<String> newLore = new ArrayList<>();
@@ -81,7 +79,9 @@ public class ReviveConfirmItem extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
+    int restoreXP = reviveMenu.getDataMap().get(event.getPlayer().getUniqueId()).getRight();
     StrifePlugin.getInstance().getSoulManager().revive(event.getPlayer(), restoreXP);
+    reviveMenu.getDataMap().remove(event.getPlayer().getUniqueId());
     event.setWillClose(true);
   }
 }

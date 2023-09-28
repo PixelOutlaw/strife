@@ -21,9 +21,12 @@ public class Revive extends Effect {
     if (soul == null) {
       return;
     }
-    ReviveMenu reviveMenu = new ReviveMenu(PlayerDataUtil.getName(caster.getEntity()),
-        percentLostExpRestored * soul.getLostExp());
-    reviveMenu.open((Player) target.getEntity());
+    getPlugin().getReviveMenu().postNewReviveData(
+        target.getEntity().getUniqueId(),
+        PlayerDataUtil.getName(caster.getEntity()),
+        (int) (percentLostExpRestored * soul.getLostExp())
+    );
+    getPlugin().getReviveMenu().open((Player) target.getEntity());
   }
 
   public void setPercentLostExpRestored(double percentLostExpRestored) {

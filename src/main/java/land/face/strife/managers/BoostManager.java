@@ -27,7 +27,6 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
 import github.scarsz.discordsrv.util.DiscordUtil;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -66,9 +65,6 @@ public class BoostManager {
 
   public BoostManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    for (Player p : Bukkit.getOnlinePlayers()) {
-      updateGlobalBoostStatus(p);
-    }
   }
 
   public int getContributorSize() {

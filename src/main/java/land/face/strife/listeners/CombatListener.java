@@ -31,7 +31,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.events.StrifePreDamageEvent;
-import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
@@ -47,6 +46,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.EvokerFangs;
+import org.bukkit.entity.FishHook;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -97,8 +97,7 @@ public class CombatListener implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void handleNpcHits(EntityDamageByEntityEvent event) {
     if (event.isCancelled() || event.getEntity().isInvulnerable() ||
-        event.getEntity().hasMetadata("NPC") ||
-        event.getEntity().hasMetadata("MiniaturePet")) {
+        event.getEntity().hasMetadata("NPC")) {
       if (event.getDamager() instanceof Projectile) {
         event.getDamager().remove();
       }
@@ -303,11 +302,11 @@ public class CombatListener implements Listener {
       return;
     }
 
-    Map<DamageType, Float> damage = DamageUtil.buildDamage(attacker, defender, damageModifiers);
-    DamageUtil.applyElementalEffects(attacker, defender, damage, damageModifiers);
-    DamageUtil.reduceDamage(attacker, defender, damage, damageModifiers);
+    Map<DamageType, Float> damages = DamageUtil.buildDamage(attacker, defender, damageModifiers);
+    DamageUtil.applyElementalEffects(attacker, defender, damages, damageModifiers);
+    DamageUtil.reduceDamage(attacker, defender, damages, damageModifiers);
 
-    float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, damage, damageModifiers);
+    float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, attackType, damages, damageModifiers);
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageModifiers);
     strifeDamageEvent.setFinalDamage(finalDamage);
@@ -339,8 +338,8 @@ public class CombatListener implements Listener {
     if (eventDamage > 0) {
       eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
 
-      if (damage.containsKey(DamageType.PHYSICAL)) {
-        DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL),
+      if (damages.containsKey(DamageType.PHYSICAL)) {
+        DamageUtil.attemptBleed(attacker, defender, damages.get(DamageType.PHYSICAL),
             damageModifiers, false);
       }
       DamageUtil.attemptPoison(attacker, defender, damageModifiers);
@@ -359,6 +358,10 @@ public class CombatListener implements Listener {
 
     if (eventDamage >= defendEntity.getHealth()) {
       eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
+    }
+    if (attackEntity.hasPermission("faceland.admin")) {
+      plugin.getDisplayManager().create("fire-thing", defendEntity.getLocation()
+          .clone().add(0, defendEntity.getEyeHeight() * 0.66, 0), DamageUtil.getColorFromDamages(damages));
     }
 
     event.setDamage(BASE, Math.max(eventDamage, 0));

@@ -21,6 +21,7 @@ package land.face.strife.listeners;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +62,7 @@ public class ExperienceListener implements Listener {
   private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
 
   private static final Map<Integer, String> xpString = new HashMap<>();
-  private static final Map<Player, Location> lastKillLocation = new WeakHashMap<>();
+  private static final Map<Player, Location> lastPlayerLocationOnKill = new WeakHashMap<>();
   private static final Map<Player, Integer> violationLevel = new WeakHashMap<>();
 
   private final List<String> penaltyFreeWorlds;
@@ -123,7 +124,7 @@ public class ExperienceListener implements Listener {
     expMultiplier = calculateLevelPenalty(expMultiplier, StatUtil.getMobLevel(event.getEntity()), killers, ue);
 
     for (Player player : killers) {
-      float xpPenalty = calculateSafespotViolationMult(player, event.getEntity().getLocation());
+      float xpPenalty = calculateSafespotViolationMult(player);
       //Bukkit.getLogger().info("[xxxxx] safespotpenalty " + xpPenalty);
       float finalXp = (droppedXp * expMultiplier * xpPenalty);
       if (finalXp < 1) {
@@ -194,36 +195,42 @@ public class ExperienceListener implements Listener {
     return Math.max(uniqueEntity.getMinLevelClampMult(), baseXpMult);
   }
 
-  private float calculateSafespotViolationMult(Player player, Location location) {
+  private float calculateSafespotViolationMult(Player player) {
     float mult = 1.0f;
-    if (lastKillLocation.containsKey(player)) {
-      if (location.getWorld() != lastKillLocation.get(player).getWorld()) {
+    if (lastPlayerLocationOnKill.containsKey(player)) {
+      if (player.getLocation().getWorld() != lastPlayerLocationOnKill.get(player).getWorld()) {
         violationLevel.put(player, 0);
-        lastKillLocation.put(player, location);
+        lastPlayerLocationOnKill.put(player, player.getLocation());
         return mult;
       }
       int amount = violationLevel.getOrDefault(player, 0);
-      double distance = lastKillLocation.get(player).distanceSquared(player.getLocation());
-      if (distance < 1) {
-        amount += 6;
-      } else if (distance < 2) {
-        amount += 3;
-      } else if (distance < 4) {
-        amount += 1;
-      } else if (distance > 2500) {
-        amount = 0;
-      } else if (distance > 16) {
-        amount -= 25;
+      if (!MoveUtil.hasMoved(player, 60000)) {
+        amount = 200;
+      } else if (!MoveUtil.hasMoved(player, 10000)) {
+        amount += 5;
       } else {
-        amount -= 5;
+        double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
+        if (distance < 0.5) {
+          amount += 4;
+        } else if (distance < 1.5) {
+          amount += 2;
+        } else if (distance < 3) {
+          amount += 1;
+        } else if (distance > 2500) {
+          amount = 0;
+        } else if (distance > 25) {
+          amount -= 45;
+        } else {
+          amount -= 8;
+        }
       }
-      amount = Math.min(100, Math.max(amount, 0));
+      amount = Math.min(200, Math.max(amount, 0));
       violationLevel.put(player, amount);
-      if (amount > 25) {
-        mult = (100f - amount) / 100f;
+      if (amount > 50) {
+        mult = Math.max(0.2f, (200f - amount) / 200f);
       }
     }
-    lastKillLocation.put(player, location);
+    lastPlayerLocationOnKill.put(player, player.getLocation());
     return mult;
   }
 
@@ -311,10 +318,11 @@ public class ExperienceListener implements Listener {
     int points = event.getNewLevel() - event.getOldLevel();
     champion.setHighestReachedLevel(event.getNewLevel());
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
-    plugin.getChampionManager().update(player);
+    champion.recombineCache();
 
     player.setHealth(player.getMaxHealth());
     StatUtil.changeEnergy(plugin.getStrifeMobManager().getStatMob(player), 200000);
+    plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)

@@ -223,7 +223,6 @@ public class EffectManager {
   }
 
   public void loadEffect(String key, ConfigurationSection cs) {
-    Effect.setPlugin(plugin);
     String type = cs.getString("type", "NULL").toUpperCase();
     EffectType effectType;
     try {
@@ -1108,7 +1107,7 @@ public class EffectManager {
         condition = new NearbyEntitiesCondition(cs.getBoolean("friendly", true), range);
         break;
       case IN_COMBAT:
-        condition = new InCombatCondition(cs.getBoolean("state", true));
+        condition = new InCombatCondition(cs.getBoolean("state", true), cs.getBoolean("pvp-only", false));
         break;
       case TIME:
         long minTime = cs.getLong("min-time", 0);

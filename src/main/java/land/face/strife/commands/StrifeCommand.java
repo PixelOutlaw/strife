@@ -221,12 +221,8 @@ public class StrifeCommand extends BaseCommand {
           "ATTENTION GAMER: &a&oThe RPG plugin is being reloaded, maybe to add things, maybe because a GM is being a dingus. Please wait...");
     }
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      // Save player data before reload continues
-      plugin.getStorage().saveAll();
-      // Normal enable/disable
       plugin.disable();
       plugin.enable();
-
       for (Player player : Bukkit.getOnlinePlayers()) {
         plugin.getStatUpdateManager().updateAllAttributes(player);
       }
@@ -234,8 +230,7 @@ public class StrifeCommand extends BaseCommand {
         MessageUtils.sendMessage(p, FaceColor.LIGHT_GREEN + FaceColor.BOLD.s() +
             "ATTENTION GAMER: Okay we're back now thanks for waiting :)");
       }
-      sendMessage(sender,
-          plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
+      sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
     }, 1L);
   }
 
@@ -333,7 +328,7 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(target.getPlayer(), "&aYour stats have been reset!");
     sendMessage(target.getPlayer(),
         "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
-    plugin.getChampionManager().update(target.getPlayer());
+    champion.recombineCache();
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
@@ -358,7 +353,7 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(sender, "You cleared <white>%player%",
         new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
     sendMessage(target.getPlayer(), "&aYour stats have been wiped :O");
-    plugin.getChampionManager().update(target.getPlayer());
+    champion.recombineCache();
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
@@ -374,7 +369,7 @@ public class StrifeCommand extends BaseCommand {
     target.getPlayer().setExp(0f);
     target.getPlayer().setLevel(newLevel);
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
-    plugin.getChampionManager().update(target.getPlayer());
+    champion.recombineCache();
     sendMessage(sender, "&aYou raised &f%player% &ato level &f%level%.",
         new String[][]{{"%player%", target.getPlayer().getDisplayName()},
             {"%level%", "" + newLevel}});
@@ -402,8 +397,7 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer())
-        .getSaveData().setAbility(slot, ability);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(slot, ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
@@ -658,12 +652,5 @@ public class StrifeCommand extends BaseCommand {
       }
     }
     sendMessage(target.getPlayer(), REVEAL_FAIL);
-  }
-
-  @Subcommand("togglexp")
-  public void toggleExp(Player player) {
-    Champion champion = plugin.getChampionManager().getChampion(player);
-    champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
-    sendMessage(player, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
   }
 }

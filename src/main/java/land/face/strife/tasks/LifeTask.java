@@ -12,6 +12,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DOTUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.PlayerDataUtil;
@@ -80,7 +81,11 @@ public class LifeTask extends BukkitRunnable {
     lifeAmount *= tickMultiplier;
 
     if (mob.getEntity().getFireTicks() > 0) {
-      lifeAmount -= mob.damageBarrier(DOTUtil.getFireDamage(mob) * tickMultiplier);
+      if (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.001) {
+        // Don't do damage at all
+      } else {
+        lifeAmount -= mob.damageBarrier(DOTUtil.getFireDamage(mob) * tickMultiplier);
+      }
     }
     // Bleed is after the multiplier because we want to deal
     // damage equal to lost bleed

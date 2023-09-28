@@ -19,26 +19,36 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Cow;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class ConsumeItemListener implements Listener {
 
   private final StrifePlugin plugin;
+  private final Map<UUID, Integer> boneTicksLeft = new HashMap<>();
 
   public ConsumeItemListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -97,6 +107,39 @@ public class ConsumeItemListener implements Listener {
   public void onPlayerClick(PlayerInteractEntityEvent event) {
     if (event.getRightClicked() instanceof Cow) {
       event.setCancelled(true);
+    }
+  }
+
+  @EventHandler
+  public void onJoin(final PlayerJoinEvent event) {
+    reapplyCooldown(event.getPlayer());
+  }
+
+  @EventHandler
+  public void onQuitSaveCooldown(final PlayerQuitEvent event) {
+    if (event.getPlayer().isOnline() && event.getPlayer().getCooldown(Material.BONE) > 0) {
+      boneTicksLeft.put(event.getPlayer().getUniqueId(), event.getPlayer().getCooldown(Material.BONE));
+    }
+  }
+
+  @EventHandler
+  public void onKickSaveCooldown(final PlayerKickEvent event) {
+    if (event.getPlayer().isOnline() && event.getPlayer().getCooldown(Material.BONE) > 0) {
+      boneTicksLeft.put(event.getPlayer().getUniqueId(), event.getPlayer().getCooldown(Material.BONE));
+    }
+  }
+
+  @EventHandler
+  public void onDeathSaveCooldown(final PlayerDeathEvent event) {
+    if (event.getPlayer().isOnline() && event.getEntity().getCooldown(Material.BONE) > 0) {
+      boneTicksLeft.put(event.getEntity().getUniqueId(), event.getEntity().getCooldown(Material.BONE));
+    }
+  }
+
+  private void reapplyCooldown(Player player) {
+    if (boneTicksLeft.containsKey(player.getUniqueId())) {
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          player.setCooldown(Material.BONE, boneTicksLeft.remove(player.getUniqueId())), 2L);
     }
   }
 }

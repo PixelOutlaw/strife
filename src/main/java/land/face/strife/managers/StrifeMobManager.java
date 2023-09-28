@@ -105,12 +105,14 @@ public class StrifeMobManager {
   }
 
   public void updateCollisions(Player player) {
+    if (!player.isOnline()) {
+      return;
+    }
     for (StrifeMob strifeMob : trackedEntities.values()) {
-      if (strifeMob.getUniqueEntityId() == null) {
+      if (strifeMob.getUniqueEntityId() == null || strifeMob.getEntity() == null) {
         continue;
       }
-      if (!plugin.getUniqueEntityManager()
-          .getUnique(strifeMob.getUniqueEntityId()).isCollidable()) {
+      if (!plugin.getUniqueEntityManager().getUnique(strifeMob.getUniqueEntityId()).isCollidable()) {
         strifeMob.getEntity().getCollidableExemptions().add(player.getUniqueId());
       }
     }

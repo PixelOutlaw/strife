@@ -19,6 +19,7 @@ package land.face.strife.storage;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,13 +124,6 @@ public class FlatfileStorage implements DataStorage {
       config.set(champUuid + "." + g + "-xp", champion.getGodXp().get(g));
     }
 
-    for (Entry<AbilitySlot, Ability> entry : champion.getAbilities().entrySet()) {
-      if (entry.getValue() == null) {
-        continue;
-      }
-      config.set(champUuid + ".new-abilities." + entry.getKey().toString(), entry.getValue().getId());
-    }
-
     List<String> boundAbilityIds = new ArrayList<>();
     for (LoreAbility loreAbility : champion.getBoundAbilities()) {
       if (loreAbility == null) {
@@ -140,18 +134,27 @@ public class FlatfileStorage implements DataStorage {
 
     config.set(champUuid + ".lore-abilities", boundAbilityIds);
 
-    if (champion.getCastMessages().get(AbilitySlot.SLOT_A) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_A", champion.getCastMessages().get(AbilitySlot.SLOT_A));
+    if (champion.getAbilities().get(AbilitySlot.SLOT_A) != null) {
+      config.set(champUuid + ".ability.SLOT_A.id", champion.getAbilities().get(AbilitySlot.SLOT_A).getId());
     }
-    if (champion.getCastMessages().get(AbilitySlot.SLOT_B) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_B", champion.getCastMessages().get(AbilitySlot.SLOT_B));
+    if (champion.getAbilities().get(AbilitySlot.SLOT_B) != null) {
+      config.set(champUuid + ".ability.SLOT_B.id", champion.getAbilities().get(AbilitySlot.SLOT_B).getId());
     }
-    if (champion.getCastMessages().get(AbilitySlot.SLOT_C) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_C", champion.getCastMessages().get(AbilitySlot.SLOT_C));
+    if (champion.getAbilities().get(AbilitySlot.SLOT_C) != null) {
+      config.set(champUuid + ".ability.SLOT_C.id", champion.getAbilities().get(AbilitySlot.SLOT_C).getId());
     }
-    if (champion.getCastMessages().get(AbilitySlot.SLOT_D) != null) {
-      config.set(champUuid + ".slot-messages.SLOT_D", champion.getCastMessages().get(AbilitySlot.SLOT_D));
+    if (champion.getAbilities().get(AbilitySlot.SLOT_D) != null) {
+      config.set(champUuid + ".ability.SLOT_D.id", champion.getAbilities().get(AbilitySlot.SLOT_D).getId());
     }
+
+    config.set(champUuid + ".ability.SLOT_A.msg",
+        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_A, Collections.emptyList()));
+    config.set(champUuid + ".ability.SLOT_B.msg",
+        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_B, Collections.emptyList()));
+    config.set(champUuid + ".ability.SLOT_C.msg",
+        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_C, Collections.emptyList()));
+    config.set(champUuid + ".ability.SLOT_D.msg",
+        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_D, Collections.emptyList()));
 
     for (Path path : LevelPath.PATH_VALUES) {
       if (champion.getPathMap().containsKey(path)) {
@@ -208,50 +211,34 @@ public class FlatfileStorage implements DataStorage {
       }
       saveData.setUnusedStatPoints(section.getInt("unused-stat-points"));
 
-      if (section.getConfigurationSection("new-abilities") == null) {
-        for (String s : section.getStringList("abilities")) {
-          Ability ability = plugin.getAbilityManager().getAbility(s);
-          if (ability == null) {
-            LogUtil.printError("Ability " + s + " not found for player " + uuid);
-            continue;
-          }
-          if (ability.getAbilityIconData() == null) {
-            LogUtil.printError("Ability " + s + " no longer supports being slotted! uuid: " + uuid);
-            continue;
-          }
-          saveData.setAbility(ability.getAbilityIconData().getAbilitySlot(), ability);
-        }
-      }
-
-      String ability1 = section.getString("new-abilities.SLOT_A");
+      String ability1 = section.getString("ability.SLOT_A.id");
       if (ability1 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability1);
         if (ability != null && ability.getAbilityIconData() != null) {
           saveData.setAbility(AbilitySlot.SLOT_A, ability);
         }
       }
-      String ability2 = section.getString("new-abilities.SLOT_B");
+      String ability2 = section.getString("ability.SLOT_B.id");
       if (ability2 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability2);
         if (ability != null && ability.getAbilityIconData() != null) {
           saveData.setAbility(AbilitySlot.SLOT_B, ability);
         }
       }
-      String ability3 = section.getString("new-abilities.SLOT_C");
+      String ability3 = section.getString("ability.SLOT_C.id");
       if (ability3 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability3);
         if (ability != null && ability.getAbilityIconData() != null) {
           saveData.setAbility(AbilitySlot.SLOT_C, ability);
         }
       }
-      String ability4 = section.getString("new-abilities.SLOT_D");
+      String ability4 = section.getString("ability.SLOT_D.id");
       if (ability4 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability4);
         if (ability != null && ability.getAbilityIconData() != null) {
           saveData.setAbility(AbilitySlot.SLOT_D, ability);
         }
       }
-
 
       for (String s : section.getStringList("lore-abilities")) {
         LoreAbility loreAbility = plugin.getLoreAbilityManager().getLoreAbilityFromId(s);
@@ -262,13 +249,10 @@ public class FlatfileStorage implements DataStorage {
         saveData.getBoundAbilities().add(loreAbility);
       }
 
-      if (section.isConfigurationSection("slot-messages")) {
-        ConfigurationSection msg = section.getConfigurationSection("slot-messages");
-        saveData.getCastMessages().put(AbilitySlot.SLOT_A, msg.getStringList("SLOT_A"));
-        saveData.getCastMessages().put(AbilitySlot.SLOT_B, msg.getStringList("SLOT_B"));
-        saveData.getCastMessages().put(AbilitySlot.SLOT_C, msg.getStringList("SLOT_C"));
-        saveData.getCastMessages().put(AbilitySlot.SLOT_D, msg.getStringList("SLOT_D"));
-      }
+      saveData.getCastMessages().put(AbilitySlot.SLOT_A, section.getStringList("ability.SLOT_C.msg"));
+      saveData.getCastMessages().put(AbilitySlot.SLOT_B, section.getStringList("ability.SLOT_C.msg"));
+      saveData.getCastMessages().put(AbilitySlot.SLOT_C, section.getStringList("ability.SLOT_C.msg"));
+      saveData.getCastMessages().put(AbilitySlot.SLOT_D, section.getStringList("ability.SLOT_C.msg"));
 
       if (section.isConfigurationSection("passives")) {
         ConfigurationSection passiveSection = section.getConfigurationSection("passives");
@@ -287,6 +271,7 @@ public class FlatfileStorage implements DataStorage {
           saveData.setLevel(s, statsSection.getInt(s.getKey(), 0));
         }
       } else {
+        Bukkit.getLogger().warning("[Strife] No attribute section found for player " + uuid);
         for (StrifeAttribute s : plugin.getAttributeManager().getAttributes()) {
           saveData.setLevel(s, 0);
         }

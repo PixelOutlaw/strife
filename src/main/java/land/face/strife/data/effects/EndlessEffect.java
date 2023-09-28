@@ -2,6 +2,7 @@ package land.face.strife.data.effects;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
@@ -61,14 +62,16 @@ public class EndlessEffect extends Effect {
   }
 
   public static void cancelEffects(LivingEntity target) {
-    for (EndlessEffectTimer timer : runningEndlessEffects) {
+    Iterator<EndlessEffectTimer> it = runningEndlessEffects.iterator();
+    while (it.hasNext()) {
+      EndlessEffectTimer timer = it.next();
       if (timer.getMob().getEntity() != target) {
         continue;
       }
       if (!timer.isCancelled()) {
         timer.cancel();
       }
-      runningEndlessEffects.remove(timer);
+      it.remove();
     }
   }
 

@@ -99,9 +99,11 @@ public class AbilityButton extends MenuItem {
       slotThreeChoiceMenu.open(event.getPlayer());
     } else {
       Ability oldAbility = champion.getSaveData().getAbility(slot);
-      if (plugin.getAbilityManager().getCooldownTracker(event.getPlayer(), oldAbility.getId()) != null) {
-        sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_ON_COOLDOWN);
-        return;
+      if (oldAbility != null) {
+        if (plugin.getAbilityManager().getCooldownTracker(event.getPlayer(), oldAbility.getId()) != null) {
+          sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_ON_COOLDOWN);
+          return;
+        }
       }
       champion.getSaveData().setAbility(slot, ability);
       plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(),

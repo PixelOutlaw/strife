@@ -126,9 +126,11 @@ public class TargetingListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onFishHookInvulnerable(ProjectileHitEvent event) {
-    if (event.getEntity() instanceof FishHook && event.getHitEntity() != null &&
-        event.getHitEntity().isInvulnerable()) {
-      event.setCancelled(true);
+    if (!(event.getEntity() instanceof FishHook) || event.getHitEntity() == null) {
+      return;
+    }
+    if (event.getHitEntity().isInvulnerable() || event.getHitEntity().hasMetadata("NPC")) {
+      event.getEntity().remove();
     }
   }
 

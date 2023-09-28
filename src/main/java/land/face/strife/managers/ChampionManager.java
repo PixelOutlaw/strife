@@ -91,21 +91,6 @@ public class ChampionManager {
     return new HashSet<>(championMap.values());
   }
 
-  public void update(Champion champion) {
-    champion.recombineCache();
-    plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
-  }
-
-  public void update(Player player) {
-    update(getChampion(player));
-  }
-
-  public void updateAll() {
-    for (Player p : Bukkit.getOnlinePlayers()) {
-      update(p);
-    }
-  }
-
   public void tickPassiveLoreAbilities() {
     for (Player p : Bukkit.getOnlinePlayers()) {
       if (!p.isValid()) {
@@ -278,7 +263,8 @@ public class ChampionManager {
         true,
         () -> {
           plugin.getChampionManager().savePendingStats(champion);
-          plugin.getChampionManager().update(champion);
+          plugin.getStatUpdateManager().updateAllAttributes(player);
+          champion.recombineCache();
           plugin.getStatUpdateManager().updateAllAttributes(player);
         },
         null

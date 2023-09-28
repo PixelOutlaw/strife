@@ -276,7 +276,7 @@ public class TargetingUtil {
     if (!e.isValid() || e.isInvulnerable() || !(e instanceof LivingEntity) || e instanceof ArmorStand) {
       return true;
     }
-    if (e.hasMetadata("NPC") || e.hasMetadata("pet") || e.hasMetadata("MiniaturePet")) {
+    if (e.hasMetadata("NPC") || e.hasMetadata("pet")) {
       return true;
     }
     if (e instanceof Player) {

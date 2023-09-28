@@ -36,7 +36,7 @@ public class FallListener implements Listener {
     fallMs = plugin.getSettings().getInt("config.mechanics.agility.roll-ms");
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.LOW)
   public void onFallDamage(EntityDamageEvent event) {
     if (event.getCause() != DamageCause.FALL || event.isCancelled()) {
       return;

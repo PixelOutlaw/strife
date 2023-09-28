@@ -84,7 +84,7 @@ public class BlockManager {
       Bukkit.getPluginManager().callEvent(ev);
       if (attacker.getEntity() instanceof Player) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 7, "&e⛨&lBlock");
+            IndicatorStyle.FLOAT_UP_MEDIUM, 4, "彠", 1.0f, 1.0f, 1.0f);
       }
       if (!blockTimers.containsKey(defender.getEntity().getUniqueId())) {
         blockTimers.put(defender.getEntity().getUniqueId(), new BlockTimer(this, defender));

@@ -97,7 +97,7 @@ public class StealthManager {
     gainedXp *= levelPenaltyMult;
 
     if (finishingBlow) {
-      gainedXp *= 2.5;
+      gainedXp *= 2.5F;
     }
     return gainedXp * levelPenaltyMult;
   }
@@ -115,11 +115,11 @@ public class StealthManager {
     for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
       if (e instanceof Player) {
         plugin.getIndicatorManager()
-            .addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
+            .addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "<bold>???", 1.0f, 1.0f, 1.0f);
       } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
         plugin.getIndicatorManager()
-            .addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "&e&l???");
+            .addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "<bold>???", 1.0f, 1.0f, 1.0f);
       }
     }
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);

@@ -36,11 +36,13 @@ import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.menus.prayer.PrayerMenu;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Source;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.MainHand;
@@ -54,6 +56,7 @@ public class PrayerManager {
   @Getter private final Map<Prayer, String> prayerNames = new HashMap<>();
   @Getter private final Map<Prayer, List<String>> prayerLore = new HashMap<>();
   @Getter private final Map<Prayer, Float> prayerActivationCost = new HashMap<>();
+  @Getter private final Map<Prayer, Sound> prayerSounds = new HashMap<>();
   private final Map<Prayer, Float> prayerCostPerTick = new HashMap<>();
   @Getter private final Map<Prayer, Integer> prayerLevelReq = new HashMap<>();
   @Getter private final Map<Prayer, Integer> prayerModelData = new HashMap<>();
@@ -88,6 +91,13 @@ public class PrayerManager {
           plugin.getPrayerYAML().getStringList("prayer." + p.toString().toLowerCase() + ".lore")));
       prayerActivationCost.put(p, (float)
           plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".activation-cost", 5));
+      // Fuck paper, fuck kyori
+      //noinspection ALL
+      String soundFx = plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".sound", "minecraft:custom.skill_up");
+      float pitch = (float) plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".pitch", 1);
+      // Fuck paper, fuck kyori
+      //noinspection ALL
+      prayerSounds.put(p, Sound.sound(Key.key(soundFx), Source.MASTER, 1f, pitch));
       prayerCostPerTick.put(p, TICK_MULT * (float)
           plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".per-second-cost", 5));
       prayerLevelReq.put(p, plugin.getPrayerYAML().getInt("prayer." + p.toString().toLowerCase() + ".level-req", 0));
@@ -127,22 +137,40 @@ public class PrayerManager {
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     float cost;
+    Sound sound;
     if (prayer.ordinal() > 11) {
       switch (prayer) {
-        case THIRTEEN -> cost = getGodPassiveOne()
-            .get(mob.getChampion().getSaveData().getSelectedGod()).getActivationCost();
-        case FOURTEEN -> cost = getGodPassiveTwo()
-            .get(mob.getChampion().getSaveData().getSelectedGod()).getActivationCost();
-        case FIFTEEN -> cost = getGodPassiveThree()
-            .get(mob.getChampion().getSaveData().getSelectedGod()).getActivationCost();
-        default -> cost = 10;
+        case THIRTEEN -> {
+          GodPrayerDetails details = getGodPassiveOne().get(mob.getChampion().getSaveData().getSelectedGod());
+          cost = details.getActivationCost();
+          sound = details.getSound();
+        }
+        case FOURTEEN -> {
+          GodPrayerDetails details = getGodPassiveTwo().get(mob.getChampion().getSaveData().getSelectedGod());
+          cost = details.getActivationCost();
+          sound = details.getSound();
+        }
+        case FIFTEEN -> {
+          GodPrayerDetails details = getGodPassiveThree().get(mob.getChampion().getSaveData().getSelectedGod());
+          cost = details.getActivationCost();
+          sound = details.getSound();
+        }
+        default -> {
+          cost = 10;
+          sound = null;
+        }
       }
     } else {
       cost = prayerActivationCost.get(prayer);
+      sound = prayerSounds.get(prayer);
     }
     if (cost > mob.getPrayer()) {
       return false;
     }
+    mob.setPrayer(mob.getPrayer() - cost);
+    Audience audience = Audience.audience(player);
+    assert sound != null;
+    audience.playSound(sound);
     activePrayers.putIfAbsent(player, new HashSet<>());
     activePrayers.get(player).add(prayer);
     switch (prayer) {
@@ -160,6 +188,7 @@ public class PrayerManager {
     if (!isPrayerActive(player, prayer)) {
       return false;
     }
+    player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.MASTER, 0.65f, 2);
     activePrayers.putIfAbsent(player, new HashSet<>());
     activePrayers.get(player).remove(prayer);
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
@@ -214,12 +243,19 @@ public class PrayerManager {
         .getDouble("gods." + god.name() + ".prayer" + (level-1) + ".activation-cost", 5);
     float perSecond = (float) plugin.getPrayerYAML()
         .getDouble("gods." + god.name() + ".prayer" + (level-1) + ".per-second-cost", 5);
+    // Fuck paper, fuck kyori
+    //noinspection ALL
+    String soundFx = plugin.getPrayerYAML().getString("gods." + god.name() + ".prayer" + (level-1) + ".sound", "minecraft:custom.skill_up");
+    float pitch = (float) plugin.getPrayerYAML().getDouble("gods." + god.name() + ".prayer" + (level-1) + ".pitch", 1);
     GodPrayerDetails prayerDetails = new GodPrayerDetails();
     prayerDetails.setName(name);
     prayerDetails.setDescription(desc);
     prayerDetails.setActivationCost(activation);
     prayerDetails.setPerTickCost(perSecond * TICK_MULT);
     prayerDetails.setLoadedBuff(loadedBuff);
+    // Fuck paper, fuck kyori
+    //noinspection ALL
+    prayerDetails.setSound(Sound.sound(Key.key(soundFx), Source.MASTER, 1f, pitch));
     switch (level) {
       case 2: godPassiveOne.put(god, prayerDetails);
       case 3: godPassiveTwo.put(god, prayerDetails);
@@ -240,6 +276,7 @@ public class PrayerManager {
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(p);
     float pietyMult = 100f / (100f + playerMob.getStat(StrifeStat.PRAYER_COST));
     Iterator<Prayer> it = activePrayers.get(p).iterator();
+    boolean removed = false;
     while (it.hasNext()) {
       Prayer prayer = it.next();
       float currentPrayer = playerMob.getPrayer();
@@ -259,6 +296,7 @@ public class PrayerManager {
       }
       cost *= pietyMult;
       if (cost >= currentPrayer) {
+        removed = true;
         it.remove();
       } else {
         switch (prayer) {
@@ -269,6 +307,9 @@ public class PrayerManager {
         }
         playerMob.setPrayer(currentPrayer - cost);
       }
+    }
+    if (removed) {
+      p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.MASTER, 0.65f, 2);
     }
     if (activePrayers.get(p).isEmpty()) {
       playerMob.setPrayer(0);

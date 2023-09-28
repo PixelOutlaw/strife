@@ -28,22 +28,25 @@ import org.bukkit.inventory.ItemStack;
 
 public class ReviveRejectItem extends MenuItem {
 
+  private final ReviveMenu reviveMenu;
   private static final String DISPLAY_NAME = StringExtensionsKt.chatColorize("&c&nReject Revive");
 
-  ReviveRejectItem() {
+  ReviveRejectItem(ReviveMenu reviveMenu) {
     super("", new ItemStack(Material.BARRIER));
+    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
+    ItemStackExtensionsKt.setDisplayName(getIcon(), DISPLAY_NAME);
+    this.reviveMenu = reviveMenu;
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    ItemStack stack = this.getIcon().clone();
-    ItemStackExtensionsKt.setDisplayName(stack, DISPLAY_NAME);
-    return stack;
+    return getIcon().clone();
   }
 
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
     event.setWillClose(true);
+    reviveMenu.getDataMap().remove(event.getPlayer().getUniqueId());
   }
 }

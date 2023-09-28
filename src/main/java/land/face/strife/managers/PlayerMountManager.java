@@ -73,7 +73,6 @@ public class PlayerMountManager {
   public boolean spawnMount(Player player) {
     UUID uuid = player.getUniqueId();
     if (ownerMap.containsKey(uuid)) {
-      Bukkit.getLogger().info("[Strife] aaaa");
       return false;
     }
     String mountId = selectedMount.get(uuid);

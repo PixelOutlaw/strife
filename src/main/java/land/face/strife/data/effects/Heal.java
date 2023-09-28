@@ -51,9 +51,9 @@ public class Heal extends Effect {
 
     if (tickDuration == -1 && caster.getEntity() instanceof Player) {
       if (!healCaster && caster != target) {
-        String healText = "&a" + DamageUtil.buildDamageString((int) heal);
+        String healText = "<green>" + DamageUtil.buildDamageString((int) heal);
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(caster.getEntity(),
-            target.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM, 8, healText);
+            target.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM, 8, healText, 1.0f, 0.8f, 0.6f);
       }
     }
 

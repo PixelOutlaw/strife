@@ -123,7 +123,8 @@ public class SkillExperienceManager {
           IndicatorStyle.FLOAT_UP_SLOW, 10,
           type.getColor() + FaceColor.BOLD.s() + "+" +
               FaceColor.WHITE + FaceColor.BOLD.s() + (int) amount +
-              type.getColor() + FaceColor.BOLD.s() + "XP!");
+              type.getColor() + FaceColor.BOLD.s() + "XP!",
+          0.9f, 1.0f, 0.7f);
     }
     if (saveData.isDisplayExp() || forceDisplay) {
       String xp = FORMAT.format(amount);

@@ -18,42 +18,28 @@
  */
 package land.face.strife.commands;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
-import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
-import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.champion.Champion;
 import org.bukkit.entity.Player;
 
-@CommandAlias("stats|inspect|view-stats|viewstats")
-public class InspectCommand extends BaseCommand {
+@CommandAlias("togglexp|xptoggle|xpdisplay")
+public class ToggleXpCommand extends BaseCommand {
 
   private final StrifePlugin plugin;
 
-  public InspectCommand(StrifePlugin plugin) {
+  public ToggleXpCommand(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
   @Default
-  public void baseCommand(Player sender) {
-    plugin.getStrifeMobManager().updateEquipmentStats(plugin.getStrifeMobManager().getStatMob(sender));
-    plugin.getChampionManager().getChampion(sender).recombineCache();
-    plugin.getStatUpdateManager().updateAllAttributes(sender);
-    plugin.getStatsMenu().getInspectionTargetMap().put(sender, sender);
-    plugin.getStatsMenu().open(sender);
+  public void toggleExp(Player player) {
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    champion.getSaveData().setDisplayExp(!champion.getSaveData().isDisplayExp());
+    sendMessage(player, "&aDisplay XP: &f" + champion.getSaveData().isDisplayExp());
   }
-
-  @Default
-  @CommandCompletion("@players")
-  public void inspectCommand(Player sender, OnlinePlayer target) {
-    if (!target.getPlayer().isValid()) {
-      MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
-      return;
-    }
-    plugin.getStatsMenu().getInspectionTargetMap().put(sender, target.getPlayer());
-    plugin.getStatsMenu().open(sender);
-  }
-
 }

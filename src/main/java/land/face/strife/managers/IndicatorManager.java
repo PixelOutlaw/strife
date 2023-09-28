@@ -8,6 +8,7 @@ import land.face.strife.data.effects.DamagePopoff;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.PopoffUtil;
 import land.face.strife.util.TargetingUtil;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -51,7 +52,8 @@ public class IndicatorManager {
     fastFloatVector = new Vector(0, fastFloatSpeed, 0);
   }
 
-  public void addIndicator(LivingEntity viewer, Location location, IndicatorStyle type, int life, String text) {
+  public void addIndicator(LivingEntity viewer, Location location, IndicatorStyle type, int life, String text,
+      float startScale, float midScale, float endScale) {
     if (!(viewer instanceof Player) || location.getWorld() != viewer.getWorld()) {
       return;
     }
@@ -60,7 +62,7 @@ public class IndicatorManager {
     if (distance > 1024) {
       return;
     }
-
+    text = ChatColor.stripColor(text);
     Vector diff = viewer.getEyeLocation().toVector().subtract(location.toVector());
     Location midway;
     if (distance < 64) {
@@ -90,16 +92,18 @@ public class IndicatorManager {
       case FLOAT_UP_SLOW -> velocity = slowFloatVector.clone();
     }
 
-    DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) viewer, midway, velocity, gravity, life, text);
+    DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) viewer,
+        midway, velocity, gravity, life, text, startScale, midScale, endScale);
     indicators.add(damagePopoff);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text) {
+  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text,
+      float startScale, float midScale, float endScale) {
     Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.BELOW_HEAD);
     if (!loc.getWorld().getName().equals(target.getEyeLocation().getWorld().getName())) {
       return;
     }
-    addIndicator(creator, loc, type, life, text);
+    addIndicator(creator, loc, type, life, text, startScale, midScale, endScale);
   }
 
   public void tickAllIndicators() {

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Projectile;
 
 public class SpecialStatusUtil {
 

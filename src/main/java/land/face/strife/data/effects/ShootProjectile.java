@@ -5,9 +5,6 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.bone.Nameable;
 import com.ticxo.modelengine.api.model.vfx.VFX;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +32,6 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.Snowball;
-import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -182,20 +178,19 @@ public class ShootProjectile extends Effect {
       }
 
       if (modelId != null && vfxBone != null) {
+        /*
         VFX vfx = ModelEngineAPI.createVFX(projectile);
         vfx.useModel(modelId, vfxBone);
         vfx.setColor(Color.WHITE);
         vfx.setBaseEntityVisible(false);
         vfx.setVisible(true);
         vfx.create();
-        Bukkit.getScheduler().runTaskTimer(getPlugin(), new BukkitRunnable() {
-          @Override
-          public void run() {
-            vfx.setPosition(projectile.getLocation().toVector());
-            vfx.point(projectile.getVelocity(), true);
-            vfx.tick();
-          }
+        Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
+          vfx.setPosition(projectile.getLocation().toVector());
+          vfx.point(projectile.getVelocity(), true);
+          vfx.tick();
         }, 0L, 1L);
+         */
       }
     }
     ProjectileUtil.bumpShotId();
