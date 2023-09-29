@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.AbilitySlot;
@@ -54,7 +55,6 @@ public class Champion {
   @Getter
   private final Set<StrifeTrait> pathTraits;
 
-  @Getter
   private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
 
   private final Map<StrifeStat, Float> combinedStatMap;
@@ -105,6 +105,32 @@ public class Champion {
         StrifePlugin.getInstance().getBoostManager().getStats()
     ));
     lastChanged = System.currentTimeMillis();
+  }
+
+  public Ability getAbility(AbilitySlot slot) {
+    return abilities.get(slot);
+  }
+
+  public boolean hasAbility(Ability ability) {
+    return abilities.containsValue(ability);
+  }
+
+  public void setAbility(StrifePlugin plugin, AbilitySlot slot, Ability ability) {
+    abilities.put(slot, ability);
+    saveData.setAbility(slot, ability != null ? ability.getId() : null);
+    recombineCache(plugin);
+  }
+
+  public boolean hasSoulSight() {
+    for (Ability ability : abilities.values()) {
+      if (ability == null) {
+        continue;
+      }
+      if (ability.getTargetType() == TargetType.NEAREST_SOUL) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public Map<StrifeStat, Float> getAbilityStats(AbilitySlot abilitySlot) {

@@ -84,29 +84,21 @@ public class AbilityButton extends MenuItem {
       return;
     }
     AbilitySlot slot = ability.getAbilityIconData().getAbilitySlot();
-    boolean abilityMatches = false;
-    for (Ability a : champion.getAbilities().values()) {
-      if (ability == a) {
-        abilityMatches = true;
-        break;
-      }
-    }
-    if (abilityMatches) {
+    if (champion.hasAbility(ability)) {
       return;
     }
     if (slot == AbilitySlot.SLOT_C) {
       SlotThreeChoiceMenu slotThreeChoiceMenu = new SlotThreeChoiceMenu(plugin, event.getPlayer(), champion, ability, subMenu);
       slotThreeChoiceMenu.open(event.getPlayer());
     } else {
-      Ability oldAbility = champion.getAbilities().get(slot);
+      Ability oldAbility = champion.getAbility((slot));
       if (oldAbility != null) {
         if (plugin.getAbilityManager().getCooldownTracker(event.getPlayer(), oldAbility.getId()) != null) {
           sendMessage(event.getPlayer(), AbilityIconManager.ABILITY_ON_COOLDOWN);
           return;
         }
       }
-      champion.getSaveData().setAbility(slot, ability.getId());
-      champion.getAbilities().put(slot, ability);
+      champion.setAbility(plugin, slot, ability);
       plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(),
           ability.getAbilityIconData(), ability.getAbilityIconData().getAbilitySlot());
 

@@ -42,13 +42,7 @@ public class SoulManager {
   }
 
   public boolean canSeeSouls(Player player) {
-    Champion champion = plugin.getChampionManager().getChampion(player);
-    for (Ability ability : champion.getAbilities().values()) {
-      if (ability.getTargetType() == TargetType.NEAREST_SOUL) {
-        return true;
-      }
-    }
-    return false;
+    return plugin.getChampionManager().getChampion(player).hasSoulSight();
   }
 
   public void createSoul(StrifeMob mob) {

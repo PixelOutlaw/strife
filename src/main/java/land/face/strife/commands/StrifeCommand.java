@@ -398,7 +398,8 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(slot, abilityString);
+    Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
+    champion.setAbility(plugin, slot, ability);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
@@ -411,8 +412,7 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "<red>Invalid slot: " + slot);
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData()
-        .setAbility(abilitySlot, null);
+    plugin.getChampionManager().getChampion(target.getPlayer()).setAbility(plugin, abilitySlot, null);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 

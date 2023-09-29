@@ -59,8 +59,7 @@ public class SlotThreeConfirmIcon extends MenuItem {
     event.setWillClose(false);
     event.setWillUpdate(false);
     event.setWillGoBack(false);
-    menu.getChampion().getAbilities().put(slot, menu.getNewAbility());
-    menu.getChampion().getSaveData().setAbility(slot, menu.getNewAbility().getId());
+    menu.getChampion().setAbility(menu.getPlugin(), slot, menu.getNewAbility());
     menu.getPlugin().getAbilityIconManager().setAbilityIcon(event.getPlayer(),
         menu.getNewAbility().getAbilityIconData(), slot);
 
