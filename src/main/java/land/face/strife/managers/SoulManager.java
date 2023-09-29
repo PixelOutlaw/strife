@@ -42,8 +42,8 @@ public class SoulManager {
   }
 
   public boolean canSeeSouls(Player player) {
-    ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
-    for (Ability ability : data.getAbilities().values()) {
+    Champion champion = plugin.getChampionManager().getChampion(player);
+    for (Ability ability : champion.getAbilities().values()) {
       if (ability.getTargetType() == TargetType.NEAREST_SOUL) {
         return true;
       }

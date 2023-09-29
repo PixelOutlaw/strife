@@ -8,58 +8,62 @@ import java.util.Set;
 import java.util.UUID;
 import land.face.strife.data.LevelPath.Choice;
 import land.face.strife.data.LevelPath.Path;
-import land.face.strife.data.LoreAbility;
-import land.face.strife.data.ability.Ability;
 import land.face.strife.stats.AbilitySlot;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-@Data
 public class ChampionSaveData {
 
+  @Getter
   private final UUID uniqueId;
 
   private final Map<StrifeAttribute, Integer> levelMap = new HashMap<>();
+  @Getter
   private final Map<LifeSkillType, Integer> skillLevelMap = new HashMap<>();
+  @Getter
   private final Map<LifeSkillType, Float> skillExpMap = new HashMap<>();
-  private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
+  private final Map<AbilitySlot, String> abilities = new HashMap<>();
+  @Getter
   private final Map<AbilitySlot, List<String>> castMessages = new HashMap<>();
+  @Getter
   private final Map<Path, Choice> pathMap = new HashMap<>();
-  private final Set<LoreAbility> boundAbilities = new HashSet<>();
+  @Getter
+  private final Set<String> boundAbilities = new HashSet<>();
 
+  @Getter
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
 
+  @Getter @Setter
   private SelectedGod selectedGod;
   @Getter
-  private Map<SelectedGod, Integer> godXp = new HashMap<>();
+  private final Map<SelectedGod, Integer> godXp = new HashMap<>();
   @Getter
-  private Map<SelectedGod, Integer> godLevel = new HashMap<>();
+  private final Map<SelectedGod, Integer> godLevel = new HashMap<>();
 
-  private int unusedStatPoints;
-  private int pendingUnusedStatPoints;
-  private int highestReachedLevel;
+  @Getter @Setter
+  private int unusedStatPoints, pendingUnusedStatPoints, highestReachedLevel;
 
+  @Getter @Setter
   private float pvpScore = 700;
   @Getter @Setter
   private float prayerPoints = 0;
+  @Getter
   private double catchupExpUsed;
 
-  private boolean onMount;
-  private boolean glowEnabled;
-  private boolean displayExp;
+  @Getter @Setter
+  private boolean onMount, glowEnabled, displayExp;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
   }
 
-  public void setAbility(AbilitySlot abilitySlot, Ability ability) {
+  public void setAbility(AbilitySlot abilitySlot, String ability) {
     abilities.put(abilitySlot, ability);
   }
 
-  public Ability getAbility(AbilitySlot abilitySlot) {
+  public String getAbility(AbilitySlot abilitySlot) {
     return abilities.get(abilitySlot);
   }
 
@@ -88,7 +92,7 @@ public class ChampionSaveData {
   }
 
   public Player getPlayer() {
-    return Bukkit.getPlayer(getUniqueId());
+    return Bukkit.getPlayer(uniqueId);
   }
 
   public void setSkillLevel(LifeSkillType type, int level) {

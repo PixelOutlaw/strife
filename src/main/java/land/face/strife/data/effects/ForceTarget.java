@@ -2,19 +2,15 @@ package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.TargetingUtil;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.bukkit.Location;
+import lombok.Setter;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-import org.bukkit.util.Vector;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class ForceTarget extends Effect {
 
+  @Setter
   private boolean casterToTarget;
+  @Setter
   private boolean overwrite;
 
   @Override

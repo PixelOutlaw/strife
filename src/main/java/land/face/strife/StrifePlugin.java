@@ -642,9 +642,8 @@ public class StrifePlugin extends FacePlugin {
       pathMenus.put(path, new PathMenu(this, path));
     }
     reviveMenu = new ReviveMenu(this);
-    Bukkit.getLogger().info("99999999999999999999");
     for (Player player : Bukkit.getOnlinePlayers()) {
-      championManager.getChampion(player).recombineCache();
+      championManager.getChampion(player).recombineCache(this);
       statUpdateManager.updateAllAttributes(player);
       boostManager.updateGlobalBoostStatus(player);
       abilityManager.loadPlayerCooldowns(player);
@@ -655,9 +654,10 @@ public class StrifePlugin extends FacePlugin {
           () -> abilityIconManager.setAllAbilityIcons(player), 10L);
     }
 
-    DamageUtil.refresh();
+    DamageUtil.refresh(this);
+    PlayerDataUtil.refresh(this);
     StatUtil.refreshPlugin(this);
-    DOTUtil.refresh();
+    DOTUtil.refresh(this);
 
     ItemUtil.pickDestroyKeys.clear();
     ItemUtil.hoeDestroyKeys.clear();

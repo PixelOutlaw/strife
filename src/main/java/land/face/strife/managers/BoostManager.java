@@ -149,7 +149,7 @@ public class BoostManager {
         announceBoost(loadedStatBoost.getAnnounceEnd(), boost.getBoosterName(), 0);
         boosts.remove(boost);
         for (Player p : Bukkit.getOnlinePlayers()) {
-          plugin.getChampionManager().getChampion(p).recombineCache();
+          plugin.getChampionManager().getChampion(p).recombineCache(plugin);
         }
         continue;
       }

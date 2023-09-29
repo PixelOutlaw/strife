@@ -40,6 +40,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Ignite;
+import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
@@ -109,8 +110,8 @@ public class DamageUtil {
   private static final StringMatcher stringMatcher = WorldGuard.getInstance()
       .getPlatform().getMatcher();
 
-  public static void refresh() {
-    plugin = StrifePlugin.getInstance();
+  public static void refresh(StrifePlugin refreshedPlugin) {
+    plugin = refreshedPlugin;
     guildsAPI = Guilds.getApi();
 
     BASE_ATTACK_SECONDS = (float) plugin.getSettings()
@@ -448,10 +449,10 @@ public class DamageUtil {
   private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods,
       float pvpMult) {
     Player player = (Player) attacker.getEntity();
-    float sneakSkill = plugin.getChampionManager().getChampion(player)
-        .getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
+    SkillLevelData data = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, true);
+    float sneakSkill = data.getLevelWithBonus();
     float sneakDamage = sneakSkill;
-    sneakDamage += defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill);
+    sneakDamage += (float) (defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill));
     sneakDamage *= mods.getAttackMultiplier();
     sneakDamage *= pvpMult;
 

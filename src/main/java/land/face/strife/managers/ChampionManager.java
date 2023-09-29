@@ -78,7 +78,7 @@ public class ChampionManager {
     rebuildAttributes(champion);
     plugin.getPathManager().buildPathBonus(champion);
 
-    champion.recombineCache();
+    champion.recombineCache(plugin);
 
     return champion;
   }
@@ -178,7 +178,7 @@ public class ChampionManager {
     champion.setLevelPointStats(StatUtil.buildStatsFromAttributes(champion.getLevelMap()));
   }
 
-  public boolean addBoundLoreAbility(StrifeMob mob, LoreAbility loreAbility) {
+  public boolean addBoundLoreAbility(StrifeMob mob, String loreAbility) {
     Champion champion = mob.getChampion();
     if (champion == null) {
       return false;
@@ -187,7 +187,7 @@ public class ChampionManager {
       return false;
     }
     champion.getSaveData().getBoundAbilities().add(loreAbility);
-    mob.getEquipmentCache().recombineAbilities(mob);
+    mob.getEquipmentCache().recombineAbilities(plugin, mob);
     return true;
   }
 
@@ -203,7 +203,7 @@ public class ChampionManager {
       return false;
     }
     champion.getSaveData().getBoundAbilities().remove(loreAbility);
-    mob.getEquipmentCache().recombineAbilities(mob);
+    mob.getEquipmentCache().recombineAbilities(plugin, mob);
     return true;
   }
 
@@ -264,7 +264,7 @@ public class ChampionManager {
         () -> {
           plugin.getChampionManager().savePendingStats(champion);
           plugin.getStatUpdateManager().updateAllAttributes(player);
-          champion.recombineCache();
+          champion.recombineCache(plugin);
           plugin.getStatUpdateManager().updateAllAttributes(player);
         },
         null

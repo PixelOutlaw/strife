@@ -19,7 +19,6 @@
 package land.face.strife.menus.abilities;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -44,7 +43,8 @@ public class SlotThreeOldChoiceIcon extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    Ability ability = menu.getChampion().getSaveData().getAbility(slot);
+    String abilityId = menu.getChampion().getSaveData().getAbility(slot);
+    Ability ability = menu.getPlugin().getAbilityManager().getAbility(abilityId);
     if (ability == null) {
       ItemStack stack = new ItemStack(Material.BARRIER);
       ItemStackExtensionsKt.setCustomModelData(stack, 50);

@@ -10,8 +10,10 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -78,11 +80,11 @@ public class FallListener implements Listener {
     damage += damage * maxHealth * 0.055;
     damage = Math.max(damage, 0);
 
-    Champion champion = mob.getChampion();
+    SkillLevelData data = PlayerDataUtil.getSkillLevels(mob, LifeSkillType.AGILITY, true);
     if (rollBonus) {
-      damage *= 100.0 / (100 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
+      damage *= 100.0 / (100 + data.getLevelWithBonus());
     } else {
-      damage *= 50.0 / (50 + champion.getEffectiveLifeSkillLevel(LifeSkillType.AGILITY, true));
+      damage *= 50.0 / (50 + data.getLevelWithBonus());
       player.addPotionEffect(new PotionEffect(SLOW, 100, 0, true, false));
     }
 

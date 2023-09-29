@@ -26,7 +26,7 @@ public class CooldownReduction extends Effect {
       if (caster.getChampion() == null || caster.getChampion().getSaveData().getAbility(slot) == null) {
         return;
       }
-      selectedAbility = caster.getChampion().getSaveData().getAbility(slot).getId();
+      selectedAbility = caster.getChampion().getSaveData().getAbility(slot);
     }
     if (percent) {
       StrifePlugin.getInstance().getAbilityManager().reduceCooldownPercent(caster.getEntity(),
@@ -35,10 +35,6 @@ public class CooldownReduction extends Effect {
       StrifePlugin.getInstance().getAbilityManager().reduceCooldownMillis(caster.getEntity(),
           selectedAbility, (int) (amount * 1000));
     }
-  }
-
-  public void setAmount(float amount) {
-    this.amount = amount;
   }
 
   public void setAbilityString(String abilityString) {

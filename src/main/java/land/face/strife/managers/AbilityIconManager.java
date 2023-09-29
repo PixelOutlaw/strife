@@ -68,9 +68,8 @@ public class AbilityIconManager {
       return;
     }
     Champion champion = plugin.getChampionManager().getChampion(player);
-    ChampionSaveData data = champion.getSaveData();
     player.getInventory().setHeldItemSlot(4);
-    for (Entry<AbilitySlot, Ability> entry : data.getAbilities().entrySet()) {
+    for (Entry<AbilitySlot, Ability> entry : champion.getAbilities().entrySet()) {
       setAbilityIcon(player, entry.getValue().getAbilityIconData(), entry.getKey());
       AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, entry.getValue());
       Bukkit.getPluginManager().callEvent(abilityChangeEvent);
@@ -103,8 +102,7 @@ public class AbilityIconManager {
   }
 
   public boolean playerHasAbility(Player player, Ability ability) {
-    ChampionSaveData data = plugin.getChampionManager().getChampion(player).getSaveData();
-    return data.getAbilities().containsValue(ability);
+    return plugin.getChampionManager().getChampion(player).getAbilities().containsValue(ability);
   }
 
   public boolean isAbilityIcon(ItemStack stack) {
@@ -119,10 +117,10 @@ public class AbilityIconManager {
     if (mob.getEntity().getType() != EntityType.PLAYER) {
       return;
     }
-    Ability abilityA = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_A);
-    Ability abilityB = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_B);
-    Ability abilityC = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_C);
-    Ability abilityD = mob.getChampion().getSaveData().getAbility(AbilitySlot.SLOT_D);
+    Ability abilityA = mob.getChampion().getAbilities().get(AbilitySlot.SLOT_A);
+    Ability abilityB = mob.getChampion().getAbilities().get(AbilitySlot.SLOT_B);
+    Ability abilityC = mob.getChampion().getAbilities().get(AbilitySlot.SLOT_C);
+    Ability abilityD = mob.getChampion().getAbilities().get(AbilitySlot.SLOT_D);
 
     if (abilityA != null && abilityA.isDeathUntoggle()) {
       plugin.getAbilityManager().unToggleAbility(mob, abilityA.getId());
@@ -145,7 +143,7 @@ public class AbilityIconManager {
     }
 
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
-    Ability ability = mob.getChampion().getSaveData().getAbility(slot);
+    Ability ability = mob.getChampion().getAbilities().get(slot);
     if (ability == null) {
       if (isAbilityIcon(player.getInventory().getItem(slotNumber))) {
         player.getInventory().setItem(slotNumber, null);
@@ -193,13 +191,13 @@ public class AbilityIconManager {
   public void updateAllIconProgress(Player player) {
     Champion champion = plugin.getChampionManager().getChampion(player);
     setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getSaveData().getAbility(AbilitySlot.SLOT_A));
+        champion.getAbilities().get(AbilitySlot.SLOT_A));
     setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getSaveData().getAbility(AbilitySlot.SLOT_B));
+        champion.getAbilities().get(AbilitySlot.SLOT_B));
     setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getSaveData().getAbility(AbilitySlot.SLOT_C));
+        champion.getAbilities().get(AbilitySlot.SLOT_C));
     setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getSaveData().getAbility(AbilitySlot.SLOT_D));
+        champion.getAbilities().get(AbilitySlot.SLOT_D));
   }
 
   public void updateChargesGui(Player player) {
@@ -209,10 +207,10 @@ public class AbilityIconManager {
 
   public void updateChargesGui(Champion champion) {
     Player player = champion.getPlayer();
-    Ability abilityA = champion.getSaveData().getAbility(AbilitySlot.SLOT_A);
-    Ability abilityB = champion.getSaveData().getAbility(AbilitySlot.SLOT_B);
-    Ability abilityC = champion.getSaveData().getAbility(AbilitySlot.SLOT_C);
-    Ability abilityD = champion.getSaveData().getAbility(AbilitySlot.SLOT_D);
+    Ability abilityA = champion.getAbilities().get(AbilitySlot.SLOT_A);
+    Ability abilityB = champion.getAbilities().get(AbilitySlot.SLOT_B);
+    Ability abilityC = champion.getAbilities().get(AbilitySlot.SLOT_C);
+    Ability abilityD = champion.getAbilities().get(AbilitySlot.SLOT_D);
 
     if (abilityA == null || abilityA.getMaxCharges() < 2) {
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-a-charges",
@@ -281,7 +279,7 @@ public class AbilityIconManager {
 
   private void updateIconProgress(Player player, AbilitySlot slot) {
     Champion champion = plugin.getChampionManager().getChampion(player);
-    setIconDamage(champion, champion.getSaveData().getAbility(slot));
+    setIconDamage(champion, champion.getAbilities().get(slot));
   }
 
   public void updateIconProgress(Player player, Ability ability) {
@@ -289,7 +287,7 @@ public class AbilityIconManager {
   }
 
   private void setIconDamage(Champion champion, Ability ability) {
-    if (ability == null || !champion.getSaveData().getAbilities().containsValue(ability)) {
+    if (ability == null || !champion.getAbilities().containsValue(ability)) {
       return;
     }
     CooldownTracker container = plugin.getAbilityManager()

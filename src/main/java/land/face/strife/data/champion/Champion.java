@@ -42,19 +42,28 @@ import org.bukkit.entity.Player;
 
 public class Champion {
 
+  @Getter
   private final ChampionSaveData saveData;
+  @Getter
   private final CombatDetailsContainer detailsContainer = new CombatDetailsContainer();
 
   private final Map<StrifeStat, Float> baseStats;
   private final Map<StrifeStat, Float> levelPointStats;
+  @Getter
   private final Map<StrifeStat, Float> pathStats;
+  @Getter
   private final Set<StrifeTrait> pathTraits;
 
+  @Getter
+  private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
+
   private final Map<StrifeStat, Float> combinedStatMap;
+  @Getter
   private String attributeHeatmap = "";
 
   @Getter
   private final List<LifeSkillType> recentSkills = new ArrayList<>();
+  @Getter @Setter
   private Player player;
   @Getter @Setter
   private long lastChanged = System.currentTimeMillis();
@@ -79,8 +88,12 @@ public class Champion {
     combinedStatMap.clear();
   }
 
-  public void recombineCache() {
+  public void recombineCache(StrifePlugin plugin) {
     clearCombinedCache();
+    abilities.put(AbilitySlot.SLOT_A, plugin.getAbilityManager().getAbility(saveData.getAbility(AbilitySlot.SLOT_A)));
+    abilities.put(AbilitySlot.SLOT_B, plugin.getAbilityManager().getAbility(saveData.getAbility(AbilitySlot.SLOT_B)));
+    abilities.put(AbilitySlot.SLOT_C, plugin.getAbilityManager().getAbility(saveData.getAbility(AbilitySlot.SLOT_C)));
+    abilities.put(AbilitySlot.SLOT_D, plugin.getAbilityManager().getAbility(saveData.getAbility(AbilitySlot.SLOT_D)));
     combinedStatMap.putAll(StatUpdateManager.combineMaps(
         baseStats,
         levelPointStats,
@@ -95,7 +108,7 @@ public class Champion {
   }
 
   public Map<StrifeStat, Float> getAbilityStats(AbilitySlot abilitySlot) {
-    Ability ability = getSaveData().getAbility(abilitySlot);
+    Ability ability = abilities.get(abilitySlot);
     if (ability == null) {
       return new HashMap<>();
     }
@@ -120,10 +133,6 @@ public class Champion {
   public void setLevelPointStats(Map<StrifeStat, Float> map) {
     levelPointStats.clear();
     levelPointStats.putAll(map);
-  }
-
-  public ChampionSaveData getSaveData() {
-    return saveData;
   }
 
   public int getAttributeLevel(StrifeAttribute attr) {
@@ -170,25 +179,12 @@ public class Champion {
             FaceColor.BLUE + IntStream.range(0, blueSegments).mapToObj(i -> "▌").collect(Collectors.joining());
   }
 
-  public String getAttributeHeatmap() {
-    return attributeHeatmap;
-  }
-
   public int getLifeSkillLevel(LifeSkillType type) {
     return saveData.getSkillLevel(type);
   }
 
   public float getLifeSkillExp(LifeSkillType type) {
     return saveData.getSkillExp(type);
-  }
-
-  // Literally doesn't work
-  @Deprecated
-  public float getEffectiveLifeSkillLevel(LifeSkillType type, boolean updateEquipment) {
-    if (updateEquipment) {
-      recombineCache();
-    }
-    return saveData.getSkillLevel(type);
   }
 
   public int getUnusedStatPoints() {
@@ -233,26 +229,6 @@ public class Champion {
 
   public Map<StrifeAttribute, Integer> getPendingLevelMap() {
     return saveData.getPendingStats();
-  }
-
-  public Player getPlayer() {
-    return player;
-  }
-
-  public void setPlayer(Player player) {
-    this.player = player;
-  }
-
-  public CombatDetailsContainer getDetailsContainer() {
-    return detailsContainer;
-  }
-
-  public Map<StrifeStat, Float> getPathStats() {
-    return pathStats;
-  }
-
-  public Set<StrifeTrait> getPathTraits() {
-    return pathTraits;
   }
 
   public void setGod(SelectedGod god) {

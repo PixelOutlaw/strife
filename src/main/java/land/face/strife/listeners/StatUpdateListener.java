@@ -46,7 +46,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      plugin.getChampionManager().getChampion(event.getPlayer()).recombineCache();
+      plugin.getChampionManager().getChampion(event.getPlayer()).recombineCache(plugin);
       plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }, 3L);
   }

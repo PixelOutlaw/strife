@@ -6,20 +6,16 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
-import land.face.strife.util.StatUtil;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Setter;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class Bleed extends Effect {
 
+  @Setter
   private float amount;
-  private boolean applyBleedMods;
+  @Setter
   private DamageScale damageScale;
-  private boolean ignoreArmor;
-  private boolean ignoreResist;
-  private boolean bypassBarrier;
+  @Setter
+  private boolean ignoreArmor, ignoreResist, bypassBarrier, applyBleedMods;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {

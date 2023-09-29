@@ -6,8 +6,6 @@ import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager.Profession;

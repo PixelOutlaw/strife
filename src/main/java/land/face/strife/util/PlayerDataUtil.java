@@ -33,7 +33,12 @@ import org.bukkit.inventory.EquipmentSlot;
 public class PlayerDataUtil {
 
   private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
-
+  private static StrifePlugin plugin;
+  
+  public static void refresh(StrifePlugin refreshedPlugin) {
+    plugin = refreshedPlugin;
+  }
+  
   public static LoadedKnowledge loadMobKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
     String name = PaletteUtil.color(knowledgeSection.getString("name",
@@ -87,7 +92,7 @@ public class PlayerDataUtil {
   }
 
   public static boolean isGlowEnabled(Player player) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player).getSaveData().isGlowEnabled();
+    return plugin.getChampionManager().getChampion(player).getSaveData().isGlowEnabled();
   }
 
   public static boolean isGlowEnabled(StrifeMob mob) {
@@ -106,7 +111,7 @@ public class PlayerDataUtil {
     if (amount < 0.1) {
       return;
     }
-    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
     if (mob != null) {
       StatUtil.changeEnergy(mob, amount);
     }
@@ -116,7 +121,7 @@ public class PlayerDataUtil {
     if (amount < 0.1) {
       return;
     }
-    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
     if (mob != null) {
       mob.addHealingOverTime(amount, ticks);
     }
@@ -126,7 +131,7 @@ public class PlayerDataUtil {
     if (amount <= 0.1) {
       return;
     }
-    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(le);
     if (mob != null) {
       mob.addEnergyOverTime(amount, ticks);
     }
@@ -137,19 +142,19 @@ public class PlayerDataUtil {
       swing(entity, slot);
       return;
     }
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> swing(entity, slot), delay);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> swing(entity, slot), delay);
   }
 
   private static void swing(LivingEntity entity, EquipmentSlot slot) {
     if (slot == EquipmentSlot.HAND) {
       SwingListener.spoofSwing(entity.getUniqueId());
       entity.swingMainHand();
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+      Bukkit.getScheduler().runTaskLater(plugin, () ->
           SwingListener.removeSwing(entity.getUniqueId()), 1L);
     } else if (slot == EquipmentSlot.OFF_HAND) {
       SwingListener.spoofSwing(entity.getUniqueId());
       entity.swingOffHand();
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+      Bukkit.getScheduler().runTaskLater(plugin, () ->
           SwingListener.removeSwing(entity.getUniqueId()), 1L);
     }
   }
@@ -195,7 +200,7 @@ public class PlayerDataUtil {
   }
 
   public static void updatePlayerEquipment(Player player) {
-    StrifePlugin.getInstance().getStrifeMobManager().updateEquipmentStats(StrifePlugin
+    plugin.getStrifeMobManager().updateEquipmentStats(StrifePlugin
         .getInstance().getStrifeMobManager().getStatMob(player));
   }
 
@@ -216,7 +221,7 @@ public class PlayerDataUtil {
 
   public static int getMaxItemDestroyLevel(Player player) {
     return getMaxItemDestroyLevel(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player)
+        plugin.getChampionManager().getChampion(player)
             .getLifeSkillLevel(LifeSkillType.CRAFTING));
   }
 
@@ -226,7 +231,7 @@ public class PlayerDataUtil {
 
   public static int getMaxCraftItemLevel(Player player) {
     return getMaxCraftItemLevel(
-        StrifePlugin.getInstance().getChampionManager().getChampion(player)
+        plugin.getChampionManager().getChampion(player)
             .getLifeSkillLevel(LifeSkillType.CRAFTING));
   }
 
@@ -243,9 +248,12 @@ public class PlayerDataUtil {
   }
 
   public static SkillLevelData getSkillLevels(Player player, LifeSkillType type, boolean forceUpdate) {
-    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(player);
+    return getSkillLevels(plugin.getStrifeMobManager().getStatMob(player), type, forceUpdate);
+  }
+
+  public static SkillLevelData getSkillLevels(StrifeMob mob, LifeSkillType type, boolean forceUpdate) {
     if (forceUpdate) {
-      mob.getChampion().recombineCache();
+      mob.getChampion().recombineCache(plugin);
     }
     SkillLevelData data = new SkillLevelData();
     data.setLevel(mob.getChampion().getLifeSkillLevel(type));
@@ -262,7 +270,7 @@ public class PlayerDataUtil {
   }
 
   public static int getLifeSkillLevel(Player player, LifeSkillType type) {
-    return getLifeSkillLevel(StrifePlugin.getInstance().getChampionManager()
+    return getLifeSkillLevel(plugin.getChampionManager()
         .getChampion(player), type);
   }
 
@@ -272,7 +280,7 @@ public class PlayerDataUtil {
 
   public static int getTotalSkillLevel(Player player) {
     int amount = 0;
-    Champion champion = StrifePlugin.getInstance().getChampionManager().getChampion(player);
+    Champion champion = plugin.getChampionManager().getChampion(player);
     for (LifeSkillType type : LifeSkillType.types) {
       amount += champion.getLifeSkillLevel(type);
     }
@@ -280,7 +288,7 @@ public class PlayerDataUtil {
   }
 
   public static float getLifeSkillExp(Player player, LifeSkillType type) {
-    return StrifePlugin.getInstance().getChampionManager().getChampion(player)
+    return plugin.getChampionManager().getChampion(player)
         .getLifeSkillExp(type);
   }
 
@@ -289,24 +297,24 @@ public class PlayerDataUtil {
   }
 
   public static float getLifeSkillMaxExp(Player player, LifeSkillType type) {
-    int level = StrifePlugin.getInstance().getChampionManager().getChampion(player)
+    int level = plugin.getChampionManager().getChampion(player)
         .getLifeSkillLevel(type);
-    return StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level);
+    return plugin.getSkillExperienceManager().getMaxExp(type, level);
   }
 
   public static float getLifeSkillMaxExp(Champion champion, LifeSkillType type) {
     int level = champion.getLifeSkillLevel(type);
-    return StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level);
+    return plugin.getSkillExperienceManager().getMaxExp(type, level);
   }
 
   public static int getLifeSkillExpToLevel(Champion champion, LifeSkillType type) {
     int level = champion.getLifeSkillLevel(type);
-    return (int) (StrifePlugin.getInstance().getSkillExperienceManager().getMaxExp(type, level)
+    return (int) (plugin.getSkillExperienceManager().getMaxExp(type, level)
         - champion.getLifeSkillExp(type));
   }
 
   public static float getSkillProgress(Champion champion, LifeSkillType type) {
-    float progress = champion.getSaveData().getSkillExp(type) / StrifePlugin.getInstance()
+    float progress = champion.getSaveData().getSkillExp(type) / plugin
         .getSkillExperienceManager().getMaxExp(type, champion.getSaveData().getSkillLevel(type));
     return Math.max(0.0f, Math.min(1.0f, progress));
   }

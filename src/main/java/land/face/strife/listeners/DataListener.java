@@ -79,7 +79,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getStrifeMobManager().updateEquipmentStats(
           plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer()));
-      event.getChampion().recombineCache();
+      event.getChampion().recombineCache(plugin);
       plugin.getStatUpdateManager().updateAllAttributes(event.getChampion().getPlayer());
       StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getChampion().getPlayer());
       StatUtil.getStat(mob, StrifeStat.BARRIER);
@@ -123,7 +123,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onAbilityCooldown(final AbilityCooldownEvent event) {
     if (event.getHolder().getChampion() != null) {
-      event.getHolder().getChampion().recombineCache();
+      event.getHolder().getChampion().recombineCache(plugin);
     }
   }
 
@@ -133,7 +133,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       plugin.getPlayerMountManager().despawn((Player) event.getCaster().getEntity());
     }
     if (event.getCaster().getChampion() != null) {
-      event.getCaster().getChampion().recombineCache();
+      event.getCaster().getChampion().recombineCache(plugin);
     }
   }
 

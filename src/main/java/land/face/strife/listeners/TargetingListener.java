@@ -30,8 +30,10 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.ProjectileUtil.IgnoreState;
 import land.face.strife.util.SpecialStatusUtil;
@@ -225,15 +227,16 @@ public class TargetingListener implements Listener {
       Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
       Vector entitySightVector = entityLoc.getDirection();
 
-      Champion champion = plugin.getChampionManager().getChampion(player);
+      StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(player);
       float angle = entitySightVector.angle(playerDifferenceVector);
-      float stealthLevel = champion.getLifeSkillLevel(LifeSkillType.SNEAK);
-      float stealthSkill = champion.getEffectiveLifeSkillLevel(LifeSkillType.SNEAK, false);
+      SkillLevelData data = PlayerDataUtil.getSkillLevels(strifeMob, LifeSkillType.SNEAK, true);
       float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
       float lightMult = (float) Math.max(0.15,
           (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock()
               .getLightLevel())));
 
+      float stealthSkill = data.getLevelWithBonus();
+      float stealthLevel = data.getLevel();
       stealthSkill = Math.max(stealthSkill, 10);
 
       if (!player.isSneaking()) {

@@ -37,8 +37,8 @@ public class DOTUtil {
   private static final Map<Integer, Float> poisonDamageMap = new HashMap<>();
   private static final Map<Integer, Float> witherDamageMap = new HashMap<>();
 
-  public static void refresh() {
-    plugin = StrifePlugin.getInstance();
+  public static void refresh(StrifePlugin refreshedPlugin) {
+    plugin = refreshedPlugin;
 
     BURN_FLAT_DAMAGE = (float) plugin.getSettings()
         .getDouble("config.mechanics.burn-flat-damage", 6);

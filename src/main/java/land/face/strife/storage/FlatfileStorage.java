@@ -75,96 +75,90 @@ public class FlatfileStorage implements DataStorage {
 
 
   @Override
-  public void save(ChampionSaveData champion) {
+  public void save(ChampionSaveData saveData) {
     SmartYamlConfiguration config;
-    String champUuid = champion.getUniqueId().toString();
-    if (configMap.containsKey(champion.getUniqueId())) {
-      config = configMap.get(champion.getUniqueId());
+    String champUuid = saveData.getUniqueId().toString();
+    if (configMap.containsKey(saveData.getUniqueId())) {
+      config = configMap.get(saveData.getUniqueId());
     } else {
       config = new SmartYamlConfiguration(
           new File(plugin.getDataFolder() + "/data", champUuid + ".json"));
     }
 
-    for (Map.Entry<StrifeAttribute, Integer> entry : champion.getLevelMap().entrySet()) {
+    for (Map.Entry<StrifeAttribute, Integer> entry : saveData.getLevelMap().entrySet()) {
       config.set(champUuid + ".stats." + entry.getKey().getKey(), entry.getValue());
     }
 
     // Preferences
-    config.set(champUuid + ".display-exp", champion.isDisplayExp());
-    config.set(champUuid + ".glow-enabled", champion.isGlowEnabled());
+    config.set(champUuid + ".display-exp", saveData.isDisplayExp());
+    config.set(champUuid + ".glow-enabled", saveData.isGlowEnabled());
 
-    config.set(champUuid + ".unused-stat-points", champion.getUnusedStatPoints());
-    config.set(champUuid + ".highest-reached-level", champion.getHighestReachedLevel());
-    config.set(champUuid + ".pvp-score", (int) champion.getPvpScore());
+    config.set(champUuid + ".unused-stat-points", saveData.getUnusedStatPoints());
+    config.set(champUuid + ".highest-reached-level", saveData.getHighestReachedLevel());
+    config.set(champUuid + ".pvp-score", (int) saveData.getPvpScore());
 
-    config.set(champUuid + ".prayer", (int) champion.getPrayerPoints());
+    config.set(champUuid + ".prayer", (int) saveData.getPrayerPoints());
 
-    config.set(champUuid + ".FACEGUY-xp", champion.getGodXp().getOrDefault(SelectedGod.FACEGUY, 0));
-    config.set(champUuid + ".AURORA-xp", champion.getGodXp().getOrDefault(SelectedGod.AURORA, 0));
-    config.set(champUuid + ".ZEXIR-xp", champion.getGodXp().getOrDefault(SelectedGod.ZEXIR, 0));
-    config.set(champUuid + ".ANYA-xp", champion.getGodXp().getOrDefault(SelectedGod.ANYA, 0));
+    config.set(champUuid + ".FACEGUY-xp", saveData.getGodXp().getOrDefault(SelectedGod.FACEGUY, 0));
+    config.set(champUuid + ".AURORA-xp", saveData.getGodXp().getOrDefault(SelectedGod.AURORA, 0));
+    config.set(champUuid + ".ZEXIR-xp", saveData.getGodXp().getOrDefault(SelectedGod.ZEXIR, 0));
+    config.set(champUuid + ".ANYA-xp", saveData.getGodXp().getOrDefault(SelectedGod.ANYA, 0));
 
-    config.set(champUuid + ".FACEGUY-level", champion.getGodLevel().getOrDefault(SelectedGod.FACEGUY, 1));
-    config.set(champUuid + ".AURORA-level", champion.getGodLevel().getOrDefault(SelectedGod.AURORA, 1));
-    config.set(champUuid + ".ZEXIR-level", champion.getGodLevel().getOrDefault(SelectedGod.ZEXIR, 1));
-    config.set(champUuid + ".ANYA-level", champion.getGodLevel().getOrDefault(SelectedGod.ANYA, 1));
+    config.set(champUuid + ".FACEGUY-level", saveData.getGodLevel().getOrDefault(SelectedGod.FACEGUY, 1));
+    config.set(champUuid + ".AURORA-level", saveData.getGodLevel().getOrDefault(SelectedGod.AURORA, 1));
+    config.set(champUuid + ".ZEXIR-level", saveData.getGodLevel().getOrDefault(SelectedGod.ZEXIR, 1));
+    config.set(champUuid + ".ANYA-level", saveData.getGodLevel().getOrDefault(SelectedGod.ANYA, 1));
 
     for (LifeSkillType type : LifeSkillType.types) {
-      config.set(champUuid + "." + type.getDataName() + "-level", champion.getSkillLevel(type));
-      config.set(champUuid + "." + type.getDataName() + "-exp", champion.getSkillExp(type));
+      config.set(champUuid + "." + type.getDataName() + "-level", saveData.getSkillLevel(type));
+      config.set(champUuid + "." + type.getDataName() + "-exp", saveData.getSkillExp(type));
     }
 
-    config.set(champUuid + ".catchup-xp-used", champion.getCatchupExpUsed());
+    config.set(champUuid + ".catchup-xp-used", saveData.getCatchupExpUsed());
 
-    config.set(champUuid + ".god", champion.getSelectedGod() == null ? "NONE" : champion.getSelectedGod().toString());
+    config.set(champUuid + ".god", saveData.getSelectedGod() == null ? "NONE" : saveData.getSelectedGod().toString());
     for (SelectedGod g : SelectedGod.values()) {
       if (g == SelectedGod.NONE) {
         continue;
       }
-      config.set(champUuid + "." + g + "-xp", champion.getGodXp().get(g));
+      config.set(champUuid + "." + g + "-xp", saveData.getGodXp().get(g));
     }
 
-    List<String> boundAbilityIds = new ArrayList<>();
-    for (LoreAbility loreAbility : champion.getBoundAbilities()) {
-      if (loreAbility == null) {
-        continue;
-      }
-      boundAbilityIds.add(loreAbility.getId());
-    }
+    List<String> boundAbilityIds = new ArrayList<>(saveData.getBoundAbilities());
 
     config.set(champUuid + ".lore-abilities", boundAbilityIds);
 
-    if (champion.getAbilities().get(AbilitySlot.SLOT_A) != null) {
-      config.set(champUuid + ".ability.SLOT_A.id", champion.getAbilities().get(AbilitySlot.SLOT_A).getId());
+    if (saveData.getAbility(AbilitySlot.SLOT_A) != null) {
+      config.set(champUuid + ".ability.SLOT_A.id", saveData.getAbility(AbilitySlot.SLOT_A));
     }
-    if (champion.getAbilities().get(AbilitySlot.SLOT_B) != null) {
-      config.set(champUuid + ".ability.SLOT_B.id", champion.getAbilities().get(AbilitySlot.SLOT_B).getId());
+    if (saveData.getAbility(AbilitySlot.SLOT_B) != null) {
+      config.set(champUuid + ".ability.SLOT_B.id", saveData.getAbility(AbilitySlot.SLOT_B));
     }
-    if (champion.getAbilities().get(AbilitySlot.SLOT_C) != null) {
-      config.set(champUuid + ".ability.SLOT_C.id", champion.getAbilities().get(AbilitySlot.SLOT_C).getId());
+    if (saveData.getAbility(AbilitySlot.SLOT_C) != null) {
+      config.set(champUuid + ".ability.SLOT_C.id", saveData.getAbility(AbilitySlot.SLOT_C));
     }
-    if (champion.getAbilities().get(AbilitySlot.SLOT_D) != null) {
-      config.set(champUuid + ".ability.SLOT_D.id", champion.getAbilities().get(AbilitySlot.SLOT_D).getId());
+    if (saveData.getAbility(AbilitySlot.SLOT_D) != null) {
+      config.set(champUuid + ".ability.SLOT_D.id", saveData.getAbility(AbilitySlot.SLOT_D));
     }
 
     config.set(champUuid + ".ability.SLOT_A.msg",
-        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_A, Collections.emptyList()));
+        saveData.getCastMessages().getOrDefault(AbilitySlot.SLOT_A, Collections.emptyList()));
     config.set(champUuid + ".ability.SLOT_B.msg",
-        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_B, Collections.emptyList()));
+        saveData.getCastMessages().getOrDefault(AbilitySlot.SLOT_B, Collections.emptyList()));
     config.set(champUuid + ".ability.SLOT_C.msg",
-        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_C, Collections.emptyList()));
+        saveData.getCastMessages().getOrDefault(AbilitySlot.SLOT_C, Collections.emptyList()));
     config.set(champUuid + ".ability.SLOT_D.msg",
-        champion.getCastMessages().getOrDefault(AbilitySlot.SLOT_D, Collections.emptyList()));
+        saveData.getCastMessages().getOrDefault(AbilitySlot.SLOT_D, Collections.emptyList()));
 
     for (Path path : LevelPath.PATH_VALUES) {
-      if (champion.getPathMap().containsKey(path)) {
-        config.set(champUuid + ".passives." + path.toString(), champion.getPathMap().get(path).toString());
+      if (saveData.getPathMap().containsKey(path)) {
+        config.set(champUuid + ".passives." + path.toString(), saveData.getPathMap().get(path).toString());
       } else {
         config.set(champUuid + ".passives." + path.toString(), null);
       }
     }
 
-    configMap.put(champion.getUniqueId(), config);
+    configMap.put(saveData.getUniqueId(), config);
     config.save();
   }
 
@@ -215,28 +209,28 @@ public class FlatfileStorage implements DataStorage {
       if (ability1 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability1);
         if (ability != null && ability.getAbilityIconData() != null) {
-          saveData.setAbility(AbilitySlot.SLOT_A, ability);
+          saveData.setAbility(AbilitySlot.SLOT_A, ability1);
         }
       }
       String ability2 = section.getString("ability.SLOT_B.id");
       if (ability2 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability2);
         if (ability != null && ability.getAbilityIconData() != null) {
-          saveData.setAbility(AbilitySlot.SLOT_B, ability);
+          saveData.setAbility(AbilitySlot.SLOT_B, ability2);
         }
       }
       String ability3 = section.getString("ability.SLOT_C.id");
       if (ability3 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability3);
         if (ability != null && ability.getAbilityIconData() != null) {
-          saveData.setAbility(AbilitySlot.SLOT_C, ability);
+          saveData.setAbility(AbilitySlot.SLOT_C, ability3);
         }
       }
       String ability4 = section.getString("ability.SLOT_D.id");
       if (ability4 != null) {
         Ability ability = plugin.getAbilityManager().getAbility(ability4);
         if (ability != null && ability.getAbilityIconData() != null) {
-          saveData.setAbility(AbilitySlot.SLOT_D, ability);
+          saveData.setAbility(AbilitySlot.SLOT_D, ability4);
         }
       }
 
@@ -246,7 +240,7 @@ public class FlatfileStorage implements DataStorage {
           LogUtil.printError("LoreAbility " + s + " not found for player " + uuid);
           continue;
         }
-        saveData.getBoundAbilities().add(loreAbility);
+        saveData.getBoundAbilities().add(s);
       }
 
       saveData.getCastMessages().put(AbilitySlot.SLOT_A, section.getStringList("ability.SLOT_C.msg"));

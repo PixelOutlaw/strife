@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.StatUpdateManager;
@@ -132,10 +133,15 @@ public class EquipmentCache {
     ));
   }
 
-  public void recombineAbilities(StrifeMob mob) {
+  public void recombineAbilities(StrifePlugin plugin, StrifeMob mob) {
     loreAbilities.clear();
     if (mob.getChampion() != null) {
-      loreAbilities.addAll(mob.getChampion().getSaveData().getBoundAbilities());
+      for (String la : mob.getChampion().getSaveData().getBoundAbilities()) {
+        LoreAbility loreAbility = plugin.getLoreAbilityManager().getLoreAbilityFromId(la);
+        if (loreAbility != null) {
+          loreAbilities.add(loreAbility);
+        }
+      }
     }
     for (String key : ITEM_SLOTS) {
       loreAbilities.addAll(slotAbilityMap.get(key));
@@ -149,9 +155,9 @@ public class EquipmentCache {
     }
   }
 
-  public void recombine(StrifeMob mob) {
+  public void recombine(StrifePlugin plugin, StrifeMob mob) {
     recombineStats();
-    recombineAbilities(mob);
+    recombineAbilities(plugin, mob);
     recombineTraits();
   }
 }

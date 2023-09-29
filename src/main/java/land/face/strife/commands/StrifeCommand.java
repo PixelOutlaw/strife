@@ -328,7 +328,7 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(target.getPlayer(), "&aYour stats have been reset!");
     sendMessage(target.getPlayer(),
         "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
-    champion.recombineCache();
+    champion.recombineCache(plugin);
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
@@ -353,7 +353,7 @@ public class StrifeCommand extends BaseCommand {
     sendMessage(sender, "You cleared <white>%player%",
         new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
     sendMessage(target.getPlayer(), "&aYour stats have been wiped :O");
-    champion.recombineCache();
+    champion.recombineCache(plugin);
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }
 
@@ -369,7 +369,7 @@ public class StrifeCommand extends BaseCommand {
     target.getPlayer().setExp(0f);
     target.getPlayer().setLevel(newLevel);
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
-    champion.recombineCache();
+    champion.recombineCache(plugin);
     sendMessage(sender, "&aYou raised &f%player% &ato level &f%level%.",
         new String[][]{{"%player%", target.getPlayer().getDisplayName()},
             {"%level%", "" + newLevel}});
@@ -380,6 +380,7 @@ public class StrifeCommand extends BaseCommand {
   @CommandCompletion("@players SLOT_(1-D) @abilities")
   @CommandPermission("strife.admin")
   public void setAbilityCommand(CommandSender sender, OnlinePlayer target, AbilitySlot slot, String abilityId) {
+    String abilityString = abilityId.replace("_", " ");
     Ability ability = plugin.getAbilityManager().getAbility(abilityId.replace("_", " "));
     if (ability == null) {
       sendMessage(sender, "&cInvalid ability ID: " + abilityId);
@@ -397,7 +398,7 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }
-    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(slot, ability);
+    plugin.getChampionManager().getChampion(target.getPlayer()).getSaveData().setAbility(slot, abilityString);
     plugin.getAbilityIconManager().setAllAbilityIcons(target.getPlayer());
   }
 
@@ -448,7 +449,7 @@ public class StrifeCommand extends BaseCommand {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
-    boolean success = plugin.getChampionManager().addBoundLoreAbility(mob, ability);
+    boolean success = plugin.getChampionManager().addBoundLoreAbility(mob, loreAbilityId);
     if (success) {
       sendMessage(sender,
           "&aBound loreAbility " + loreAbilityId + " to player " + target.getPlayer().getName());

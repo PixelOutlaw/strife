@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.abilities;
 
+import com.sk89q.worldedit.command.tool.brush.SmoothBrush;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -58,7 +59,8 @@ public class SlotThreeConfirmIcon extends MenuItem {
     event.setWillClose(false);
     event.setWillUpdate(false);
     event.setWillGoBack(false);
-    menu.getChampion().getSaveData().setAbility(slot, menu.getNewAbility());
+    menu.getChampion().getAbilities().put(slot, menu.getNewAbility());
+    menu.getChampion().getSaveData().setAbility(slot, menu.getNewAbility().getId());
     menu.getPlugin().getAbilityIconManager().setAbilityIcon(event.getPlayer(),
         menu.getNewAbility().getAbilityIconData(), slot);
 

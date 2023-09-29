@@ -57,7 +57,7 @@ public class ChoiceButton extends MenuItem {
     Champion champion = plugin.getChampionManager().getChampion(p);
     champion.getSaveData().getPathMap().put(path, choice);
     plugin.getPathManager().buildPathBonus(champion);
-    champion.recombineCache();
+    champion.recombineCache(plugin);
     p.playSound(p.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 0.5f);
     MessageUtils.sendMessage(p, "&f&l&oYou have chosen your path!");
     event.setWillClose(true);

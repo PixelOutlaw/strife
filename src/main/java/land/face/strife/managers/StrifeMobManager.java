@@ -192,7 +192,7 @@ public class StrifeMobManager {
         applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
       }
     }
-    equipmentCache.recombine(mob);
+    equipmentCache.recombine(plugin, mob);
   }
 
   private ItemDataBundle getItemInfo(String slot, EntityEquipment equipment,
@@ -267,7 +267,7 @@ public class StrifeMobManager {
   public void updateEquipmentStats(StrifeMob mob) {
     buildEquipmentAttributes(mob);
     if (mob.getChampion() != null) {
-      mob.getChampion().recombineCache();
+      mob.getChampion().recombineCache(plugin);
     }
   }
 

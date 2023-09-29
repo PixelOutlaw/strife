@@ -3,16 +3,16 @@ package land.face.strife.data.effects;
 import land.face.strife.data.StrifeMob;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class LookAt extends Effect {
 
+  @Setter
   private boolean casterToTarget;
 
   @Override

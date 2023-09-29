@@ -318,7 +318,7 @@ public class ExperienceListener implements Listener {
     int points = event.getNewLevel() - event.getOldLevel();
     champion.setHighestReachedLevel(event.getNewLevel());
     champion.setUnusedStatPoints(champion.getUnusedStatPoints() + points);
-    champion.recombineCache();
+    champion.recombineCache(plugin);
 
     player.setHealth(player.getMaxHealth());
     StatUtil.changeEnergy(plugin.getStrifeMobManager().getStatMob(player), 200000);

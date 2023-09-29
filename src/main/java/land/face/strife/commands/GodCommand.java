@@ -61,8 +61,7 @@ public class GodCommand extends BaseCommand {
         plugin.getLoreAbilityManager().getLoreAbilityFromId("ZEXIR-1"));
     plugin.getChampionManager().removeBoundLoreAbility(mob,
         plugin.getLoreAbilityManager().getLoreAbilityFromId("ANYA-1"));
-    plugin.getChampionManager().addBoundLoreAbility(mob,
-        plugin.getLoreAbilityManager().getLoreAbilityFromId(selectedGod.name() + "-1"));
+    plugin.getChampionManager().addBoundLoreAbility(mob, selectedGod.name() + "-1");
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
     if (target.getPlayer().hasPermission("prayer.enabled") && mob.getPrayer() != mob.getMaxPrayer()) {
       PaletteUtil.sendMessage(target.getPlayer(), FaceColor.WHITE.s() + FaceColor.ITALIC + "Faith restored!");
