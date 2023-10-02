@@ -52,6 +52,7 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.managers.DisplayManager;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -216,6 +217,12 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("reload")
   @CommandPermission("strife.admin")
   public void reloadCommand(CommandSender sender) {
+    sendMessage(sender, "Specify 'reload all' to do this");
+  }
+
+  @Subcommand("reload all")
+  @CommandPermission("strife.admin")
+  public void reloadAllCommand(CommandSender sender) {
     for (Player p : Bukkit.getOnlinePlayers()) {
       MessageUtils.sendMessage(p, FaceColor.LIME + FaceColor.BOLD.s() +
           "ATTENTION GAMER: &a&oThe RPG plugin is being reloaded, maybe to add things, maybe because a GM is being a dingus. Please wait...");
@@ -232,6 +239,20 @@ public class StrifeCommand extends BaseCommand {
       }
       sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
     }, 1L);
+  }
+
+  @Subcommand("reload vfx")
+  @CommandPermission("strife.admin")
+  public void reloadVfxCommand(CommandSender sender) {
+    plugin.getDisplayManager().reload();
+    sendMessage(sender, "[Strife] Reloaded VFX");
+  }
+
+  @Subcommand("reload prayer")
+  @CommandPermission("strife.admin")
+  public void reloadPrayerCommand(CommandSender sender) {
+    plugin.getPrayerManager().reload();
+    sendMessage(sender, "[Strife] Reloaded Prayers");
   }
 
   @Subcommand("profile")

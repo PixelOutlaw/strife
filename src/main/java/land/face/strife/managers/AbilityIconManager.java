@@ -70,19 +70,20 @@ public class AbilityIconManager {
     Champion champion = plugin.getChampionManager().getChampion(player);
     player.getInventory().setHeldItemSlot(4);
 
-    setAbilityIcon(player, champion.getAbility(AbilitySlot.SLOT_A).getAbilityIconData(), AbilitySlot.SLOT_A);
-    Bukkit.getPluginManager().callEvent(new AbilityChangeEvent(champion, champion.getAbility(AbilitySlot.SLOT_A)));
-    setAbilityIcon(player, champion.getAbility(AbilitySlot.SLOT_B).getAbilityIconData(), AbilitySlot.SLOT_B);
-    Bukkit.getPluginManager().callEvent(new AbilityChangeEvent(champion, champion.getAbility(AbilitySlot.SLOT_B)));
-    setAbilityIcon(player, champion.getAbility(AbilitySlot.SLOT_C).getAbilityIconData(), AbilitySlot.SLOT_C);
-    Bukkit.getPluginManager().callEvent(new AbilityChangeEvent(champion, champion.getAbility(AbilitySlot.SLOT_C)));
-    setAbilityIcon(player, champion.getAbility(AbilitySlot.SLOT_D).getAbilityIconData(), AbilitySlot.SLOT_D);
-    Bukkit.getPluginManager().callEvent(new AbilityChangeEvent(champion, champion.getAbility(AbilitySlot.SLOT_D)));
+    setAbilityIcon(player, champion, AbilitySlot.SLOT_A);
+    setAbilityIcon(player, champion, AbilitySlot.SLOT_B);
+    setAbilityIcon(player, champion, AbilitySlot.SLOT_C);
+    setAbilityIcon(player, champion, AbilitySlot.SLOT_D);
 
     plugin.getAbilityIconManager().updateChargesGui(player);
   }
 
-  public void setAbilityIcon(Player player, AbilityIconData abilityIconData, AbilitySlot slot) {
+  public void setAbilityIcon(Player player, Champion champion, AbilitySlot slot) {
+    Ability ability = champion.getAbility(slot);
+    if (ability == null) {
+      return;
+    }
+    AbilityIconData abilityIconData = ability.getAbilityIconData();
     if (abilityIconData == null || abilityIconData.getAbilitySlot() == AbilitySlot.INVALID) {
       return;
     }
@@ -100,6 +101,9 @@ public class AbilityIconManager {
         player.getWorld().dropItem(player.getLocation(), extraStack);
       }
     }
+
+    Bukkit.getPluginManager().callEvent(new AbilityChangeEvent(champion, ability));
+
     plugin.getChampionManager().getChampion(player).setLastChanged(1);
     AbilitySlot finalSlot = slot;
     Bukkit.getScheduler().runTaskLater(plugin, () ->

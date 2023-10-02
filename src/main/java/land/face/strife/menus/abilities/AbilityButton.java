@@ -99,8 +99,7 @@ public class AbilityButton extends MenuItem {
         }
       }
       champion.setAbility(plugin, slot, ability);
-      plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(),
-          ability.getAbilityIconData(), ability.getAbilityIconData().getAbilitySlot());
+      plugin.getAbilityIconManager().setAbilityIcon(event.getPlayer(), champion, slot);
 
       AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(champion, ability);
       Bukkit.getPluginManager().callEvent(abilityChangeEvent);

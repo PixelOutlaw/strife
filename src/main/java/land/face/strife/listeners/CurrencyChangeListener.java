@@ -32,7 +32,7 @@ import org.nunnerycode.mint.MintPlugin;
 public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler
-  public void OnJoin(PlayerJoinEvent event) {
+  public void onJoin(PlayerJoinEvent event) {
     int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(event.getPlayer().getUniqueId());
     plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("money-display",
         plugin.getGuiManager().convertToMoneyFont(money), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));

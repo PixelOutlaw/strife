@@ -16,6 +16,8 @@ import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
@@ -36,8 +38,7 @@ import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+@Getter @Setter
 public class ShootProjectile extends Effect {
 
   private EntityType projectileEntity;

@@ -46,11 +46,12 @@ import org.bukkit.SoundCategory;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.MainHand;
+import org.bukkit.scheduler.BukkitTask;
 
 public class PrayerManager {
 
   private final StrifePlugin plugin;
-  @Getter private final PrayerMenu prayerMenu;
+  @Getter private PrayerMenu prayerMenu;
 
   private final Map<Player, Set<Prayer>> activePrayers = new WeakHashMap<>();
   @Getter private final Map<Prayer, String> prayerNames = new HashMap<>();
@@ -65,9 +66,9 @@ public class PrayerManager {
   @Getter private final Map<SelectedGod, GodPrayerDetails> godPassiveThree = new HashMap<>();
 
 
-  @Getter private final int godLevelXpTwo;
-  @Getter private final int godLevelXpThree;
-  @Getter private final int godLevelXpFour;
+  @Getter private int godLevelXpTwo;
+  @Getter private int godLevelXpThree;
+  @Getter private int godLevelXpFour;
 
   public static final net.kyori.adventure.sound.Sound FAITH_RESTORED = Sound.sound(
       Key.key("minecraft:custom.faith_restored"), Source.MASTER, 1f, 1f);
@@ -79,34 +80,48 @@ public class PrayerManager {
   private static final long TICK_RATE = 6L;
   private static final float TICK_MULT = 1 / (20f / TICK_RATE);
 
+  private BukkitTask task;
+
   public PrayerManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    reload();
+  }
+
+  public void reload() {
+    activePrayers.clear();
     godLevelXpTwo = plugin.getConfig().getInt("gods.xp-for-level-two", 2000);
     godLevelXpThree = plugin.getConfig().getInt("gods.xp-for-level-three", 10000);
     godLevelXpFour = plugin.getConfig().getInt("gods.xp-for-level-four", 95000);
     for (Prayer p : Prayer.values()) {
-      prayerNames.put(p, PaletteUtil.color(
-          plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".name", "Changeme")));
-      prayerLore.put(p, PaletteUtil.color(
-          plugin.getPrayerYAML().getStringList("prayer." + p.toString().toLowerCase() + ".lore")));
-      prayerActivationCost.put(p, (float)
-          plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".activation-cost", 5));
-      // Fuck paper, fuck kyori
-      //noinspection ALL
-      String soundFx = plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".sound", "minecraft:custom.skill_up");
-      float pitch = (float) plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".pitch", 1);
-      // Fuck paper, fuck kyori
-      //noinspection ALL
-      prayerSounds.put(p, Sound.sound(Key.key(soundFx), Source.MASTER, 1f, pitch));
-      prayerCostPerTick.put(p, TICK_MULT * (float)
-          plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".per-second-cost", 5));
-      prayerLevelReq.put(p, plugin.getPrayerYAML().getInt("prayer." + p.toString().toLowerCase() + ".level-req", 0));
-      prayerModelData.put(p,
-          plugin.getPrayerYAML().getInt("prayer." + p.toString().toLowerCase() + ".model-data", 800));
+      try {
+        prayerNames.put(p, PaletteUtil.color(
+            plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".name", "Changeme")));
+        prayerLore.put(p, PaletteUtil.color(
+            plugin.getPrayerYAML().getStringList("prayer." + p.toString().toLowerCase() + ".lore")));
+        prayerActivationCost.put(p, (float)
+            plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".activation-cost", 5));
+        // Fuck paper, fuck kyori
+        //noinspection ALL
+        String soundFx = plugin.getPrayerYAML()
+            .getString("prayer." + p.toString().toLowerCase() + ".sound", "minecraft:custom.skill_up");
+        float pitch = (float) plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".pitch", 1);
+        // Fuck paper, fuck kyori
+        //noinspection ALL
+        prayerSounds.put(p, Sound.sound(Key.key(soundFx), Source.MASTER, 1f, pitch));
+        prayerCostPerTick.put(p, TICK_MULT * (float)
+            plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".per-second-cost", 5));
+        prayerLevelReq.put(p, plugin.getPrayerYAML().getInt("prayer." + p.toString().toLowerCase() + ".level-req", 0));
+        prayerModelData.put(p,
+            plugin.getPrayerYAML().getInt("prayer." + p.toString().toLowerCase() + ".model-data", 800));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
     prayerMenu = new PrayerMenu(plugin);
-
-    Bukkit.getScheduler().runTaskTimer(plugin, this::tickAllPrayer, 50L, TICK_RATE);
+    if (task != null && task.isCancelled()) {
+      task.cancel();
+    }
+    task = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAllPrayer, 20L * 20, TICK_RATE);
   }
 
   public boolean isPrayerActive(Player player) {

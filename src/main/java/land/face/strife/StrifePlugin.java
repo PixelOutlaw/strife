@@ -427,6 +427,7 @@ public class StrifePlugin extends FacePlugin {
         * EnergyTask.TICK_MULT;
     RUN_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.run-regen-percent",
         0.25);
+
     buildConditions();
     buildEffects();
     buildAbilities();

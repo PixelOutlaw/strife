@@ -36,15 +36,23 @@ public class DisplayManager {
 
   public DisplayManager(StrifePlugin plugin) {
     this.plugin = plugin;
+    reload();
+  }
+
+  public void reload() {
     for (String key : plugin.getDisplaysYaml().getKeys(false)) {
-      DisplayContainer container = new DisplayContainer();
-      ConfigurationSection section = plugin.getDisplaysYaml().getConfigurationSection(key);
-      ConfigurationSection frameSection = section.getConfigurationSection("frames");
-      for (String s : frameSection.getKeys(false)) {
-        DisplayFrame displayFrame = DisplayFrame.fromString(frameSection.getString(s));
-        container.getFrames().add(displayFrame);
+      try {
+        DisplayContainer container = new DisplayContainer();
+        ConfigurationSection section = plugin.getDisplaysYaml().getConfigurationSection(key);
+        ConfigurationSection frameSection = section.getConfigurationSection("frames");
+        for (String s : frameSection.getKeys(false)) {
+          DisplayFrame displayFrame = DisplayFrame.fromString(frameSection.getString(s));
+          container.getFrames().add(displayFrame);
+        }
+        displaysMap.put(key, container);
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      displaysMap.put(key, container);
     }
   }
 

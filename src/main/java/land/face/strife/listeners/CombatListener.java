@@ -43,6 +43,7 @@ import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.EvokerFangs;
@@ -58,6 +59,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class CombatListener implements Listener {
 
@@ -224,13 +226,17 @@ public class CombatListener implements Listener {
 
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
-      if (ItemUtil.isWandOrStaff(Objects.requireNonNull(attackEntity.getEquipment()).getItemInMainHand())) {
+      ItemStack item = attackEntity.getEquipment() == null ? null : attackEntity.getEquipment().getItemInMainHand();
+      if (ItemUtil.isWandOrStaff(item)) {
         double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
         ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.25D));
         event.setCancelled(true);
         return;
       }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
+      if (item != null && item.getType() == Material.BOW) {
+        attackMultiplier *= 0.6f;
+      }
       onHitChance = attackMultiplier;
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());

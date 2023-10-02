@@ -211,22 +211,20 @@ public class ExperienceListener implements Listener {
       } else {
         double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
         if (distance < 0.5) {
-          amount += 4;
-        } else if (distance < 1.5) {
           amount += 2;
-        } else if (distance < 3) {
+        } else if (distance < 2) {
           amount += 1;
-        } else if (distance > 2500) {
+        } else if (distance > 144) {
           amount = 0;
         } else if (distance > 25) {
-          amount -= 45;
+          amount -= 70;
         } else {
-          amount -= 8;
+          amount -= 12;
         }
       }
       amount = Math.min(200, Math.max(amount, 0));
       violationLevel.put(player, amount);
-      if (amount > 50) {
+      if (amount > 60) {
         mult = Math.max(0.2f, (200f - amount) / 200f);
       }
     }

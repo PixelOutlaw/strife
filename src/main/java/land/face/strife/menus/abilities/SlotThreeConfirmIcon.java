@@ -60,11 +60,7 @@ public class SlotThreeConfirmIcon extends MenuItem {
     event.setWillUpdate(false);
     event.setWillGoBack(false);
     menu.getChampion().setAbility(menu.getPlugin(), slot, menu.getNewAbility());
-    menu.getPlugin().getAbilityIconManager().setAbilityIcon(event.getPlayer(),
-        menu.getNewAbility().getAbilityIconData(), slot);
-
-    AbilityChangeEvent abilityChangeEvent = new AbilityChangeEvent(menu.getChampion(), menu.getNewAbility());
-    Bukkit.getPluginManager().callEvent(abilityChangeEvent);
+    menu.getPlugin().getAbilityIconManager().setAbilityIcon(event.getPlayer(), menu.getChampion(), slot);
     menu.getPlugin().getAbilityIconManager().updateChargesGui(event.getPlayer());
     menu.getPlugin().getSubmenu(menu.getSubMenu()).open(event.getPlayer());
   }

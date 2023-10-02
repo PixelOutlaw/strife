@@ -42,11 +42,7 @@ import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.menus.common.ConfirmationMenu;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.SoundCategory;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
@@ -199,10 +195,10 @@ public class ChampionManager {
     if (champion == null) {
       return false;
     }
-    if (!champion.getSaveData().getBoundAbilities().contains(loreAbility)) {
+    if (!champion.getSaveData().getBoundAbilities().contains(loreAbility.getId())) {
       return false;
     }
-    champion.getSaveData().getBoundAbilities().remove(loreAbility);
+    champion.getSaveData().getBoundAbilities().remove(loreAbility.getId());
     mob.getEquipmentCache().recombineAbilities(plugin, mob);
     return true;
   }

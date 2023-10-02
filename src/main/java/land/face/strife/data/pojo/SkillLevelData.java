@@ -1,8 +1,9 @@
 package land.face.strife.data.pojo;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter @Setter
 public class SkillLevelData {
   int level;
   int levelWithBonus;

@@ -6,7 +6,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.DisplayFrame;
 import land.face.strife.data.pojo.DisplayContainer;
 import lombok.Setter;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
