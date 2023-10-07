@@ -497,7 +497,7 @@ public class StrifePlugin extends FacePlugin {
     }
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> championManager.tickPassiveLoreAbilities(),
-        20L * 5, // Start save after 5s
+        20L * 10, // Start save after 10s
         9L // Run slightly more often than every 0.5s to catch odd rounding
     ));
     taskList.add(strifeMobTracker.runTaskTimer(this,
@@ -643,17 +643,6 @@ public class StrifePlugin extends FacePlugin {
       pathMenus.put(path, new PathMenu(this, path));
     }
     reviveMenu = new ReviveMenu(this);
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      championManager.getChampion(player).recombineCache(this);
-      statUpdateManager.updateAllAttributes(player);
-      boostManager.updateGlobalBoostStatus(player);
-      abilityManager.loadPlayerCooldowns(player);
-      guiManager.setupGui(player);
-      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
-      bossBarManager.createBars(player);
-      Bukkit.getScheduler().runTaskLater(this,
-          () -> abilityIconManager.setAllAbilityIcons(player), 10L);
-    }
 
     DamageUtil.refresh(this);
     PlayerDataUtil.refresh(this);
@@ -701,10 +690,25 @@ public class StrifePlugin extends FacePlugin {
           }
         });
 
-    LogUtil.printInfo("Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
-    LogUtil.printInfo("Loaded " + effectManager.getLoadedEffects().size() + " effects");
-    LogUtil.printInfo("Loaded " + abilityManager.getLoadedAbilities().size() + " abilities");
-    LogUtil.printInfo("Successfully enabled Strife-v" + getDescription().getVersion());
+    LogUtil.printInfo("[Strife] Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
+    LogUtil.printInfo("[Strife] Loaded " + effectManager.getLoadedEffects().size() + " effects");
+    LogUtil.printInfo("[Strife] Loaded " + abilityManager.getLoadedAbilities().size() + " abilities");
+
+
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      championManager.getChampion(player).recombineCache(this);
+      statUpdateManager.updateAllAttributes(player);
+      boostManager.updateGlobalBoostStatus(player);
+      abilityManager.loadPlayerCooldowns(player);
+      guiManager.setupGui(player);
+      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
+      bossBarManager.createBars(player);
+      Bukkit.getScheduler().runTaskLater(this,
+          () -> abilityIconManager.setAllAbilityIcons(player), 10L);
+      LogUtil.printInfo("[Strife] Refreshed player " + player.getName());
+    }
+
+    LogUtil.printInfo("[Strife] Successfully enabled Strife-v" + getDescription().getVersion());
   }
 
   @Override

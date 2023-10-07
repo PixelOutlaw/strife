@@ -149,9 +149,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>me.glaremasters</groupId>
-      <artifactId>guilds</artifactId>
-      <version>3.5.4.9</version>
+      <groupId>io.pixeloutlaw</groupId>
+      <artifactId>poggers-guilds</artifactId>
+      <version>1.0.6</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -593,6 +593,12 @@ public class EffectManager {
         effect = new AddEarthRunes();
         ((AddEarthRunes) effect).setAmount(cs.getInt("amount", 1));
       }
+      case ATTACK_MOD -> {
+        effect = new AttackSpeedMod();
+        ((AttackSpeedMod) effect).setRatio((float) cs.getDouble("ratio", 1));
+        ((AttackSpeedMod) effect).setDelaySeconds((float) cs.getDouble("delay-seconds", 0));
+        ((AttackSpeedMod) effect).setHardReset(cs.getBoolean("hard-reset", false));
+      }
       case TELEPORT -> {
         effect = new Teleport();
         ((Teleport) effect).setTargeted(cs.getBoolean("targeted", true));
@@ -674,6 +680,7 @@ public class EffectManager {
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
         ((Push) effect).setZeroFall(cs.getBoolean("zero-fall", false));
+        ((Push) effect).setCancelHorizontal(cs.getBoolean("cancel-horizontal", false));
         ((Push) effect).setHorizontalClamp(cs.getBoolean("horizontal-clamp", true));
         ((Push) effect).setVerticalClamp(cs.getBoolean("vertical-clamp", true));
         ((Push) effect).setPushType(

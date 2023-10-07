@@ -256,6 +256,9 @@ public class ExperienceListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeath(PlayerDeathEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
     event.setKeepLevel(true);
     event.setDroppedExp(0);
   }

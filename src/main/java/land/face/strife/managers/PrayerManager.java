@@ -121,7 +121,7 @@ public class PrayerManager {
     if (task != null && task.isCancelled()) {
       task.cancel();
     }
-    task = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAllPrayer, 20L * 20, TICK_RATE);
+    task = Bukkit.getScheduler().runTaskTimer(plugin, this::tickAllPrayer, 20L * 30, TICK_RATE);
   }
 
   public boolean isPrayerActive(Player player) {

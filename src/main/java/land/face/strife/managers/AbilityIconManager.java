@@ -187,9 +187,9 @@ public class AbilityIconManager {
     }
     if (ability.getCastType() == AbilityType.ATTACK) {
       if (ability.getGlobalCooldownTicks() > 5) {
-        plugin.getAttackSpeedManager().resetAttack(mob, 1f, (float) ability.getGlobalCooldownTicks() / 20f);
+        plugin.getAttackSpeedManager().resetAttack(mob, 1f, (float) ability.getGlobalCooldownTicks() / 20f, false);
       } else {
-        plugin.getAttackSpeedManager().resetAttack(mob, 1f);
+        plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
       }
     }
     plugin.getAbilityManager().setGlobalCooldown(player, ability.getGlobalCooldownTicks());
@@ -199,14 +199,10 @@ public class AbilityIconManager {
 
   public void updateAllIconProgress(Player player) {
     Champion champion = plugin.getChampionManager().getChampion(player);
-    setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getAbility(AbilitySlot.SLOT_A));
-    setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getAbility(AbilitySlot.SLOT_B));
-    setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getAbility(AbilitySlot.SLOT_C));
-    setIconDamage(plugin.getChampionManager().getChampion(player),
-        champion.getAbility(AbilitySlot.SLOT_D));
+    setIconDamage(champion, champion.getAbility(AbilitySlot.SLOT_A));
+    setIconDamage(champion, champion.getAbility(AbilitySlot.SLOT_B));
+    setIconDamage(champion, champion.getAbility(AbilitySlot.SLOT_C));
+    setIconDamage(champion, champion.getAbility(AbilitySlot.SLOT_D));
   }
 
   public void updateChargesGui(Player player) {

@@ -137,6 +137,7 @@ public abstract class Effect {
     THRALL,
     TITLE,
     CORRUPT,
+    ATTACK_MOD,
     ADD_EARTH_RUNES,
     CONSUME_BLEED,
     CONSUME_CORRUPT,

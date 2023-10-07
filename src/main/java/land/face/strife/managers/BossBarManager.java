@@ -43,8 +43,8 @@ public class BossBarManager {
       randomizeBars(statusBar2);
       randomizeBars(statusBar3);
       randomizeBars(statusBar4);
-    },20L * 5, 100L);
-    Bukkit.getScheduler().runTaskTimer(plugin, this::tickBars,20L * 10, 4L);
+    },20L * 17, 100L);
+    Bukkit.getScheduler().runTaskTimer(plugin, this::tickBars,20L * 20, 4L);
   }
 
   public void createBars(Player player) {

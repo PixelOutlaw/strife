@@ -19,6 +19,8 @@ import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import com.soujah.poggersguilds.GuildPlugin;
+import com.soujah.poggersguilds.data.Guild;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.ShaderStyle;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
@@ -50,9 +52,6 @@ import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import me.glaremasters.guilds.Guilds;
-import me.glaremasters.guilds.api.GuildsAPI;
-import me.glaremasters.guilds.guild.Guild;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -77,7 +76,6 @@ import org.bukkit.potion.PotionEffectType;
 public class DamageUtil {
 
   private static StrifePlugin plugin;
-  private static GuildsAPI guildsAPI;
 
   public static String ATTACK_BLOCKED;
   public static String ATTACK_DODGED;
@@ -112,7 +110,6 @@ public class DamageUtil {
 
   public static void refresh(StrifePlugin refreshedPlugin) {
     plugin = refreshedPlugin;
-    guildsAPI = Guilds.getApi();
 
     BASE_ATTACK_SECONDS = (float) plugin.getSettings()
         .getDouble("config.mechanics.attack-speed.base-attack-time", 1.6);
@@ -156,17 +153,12 @@ public class DamageUtil {
     if (mob.getAlliedGuild() == null) {
       return false;
     }
-    Guild guild = guildsAPI.getGuildHandler().getGuild(player);
+    Guild guild = GuildPlugin.getInstance().getGuildManager().getGuild(player, false);
     if (guild == null) {
       return false;
     }
     if (mob.getAlliedGuild().equals(guild.getId())) {
       return true;
-    }
-    for (UUID uuid : guild.getAllies()) {
-      if (mob.getAlliedGuild().equals(uuid)) {
-        return true;
-      }
     }
     return false;
   }
@@ -197,9 +189,6 @@ public class DamageUtil {
     if (!mods.isSneakAttack()) {
       if (mods.isCanBeEvaded()) {
         if (DamageUtil.isEvaded(attacker, defender, mods.getAbilityMods())) {
-          if (mods.isBasicAttack() && mods.getAttackType() == AttackType.MELEE) {
-            plugin.getAttackSpeedManager().resetAttack(attacker, 0.5f);
-          }
           return false;
         }
       }

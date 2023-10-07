@@ -52,11 +52,11 @@ public class AttackSpeedManager {
     attackFastMsg = plugin.getSettings().getString("language.generic.attack-too-fast");
   }
 
-  public void resetAttack(StrifeMob mob, float ratio) {
-    resetAttack(mob, ratio, 0);
+  public void resetAttack(StrifeMob mob, float ratio, boolean hardReset) {
+    resetAttack(mob, ratio, 0, hardReset);
   }
 
-  public void resetAttack(StrifeMob mob, float ratio, float delaySeconds) {
+  public void resetAttack(StrifeMob mob, float ratio, float delaySeconds, boolean hardReset) {
     if (mob.getEntity().getType() != EntityType.PLAYER) {
       return;
     }
@@ -65,20 +65,21 @@ public class AttackSpeedManager {
     setAttackTime(
         mob.getEntity().getUniqueId(),
         (long) (1000 * attackSeconds),
-        (long) delaySeconds * 1000
+        (long) delaySeconds * 1000,
+        hardReset
     );
-    int ticks = (int) Math.max(5, attackSeconds * 20 - 5);
-    if (((Player) mob.getEntity()).getCooldown(Material.DIAMOND_CHESTPLATE) < ticks) {
+    int ticks = (int) Math.max(4, attackSeconds * 20 - 5);
+    if (hardReset || ((Player) mob.getEntity()).getCooldown(Material.DIAMOND_CHESTPLATE) < ticks) {
       ((Player) mob.getEntity()).setCooldown(Material.DIAMOND_CHESTPLATE, ticks);
     }
   }
 
-  public void setAttackTime(UUID uuid, long fullAttackMillis, long delay) {
+  public void setAttackTime(UUID uuid, long fullAttackMillis, long delay, boolean hardReset) {
     if (!lastAttackMap.containsKey(uuid)) {
       lastAttackMap.put(uuid, new AttackTracker(fullAttackMillis + delay, fullAttackMillis));
       return;
     }
-    lastAttackMap.get(uuid).reset(fullAttackMillis, delay);
+    lastAttackMap.get(uuid).reset(fullAttackMillis, delay, hardReset);
   }
 
   public void wipeAttackRecord(Player player) {
@@ -104,8 +105,8 @@ public class AttackSpeedManager {
       attackMult = attackTracker.getRechargePercent();
     }
 
-    attackTracker.reset(finalAttackTime, 0L);
-    resetAttack(attacker, resetRatio);
+    attackTracker.reset(finalAttackTime, 0L, false);
+    resetAttack(attacker, resetRatio, false);
 
     if (attacker.hasTrait(StrifeTrait.NO_ENERGY_BASICS)) {
       return attackMult;

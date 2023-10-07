@@ -57,8 +57,13 @@ public class ChampionManager {
     this.plugin = plugin;
   }
 
+  public Champion getChampionSoft(Player player) {
+    return championMap.get(player.getUniqueId());
+  }
+
   public Champion getChampion(Player player) {
 
+    //Bukkit.getLogger().info("[String] Got champion for player " + player.getName());
     UUID uuid = player.getUniqueId();
 
     if (championExists(uuid)) {

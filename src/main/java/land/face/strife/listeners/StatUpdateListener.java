@@ -99,7 +99,7 @@ public record StatUpdateListener(StrifePlugin plugin) implements Listener {
         plugin.getStrifeMobManager().getStatMob(event.getPlayer()));
     plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     plugin.getAttackSpeedManager().resetAttack(
-        plugin.getStrifeMobManager().getStatMob(event.getPlayer()), 1);
+        plugin.getStrifeMobManager().getStatMob(event.getPlayer()), 1, true);
   }
 
 

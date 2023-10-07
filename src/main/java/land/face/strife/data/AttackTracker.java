@@ -13,9 +13,9 @@ public class AttackTracker {
     this.attackDuration = attackDuration;
   }
 
-  public void reset(long attackDuration, long delay) {
+  public void reset(long attackDuration, long delay, boolean hardReset) {
     long newStamp = System.currentTimeMillis() + attackDuration + delay;
-    if (newStamp > attackRechargedStamp) {
+    if (hardReset || newStamp > attackRechargedStamp) {
       attackRechargedStamp = newStamp;
       this.attackDuration = attackDuration;
     }

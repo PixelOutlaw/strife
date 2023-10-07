@@ -27,6 +27,8 @@ public class Push extends Effect {
   private Location tempOrigin;
   @Setter
   private Vector tempDirection;
+  @Setter
+  private boolean cancelHorizontal;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -58,6 +60,11 @@ public class Push extends Effect {
     Vector horizontalPush = direction.clone();
     horizontalPush.setY(0.0001);
     horizontalPush.normalize().multiply(power / 10);
+
+    if (cancelHorizontal) {
+      currentVelocity.setX(0);
+      currentVelocity.setZ(0);
+    }
 
     if (zeroFall) {
       if (currentVelocity.getY() < 0) {

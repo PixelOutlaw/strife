@@ -5,6 +5,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.menus.abilities.SlotThreeChoiceMenu;
 import ninja.amp.ampmenus.menus.MenuHolder;
 import org.bukkit.Bukkit;
@@ -108,10 +109,12 @@ public class InventoryListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.LOW)
   public void onPlayerDeathDrops(PlayerDeathEvent event) {
-    event.getDrops().removeAll(
-        event.getDrops().stream().filter(this::isIcon).collect(Collectors.toList()));
+    if (event.isCancelled()) {
+      return;
+    }
+    event.getDrops().removeAll(event.getDrops().stream().filter(this::isIcon).toList());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

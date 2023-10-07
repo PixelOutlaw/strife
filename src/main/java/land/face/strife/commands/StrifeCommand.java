@@ -238,7 +238,7 @@ public class StrifeCommand extends BaseCommand {
             "ATTENTION GAMER: Okay we're back now thanks for waiting :)");
       }
       sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
-    }, 1L);
+    }, 5L);
   }
 
   @Subcommand("reload vfx")
