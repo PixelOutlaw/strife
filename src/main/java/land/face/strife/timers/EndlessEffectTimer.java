@@ -59,7 +59,7 @@ public class EndlessEffectTimer extends BukkitRunnable {
     }
   }
 
-  private void runCancelEffects() {
+  public void runCancelEffects() {
     LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
 
     Set<LivingEntity> entities = new HashSet<>();

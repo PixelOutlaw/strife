@@ -84,19 +84,7 @@ public class WorldSpaceEffect {
     Vector velocity = this.velocity.clone();
 
     if (effectSchedule.containsKey(currentTick)) {
-      List<Effect> effects = effectSchedule.get(currentTick);
-      for (Effect effect : effects) {
-        if (effect == null) {
-          LogUtil.printError("Null WSE effect! Tick:" + currentTick);
-          continue;
-        }
-        if (!(effect instanceof LocationEffect)) {
-          LogUtil.printError("WSEs can only use effects with location! invalid: " + effect.getId());
-          continue;
-        }
-        applyDirectionToPushEffects(this, effect);
-        ((LocationEffect) effect).applyAtLocation(caster, newLocation);
-      }
+      runEffects(newLocation);
     }
 
     if (gravity > 0) {
@@ -114,9 +102,9 @@ public class WorldSpaceEffect {
           return false;
         }
         velocity.setY(0);
+        newLocation.setY(blockBelow.getY() + 1.3);
         if (currentFallTicks != 0) {
           currentFallTicks = 0;
-          newLocation.setY(blockBelow.getY() + 1.3);
         }
       }
     }
@@ -130,7 +118,7 @@ public class WorldSpaceEffect {
     if (maxDisplacement > 0) {
       float displacement = 0;
       while (block.getType().isSolid()) {
-        displacement += 0.4;
+        displacement += 0.4F;
         if (displacement >= maxDisplacement) {
           LogUtil.printDebug("WSE effect has hit a wall! Removing...");
           return false;
@@ -158,6 +146,22 @@ public class WorldSpaceEffect {
       currentTick = 1;
     }
     return true;
+  }
+
+  private void runEffects(Location newLocation) {
+    List<Effect> effects = effectSchedule.get(currentTick);
+    for (Effect effect : effects) {
+      if (effect == null) {
+        LogUtil.printError("Null WSE effect! Tick:" + currentTick);
+        continue;
+      }
+      if (!(effect instanceof LocationEffect)) {
+        LogUtil.printError("WSEs can only use effects with location! invalid: " + effect.getId());
+        continue;
+      }
+      applyDirectionToPushEffects(this, effect);
+      ((LocationEffect) effect).applyAtLocation(caster, newLocation);
+    }
   }
 
   private void applyDirectionToPushEffects(WorldSpaceEffect wse, Effect effect) {

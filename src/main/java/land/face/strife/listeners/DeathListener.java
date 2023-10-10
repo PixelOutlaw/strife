@@ -52,13 +52,6 @@ public class DeathListener implements Listener {
   public void onPlayerDeath(PlayerDeathEvent event) {
     plugin.getPlayerMountManager().despawn(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
-    mob.getEquipmentCache().recombine(plugin, mob);
-    DamageUtil.doPreDeath(mob, 0);
-    if (mob.isInvincible() || event.getPlayer().getHealth() > 0.01) {
-      event.setCancelled(true);
-      event.setReviveHealth(0.5);
-      return;
-    }
     mob.clearBuffs();
     plugin.getSoulManager().createSoul(mob);
     EndlessEffect.cancelEffects(event.getEntity());

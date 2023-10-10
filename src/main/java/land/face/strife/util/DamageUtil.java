@@ -1155,6 +1155,7 @@ public class DamageUtil {
   }
 
   public static float doPreDeath(StrifeMob victim, float damage) {
+    plugin.getStrifeMobManager().updateEquipmentStats(victim);
     Set<LoreAbility> abilitySet = new HashSet<>(victim.getLoreAbilities(ON_DEATH));
     executeBoundEffects(victim, victim, abilitySet);
     executeFiniteEffects(victim, victim, ON_DEATH);

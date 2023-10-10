@@ -2,6 +2,7 @@ package land.face.strife.managers;
 
 import static land.face.strife.util.PlayerDataUtil.getName;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.tuple.Triple;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
@@ -375,6 +376,12 @@ public class EffectManager {
             cs.getString("particle-class", "AnimatedBallEffect"));
         ((EffectLibParticle) effect).setParticleConfig(
             cs.getConfigurationSection("particle-config"));
+      }
+      case DISPLAY_FX -> {
+        effect = new DisplaySpawn();
+        ((DisplaySpawn) effect).setDisplayId(cs.getString("display-id"));
+        ((DisplaySpawn) effect).setEntityLock(cs.getBoolean("entity-lock", false));
+        ((DisplaySpawn) effect).setFaceColor(FaceColor.valueOf(cs.getString("color", "NONE")));
       }
       case AREA_EFFECT -> {
         effect = new AreaEffect();

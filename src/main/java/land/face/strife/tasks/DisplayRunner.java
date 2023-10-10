@@ -48,6 +48,8 @@ public class DisplayRunner {
   private void setup() {
     if (location != null) {
       display = location.getWorld().spawn(location, TextDisplay.class, (e) -> {
+        e.setInterpolationDelay(0);
+        e.setInterpolationDuration(1);
         e.setBrightness(new Brightness(15, 15));
         e.setText("");
         e.setBillboard(Billboard.CENTER);
@@ -57,6 +59,8 @@ public class DisplayRunner {
       ChunkUtil.setDespawnOnUnload(display);
     } else if (livingEntity != null) {
       display = location.getWorld().spawn(location, TextDisplay.class, (e) -> {
+        e.setInterpolationDelay(0);
+        e.setInterpolationDuration(1);
         e.setBrightness(new Brightness(15, 15));
         e.setText("");
         e.setBillboard(Billboard.CENTER);

@@ -114,6 +114,7 @@ public abstract class Effect {
     ENDLESS_EFFECT,
     CANCEL_ENDLESS_EFFECT,
     EFFECT_LIB_PARTICLE,
+    DISPLAY_FX,
     REVIVE,
     HEAL,
     COOLDOWN_REDUCTION,

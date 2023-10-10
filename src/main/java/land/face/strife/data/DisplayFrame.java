@@ -28,8 +28,7 @@ public class DisplayFrame {
         displayFrame.setBrightness(new Brightness(brightness, brightness));
       } else if (s.startsWith("scale:")) {
         String[] strs = s.replace("scale:", "").split(",");
-        displayFrame.setScale(
-            new Vector3f(Float.parseFloat(strs[0]), Float.parseFloat(strs[1]), Float.parseFloat(strs[2])));
+        displayFrame.getScale().set(Float.parseFloat(strs[0]), Float.parseFloat(strs[1]), Float.parseFloat(strs[2]));
       } else if (s.startsWith("translation:")) {
         String[] strs = s.replace("translation:", "").split(",");
         displayFrame.setTranslation(

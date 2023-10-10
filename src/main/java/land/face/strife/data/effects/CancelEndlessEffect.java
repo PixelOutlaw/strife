@@ -18,7 +18,7 @@ public class CancelEndlessEffect extends Effect {
     if (timer == null) {
       return;
     }
-    timer.doExpiry();
+    timer.runCancelEffects();
   }
 
   public void setEndlessEffect(EndlessEffect endlessEffect) {
