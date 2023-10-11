@@ -25,6 +25,7 @@ import land.face.strife.tasks.DisplayRunner;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DisplayFrame;
 import land.face.strife.data.pojo.DisplayContainer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -58,12 +59,20 @@ public class DisplayManager {
 
   public void create(String id, LivingEntity livingEntity, FaceColor color) {
     DisplayContainer container = displaysMap.get(id);
+    if (container == null) {
+      Bukkit.getLogger().info("[Strife] Failed to create display holo named " + id);
+      return;
+    }
     DisplayRunner runner = new DisplayRunner(container, livingEntity, 0, 0);
     runner.setColor(color);
   }
 
   public void create(String id, Location location, FaceColor color) {
     DisplayContainer container = displaysMap.get(id);
+    if (container == null) {
+      Bukkit.getLogger().info("[Strife] Failed to create display holo named " + id);
+      return;
+    }
     DisplayRunner runner = new DisplayRunner(container, location);
     runner.setColor(color);
   }

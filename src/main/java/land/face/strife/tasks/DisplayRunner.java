@@ -1,18 +1,22 @@
 package land.face.strife.tasks;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import de.oliver.fancyholograms.FancyHolograms;
+import de.oliver.fancyholograms.api.FancyHologramsPlugin;
+import de.oliver.fancyholograms.api.Hologram;
+import de.oliver.fancyholograms.api.HologramData;
+import java.util.List;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DisplayFrame;
 import land.face.strife.data.pojo.DisplayContainer;
+import land.face.strife.util.DamageUtil.OriginLocation;
+import land.face.strife.util.TargetingUtil;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.entity.Display.Billboard;
 import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.TextDisplay;
 import org.bukkit.scheduler.BukkitTask;
 
 public class DisplayRunner {
@@ -28,7 +32,7 @@ public class DisplayRunner {
 
   @Setter
   private FaceColor color = null;
-  private TextDisplay display;
+  private Hologram display;
   private BukkitTask task;
 
   public DisplayRunner(DisplayContainer displayContainer, Location location) {
@@ -46,29 +50,21 @@ public class DisplayRunner {
   }
 
   private void setup() {
+    HologramData data = new HologramData(UUID.randomUUID().toString());
+    data.setText(List.of(""));
+    data.setBackground(Hologram.TRANSPARENT);
+    data.setTextHasShadow(false);
     if (location != null) {
-      display = location.getWorld().spawn(location, TextDisplay.class, (e) -> {
-        e.setInterpolationDelay(0);
-        e.setInterpolationDuration(1);
-        e.setBrightness(new Brightness(15, 15));
-        e.setText("");
-        e.setBillboard(Billboard.CENTER);
-        e.setShadowed(false);
-        e.setBackgroundColor(Color.fromARGB(0,0,0,0));
-      });
-      ChunkUtil.setDespawnOnUnload(display);
+      data.setLocation(location);
     } else if (livingEntity != null) {
-      display = location.getWorld().spawn(location, TextDisplay.class, (e) -> {
-        e.setInterpolationDelay(0);
-        e.setInterpolationDuration(1);
-        e.setBrightness(new Brightness(15, 15));
-        e.setText("");
-        e.setBillboard(Billboard.CENTER);
-        e.setShadowed(false);
-        e.setBackgroundColor(Color.fromARGB(0,0,0,0));
-      });
-      ChunkUtil.setDespawnOnUnload(display);
+      data.setLocation(TargetingUtil.getOriginLocation(livingEntity, OriginLocation.CENTER));
     }
+    data.setScale(1);
+    data.setBrightness(new Brightness(3, 3));
+    Hologram holo = FancyHologramsPlugin.get().getHologramManager().create(data);
+    holo.createHologram();
+    holo.showHologram(Bukkit.getOnlinePlayers());
+    display = holo;
     task = Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), this::tick, 0L, 1L);
   }
 
@@ -77,29 +73,31 @@ public class DisplayRunner {
       frame = 0;
       loop++;
     }
-    if (loop > displayContainer.getLoops() || !display.isValid()) {
-      display.remove();
+    if (loop > displayContainer.getLoops()) {
+      display.hideHologram(Bukkit.getOnlinePlayers());
+      display.deleteHologram();
       task.cancel();
       return;
     }
     DisplayFrame displayFrame = displayContainer.getFrames().get(frame);
     if (livingEntity != null) {
       if (!livingEntity.isValid()) {
-        display.remove();
+        display.hideHologram(Bukkit.getOnlinePlayers());
+        display.deleteHologram();
         task.cancel();
         return;
       }
-      Location loc = livingEntity.getLocation().clone();
+      Location loc = TargetingUtil.getOriginLocation(livingEntity, OriginLocation.CENTER);
       if (verticalOffset != 0) {
         loc.setY(loc.getY() + verticalOffset);
       }
       if (offset != 0) {
         loc.add(livingEntity.getLocation().getDirection().multiply(offset));
       }
-      display.teleport(loc);
+      display.getData().setLocation(loc);
     }
     frame++;
     displayFrame.applyToDisplay(display, color);
+    display.updateHologram();
   }
-
 }

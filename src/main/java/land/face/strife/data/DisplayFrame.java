@@ -1,10 +1,11 @@
 package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import de.oliver.fancyholograms.api.Hologram;
+import java.util.List;
 import lombok.Data;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Display.Brightness;
-import org.bukkit.entity.TextDisplay;
-import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
 import org.joml.Vector3f;
 
@@ -28,12 +29,14 @@ public class DisplayFrame {
         displayFrame.setBrightness(new Brightness(brightness, brightness));
       } else if (s.startsWith("scale:")) {
         String[] strs = s.replace("scale:", "").split(",");
-        displayFrame.getScale().set(Float.parseFloat(strs[0]), Float.parseFloat(strs[1]), Float.parseFloat(strs[2]));
+        displayFrame.setScale(
+            new Vector3f(Float.parseFloat(strs[0]), Float.parseFloat(strs[1]), Float.parseFloat(strs[2])));
       } else if (s.startsWith("translation:")) {
         String[] strs = s.replace("translation:", "").split(",");
         displayFrame.setTranslation(
             new Vector3f(Float.parseFloat(strs[0]), Float.parseFloat(strs[1]), Float.parseFloat(strs[2])));
-      } if (s.startsWith("rotation:")) {
+      }
+      if (s.startsWith("rotation:")) {
         String[] strs = s.replace("rotation:", "").split(",");
         displayFrame.setRotation(
             new Vector(Float.parseFloat(strs[0]), Float.parseFloat(strs[1]), Float.parseFloat(strs[2])));
@@ -43,29 +46,27 @@ public class DisplayFrame {
     return displayFrame;
   }
 
-  public void applyToDisplay(TextDisplay textDisplay) {
-    applyToDisplay(textDisplay, null);
+  public void applyToDisplay(Hologram hologram) {
+    applyToDisplay(hologram, null);
   }
 
-  public void applyToDisplay(TextDisplay textDisplay, FaceColor color) {
+  public void applyToDisplay(Hologram hologram, FaceColor color) {
     if (text != null) {
-      textDisplay.setText(color == null ? "" : color + text);
+      hologram.getData().setText(List.of(text));
     }
     if (brightness != null) {
-      textDisplay.setBrightness(brightness);
+      hologram.getData().setBrightness(brightness);
     }
     if (rotation != null) {
-      textDisplay.getLocation().setDirection(rotation);
+      hologram.getData().getLocation().setDirection(rotation);
     }
-    if (scale != null || translation != null) {
-      Transformation transformation = textDisplay.getTransformation();
-      if (scale != null) {
-        transformation.getScale().set(scale);
-      }
-      if (translation != null) {
-        transformation.getTranslation().set(translation);
-      }
-      textDisplay.setTransformation(transformation);
+    if (scale != null) {
+      hologram.getData().getScale().set(scale.x, scale.y, scale.z);
     }
+    if (translation != null) {
+      hologram.getData().getTranslation().set(translation.x, translation.y, translation.z);
+    }
+    hologram.updateHologram();
+    hologram.refreshHologram(Bukkit.getOnlinePlayers());
   }
 }

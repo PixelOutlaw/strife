@@ -3,7 +3,7 @@ version: ${project.version}
 main: land.face.strife.StrifePlugin
 api-version: 1.19
 depend: [Facecore, ProtocolLib, GUIAPI]
-softdepend: [WorldGuard, PoggersGuilds, Loot, Bullion, LibsDisguises, SnazzyParties, DiscordSRV, HeadDatabase, GlowAPI, DecentHolograms, LearninBooks]
+softdepend: [WorldGuard, PoggersGuilds, Loot, Bullion, LibsDisguises, SnazzyParties, DiscordSRV, HeadDatabase, GlowAPI, FancyHolograms, LearninBooks]
 
 commands:
   cast:
