@@ -128,7 +128,7 @@ public class Spawner extends BukkitRunnable {
     if (spawner.getUniqueEntity().isVagabondAllowed()) {
       if (spawner.getUniqueEntity().getBaseLevel() > StrifePlugin.getInstance()
           .getVagabondManager().getMinimumLevel()) {
-        if (StrifePlugin.getInstance().getVagabondManager().getSpawnChance() > Math.random()) {
+        if (StrifePlugin.getInstance().getVagabondManager().getSpawnChance() > StrifePlugin.RNG.nextFloat()) {
           int level = spawner.getUniqueEntity().getBaseLevel();
           StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
               (LivingEntity) StrifePlugin.getInstance().getVagabondManager().spawnVagabond(level,
@@ -177,7 +177,7 @@ public class Spawner extends BukkitRunnable {
         }
         // Random displacement to prevent clumping
         if (spawner.getUniqueEntity().getDisplaceMultiplier() != 0) {
-          Vector vec = new Vector(-1 + Math.random() * 2, 0.1, -1 + Math.random() * 2).normalize();
+          Vector vec = new Vector(-1 + StrifePlugin.RNG.nextFloat() * 2, 0.1, -1 + StrifePlugin.RNG.nextFloat() * 2).normalize();
           vec.multiply(spawner.getUniqueEntity().getDisplaceMultiplier());
           mob.getEntity().setVelocity(vec);
           mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());

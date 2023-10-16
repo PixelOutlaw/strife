@@ -600,8 +600,8 @@ public class StrifeCommand extends BaseCommand {
     }
     Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
     plugin.getChampionManager().updateRecentSkills(champion, type);
-    plugin.getBossBarManager().updateBar(target.getPlayer(), 1, 0,
-        plugin.getSkillExperienceManager().updateSkillString(champion), 0);
+    plugin.getTopBarManager().updateSkills(target.getPlayer(),
+        plugin.getSkillExperienceManager().updateSkillString(champion));
     MessageUtils.sendMessage(sender, "&aSent recent skill");
   }
 

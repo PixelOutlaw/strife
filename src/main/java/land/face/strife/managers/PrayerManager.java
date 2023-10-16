@@ -65,7 +65,6 @@ public class PrayerManager {
   @Getter private final Map<SelectedGod, GodPrayerDetails> godPassiveTwo = new HashMap<>();
   @Getter private final Map<SelectedGod, GodPrayerDetails> godPassiveThree = new HashMap<>();
 
-
   @Getter private int godLevelXpTwo;
   @Getter private int godLevelXpThree;
   @Getter private int godLevelXpFour;
@@ -183,6 +182,7 @@ public class PrayerManager {
       return false;
     }
     mob.setPrayer(mob.getPrayer() - cost);
+    mob.setReCache(true);
     Audience audience = Audience.audience(player);
     assert sound != null;
     audience.playSound(sound);
@@ -213,6 +213,8 @@ public class PrayerManager {
       case FIFTEEN -> removeGodBuff(mob, godPassiveThree);
     }
     sendPrayerUpdate(player, mob.getPrayer() / mob.getMaxPrayer(), isPrayerActive(player));
+    mob.setReCache(true);
+
     //PaletteUtil.sendMessage(player, "Prayer deactivated " + prayer);
     return true;
   }
@@ -325,6 +327,8 @@ public class PrayerManager {
     }
     if (removed) {
       p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.MASTER, 0.65f, 2);
+      playerMob.setReCache(true);
+      // TODO: UPDATE MENU!
     }
     if (activePrayers.get(p).isEmpty()) {
       playerMob.setPrayer(0);

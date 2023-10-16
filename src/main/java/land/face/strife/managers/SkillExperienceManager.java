@@ -28,7 +28,6 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
@@ -40,11 +39,8 @@ import land.face.strife.events.SkillLevelUpEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.Sound.Source;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -115,7 +111,7 @@ public class SkillExperienceManager {
       return;
     }
     if (!exact) {
-      float skillXpMult = plugin.getStrifeMobManager().getStatMob(player).getStat(StrifeStat.SKILL_XP_GAIN) / 100;
+      float skillXpMult = mob.getStat(StrifeStat.SKILL_XP_GAIN) / 100;
       amount *= 1 + skillXpMult;
     }
     if (location != null) {
@@ -141,7 +137,9 @@ public class SkillExperienceManager {
     double currentExp = saveData.getSkillExp(type) + xpEvent.getAmount();
     double maxExp = (double) getMaxExp(type, saveData.getSkillLevel(type));
 
+    boolean levelUp = false;
     while (currentExp > maxExp) {
+      levelUp = true;
       currentExp -= maxExp;
       saveData.setSkillLevel(type, saveData.getSkillLevel(type) + 1);
 
@@ -155,8 +153,11 @@ public class SkillExperienceManager {
       maxExp = (double) getMaxExp(type, saveData.getSkillLevel(type));
       checkSkillUnlock(player, type);
     }
+    if (levelUp) {
+      mob.setReCache(true);
+    }
     saveData.setSkillExp(type, (float) currentExp);
-    plugin.getBossBarManager().updateBar(player, 1, 0, buildSkillString(mob.getChampion(), type), 0);
+    plugin.getTopBarManager().updateSkills(player, buildSkillString(mob.getChampion(), type));
   }
 
   private String buildSkillString(Champion champion, LifeSkillType skill) {
@@ -169,23 +170,16 @@ public class SkillExperienceManager {
 
   public String updateSkillString(Champion champion) {
     StringBuilder newTitle = new StringBuilder();
-    int skills = 0;
     for (LifeSkillType skillType : champion.getRecentSkills()) {
-      float progress = PlayerDataUtil.getSkillProgress(champion, skillType);
+      int progress = (int) Math.floor(100D * PlayerDataUtil.getSkillProgress(champion, skillType));
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
-        newTitle.append(skillBackground.get((int) Math.floor(progress * 18)));
-        newTitle.append(skillType.getCharacter());
-        newTitle.append(skillLevel.get(level));
-        skills++;
-        if (skills != champion.getRecentSkills().size()) {
-          newTitle.append("\uF824");
-        }
+        newTitle.append(FaceColor.NO_SHADOW).append(skillType.getCharacter()).append(FaceColor.LIGHT_GREEN).append(progress)
+            .append("%").append(" ");
       }
     }
     return newTitle.toString();
   }
-
 
   public Integer getMaxExp(LifeSkillType type, int level) {
     return levelingRates.get(type).get(level);

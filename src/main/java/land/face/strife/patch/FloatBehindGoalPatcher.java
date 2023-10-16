@@ -4,11 +4,9 @@ import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import java.util.EnumSet;
-import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
@@ -29,7 +27,6 @@ public class FloatBehindGoalPatcher {
     private LivingEntity master;
     private long cooldown = 0;
     private long masterDetectCooldown = 0;
-    private final Random random = new Random(System.currentTimeMillis());
 
     public FloatBehindGoal(Mob mob) {
       this.mob = mob;
@@ -76,9 +73,9 @@ public class FloatBehindGoalPatcher {
       Location baseLocation = master.getEyeLocation().clone()
           .add(master.getEyeLocation().getDirection().multiply(-2));
       baseLocation.add(
-          4 * (0.5 - random.nextDouble()),
-          2 * (0.5 - random.nextDouble()),
-          4 * (0.5 - random.nextDouble())
+          4 * (0.5 - StrifePlugin.RNG.nextDouble()),
+          2 * (0.5 - StrifePlugin.RNG.nextDouble()),
+          4 * (0.5 - StrifePlugin.RNG.nextDouble())
       );
       mob.getPathfinder().moveTo(baseLocation, 1.0D);
       cooldown = System.currentTimeMillis() + 1000;

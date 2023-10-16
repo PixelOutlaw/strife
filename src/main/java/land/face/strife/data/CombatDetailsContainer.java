@@ -42,7 +42,7 @@ public class CombatDetailsContainer {
     }
     float xpTotal = totalExp * EXP_PERCENTAGE;
     xpTotal += WEIGHT_PERCENTAGE * totalWeight;
-    xpTotal *= (float) (0.9f + Math.random() * 0.2f);
+    xpTotal *= (float) (0.9f + StrifePlugin.RNG.nextFloat() * 0.2f);
     Map<LifeSkillType, Float> rewards = new HashMap<>();
     for (LifeSkillType type : skillWeight.keySet()) {
       rewards.put(type, Math.max(1, xpTotal * (skillWeight.get(type) / totalWeight)));

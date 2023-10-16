@@ -1,12 +1,9 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.StringUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.WordUtils;
 import java.util.List;
-import java.util.Random;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.stats.StrifeStat;
@@ -20,7 +17,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 public class DogeListener implements Listener {
 
   private final StrifeMobManager strifeMobManager;
-  private final Random random;
 
   private static final List<String> DOGE_MEMES = List.of(
       FaceColor.ORANGE + "2 the moon??",
@@ -53,7 +49,6 @@ public class DogeListener implements Listener {
 
   public DogeListener(StrifeMobManager strifeMobManager) {
     this.strifeMobManager = strifeMobManager;
-    this.random = new Random(System.currentTimeMillis());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
@@ -62,9 +57,9 @@ public class DogeListener implements Listener {
       return;
     }
     StrifeMob attacker = strifeMobManager.getStatMob((LivingEntity) event.getEntity());
-    if (random.nextDouble() <= attacker.getStat(StrifeStat.DOGE) / 100) {
-      event.getEntity().sendMessage(StringUtils.repeat(" ", random.nextInt(5)) +
-          DOGE_MEMES.get(random.nextInt(DOGE_MEMES.size())));
+    if (StrifePlugin.RNG.nextDouble() <= attacker.getStat(StrifeStat.DOGE) / 100) {
+      event.getEntity().sendMessage(StringUtils.repeat(" ", StrifePlugin.RNG.nextInt(5)) +
+          DOGE_MEMES.get(StrifePlugin.RNG.nextInt(DOGE_MEMES.size())));
     }
   }
 }

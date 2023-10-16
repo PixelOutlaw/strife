@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,8 +60,6 @@ public class AbilityManager {
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
   private final Map<LivingEntity, Set<CooldownTracker>> cdMap = new ConcurrentHashMap<>();
   private final Map<UUID, Set<CooldownTracker>> savedCooldowns = new ConcurrentHashMap<>();
-
-  private final Random random = new Random();
 
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -291,7 +288,7 @@ public class AbilityManager {
       return;
     }
     ((Player) caster.getEntity())
-        .chat("==ability==" + messages.get(random.nextInt(messages.size())));
+        .chat("==ability==" + messages.get(StrifePlugin.RNG.nextInt(messages.size())));
   }
 
   public void startAbilityTimerTask(StrifeMob mob) {
@@ -348,7 +345,7 @@ public class AbilityManager {
     if (selectorList.isEmpty()) {
       return false;
     }
-    Ability ability = selectorList.get(random.nextInt(selectorList.size()));
+    Ability ability = selectorList.get(StrifePlugin.RNG.nextInt(selectorList.size()));
     if (caster.getEntity() instanceof Mob) {
       LivingEntity le = ((Mob) caster.getEntity()).getTarget();
       if (le != null && le.isValid()) {

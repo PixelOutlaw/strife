@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
@@ -20,9 +21,9 @@ public class ChaserEffect extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     double startSpeed = loadedChaser.getStartSpeed();
     Vector vector = new Vector(
-        2 * startSpeed * (0.5 - Math.random()),
-        startSpeed * Math.random(),
-        2 * startSpeed * (0.5 - Math.random())
+        2 * startSpeed * (0.5 - StrifePlugin.RNG.nextFloat()),
+        startSpeed * StrifePlugin.RNG.nextFloat(),
+        2 * startSpeed * (0.5 - StrifePlugin.RNG.nextFloat())
     );
     Location location;
     if (overrideLocation == null) {

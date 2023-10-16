@@ -63,7 +63,8 @@ public class GodCommand extends BaseCommand {
         plugin.getLoreAbilityManager().getLoreAbilityFromId("ANYA-1"));
     plugin.getChampionManager().addBoundLoreAbility(mob, selectedGod.name() + "-1");
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
-    if (target.getPlayer().hasPermission("prayer.enabled") && mob.getPrayer() != mob.getMaxPrayer()) {
+    if (target.getPlayer().hasPermission("prayer.enabled") &&
+        mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
       PaletteUtil.sendMessage(target.getPlayer(), FaceColor.WHITE.s() + FaceColor.ITALIC + "Faith restored!");
       Audience audience = Audience.audience(target.getPlayer());
       audience.playSound(PrayerManager.FAITH_RESTORED);
@@ -142,7 +143,8 @@ public class GodCommand extends BaseCommand {
     SelectedGod selectedGod = mob.getChampion().getSaveData().getSelectedGod();
 
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
-    if (target.getPlayer().hasPermission("prayer.enabled") && mob.getPrayer() != mob.getMaxPrayer()) {
+    if (target.getPlayer().hasPermission("prayer.enabled") &&
+        mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
       PaletteUtil.sendMessage(target.getPlayer(), FaceColor.WHITE.s() + FaceColor.ITALIC + "Faith restored!");
       Audience audience = Audience.audience(target.getPlayer());
       audience.playSound(PrayerManager.FAITH_RESTORED);

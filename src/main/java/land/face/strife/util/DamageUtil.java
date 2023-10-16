@@ -22,16 +22,13 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.soujah.poggersguilds.GuildPlugin;
 import com.soujah.poggersguilds.data.Guild;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.ShaderStyle;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
@@ -47,7 +44,6 @@ import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
-import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
@@ -98,10 +94,9 @@ public class DamageUtil {
 
   private static float PVP_MULT;
 
-  private static String POSION_TEXT = "彣";
+  private static final String POISON_TEXT = "彣";
 
   private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
-  private static final Random RANDOM = new Random(System.currentTimeMillis());
 
   private static final RegionContainer regionContainer = WorldGuard.getInstance()
       .getPlatform().getRegionContainer();
@@ -338,11 +333,11 @@ public class DamageUtil {
     rawDamage *= DamageUtil.getTenacityMult(defender);
 
     if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
-      rawDamage *= 1 - 0.3 * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity()
+      rawDamage *= 1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity()
           .getMaxFreezeTicks());
     }
     if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
-      rawDamage *= 1 - (0.03 * defender.getEarthRunes());
+      rawDamage *= 1 - (0.03f * defender.getEarthRunes());
     }
 
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
@@ -370,15 +365,15 @@ public class DamageUtil {
       int defenderLevel = StatUtil.getMobLevel(defender.getEntity());
       int diffCap = (int) Math.max(9f, (float) attackerLevel / 5);
       if (attackerLevel + diffCap < defenderLevel) {
-        rawDamage *= Math.pow(0.875, defenderLevel - (attackerLevel + diffCap));
+        rawDamage *= (float) Math.pow(0.875, defenderLevel - (attackerLevel + diffCap));
       }
     }
 
     if (plugin.getPrayerManager().isPrayerActive(attacker.getEntity(), Prayer.TWO)) {
-      rawDamage *= 1.05;
+      rawDamage *= 1.05F;
     }
     if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.ONE)) {
-      rawDamage *= 0.9;
+      rawDamage *= 0.9F;
     }
 
     String damageString;
@@ -653,7 +648,7 @@ public class DamageUtil {
       return;
     }
     float currentWeight = 0;
-    totalElementalDamage *= Math.random();
+    totalElementalDamage *= StrifePlugin.RNG.nextFloat();
     DamageType finalElementType = null;
     for (DamageType type : elementalDamages.keySet()) {
       currentWeight += elementalDamages.get(type);
@@ -719,7 +714,7 @@ public class DamageUtil {
         armor *= 1 - modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN_MULT, 0f);
         armor -= modDoubleMap.getOrDefault(AbilityMod.ARMOR_PEN, 0f);
         if (modDoubleMap.containsKey(AbilityMod.BACK_ATTACK)) {
-          armor *= 0.8;
+          armor *= 0.8f;
         }
         return getArmorMult(armor);
       }
@@ -731,7 +726,7 @@ public class DamageUtil {
         warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0f);
         warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
         if (modDoubleMap.containsKey(AbilityMod.BACK_ATTACK)) {
-          warding *= 0.8;
+          warding *= 0.8f;
         }
         return getWardingMult(warding);
       }
@@ -741,7 +736,7 @@ public class DamageUtil {
           fireResist /= 2;
         }
         if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
-          fireResist += 0.5;
+          fireResist += 0.5f;
         }
         fireResist = Math.min(fireResist, 0.85f);
         return fireResist >= 0 ? (1 - fireResist) : 1 + Math.abs(fireResist);
@@ -749,7 +744,7 @@ public class DamageUtil {
       case ICE -> {
         float iceResist = defend.getStat(StrifeStat.ICE_RESIST) / 100;
         if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
-          iceResist -= 0.3;
+          iceResist -= 0.3f;
         }
         iceResist = Math.min(iceResist, 0.85f);
         return iceResist >= 0 ? (1 - iceResist) : 1 + Math.abs(iceResist);
@@ -757,7 +752,7 @@ public class DamageUtil {
       case LIGHTNING -> {
         float lightningResist = defend.getStat(StrifeStat.LIGHTNING_RESIST) / 100;
         if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
-          lightningResist -= 0.3;
+          lightningResist -= 0.3f;
         }
         lightningResist = Math.min(lightningResist, 0.85f);
         return lightningResist >= 0 ? (1 - lightningResist) : 1 + Math.abs(lightningResist);
@@ -842,8 +837,7 @@ public class DamageUtil {
         0.3, 0.3, 0.3, 0.03
     );
     float duration = (50 + damage / 2) * (1 + attacker.getStat(StrifeStat.EFFECT_DURATION) / 100);
-    boolean igniteSuccess = Ignite.setFlames(defender,
-        Math.max((int) duration, defender.getEntity().getFireTicks()));
+    Ignite.setFlames(defender, Math.max((int) duration, defender.getEntity().getFireTicks()));
   }
 
   public static float attemptShock(float damage, LivingEntity defender) {
@@ -894,16 +888,16 @@ public class DamageUtil {
   public static boolean rollDodgeFromEvasion(StrifeMob attacker, StrifeMob defender,
       Map<AbilityMod, Float> mods) {
     float totalEvasion = StatUtil.getEvasion(defender);
-    float totalAccuracy = StatUtil.getAccuracy(attacker);
+    float totalAccuracy = attacker.getStat(StrifeStat.ACCURACY);
     if (mods != null) {
       totalAccuracy *= 1 + mods.getOrDefault(AbilityMod.ACCURACY_MULT, 0f) / 100;
       totalAccuracy += mods.getOrDefault(AbilityMod.ACCURACY, 0f);
       if (mods.containsKey(AbilityMod.BACK_ATTACK)) {
-        totalEvasion *= 0.8;
+        totalEvasion *= 0.8f;
       }
     }
     float dodgeChance = getDodgeChanceFromEvasion(totalEvasion, totalAccuracy);
-    return Math.random() < dodgeChance;
+    return StrifePlugin.RNG.nextFloat() < dodgeChance;
   }
 
   public static float getDodgeChanceFromEvasion(float evasion, float accuracy) {
@@ -914,9 +908,8 @@ public class DamageUtil {
     return 1f - (float) Math.pow(0.9f, advantage / 20);
   }
 
-  public static boolean isEvaded(StrifeMob attacker, StrifeMob defender,
-      Map<AbilityMod, Float> attackModifiers) {
-    if (Math.random() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
+  public static boolean isEvaded(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> attackModifiers) {
+    if (StrifePlugin.RNG.nextFloat() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
       DamageUtil.doEvasion(attacker, defender);
       return true;
     }
@@ -933,7 +926,7 @@ public class DamageUtil {
         Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (attacker.getEntity() instanceof Player) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 1f, 1f, 1f);
+          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 3.5f, 3f, 2f);
     }
   }
 
@@ -942,20 +935,20 @@ public class DamageUtil {
 
     PotionEffect powerEffect = attacker.getPotionEffect(PotionEffectType.INCREASE_DAMAGE);
     if (powerEffect != null) {
-      potionMult += 0.1 * (powerEffect.getAmplifier() + 1);
+      potionMult += 0.1f * (powerEffect.getAmplifier() + 1);
     }
     PotionEffect weaknessEffect = attacker.getPotionEffect(PotionEffectType.WEAKNESS);
     if (weaknessEffect != null) {
-      potionMult -= 0.1 * (weaknessEffect.getAmplifier() + 1);
+      potionMult -= 0.1f * (weaknessEffect.getAmplifier() + 1);
     }
 
     PotionEffect vulnerabilityEffect = defender.getPotionEffect(PotionEffectType.UNLUCK);
     if (vulnerabilityEffect != null) {
-      potionMult += 0.1 * (vulnerabilityEffect.getAmplifier() + 1);
+      potionMult += 0.1f * (vulnerabilityEffect.getAmplifier() + 1);
     }
     PotionEffect resistEffect = defender.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
     if (resistEffect != null) {
-      potionMult -= 0.1 * (resistEffect.getAmplifier() + 1);
+      potionMult -= 0.1f * (resistEffect.getAmplifier() + 1);
     }
     return Math.max(0, potionMult);
   }
@@ -972,6 +965,7 @@ public class DamageUtil {
         defender.getLocation().getBlockY(),
         defender.getLocation().getBlockZ()
     );
+    assert manager != null;
     ApplicableRegionSet regions1 = manager.getApplicableRegions(vectorLoc1);
     if (State.DENY == regions1.queryValue(WorldGuardPlugin.inst()
         .wrapPlayer(attacker), Flags.PVP)) {
@@ -991,9 +985,9 @@ public class DamageUtil {
     return true;
   }
 
-  public static double getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
-    return Math.max(0.05D, 1 + (atk.getStat(StrifeStat.PROJECTILE_DAMAGE) -
-        def.getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100);
+  public static float getProjectileMultiplier(StrifeMob atk, StrifeMob def) {
+    return Math.max(0.05f, 1f + (atk.getStat(StrifeStat.PROJECTILE_DAMAGE) -
+        def.getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100f);
   }
 
   public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier,
@@ -1035,7 +1029,7 @@ public class DamageUtil {
       damage *= 1 + (bleedDamage / 100);
       applyBleed(attacker, defender, damage, bypassBarrier, false, false);
     }
-    return false;
+    return true;
   }
 
   public static boolean attemptPoison(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
@@ -1078,7 +1072,7 @@ public class DamageUtil {
       defender.getEntity().removePotionEffect(PotionEffectType.POISON);
       defender.getEntity().addPotionEffect(newPoisonEffect);
       plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          IndicatorStyle.FLOAT_UP_MEDIUM, 5, POSION_TEXT, 1.0f, 1.0f, 1.0f);
+          IndicatorStyle.FLOAT_UP_MEDIUM, 5, POISON_TEXT, 1.0f, 1.0f, 1.0f);
       attacker.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
           Sound.ENTITY_SILVERFISH_DEATH, 1, 2.0f);
       return true;
@@ -1244,7 +1238,7 @@ public class DamageUtil {
   }
 
   public static float rollDouble() {
-    return RANDOM.nextFloat();
+    return StrifePlugin.RNG.nextFloat();
   }
 
   public static boolean rollBool(float chance, boolean lucky) {
@@ -1252,11 +1246,7 @@ public class DamageUtil {
   }
 
   public static boolean rollBool(float chance) {
-    return RANDOM.nextFloat() <= chance;
-  }
-
-  private static BlockManager getBlockManager() {
-    return StrifePlugin.getInstance().getBlockManager();
+    return StrifePlugin.RNG.nextFloat() <= chance;
   }
 
   public enum DamageScale {

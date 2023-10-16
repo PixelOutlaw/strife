@@ -143,6 +143,7 @@ public class StatUpdateManager {
     strifeMob.getEntity().setMaximumAir((int) maxAir);
     StatUtil.getStat(strifeMob, StrifeStat.BARRIER);
     StatUtil.getStat(strifeMob, StrifeStat.MAXIMUM_RAGE);
+    StatUtil.getStat(strifeMob, StrifeStat.MAX_PRAYER_POINTS);
     if (strifeMob.getEntity() instanceof Player p) {
       if (plugin.getGuiManager().getLifeSeparators().get(105) != null) {
         if (strifeMob.getMaxLife() >= 105) {

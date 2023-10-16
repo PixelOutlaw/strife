@@ -56,6 +56,7 @@ public class JoinAndLeaveListener implements Listener {
   @EventHandler(priority = EventPriority.LOW)
   public void onPlayerJoinLow(final PlayerJoinEvent event) {
     plugin.getGuiManager().setupGui(event.getPlayer());
+    plugin.getTopBarManager().setupPlayer(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -114,9 +115,9 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getBossBarManager().createBars(event.getPlayer());
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getChampionManager().pushCloseSkills(champion);
-      plugin.getBossBarManager().updateBar(event.getPlayer(), 1, 0,
-          plugin.getSkillExperienceManager().updateSkillString(champion), 0);
-    }, 33L);
+      plugin.getTopBarManager().updateSkills(event.getPlayer(),
+          plugin.getSkillExperienceManager().updateSkillString(champion));
+      }, 33L);
 
     plugin.getGuiManager().updateLevelDisplay(playerMob);
     //plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());

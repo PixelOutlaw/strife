@@ -172,7 +172,7 @@ public enum StrifeStat {
   PHYSICAL_MULT(),
   MAGIC_MULT(),
 
-  DAMAGE_MULT(),
+  DAMAGE_MULT("Damage"),
   ELEMENTAL_MULT("Elemental Damage"),
   ACCURACY_MULT(),
   MINION_MULT_INTERNAL(),

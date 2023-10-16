@@ -78,9 +78,9 @@ public class IndicatorManager {
     switch (type) {
       case RANDOM_POPOFF -> {
         velocity = new Vector(
-            -randomDamageHSpeed + 2 * Math.random() * randomDamageHSpeed,
-            randomDamageVSpeed / 2 + Math.random() * randomDamageVSpeed,
-            -randomDamageHSpeed + 2 * Math.random() * randomDamageHSpeed);
+            -randomDamageHSpeed + 2 * StrifePlugin.RNG.nextFloat() * randomDamageHSpeed,
+            randomDamageVSpeed / 2 + StrifePlugin.RNG.nextFloat() * randomDamageVSpeed,
+            -randomDamageHSpeed + 2 * StrifePlugin.RNG.nextFloat() * randomDamageHSpeed);
         gravity = randomDamageGravity;
       }
       case BOUNCE -> {

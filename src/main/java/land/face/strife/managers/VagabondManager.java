@@ -54,8 +54,6 @@ public class VagabondManager {
 
   private final String vagabond = ChatColor.GOLD + "< " + ChatColor.GRAY + "Vagabond" + ChatColor.GOLD +  " >";
 
-  private final Random random = new Random();
-
   public VagabondManager(StrifePlugin plugin) {
     this.plugin = plugin;
     spawnChance = (float) plugin.getSettings().getDouble("config.vagabonds.spawn-chance");
@@ -75,7 +73,7 @@ public class VagabondManager {
   private void vagabondSetup(Skeleton entity, String className, int level) {
 
     PlayerDisguise playerDisguise = new PlayerDisguise("vagabond1", vagabondNames
-        .get(random.nextInt(vagabondNames.size())));
+        .get(StrifePlugin.RNG.nextInt(vagabondNames.size())));
     playerDisguise.setReplaceSounds(true);
     playerDisguise.setName(vagabond);
     playerDisguise.setDynamicName(false);

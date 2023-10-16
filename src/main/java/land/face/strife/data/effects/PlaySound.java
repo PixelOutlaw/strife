@@ -1,12 +1,14 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 
+@Getter @Setter
 public class PlaySound extends LocationEffect {
 
-  private Sound sound;
+  private String sound;
   private float volume;
   private float pitch;
 
@@ -19,29 +21,5 @@ public class PlaySound extends LocationEffect {
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
     location.getWorld().playSound(location, sound, volume, pitch);
-  }
-
-  public Sound getSound() {
-    return sound;
-  }
-
-  public void setSound(Sound sound) {
-    this.sound = sound;
-  }
-
-  public float getVolume() {
-    return volume;
-  }
-
-  public void setVolume(float volume) {
-    this.volume = volume;
-  }
-
-  public float getPitch() {
-    return pitch;
-  }
-
-  public void setPitch(float pitch) {
-    this.pitch = pitch;
   }
 }

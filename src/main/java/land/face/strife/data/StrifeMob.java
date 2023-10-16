@@ -49,7 +49,9 @@ import org.bukkit.entity.Player;
 
 public class StrifeMob {
 
+  @Getter
   private final EquipmentCache equipmentCache = new EquipmentCache();
+  @Getter
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
   @Getter
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
@@ -61,6 +63,7 @@ public class StrifeMob {
   private WeakReference<ModeledEntity> modelEntity = null;
   private WeakReference<StrifeMob> owner = new WeakReference<>(null);
 
+  @Getter
   private EntityAbilitySet abilitySet;
   @Getter
   private final Set<String> mods = new HashSet<>();
@@ -84,7 +87,9 @@ public class StrifeMob {
 
   @Getter @Setter
   private float maxPrayer;
+  @Getter
   private float energy = 0;
+  @Getter
   private float maxEnergy = 0;
   @Getter @Setter
   private float maxRage = 0;
@@ -112,8 +117,8 @@ public class StrifeMob {
   private float bleed;
   @Getter
   private int maxAirJumps;
-  private boolean shielded;
 
+  @Getter
   private boolean useEquipment;
 
   private CombatCountdownTask combatCountdownTask = null;
@@ -130,7 +135,8 @@ public class StrifeMob {
 
   private final Set<StrifeMob> minions = new HashSet<>();
 
-  private boolean buffsChanged = false;
+  @Setter
+  private boolean reCache = false;
   private long lastEquipmentUpdate = 100L;
   private long lastChampionUpdate = 100L;
 
@@ -156,6 +162,7 @@ public class StrifeMob {
 
   public int getLevel() {
     if (livingEntity.get() instanceof Player) {
+      //noinspection DataFlowIssue
       return ((Player) livingEntity.get()).getLevel();
     }
     return SpecialStatusUtil.getMobLevel(livingEntity.get());
@@ -165,6 +172,7 @@ public class StrifeMob {
     if (uniqueEntity == null || uniqueEntity.get() == null) {
       return true;
     }
+    //noinspection DataFlowIssue
     if (!uniqueEntity.get().isAttackDisabledOnGlobalCooldown()) {
       return true;
     }
@@ -289,16 +297,8 @@ public class StrifeMob {
     }
   }
 
-  public float getEnergy() {
-    return energy;
-  }
-
   public void setEnergy(float energy) {
     this.energy = Math.min(Math.max(0, energy), maxEnergy);
-  }
-
-  public float getMaxEnergy() {
-    return maxEnergy;
   }
 
   public void setMaxEnergy(float maxEnergy) {
@@ -309,6 +309,7 @@ public class StrifeMob {
     if (champion.get() == null) {
       return 0;
     }
+    //noinspection DataFlowIssue
     return champion.get().getSaveData().getPrayerPoints();
   }
 
@@ -316,6 +317,7 @@ public class StrifeMob {
     if (champion.get() == null) {
       return;
     }
+    //noinspection DataFlowIssue
     champion.get().getSaveData().setPrayerPoints(Math.min(maxPrayer, amount));
   }
 
@@ -343,7 +345,7 @@ public class StrifeMob {
         rageTask = new RageTask(this);
       }
       if (hasTrait(StrifeTrait.BLOOD_BOIL) && bleed > 0) {
-        amount *= 1.3;
+        amount *= 1.3f;
       }
       rageTask.bumpRage(amount);
     } else {
@@ -430,7 +432,7 @@ public class StrifeMob {
   }
 
   public boolean cacheUpdateRequired() {
-    return buffsChanged || lastEquipmentUpdate != equipmentCache.getLastUpdate() ||
+    return reCache || lastEquipmentUpdate != equipmentCache.getLastUpdate() ||
         (getChampion() != null && getChampion().getLastChanged() != lastChampionUpdate);
   }
 
@@ -438,7 +440,7 @@ public class StrifeMob {
     if (cacheUpdateRequired()) {
       statCache.clear();
       statCache.putAll(getFinalStats());
-      buffsChanged = false;
+      reCache = false;
       lastEquipmentUpdate = equipmentCache.getLastUpdate();
       if (getChampion() != null) {
         lastChampionUpdate = getChampion().getLastChanged();
@@ -492,19 +494,11 @@ public class StrifeMob {
 
   public void forceSetStat(StrifeStat stat, float value) {
     baseStats.put(stat, value);
-    buffsChanged = true;
+    reCache = true;
   }
 
   public LivingEntity getEntity() {
     return livingEntity.get();
-  }
-
-  public EntityAbilitySet getAbilitySet() {
-    return abilitySet;
-  }
-
-  public boolean isUseEquipment() {
-    return useEquipment;
   }
 
   public void setUseEquipment(boolean useEquipment) {
@@ -559,7 +553,7 @@ public class StrifeMob {
       buff.cancel();
     }
     runningBuffs.clear();
-    buffsChanged = true;
+    reCache = true;
   }
 
   public Map<StrifeStat, Float> getFinalStats() {
@@ -569,10 +563,6 @@ public class StrifeMob {
     }
     return StatUpdateManager.combineMaps(baseStats, getBuffStats(),
         equipmentCache.getCombinedStats());
-  }
-
-  public Map<StrifeStat, Float> getBaseStats() {
-    return baseStats;
   }
 
   public void setStats(Map<StrifeStat, Float> stats) {
@@ -630,7 +620,7 @@ public class StrifeMob {
   public void addBuff(LoadedBuff loadedBuff, UUID source, float duration) {
     Buff buff = LoadedBuff.toRunningBuff(this, source, duration, loadedBuff);
     Buff oldBuff = getBuff(buff.getId(), buff.getSource());
-    buffsChanged = true;
+    reCache = true;
     if (oldBuff == null) {
       buff.refreshBuff(duration);
       runningBuffs.add(buff);
@@ -662,11 +652,10 @@ public class StrifeMob {
   public void removeBuff(Buff buff) {
     buff.cancel();
     runningBuffs.remove(buff);
-    buffsChanged = true;
+    reCache = true;
     if (buff.getBuffStats().containsKey(StrifeStat.BARRIER)) {
       getStat(StrifeStat.BARRIER);
       StatUtil.getStat(this, StrifeStat.BARRIER);
-
     }
   }
 
@@ -674,11 +663,11 @@ public class StrifeMob {
     if (buff.getStacks() <= stacks) {
       buff.cancel();
       runningBuffs.remove(buff);
-      buffsChanged = true;
+      reCache = true;
       return;
     }
     buff.setStacks(buff.getStacks() - stacks);
-    buffsChanged = true;
+    reCache = true;
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {
@@ -696,10 +685,6 @@ public class StrifeMob {
       }
     }
     return false;
-  }
-
-  public EquipmentCache getEquipmentCache() {
-    return equipmentCache;
   }
 
   public Set<LoreAbility> getLoreAbilities() {
@@ -759,10 +744,11 @@ public class StrifeMob {
     minion.forceSetStat(StrifeStat.HEALTH, newMaxLife);
     minion.forceSetStat(StrifeStat.HEALTH_MULT, 0);
     minion.setMaxLife(newMaxLife);
+    //noinspection DataFlowIssue
     minion.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(newMaxLife);
     minion.getEntity().setHealth(newMaxLife);
     minion.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
-    minion.forceSetStat(StrifeStat.ACCURACY, StatUtil.getAccuracy(this));
+    minion.forceSetStat(StrifeStat.ACCURACY, StatUtil.getStat(this, StrifeStat.ACCURACY));
     SpecialStatusUtil.setMobLevel(minion.getEntity(), getLevel());
     ChunkUtil.setDespawnOnUnload(minion.getEntity());
     minion.setMaster(this, lifespan);
@@ -803,6 +789,7 @@ public class StrifeMob {
     if (minionTask.getLifespan() < 1) {
       return 0;
     }
+    //noinspection DataFlowIssue
     return livingEntity.get().getHealth() * (1 + (double) minionTask.getLifespan() / 10D);
   }
 

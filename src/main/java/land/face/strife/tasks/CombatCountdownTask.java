@@ -2,13 +2,10 @@ package land.face.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
-import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.lang.ref.WeakReference;
-import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -22,9 +19,7 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -43,7 +38,6 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   // 128 8 3
   private static final String healthBarBase = "ᛤ";
-  private static final Random random = new Random();
 
   private final Player player;
 
@@ -144,8 +138,8 @@ public class CombatCountdownTask extends BukkitRunnable {
       targetWasAlive = false;
       ticks = Math.max(DEATH_TICKS, ticks);
       String title;
-      if (Math.random() < 0.025) {
-        title = DamageUtil.sillyDeathMsgs.get(random.nextInt(DamageUtil.sillyDeathMsgs.size()));
+      if (StrifePlugin.RNG.nextFloat() < 0.025) {
+        title = DamageUtil.sillyDeathMsgs.get(StrifePlugin.RNG.nextInt(DamageUtil.sillyDeathMsgs.size()));
       } else {
         title = DamageUtil.deathMessage;
       }
@@ -221,8 +215,8 @@ public class CombatCountdownTask extends BukkitRunnable {
     for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
       xpTotal += champion.getDetailsContainer().getExpValues().get(type);
     }
-    xpTotal *= 0.12;
-    xpTotal += Math.pow(champion.getDetailsContainer().getTotalExp(), 0.6);
+    xpTotal *= 0.12f;
+    xpTotal += (float) Math.pow(champion.getDetailsContainer().getTotalExp(), 0.6f);
     xpTotal *= (float) prayerYes / (prayerYes + prayerNo);
     if (xpTotal > 1) {
       StrifePlugin.getInstance().getSkillExperienceManager().addExperience(

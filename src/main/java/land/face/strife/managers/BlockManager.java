@@ -42,7 +42,6 @@ public class BlockManager {
   private final StrifePlugin plugin;
 
   private final Map<UUID, BlockTimer> blockTimers = new HashMap<>();
-  private final Random random = new Random();
 
   private static final double MAX_BLOCK_CHANCE = 0.55;
   public static final int BLOCK_TICK = 4;
@@ -137,7 +136,7 @@ public class BlockManager {
       blockChance *= PHYSICAL_BLOCK_CHANCE_MULT;
     }
 
-    if (random.nextDouble() > blockChance) {
+    if (StrifePlugin.RNG.nextDouble() > blockChance) {
       return false;
     }
 

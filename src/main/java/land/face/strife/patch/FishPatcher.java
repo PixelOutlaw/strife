@@ -6,7 +6,6 @@ import com.destroystokyo.paper.entity.ai.GoalType;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Predicate;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
@@ -61,7 +60,6 @@ public class FishPatcher {
     private LivingEntity currentAttacker = null;
     private int cooldownMove;
     private int cooldownAttack;
-    private final Random random = new Random(System.currentTimeMillis());
 
     public AttackEntityGoal(Mob mob) {
       this.mob = mob;
@@ -135,7 +133,7 @@ public class FishPatcher {
         mob.lookAt(entity);
         this.resetCooldownAttack();
         mob.getWorld().playSound(mob.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, 5.0F,
-            (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+            (StrifePlugin.RNG.nextFloat() - StrifePlugin.RNG.nextFloat()) * 0.2F + 1.0F);
         mob.swingMainHand();
         mob.swingOffHand();
         double baseDamage = 8;

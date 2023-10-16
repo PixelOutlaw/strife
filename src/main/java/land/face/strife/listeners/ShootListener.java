@@ -43,12 +43,10 @@ import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.ProjectileUtil;
-import land.face.strife.util.ProjectileUtil.IgnoreState;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
@@ -267,43 +265,10 @@ public class ShootListener implements Listener {
     player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 1f, 1f);
   }
 
-  @EventHandler
-  public void onDragonFireballHit(final EnderDragonFireballHitEvent event) {
-    event.getAreaEffectCloud().remove();
-    event.setCancelled(true);
-
-    if (!(event.getEntity().getShooter() instanceof LivingEntity)) {
-      return;
-    }
-
-    List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
-    if (hitEffects.isEmpty()) {
-      return;
-    }
-
-    StrifeMob caster = plugin.getStrifeMobManager()
-        .getStatMob((LivingEntity) event.getEntity().getShooter());
-    Location loc = event.getEntity().getLocation().clone()
-        .add(event.getEntity().getLocation().getDirection().multiply(-0.25));
-
-    for (Effect effect : hitEffects) {
-      if (effect instanceof LocationEffect) {
-        ((LocationEffect) effect).applyAtLocation(caster, loc);
-      }
-    }
-  }
-
   @EventHandler(priority = EventPriority.HIGH)
   public void onEffectProjectileHit(final ProjectileHitEvent event) {
-    if (ProjectileUtil.getHitEffects(event.getEntity()) == null) {
+    if (event.isCancelled() || ProjectileUtil.getHitEffects(event.getEntity()) == null) {
       return;
-    }
-    if (event.getHitEntity() != null) {
-      if (ProjectileUtil.getIgnoreStatus(event.getEntity(),
-          event.getHitEntity().getEntityId()) == IgnoreState.IGNORED) {
-        event.setCancelled(true);
-        return;
-      }
     }
     TargetResponse response;
     if (!ProjectileUtil.isContactTrigger(event.getEntity())) {
@@ -320,8 +285,7 @@ public class ShootListener implements Listener {
         if (event.getHitBlockFace() != null) {
           effectLocation.add(event.getHitBlockFace().getDirection());
         } else {
-          effectLocation.add(
-              event.getEntity().getLocation().getDirection().clone().multiply(-1.1));
+          effectLocation.add(event.getEntity().getLocation().getDirection().clone().multiply(-1.1));
         }
       } else if (event.getHitEntity() != null) {
         effectLocation = event.getEntity().getLocation().clone();
@@ -339,10 +303,9 @@ public class ShootListener implements Listener {
       return;
     }
 
-    plugin.getEffectManager().processEffectList(caster, response, hitEffects,
-        ProjectileUtil.getShotId(event.getEntity()));
-    if (event.getHitBlock() != null) {
-      event.getEntity().remove();
+    plugin.getEffectManager().processEffectList(caster, response, hitEffects, ProjectileUtil.getShotId(event.getEntity()));
+    if (event.getHitEntity() != null) {
+      ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
     }
   }
 

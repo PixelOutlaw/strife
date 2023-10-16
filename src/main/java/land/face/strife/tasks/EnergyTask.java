@@ -127,10 +127,10 @@ public class EnergyTask extends BukkitRunnable {
   private float getHungerPotionMult(LivingEntity livingEntity) {
     float ratio = 1;
     if (livingEntity.hasPotionEffect(PotionEffectType.SATURATION)) {
-      ratio += 0.1 * (livingEntity.getPotionEffect(PotionEffectType.SATURATION).getAmplifier() + 1);
+      ratio += (float) (0.1 * (livingEntity.getPotionEffect(PotionEffectType.SATURATION).getAmplifier() + 1));
     }
     if (livingEntity.hasPotionEffect(PotionEffectType.HUNGER)) {
-      ratio -= 0.1 * (livingEntity.getPotionEffect(PotionEffectType.HUNGER).getAmplifier() + 1);
+      ratio -= (float) (0.1 * (livingEntity.getPotionEffect(PotionEffectType.HUNGER).getAmplifier() + 1));
     }
     return ratio;
   }

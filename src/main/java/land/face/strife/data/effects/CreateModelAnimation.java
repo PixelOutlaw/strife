@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.TargetingUtil;
 import lombok.Setter;
@@ -68,12 +69,12 @@ public class CreateModelAnimation extends LocationEffect {
     Location loc = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
 
     if (randomRotation) {
-      loc.setYaw((float) (Math.random() * 360));
+      loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
     } else {
       if (rotationLock) {
         loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
       } else {
-        loc.setYaw((float) (Math.random() * 360));
+        loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
       }
     }
     loc.setPitch(0);
@@ -142,12 +143,12 @@ public class CreateModelAnimation extends LocationEffect {
     }
 
     if (randomRotation) {
-      loc.setYaw((float) (Math.random() * 360));
+      loc.setYaw(StrifePlugin.RNG.nextFloat() * 360);
     } else {
       if (rotationLock) {
         loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
       } else {
-        loc.setYaw((float) (Math.random() * 360));
+        loc.setYaw(StrifePlugin.RNG.nextFloat() * 360);
       }
     }
     loc.setPitch(0);

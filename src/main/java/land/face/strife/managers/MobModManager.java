@@ -35,8 +35,6 @@ public class MobModManager {
   private double MOB_MOD_UP_CHANCE;
   public static int MOB_MOD_MAX_MODS;
 
-  private static Random random = new Random();
-
   public MobModManager(MasterConfiguration settings, EntityEquipmentManager equipmentManager) {
     this.equipmentManager = equipmentManager;
     MOB_MOD_UP_CHANCE = settings.getDouble("config.leveled-monsters.add-mod-chance", 0.1);
@@ -105,7 +103,7 @@ public class MobModManager {
       for (MobMod mod : mods) {
         maxWeight += mod.getWeight();
       }
-      int randWeight = random.nextInt(maxWeight + 1);
+      int randWeight = StrifePlugin.RNG.nextInt(maxWeight + 1);
       int curWeight = 0;
       for (MobMod mod : mods) {
         curWeight += mod.getWeight();
@@ -140,7 +138,7 @@ public class MobModManager {
     int mods = 0;
     max = Math.min(max, MOB_MOD_MAX_MODS);
     for (int i = 0; i < max; i++) {
-      if (random.nextDouble() < MOB_MOD_UP_CHANCE) {
+      if (StrifePlugin.RNG.nextDouble() < MOB_MOD_UP_CHANCE) {
         mods++;
         continue;
       }

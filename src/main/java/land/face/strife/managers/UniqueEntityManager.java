@@ -183,13 +183,13 @@ public class UniqueEntityManager {
     } else if (le instanceof Slime) {
       int size = uniqueEntity.getSize();
       if (size < 1) {
-        size = 2 + (int) (Math.random() * 3);
+        size = 2 + (int) (StrifePlugin.RNG.nextFloat() * 3);
       }
       ((Slime) le).setSize(size);
     } else if (le instanceof Phantom) {
       int size = uniqueEntity.getSize();
       if (size < 1) {
-        size = 1 + (int) (Math.random() * 3);
+        size = 1 + (int) (StrifePlugin.RNG.nextFloat() * 3);
       }
       ((Phantom) le).setSize(size);
     } else if (le instanceof Rabbit) {

@@ -38,6 +38,7 @@ import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
 import java.io.File;
+import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,6 +146,7 @@ import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.StealthManager;
 import land.face.strife.managers.StrifeAttributeManager;
 import land.face.strife.managers.StrifeMobManager;
+import land.face.strife.managers.TopBarManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.managers.VagabondManager;
 import land.face.strife.managers.WSEManager;
@@ -196,6 +198,7 @@ import org.bukkit.util.Vector;
 public class StrifePlugin extends FacePlugin {
 
   private static StrifePlugin instance;
+  public static SecureRandom RNG;
   @Getter
   private static boolean glowEnabled;
 
@@ -219,6 +222,8 @@ public class StrifePlugin extends FacePlugin {
   private IndicatorManager indicatorManager;
   @Getter
   private PrayerManager prayerManager;
+  @Getter
+  private TopBarManager topBarManager;
   @Getter
   private ExperienceManager experienceManager;
   @Getter
@@ -332,6 +337,7 @@ public class StrifePlugin extends FacePlugin {
   @Override
   public void enable() {
     instance = this;
+    RNG = new SecureRandom();
     debugPrinter = new PluginLogger(this);
     try {
       logLevel = LogLevel.valueOf(settings.getString("config.log-level", "ERROR"));
@@ -398,6 +404,7 @@ public class StrifePlugin extends FacePlugin {
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager(this);
     prayerManager = new PrayerManager(this);
+    topBarManager = new TopBarManager(this);
     equipmentManager = new EntityEquipmentManager();
     buildEquipment();
     displayManager = new DisplayManager(this);
@@ -696,6 +703,7 @@ public class StrifePlugin extends FacePlugin {
 
 
     for (Player player : Bukkit.getOnlinePlayers()) {
+      topBarManager.setupPlayer(player);
       championManager.getChampion(player).recombineCache(this);
       statUpdateManager.updateAllAttributes(player);
       boostManager.updateGlobalBoostStatus(player);

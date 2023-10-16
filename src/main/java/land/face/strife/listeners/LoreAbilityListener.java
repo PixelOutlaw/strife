@@ -148,7 +148,7 @@ public class LoreAbilityListener implements Listener {
       return;
     }
 
-    boolean trigger = Math.random() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
+    boolean trigger = StrifePlugin.RNG.nextFloat() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
             event.getDamageModifiers().getDamageReductionRatio());
     if (trigger) {
       HashSet<LoreAbility> abilitySet = new HashSet<>(attacker.getLoreAbilities(ON_HIT));
@@ -176,7 +176,7 @@ public class LoreAbilityListener implements Listener {
     if (attacker.isMasterOf(defender)) {
       return;
     }
-    boolean trigger = Math.random() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
+    boolean trigger = StrifePlugin.RNG.nextFloat() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
         event.getDamageModifiers().getDamageReductionRatio());
     if (trigger) {
       HashSet<LoreAbility> abilitySet = new HashSet<>(attacker.getLoreAbilities(EARLY_ON_HIT));

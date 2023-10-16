@@ -1,8 +1,5 @@
 package land.face.strife.util;
 
-import static org.bukkit.potion.PotionEffectType.FAST_DIGGING;
-import static org.bukkit.potion.PotionEffectType.SLOW_DIGGING;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -149,10 +146,18 @@ public class StatUtil {
       case BARRIER_REGEN -> {
         if (mob.hasTrait(StrifeTrait.OVERSHIELD) && mob.getEntity().getHealth() > mob.getMaxLife() - 0.01) {
           float amount = stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
-          amount += getStat(mob, StrifeStat.REGENERATION) * 0.3;
+          amount += getStat(mob, StrifeStat.REGENERATION) * 0.3f;
           return amount;
         } else
           return stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
+      }
+      case ACCURACY -> {
+        float amount = stats.getOrDefault(StrifeStat.ACCURACY, 0f) *
+            (1 + stats.getOrDefault(StrifeStat.ACCURACY_MULT, 0f) / 100);
+        if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.FOUR)) {
+          amount *= 1.06f;
+        }
+        return amount;
       }
     }
     return stats.getOrDefault(stat, 0f);
@@ -184,18 +189,6 @@ public class StatUtil {
   public static float getAttackTime(StrifeMob ae) {
 
     float attackTime = DamageUtil.BASE_ATTACK_SECONDS;
-    int potionAmp = 0;
-    if (ae.getEntity().hasPotionEffect(FAST_DIGGING)) {
-      potionAmp += ae.getEntity().getPotionEffect(FAST_DIGGING).getAmplifier() + 1;
-    }
-    if (ae.getEntity().hasPotionEffect(SLOW_DIGGING)) {
-      potionAmp -= ae.getEntity().getPotionEffect(SLOW_DIGGING).getAmplifier() + 1;
-    }
-    if (potionAmp > 0) {
-      attackTime += Math.pow(0.9, potionAmp);
-    } else if (potionAmp < 0) {
-      attackTime += Math.pow(1.1, -potionAmp);
-    }
 
     attackTime *= (1f + ae.getFrost() / 10000f);
 
@@ -252,14 +245,6 @@ public class StatUtil {
 
   public static float getWardPen(StrifeMob ae) {
     return ae.getStat(StrifeStat.WARD_PENETRATION);
-  }
-
-  public static float getAccuracy(StrifeMob ae) {
-    float amount = ae.getStat(StrifeStat.ACCURACY) * (1f + (ae.getStat(StrifeStat.ACCURACY_MULT) / 100f));
-    if (plugin.getPrayerManager().isPrayerActive(ae.getEntity(), Prayer.FOUR)) {
-      amount *= 1.06;
-    }
-    return amount;
   }
 
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {

@@ -146,7 +146,7 @@ public class StealthManager {
     }
     player.spawnParticle(Particle.ASH, player.getEyeLocation(), 60, 12, 12, 12, 0);
     player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation(), 40, 7, 7, 7, 0);
-    double particles = Math.random() * BASE_STEALTH_PARTICLES;
+    double particles = StrifePlugin.RNG.nextFloat() * BASE_STEALTH_PARTICLES;
     if (MoveUtil.hasMoved(player)) {
       if (!player.isSneaking()) {
         particles *= MOVEMENT_PARTICLE_MULT;
@@ -160,7 +160,7 @@ public class StealthManager {
     particles = Math.min(Math.round(particles), MAX_STEALTH_PARTICLES);
     for (int i = 0; i < particles; i++) {
       Location newLoc = player.getLocation().clone()
-          .add(-0.7 + Math.random() * 1.4, Math.random() * 2, -0.7 + Math.random() * 1.4);
+          .add(-0.7 + StrifePlugin.RNG.nextFloat() * 1.4, StrifePlugin.RNG.nextFloat() * 2, -0.7 + StrifePlugin.RNG.nextFloat() * 1.4);
       newLoc.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, 89, 98, 98, 1);
     }
   }

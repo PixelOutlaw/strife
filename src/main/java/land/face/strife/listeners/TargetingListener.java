@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
@@ -24,18 +22,14 @@ import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.util.DamageUtil;
-import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
-import land.face.strife.util.ProjectileUtil.IgnoreState;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
@@ -57,7 +51,6 @@ import org.bukkit.util.Vector;
 public class TargetingListener implements Listener {
 
   private final StrifePlugin plugin;
-  private final Random random;
 
   private final float DETECTION_THRESHOLD;
   private final float BASE_AWARENESS_UNSEEN;
@@ -74,7 +67,6 @@ public class TargetingListener implements Listener {
 
   public TargetingListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    this.random = new Random();
     SNEAK_KEYS = new HashSet<>();
 
     DETECTION_THRESHOLD = (float) plugin.getSettings()
@@ -110,19 +102,9 @@ public class TargetingListener implements Listener {
       event.setCancelled(true);
       return;
     }
-    IgnoreState state = ProjectileUtil.getIgnoreStatus(event.getEntity(), event.getHitEntity().getEntityId());
-    switch (state) {
-      case IGNORED -> event.setCancelled(true);
-      case NONE -> {
-        boolean isFriendly = TargetingUtil.isFriendly(plugin.getStrifeMobManager().getStatMob(
-            (LivingEntity) event.getEntity().getShooter()), plugin.getStrifeMobManager().getStatMob(
-            (LivingEntity) event.getHitEntity()));
-        int entityId = event.getHitEntity().getEntityId();
-        ProjectileUtil.addIgnoredId(event.getEntity(), isFriendly ? entityId : -entityId);
-        if (isFriendly) {
-          event.setCancelled(true);
-        }
-      }
+    if (TargetingUtil.isFriendly((LivingEntity) event.getEntity().getShooter(), (LivingEntity) event.getHitEntity())) {
+      event.setCancelled(true);
+      ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
     }
   }
 
@@ -256,7 +238,7 @@ public class TargetingListener implements Listener {
       awareness *= lightMult;
       awareness -= stealthSkill * SNEAK_EFFECTIVENESS;
 
-      if (random.nextDouble() > awareness / DETECTION_THRESHOLD) {
+      if (StrifePlugin.RNG.nextDouble() > awareness / DETECTION_THRESHOLD) {
         event.setCancelled(true);
         if (distSquared <= MAX_EXP_RANGE_SQUARED) {
           float difficultyLevel = Math.min(stealthLevel + 10, mobLevel);

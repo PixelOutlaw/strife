@@ -41,6 +41,7 @@ public class DisplayManager {
   }
 
   public void reload() {
+    displaysMap.clear();
     for (String key : plugin.getDisplaysYaml().getKeys(false)) {
       try {
         DisplayContainer container = new DisplayContainer();

@@ -18,7 +18,6 @@
  */
 package land.face.strife.timers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import java.lang.ref.WeakReference;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
@@ -39,7 +37,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -50,7 +47,6 @@ public class RuneTimer extends BukkitRunnable {
   private final UUID savedUUID;
   private final RuneManager runeManager;
   private final Set<Hologram> runeHolograms = new HashSet<>();
-  private final Random random = new Random();
 
   private static final Map<Integer, Map<Integer, List<Vector>>> gigaMap = cacheRuneLocations();
 
@@ -109,7 +105,7 @@ public class RuneTimer extends BukkitRunnable {
         Hologram holo = DHAPI.createHologram(
             UUID.randomUUID().toString(),
             mob.getEntity().getEyeLocation().clone(),
-            List.of("#ICON: IRON_NUGGET {CustomModelData:" + (100 + random.nextInt(5) + "}"))
+            List.of("#ICON: IRON_NUGGET {CustomModelData:" + (100 + StrifePlugin.RNG.nextInt(5) + "}"))
         );
         runeHolograms.add(holo);
       }

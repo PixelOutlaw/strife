@@ -82,7 +82,7 @@ public class FishingListener implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-    if (Math.random() < mob.getStat(StrifeStat.AUTO_FISH_CHANCE) / 100) {
+    if (StrifePlugin.RNG.nextFloat() < mob.getStat(StrifeStat.AUTO_FISH_CHANCE) / 100) {
       event.setCancelled(true);
       AutoFishEvent autoFishEvent = new AutoFishEvent(mob, event.getHook().getLocation());
       Bukkit.getPluginManager().callEvent(autoFishEvent);
@@ -129,7 +129,7 @@ public class FishingListener implements Listener {
     speedBonus = Math.max(-75, speedBonus);
     float fishDivisor = 1f + (speedBonus / 100f);
     int minFishTime = 20 + (int) (180f / fishDivisor);
-    int maxFishTime = minFishTime + (int) (Math.random() * (200f / fishDivisor));
+    int maxFishTime = minFishTime + (int) (StrifePlugin.RNG.nextFloat() * (200f / fishDivisor));
 
     if (damaged) {
       minFishTime *= 4;
@@ -146,7 +146,7 @@ public class FishingListener implements Listener {
     hook.setApplyLure(false);
 
     //event.getHook().setWaitTime((int)
-    //    (minFishTime + (Math.random() * (maxFishTime - minFishTime))));
+    //    (minFishTime + (StrifePlugin.RNG.nextFloat() * (maxFishTime - minFishTime))));
   }
 
   private void consumeBait(StrifeMob mob) {
@@ -154,7 +154,7 @@ public class FishingListener implements Listener {
         mob.getEntity().getEquipment().getItemInOffHand().getType() != Material.WHEAT_SEEDS) {
       return;
     }
-    if (Math.random() < mob.getStat(StrifeStat.FISH_BAIT_KEEP) / 100) {
+    if (StrifePlugin.RNG.nextFloat() < mob.getStat(StrifeStat.FISH_BAIT_KEEP) / 100) {
       return;
     }
     PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager()
@@ -187,7 +187,7 @@ public class FishingListener implements Listener {
       String strippedLore = ChatColor.stripColor(loreLine);
       repairMod += Double.parseDouble(pattern.matcher(strippedLore).replaceAll(""));
     }
-    if (Math.random() < 0.05 / (repairMod / 100)) {
+    if (StrifePlugin.RNG.nextFloat() < 0.05 / (repairMod / 100)) {
       stack.setDurability((short) (stack.getDurability() + 1));
     }
   }

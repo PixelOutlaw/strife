@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.FangUtil;
 import org.bukkit.Location;
@@ -15,7 +16,6 @@ public class EvokerFangEffect extends LocationEffect {
   private final List<Effect> hitEffects = new ArrayList<>();
 
   private static final int MAX_GROUND_CHECK = 9;
-  private static final Random RANDOM = new Random();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -27,8 +27,8 @@ public class EvokerFangEffect extends LocationEffect {
     for (int i = 0; i < quantity; i++) {
       Location fangLoc = location.clone();
       fangLoc.add(0, 2, 0);
-      fangLoc.setX(fangLoc.getX() - spread + spread * 2 * RANDOM.nextFloat());
-      fangLoc.setZ(fangLoc.getZ() - spread + spread * 2 * RANDOM.nextFloat());
+      fangLoc.setX(fangLoc.getX() - spread + spread * 2 * StrifePlugin.RNG.nextFloat());
+      fangLoc.setZ(fangLoc.getZ() - spread + spread * 2 * StrifePlugin.RNG.nextFloat());
       if (fangLoc.getBlock().getType().isSolid()) {
         continue;
       }

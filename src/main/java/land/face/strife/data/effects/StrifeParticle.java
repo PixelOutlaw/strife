@@ -48,8 +48,6 @@ public class StrifeParticle extends LocationEffect {
   private ItemStack itemData = null;
   private BlockData blockData = null;
 
-  private static final Random random = new Random();
-
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     if (tickDuration > 0) {
@@ -210,8 +208,8 @@ public class StrifeParticle extends LocationEffect {
     int segments = (int) (6 * (angle / 90) * (1 + radius / 3));
     double startAngle = -angle * 0.5;
     double segmentAngle = angle / segments;
-    double verticalDirection = random.nextDouble() < 0.5 ? 1 : -1;
-    double startVerticalOffset = verticalDirection * offset * random.nextDouble() * 0.5;
+    double verticalDirection = StrifePlugin.RNG.nextDouble() < 0.5 ? 1 : -1;
+    double startVerticalOffset = verticalDirection * offset * StrifePlugin.RNG.nextDouble() * 0.5;
     double segmentOffset = (2 * startVerticalOffset) / segments;
     for (int i = 0; i <= segments; i++) {
       Vector newDirection = direction.clone();
@@ -231,8 +229,8 @@ public class StrifeParticle extends LocationEffect {
     int segments = (int) (6 * (angle / 90) * (1 + radius / 3));
     double startAngle = -angle * 0.5;
     double segmentAngle = angle / segments;
-    double verticalDirection = random.nextDouble() < 0.5 ? 1 : -1;
-    double startVerticalOffset = verticalDirection * offset * random.nextDouble() * 0.5;
+    double verticalDirection = StrifePlugin.RNG.nextDouble() < 0.5 ? 1 : -1;
+    double startVerticalOffset = verticalDirection * offset * StrifePlugin.RNG.nextDouble() * 0.5;
     double segmentOffset = (2 * startVerticalOffset) / segments;
     double segmentChunk = ((double) segments) * 0.25D;
     for (int i = 0; i <= segments; i++) {
@@ -313,8 +311,8 @@ public class StrifeParticle extends LocationEffect {
     if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
         || particle == Particle.SPELL_INSTANT) {
       for (int i = 0; i < quantity; i++) {
-        Location newLoc = location.clone().add(-spread + random.nextDouble() * spread * 2, -spread
-            + random.nextDouble() * spread * 2, -spread + random.nextDouble() * spread * 2);
+        Location newLoc = location.clone().add(-spread + StrifePlugin.RNG.nextDouble() * spread * 2, -spread
+            + StrifePlugin.RNG.nextDouble() * spread * 2, -spread + StrifePlugin.RNG.nextDouble() * spread * 2);
         location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
       }
     } else if (itemData != null) {

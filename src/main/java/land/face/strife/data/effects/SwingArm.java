@@ -1,5 +1,6 @@
 package land.face.strife.data.effects;
 
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.PlayerDataUtil;
 import org.bukkit.inventory.EquipmentSlot;
@@ -14,7 +15,7 @@ public class SwingArm extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     EquipmentSlot trueSlot;
     if (random) {
-      trueSlot = Math.random() > 0.5 ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+      trueSlot = StrifePlugin.RNG.nextFloat() > 0.5f ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
     } else {
       trueSlot = slot;
     }

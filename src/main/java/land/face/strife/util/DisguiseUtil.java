@@ -1,6 +1,7 @@
 package land.face.strife.util;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +18,7 @@ import me.libraryaddict.disguise.disguisetypes.watchers.AgeableWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.DroppedItemWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FoxWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.FrogWatcher;
+import me.libraryaddict.disguise.disguisetypes.watchers.ItemDisplayWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.MushroomCowWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.PandaWatcher;
 import me.libraryaddict.disguise.disguisetypes.watchers.ParrotWatcher;
@@ -30,6 +32,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Display.Billboard;
+import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Frog;
 import org.bukkit.entity.LivingEntity;
@@ -176,15 +180,37 @@ public class DisguiseUtil {
       miscDisguise.setReplaceSounds(true);
       FlagWatcher watcher = miscDisguise.getWatcher();
       try {
-        if (type == DisguiseType.DROPPED_ITEM) {
-          Material material = Material.valueOf(section.getString("material", "STONE"));
-          ItemStack stack = new ItemStack(material);
-          if (material == Material.PLAYER_HEAD) {
-            String base64 = section.getString("base64",
-                "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
-            stack = ItemUtil.withBase64(stack, base64);
+        switch (type) {
+          case DROPPED_ITEM -> {
+            Material material = Material.valueOf(section.getString("material", "STONE"));
+            ItemStack stack = new ItemStack(material);
+            if (material == Material.PLAYER_HEAD) {
+              String base64 = section.getString("base64",
+                  "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
+              stack = ItemUtil.withBase64(stack, base64);
+            }
+            ((DroppedItemWatcher) watcher).setItemStack(stack);
           }
-          ((DroppedItemWatcher) watcher).setItemStack(stack);
+          case ITEM_DISPLAY -> {
+            Material material = Material.valueOf(section.getString("material", "STONE"));
+            int modelData = section.getInt("model-data", 0);
+            ItemStack stack = new ItemStack(material);
+            ItemStackExtensionsKt.setCustomModelData(stack, modelData);
+            if (material == Material.PLAYER_HEAD) {
+              String base64 = section.getString("base64",
+                  "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");
+              stack = ItemUtil.withBase64(stack, base64);
+            }
+            Billboard billboard = Billboard.valueOf(section.getString("billboard", "FIXED"));
+            int brightness = section.getInt("brightness", -1);
+            if (brightness > -1) {
+              ((ItemDisplayWatcher) watcher).setBrightness(new Brightness(brightness, brightness));
+            }
+            ((ItemDisplayWatcher) watcher).setItemStack(stack);
+            ((ItemDisplayWatcher) watcher).setBillboard(billboard);
+            ((ItemDisplayWatcher) watcher).setInterpolationDelay(0);
+            ((ItemDisplayWatcher) watcher).setInterpolationDuration(1);
+          }
         }
       } catch (Exception e) {
         LogUtil.printWarning("Cannot load data for " + name);

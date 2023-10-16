@@ -1,14 +1,10 @@
 package land.face.strife.listeners;
 
-import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
-import static org.bukkit.potion.PotionEffectType.SLOW;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.stats.StrifeTrait;
@@ -25,6 +21,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class FallListener implements Listener {
@@ -48,6 +45,10 @@ public class FallListener implements Listener {
       return;
     }
     if (!(event.getEntity() instanceof Player player)) {
+      return;
+    }
+    if (((Player) event.getEntity()).hasPotionEffect(PotionEffectType.JUMP)) {
+      event.setCancelled(true);
       return;
     }
 
@@ -85,7 +86,7 @@ public class FallListener implements Listener {
       damage *= 100.0 / (100 + data.getLevelWithBonus());
     } else {
       damage *= 50.0 / (50 + data.getLevelWithBonus());
-      player.addPotionEffect(new PotionEffect(SLOW, 100, 0, true, false));
+      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 0, true, false));
     }
 
     if (mob.isInvincible()) {
@@ -93,8 +94,9 @@ public class FallListener implements Listener {
       return;
     }
 
-    if (player.hasPotionEffect(DAMAGE_RESISTANCE)) {
-      double level = ((Player) event.getEntity()).getPotionEffect(DAMAGE_RESISTANCE).getAmplifier();
+    if (player.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+      //noinspection DataFlowIssue
+      double level = ((Player) event.getEntity()).getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE).getAmplifier();
       damage *= 1 - (0.1 * (level + 1));
     }
 

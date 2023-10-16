@@ -28,7 +28,7 @@ public class PopoffUtil {
     data.setBackground(Hologram.TRANSPARENT);
     data.setTextHasShadow(false);
     data.setLocation(location.clone());
-    data.setScale(1);
+    data.setScale(startScale);
     data.setBrightness(new Brightness(9, 9));
     Hologram holo = FancyHologramsPlugin.get().getHologramManager().create(data);
     holo.showHologram(List.of());

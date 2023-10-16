@@ -1,18 +1,15 @@
 package land.face.strife.data.effects;
 
-import java.util.Random;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.StatUtil;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
 public class Charm extends Effect {
-
-  private static final Random random = new Random();
 
   private boolean overrideMaster;
   private float lifespanSeconds;
@@ -47,9 +44,9 @@ public class Charm extends Effect {
   private boolean rollCharmChance(StrifeMob caster, StrifeMob target) {
     int levelDiff = StatUtil.getMobLevel(caster.getEntity()) - StatUtil.getMobLevel(target.getEntity());
     if (levelDiff >= 0) {
-      return chance + levelDiff * chancePerLevel > random.nextDouble();
+      return chance + levelDiff * chancePerLevel > StrifePlugin.RNG.nextDouble();
     }
-    return chance - (levelDiff * chance * 0.1) > random.nextDouble();
+    return chance - (levelDiff * chance * 0.1) > StrifePlugin.RNG.nextDouble();
   }
 
   public void setLifespanSeconds(float lifespanSeconds) {

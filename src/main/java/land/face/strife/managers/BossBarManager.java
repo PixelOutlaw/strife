@@ -78,7 +78,7 @@ public class BossBarManager {
 
   private void randomizeBars(Map<Player, BarState> map) {
     for (BarState b : map.values()) {
-      b.getBar().setProgress(Math.random());
+      b.getBar().setProgress(StrifePlugin.RNG.nextFloat());
       b.getBar().setVisible(true);
     }
   }

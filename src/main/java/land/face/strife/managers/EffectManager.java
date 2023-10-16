@@ -96,6 +96,7 @@ import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -103,6 +104,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.intellij.lang.annotations.Subst;
 
 public class EffectManager {
 
@@ -846,14 +848,13 @@ public class EffectManager {
       }
       case SOUND -> {
         effect = new PlaySound();
-        Sound sound;
+        final String aaa = cs.getString("sound-type", "minecraft:custom.sfx.vine_boom");
         try {
-          sound = Sound.valueOf((cs.getString("sound-type")));
+          Sound vanillaSound = Sound.valueOf(aaa);
+          ((PlaySound) effect).setSound(vanillaSound.getKey().asString());
         } catch (Exception e) {
-          LogUtil.printWarning("Invalid sound effect type in effect " + key + ". Skipping.");
-          return;
+          ((PlaySound) effect).setSound(aaa);
         }
-        ((PlaySound) effect).setSound(sound);
         ((PlaySound) effect).setVolume((float) cs.getDouble("volume", 1));
         ((PlaySound) effect).setPitch((float) cs.getDouble("pitch", 1));
       }

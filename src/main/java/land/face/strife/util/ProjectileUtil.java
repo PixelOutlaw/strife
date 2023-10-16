@@ -1,15 +1,12 @@
 package land.face.strife.util;
 
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.stats.StrifeStat;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -34,14 +31,11 @@ public class ProjectileUtil {
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
   private static final Map<Projectile, Boolean> APPLY_ON_HIT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
-  private static final Map<Projectile, List<Integer>> IGNORED_IDS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
   private static final Map<Projectile, Boolean> ABILITY_PROJECTILE = new WeakHashMap<>();
 
   private static final ItemStack wandProjectile = buildWandProjectile();
   private static final ItemStack bulletProjectile = buildBulletProjectile();
-
-  private static final Random RANDOM = new Random(System.currentTimeMillis());
 
   public static void setContactTrigger(Projectile projectile) {
     CONTACT_TRIGGER.put(projectile, true);
@@ -83,7 +77,7 @@ public class ProjectileUtil {
     if (chance > 0) {
       int maxPuncture = 0;
       while (maxPuncture < 3) {
-        if (RANDOM.nextDouble() > chance) {
+        if (StrifePlugin.RNG.nextDouble() > chance) {
           break;
         }
         maxPuncture++;
@@ -112,36 +106,21 @@ public class ProjectileUtil {
     HIT_EFFECTS.put(projectile, effects);
   }
 
-  public static IgnoreState getIgnoreStatus(Projectile projectile, int entityId) {
-    if (!IGNORED_IDS.containsKey(projectile)) {
-      return IgnoreState.NONE;
-    }
-    List<Integer> values = IGNORED_IDS.get(projectile);
-    if (values.contains(entityId)) {
-      return IgnoreState.IGNORED;
-    }
-    if (values.contains(-entityId)) {
-      return IgnoreState.ALLOWED;
-    }
-    return IgnoreState.NONE;
-  }
-
-  public static void addIgnoredId(Projectile projectile, int entityId) {
-    if (!IGNORED_IDS.containsKey(projectile)) {
-      IGNORED_IDS.put(projectile, new ArrayList<>());
-    }
-    IGNORED_IDS.get(projectile).add(entityId);
-  }
-
   public static List<Effect> getHitEffects(Projectile projectile) {
     return HIT_EFFECTS.getOrDefault(projectile, null);
+  }
+
+  public static void disableCollision(Projectile projectile, LivingEntity entity) {
+    entity.getCollidableExemptions().add(projectile.getUniqueId());
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+        entity.getCollidableExemptions().remove(projectile.getUniqueId()),200L);
   }
 
   public static int getTotalProjectiles(double initialProjectiles, double multiShot) {
     double projectiles = initialProjectiles;
     if (multiShot > 0) {
       projectiles *= 1 + (multiShot / 100);
-      if (projectiles % 1 >= RANDOM.nextDouble()) {
+      if (projectiles % 1 >= StrifePlugin.RNG.nextDouble()) {
         projectiles++;
       }
       return (int) Math.floor(projectiles);
@@ -283,9 +262,9 @@ public class ProjectileUtil {
     if (spread == 0) {
       return direction.add(new Vector(0, verticalBonus, 0));
     }
-    double xOff = -spread + spread * 2 * Math.random();
-    double yOff = -spread + spread * 2 * Math.random();
-    double zOff = -spread + spread * 2 * Math.random();
+    double xOff = -spread + spread * 2 * StrifePlugin.RNG.nextFloat();
+    double yOff = -spread + spread * 2 * StrifePlugin.RNG.nextFloat();
+    double zOff = -spread + spread * 2 * StrifePlugin.RNG.nextFloat();
     return direction.add(new Vector(xOff, verticalBonus + yOff, zOff));
   }
 
@@ -329,11 +308,5 @@ public class ProjectileUtil {
     ItemStack stack = new ItemStack(Material.POLISHED_BLACKSTONE_BUTTON);
     ItemStackExtensionsKt.setCustomModelData(stack, 100);
     return stack;
-  }
-
-  public enum IgnoreState {
-    ALLOWED,
-    IGNORED,
-    NONE
   }
 }

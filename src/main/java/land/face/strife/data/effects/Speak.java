@@ -2,7 +2,7 @@ package land.face.strife.data.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import org.bukkit.entity.Player;
 
@@ -13,8 +13,7 @@ public class Speak extends Effect {
 	@Override
 	public void apply(StrifeMob caster, StrifeMob target) {
 		if (target.getEntity() instanceof Player) {
-			MessageUtils.sendMessage(target.getEntity(),
-					messages.get(ThreadLocalRandom.current().nextInt(messages.size())));
+			MessageUtils.sendMessage(target.getEntity(), messages.get(StrifePlugin.RNG.nextInt(messages.size())));
 		}
 	}
 

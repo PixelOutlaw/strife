@@ -5,6 +5,7 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.timers.FallingBlockTimer;
 import land.face.strife.util.SpecialStatusUtil;
@@ -93,8 +94,8 @@ public class ShootBlock extends LocationEffect {
 
   private void applySpread(Vector direction, double spread) {
     direction.add(new Vector(
-        spread - 2 * spread * Math.random(),
-        spread - 2 * spread * Math.random() + verticalBonus,
-        spread - 2 * spread * Math.random()));
+        spread - 2 * spread * StrifePlugin.RNG.nextFloat(),
+        spread - 2 * spread * StrifePlugin.RNG.nextFloat() + verticalBonus,
+        spread - 2 * spread * StrifePlugin.RNG.nextFloat()));
   }
 }
