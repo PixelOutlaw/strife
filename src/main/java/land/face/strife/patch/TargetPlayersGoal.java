@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.function.Predicate;
@@ -27,18 +28,22 @@ public class TargetPlayersGoal implements Goal<Mob> {
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
-  private final Mob mob;
+  private final WeakReference<Mob> mob;
   private long retargetTimestamp = 0;
 
   public TargetPlayersGoal(Mob mob) {
-    this.mob = mob;
-    this.mob.getPathfinder().setCanPassDoors(true);
-    this.mob.getPathfinder().setCanOpenDoors(true);
-    this.mob.getPathfinder().setCanFloat(true);
+    this.mob = new WeakReference<>(mob);
+    mob.getPathfinder().setCanPassDoors(true);
+    mob.getPathfinder().setCanOpenDoors(true);
+    mob.getPathfinder().setCanFloat(true);
   }
 
   @Override
   public boolean shouldActivate() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return false;
+    }
     if (mob.getTarget() == null && retargetTimestamp < System.currentTimeMillis()) {
       LivingEntity target = getClosestTarget();
       if (target == null) {
@@ -81,6 +86,10 @@ public class TargetPlayersGoal implements Goal<Mob> {
   }
 
   private LivingEntity getClosestTarget() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return null;
+    }
     retargetTimestamp = System.currentTimeMillis() + 800;
     double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
 

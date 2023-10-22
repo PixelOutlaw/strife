@@ -1,10 +1,12 @@
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,7 +24,7 @@ public class SpawnListener implements Listener {
     SKELETON_WAND = buildSkeletonWand();
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGH)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
     if (event.isCancelled() || event.getEntity().hasMetadata("NPC") ||
         event.getEntity().hasMetadata("pet") ||
@@ -33,6 +35,16 @@ public class SpawnListener implements Listener {
     }
     event.setCancelled(true);
     // See git history for world level based spawning
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onSpawnerMobSpawn(CreatureSpawnEvent event) {
+    if (event.isCancelled() || event.getSpawnReason() != SpawnReason.SPAWNER) {
+      return;
+    }
+    if (event.getEntity().getType() != EntityType.VILLAGER) {
+      ChunkUtil.setDespawnOnUnload(event.getEntity());
+    }
   }
 
   static ItemStack buildSkeletonWand() {

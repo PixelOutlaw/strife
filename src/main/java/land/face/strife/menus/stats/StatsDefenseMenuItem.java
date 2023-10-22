@@ -52,7 +52,7 @@ public class StatsDefenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
   public static final String PER_TEN = ChatColor.GRAY + "/10s";
-  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
+  private final Map<Player, ItemStack> cachedIcon = new HashMap<>();
 
   StatsDefenseMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), new ItemStack(Material.BARRIER));
@@ -79,16 +79,15 @@ public class StatsDefenseMenuItem extends MenuItem {
     lore.add(breakLine);
     if (!mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && mob.getMaxBarrier() > 0) {
       lore.add(addStat("Maximum Barrier: ", StatUtil.getStat(mob, StrifeStat.BARRIER), INT_FORMAT));
-      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN,
-          ONE_DECIMAL));
+      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN, INT_FORMAT));
       if (mob.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(addStat("Barrier Regeneration: ", StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN), PER_TEN, TWO_DECIMAL));
+        lore.add(addStat("Barrier Regeneration: ", StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN), PER_TEN, INT_FORMAT));
       }
       lore.add(breakLine);
     }
 
     lore.add(addStat("Maximum Life: ", mob.getMaxLife(), INT_FORMAT));
-    lore.add(addStat("Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, TWO_DECIMAL));
+    lore.add(addStat("Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, INT_FORMAT));
     if (mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
       lore.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));

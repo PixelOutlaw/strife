@@ -17,6 +17,7 @@ import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,8 +29,9 @@ public class CombatCountdownTask extends BukkitRunnable {
   // TICKS EVERY 4 SERVER TICKS, 0.2s
   private static final int BUMP_TICKS = 60;
   private static final int DEATH_TICKS = 8;
-  private final WeakReference<StrifeMob> parentMob;
-  private WeakReference<StrifeMob> targetMob;
+  private final StrifeMob parentMob;
+  private StrifeMob targetMob;
+  @Getter
   private boolean pvp = false;
   private int ticks;
 
@@ -48,8 +50,8 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   public CombatCountdownTask(StrifeMob parentMob, StrifeMob targetMob) {
     manager = StrifePlugin.getInstance().getBossBarManager();
-    this.parentMob = new WeakReference<>(parentMob);
-    this.targetMob = new WeakReference<>(targetMob);
+    this.parentMob = parentMob;
+    this.targetMob = targetMob;
     ticks = BUMP_TICKS;
     targetWasAlive = targetMob != null;
     player = parentMob.getEntity() instanceof Player ? (Player) parentMob.getEntity() : null;
@@ -62,7 +64,7 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   @Override
   public void run() {
-    StrifeMob mob = parentMob.get();
+    StrifeMob mob = parentMob;
     if (mob == null || mob.getEntity() == null) {
       cancel();
       return;
@@ -82,20 +84,20 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
 
-    StrifeMob strifeMob = targetMob.get();
+    StrifeMob strifeMob = targetMob;
     if (strifeMob != null) {
-      if (strifeMob.getEntity().getWorld() != parentMob.get().getEntity().getWorld()) {
+      if (strifeMob.getEntity().getWorld() != parentMob.getEntity().getWorld()) {
         if ("Graveyard".equals(strifeMob.getEntity().getWorld())) {
           targetWasAlive = false;
           updateStatus(strifeMob);
-          targetMob = new WeakReference<>(null);
+          targetMob = null;
         } else {
           clearBars();
         }
       } else {
         updateStatus(strifeMob);
         if (!targetWasAlive) {
-          targetMob = new WeakReference<>(null);
+          targetMob = null;
         }
       }
     }
@@ -106,7 +108,7 @@ public class CombatCountdownTask extends BukkitRunnable {
     if (player != null) {
       ToastUtils.sendToast(player, StatUtil.COMBAT_EXIT_TOAST, ItemUtils.BLANK, ToastStyle.INFO);
       awardSkillExp(parent);
-      StrifeMob target = targetMob.get();
+      StrifeMob target = targetMob;
       if (target != null && target.getEntity() != null && target.getEntity().isValid()) {
         clearBars();
       }
@@ -159,7 +161,7 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   public void bump(StrifeMob mob) {
     if (mob != null) {
-      targetMob = new WeakReference<>(mob);
+      targetMob = mob;
       targetWasAlive = mob.getEntity().isValid();
     }
     ticks = BUMP_TICKS;
@@ -167,10 +169,6 @@ public class CombatCountdownTask extends BukkitRunnable {
 
   public void setPvp() {
     pvp = true;
-  }
-
-  public boolean isPvp() {
-    return pvp;
   }
 
   private String createBarTitle(StrifeMob target) {
@@ -204,7 +202,7 @@ public class CombatCountdownTask extends BukkitRunnable {
   }
 
   public void awardSkillExp(StrifeMob mob) {
-    Champion champion = mob.getChampion();
+    Champion champion = StrifePlugin.getInstance().getChampionManager().getChampionSoft((Player) mob.getEntity());
     if (champion == null) {
       return;
     }

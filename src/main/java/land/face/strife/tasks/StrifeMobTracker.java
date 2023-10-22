@@ -19,11 +19,10 @@
 package land.face.strife.tasks;
 
 import java.util.Map.Entry;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.LogUtil;
-import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class StrifeMobTracker extends BukkitRunnable {
@@ -36,21 +35,16 @@ public class StrifeMobTracker extends BukkitRunnable {
 
   @Override
   public void run() {
-    int size = plugin.getStrifeMobManager().getMobs().size();
-    //LogUtil.printInfo("Current StrifeMobs: " + size);
-    for (Entry<UUID, StrifeMob> entry : plugin.getStrifeMobManager().getMobs().entrySet()) {
-      if (entry.getValue().getEntity() == null) {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->
-            plugin.getStrifeMobManager().getMobs().remove(entry.getKey()), 500L);
-        continue;
-      }
-      if (entry.getValue().isFlaggedForDeletion()) {
-        continue;
-      }
-      if (!entry.getValue().getEntity().isValid()) {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->
-            plugin.getStrifeMobManager().getMobs().remove(entry.getKey()), 2000L);
+    // TODO: something is keeping living entities in memory...
+    plugin.getStrifeMobManager().getMobs().entrySet().removeIf(entry ->
+        entry.getValue() == null || entry.getValue().getExpiryAge() > 2);
+    for (Entry<LivingEntity, StrifeMob> entry : plugin.getStrifeMobManager().getMobs().entrySet()) {
+      if (!entry.getKey().isValid()) {
+        entry.getValue().setExpiryAge(entry.getValue().getExpiryAge() + 1);
+      } else {
+        entry.getValue().setExpiryAge(0);
       }
     }
+    LogUtil.printInfo("Current StrifeMobs: " + plugin.getStrifeMobManager().getMobs().size());
   }
 }

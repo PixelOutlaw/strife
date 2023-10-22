@@ -14,6 +14,7 @@ import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ItemDataBundle;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
@@ -29,8 +30,8 @@ import org.bukkit.inventory.ItemStack;
 public class StrifeMobManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, StrifeMob> trackedEntities = new WeakHashMap<>();
 
+  private final WeakHashMap<LivingEntity, StrifeMob> trackedEntities = new WeakHashMap<>();
   private final String levelReqGeneric;
   private final float dualWieldAttackSpeed;
   private final Map<String, String> levelReqMap = new HashMap<>();
@@ -55,7 +56,7 @@ public class StrifeMobManager {
     }
   }
 
-  public Map<UUID, StrifeMob> getMobs() {
+  public WeakHashMap<LivingEntity, StrifeMob> getMobs() {
     return trackedEntities;
   }
 
@@ -63,13 +64,10 @@ public class StrifeMobManager {
     if (entity == null) {
       return null;
     }
-    if (!trackedEntities.containsKey(entity.getUniqueId())) {
-      StrifeMob mob;
-      if (entity.getType() == EntityType.PLAYER) {
-        mob = new StrifeMob(plugin.getChampionManager().getChampion((Player) entity));
-      } else {
-        mob = new StrifeMob(entity);
-      }
+    Champion champion = entity.getType() == EntityType.PLAYER ?
+        plugin.getChampionManager().getChampion((Player) entity) : null;
+    if (!trackedEntities.containsKey(entity)) {
+      StrifeMob mob = new StrifeMob(entity, champion);
       int level = StatUtil.getMobLevel(entity);
       mob.setStats(plugin.getMonsterManager().getBaseStats(entity.getType(), level));
       StatUtil.getStat(mob, StrifeStat.BARRIER);
@@ -78,26 +76,26 @@ public class StrifeMobManager {
       StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
       mob.restoreBarrier(200000);
       entity.lockFreezeTicks(true);
-      trackedEntities.put(entity.getUniqueId(), mob);
+      trackedEntities.put(entity, mob);
       if (entity instanceof Player) {
         mob.setEnergy(mob.getMaxEnergy() * ((Player) entity).getFoodLevel() / 20);
       }
     }
     entity.setMaximumNoDamageTicks(0);
-    return trackedEntities.get(entity.getUniqueId());
+    return trackedEntities.get(entity);
   }
 
   public void saveEnergy(Player player) {
-    if (trackedEntities.containsKey(player.getUniqueId())) {
-      StrifeMob mob = trackedEntities.get(player.getUniqueId());
+    if (trackedEntities.containsKey(player)) {
+      StrifeMob mob = trackedEntities.get(player);
       float value = 20f * mob.getEnergy();
       player.setFoodLevel((int) (value / mob.getMaxEnergy()));
     }
   }
 
   public void despawnMinions(Player player) {
-    if (trackedEntities.containsKey(player.getUniqueId())) {
-      StrifeMob mob = trackedEntities.get(player.getUniqueId());
+    if (trackedEntities.containsKey(player)) {
+      StrifeMob mob = trackedEntities.get(player);
       for (StrifeMob m : mob.getMinions()) {
         m.getEntity().remove();
       }
@@ -128,11 +126,11 @@ public class StrifeMobManager {
   }
 
   public void removeStrifeMob(LivingEntity entity) {
-    trackedEntities.remove(entity.getUniqueId());
+    trackedEntities.remove(entity);
   }
 
   public boolean isTrackedEntity(LivingEntity entity) {
-    return trackedEntities.containsKey(entity.getUniqueId());
+    return trackedEntities.containsKey(entity);
   }
 
   private void buildEquipmentAttributes(StrifeMob mob) {

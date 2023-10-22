@@ -121,7 +121,7 @@ public class Spawner extends BukkitRunnable {
     if (totalMobSlotsInUse >= maxMobs) {
       return;
     }
-    if (!ChunkUtil.canSpawnEntity(spawner.chunkKey)) {
+    if (!ChunkUtil.isChuckLoaded(spawner.chunkKey)) {
       return;
     }
 

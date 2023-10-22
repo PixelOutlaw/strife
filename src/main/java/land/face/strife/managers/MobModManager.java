@@ -2,12 +2,13 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.MobMod;
@@ -18,24 +19,35 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
+import ninja.amp.ampmenus.menus.common.ConfirmationMenu;
+import org.black_ixx.playerpoints.PlayerPointsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class MobModManager {
 
+  private final StrifePlugin plugin;
   private final EntityEquipmentManager equipmentManager;
   private final Map<String, MobMod> loadedMods = new HashMap<>();
+  @Getter
+  private Long gemStormEndTime = 0L;
+  @Getter
+  private int dropGems = 0;
 
   private double MOB_MOD_UP_CHANCE;
   public static int MOB_MOD_MAX_MODS;
 
-  public MobModManager(MasterConfiguration settings, EntityEquipmentManager equipmentManager) {
+  public MobModManager(StrifePlugin plugin, MasterConfiguration settings, EntityEquipmentManager equipmentManager) {
+    this.plugin = plugin;
     this.equipmentManager = equipmentManager;
     MOB_MOD_UP_CHANCE = settings.getDouble("config.leveled-monsters.add-mod-chance", 0.1);
     MOB_MOD_MAX_MODS = settings.getInt("config.leveled-monsters.max-mob-mods", 4);
@@ -45,6 +57,10 @@ public class MobModManager {
     String prefix = "";
     int prefixWeight = Integer.MAX_VALUE;
     Set<MobMod> mods = getRandomMods(mob.getEntity(), mob.getEntity().getLocation(), getModCount(max));
+    if (gemStormEndTime > System.currentTimeMillis() && StrifePlugin.RNG.nextDouble() < 0.2 && mods.size() < 3) {
+      mods.add(loadedMods.get("bejewled"));
+      mob.getEntity().getLocation().getWorld().strikeLightningEffect(mob.getEntity().getLocation());
+    }
     for (MobMod mod : mods) {
       applyMobMod(mob, mod);
       if (mod.getWeight() < prefixWeight && StringUtils.isNotBlank(mod.getPrefix())) {
@@ -56,6 +72,51 @@ public class MobModManager {
     }
     mob.getEntity().setCustomName(getPrefixColor(mods.size()) + prefix +
         FaceColor.WHITE + mob.getEntity().getCustomName());
+  }
+
+  public void attemptGemStormPurchase(Player player, int cost, int refund) {
+    if (gemStormEndTime > System.currentTimeMillis()) {
+      PaletteUtil.sendMessage(player, "|yellow|A gem storm is already active!");
+      return;
+    }
+    ConfirmationMenu confirmationMenu = new ConfirmationMenu(
+        FaceColor.BLACK + "Gem Storm?!",
+        FaceColor.GREEN + FaceColor.BOLD.s() + "Confirm!",
+        List.of(
+            PaletteUtil.color("|gray|Buy a |pink|GEM STORM |gray|for |purple|" + cost + " FaceGems|gray|?")
+        ),
+        FaceColor.RED + FaceColor.BOLD.s() + "No thanks",
+        List.of(FaceColor.LIGHT_GRAY + "I changed my mind..."),
+        true,
+        true,
+        () -> {
+          int gems = plugin.getPlayerPointsPlugin().getAPI().look(player.getUniqueId());
+          if (gems >= cost) {
+            PaletteUtil.sendMessage(player, "|green|Purchase Successful!");
+            plugin.getPlayerPointsPlugin().getAPI().take(player.getUniqueId(), cost);
+            gemStormEndTime = System.currentTimeMillis() + (1000 * 60 * 10);
+            dropGems = Math.max(refund, dropGems);
+            String msg = PaletteUtil.color("""
+                 
+                |pink||b|>>=-=-=-=<< |chrom|GEM STORM |pink||b|>>=-=-=-=<<
+                |purple|Woah! |white|{p} |purple|purchased a |pink||b|GEM STORM|purple|!
+                |purple|The |pink|POWER |purple|of the |pink|GEMS |purple|cause extra loot for |white|10m|purple|!
+                 
+                """.replace("{p}", player.getName()));
+            String eventString = plugin.getBoostManager().getBoostString();
+            for (Player p : Bukkit.getOnlinePlayers()) {
+              p.sendMessage(msg);
+              p.playSound(p.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.75f, 1f);
+              p.getWorld().setStorm(true);
+              plugin.getTopBarManager().updateEvent(p, eventString);
+            }
+          } else {
+            PaletteUtil.sendMessage(player, "|yellow| you cannot afford this!");
+          }
+        },
+        null
+    );
+    Bukkit.getScheduler().runTaskLater(plugin, () -> confirmationMenu.open(player), 1L);
   }
 
   public void applyMobMod(StrifeMob strifeMob, MobMod mobMod) {

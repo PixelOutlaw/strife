@@ -107,26 +107,28 @@ public class StatsOffenseMenuItem extends MenuItem {
     float shadow = damageMap.getOrDefault(DamageType.DARK, 0f);
     float trueDmg = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) - 1;
 
-    float total = physical + magical + fire + ice + lightning + earth + light + shadow + trueDmg;
+    float total = physical + magical + fire + ice + lightning + earth + light + shadow;
+    total *= 1 + mob.getStat(StrifeStat.DAMAGE_MULT) / 100;
+    total += trueDmg;
 
     lore.add(breakLine);
 
     lore.add(addStat("Total Damage: ", total, INT_FORMAT));
     StringBuilder damageDisplay = new StringBuilder();
     if (physical > magical) {
-      addIfApplicable(damageDisplay, physical, FaceColor.RED, "⚔");
-      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, "☄");
+      addIfApplicable(damageDisplay, physical, FaceColor.RED, FaceColor.WHITE + "儀");
+      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, FaceColor.WHITE + "儁");
     } else {
-      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, "☄");
-      addIfApplicable(damageDisplay, physical, FaceColor.RED, "⚔");
+      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, FaceColor.WHITE + "儁");
+      addIfApplicable(damageDisplay, physical, FaceColor.RED, FaceColor.WHITE + "儀");
     }
-    addIfApplicable(damageDisplay, fire, FaceColor.ORANGE, "\uD83D\uDD25");
-    addIfApplicable(damageDisplay, ice, FaceColor.CYAN, "❄");
-    addIfApplicable(damageDisplay, lightning, FaceColor.YELLOW, "⚡");
-    addIfApplicable(damageDisplay, earth, FaceColor.GREEN, "₪");
-    addIfApplicable(damageDisplay, light, FaceColor.WHITE, "❂");
-    addIfApplicable(damageDisplay, shadow, FaceColor.PURPLE, "☠");
-    addIfApplicable(damageDisplay, trueDmg, FaceColor.LIGHT_GRAY, "Ω");
+    addIfApplicable(damageDisplay, fire, FaceColor.ORANGE, FaceColor.WHITE + "儂");
+    addIfApplicable(damageDisplay, ice, FaceColor.CYAN, FaceColor.WHITE + "儃");
+    addIfApplicable(damageDisplay, lightning, FaceColor.YELLOW, FaceColor.WHITE + "億");
+    addIfApplicable(damageDisplay, earth, FaceColor.GREEN, FaceColor.WHITE + "儅");
+    addIfApplicable(damageDisplay, light, FaceColor.WHITE, FaceColor.WHITE + "儆");
+    addIfApplicable(damageDisplay, shadow, FaceColor.PURPLE, FaceColor.WHITE + "儇");
+    addIfApplicable(damageDisplay, trueDmg, FaceColor.LIGHT_GRAY, FaceColor.WHITE + "儈");
     lore.add(damageDisplay.toString());
     float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
     if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT) || critMult < 0.1) {
@@ -146,11 +148,11 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (mob.getStat(StrifeStat.POISON_CHANCE) > 0) {
       float poisonDmg = POISON_FLAT_DAMAGE + mob.getLevel() * POISON_LEVEL_DAMAGE;
       poisonDmg *= 5;
-      poisonDmg *= Math.pow(mob.getStat(StrifeStat.POISON_CHANCE) / 100, 2);
+      poisonDmg *= (float) Math.pow(mob.getStat(StrifeStat.POISON_CHANCE) / 100, 2);
       total += poisonDmg;
     }
     if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
-      total *= 1 + (0.3 * (mob.getStat(StrifeStat.MULTISHOT) / 100));
+      total *= (float) (1 + (0.3 * (mob.getStat(StrifeStat.MULTISHOT) / 100)));
     }
     float dps = total * (1 / StatUtil.getAttackTime(mob));
     lore.add(addStat("Estimated DPS: ", dps, " Damage", INT_FORMAT));

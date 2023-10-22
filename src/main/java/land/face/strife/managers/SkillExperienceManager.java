@@ -174,8 +174,8 @@ public class SkillExperienceManager {
       int progress = (int) Math.floor(100D * PlayerDataUtil.getSkillProgress(champion, skillType));
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
-        newTitle.append(FaceColor.NO_SHADOW).append(skillType.getCharacter()).append(FaceColor.LIGHT_GREEN).append(progress)
-            .append("%").append(" ");
+        newTitle.append(FaceColor.NO_SHADOW).append(skillType.getCharacter()).append(FaceColor.LIME)
+            .append(progress).append("%").append("  ");
       }
     }
     return newTitle.toString();

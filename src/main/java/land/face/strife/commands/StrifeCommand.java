@@ -38,9 +38,14 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.EloResponse;
 import land.face.strife.data.LoreAbility;
@@ -631,7 +636,37 @@ public class StrifeCommand extends BaseCommand {
     boolean success = plugin.getBoostManager().startBoost(creator, boostId, duration);
     if (!success) {
       sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
+      return;
     }
+    String eventString = plugin.getBoostManager().getBoostString();
+    for (Player p : Bukkit.getOnlinePlayers()) {
+      if (p.isOnline()) {
+        plugin.getTopBarManager().updateEvent(p, eventString);
+      }
+    }
+  }
+
+  @Subcommand("dumpmobs")
+  @CommandPermission("strife.admin")
+  public void startBoostCommand(CommandSender sender) {
+    Bukkit.getLogger().info("[Strife] Mobs: " + plugin.getStrifeMobManager().getMobs().size());
+    Map<String, Integer> types = new HashMap<>();
+    Map<String, Integer> names = new HashMap<>();
+    int alive = 0;
+    for (LivingEntity le : plugin.getStrifeMobManager().getMobs().keySet()) {
+      types.put(le.getName(), types.getOrDefault(le.getName(), 0) + 1);
+      names.put(le.getType().toString(), names.getOrDefault(le.getType().toString(), 0) + 1);
+      if (le.isValid()) {
+        alive++;
+      }
+    }
+    for (String s : types.keySet()) {
+      Bukkit.getLogger().info("[Strife] Type " + s + " x" + types.get(s));
+    }
+    for (String s : names.keySet()) {
+      Bukkit.getLogger().info("[Strife] Names " + s + " x" + names.get(s));
+    }
+    Bukkit.getLogger().info("[Strife] Alive: " + alive);
   }
 
   @Subcommand("applybuff")
@@ -644,6 +679,13 @@ public class StrifeCommand extends BaseCommand {
       return;
     }
     plugin.getStrifeMobManager().getStatMob(player.getPlayer()).addBuff(buff, null, seconds);
+  }
+
+  @Subcommand("gemstorm")
+  @CommandCompletion("@players")
+  @CommandPermission("strife.admin")
+  public void applyBuff(CommandSender sender, OnlinePlayer player, int cost, int refund) {
+    plugin.getMobModManager().attemptGemStormPurchase(player.getPlayer(), cost, refund);
   }
 
   @Subcommand("reveal")

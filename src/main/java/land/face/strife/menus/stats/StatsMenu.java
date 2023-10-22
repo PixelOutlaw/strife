@@ -31,7 +31,7 @@ public class StatsMenu extends ItemMenu {
   static final DecimalFormat INT_FORMAT = new DecimalFormat("#");
   static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#.#");
   static final DecimalFormat TWO_DECIMAL = new DecimalFormat("#.##");
-  static final String breakLine = StringExtensionsKt.chatColorize("&8=========================");
+  static final String breakLine = StringExtensionsKt.chatColorize("&8==========================");
 
   private final Map<Player, Player> inspectionTargetMap = new WeakHashMap<>();
 

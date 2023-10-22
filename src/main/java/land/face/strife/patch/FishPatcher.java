@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -55,17 +56,17 @@ public class FishPatcher {
 
     @Getter
     private static final GoalKey<Fish> goalKey = GoalKey.of(Fish.class, key_hostile_fish);
-    private final Mob mob;
+    private final WeakReference<Mob> mob;
     private LivingEntity currentTarget;
     private LivingEntity currentAttacker = null;
     private int cooldownMove;
     private int cooldownAttack;
 
     public AttackEntityGoal(Mob mob) {
-      this.mob = mob;
-      this.mob.getPathfinder().setCanPassDoors(true);
-      this.mob.getPathfinder().setCanOpenDoors(true);
-      this.mob.getPathfinder().setCanFloat(false);
+      this.mob = new WeakReference<>(mob);
+      mob.getPathfinder().setCanPassDoors(true);
+      mob.getPathfinder().setCanOpenDoors(true);
+      mob.getPathfinder().setCanFloat(false);
     }
 
     @Override
@@ -75,6 +76,10 @@ public class FishPatcher {
         return false;
       }
 
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return false;
+      }
       // Check if currentAttacker is still on range
       if (currentAttacker != null) {
         double distanceFollowAttacker = 200;
@@ -103,6 +108,10 @@ public class FishPatcher {
 
     @Override
     public void stop() {
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return;
+      }
       mob.getPathfinder().stopPathfinding();
       mob.setTarget(null);
       cooldownMove = 100;
@@ -110,6 +119,10 @@ public class FishPatcher {
 
     @Override
     public void tick() {
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return;
+      }
       mob.setTarget(currentTarget);
       if (mob.getLocation().distanceSquared(currentTarget.getLocation()) < 3.25) {
         this.cooldownAttack = Math.max(this.cooldownAttack - 1, 0);
@@ -123,6 +136,10 @@ public class FishPatcher {
     }
 
     private void attack(LivingEntity entity, double squaredDistance) {
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return;
+      }
       double squaredMaxAttackDistance = this.getSquaredMaxAttackDistance(entity);
       if (squaredDistance <= squaredMaxAttackDistance && this.cooldownAttack <= 0) {
         List<Block> blocks = mob.getLineOfSight(null, 1);
@@ -160,6 +177,10 @@ public class FishPatcher {
     }
 
     private LivingEntity getClosestTarget() {
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return null;
+      }
       double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
 
       Collection<LivingEntity> nearbyTargets = mob.getWorld().getNearbyEntitiesByType(

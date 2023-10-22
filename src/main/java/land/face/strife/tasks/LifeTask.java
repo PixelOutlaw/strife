@@ -52,7 +52,7 @@ public class LifeTask extends BukkitRunnable {
 
     float lifeAmount = StatUtil.getStat(mob, StrifeStat.REGENERATION);
     if (mob.getEntity().getType() == EntityType.PLAYER && !mob.isInCombat()) {
-      lifeAmount *= 1.5;
+      lifeAmount *= 1.5F;
       lifeAmount += 4;
     }
 

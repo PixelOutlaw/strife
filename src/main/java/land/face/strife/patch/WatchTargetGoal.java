@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
@@ -17,14 +18,18 @@ public class WatchTargetGoal implements Goal<Mob> {
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
-  private final Mob mob;
+  private final WeakReference<Mob> mob;
 
   public WatchTargetGoal(Mob mob) {
-    this.mob = mob;
+    this.mob = new WeakReference<>(mob);
   }
 
   @Override
   public boolean shouldActivate() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return false;
+    }
     return mob.getTarget() != null;
   }
 
@@ -45,6 +50,10 @@ public class WatchTargetGoal implements Goal<Mob> {
 
   @Override
   public void tick() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return;
+    }
     if (mob.getTarget() == null || !mob.getTarget().isValid() || mob.getTarget().getWorld() != mob.getWorld()) {
       mob.setTarget(null);
       stop();

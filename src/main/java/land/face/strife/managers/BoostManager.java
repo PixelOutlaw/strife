@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
@@ -82,6 +83,49 @@ public class BoostManager {
 
   public Set<String> getLoadedBoostIds() {
     return loadedBoosts.keySet();
+  }
+
+  public long getBoostTime(String id) {
+    for (Boost b : boosts) {
+      if (id.equals(b.getBoostId())) {
+        return b.getSecondsRemaining();
+      }
+    }
+    return -1;
+  }
+
+  public Boost getRunningBoost(String id) {
+    for (Boost b : boosts) {
+      if (id.equals(b.getBoostId())) {
+        return b;
+      }
+    }
+    return null;
+  }
+
+  public String getBoostString() {
+    StringBuilder str = new StringBuilder();
+    if (dailyBoost != null) {
+      str.append(dailyBoost.getTopBarText());
+    }
+    for (Boost b : boosts) {
+      LoadedStatBoost load = loadedBoosts.get(b.getBoostId());
+      if (load.getTopBarText().isEmpty()) {
+        continue;
+      }
+      if (b.getSecondsRemaining() > -1) {
+        str.append(load.getTopBarText().replace("{m}", String.valueOf(Math.max(1, b.getSecondsRemaining() / 60))));
+      } else {
+        str.append(load.getTopBarText());
+      }
+    }
+    long timeDiff = plugin.getMobModManager().getGemStormEndTime() - System.currentTimeMillis();
+    if (timeDiff > 0) {
+      int minutes = Math.max(1, (int) ((timeDiff / 1000) / 60));
+      str.append(FaceColor.NO_SHADOW + "冣" + FaceColor.PURPLE).append(minutes).append("m  ");
+    }
+    String result = str.toString();
+    return result.isEmpty() ? "" : result + " ";
   }
 
   public void updateGlobalBoostStatus(Player player) {
@@ -174,11 +218,12 @@ public class BoostManager {
           boost.getStringList("announcement-running"));
       List<String> announceEnd = PaletteUtil.color(
           boost.getStringList("announcement-end"));
+      String topBarText = PaletteUtil.color(boost.getString("top-bar-text", ""));
 
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");
       Map<StrifeStat, Float> attrMap = StatUtil.getStatMapFromSection(attrSection);
 
-      LoadedStatBoost loadedStatBoost = new LoadedStatBoost(creator, announceInterval, duration);
+      LoadedStatBoost loadedStatBoost = new LoadedStatBoost(creator, topBarText, announceInterval, duration);
       loadedStatBoost.getAnnounceStart().addAll(announceStart);
       loadedStatBoost.getAnnounceRun().addAll(announceRun);
       loadedStatBoost.getAnnounceEnd().addAll(announceEnd);

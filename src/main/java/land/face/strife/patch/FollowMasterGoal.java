@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -19,27 +20,35 @@ public class FollowMasterGoal implements Goal<Mob> {
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
-  private final Mob mob;
-  private LivingEntity master;
+  private final WeakReference<Mob> mob;
+  private WeakReference<LivingEntity> master = new WeakReference<>(null);
   private long masterCheck = 0;
   private int teleportTicks = 0;
 
   public FollowMasterGoal(Mob mob) {
-    this.mob = mob;
-    this.mob.getPathfinder().setCanPassDoors(true);
-    this.mob.getPathfinder().setCanOpenDoors(true);
-    this.mob.getPathfinder().setCanFloat(true);
+    this.mob = new WeakReference<>(mob);
+    mob.getPathfinder().setCanPassDoors(true);
+    mob.getPathfinder().setCanOpenDoors(true);
+    mob.getPathfinder().setCanFloat(true);
   }
 
   @Override
   public boolean shouldActivate() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return false;
+    }
     if (masterCheck < System.currentTimeMillis()) {
       masterCheck = System.currentTimeMillis() + 1000;
       StrifeMob self = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(mob);
       if (self.getMaster() == null) {
         return false;
       }
-      master = self.getMaster().getEntity();
+      LivingEntity master = this.master.get();
+      if (master == null) {
+        return false;
+      }
+      this.master = new WeakReference<>(self.getMaster().getEntity());
       if (!master.isValid() || master.getWorld() != mob.getWorld()) {
         return false;
       }
@@ -52,6 +61,14 @@ public class FollowMasterGoal implements Goal<Mob> {
   public boolean shouldStayActive() {
     if (masterCheck > System.currentTimeMillis()) {
       return true;
+    }
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return false;
+    }
+    LivingEntity master = this.master.get();
+    if (master == null) {
+      return false;
     }
     masterCheck = System.currentTimeMillis() + 500;
     if (master.getWorld() != mob.getWorld()) {
@@ -77,11 +94,20 @@ public class FollowMasterGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return;
+    }
     mob.getPathfinder().stopPathfinding();
   }
 
   @Override
   public void tick() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return;
+    }
+    LivingEntity master = this.master.get();
     if (master == null || !master.isValid() || master.getWorld() != mob.getWorld()) {
       return;
     }

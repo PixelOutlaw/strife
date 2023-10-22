@@ -3,8 +3,10 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.Random;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
@@ -20,20 +22,24 @@ public class AttackTargetGoal implements Goal<Mob> {
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
-  private final Mob mob;
+  private final WeakReference<Mob> mob;
   private final float attackRange;
   private long attackTimestamp = 0;
 
   public AttackTargetGoal(Mob mob, float attackRange) {
-    this.mob = mob;
-    this.mob.getPathfinder().setCanPassDoors(true);
-    this.mob.getPathfinder().setCanOpenDoors(true);
-    this.mob.getPathfinder().setCanFloat(true);
+    this.mob = new WeakReference<>(mob);
+    mob.getPathfinder().setCanPassDoors(true);
+    mob.getPathfinder().setCanOpenDoors(true);
+    mob.getPathfinder().setCanFloat(true);
     this.attackRange = (float) Math.pow(attackRange, 2f);
   }
 
   @Override
   public boolean shouldActivate() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return false;
+    }
     if (mob.getTarget() == null || attackTimestamp > System.currentTimeMillis()) {
       return false;
     }
@@ -52,6 +58,10 @@ public class AttackTargetGoal implements Goal<Mob> {
   }
 
   private void attack(LivingEntity entity) {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return;
+    }
     attackTimestamp = System.currentTimeMillis() + 900;
     mob.lookAt(entity);
     mob.swingMainHand();

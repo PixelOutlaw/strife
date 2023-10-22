@@ -40,7 +40,7 @@ public class BarrierTask extends BukkitRunnable {
       cancel();
       return;
     }
-    forceAbsorbHearts();
+    //forceAbsorbHearts();
     if (mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) || mob.getMaxBarrier() < 0.1) {
       delayTicks = 10;
       return;
@@ -80,6 +80,7 @@ public class BarrierTask extends BukkitRunnable {
     );
   }
 
+  /*
   public void forceAbsorbHearts() {
     StrifeMob mob = parentMob.get();
     if (mob.getChampion() == null) {
@@ -95,5 +96,5 @@ public class BarrierTask extends BukkitRunnable {
       mob.getEntity().removePotionEffect(PotionEffectType.ABSORPTION);
     }
   }
-
+  */
 }

@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
@@ -21,13 +22,13 @@ public class OriginLockGoal implements Goal<Mob> {
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
-  private final Mob mob;
+  private final WeakReference<Mob> mob;
 
   public OriginLockGoal(Mob mob) {
-    this.mob = mob;
-    this.mob.getPathfinder().setCanPassDoors(true);
-    this.mob.getPathfinder().setCanOpenDoors(true);
-    this.mob.getPathfinder().setCanFloat(true);
+    this.mob = new WeakReference<>(mob);
+    mob.getPathfinder().setCanPassDoors(true);
+    mob.getPathfinder().setCanOpenDoors(true);
+    mob.getPathfinder().setCanFloat(true);
   }
 
   @Override
@@ -52,6 +53,10 @@ public class OriginLockGoal implements Goal<Mob> {
 
   @Override
   public void tick() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return;
+    }
     Location origin = mob.getOrigin();
     if (origin == null) {
       return;

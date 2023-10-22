@@ -416,7 +416,7 @@ public class StrifePlugin extends FacePlugin {
     wseManager = new WSEManager();
     agilityManager = new AgilityManager(this, agilityYAML);
     spawnerManager = new SpawnerManager(this);
-    mobModManager = new MobModManager(settings, equipmentManager);
+    mobModManager = new MobModManager(this, settings, equipmentManager);
     abilityIconManager = new AbilityIconManager(this);
     guiManager = new GuiManager(this);
     buffManager = new BuffManager();

@@ -56,7 +56,10 @@ public class StrifeMob {
   @Getter
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
-  private WeakReference<Champion> champion;
+  @Getter @Setter
+  private int expiryAge = 0;
+
+  private Champion champion;
   private final WeakReference<LivingEntity> livingEntity;
   private WeakReference<UniqueEntity> uniqueEntity = null;
   private WeakReference<Spawner> spawner = new WeakReference<>(null);
@@ -76,9 +79,6 @@ public class StrifeMob {
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
   private final Set<UUID> reflectedTargets = new HashSet<>();
-
-  @Getter @Setter
-  private boolean flaggedForDeletion;
 
   @Getter @Setter
   private float threatLevel = 0;
@@ -144,20 +144,13 @@ public class StrifeMob {
 
   private final Map<Integer, Integer> multishotMap = new HashMap<>();
 
-  public StrifeMob(Champion champion) {
-    this.livingEntity = new WeakReference<>(champion.getPlayer());
-    this.champion = new WeakReference<>(champion);
-    useEquipment = true;
-    statCache.clear();
-    statCache.putAll(getFinalStats());
-  }
-
-  public StrifeMob(LivingEntity livingEntity) {
+  public StrifeMob(LivingEntity livingEntity, Champion champion) {
     this.livingEntity = new WeakReference<>(livingEntity);
-    this.champion = new WeakReference<>(null);
-    useEquipment = livingEntity instanceof Player;
+    this.champion = champion;
+    useEquipment = champion != null;
     statCache.clear();
     statCache.putAll(getFinalStats());
+    //Bukkit.getLogger().info("[Strife] StrMob created! Type:" + livingEntity.getType() + " name:" + livingEntity.getName() + " loc:" + livingEntity.getLocation().toVector());
   }
 
   public int getLevel() {
@@ -260,9 +253,6 @@ public class StrifeMob {
       return;
     }
     barrier = Math.min(barrier + amount, maxBarrier);
-    if (barrierTask != null) {
-      barrierTask.forceAbsorbHearts();
-    }
   }
 
   public float damageBarrier(float amount) {
@@ -274,9 +264,6 @@ public class StrifeMob {
     float diff = barrier - amount;
     if (diff > 0) {
       barrier -= amount;
-      if (barrierTask != null) {
-        barrierTask.forceAbsorbHearts();
-      }
       BarrierTask.spawnBarrierParticles(getEntity(), amount);
       return 0;
     } else {
@@ -284,9 +271,6 @@ public class StrifeMob {
         BarrierTask.spawnBarrierParticles(getEntity(), barrier);
       }
       barrier = 0;
-      if (barrierTask != null) {
-        barrierTask.forceAbsorbHearts();
-      }
       return -1 * diff;
     }
   }
@@ -306,19 +290,17 @@ public class StrifeMob {
   }
 
   public float getPrayer() {
-    if (champion.get() == null) {
+    if (champion == null) {
       return 0;
     }
-    //noinspection DataFlowIssue
-    return champion.get().getSaveData().getPrayerPoints();
+    return champion.getSaveData().getPrayerPoints();
   }
 
   public void setPrayer(float amount) {
-    if (champion.get() == null) {
+    if (champion == null) {
       return;
     }
-    //noinspection DataFlowIssue
-    champion.get().getSaveData().setPrayerPoints(Math.min(maxPrayer, amount));
+    champion.getSaveData().setPrayerPoints(Math.min(maxPrayer, amount));
   }
 
   public float getRage() {
@@ -521,11 +503,11 @@ public class StrifeMob {
   }
 
   public Champion getChampion() {
-    Champion result = champion == null ? null : champion.get();
+    Champion result = champion == null ? null : champion;
     if (result == null && getEntity() instanceof Player) {
       Bukkit.getLogger().warning("[Strife] Invalid champion for " + getEntity().getName()+ "... Resolving...");
-      champion = new WeakReference<>(StrifePlugin.getInstance().getChampionManager().getChampion((Player) getEntity()));
-      return champion.get();
+      champion = StrifePlugin.getInstance().getChampionManager().getChampion((Player) getEntity());
+      return champion;
     }
     return result;
   }
@@ -703,8 +685,8 @@ public class StrifeMob {
 
   public Set<StrifeTrait> getTraits() {
     Set<StrifeTrait> traits = new HashSet<>(equipmentCache.getCombinedTraits());
-    if (champion.get() != null) {
-      traits.addAll(Objects.requireNonNull(champion.get()).getPathTraits());
+    if (champion != null) {
+      traits.addAll(Objects.requireNonNull(champion).getPathTraits());
     }
     return traits;
   }
@@ -715,11 +697,11 @@ public class StrifeMob {
         return true;
       }
     }
-    if (champion.get() == null) {
+    if (champion == null) {
       return equipmentCache.getCombinedTraits().contains(trait);
     }
     return equipmentCache.getCombinedTraits().contains(trait) ||
-        Objects.requireNonNull(champion.get()).getPathTraits().contains(trait);
+        Objects.requireNonNull(champion).getPathTraits().contains(trait);
   }
 
   public void removeMinion(StrifeMob minion) {

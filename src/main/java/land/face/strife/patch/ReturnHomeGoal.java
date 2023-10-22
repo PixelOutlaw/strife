@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
@@ -17,21 +18,25 @@ public class ReturnHomeGoal implements Goal<Mob> {
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, RETURN_HOME);
-  private final Mob mob;
+  private final WeakReference<Mob> mob;
   private final double range;
   private boolean returning;
   private long checkCooldown = 0;
 
   public ReturnHomeGoal(Mob mob, double dist) {
-    this.mob = mob;
-    this.mob.getPathfinder().setCanPassDoors(true);
-    this.mob.getPathfinder().setCanOpenDoors(true);
-    this.mob.getPathfinder().setCanFloat(true);
+    this.mob = new WeakReference<>(mob);
+    mob.getPathfinder().setCanPassDoors(true);
+    mob.getPathfinder().setCanOpenDoors(true);
+    mob.getPathfinder().setCanFloat(true);
     this.range = dist;
   }
 
   @Override
   public boolean shouldActivate() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return false;
+    }
     if (mob.getTarget() != null) {
       return false;
     }
@@ -65,6 +70,10 @@ public class ReturnHomeGoal implements Goal<Mob> {
 
   @Override
   public void tick() {
+    Mob mob = this.mob.get();
+    if (mob == null) {
+      return;
+    }
     if (mob.getTarget() != null) {
       return;
     }

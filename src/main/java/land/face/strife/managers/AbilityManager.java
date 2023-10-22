@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
@@ -57,16 +58,13 @@ public class AbilityManager {
 
   private final StrifePlugin plugin;
 
+  @Getter
   private final Map<String, Ability> loadedAbilities = new HashMap<>();
-  private final Map<LivingEntity, Set<CooldownTracker>> cdMap = new ConcurrentHashMap<>();
+  private final Map<LivingEntity, Set<CooldownTracker>> cdMap = new WeakHashMap<>();
   private final Map<UUID, Set<CooldownTracker>> savedCooldowns = new ConcurrentHashMap<>();
 
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
-  }
-
-  public Map<String, Ability> getLoadedAbilities() {
-    return loadedAbilities;
   }
 
   public Ability getAbility(String name) {
@@ -722,12 +720,12 @@ public class AbilityManager {
     return data;
   }
 
+  @Getter
   public enum AbilityType {
 
     ATTACK(Material.DIAMOND_CHESTPLATE),
     SPELL(Material.GOLDEN_CHESTPLATE);
 
-    @Getter
     private final Material material;
 
     AbilityType(Material material) {

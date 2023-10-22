@@ -3,6 +3,7 @@ package land.face.strife.patch;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -22,21 +23,28 @@ public class FloatBehindGoalPatcher {
 
     @Getter
     private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, generic_hostile_key);
-    private final Mob mob;
-
-    private LivingEntity master;
+    private final WeakReference<Mob> mob;
+    private WeakReference<LivingEntity> master = new WeakReference<>(null);
     private long cooldown = 0;
     private long masterDetectCooldown = 0;
 
     public FloatBehindGoal(Mob mob) {
-      this.mob = mob;
-      this.mob.getPathfinder().setCanPassDoors(true);
-      this.mob.getPathfinder().setCanOpenDoors(true);
-      this.mob.getPathfinder().setCanFloat(true);
+      this.mob = new WeakReference<>(mob);
+      mob.getPathfinder().setCanPassDoors(true);
+      mob.getPathfinder().setCanOpenDoors(true);
+      mob.getPathfinder().setCanFloat(true);
     }
 
     @Override
     public boolean shouldActivate() {
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return false;
+      }
+      LivingEntity master = this.master.get();
+      if (master == null) {
+        return false;
+      }
       if (master != null && master.isValid() && master.getWorld() == mob.getWorld()) {
         return true;
       }
@@ -46,7 +54,7 @@ public class FloatBehindGoalPatcher {
       masterDetectCooldown = System.currentTimeMillis() + 3000;
       StrifeMob masterMob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(mob);
       if (masterMob != null) {
-        master = masterMob.getEntity();
+        this.master = new WeakReference<>(masterMob.getEntity());
         return true;
       }
       return false;
@@ -68,6 +76,14 @@ public class FloatBehindGoalPatcher {
     @Override
     public void tick() {
       if (cooldown > System.currentTimeMillis()) {
+        return;
+      }
+      Mob mob = this.mob.get();
+      if (mob == null) {
+        return;
+      }
+      LivingEntity master = this.master.get();
+      if (master == null) {
         return;
       }
       Location baseLocation = master.getEyeLocation().clone()
