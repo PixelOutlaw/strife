@@ -1,12 +1,11 @@
 package land.face.strife.patch;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
-import com.ticxo.modelengine.api.animation.blueprint.LoopMode;
 import com.ticxo.modelengine.api.animation.property.SimpleProperty;
-import com.ticxo.modelengine.api.animation.state.ModelState;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.mount.controller.AbstractMountController;
+import com.ticxo.modelengine.api.model.bone.type.Mount;
+import com.ticxo.modelengine.api.mount.controller.impl.AbstractMountController;
 import com.ticxo.modelengine.api.nms.entity.wrapper.MoveController;
 import land.face.strife.data.LoadedMount;
 import org.bukkit.entity.Entity;
@@ -23,6 +22,7 @@ public class FacelandMountController extends AbstractMountController {
   private final float airSpeed;
 
   public FacelandMountController(ActiveModel model, LoadedMount loadedMount) {
+    super(Entity entity, Mount mount);
     this.flying = false;
     this.loadedMount = loadedMount;
     this.model = model;

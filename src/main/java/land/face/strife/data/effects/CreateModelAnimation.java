@@ -3,12 +3,11 @@ package land.face.strife.data.effects;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.tuple.Triple;
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.generator.model.BlueprintBone;
-import com.ticxo.modelengine.api.generator.model.ModelBlueprint;
+import com.ticxo.modelengine.api.generator.blueprint.BlueprintBone;
+import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.ModelBone;
-import com.ticxo.modelengine.api.model.bone.Renderer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +22,6 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Tadpole;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -193,18 +191,12 @@ public class CreateModelAnimation extends LocationEffect {
         Bukkit.getLogger().warning("Failed to create modelled entity");
       } else {
         modeledEntity.addModel(model, true);
-        modeledEntity.setModelRotationLock(rotationLock);
+        modeledEntity.setModelRotationLocked(rotationLock);
         modeledEntity.setBaseEntityVisible(false);
       }
 
       if (animationId != null) {
         model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
-      }
-
-      if (color != null) {
-        for (Renderer bone : model.getRendererHandler().getBones().values()) {
-          bone.getRenderer().setColor(color);
-        }
       }
 
       if (complexPart != null) {
@@ -225,17 +217,17 @@ public class CreateModelAnimation extends LocationEffect {
                 blueprint = ModelEngineAPI.getBlueprint(base);
                 cachedAnimationModels.put(base, blueprint);
               }
-              final ModelBone bone = model.getBone(targetPartId);
+              final ModelBone bone = model.getBone(targetPartId).get();
               BlueprintBone bpBone = blueprint.getBones().get(newPartId);
               if (bpBone == null) {
                 continue;
               }
               if (bone.getParent() == null) {
                 model.removeBone(targetPartId);
-                model.forceGenerateBone(null, bpBone);
+                model.forceGenerateBone(null, null, bpBone);
               } else {
                 model.removeBone(targetPartId);
-                model.forceGenerateBone(bone.getParent().getBoneId(), bpBone);
+                model.forceGenerateBone(bone.getParent().getBoneId(), null, bpBone);
               }
             }
           }, i);

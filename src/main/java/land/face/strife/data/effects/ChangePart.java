@@ -1,8 +1,8 @@
 package land.face.strife.data.effects;
 
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.generator.model.BlueprintBone;
-import com.ticxo.modelengine.api.generator.model.ModelBlueprint;
+import com.ticxo.modelengine.api.generator.blueprint.BlueprintBone;
+import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.bone.ModelBone;
 import land.face.strife.data.StrifeMob;
@@ -26,7 +26,7 @@ public class ChangePart extends Effect {
     }
     // Might only work on things with one active model? can you have two...?
     ActiveModel currentModel = target.getModelEntity().getModels().get(oldModelId);
-    final ModelBone partEntity = currentModel.getBone(oldPartId);
+    final ModelBone partEntity = currentModel.getBone(oldPartId).get();
     if (partEntity == null) {
       return;
     }
@@ -40,10 +40,10 @@ public class ChangePart extends Effect {
     }
     if (partEntity.getParent() == null) {
       currentModel.removeBone(oldPartId);
-      currentModel.forceGenerateBone(null, bpBone);
+      currentModel.forceGenerateBone(null, null, bpBone);
     } else {
       currentModel.removeBone(oldPartId);
-      currentModel.forceGenerateBone(partEntity.getParent().getBoneId(), bpBone);
+      currentModel.forceGenerateBone(partEntity.getParent().getBoneId(), null, bpBone);
     }
   }
 }

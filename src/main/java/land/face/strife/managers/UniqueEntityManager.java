@@ -8,7 +8,6 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.bone.Nameable;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -141,13 +140,6 @@ public class UniqueEntityManager {
           modeledEntity.addModel(model, true);
           //modeledEntity.detectPlayers();
           modeledEntity.setBaseEntityVisible(false);
-          Nameable nameo = (Nameable) model.getBone("name");
-          if (nameo != null) {
-            model.getNametagHandler().registerSpecialBone(nameo);
-            model.getNametagHandler().spawn();
-            nameo.setCustomName(entity.getCustomName());
-            nameo.setCustomNameVisible(true);
-          }
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) entity);
           mob.setModelEntity(modeledEntity);
         }

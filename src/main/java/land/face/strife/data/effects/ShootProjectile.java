@@ -4,8 +4,6 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
-import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.model.vfx.VFX;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
@@ -14,8 +12,6 @@ import land.face.strife.tasks.ThrownItemTask;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import me.libraryaddict.disguise.DisguiseAPI;
@@ -45,7 +41,6 @@ public class ShootProjectile extends Effect {
   private OriginLocation originType;
   private Color arrowColor;
   private String modelId;
-  private String vfxBone;
   private double attackMultiplier;
   private boolean targeted;
   private boolean seeking;
@@ -175,22 +170,6 @@ public class ShootProjectile extends Effect {
           }
         }
         new ThrownItemTask(projectile, stack, originLocation, throwSpin).runTaskTimer(getPlugin(), 0L, 1L);
-      }
-
-      if (modelId != null && vfxBone != null) {
-        /*
-        VFX vfx = ModelEngineAPI.createVFX(projectile);
-        vfx.useModel(modelId, vfxBone);
-        vfx.setColor(Color.WHITE);
-        vfx.setBaseEntityVisible(false);
-        vfx.setVisible(true);
-        vfx.create();
-        Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
-          vfx.setPosition(projectile.getLocation().toVector());
-          vfx.point(projectile.getVelocity(), true);
-          vfx.tick();
-        }, 0L, 1L);
-         */
       }
     }
     ProjectileUtil.bumpShotId();
