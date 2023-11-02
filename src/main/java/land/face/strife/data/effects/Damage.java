@@ -23,40 +23,28 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+@Getter
+@Setter
 public class Damage extends Effect {
 
   private float attackMultiplier;
-  @Getter
   private float healMultiplier;
   private float damageReductionRatio;
-  @Getter
   private final Map<DamageType, Float> damageMultipliers = new HashMap<>();
-  @Getter
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
-  @Getter
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
-  @Getter
   private AttackType attackType;
-  @Getter
   private boolean canBeEvaded;
-  @Getter
   private boolean canBeBlocked;
   private boolean canSneakAttack;
   private boolean isBlocking;
-  @Getter
   private boolean applyOnHitEffects;
-  @Getter
   private boolean showPopoffs;
-  @Getter
   private boolean bypassBarrier;
-  @Getter @Setter
   private boolean guardBreak;
   private boolean selfInflict;
-  @Getter
   private final List<Effect> hitEffects = new ArrayList<>();
-  @Getter
   private final List<Effect> killEffects = new ArrayList<>();
-
   public int currentProjectileId = -1;
 
   @Override
@@ -74,6 +62,7 @@ public class Damage extends Effect {
     }
 
     DamageModifiers mods = new DamageModifiers();
+    mods.setBasicAttack(false);
     mods.setAttackType(attackType);
     mods.setAttackMultiplier(attackMultiplier);
     mods.setHealMultiplier(healMultiplier);
@@ -93,7 +82,6 @@ public class Damage extends Effect {
     mods.getBonusDamages().addAll(bonusDamages);
     mods.getDamageMultipliers().putAll(damageMultipliers);
     mods.getAbilityMods().putAll(abilityMods);
-    mods.setBasicAttack(false);
 
     mods.setAttackMultiplier(mods.getAttackMultiplier());
     boolean attackSuccess = DamageUtil.preDamage(caster, target, mods);
@@ -156,67 +144,7 @@ public class Damage extends Effect {
     StrifeMob finalTarget = target;
     if (mods.isApplyOnHitEffects()) {
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-          DamageUtil.postDamage(caster, finalTarget, mods), 0L);
+          DamageUtil.postDamage(caster, finalTarget, mods, false), 0L);
     }
-  }
-
-  public float getDamageReductionRatio() {
-    return damageReductionRatio;
-  }
-
-  public void setDamageReductionRatio(float damageReductionRatio) {
-    this.damageReductionRatio = damageReductionRatio;
-  }
-
-  public void setHealMultiplier(float healMultiplier) {
-    this.healMultiplier = healMultiplier;
-  }
-
-  public double getAttackMultiplier() {
-    return attackMultiplier;
-  }
-
-  public void setAttackMultiplier(float attackMultiplier) {
-    this.attackMultiplier = attackMultiplier;
-  }
-
-  public void setAttackType(AttackType attackType) {
-    this.attackType = attackType;
-  }
-
-  public void setCanBeEvaded(boolean canBeEvaded) {
-    this.canBeEvaded = canBeEvaded;
-  }
-
-  public void setCanBeBlocked(boolean canBeBlocked) {
-    this.canBeBlocked = canBeBlocked;
-  }
-
-  public void setCanSneakAttack(boolean canSneakAttack) {
-    this.canSneakAttack = canSneakAttack;
-  }
-
-  public void setApplyOnHitEffects(boolean applyOnHitEffects) {
-    this.applyOnHitEffects = applyOnHitEffects;
-  }
-
-  public void setShowPopoffs(boolean showPopoffs) {
-    this.showPopoffs = showPopoffs;
-  }
-
-  public void setBypassBarrier(boolean bypassBarrier) {
-    this.bypassBarrier = bypassBarrier;
-  }
-
-  public void setSelfInflict(boolean selfInflict) {
-    this.selfInflict = selfInflict;
-  }
-
-  public boolean isBlocking() {
-    return isBlocking;
-  }
-
-  public void setBlocking(boolean blocking) {
-    isBlocking = blocking;
   }
 }

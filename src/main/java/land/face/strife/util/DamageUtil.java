@@ -145,6 +145,9 @@ public class DamageUtil {
   }
 
   public static boolean isGuildAlly(StrifeMob mob, Player player) {
+    if (mob == null) {
+      return false;
+    }
     if (mob.getAlliedGuild() == null) {
       return false;
     }
@@ -398,7 +401,7 @@ public class DamageUtil {
     return rawDamage;
   }
 
-  public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
+  public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods, boolean isBasicAttack) {
     if (mods.getAttackType() == AttackType.BONUS) {
       return;
     }
@@ -460,8 +463,7 @@ public class DamageUtil {
     return sneakEvent.getSneakAttackDamage();
   }
 
-  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender,
-      DamageModifiers mods) {
+  private static boolean isCriticalHit(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
     float attackPenalty = 1f;
     if (mods.isScaleChancesWithAttack()) {
       attackPenalty = mods.getAttackMultiplier();
@@ -537,6 +539,10 @@ public class DamageUtil {
       case CASTER_CURRENT_CORRUPTION -> amount * caster.getCorruption();
       case TARGET_MAX_RAGE -> amount * target.getMaxRage();
       case CASTER_MAX_RAGE -> amount * caster.getMaxRage();
+      case CASTER_ATTRIBUTE -> amount * caster.getChampion().getAttributeLevel(bonusDamage.getAttribute());
+      case TARGET_ATTRIBUTE -> amount * target.getChampion().getAttributeLevel(bonusDamage.getAttribute());
+      case CASTER_SKILL_LEVEL -> amount * caster.getChampion().getLifeSkillLevel(bonusDamage.getLifeSkillType());
+      case TARGET_SKILL_LEVEL -> amount * target.getChampion().getLifeSkillLevel(bonusDamage.getLifeSkillType());
     };
   }
 
@@ -622,6 +628,10 @@ public class DamageUtil {
     if (baseDarkDamage != 0) {
       damageMap.put(DamageType.DARK, baseDarkDamage *
           plugin.getCorruptionManager().getCorruptionMultiplier(defender));
+    }
+    float baseFireDmg = damageMap.getOrDefault(DamageType.FIRE, 0f);
+    if (baseFireDmg > 0.04 && defender.getEntity().getFireTicks() > 0) {
+      damageMap.put(DamageType.FIRE, baseFireDmg * 1.2f);
     }
     float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
         attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
@@ -1152,7 +1162,7 @@ public class DamageUtil {
     plugin.getStrifeMobManager().updateEquipmentStats(victim);
     Set<LoreAbility> abilitySet = new HashSet<>(victim.getLoreAbilities(ON_DEATH));
     executeBoundEffects(victim, victim, abilitySet);
-    executeFiniteEffects(victim, victim, ON_DEATH);
+    executeFiniteEffects(victim, victim, new HashSet<>(List.of(ON_DEATH)));
     plugin.getAbilityIconManager().untoggleDeathToggles(victim);
     if (victim.isInvincible()) {
       victim.getEntity().setHealth(1);
@@ -1279,7 +1289,11 @@ public class DamageUtil {
     TARGET_CURRENT_CORRUPTION,
     CASTER_CURRENT_CORRUPTION,
     TARGET_MAX_RAGE,
-    CASTER_MAX_RAGE
+    CASTER_MAX_RAGE,
+    CASTER_SKILL_LEVEL,
+    TARGET_SKILL_LEVEL,
+    CASTER_ATTRIBUTE,
+    TARGET_ATTRIBUTE,
   }
 
   public enum OriginLocation {

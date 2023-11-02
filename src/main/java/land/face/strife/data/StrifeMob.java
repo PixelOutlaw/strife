@@ -851,7 +851,11 @@ public class StrifeMob {
   }
 
   public void endCombat() {
+    if (combatCountdownTask == null) {
+      return;
+    }
     if (!combatCountdownTask.isCancelled()) {
+      combatCountdownTask.clearBars();
       combatCountdownTask.cancel();
     }
     combatCountdownTask = null;

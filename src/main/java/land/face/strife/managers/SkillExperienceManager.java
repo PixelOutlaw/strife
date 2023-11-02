@@ -171,7 +171,7 @@ public class SkillExperienceManager {
   public String updateSkillString(Champion champion) {
     StringBuilder newTitle = new StringBuilder();
     for (LifeSkillType skillType : champion.getRecentSkills()) {
-      int progress = (int) Math.floor(100D * PlayerDataUtil.getSkillProgress(champion, skillType));
+      int progress = Math.min(99, (int) (100D * PlayerDataUtil.getSkillProgress(champion, skillType)));
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
         newTitle.append(FaceColor.NO_SHADOW).append(skillType.getCharacter()).append(FaceColor.LIME)

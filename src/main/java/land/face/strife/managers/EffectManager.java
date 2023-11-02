@@ -303,8 +303,7 @@ public class EffectManager {
             multMap.put(mod, (float) multCs.getDouble(k));
           }
         }
-        List<BonusDamage> bonusDamages = loadBonusDamages(key,
-            cs.getConfigurationSection("bonus-damages"));
+        List<BonusDamage> bonusDamages = loadBonusDamages(key, cs.getConfigurationSection("bonus-damages"));
         ConfigurationSection modsCs = cs.getConfigurationSection("attack-mods");
         Map<AbilityMod, Float> attackModMap = new HashMap<>();
         if (modsCs != null) {
@@ -935,14 +934,11 @@ public class EffectManager {
     if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
       effect.setFriendly(cs.getBoolean("friendly", false));
-      Map<StrifeStat, Float> statMults = StatUtil
-          .getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
+      Map<StrifeStat, Float> statMults = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
       effect.setStatMults(statMults);
-      Map<LifeSkillType, Float> skillMults = StatUtil
-          .getSkillMapFromSection(cs.getConfigurationSection("skill-multipliers"));
+      Map<LifeSkillType, Float> skillMults = StatUtil.getSkillMapFromSection(cs.getConfigurationSection("skill-multipliers"));
       effect.setSkillMults(skillMults);
-      Map<StrifeAttribute, Float> attributeMults = StatUtil
-          .getAttributeMapFromSection(cs.getConfigurationSection("attribute-multipliers"));
+      Map<StrifeAttribute, Float> attributeMults = StatUtil.getAttributeMapFromSection(cs.getConfigurationSection("attribute-multipliers"));
       effect.setAttributeMults(attributeMults);
     }
     effect.setId(key);
@@ -966,22 +962,28 @@ public class EffectManager {
     }
     for (String k : section.getKeys(false)) {
       ConfigurationSection bonus = section.getConfigurationSection(k);
-      DamageType type;
-      DamageScale scale;
-      StrifeStat stat = null;
+      BonusDamage bonusDamage = new BonusDamage();
       try {
-        type = DamageType.valueOf(bonus.getString("damage-type"));
-        scale = DamageScale.valueOf(bonus.getString("damage-scale", "FLAT"));
+        bonusDamage.setDamageType(DamageType.valueOf(bonus.getString("damage-type")));
+        bonusDamage.setDamageScale(DamageScale.valueOf(bonus.getString("damage-scale", "FLAT")));
         String statString = bonus.getString("damage-stat", "");
         if (StringUtils.isNotBlank(statString)) {
-          stat = StrifeStat.valueOf(statString);
+          bonusDamage.setDamageStat(StrifeStat.valueOf(statString));
+        }
+        if (bonusDamage.getDamageScale() == DamageScale.CASTER_ATTRIBUTE ||
+            bonusDamage.getDamageScale() == DamageScale.TARGET_ATTRIBUTE) {
+          bonusDamage.setAttribute(plugin.getAttributeManager().getAttribute(bonus.getString("attribute")));
+        } else if (bonusDamage.getDamageScale() == DamageScale.CASTER_SKILL_LEVEL ||
+            bonusDamage.getDamageScale()  == DamageScale.TARGET_SKILL_LEVEL) {
+          bonusDamage.setLifeSkillType(LifeSkillType.valueOf(bonus.getString("life-skill")));
         }
       } catch (Exception e) {
         LogUtil.printWarning("Check config for " + effectId + " invalid bonus dmg " + k);
         continue;
       }
       double amount = bonus.getDouble("amount", 0);
-      damages.add(new BonusDamage(scale, type, stat, (float) amount));
+      bonusDamage.setAmount((float) amount);
+      damages.add(bonusDamage);
     }
     return damages;
   }

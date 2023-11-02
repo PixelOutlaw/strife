@@ -13,6 +13,7 @@ import land.face.strife.util.DamageUtil.DamageType;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter @Setter
 public class DamageModifiers {
 
   private static final Map<DamageType, Float> baseDamageMults = buildBaseDamageMults();
@@ -25,7 +26,6 @@ public class DamageModifiers {
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private final Set<ElementalStatus> elementalStatuses = new HashSet<>();
-  @Getter @Setter
   private boolean isBasicAttack = true;
   private boolean isSneakAttack = false;
   private boolean isBlocking = false;
@@ -35,120 +35,7 @@ public class DamageModifiers {
   private boolean scaleChancesWithAttack = false;
   private boolean showPopoffs = true;
   private boolean bypassBarrier = false;
-  @Getter @Setter
   private boolean guardBreak = false;
-
-  public AttackType getAttackType() {
-    return attackType;
-  }
-
-  public void setAttackType(AttackType attackType) {
-    this.attackType = attackType;
-  }
-
-  public float getAttackMultiplier() {
-    return attackMultiplier;
-  }
-
-  public void setAttackMultiplier(float attackMultiplier) {
-    this.attackMultiplier = attackMultiplier;
-  }
-
-  public float getDamageReductionRatio() {
-    return damageReductionRatio;
-  }
-
-  public void setDamageReductionRatio(float damageReductionRatio) {
-    this.damageReductionRatio = damageReductionRatio;
-  }
-
-  public float getHealMultiplier() {
-    return healMultiplier;
-  }
-
-  public void setHealMultiplier(float healMultiplier) {
-    this.healMultiplier = healMultiplier;
-  }
-
-  public Map<DamageType, Float> getDamageMultipliers() {
-    return damageMultipliers;
-  }
-
-  public List<BonusDamage> getBonusDamages() {
-    return bonusDamages;
-  }
-
-  public Map<AbilityMod, Float> getAbilityMods() {
-    return abilityMods;
-  }
-
-  public Set<ElementalStatus> getElementalStatuses() {
-    return elementalStatuses;
-  }
-
-  public boolean isSneakAttack() {
-    return isSneakAttack;
-  }
-
-  public void setSneakAttack(boolean sneakAttack) {
-    isSneakAttack = sneakAttack;
-  }
-
-  public boolean isBlocking() {
-    return isBlocking;
-  }
-
-  public void setBlocking(boolean blocking) {
-    isBlocking = blocking;
-  }
-
-  public boolean isCanBeBlocked() {
-    return canBeBlocked;
-  }
-
-  public void setCanBeBlocked(boolean canBeBlocked) {
-    this.canBeBlocked = canBeBlocked;
-  }
-
-  public boolean isCanBeEvaded() {
-    return canBeEvaded;
-  }
-
-  public void setCanBeEvaded(boolean canBeEvaded) {
-    this.canBeEvaded = canBeEvaded;
-  }
-
-  public boolean isApplyOnHitEffects() {
-    return applyOnHitEffects;
-  }
-
-  public void setApplyOnHitEffects(boolean applyOnHitEffects) {
-    this.applyOnHitEffects = applyOnHitEffects;
-  }
-
-  public boolean isScaleChancesWithAttack() {
-    return scaleChancesWithAttack;
-  }
-
-  public void setScaleChancesWithAttack(boolean scaleChancesWithAttack) {
-    this.scaleChancesWithAttack = scaleChancesWithAttack;
-  }
-
-  public boolean isShowPopoffs() {
-    return showPopoffs;
-  }
-
-  public void setShowPopoffs(boolean showPopoffs) {
-    this.showPopoffs = showPopoffs;
-  }
-
-  public boolean isBypassBarrier() {
-    return bypassBarrier;
-  }
-
-  public void setBypassBarrier(boolean bypassBarrier) {
-    this.bypassBarrier = bypassBarrier;
-  }
 
   private static Map<DamageType, Float> buildBaseDamageMults() {
     Map<DamageType, Float> base = new HashMap<>();

@@ -50,7 +50,8 @@ public class MinionListener implements Listener {
       return;
     }
     if (event.getEntity() instanceof LivingEntity) {
-      if (plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity()).getMaster() != null) {
+      StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+      if (mob != null && mob.getMaster() != null) {
         event.setCancelled(true);
       }
     }

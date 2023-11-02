@@ -61,7 +61,7 @@ public class StrifeMobManager {
   }
 
   public StrifeMob getStatMob(LivingEntity entity) {
-    if (entity == null) {
+    if (entity == null || entity.hasMetadata("NPC") || entity.hasMetadata("pet")) {
       return null;
     }
     Champion champion = entity.getType() == EntityType.PLAYER ?

@@ -125,8 +125,8 @@ public class UniqueEntityManager {
 
     assert uniqueEntity.getType().getEntityClass() != null;
 
-    Entity entity = location.getWorld().spawn(location,
-        uniqueEntity.getType().getEntityClass(), e -> lambdaSetup(e, uniqueEntity, location));
+    Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
+        e -> lambdaSetup(e, uniqueEntity, location));
 
     if (uniqueEntity.getModelId() != null) {
       ActiveModel model = ModelEngineAPI.createActiveModel(uniqueEntity.getModelId());
@@ -150,12 +150,12 @@ public class UniqueEntityManager {
   }
 
   private void lambdaSetup(Entity entity, UniqueEntity uniqueEntity, Location location) {
-    SpecialStatusUtil.setUniqueId(entity, uniqueEntity.getId());
     if (cachedDisguises.containsKey(uniqueEntity.getId())) {
       DisguiseAPI.disguiseToAll(entity, cachedDisguises.get(uniqueEntity.getId()).clone());
     }
 
     LivingEntity le = (LivingEntity) entity;
+    SpecialStatusUtil.setUniqueId(entity, uniqueEntity.getId());
     le.setRemoveWhenFarAway(true);
 
     if (!uniqueEntity.isGravity()) {
@@ -164,6 +164,9 @@ public class UniqueEntityManager {
     if (!uniqueEntity.isCollidable()) {
       le.getCollidableExemptions().addAll(Bukkit.getServer()
           .getOnlinePlayers().stream().map(Player::getUniqueId).toList());
+    }
+    if (uniqueEntity.isIgnoreTargetLevel()) {
+      SpecialStatusUtil.setIgnoreTargetLevel(le);
     }
     if (!uniqueEntity.isHasAI()) {
       le.setAI(false);
@@ -257,17 +260,17 @@ public class UniqueEntityManager {
       AttributeInstance attributeInstance = le.getAttribute(GENERIC_FOLLOW_RANGE);
       if (attributeInstance != null) {
         attributeInstance.setBaseValue(uniqueEntity.getFollowRange());
-        if (uniqueEntity.isRemoveFollowMods()) {
-          for (AttributeModifier mod : attributeInstance.getModifiers()) {
-            attributeInstance.removeModifier(mod);
-          }
+        for (AttributeModifier mod : attributeInstance.getModifiers()) {
+          attributeInstance.removeModifier(mod);
         }
       }
     }
 
     if (uniqueEntity.isInvisible()) {
-      le.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,
-          99999999, 10, true, false));
+      le.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999999, 10, true, false));
+    }
+    if (uniqueEntity.isInvulnerable()) {
+      le.setInvulnerable(true);
     }
 
     if (uniqueEntity.isSilent()) {
@@ -424,6 +427,7 @@ public class UniqueEntityManager {
         uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
         uniqueEntity.setSize(cs.getInt("size", -1));
         uniqueEntity.getFactions().addAll(cs.getStringList("factions"));
+        uniqueEntity.getEnemyUniques().addAll(cs.getStringList("enemy-uniques"));
         uniqueEntity.setBaby(cs.getBoolean("baby", false));
         uniqueEntity.setAngry(cs.getBoolean("angry", false));
         uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
@@ -439,10 +443,12 @@ public class UniqueEntityManager {
             cs.getBoolean("always-run-timer", false));
         uniqueEntity.setGravity(cs.getBoolean("gravity", true));
         uniqueEntity.setCollidable(cs.getBoolean("collidable", true));
+        uniqueEntity.setIgnoreTargetLevel(cs.getBoolean("ignore-target-level", false));
         uniqueEntity.setVagabondAllowed(cs.getBoolean("vagabond-allowed", true));
         uniqueEntity.setMinLevelClampMult((float) cs.getDouble("min-level-clamp-mult", 0));
         uniqueEntity.setHasAI(cs.getBoolean("has-ai", true));
         uniqueEntity.setInvisible(cs.getBoolean("invisible", false));
+        uniqueEntity.setInvulnerable(cs.getBoolean("invulnerable", false));
         uniqueEntity.setSilent(cs.getBoolean("silent", false));
         uniqueEntity.setGuildMob(cs.getBoolean("guild-mob", false));
         boolean adaptiveName = cs.getBoolean("adaptive-name", false);

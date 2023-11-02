@@ -17,7 +17,11 @@ public class ChangeRage extends Effect {
       return;
     }
     float restoreAmount = amount;
-    BonusDamage bonusDamage = new BonusDamage(damageScale, null, null, restoreAmount);
+
+    BonusDamage bonusDamage = new BonusDamage();
+    bonusDamage.setDamageScale(damageScale);
+    bonusDamage.setAmount(restoreAmount);
+
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
     target.changeRage(applyMultipliers(caster, restoreAmount));
   }

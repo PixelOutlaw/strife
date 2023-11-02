@@ -154,7 +154,6 @@ public class Spawner extends BukkitRunnable {
       Bukkit.getLogger().warning("Spawner failed to spawn unique! " + spawner.getId());
       return;
     }
-
     mob.setSpawner(spawner);
     if (spawner.getLevel() > 0) {
       SpecialStatusUtil.setMobLevel(mob.getEntity(), spawner.getLevel());
@@ -183,8 +182,7 @@ public class Spawner extends BukkitRunnable {
           mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
         }
         if (mob.getEntity() instanceof Mob) {
-          ReturnHomeGoal returnHomeGoal = new ReturnHomeGoal((Mob) mob.getEntity(),
-              spawner.squaredLeashRange * 0.75);
+          ReturnHomeGoal returnHomeGoal = new ReturnHomeGoal((Mob) mob.getEntity(), spawner.squaredLeashRange * 0.75);
           if (!Bukkit.getMobGoals().hasGoal((Mob) mob.getEntity(), returnHomeGoal.getKey())) {
             Bukkit.getMobGoals().addGoal((Mob) mob.getEntity(), 0, returnHomeGoal);
           }

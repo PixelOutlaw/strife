@@ -1,10 +1,12 @@
 package land.face.strife.patch;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.List;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.patch.FloatBehindGoalPatcher.FloatBehindGoal;
+import land.face.strife.util.SpecialStatusUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.entity.Fish;
 import org.bukkit.entity.Mob;
 
@@ -58,6 +60,28 @@ public class GoalPatcher {
           Bukkit.getMobGoals().addGoal(mob, 3, goal);
         }
       }
+      case "strife:flee_nearest" -> {
+        FleeNearestGoal goal = new FleeNearestGoal(mob);
+        if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
+          Bukkit.getMobGoals().addGoal(mob, 1, goal);
+        }
+      }
+      case "strife:target_factions" -> {
+        String uniqueId = SpecialStatusUtil.getUniqueId(mob);
+        //Bukkit.getLogger().info("a");
+        if (!StringUtils.isBlank(uniqueId)) {
+          //Bukkit.getLogger().info("b");
+          UniqueEntity ue = StrifePlugin.getInstance().getUniqueEntityManager()
+              .getUnique(SpecialStatusUtil.getUniqueId(mob));
+          if (ue != null) {
+            TargetEnemyFaction goal = new TargetEnemyFaction(mob, ue.getEnemyUniques());
+            //Bukkit.getLogger().info("c" + ue.getEnemyUniques());
+            if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
+              Bukkit.getMobGoals().addGoal(mob, 1, goal);
+            }
+          }
+        }
+      }
       case "strife:float_behind_master" -> {
         FloatBehindGoal goal = new FloatBehindGoal(mob);
         if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
@@ -69,7 +93,7 @@ public class GoalPatcher {
   }
 
   public static void removeGoals(Mob mob, List<String> removeKeys) {
-    if (removeKeys.size() == 0) {
+    if (removeKeys.isEmpty()) {
       return;
     }
     Bukkit.getMobGoals().getAllGoals(mob).forEach(goal -> {

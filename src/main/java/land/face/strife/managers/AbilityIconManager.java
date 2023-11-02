@@ -161,9 +161,10 @@ public class AbilityIconManager {
     }
     // Absolutely stupid fix for clientside armor equip nonsense
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      updateAllIconProgress(player);
       player.updateInventory();
+      setIconDamage(mob.getChampion(), ability);
     }, 0L);
+    //Bukkit.getScheduler().runTaskLater(plugin, () -> setIconDamage(mob.getChampion(), ability), 1L);
     boolean toggledOn = false;
     CooldownTracker cooldownTracker = plugin.getAbilityManager()
         .getCooldownTracker(player, ability.getId());
@@ -282,7 +283,7 @@ public class AbilityIconManager {
     }
   }
 
-  private void updateIconProgress(Player player, AbilitySlot slot) {
+  public void updateIconProgress(Player player, AbilitySlot slot) {
     Champion champion = plugin.getChampionManager().getChampion(player);
     setIconDamage(champion, champion.getAbility(slot));
   }
@@ -295,8 +296,7 @@ public class AbilityIconManager {
     if (ability == null || !champion.hasAbility(ability)) {
       return;
     }
-    CooldownTracker container = plugin.getAbilityManager()
-        .getCooldownTracker(champion.getPlayer(), ability.getId());
+    CooldownTracker container = plugin.getAbilityManager().getCooldownTracker(champion.getPlayer(), ability.getId());
     if (container != null) {
       container.updateIcon();
     }

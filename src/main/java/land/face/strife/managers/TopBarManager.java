@@ -74,7 +74,6 @@ public class TopBarManager {
       if (world == null) {
         return;
       }
-      /*
       long time = (int) ((world.getTime() / 1000 + 8) % 24);
       String affix = time < 12 ? "am   " : "pm   ";
       if (time > 12) {
@@ -83,9 +82,8 @@ public class TopBarManager {
         time = 12;
       }
       String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.WHITE + time + affix;
-      */
       // HALLOWEEN ONLY
-      String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.ORANGE + "Witching Hour  ";
+      // String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.ORANGE + "Witching Hour  ";
       for (Player p : dataMap.keySet()) {
         if (p.isOnline()) {
           TopBarData data = dataMap.get(p);

@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.events.EventConditionEvent;
-import land.face.strife.events.EventEffectEvent;
-import land.face.strife.util.PlayerDataUtil;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 

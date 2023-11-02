@@ -60,7 +60,7 @@ public class DOTUtil {
 
     Map<StrifeStat, Float> debuffMap = new HashMap<>();
     debuffMap.put(StrifeStat.BURNING_RESIST, -12.5f);
-    lavaDebuff = new LoadedBuff("BUILT-IN-LAVA-DEBUFF", debuffMap, "", 200, 3);
+    lavaDebuff = new LoadedBuff("BUILT-IN-LAVA-DEBUFF", debuffMap, "", -1, null, 200, 3);
 
     for (int i = 0; i <= 300; i++) {
       poisonDamageMap.put(i, POISON_FLAT_DAMAGE + i * POISON_LEVEL_DAMAGE);

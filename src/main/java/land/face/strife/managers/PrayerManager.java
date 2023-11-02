@@ -250,7 +250,8 @@ public class PrayerManager {
   }
 
   public void putGodPrayerDetails(SelectedGod god, int level, String loreAbilityId) {
-    LoadedBuff loadedBuff = new LoadedBuff(god.name() + level, new HashMap<>(), god.name() + level, 1, 1);
+    LoadedBuff loadedBuff = new LoadedBuff(god.name() + level, new HashMap<>(), god.name() + level,
+        -1, null, 1, 1);
     loadedBuff.getLoreAbilities().add(plugin.getLoreAbilityManager().getLoreAbilityFromId(loreAbilityId));
     String name = PaletteUtil.color(
         plugin.getPrayerYAML().getString("gods." + god.name() + ".prayer" + (level-1) + ".name", "test"));

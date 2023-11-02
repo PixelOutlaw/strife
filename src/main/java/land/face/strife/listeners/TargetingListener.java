@@ -151,6 +151,9 @@ public class TargetingListener implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity());
+    if (mob == null) {
+      return;
+    }
     if (DamageUtil.isGuildAlly(mob, (Player) event.getTarget())) {
       event.setCancelled(true);
     }
@@ -158,7 +161,7 @@ public class TargetingListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onTargetHighLevel(EntityTargetLivingEntityEvent event) {
-    if (event.isCancelled()) {
+    if (event.isCancelled() || SpecialStatusUtil.isIgnoreTargetLevel(event.getEntity())) {
       return;
     }
     if (event.getTarget() instanceof Player && event.getReason() == CLOSEST_PLAYER) {
