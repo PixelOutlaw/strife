@@ -1,6 +1,7 @@
 package land.face.strife.listeners;
 
 import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class CitizenModelListener implements Listener {
         NpcModelData npcModelData = new NpcModelData();
         npcModelData.setModel(npcSection.getString("model-id"));
         npcModelData.setShowBaseEntity(npcSection.getBoolean("show-base-entity", false));
+        npcModelData.setNameTag(npcSection.getBoolean("show-name-tag", false));
         npcModelMap.put(Integer.valueOf(key), npcModelData);
       } catch (Exception e) {
         e.printStackTrace();
@@ -65,8 +67,12 @@ public class CitizenModelListener implements Listener {
         if (!ModelEngineAPI.getModelTicker().isModeledEntity(npc.getEntity().getUniqueId())) {
           ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(npc.getEntity());
           if (modeledEntity != null) {
-            modeledEntity.addModel(ModelEngineAPI.createActiveModel(npcModelData.getModel()), true);
+            ActiveModel activeModel = ModelEngineAPI.createActiveModel(npcModelData.getModel());
+            modeledEntity.addModel(activeModel, true);
             modeledEntity.setBaseEntityVisible(npcModelData.isShowBaseEntity());
+            if (npcModelData.isNameTag()) {
+              activeModel.getNametagHandler().spawn();
+            }
           }
         }
       }

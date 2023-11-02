@@ -127,8 +127,7 @@ public class CooldownTracker extends BukkitRunnable {
         return;
       }
       double percent = (double) duration / maxDuration;
-      ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(),
-          player, slot.getSlotIndex(),
+      ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), player, slot.getSlotIndex(),
           percent, 1, toggleState);
     }
   }

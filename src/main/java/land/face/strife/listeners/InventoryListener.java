@@ -38,8 +38,8 @@ public class InventoryListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerItemHeldEvent event) {
     if (isIcon(event.getPlayer().getInventory().getItem(event.getNewSlot()))) {
-      Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getAbilityIconManager()
-          .triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
+      Bukkit.getScheduler().runTaskLater(plugin, () ->
+          plugin.getAbilityIconManager().triggerAbility(event.getPlayer(), event.getNewSlot()), 0L);
       event.setCancelled(true);
       return;
     }
@@ -58,8 +58,8 @@ public class InventoryListener implements Listener {
       return;
     }
     if (event.getClick() == ClickType.NUMBER_KEY) {
-      if (isIcon(event.getWhoClicked().getInventory().getItem(event.getHotbarButton())) || isIcon(
-          event.getCurrentItem())) {
+      if (isIcon(event.getWhoClicked().getInventory().getItem(event.getHotbarButton())) ||
+          isIcon(event.getCurrentItem())) {
         MessageUtils.sendMessage(event.getWhoClicked(), NO_MOVE_ABILITY);
         event.setCancelled(true);
       }

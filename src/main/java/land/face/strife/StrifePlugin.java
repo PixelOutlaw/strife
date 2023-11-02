@@ -130,6 +130,7 @@ import land.face.strife.managers.EffectManager;
 import land.face.strife.managers.EntityEquipmentManager;
 import land.face.strife.managers.ExperienceManager;
 import land.face.strife.managers.GuiManager;
+import land.face.strife.managers.HerdManager;
 import land.face.strife.managers.IndicatorManager;
 import land.face.strife.managers.LoreAbilityManager;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
@@ -207,7 +208,8 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
-          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml;
+          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml,
+          herdYML;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -226,6 +228,8 @@ public class StrifePlugin extends FacePlugin {
   private TopBarManager topBarManager;
   @Getter
   private ExperienceManager experienceManager;
+  @Getter
+  private HerdManager herdManager;
   @Getter
   private SkillExperienceManager skillExperienceManager;
   @Getter
@@ -357,6 +361,7 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
     configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
     configurations.add(pathYAML = defaultSettingsLoad("paths.yml"));
+    configurations.add(herdYML = defaultSettingsLoad("herding-locations.yml"));
     configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
     configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
     configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
@@ -421,6 +426,7 @@ public class StrifePlugin extends FacePlugin {
     guiManager = new GuiManager(this);
     buffManager = new BuffManager();
     pathManager = new PathManager();
+    herdManager = new HerdManager(this);
 
     MenuListener.getInstance().register(this);
 

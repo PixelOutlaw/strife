@@ -18,43 +18,28 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
+@Getter @Setter
 public class Buff extends BukkitRunnable {
 
-  @Getter
   private final String id;
   private final WeakReference<StrifeMob> buffOwner;
-  @Getter
   private final UUID source;
   private final String actionBarTag;
 
-  @Getter
   private final Map<StrifeStat, Float> buffStats;
-  @Getter
   private final Set<LoreAbility> abilities;
-  @Getter
   private final Set<StrifeTrait> traits;
-  @Getter
-  private final Set<TriggerType> consumeTriggers;
-
-  @Getter
   private final int maxStacks;
-  @Getter
-  @Setter
   private int stacks;
-  @Getter
+  private int usesRemaining;
   private final boolean stacksMultiplyStats;
-
-  @Getter
-  @Setter
   private float secondsRemaining;
-
-  @Getter
-  @Setter
   private boolean rebuildBarrier;
+  private TriggerType useType;
 
   public Buff(String id, StrifeMob owner, UUID source, float duration, String actionBarTag,
-      Map<StrifeStat, Float> buffStats, Set<StrifeTrait> traits, Set<LoreAbility> loreAbilities,
-      Set<TriggerType> consumeTriggers, int maxStacks, boolean stacksMultiplyStats) {
+      Map<StrifeStat, Float> buffStats, Set<StrifeTrait> traits, Set<LoreAbility> loreAbilities, int usesRemaining,
+      TriggerType useType, int maxStacks, boolean stacksMultiplyStats) {
     this.id = id;
     this.source = source;
     this.actionBarTag = actionBarTag;
@@ -62,14 +47,15 @@ public class Buff extends BukkitRunnable {
     this.buffStats = buffStats;
     this.traits = new HashSet<>(traits);
     this.abilities = new HashSet<>(loreAbilities);
-    this.consumeTriggers = consumeTriggers;
     this.stacks = 1;
+    this.usesRemaining = usesRemaining;
     this.maxStacks = maxStacks;
     this.stacksMultiplyStats = stacksMultiplyStats;
     this.secondsRemaining = duration;
+    this.useType = useType;
     if (rebuildBarrier) {
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-          StatUtil.getStat(owner, StrifeStat.BARRIER), 1L);
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
+          () -> StatUtil.getStat(owner, StrifeStat.BARRIER), 0L);
     }
     runTaskTimer(StrifePlugin.getInstance(), 2L, 4L);
   }
@@ -88,11 +74,9 @@ public class Buff extends BukkitRunnable {
       AdvancedActionBarUtil.addMessage((Player) buffOwner.get().getEntity(),
           actionBarTag + source, msg, 4);
     }
-
-     */
-    secondsRemaining -= 0.2;
+    */
+    secondsRemaining -= 0.2F;
     if (secondsRemaining < 0) {
-      // This also cancels the buff!
       buffOwner.get().removeBuff(this);
     }
   }
@@ -113,6 +97,6 @@ public class Buff extends BukkitRunnable {
   public void bumpBuff(double duration) {
     secondsRemaining = Math.max((float) duration, secondsRemaining);
     stacks = Math.min(stacks + 1, maxStacks);
-    //Bukkit.getLogger().warning(" Stacks: " + stacks + "/" + maxStacks);
+    // Bukkit.getLogger().warning(" Stacks: " + stacks + "/" + maxStacks);
   }
 }

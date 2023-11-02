@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.buff.LoadedBuff;
-import land.face.strife.data.effects.BuffEffect;
+import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
@@ -47,9 +48,19 @@ public class BuffManager {
   public void loadBuff(String key, ConfigurationSection cs) {
     Map<StrifeStat, Float> statsMap = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stats"));
     int maxStacks = cs.getInt("max-stacks", 1);
+    int uses = cs.getInt("uses", -1);
     int durationSeconds = cs.getInt("duration-seconds", 10);
+    TriggerType useType = null;
+    try {
+      String typeString = cs.getString("use-type");
+      if (!StringUtils.isBlank(typeString)) {
+        useType = TriggerType.valueOf(typeString);
+      }
+    } catch (Exception e) {
+      Bukkit.getLogger().info("[Strife] Invalid use type for buff " + key + " you dummy!");
+    }
     String tag = cs.getString("action-bar-tag", "");
-    LoadedBuff loadedBuff = new LoadedBuff(key, statsMap, tag, maxStacks, durationSeconds);
+    LoadedBuff loadedBuff = new LoadedBuff(key, statsMap, tag, uses, useType, maxStacks, durationSeconds);
     List<String> traits = cs.getStringList("traits");
     List<String> loreAbilities = cs.getStringList("lore-abilities");
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {

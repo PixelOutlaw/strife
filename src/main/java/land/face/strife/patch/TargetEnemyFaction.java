@@ -6,35 +6,33 @@ import com.destroystokyo.paper.entity.ai.GoalType;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.Predicate;
 import land.face.strife.StrifePlugin;
+import land.face.strife.util.SpecialStatusUtil;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class TargetPlayersGoal implements Goal<Mob> {
+public class TargetEnemyFaction implements Goal<Mob> {
 
-  private static final NamespacedKey key = new NamespacedKey(StrifePlugin.getInstance(), "target_players");
+  private static final NamespacedKey key = new NamespacedKey(StrifePlugin.getInstance(), "target_factions");
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);
   private final WeakReference<Mob> mob;
+  private final Set<String> uniques;
   private long retargetTimestamp = 0;
 
-  public TargetPlayersGoal(Mob mob) {
+  public TargetEnemyFaction(Mob mob, Set<String> uniques) {
     this.mob = new WeakReference<>(mob);
     mob.getPathfinder().setCanPassDoors(true);
     mob.getPathfinder().setCanOpenDoors(true);
     mob.getPathfinder().setCanFloat(true);
+    this.uniques = uniques;
   }
 
   @Override
@@ -89,11 +87,11 @@ public class TargetPlayersGoal implements Goal<Mob> {
     if (mob == null) {
       return null;
     }
-    retargetTimestamp = System.currentTimeMillis() + 800;
+    retargetTimestamp = System.currentTimeMillis() + 850;
     double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
 
     Collection<LivingEntity> nearbyTargets = mob.getWorld().getNearbyEntitiesByType(
-        LivingEntity.class, mob.getLocation(), range, filterTargets(mob));
+        LivingEntity.class, mob.getLocation(), range, filterTargets(mob, uniques));
 
     if (nearbyTargets.isEmpty()) {
       return null;
@@ -110,19 +108,12 @@ public class TargetPlayersGoal implements Goal<Mob> {
       closestTarget = target;
     }
 
-    EntityTargetLivingEntityEvent ev = new EntityTargetLivingEntityEvent(mob,
-        closestTarget, TargetReason.CLOSEST_PLAYER);
-
-    Bukkit.getPluginManager().callEvent(ev);
-    if (ev.isCancelled()) {
-      return null;
-    }
     return closestTarget;
   }
 
-  private static Predicate<LivingEntity> filterTargets(Mob mob) {
+  private static Predicate<LivingEntity> filterTargets(Mob ownerMob, Set<String> uniques) {
     return targetEntity -> targetEntity != null && targetEntity.isValid() &&
-        mob != targetEntity && targetEntity.getType() == EntityType.PLAYER &&
-        ((Player) targetEntity).getGameMode() != GameMode.SPECTATOR;
+        ownerMob != targetEntity && SpecialStatusUtil.getUniqueId(targetEntity) != null &&
+        uniques.contains(SpecialStatusUtil.getUniqueId(targetEntity));
   }
 }

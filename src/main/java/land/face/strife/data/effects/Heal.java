@@ -37,7 +37,10 @@ public class Heal extends Effect {
 
     float heal = amount;
 
-    BonusDamage container = new BonusDamage(damageScale, null, null, heal);
+    BonusDamage container = new BonusDamage();
+    container.setDamageScale(damageScale);
+    container.setAmount(heal);
+
     heal = DamageUtil.applyDamageScale(caster, target, container);
     heal += flatBonus;
 

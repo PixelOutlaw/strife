@@ -84,21 +84,22 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
 
-    StrifeMob strifeMob = targetMob;
-    if (strifeMob != null) {
-      if (strifeMob.getEntity().getWorld() != parentMob.getEntity().getWorld()) {
-        if ("Graveyard".equals(strifeMob.getEntity().getWorld())) {
-          targetWasAlive = false;
-          updateStatus(strifeMob);
-          targetMob = null;
-        } else {
-          clearBars();
-        }
+    if (targetMob == null || targetMob.getEntity() == null) {
+      return;
+    }
+
+    if (targetMob.getEntity().getWorld() != mob.getEntity().getWorld()) {
+      if ("Graveyard".equals(targetMob.getEntity().getWorld())) {
+        targetWasAlive = false;
+        updateStatus(targetMob);
+        targetMob = null;
       } else {
-        updateStatus(strifeMob);
-        if (!targetWasAlive) {
-          targetMob = null;
-        }
+        clearBars();
+      }
+    } else {
+      updateStatus(targetMob);
+      if (!targetWasAlive) {
+        targetMob = null;
       }
     }
   }
@@ -151,7 +152,7 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
   }
 
-  private void clearBars() {
+  public void clearBars() {
     if (player == null) {
       return;
     }
@@ -213,8 +214,10 @@ public class CombatCountdownTask extends BukkitRunnable {
     for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
       xpTotal += champion.getDetailsContainer().getExpValues().get(type);
     }
-    xpTotal *= 0.12f;
-    xpTotal += (float) Math.pow(champion.getDetailsContainer().getTotalExp(), 0.6f);
+    // ROUGHLY 10X xp = double XP gain
+    xpTotal += (float) Math.pow(champion.getDetailsContainer().getTotalExp(), 0.3f);
+    // MODIFY THIS TO ADJUST
+    xpTotal += 1.0f;
     xpTotal *= (float) prayerYes / (prayerYes + prayerNo);
     if (xpTotal > 1) {
       StrifePlugin.getInstance().getSkillExperienceManager().addExperience(

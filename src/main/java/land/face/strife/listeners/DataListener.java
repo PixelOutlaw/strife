@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
@@ -61,6 +59,7 @@ import org.bukkit.event.entity.EntityPotionEffectEvent.Cause;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -88,6 +87,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       plugin.getAbilityIconManager().updateChargesGui(event.getChampion());
     }, 1L);
   }
+
   @EventHandler
   public void onCast(AbilityCastEvent event) {
     if (event.getCaster().getEntity().getType() == EntityType.PLAYER) {
@@ -301,7 +301,12 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (!plugin.getChampionManager().hasPendingChanges((Player) event.getPlayer())) {
       return;
     }
-    plugin.getChampionManager().promptSaveAttributes((Player) event.getPlayer());
+    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+      if (event.getPlayer().getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
+        return;
+      }
+      plugin.getChampionManager().promptSaveAttributes((Player) event.getPlayer());
+    }, 1L);
   }
 
   @EventHandler
@@ -317,6 +322,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   public void onRespawn(PlayerRespawnEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    plugin.getAttackSpeedManager().wipeAttackRecord(event.getPlayer());
     mob.endCombat();
     mob.endRageTask();
     mob.setBlock(mob.getMaxBlock());

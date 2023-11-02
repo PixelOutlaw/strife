@@ -222,7 +222,9 @@ public class CombatListener implements Listener {
     float onHitChance = 1f;
     float attackMultiplier = 1f;
     float healMultiplier = 1f;
+    float multishotRatio = 1f;
     boolean backAttack = false;
+    boolean onHitProjectile = false;
 
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
@@ -243,14 +245,15 @@ public class CombatListener implements Listener {
       //backAttack = angle < 1;
     } else if (attackType == AttackType.PROJECTILE) {
       attackMultiplier = ProjectileUtil.getAttackMult(projectile);
-      onHitChance = ProjectileUtil.getApplyOnHit(projectile) ? 1.0f : attackMultiplier;
+      onHitProjectile = ProjectileUtil.getApplyOnHit(projectile);
+      onHitChance = onHitProjectile ? 1.0f : attackMultiplier;
       assert projectile != null;
       if (attackMultiplier < 0.05) {
         event.setCancelled(true);
         removeIfExisting(projectile);
         return;
       }
-      float multishotRatio = defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
+      multishotRatio = defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
       if (multishotRatio < 0.05) {
         event.setCancelled(true);
         removeIfExisting(projectile);
@@ -262,7 +265,7 @@ public class CombatListener implements Listener {
       //backAttack = angle < 1;
     } else if (attackType == AttackType.AREA) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
-      attackMultiplier *= Math.max(0.3, 4 / (distance + 3));
+      attackMultiplier *= (float) Math.max(0.3, 4 / (distance + 3));
       onHitChance = attackMultiplier;
       healMultiplier = 0.3f;
     }
@@ -281,11 +284,17 @@ public class CombatListener implements Listener {
     }
 
     DamageModifiers damageModifiers = new DamageModifiers();
+    damageModifiers.setBasicAttack(true);
     damageModifiers.setAttackType(attackType);
     damageModifiers.setAttackMultiplier(attackMultiplier);
     damageModifiers.setHealMultiplier(healMultiplier);
     damageModifiers.setDamageReductionRatio(1.0f);
-    damageModifiers.setScaleChancesWithAttack(true);
+    // TODO: actually handle on hit projectiles better
+    if (onHitProjectile && multishotRatio == 1f) {
+      damageModifiers.setScaleChancesWithAttack(false);
+    } else {
+      damageModifiers.setScaleChancesWithAttack(true);
+    }
     damageModifiers.setApplyOnHitEffects(StrifePlugin.RNG.nextFloat() < onHitChance);
     damageModifiers.setSneakAttack(isSneakAttack);
     damageModifiers.setBlocking(blocked);
@@ -359,17 +368,12 @@ public class CombatListener implements Listener {
 
     if (damageModifiers.isApplyOnHitEffects()) {
       Bukkit.getScheduler().runTaskLater(plugin, () ->
-          DamageUtil.postDamage(attacker, defender, damageModifiers), 0L);
+          DamageUtil.postDamage(attacker, defender, damageModifiers, true), 0L);
     }
 
     if (eventDamage >= defendEntity.getHealth()) {
       eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
     }
-    if (attackEntity.hasPermission("faceland.admin")) {
-      plugin.getDisplayManager().create("fire-thing", defendEntity.getLocation()
-          .clone().add(0, defendEntity.getEyeHeight() * 0.66, 0), DamageUtil.getColorFromDamages(damages));
-    }
-
     event.setDamage(BASE, Math.max(eventDamage, 0));
   }
 

@@ -45,6 +45,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 
 public class ChampionManager {
 
@@ -270,7 +271,7 @@ public class ChampionManager {
         },
         null
     );
-    Bukkit.getScheduler().runTaskLater(plugin, () -> confirmationMenu.open(player), 1L);
+    confirmationMenu.open(player);
   }
 
   private int getTotalChampionStats(Champion champion) {

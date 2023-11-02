@@ -5,7 +5,6 @@ import java.util.*;
 import land.face.strife.data.ability.EntityAbilitySet;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.DyeColor;
@@ -25,6 +24,7 @@ public class UniqueEntity {
   @Setter float minLevelClampMult;
   @Setter Map<StrifeStat, Float> attributeMap;
   final Set<String> factions = new HashSet<>();
+  final Set<String> enemyUniques = new HashSet<>();
   @Setter EntityAbilitySet abilitySet;
   @Setter int baseLevel;
   @Setter boolean showName;
@@ -35,9 +35,11 @@ public class UniqueEntity {
   @Setter boolean hasAI;
   @Setter boolean gravity;
   @Setter boolean collidable;
+  @Setter boolean ignoreTargetLevel;
   @Setter boolean guildMob;
   @Setter Profession profession;
   @Setter boolean invisible;
+  @Setter boolean invulnerable;
   @Setter boolean silent;
   @Setter int size;
   @Setter int followRange = -1;

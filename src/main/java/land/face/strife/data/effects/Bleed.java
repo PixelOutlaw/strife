@@ -20,7 +20,10 @@ public class Bleed extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     float bleedAmount = amount;
-    BonusDamage container = new BonusDamage(damageScale, null, null, bleedAmount);
+    BonusDamage container = new BonusDamage();
+    container.setDamageScale(damageScale);
+    container.setAmount(bleedAmount);
+
     bleedAmount = DamageUtil.applyDamageScale(caster, target, container);
     if (applyBleedMods) {
       bleedAmount *= 1 + caster.getStat(StrifeStat.BLEED_DAMAGE) / 100;

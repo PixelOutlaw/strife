@@ -94,15 +94,16 @@ public class MobModManager {
           if (gems >= cost) {
             PaletteUtil.sendMessage(player, "|green|Purchase Successful!");
             plugin.getPlayerPointsPlugin().getAPI().take(player.getUniqueId(), cost);
-            gemStormEndTime = System.currentTimeMillis() + (1000 * 60 * 10);
+            gemStormEndTime = (long) (System.currentTimeMillis() + (1000 * 60 * 10.9));
             dropGems = Math.max(refund, dropGems);
-            String msg = PaletteUtil.color("""
-                 
+            String msg = PaletteUtil.color(
+               """
+                
                 |pink||b|>>=-=-=-=<< |chrom|GEM STORM |pink||b|>>=-=-=-=<<
                 |purple|Woah! |white|{p} |purple|purchased a |pink||b|GEM STORM|purple|!
                 |purple|The |pink|POWER |purple|of the |pink|GEMS |purple|cause extra loot for |white|10m|purple|!
-                 
-                """.replace("{p}", player.getName()));
+               
+               """.replace("{p}", player.getName()));
             String eventString = plugin.getBoostManager().getBoostString();
             for (Player p : Bukkit.getOnlinePlayers()) {
               p.sendMessage(msg);
