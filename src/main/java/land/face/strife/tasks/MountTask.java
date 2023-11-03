@@ -1,6 +1,7 @@
 package land.face.strife.tasks;
 
 import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.bone.manager.MountManager;
 import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -22,8 +23,7 @@ public class MountTask extends BukkitRunnable {
   @Getter
   private final ActiveModel model;
 
-  public MountTask(PlayerMountManager manager, Player player, StrifeMob mount,
-      ActiveModel model) {
+  public MountTask(PlayerMountManager manager, Player player, StrifeMob mount, ActiveModel model) {
     this.player = new WeakReference<>(player);
     this.manager = manager;
     this.mount = new WeakReference<>(mount);
@@ -52,11 +52,12 @@ public class MountTask extends BukkitRunnable {
         return;
       }
     } else {
-      if (model.getModeledEntity().getMountManager().getDriver() == null) {
-        player.leaveVehicle();
-        manager.despawn(player);
-        return;
-      }
+      model.getMountManager().ifPresent(m -> {
+        if (m.getDriver() == null) {
+          Bukkit.getLogger().info("[testoSTRIFE] despawned due to no driver");
+          manager.despawn(player);
+        }
+      });
     }
     Material material = mount.get().getEntity().getLocation().getBlock().getType();
     if (material == Material.WATER || material == Material.LAVA) {

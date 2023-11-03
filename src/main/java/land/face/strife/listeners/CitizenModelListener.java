@@ -3,6 +3,7 @@ package land.face.strife.listeners;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
@@ -64,14 +65,20 @@ public class CitizenModelListener implements Listener {
   private void applyModel(NPC npc, NpcModelData npcModelData) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       if (npc.getEntity() != null && npc.getEntity().isValid()) {
-        if (!ModelEngineAPI.getModelTicker().isModeledEntity(npc.getEntity().getUniqueId())) {
+        if (!ModelEngineAPI.isModeledEntity(npc.getEntity().getUniqueId())) {
           ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(npc.getEntity());
           if (modeledEntity != null) {
             ActiveModel activeModel = ModelEngineAPI.createActiveModel(npcModelData.getModel());
+            activeModel.setShadowVisible(true);
             modeledEntity.addModel(activeModel, true);
             modeledEntity.setBaseEntityVisible(npcModelData.isShowBaseEntity());
             if (npcModelData.isNameTag()) {
-              activeModel.getNametagHandler().spawn();
+              activeModel.getBone("name").ifPresent(modelBone -> {
+                modelBone.getBoneBehavior(BoneBehaviorTypes.NAMETAG).ifPresent(head -> {
+                  head.setVisible(true);
+                  head.setString(npc.getFullName());
+                });
+              });
             }
           }
         }

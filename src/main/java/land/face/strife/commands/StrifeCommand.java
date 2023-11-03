@@ -134,6 +134,12 @@ public class StrifeCommand extends BaseCommand {
     mob.applyInvincible(ticks);
   }
 
+  @Subcommand("gravity")
+  @CommandPermission("strife.admin")
+  public void invincible(CommandSender sender, OnlinePlayer target) {
+    target.getPlayer().setGravity(!target.getPlayer().hasGravity());
+  }
+
   @Subcommand("setGod")
   @CommandPermission("strife.admin")
   public void setGod(CommandSender sender, OnlinePlayer target, String godString) {

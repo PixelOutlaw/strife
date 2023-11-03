@@ -485,7 +485,6 @@ public class EffectManager {
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
         ((ShootProjectile) effect).setModelId(cs.getString("model-id", null));
-        ((ShootProjectile) effect).setVfxBone(cs.getString("vfx-bone", null));
         ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
         ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
         ((ShootProjectile) effect).setSpeed((float) cs.getDouble("speed", 1));

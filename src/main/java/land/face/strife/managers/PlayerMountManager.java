@@ -18,11 +18,11 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.manager.MountManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,7 +32,8 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoadedMount;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.patch.FacelandMountController;
+import land.face.strife.patch.AirMountController;
+import land.face.strife.patch.GroundMountController;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.MountTask;
 import org.bukkit.Bukkit;
@@ -40,6 +41,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Cow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerMountManager {
@@ -126,6 +128,7 @@ public class PlayerMountManager {
   private void createMount(Player player, LoadedMount loadedMount) {
 
     Cow mountEntity = player.getWorld().spawn(player.getLocation(), Cow.class);
+
     mountEntity.setAdult();
     mountEntity.setBreed(false);
     mountEntity.setSilent(true);
@@ -145,9 +148,8 @@ public class PlayerMountManager {
     mob.forceSetStat(StrifeStat.ALL_RESIST, 80);
     mob.forceSetStat(StrifeStat.DAMAGE_REDUCTION, -5);
     plugin.getStatUpdateManager().updateAllAttributes(mob);
-    ChunkUtil.setDespawnOnUnload(mountEntity);
 
-    ActiveModel model = null;
+    ActiveModel model;
     if (loadedMount.getModelId() != null) {
       model = ModelEngineAPI.createActiveModel(loadedMount.getModelId());
       if (model == null) {
@@ -157,16 +159,31 @@ public class PlayerMountManager {
         if (modeledEntity != null) {
           modeledEntity.addModel(model, true);
           modeledEntity.setBaseEntityVisible(false);
-          modeledEntity.getMountManager().setCanSteer(true);
-          modeledEntity.getMountManager().setCanRide(true);
-          modeledEntity.setStepHeight(1);
-          FacelandMountController c = new FacelandMountController(model, loadedMount);
-          player.leaveVehicle();
-          modeledEntity.getMountManager().setDriver(player, c);
-          c.setFlying(modeledEntity);
+          model.getModeledEntity().getBase().setMaxStepHeight(1);
+          //player.leaveVehicle();
+          if (loadedMount.isFlying()) {
+            //Bukkit.getLogger().info("[testoSTRIFE] Mounted flying");
+            Bukkit.getScheduler().runTaskLater(plugin, () -> model.getMountManager().ifPresent(mountManager -> {
+              mountManager.setCanDrive(true);
+              mountManager.setCanRide(true);
+              //Bukkit.getLogger().info("[testoSTRIFE] Mounted flying2");
+              mountManager.mountDriver(player, AirMountController.CUSTOM);
+              ChunkUtil.setDespawnOnUnload(mountEntity);
+            }), 3L);
+          } else {
+            //Bukkit.getLogger().info("[testoSTRIFE] Mounted land2");
+            Bukkit.getScheduler().runTaskLater(plugin, () -> model.getMountManager().ifPresent(mountManager -> {
+              mountManager.setCanDrive(true);
+              mountManager.setCanRide(true);
+              //Bukkit.getLogger().info("[testoSTRIFE] Mounted land2");
+              mountManager.mountDriver(player, GroundMountController.CUSTOM);
+              ChunkUtil.setDespawnOnUnload(mountEntity);
+            }), 3L);
+          }
         }
       }
     } else {
+      model = null;
       mountEntity.addPassenger(player);
     }
 
@@ -205,7 +222,7 @@ public class PlayerMountManager {
     player.leaveVehicle();
     task.getMount().get().getEntity().eject();
     if (task.getModel() != null) {
-      task.getModel().getModeledEntity().getMountManager().dismountAll();
+      task.getModel().getMountManager().ifPresent(MountManager::dismountAll);
       task.getModel().destroy();
     }
     task.getMount().get().getEntity().remove();
@@ -218,7 +235,7 @@ public class PlayerMountManager {
   public void clearAll() {
     for (MountTask task : ownerMap.values()) {
       if (task.getModel() != null) {
-        task.getModel().getModeledEntity().getMountManager().dismountAll();
+        task.getModel().getMountManager().ifPresent(MountManager::dismountAll);
         task.getModel().destroy();
       }
       task.getMount().get().getEntity().remove();

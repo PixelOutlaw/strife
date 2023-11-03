@@ -717,6 +717,7 @@ public class StrifePlugin extends FacePlugin {
       guiManager.setupGui(player);
       attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
       bossBarManager.createBars(player);
+      playerMountManager.updateSelectedMount(player);
       Bukkit.getScheduler().runTaskLater(this,
           () -> abilityIconManager.setAllAbilityIcons(player), 10L);
       LogUtil.printInfo("[Strife] Refreshed player " + player.getName());

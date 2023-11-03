@@ -8,6 +8,7 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -37,6 +38,8 @@ import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
@@ -142,6 +145,14 @@ public class UniqueEntityManager {
           modeledEntity.setBaseEntityVisible(false);
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) entity);
           mob.setModelEntity(modeledEntity);
+          if (StringUtils.isNotBlank(entity.getCustomName())) {
+            TextComponent tc = LegacyComponentSerializer.legacySection().deserialize(entity.getCustomName());
+            model.getBone("name").flatMap(modelBone ->
+                modelBone.getBoneBehavior(BoneBehaviorTypes.NAMETAG)).ifPresent(head -> {
+              head.setVisible(true);
+              head.setComponent(tc);
+            });
+          }
         }
       }
     }
