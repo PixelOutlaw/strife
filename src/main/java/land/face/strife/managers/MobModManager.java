@@ -97,13 +97,12 @@ public class MobModManager {
             gemStormEndTime = (long) (System.currentTimeMillis() + (1000 * 60 * 10.9));
             dropGems = Math.max(refund, dropGems);
             String msg = PaletteUtil.color(
-               """
-                
-                |pink||b|>>=-=-=-=<< |chrom|GEM STORM |pink||b|>>=-=-=-=<<
-                |purple|Woah! |white|{p} |purple|purchased a |pink||b|GEM STORM|purple|!
-                |purple|The |pink|POWER |purple|of the |pink|GEMS |purple|cause extra loot for |white|10m|purple|!
-               
-               """.replace("{p}", player.getName()));
+               "\n" +
+               "|pink||b|>>=-=-=-=<< |chrom|GEM STORM |pink||b|>>=-=-=-=<<\n" +
+               "|purple|Woah! |white|{p} |purple|purchased a |pink||b|GEM STORM|purple|!\n".replace("{p}", player.getName()) +
+               "|purple|The |pink|POWER |purple|of the |pink|GEMS |purple|cause extra loot for |white|10m|purple|!\n" +
+               "\n"
+            );
             String eventString = plugin.getBoostManager().getBoostString();
             for (Player p : Bukkit.getOnlinePlayers()) {
               p.sendMessage(msg);
@@ -228,10 +227,13 @@ public class MobModManager {
     }
     mod.setAbilitySet(new EntityAbilitySet(cs.getConfigurationSection("abilities")));
     for (String s : cs.getStringList("required-biome")) {
-      mod.addValidBiome(Biome.valueOf(s));
+      mod.getValidBiomes().add(Biome.valueOf(s));
     }
     for (String s : cs.getStringList("required-entity-type")) {
-      mod.addValidEntity(EntityType.valueOf(s));
+      mod.getValidEntities().add(EntityType.valueOf(s));
+    }
+    for (String s : cs.getStringList("banned-entity-type")) {
+      mod.getInvalidEntities().add(EntityType.valueOf(s));
     }
     loadedMods.put(id, mod);
   }
@@ -241,10 +243,13 @@ public class MobModManager {
       LogUtil.printError("Cannot set mods on a null entity... something is very wrong!");
       return false;
     }
-    if (mod.getValidEntities() != null && !mod.getValidEntities().isEmpty()) {
+    if (!mod.getValidEntities().isEmpty()) {
       if (!mod.getValidEntities().contains(le.getType())) {
         return false;
       }
+    }
+    if (mod.getInvalidEntities().contains(le.getType())) {
+      return false;
     }
     if (mod.getValidBiomes() != null && !mod.getValidBiomes().isEmpty()) {
       if (!mod.getValidBiomes().contains(location.getBlock().getBiome())) {

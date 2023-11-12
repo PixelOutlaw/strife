@@ -6,6 +6,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
 import lombok.Getter;
+import org.bukkit.entity.Player;
 
 public class CombatDetailsContainer {
 
@@ -18,13 +19,14 @@ public class CombatDetailsContainer {
   private static final float WEIGHT_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
       .getDouble("config.leveling.combat-skill-exp-weight", 0.1);
 
-  public void addWeights(Ability ability) {
+  public void addWeights(Ability ability, Player player) {
     if (totalExp == 0 && !skillWeight.isEmpty()) {
       skillWeight.clear();
     }
+    float violationLevel = StrifePlugin.getInstance().getViolationManager().calculateSafespotViolationMult(player);
     for (LifeSkillType type : ability.getAbilityIconData().getExpWeights().keySet()) {
-      skillWeight.put(type, skillWeight.getOrDefault(type, 0f) +
-          ability.getAbilityIconData().getExpWeights().get(type));
+      float amount = ability.getAbilityIconData().getExpWeights().get(type) * violationLevel;
+      skillWeight.put(type, skillWeight.getOrDefault(type, 0f) + amount);
     }
   }
 

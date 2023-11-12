@@ -1013,8 +1013,7 @@ public class DamageUtil {
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
-  public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier,
-      float healMultiplier) {
+  public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier, float healMultiplier) {
     float energy = attacker.getStat(StrifeStat.ENERGY_ON_HIT) * attackMultiplier * healMultiplier;
     StatUtil.changeEnergy(attacker, energy);
   }

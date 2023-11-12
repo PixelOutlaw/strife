@@ -54,7 +54,7 @@ public class MountTask extends BukkitRunnable {
     } else {
       model.getMountManager().ifPresent(m -> {
         if (m.getDriver() == null) {
-          Bukkit.getLogger().info("[testoSTRIFE] despawned due to no driver");
+          //Bukkit.getLogger().info("[testoSTRIFE] despawned due to no driver");
           manager.despawn(player);
         }
       });

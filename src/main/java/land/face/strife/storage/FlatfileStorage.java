@@ -117,12 +117,6 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".catchup-xp-used", saveData.getCatchupExpUsed());
 
     config.set(champUuid + ".god", saveData.getSelectedGod() == null ? "NONE" : saveData.getSelectedGod().toString());
-    for (SelectedGod g : SelectedGod.values()) {
-      if (g == SelectedGod.NONE) {
-        continue;
-      }
-      config.set(champUuid + "." + g + "-xp", saveData.getGodXp().get(g));
-    }
 
     List<String> boundAbilityIds = new ArrayList<>(saveData.getBoundAbilities());
 

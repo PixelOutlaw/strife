@@ -129,6 +129,9 @@ public class TargetingUtil {
   }
 
   public static boolean isFriendly(StrifeMob attacker, StrifeMob defender) {
+    if (attacker.getEntity() == null) {
+      return false;
+    }
     if (defender == null) {
       return true;
     }

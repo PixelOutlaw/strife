@@ -22,7 +22,7 @@ public class AirMountController extends AbstractMountController {
 
   public AirMountController(Entity entity, Mount mount) {
     super(entity, mount);
-    landSpeed = 1.6f;
+    landSpeed = 1.25f;
     airVelocity = 0.225f;
   }
 
@@ -90,7 +90,7 @@ public class AirMountController extends AbstractMountController {
         //model.setState(ModelState.IDLE);
       }
 
-      float move = controller.isOnGround() ? landSpeed : landSpeed * 0.2f;
+      float move = controller.isOnGround() ? landSpeed : landSpeed * 0.8f;
       controller.move(input.getSide(), 0, input.getFront(), move);
 
       if (input.isJump() && controller.isOnGround()) {

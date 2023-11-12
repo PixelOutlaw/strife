@@ -150,6 +150,7 @@ import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.managers.TopBarManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.managers.VagabondManager;
+import land.face.strife.managers.ViolationManager;
 import land.face.strife.managers.WSEManager;
 import land.face.strife.menus.abilities.AbilityMenu;
 import land.face.strife.menus.abilities.AbilitySubmenu;
@@ -272,6 +273,8 @@ public class StrifePlugin extends FacePlugin {
   private AbilityIconManager abilityIconManager;
   @Getter
   private GuiManager guiManager;
+  @Getter
+  private ViolationManager violationManager;
   @Getter
   private BuffManager buffManager;
   @Getter
@@ -424,6 +427,7 @@ public class StrifePlugin extends FacePlugin {
     mobModManager = new MobModManager(this, settings, equipmentManager);
     abilityIconManager = new AbilityIconManager(this);
     guiManager = new GuiManager(this);
+    violationManager = new ViolationManager(this);
     buffManager = new BuffManager();
     pathManager = new PathManager();
     herdManager = new HerdManager(this);

@@ -304,7 +304,7 @@ public class ShootListener implements Listener {
     }
 
     plugin.getEffectManager().processEffectList(caster, response, hitEffects, ProjectileUtil.getShotId(event.getEntity()));
-    if (event.getHitEntity() != null) {
+    if (event.getHitEntity() != null && event.getHitEntity() instanceof LivingEntity) {
       ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
     }
   }

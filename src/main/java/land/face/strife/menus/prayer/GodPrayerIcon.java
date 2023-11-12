@@ -34,7 +34,8 @@ public class GodPrayerIcon extends MenuItem {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     SelectedGod god = mob.getChampion().getSaveData().getSelectedGod();
     ItemStack stack = new ItemStack(Material.PAPER);
-    if (god == SelectedGod.NONE || mob.getChampion().getSaveData().getGodLevel().get(god) < godLevel) {
+    if (god == null || god == SelectedGod.NONE ||
+        mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
       ItemStackExtensionsKt.setCustomModelData(stack, 800);
       ItemStackExtensionsKt.setDisplayName(stack, FaceColor.WHITE + "Unknown Prayer");
       TextUtils.setLore(stack, List.of("", FaceColor.GRAY + " ? ? ?", ""), false);

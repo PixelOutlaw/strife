@@ -51,9 +51,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsOffenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
-  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
-  private float POISON_FLAT_DAMAGE;
-  private float POISON_LEVEL_DAMAGE;
+
+  private final Map<Player, ItemStack> cachedIcon = new HashMap<>();
+  private final float POISON_FLAT_DAMAGE;
+  private final float POISON_LEVEL_DAMAGE;
 
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
@@ -170,7 +171,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
     if (mob.getStat(StrifeStat.CRITICAL_RATE) > 0 && !mob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
       loreSection.add(
-          addStat("Critical Chance: ", Math.min(100, mob.getStat(StrifeStat.CRITICAL_RATE)), "%", INT_FORMAT));
+          addStat("Critical Chance: ", mob.getStat(StrifeStat.CRITICAL_RATE), "%", INT_FORMAT));
       loreSection.add(
           addStat("Critical Multiplier: ", StatUtil.getCriticalMultiplier(mob), "x", TWO_DECIMAL));
     }

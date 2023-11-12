@@ -117,11 +117,11 @@ public class GodCommand extends BaseCommand {
       case 3 -> plugin.getPrayerManager().getGodLevelXpFour();
       default -> -1;
     };
-    PaletteUtil.sendMessage(target.getPlayer(), "|teal|Gained |cyan|" + amount + " XP |teal|for |white|" + selectedGod);
     if (xpToLevel == -1) {
       mob.getChampion().getSaveData().getGodXp().put(selectedGod, newXp);
       return;
     }
+    PaletteUtil.sendMessage(target.getPlayer(), "|teal|Gained |cyan|" + amount + " XP |teal|for |white|" + selectedGod);
     if (newXp >= xpToLevel) {
       newXp -= xpToLevel;
       TitleUtils.sendTitle(
@@ -140,7 +140,6 @@ public class GodCommand extends BaseCommand {
   @CommandPermission("strife.admin")
   public void shittyTribute(CommandSender sender, OnlinePlayer target) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
-    SelectedGod selectedGod = mob.getChampion().getSaveData().getSelectedGod();
 
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
     if (target.getPlayer().hasPermission("prayer.enabled") &&
@@ -152,12 +151,13 @@ public class GodCommand extends BaseCommand {
     mob.setPrayer(mob.getMaxPrayer());
     plugin.getPrayerManager().sendPrayerUpdate(target.getPlayer(), 1, false);
 
-    if (selectedGod == SelectedGod.NONE) {
-      PaletteUtil.sendMessage(target.getPlayer(),
-          FaceColor.YELLOW + "You must choose a God before you can tribute! Select one of the nearby heads!");
-      return;
+    SelectedGod selectedGod = mob.getChampion().getSaveData().getSelectedGod();
+    switch (selectedGod) {
+      case FACEGUY, AURORA, ZEXIR, ANYA ->
+          Bukkit.getServer().dispatchCommand(sender, "bs open tribute-gui " + target.getPlayer().getName());
+      default -> // TODO: Not use bossshop for this UI
+          PaletteUtil.sendMessage(target.getPlayer(),
+              FaceColor.YELLOW + "You must choose a God before you can tribute! Select one of the nearby heads!");
     }
-    // TODO: Not use bossshop for this UI
-    Bukkit.getServer().dispatchCommand(sender, "bs open tribute-gui " + target.getPlayer().getName());
   }
 }

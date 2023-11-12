@@ -36,7 +36,7 @@ public class ChampionSaveData {
   private final Map<StrifeAttribute, Integer> pendingStats = new HashMap<>();
 
   @Getter @Setter
-  private SelectedGod selectedGod;
+  private SelectedGod selectedGod = SelectedGod.NONE;
   @Getter
   private final Map<SelectedGod, Integer> godXp = new HashMap<>();
   @Getter

@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -34,27 +35,37 @@ public class FollowMasterGoal implements Goal<Mob> {
 
   @Override
   public boolean shouldActivate() {
-    Mob mob = this.mob.get();
-    if (mob == null) {
+    Mob selfMob = this.mob.get();
+    LivingEntity masterEntity = this.master.get();
+    if (selfMob == null) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to null mob");
       return false;
     }
     if (masterCheck < System.currentTimeMillis()) {
       masterCheck = System.currentTimeMillis() + 1000;
-      StrifeMob self = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(mob);
+      StrifeMob self = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(selfMob);
       if (self.getMaster() == null) {
+        selfMob.remove();
+        //Bukkit.getLogger().info("[Strife][AI][follow_master] Existed due to not strifemob master");
         return false;
       }
-      LivingEntity master = this.master.get();
-      if (master == null) {
-        return false;
+      if (masterEntity != self.getMaster().getEntity()) {
+        this.master = new WeakReference<>(self.getMaster().getEntity());
+        masterEntity = self.getMaster().getEntity();
       }
-      this.master = new WeakReference<>(self.getMaster().getEntity());
-      if (!master.isValid() || master.getWorld() != mob.getWorld()) {
-        return false;
-      }
-      return master.getLocation().distanceSquared(mob.getLocation()) > 64;
     }
-    return false;
+    if (masterEntity == null || !masterEntity.isValid()) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to invalid master entity");
+      return false;
+    }
+    if (masterEntity.getWorld() != selfMob.getWorld()) {
+      if (!"Graveyard".equals(selfMob.getWorld().getName())) {
+        selfMob.remove();
+      }
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to differing world");
+      return false;
+    }
+    return masterEntity.getLocation().distanceSquared(selfMob.getLocation()) > 64;
   }
 
   @Override
@@ -62,29 +73,34 @@ public class FollowMasterGoal implements Goal<Mob> {
     if (masterCheck > System.currentTimeMillis()) {
       return true;
     }
-    Mob mob = this.mob.get();
-    if (mob == null) {
+    Mob selfMob = this.mob.get();
+    if (selfMob == null) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to missing selfmob");
       return false;
     }
     LivingEntity master = this.master.get();
     if (master == null) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to null master");
       return false;
     }
     masterCheck = System.currentTimeMillis() + 500;
-    if (master.getWorld() != mob.getWorld()) {
+    if (master.getWorld() != selfMob.getWorld()) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to differing worls2");
       return false;
     }
-    if (mob.getTarget() != null && mob.getTarget().isValid()) {
+    if (selfMob.getTarget() != null && selfMob.getTarget().isValid()) {
       teleportTicks = 0;
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Teleport ticks due to target found");
       return false;
     }
     teleportTicks++;
     if (teleportTicks > 8) {
-      mob.teleport(master.getLocation());
+      selfMob.teleport(master.getLocation());
       teleportTicks = 0;
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Teleport ticks due to teleport success");
       return false;
     }
-    return master.getLocation().distanceSquared(mob.getLocation()) > 28;
+    return master.getLocation().distanceSquared(selfMob.getLocation()) > 28;
   }
 
   @Override
@@ -105,10 +121,12 @@ public class FollowMasterGoal implements Goal<Mob> {
   public void tick() {
     Mob mob = this.mob.get();
     if (mob == null) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Mob tick, do nothing, null mob");
       return;
     }
     LivingEntity master = this.master.get();
     if (master == null || !master.isValid() || master.getWorld() != mob.getWorld()) {
+      //Bukkit.getLogger().info("[Strife][AI][fllow_master] Mob tick, null invalid or wrong world master");
       return;
     }
     mob.getPathfinder().moveTo(master.getLocation(), 1.35D);

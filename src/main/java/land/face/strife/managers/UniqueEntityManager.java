@@ -429,7 +429,7 @@ public class UniqueEntityManager {
         uniqueEntity.setCanTarget(cs.getBoolean("can-target", true));
         uniqueEntity.setBoundingBonus(cs.getDouble("bounding-bonus", -1));
         uniqueEntity.setMaxMods(cs.getInt("max-mods", 3));
-        uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", false));
+        uniqueEntity.setRemoveFollowMods(cs.getBoolean("remove-range-modifiers", true));
         if (uniqueEntity.getType() == EntityType.CREEPER) {
           uniqueEntity.setPowered(cs.getBoolean("powered", false));
         }

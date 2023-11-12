@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
@@ -110,7 +111,9 @@ public class AbilityManager {
       coolDownAbility(caster, ability, slot);
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
-      caster.getChampion().getDetailsContainer().addWeights(ability);
+      if (MoveUtil.hasMoved((Player) caster.getEntity(), 30000)) {
+        caster.getChampion().getDetailsContainer().addWeights(ability, (Player) caster.getEntity());
+      }
     }
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
