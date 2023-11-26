@@ -20,10 +20,7 @@ public class CombatDetailsContainer {
       .getDouble("config.leveling.combat-skill-exp-weight", 0.1);
 
   public void addWeights(Ability ability, Player player) {
-    if (totalExp == 0 && !skillWeight.isEmpty()) {
-      skillWeight.clear();
-    }
-    float violationLevel = StrifePlugin.getInstance().getViolationManager().calculateSafespotViolationMult(player);
+    float violationLevel = StrifePlugin.getInstance().getViolationManager().getSafespotViolationMult(player);
     for (LifeSkillType type : ability.getAbilityIconData().getExpWeights().keySet()) {
       float amount = ability.getAbilityIconData().getExpWeights().get(type) * violationLevel;
       skillWeight.put(type, skillWeight.getOrDefault(type, 0f) + amount);

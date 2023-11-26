@@ -21,6 +21,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class StatUtil {
 
@@ -159,6 +161,19 @@ public class StatUtil {
         }
         return amount;
       }
+      case AIR_JUMPS -> {
+        if (mob.getChampion() == null) {
+          return 0;
+        }
+        float amount = stats.getOrDefault(StrifeStat.AIR_JUMPS, 0f);
+        if (mob.getChampion().getLifeSkillLevel(LifeSkillType.AGILITY) >= 40) {
+          amount++;
+        }
+        if (mob.getChampion().getLifeSkillLevel(LifeSkillType.AGILITY) >= 60) {
+          amount++;
+        }
+        return amount;
+      }
     }
     return stats.getOrDefault(stat, 0f);
   }
@@ -204,6 +219,22 @@ public class StatUtil {
       attackTime /= 1 + attackBonus / 100;
     } else {
       attackTime *= 1 + Math.abs(attackBonus / 100);
+    }
+
+    ae.getEntity().removePotionEffect(PotionEffectType.FAST_DIGGING);
+    ae.getEntity().removePotionEffect(PotionEffectType.SLOW_DIGGING);
+    if (attackTime > 1.8) {
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 10, 1, true, false));
+    } else if (attackTime > 1.605) {
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 9, 0, true, false));
+    } else if (attackTime > 1.25) {
+      // do nothing
+    } else if (attackTime > 0.9) {
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 8, 0, true, false));
+    } else if (attackTime > 0.6) {
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 7, 1, true, false));
+    } else {
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 6, 2, true, false));
     }
 
     return attackTime;

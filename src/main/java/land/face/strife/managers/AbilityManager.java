@@ -48,6 +48,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -493,6 +494,11 @@ public class AbilityManager {
           targets.add(target.getEntity());
           return new TargetResponse(targets);
         }
+        if (ability.isSneakSelfTarget() &&
+            caster.getEntity().getType() == EntityType.PLAYER && caster.getEntity().isSneaking()) {
+          targets.add(caster.getEntity());
+          return new TargetResponse(targets, true);
+        }
         LivingEntity newTarget = TargetingUtil.selectFirstEntityInSight(caster.getEntity(),
             ability.getRange(), ability.isFriendly());
         if (newTarget != null) {
@@ -638,9 +644,10 @@ public class AbilityManager {
     boolean friendly = cs.getBoolean("friendly", false);
     boolean passivesOnCooldown = cs.getBoolean("passive-stats-on-cooldown", false);
     boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
+    boolean sneakSelfTarget = cs.getBoolean("sneak-self-target", false);
     boolean deathUntoggle = cs.getBoolean("untoggle-on-death", false);
 
-    Ability ability = new Ability(key, name, effects, toggleOffEffects, abilityType, targetType,
+    Ability ability = new Ability(key, name, effects, toggleOffEffects, abilityType, targetType, sneakSelfTarget,
         range, cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
         raycastsHitEntities, conditions, passivesOnCooldown, friendly, abilityIconData,
         cancelStealth, deathUntoggle, minCooldown);

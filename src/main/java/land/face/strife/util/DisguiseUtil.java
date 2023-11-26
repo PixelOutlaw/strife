@@ -49,7 +49,7 @@ public class DisguiseUtil {
   private static BukkitTask task;
 
   public static void refresh() {
-    if (task != null) {
+    if (task != null && !task.isCancelled()) {
       task.cancel();
     }
     for (LivingEntity le : tempDisguiseMap.keySet()) {
@@ -178,6 +178,7 @@ public class DisguiseUtil {
     } else if (type.isMisc()) {
       MiscDisguise miscDisguise = new MiscDisguise(type);
       miscDisguise.setReplaceSounds(true);
+      miscDisguise.setVelocitySent(true);
       FlagWatcher watcher = miscDisguise.getWatcher();
       try {
         switch (type) {

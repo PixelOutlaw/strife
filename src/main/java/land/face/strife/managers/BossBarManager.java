@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BarState;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -37,13 +38,6 @@ public class BossBarManager {
   private final Map<Player, BarState> statusBar4 = new HashMap<>();
 
   public BossBarManager(StrifePlugin plugin) {
-    // Ensure bars do not expire from inactivity
-    Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-      randomizeBars(statusBar1);
-      randomizeBars(statusBar2);
-      randomizeBars(statusBar3);
-      randomizeBars(statusBar4);
-    },20L * 17, 100L);
     Bukkit.getScheduler().runTaskTimer(plugin, this::tickBars,20L * 20, 4L);
   }
 
@@ -64,6 +58,7 @@ public class BossBarManager {
     iterateTicks(statusBar3.values());
     iterateTicks(statusBar4.values());
   }
+
   private void iterateTicks(Collection<BarState> stateSet) {
     for (BarState state : stateSet) {
       if (state.getTicks() == 0) {
@@ -73,13 +68,6 @@ public class BossBarManager {
         state.getBar().setTitle("");
       }
       state.setTicks(state.getTicks() - 1);
-    }
-  }
-
-  private void randomizeBars(Map<Player, BarState> map) {
-    for (BarState b : map.values()) {
-      b.getBar().setProgress(StrifePlugin.RNG.nextFloat());
-      b.getBar().setVisible(true);
     }
   }
 
@@ -93,7 +81,26 @@ public class BossBarManager {
     }
   }
 
+  private void updateBarTitleIfPossible(BarState state, int priority, int ticks, TextComponent text) {
+    if (state != null) {
+      if (priority <= state.getPriority() || state.getTicks() < 1) {
+        state.setPriority(priority);
+        state.setTicks(ticks / 4);
+        //state.getBar().setTitle(text);
+      }
+    }
+  }
+
   public void updateBar(Player player, int barNumber, int priority, String text, int ticks) {
+    switch (barNumber) {
+      case 1 -> updateBarTitleIfPossible(statusBar1.get(player), priority, ticks, text);
+      case 2 -> updateBarTitleIfPossible(statusBar2.get(player), priority, ticks, text);
+      case 3 -> updateBarTitleIfPossible(statusBar3.get(player), priority, ticks, text);
+      case 4 -> updateBarTitleIfPossible(statusBar4.get(player), priority, ticks, text);
+    }
+  }
+
+  public void updateBar(Player player, int barNumber, int priority, TextComponent text, int ticks) {
     switch (barNumber) {
       case 1 -> updateBarTitleIfPossible(statusBar1.get(player), priority, ticks, text);
       case 2 -> updateBarTitleIfPossible(statusBar2.get(player), priority, ticks, text);
@@ -148,8 +155,7 @@ public class BossBarManager {
   }
 
   private static BarState buildBar(Player player) {
-    BossBar bar = StrifePlugin.getInstance().getServer()
-        .createBossBar("", BarColor.PURPLE, BarStyle.SOLID);
+    BossBar bar = StrifePlugin.getInstance().getServer().createBossBar("", BarColor.PURPLE, BarStyle.SOLID);
     BarState state = new BarState();
     state.setBar(bar);
     bar.addPlayer(player);

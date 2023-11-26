@@ -44,7 +44,6 @@ public class PrayerCommand extends BaseCommand {
   }
 
   @Default
-  @CommandPermission("prayer.enabled")
   public void baseCommand(Player sender) {
     plugin.getPrayerManager().getPrayerMenu().open(sender);
   }
@@ -54,8 +53,7 @@ public class PrayerCommand extends BaseCommand {
   public void creationCommand(CommandSender sender, OnlinePlayer target) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
-    if (target.getPlayer().hasPermission("prayer.enabled") &&
-        mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
+    if (mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
       PaletteUtil.sendMessage(target.getPlayer(), FaceColor.WHITE.s() + FaceColor.ITALIC + "Faith restored!");
       Audience audience = Audience.audience(target.getPlayer());
       audience.playSound(PrayerManager.FAITH_RESTORED);

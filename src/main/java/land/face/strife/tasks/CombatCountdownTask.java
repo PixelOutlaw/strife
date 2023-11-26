@@ -58,6 +58,9 @@ public class CombatCountdownTask extends BukkitRunnable {
     CombatChangeEvent cce = new CombatChangeEvent(parentMob, NewCombatState.ENTER);
     if (player != null) {
       ToastUtils.sendToast(player, StatUtil.COMBAT_ENTER_TOAST, ItemUtils.BLANK, ToastStyle.INFO);
+      if (parentMob.getChampion().getDetailsContainer() != null) {
+        parentMob.getChampion().getDetailsContainer().clearAll();
+      }
     }
     Bukkit.getPluginManager().callEvent(cce);
   }
@@ -214,10 +217,9 @@ public class CombatCountdownTask extends BukkitRunnable {
     for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
       xpTotal += champion.getDetailsContainer().getExpValues().get(type);
     }
-    // ROUGHLY 10X xp = double XP gain
-    xpTotal += (float) Math.pow(champion.getDetailsContainer().getTotalExp(), 0.3f);
+    xpTotal += (float) Math.pow(champion.getDetailsContainer().getTotalExp(), 0.2f);
     // MODIFY THIS TO ADJUST
-    xpTotal += 1.0f;
+    xpTotal += 0.75f;
     xpTotal *= (float) prayerYes / (prayerYes + prayerNo);
     if (xpTotal > 1) {
       StrifePlugin.getInstance().getSkillExperienceManager().addExperience(

@@ -116,9 +116,6 @@ public class StrifeMob {
   @Getter @Setter
   private float bleed;
   @Getter
-  private int maxAirJumps;
-
-  @Getter
   private boolean useEquipment;
 
   private CombatCountdownTask combatCountdownTask = null;
@@ -311,12 +308,14 @@ public class StrifeMob {
   }
 
   public void endRageTask() {
+    if (getEntity() instanceof Player) {
+      StrifePlugin.getInstance().getGuiManager().getGui((Player) getEntity()).update(
+          new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+    }
     if (rageTask != null) {
-      if (getEntity() instanceof Player) {
-        StrifePlugin.getInstance().getGuiManager().getGui((Player) getEntity()).update(
-                new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+      if (!rageTask.isCancelled()) {
+        rageTask.cancel();
       }
-      rageTask.cancel();
       rageTask = null;
     }
   }
@@ -428,18 +427,6 @@ public class StrifeMob {
         lastChampionUpdate = getChampion().getLastChanged();
       }
       setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
-      if (getChampion() != null) {
-        int agilityLevel = getChampion().getLifeSkillLevel(LifeSkillType.AGILITY);
-        if (agilityLevel < 40) {
-          maxAirJumps = 0;
-        } else {
-          int amount = 1 + (int) getStat(StrifeStat.AIR_JUMPS);
-          if (agilityLevel > 59) {
-            amount++;
-          }
-          maxAirJumps = amount;
-        }
-      }
     }
     return StatUtil.getStat(this, stat);
   }

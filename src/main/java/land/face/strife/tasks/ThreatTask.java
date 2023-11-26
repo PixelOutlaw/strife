@@ -18,7 +18,7 @@ public class ThreatTask extends BukkitRunnable {
   @Override
   public void run() {
     StrifeMob mob = parentMob.get();
-    if (mob == null || mob.getEntity() == null) {
+    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
       cancel();
       return;
     }

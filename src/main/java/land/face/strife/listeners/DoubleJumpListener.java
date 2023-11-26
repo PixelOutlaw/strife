@@ -104,11 +104,7 @@ public class DoubleJumpListener implements Listener {
 
   private void resetJumps(Player player) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
-    int agilityLevel = mob.getChampion().getLifeSkillLevel(AGILITY);
-    if (agilityLevel > 39) {
-      int maxJumps = JumpUtil.getMaxJumps(mob);
-      JumpUtil.setJumps(mob, maxJumps);
-    }
+    JumpUtil.setJumps(mob, (int) mob.getStat(StrifeStat.AIR_JUMPS));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -120,35 +116,17 @@ public class DoubleJumpListener implements Listener {
     if (MoveUtil.timeOffGround(event.getPlayer()) < 200) {
       return;
     }
-
-    boolean waterHop = event.getPlayer().getLocation().getBlock().getType() == Material.WATER &&
-        event.getPlayer().getVelocity().getY() < -0.4 &&
-        event.getPlayer().getLocation().clone().add(0, 1, 0).getBlock().getType().isAir();
-
     int jumps = JumpUtil.getJumps(event.getPlayer());
-    if ((jumps < 1 && !waterHop)) {
+    if ((jumps < 1)) {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     if (mob.getEnergy() < 20) {
-      plugin.getGuiManager()
-          .postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 10));
-      event.getPlayer()
-          .playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
+      plugin.getGuiManager().postNotice(event.getPlayer(), new NoticeData(GuiManager.NOTICE_ENERGY, 10));
+      event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
       return;
     }
-
-    int agilityLevel = PlayerDataUtil.getLifeSkillLevel(mob.getChampion(), AGILITY);
-
-    if (agilityLevel < 40) {
-      return;
-    }
-
-    if (waterHop) {
-      doWaterSkip(mob, event.getPlayer());
-    } else {
-      doAirJump(mob, event.getPlayer(), jumps);
-    }
+    doAirJump(mob, event.getPlayer(), jumps);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

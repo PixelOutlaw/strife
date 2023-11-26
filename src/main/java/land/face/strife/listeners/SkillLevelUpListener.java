@@ -72,18 +72,13 @@ public class SkillLevelUpListener implements Listener {
       xpSoundMercyMap.put(event.getPlayer(), System.currentTimeMillis() + 500);
     }
 
-    if (event.getNewSkillLevel() % 5 == 0) {
-      if (event.getSkillType() != LifeSkillType.PRAYER) {
-        String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached "
+    if (event.getNewSkillLevel() > 9 && event.getNewSkillLevel() % 5 == 0) {
+      String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached "
             + event.getSkillType().getPrettyName() + " skill level " + event.getNewSkillLevel() + "!**";
-        TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
-        DiscordUtil.sendMessage(textChannel, discordMessage);
-      }
+      TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
+      DiscordUtil.sendMessage(textChannel, discordMessage);
       String msg = PaletteUtil.color(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
       for (Player p : Bukkit.getOnlinePlayers()) {
-        if (event.getSkillType() == LifeSkillType.PRAYER && !p.hasPermission("prayer.enabled")) {
-          continue;
-        }
         MessageUtils.sendMessage(p, msg);
       }
     } else {

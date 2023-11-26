@@ -39,6 +39,9 @@ import land.face.strife.events.SkillLevelUpEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -115,12 +118,12 @@ public class SkillExperienceManager {
       amount *= 1 + skillXpMult;
     }
     if (location != null) {
-      plugin.getIndicatorManager().addIndicator(mob.getEntity(), location,
-          IndicatorStyle.FLOAT_UP_SLOW, 10,
+      String str = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(
           type.getColor() + FaceColor.BOLD.s() + "+" +
               FaceColor.WHITE + FaceColor.BOLD.s() + (int) amount +
-              type.getColor() + FaceColor.BOLD.s() + "XP!",
-          0.9f, 1.0f, 0.7f);
+              type.getColor() + FaceColor.BOLD.s() + "XP!"
+      ));
+      plugin.getIndicatorManager().addIndicator(mob.getEntity(), location, IndicatorStyle.FLOAT_UP_SLOW, 10, str, 0.9f, 1.0f, 0.7f);
     }
     if (saveData.isDisplayExp() || forceDisplay) {
       String xp = FORMAT.format(amount);

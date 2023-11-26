@@ -62,7 +62,6 @@ public class IndicatorManager {
     if (distance > 1024) {
       return;
     }
-    text = ChatColor.stripColor(text);
     Vector diff = viewer.getEyeLocation().toVector().subtract(location.toVector());
     Location midway;
     if (distance < 64) {

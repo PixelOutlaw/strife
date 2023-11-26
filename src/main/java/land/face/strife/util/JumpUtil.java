@@ -10,6 +10,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.HoverData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
+import land.face.strife.stats.StrifeStat;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,10 +22,6 @@ public class JumpUtil {
   private final static Map<UUID, Integer> JUMP_MAP = new HashMap<>();
   private final static Map<Player, HoverData> HOVER_MAP = new WeakHashMap<>();
 
-  public static int getMaxJumps(StrifeMob mob) {
-    return mob.getMaxAirJumps();
-  }
-
   public static void setJumps(StrifeMob mob, int amount) {
     if (amount == 0) {
       JUMP_MAP.remove(mob.getEntity().getUniqueId());
@@ -33,7 +30,7 @@ public class JumpUtil {
     }
     JUMP_MAP.put(mob.getEntity().getUniqueId(), amount);
     amount = Math.min(5, amount);
-    int maxAmount = Math.min(5, mob.getMaxAirJumps());
+    int maxAmount = (int) Math.min(5, mob.getStat(StrifeStat.AIR_JUMPS));
     int empty = maxAmount - amount;
     int totalElements = amount + empty;
     StringBuilder str = new StringBuilder();

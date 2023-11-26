@@ -1,7 +1,6 @@
 package land.face.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import de.oliver.fancyholograms.FancyHolograms;
 import de.oliver.fancyholograms.api.FancyHologramsPlugin;
 import de.oliver.fancyholograms.api.Hologram;
 import de.oliver.fancyholograms.api.HologramData;

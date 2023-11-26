@@ -80,9 +80,6 @@ public class ConsumeItemListener implements Listener {
       if (event.getPlayer().getCooldown(Material.BONE) > 0) {
         return;
       }
-      if (!event.getPlayer().hasPermission("prayer.enabled")) {
-        return;
-      }
       if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
         ItemStack stack = event.getPlayer().getEquipment().getItemInMainHand();
         if (stack.getType() != Material.BONE) {
@@ -96,7 +93,7 @@ public class ConsumeItemListener implements Listener {
         event.getPlayer().updateInventory();
         plugin.getPrayerManager().sendPrayerUpdate(event.getPlayer(), mob.getPrayer() / mob.getMaxPrayer(),
             plugin.getPrayerManager().isPrayerActive(event.getPlayer()));
-        plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.PRAYER, 30, false, false);
+        plugin.getSkillExperienceManager().addExperience(mob, LifeSkillType.PRAYER, 120, false, true);
         event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.ENTITY_TURTLE_EGG_CRACK, 1, 1.25f);
         event.getPlayer().setCooldown(Material.BONE, 6000);
       }

@@ -19,6 +19,7 @@ package land.face.strife.listeners;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
+import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
@@ -159,6 +160,15 @@ public class TargetingListener implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onTargetProteted(EntityTargetLivingEntityEvent event) {
+    if (event.getTarget() != null && event.getTarget().hasPotionEffect(DAMAGE_RESISTANCE)) {
+      if (event.getTarget().getPotionEffect(DAMAGE_RESISTANCE).getAmplifier() >= 10) {
+        event.setCancelled(true);
+      }
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGH)
   public void onTargetHighLevel(EntityTargetLivingEntityEvent event) {
     if (event.isCancelled() || SpecialStatusUtil.isIgnoreTargetLevel(event.getEntity())) {
@@ -225,10 +235,10 @@ public class TargetingListener implements Listener {
       stealthSkill = Math.max(stealthSkill, 10);
 
       if (!player.isSneaking()) {
-        stealthSkill *= 0.75;
+        stealthSkill *= 0.75F;
       }
       if (player.isSprinting()) {
-        stealthSkill *= 0.5;
+        stealthSkill *= 0.5F;
       }
 
       float awareness;

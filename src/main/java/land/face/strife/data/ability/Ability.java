@@ -27,6 +27,8 @@ public class Ability {
   private final boolean raycastsTargetEntities;
   @Getter
   private final boolean requireTarget;
+  @Getter
+  private final boolean sneakSelfTarget;
   private final boolean cancelStealth;
   private final float range;
   private final float cost;
@@ -58,7 +60,7 @@ public class Ability {
   private int maxTargets = 1;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
-      AbilityType castType, TargetType targetType, float range, float cost, float cooldown,
+      AbilityType castType, TargetType targetType, boolean sneakSelfTarget, float range, float cost, float cooldown,
       int maxCharges, int globalCooldownTicks, boolean showMsgs, boolean requireTarget,
       boolean raycastsTargetEntities, Set<Condition> conditions, boolean passiveStatsOnCooldown,
       boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth,
@@ -73,6 +75,7 @@ public class Ability {
     this.targetType = targetType;
     this.castType = castType;
     this.requireTarget = requireTarget;
+    this.sneakSelfTarget = sneakSelfTarget;
     this.raycastsTargetEntities = raycastsTargetEntities;
     this.range = range;
     this.cost = cost;

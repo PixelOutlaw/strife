@@ -19,8 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BarrierTask extends BukkitRunnable {
 
-  private static final BlockData BLOCK_DATA = Bukkit.getServer()
-      .createBlockData(Material.WHITE_STAINED_GLASS);
+  private static final BlockData BLOCK_DATA = Bukkit.getServer().createBlockData(Material.WHITE_STAINED_GLASS);
 
   private final WeakReference<StrifeMob> parentMob;
   private int delayTicks = 0;

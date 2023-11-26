@@ -2,7 +2,6 @@ package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import land.face.strife.events.LocationChangeEvent;
-import land.face.strife.events.RuneChangeEvent;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
