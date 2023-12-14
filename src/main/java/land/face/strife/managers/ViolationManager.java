@@ -58,10 +58,11 @@ public class ViolationManager {
           amount -= 12;
         }
       }
-      amount = Math.min(200, Math.max(amount, 0));
+      amount = Math.max(amount, 0);
+      amount = Math.min(amount, 200);
       violationLevel.put(player, amount);
       if (amount > 60) {
-        mult = Math.max(0.0f, (200f - amount) / 200f);
+        mult = (200f - amount) / 200f;
       }
     }
     lastPlayerLocationOnKill.put(player, player.getLocation());

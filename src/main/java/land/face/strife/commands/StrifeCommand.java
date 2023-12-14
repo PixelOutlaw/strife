@@ -25,6 +25,7 @@ import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
@@ -57,6 +58,7 @@ import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
+import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.DisplayManager;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
@@ -64,6 +66,8 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.EloUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -188,9 +192,40 @@ public class StrifeCommand extends BaseCommand {
   @CommandCompletion("@players SNEED")
   @Syntax("<player> <duration> <priority> <message>")
   @CommandPermission("strife.admin")
-  public void sendNotif(CommandSender sender, OnlinePlayer target,
-      @Default("20") int duration, @Default("0") int priority, @Default("sneed") String message) {
-    plugin.getBossBarManager().updateBar(target.getPlayer(), 4, priority, TextUtils.color(message), duration);
+  public void sendNotif(
+      CommandSender sender,
+      OnlinePlayer target,
+      @Default("20") int duration,
+      @Default("0") int priority,
+      @Default("sneed") String message
+  ) {
+    TextComponent tc = BossBarManager.covertStringToRetardComponent(TextUtils.color(message));
+    plugin.getBossBarManager().updateBar(target.getPlayer(), 4, priority, tc, duration);
+  }
+
+  @Subcommand("restore")
+  @CommandCompletion("@players health/energy amount")
+  @Syntax("<player> <health/energy> <amount>")
+  @CommandPermission("strife.admin")
+  public void restoreThing(
+      CommandSender sender,
+      OnlinePlayer target,
+      @Default("health") String type,
+      @Default("10") int amount
+  ) {
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
+    switch (type.toUpperCase()) {
+      case "HEALTH" -> {
+        StatUtil.getStat(mob, StrifeStat.HEALTH);
+        target.getPlayer().setHealth(
+            Math.min(target.getPlayer().getMaxHealth(), target.getPlayer().getHealth() + amount));
+      }
+      case "ENERGY" -> {
+        StatUtil.getStat(mob, StrifeStat.ENERGY);
+        mob.setEnergy(mob.getEnergy() + amount);
+      }
+      default -> PaletteUtil.sendMessage(sender, "|yellow|[Strife] Invalid restore usage. Use 'health' or 'energy'");
+    }
   }
 
   @Subcommand("defeat")

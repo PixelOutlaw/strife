@@ -168,10 +168,11 @@ public class PlayerMountManager {
               mountManager.setCanRide(true);
               //Bukkit.getLogger().info("[testoSTRIFE] Mounted flying2");
               player.setSprinting(false);
+              //player.teleport(mountEntity.getLocation());
               mountManager.mountDriver(player, AirMountController.CUSTOM);
               player.setSprinting(false);
               ChunkUtil.setDespawnOnUnload(mountEntity);
-            }), 6L);
+            }), 8L);
           } else {
             //Bukkit.getLogger().info("[testoSTRIFE] Mounted land2");
             Bukkit.getScheduler().runTaskLater(plugin, () -> model.getMountManager().ifPresent(mountManager -> {
@@ -179,10 +180,11 @@ public class PlayerMountManager {
               mountManager.setCanRide(true);
               //Bukkit.getLogger().info("[testoSTRIFE] Mounted land2");
               player.setSprinting(false);
+              //player.teleport(mountEntity.getLocation());
               mountManager.mountDriver(player, GroundMountController.CUSTOM);
               player.setSprinting(false);
               ChunkUtil.setDespawnOnUnload(mountEntity);
-            }), 6L);
+            }), 8L);
           }
         }
       }

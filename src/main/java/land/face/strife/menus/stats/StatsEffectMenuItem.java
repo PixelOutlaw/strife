@@ -87,6 +87,9 @@ public class StatsEffectMenuItem extends MenuItem {
       }
     }
     for (LoreAbility la : pStats.getLoreAbilities()) {
+      if (la.isHide()) {
+        continue;
+      }
       abilityLores.add(la.getTriggerText());
       abilityLores.addAll(la.getDescription());
     }

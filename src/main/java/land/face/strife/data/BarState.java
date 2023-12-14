@@ -1,9 +1,10 @@
 package land.face.strife.data;
 
-import lombok.Data;
-import org.bukkit.boss.BossBar;
+import lombok.Getter;
+import lombok.Setter;
+import net.kyori.adventure.bossbar.BossBar;
 
-@Data
+@Getter @Setter
 public class BarState {
 
   private BossBar bar;

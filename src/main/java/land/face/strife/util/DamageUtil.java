@@ -23,6 +23,7 @@ import com.soujah.poggersguilds.GuildPlugin;
 import com.soujah.poggersguilds.data.Guild;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,10 +45,12 @@ import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
+import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -84,8 +87,8 @@ public class DamageUtil {
   public static float FLAT_BARRIER_PER_SECOND;
   public static float PERCENT_BARRIER_PER_SECOND;
 
-  public static String deathMessage;
-  public static List<String> sillyDeathMsgs;
+  public static TextComponent deathMessage;
+  public static List<TextComponent> sillyDeathMsgs;
 
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
@@ -126,10 +129,12 @@ public class DamageUtil {
     PERCENT_BARRIER_PER_SECOND = (float) plugin.getSettings()
         .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
 
-    deathMessage = PaletteUtil.color(plugin.getSettings()
-        .getString("language.enemy-killed-title"));
-    sillyDeathMsgs = PaletteUtil.color(plugin.getSettings()
-        .getStringList("language.silly-enemy-killed-titles"));
+    deathMessage = BossBarManager.covertStringToRetardComponent(PaletteUtil.color(plugin.getSettings()
+        .getString("language.enemy-killed-title")));
+    sillyDeathMsgs = new ArrayList<>();
+    for (String s : plugin.getSettings().getStringList("language.silly-enemy-killed-titles")) {
+      sillyDeathMsgs.add(BossBarManager.covertStringToRetardComponent(PaletteUtil.color(s)));
+    }
   }
 
   public static boolean isGuildAlly(StrifeMob attacker, StrifeMob defender) {
@@ -346,13 +351,16 @@ public class DamageUtil {
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
     rawDamage += DamageUtil.getKnowledgeMult(attacker, defender);
 
-    if (mods.isSneakAttack() && !SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
-      rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
-      boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
-      float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
-          attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
-      plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
-          LifeSkillType.SNEAK, gainedXp, false, false);
+    if (mods.isSneakAttack()) {
+      if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
+        rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
+        boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
+        float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
+            attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
+        plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
+            LifeSkillType.SNEAK, gainedXp, false, false);
+      }
+      plugin.getStealthManager().unstealthPlayer((Player) attacker.getEntity());
     }
 
     if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {

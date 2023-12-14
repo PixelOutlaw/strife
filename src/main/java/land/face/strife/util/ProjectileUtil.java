@@ -8,6 +8,11 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
+import me.libraryaddict.disguise.disguisetypes.DisguiseType;
+import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
+import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
+import me.libraryaddict.disguise.disguisetypes.watchers.SnowballWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -33,9 +38,12 @@ public class ProjectileUtil {
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
   private static final Map<Projectile, Boolean> ABILITY_PROJECTILE = new WeakHashMap<>();
+  private static final Map<Projectile, Boolean> DESPAWN_ON_CONTACT = new WeakHashMap<>();
 
   private static final ItemStack wandProjectile = buildWandProjectile();
   private static final ItemStack bulletProjectile = buildBulletProjectile();
+  private static final Disguise wandDisguise = buildWandDisguise();
+  private static final Disguise bulletDisguise = buildBulletDisguise();
 
   public static void setContactTrigger(Projectile projectile) {
     CONTACT_TRIGGER.put(projectile, true);
@@ -69,6 +77,14 @@ public class ProjectileUtil {
     return APPLY_ON_HIT.getOrDefault(projectile, false);
   }
 
+  public static boolean isDespawnOnContact(Projectile projectile) {
+    return DESPAWN_ON_CONTACT.getOrDefault(projectile, false);
+  }
+
+  public static boolean removeDespawnOnContact(Projectile projectile) {
+    return DESPAWN_ON_CONTACT.remove(projectile);
+  }
+
   public static void setPierce(AbstractArrow arrow, float chance) {
     setPierce(arrow, chance, 0);
   }
@@ -88,6 +104,24 @@ public class ProjectileUtil {
         arrow.setPierceLevel(maxPuncture);
       }
     }
+  }
+
+  private static Disguise buildWandDisguise() {
+    MiscDisguise miscDisguise = new MiscDisguise(DisguiseType.SNOWBALL);
+    miscDisguise.setReplaceSounds(true);
+    miscDisguise.setVelocitySent(true);
+    FlagWatcher watcher = miscDisguise.getWatcher();
+    ((SnowballWatcher) watcher).setItemStack(wandProjectile);
+    return miscDisguise;
+  }
+
+  private static Disguise buildBulletDisguise() {
+    MiscDisguise miscDisguise = new MiscDisguise(DisguiseType.SNOWBALL);
+    miscDisguise.setReplaceSounds(true);
+    miscDisguise.setVelocitySent(true);
+    FlagWatcher watcher = miscDisguise.getWatcher();
+    ((SnowballWatcher) watcher).setItemStack(bulletProjectile);
+    return miscDisguise;
   }
 
   public static void setShotId(Projectile projectile) {
@@ -134,15 +168,14 @@ public class ProjectileUtil {
     }
     // x / 117.647 = 0.85
     float projectileSpeed = 0.85f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 117.65f;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1,
-        mob.getStat(StrifeStat.MULTISHOT) * attackMult);
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult);
+    float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
 
-    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, 0.03);
+    ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance, 0.03);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed,
-          randomWandOffset(projectiles));
+      ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance, randomWandOffset(projectiles));
     }
 
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 1f);
@@ -207,24 +240,31 @@ public class ProjectileUtil {
     setShotId(arrow);
   }
 
-  public static void createMagicMissile(LivingEntity shooter, double attackMult, float power, double spread) {
+  public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,
+      float pierceChance, double spread) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
-    Snowball bullet = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
+    Snowball arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
       e.setVelocity(velocity);
+      //e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
       e.setItem(wandProjectile);
       e.setGravity(false);
+      e.setSilent(true);
     });
-    bullet.setShooter(shooter);
-    bullet.getBoundingBox().expand(0.35);
+    //DisguiseAPI.disguiseToAll(arrow, wandDisguise);
+
+    arrow.setShooter(shooter);
+    arrow.getBoundingBox().expand(0.35);
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      if (bullet.isValid()) {
-        bullet.remove();
+      if (arrow.isValid()) {
+        arrow.remove();
       }
     }, 10 + (int) (18f * attackMult));
 
-    setAttackMult(bullet, (float) attackMult);
-    setShotId(bullet);
+    // DESPAWN_ON_CONTACT.put(arrow, true);
+    // setPierce(arrow, pierceChance);
+    setAttackMult(arrow, (float) attackMult);
+    setShotId(arrow);
   }
 
   public static void createBullet(LivingEntity shooter, double attackMult, float power, double spread) {

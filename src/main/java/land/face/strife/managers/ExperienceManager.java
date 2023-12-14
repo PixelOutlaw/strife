@@ -82,7 +82,7 @@ public class ExperienceManager {
       double original = amount;
       double statsMult = pStats.getStat(StrifeStat.XP_GAIN) / 100;
       if (pStats.isInCombat()) {
-        pStats.getChampion().getDetailsContainer().addExp((float) amount);
+        pStats.getChampion().getDetailsContainer().addCombatXp((float) amount);
       }
       amount *= 1 + statsMult;
       double catchupDiff = globalCatchupXp - pStats.getChampion().getSaveData().getCatchupExpUsed();

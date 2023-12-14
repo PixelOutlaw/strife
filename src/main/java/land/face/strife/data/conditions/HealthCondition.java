@@ -12,14 +12,15 @@ public class HealthCondition extends Condition {
   }
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
+    StrifeMob mob = getEntity(attacker, target);
+    if (mob == null) {
+      return false;
+    }
     double healthValue;
     if (percentage) {
-      healthValue = getCompareTarget() == CompareTarget.SELF ?
-          attacker.getEntity().getHealth() / attacker.getEntity().getMaxHealth() :
-          target.getEntity().getHealth() / target.getEntity().getMaxHealth();
+      healthValue = mob.getEntity().getHealth() / mob.getEntity().getMaxHealth();
     } else {
-      healthValue = getCompareTarget() == CompareTarget.SELF ?
-          attacker.getEntity().getHealth() : target.getEntity().getHealth();
+      healthValue = mob.getEntity().getHealth();
       healthValue = Math.round(healthValue);
     }
     return PlayerDataUtil.conditionCompare(getComparison(), healthValue, getValue());

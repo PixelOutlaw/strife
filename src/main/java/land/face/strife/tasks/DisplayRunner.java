@@ -59,7 +59,7 @@ public class DisplayRunner {
       data.setLocation(TargetingUtil.getOriginLocation(livingEntity, OriginLocation.CENTER));
     }
     data.setScale(1);
-    data.setBrightness(new Brightness(3, 3));
+    data.setBrightness(new Brightness(9, 9));
     Hologram holo = FancyHologramsPlugin.get().getHologramManager().create(data);
     holo.createHologram();
     holo.showHologram(Bukkit.getOnlinePlayers());

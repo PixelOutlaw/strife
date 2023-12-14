@@ -28,7 +28,7 @@ public class MountTask extends BukkitRunnable {
     this.manager = manager;
     this.mount = new WeakReference<>(mount);
     this.model = model;
-    this.runTaskTimer(StrifePlugin.getInstance(), 10L, 4L);
+    this.runTaskTimer(StrifePlugin.getInstance(), 12L, 4L);
   }
 
   @Override

@@ -6,6 +6,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -18,6 +19,9 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -46,7 +50,6 @@ public class CombatCountdownTask extends BukkitRunnable {
   private boolean targetWasAlive;
 
   private final BossBarManager manager;
-  private int prayerYes = 0, prayerNo = 1;
 
   public CombatCountdownTask(StrifeMob parentMob, StrifeMob targetMob) {
     manager = StrifePlugin.getInstance().getBossBarManager();
@@ -68,16 +71,23 @@ public class CombatCountdownTask extends BukkitRunnable {
   @Override
   public void run() {
     StrifeMob mob = parentMob;
-    if (mob == null || mob.getEntity() == null) {
+    if (mob == null) {
       cancel();
+      return;
+    }
+    if (mob.getEntity() == null) {
+      cancel();
+      mob.endCombat();
       return;
     }
 
     if (ticks % 5 == 0) {
-      if (StrifePlugin.getInstance().getPrayerManager().isPrayerActive(mob.getEntity())) {
-        prayerYes++;
-      } else {
-        prayerNo++;
+      if (mob.getChampion() != null) {
+        if (StrifePlugin.getInstance().getPrayerManager().isPrayerActive(mob.getEntity())) {
+          mob.getChampion().getDetailsContainer().incrementPrayer(1, 0);
+        } else {
+          mob.getChampion().getDetailsContainer().incrementPrayer(0, 1);
+        }
       }
     }
 
@@ -138,18 +148,20 @@ public class CombatCountdownTask extends BukkitRunnable {
         if (barrierState > 0) {
           s += GuiManager.BARRIER_BAR_TARGET.get(barrierState);
         }
-        manager.updateBar(player, 3, 0, s, 9999999);
+        TextComponent s2 = BossBarManager.covertStringToRetardComponent(s);
+        manager.updateBar(player, 3, 0, s2, 9999999);
       }
     } else if (targetWasAlive) {
       targetWasAlive = false;
       ticks = Math.max(DEATH_TICKS, ticks);
-      String title;
+      TextComponent title;
       if (StrifePlugin.RNG.nextFloat() < 0.025) {
         title = DamageUtil.sillyDeathMsgs.get(StrifePlugin.RNG.nextInt(DamageUtil.sillyDeathMsgs.size()));
       } else {
         title = DamageUtil.deathMessage;
       }
-      String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138);
+      TextComponent s = (TextComponent) MiniMessage.miniMessage()
+          .deserialize(healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138));
       manager.updateBar(player, 3, 0, s, 60);
       manager.updateBar(player, 2, 0, title, 60);
     }
@@ -159,8 +171,8 @@ public class CombatCountdownTask extends BukkitRunnable {
     if (player == null) {
       return;
     }
-    manager.updateBar(player, 2, 0, "", 0);
-    manager.updateBar(player, 3, 0, "", 0);
+    manager.updateBar(player, 2, 0, Component.empty(), 0);
+    manager.updateBar(player, 3, 0, Component.empty(), 0);
   }
 
   public void bump(StrifeMob mob) {
@@ -175,7 +187,7 @@ public class CombatCountdownTask extends BukkitRunnable {
     pvp = true;
   }
 
-  private String createBarTitle(StrifeMob target) {
+  private TextComponent createBarTitle(StrifeMob target) {
     String name;
     if (target.getEntity() instanceof Player) {
       name = FaceColor.WHITE + target.getEntity().getName() + FaceColor.LIGHT_GRAY + " Lv"
@@ -202,33 +214,13 @@ public class CombatCountdownTask extends BukkitRunnable {
       name += "  " + FaceColor.GREEN +
           (target.getEntity().getPotionEffect(PotionEffectType.POISON).getAmplifier() + 1) + "☠";
     }
-    return name;
+    return BossBarManager.covertStringToRetardComponent(name);
   }
 
   public void awardSkillExp(StrifeMob mob) {
-    Champion champion = StrifePlugin.getInstance().getChampionManager().getChampionSoft((Player) mob.getEntity());
-    if (champion == null) {
+    if (mob.getChampion() == null) {
       return;
     }
-    if (champion.getDetailsContainer().getExpValues() == null) {
-      return;
-    }
-    float xpTotal = 0;
-    for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
-      xpTotal += champion.getDetailsContainer().getExpValues().get(type);
-    }
-    xpTotal += (float) Math.pow(champion.getDetailsContainer().getTotalExp(), 0.2f);
-    // MODIFY THIS TO ADJUST
-    xpTotal += 0.75f;
-    xpTotal *= (float) prayerYes / (prayerYes + prayerNo);
-    if (xpTotal > 1) {
-      StrifePlugin.getInstance().getSkillExperienceManager().addExperience(
-          (Player) mob.getEntity(), LifeSkillType.PRAYER, xpTotal, false, false);
-    }
-    for (LifeSkillType type : champion.getDetailsContainer().getExpValues().keySet()) {
-      StrifePlugin.getInstance().getSkillExperienceManager().addExperience((Player) mob.getEntity(), type,
-          champion.getDetailsContainer().getExpValues().get(type), false, false);
-    }
-    champion.getDetailsContainer().clearAll();
+    mob.getChampion().getDetailsContainer().award(mob.getChampion());
   }
 }

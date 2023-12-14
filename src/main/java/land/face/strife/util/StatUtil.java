@@ -210,9 +210,9 @@ public class StatUtil {
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
-      attackBonus += ae.getRage();
+      attackBonus += ae.getRage() * 0.5f;
     } else {
-      attackBonus += ae.getRage() * 0.4f;
+      attackBonus += ae.getRage() * 0.2f;
     }
 
     if (attackBonus > 0) {

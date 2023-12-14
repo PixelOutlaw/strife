@@ -1237,6 +1237,7 @@ public class EffectManager {
     condition.setCompareTarget(compareTarget);
     condition.setComparison(comparison);
     condition.setConditionUser(conditionUser);
+    condition.setCheckMaster(cs.getBoolean("check-master", false));
     condition.setType(conditionType);
     condition.setValue((float) cs.getDouble("value", 0));
 

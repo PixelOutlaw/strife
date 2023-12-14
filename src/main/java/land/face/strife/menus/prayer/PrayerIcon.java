@@ -5,9 +5,6 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
@@ -77,14 +74,14 @@ public class PrayerIcon extends MenuItem {
         mob.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER)) {
       return;
     }
-    if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-      event.setWillUpdate(true);
-      return;
-    }
     if (plugin.getPrayerManager().isPrayerActive(event.getPlayer(), prayer)) {
       boolean success = plugin.getPrayerManager().disablePrayer(event.getPlayer(), prayer);
       event.setWillUpdate(success);
     } else {
+      if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
+        event.setWillUpdate(true);
+        return;
+      }
       boolean success = plugin.getPrayerManager().activatePrayer(event.getPlayer(), prayer);
       event.setWillUpdate(success);
     }

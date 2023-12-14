@@ -37,18 +37,23 @@ public class EveryTickTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
 
-  private final List<TextComponent> attackIndication = List.of(
-      GuiManager.noShadow(new TextComponent("码")),
-      GuiManager.noShadow(new TextComponent("੧")),
-      GuiManager.noShadow(new TextComponent("੨")),
-      GuiManager.noShadow(new TextComponent("੩")),
-      GuiManager.noShadow(new TextComponent("੪")),
-      GuiManager.noShadow(new TextComponent("੫")),
-      GuiManager.noShadow(new TextComponent("੬")),
-      GuiManager.noShadow(new TextComponent("੭")),
-      GuiManager.noShadow(new TextComponent("੮")),
-      GuiManager.noShadow(new TextComponent("੯"))
+  private final List<GUIComponent> attackIndication = List.of(
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兰")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("共")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兲")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("关")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兴")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兵")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("其")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("具")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("典")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兹")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兺")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("养")), 23, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兼")), 23, 0, Alignment.CENTER)
   );
+  private final int arrLen = attackIndication.size();
+  private final GUIComponent emptyAttack = new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER);
 
   public EveryTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -64,11 +69,11 @@ public class EveryTickTask extends BukkitRunnable {
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
 
         if (mob.isInCombat()) {
-          int attackProgress = (int) (10f * plugin.getAttackSpeedManager().getRawMultiplier(p.getUniqueId()));
-          if (attackProgress != 10) {
-            gui.update(new GUIComponent("attack-bar", attackIndication.get(attackProgress), 41, 0, Alignment.CENTER));
+          int attackProgress = (int) (plugin.getAttackSpeedManager().getRawMultiplier(p.getUniqueId()) * arrLen);
+          if (attackProgress != arrLen) {
+            gui.update(attackIndication.get(attackProgress));
           } else {
-            gui.update(new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+            gui.update(emptyAttack);
           }
         }
 

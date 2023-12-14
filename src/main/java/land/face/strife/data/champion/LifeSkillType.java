@@ -21,7 +21,7 @@ public enum LifeSkillType {
   PRAYER("Prayer", "prayer", "凂", ChatColor.of(new Color(202, 255, 245))),
 
   SWORDSMANSHIP("Swordsmanship", "sword", "冰", FaceColor.ORANGE.getColor(), true),
-  DAGGER_MASTERY("Dagger Mastery", "dagger", "", ChatColor.of(new Color(204, 246, 102)), true),
+  DAGGER_MASTERY("Dagger Mastery", "dagger", "凇", FaceColor.LIME.getColor(), true),
   AXE_MASTERY("Axe Mastery", "axe", "冱", FaceColor.RED.getColor(), true),
   BLUNT_WEAPONS("Blunt Weapons", "blunt", "冸", FaceColor.YELLOW.getColor(), true),
   DUAL_WIELDING("Dual Wielding", "dual", "冴", FaceColor.LIME.getColor(), true),

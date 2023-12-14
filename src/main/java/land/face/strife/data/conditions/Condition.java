@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
+import lombok.Setter;
 
 public abstract class Condition {
 
@@ -12,6 +14,8 @@ public abstract class Condition {
   private ConditionType type;
   private ConditionUser conditionUser;
   private float value;
+  @Getter @Setter
+  private boolean checkMaster = false;
   private boolean inverted;
 
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
@@ -22,6 +26,16 @@ public abstract class Condition {
 
   public CompareTarget getCompareTarget() {
     return compareTarget;
+  }
+
+  public StrifeMob getEntity(StrifeMob caster, StrifeMob target) {
+    if (compareTarget == CompareTarget.SELF) {
+      return checkMaster ? caster.getMaster() : caster;
+    } else if (compareTarget == CompareTarget.OTHER) {
+      return checkMaster ? target.getMaster() : target;
+    } else {
+      return null;
+    }
   }
 
   public void setCompareTarget(CompareTarget compareTarget) {

@@ -96,7 +96,8 @@ public class LoreAbilityManager {
       return;
     }
     List<String> description = PaletteUtil.color(cs.getStringList("description"));
-    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description);
+    boolean hide = cs.getBoolean("hide", false);
+    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description, hide);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);
     }

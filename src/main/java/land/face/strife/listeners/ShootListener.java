@@ -265,6 +265,18 @@ public class ShootListener implements Listener {
     player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_THROW, 1f, 1f);
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onDespawnProjectileHit(final ProjectileHitEvent event) {
+    if (event.isCancelled() || event.getHitBlock() == null || !event.getEntity().isValid()) {
+      return;
+    }
+    if (!ProjectileUtil.isDespawnOnContact(event.getEntity())) {
+      return;
+    }
+    event.getEntity().remove();
+    ProjectileUtil.removeDespawnOnContact(event.getEntity());
+  }
+
   @EventHandler(priority = EventPriority.HIGH)
   public void onEffectProjectileHit(final ProjectileHitEvent event) {
     if (event.isCancelled() || ProjectileUtil.getHitEffects(event.getEntity()) == null) {

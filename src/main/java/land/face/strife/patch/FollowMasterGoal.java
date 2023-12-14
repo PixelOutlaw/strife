@@ -65,7 +65,14 @@ public class FollowMasterGoal implements Goal<Mob> {
       //Bukkit.getLogger().info("[Strife][AI][fllow_master] Existed due to differing world");
       return false;
     }
-    return masterEntity.getLocation().distanceSquared(selfMob.getLocation()) > 64;
+    if (selfMob.getTarget() == null) {
+      return masterEntity.getLocation().distanceSquared(selfMob.getLocation()) > 64;
+    }
+    if (masterEntity.getLocation().distanceSquared(selfMob.getLocation()) > 324) {
+      selfMob.setTarget(null);
+      return true;
+    }
+    return false;
   }
 
   @Override

@@ -136,7 +136,7 @@ public class ExperienceListener implements Listener {
       if (xpEvent.isCancelled()) {
         // Only do skillXP
         StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(player);
-        playerMob.getChampion().getDetailsContainer().addExp(finalXp);
+        playerMob.getChampion().getDetailsContainer().addCombatXp(finalXp);
       } else {
         plugin.getExperienceManager().addExperience(player, finalXp, false);
       }

@@ -92,10 +92,8 @@ public class SkillExperienceManager {
     addExperience(player, type, null, amount, exact, forceDisplay);
   }
 
-  public void addExperience(Player player, LifeSkillType type, Location location, double amount,
-      boolean exact, boolean forceDisplay) {
-    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, location, amount,
-        exact, forceDisplay);
+  public void addExperience(Player player, LifeSkillType type, Location location, double amount, boolean exact, boolean forceDisplay) {
+    addExperience(plugin.getStrifeMobManager().getStatMob(player), type, location, amount, exact, forceDisplay);
   }
 
   public void addExperience(StrifeMob mob, LifeSkillType type, double amount, boolean exact,
@@ -160,7 +158,12 @@ public class SkillExperienceManager {
       mob.setReCache(true);
     }
     saveData.setSkillExp(type, (float) currentExp);
-    plugin.getTopBarManager().updateSkills(player, buildSkillString(mob.getChampion(), type));
+    try {
+      plugin.getTopBarManager().updateSkills(player, buildSkillString(mob.getChampion(), type));
+    } catch (Exception e) {
+      Bukkit.getLogger().warning("[Strife] Exception setting top bar on xp gain!");
+      e.printStackTrace();
+    }
   }
 
   private String buildSkillString(Champion champion, LifeSkillType skill) {
@@ -174,9 +177,9 @@ public class SkillExperienceManager {
   public String updateSkillString(Champion champion) {
     StringBuilder newTitle = new StringBuilder();
     for (LifeSkillType skillType : champion.getRecentSkills()) {
-      int progress = Math.min(99, (int) (100D * PlayerDataUtil.getSkillProgress(champion, skillType)));
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
+        int progress = Math.min(99, (int) (100D * PlayerDataUtil.getSkillProgress(champion, skillType)));
         newTitle.append(FaceColor.NO_SHADOW).append(skillType.getCharacter()).append(FaceColor.LIME)
             .append(progress).append("%").append("  ");
       }

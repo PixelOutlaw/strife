@@ -139,10 +139,10 @@ public class Damage extends Effect {
     if (damage.containsKey(DamageType.PHYSICAL)) {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
     }
-    DamageUtil.attemptPoison(caster, target, mods);
 
     StrifeMob finalTarget = target;
     if (mods.isApplyOnHitEffects()) {
+      DamageUtil.attemptPoison(caster, target, mods);
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
           DamageUtil.postDamage(caster, finalTarget, mods, false), 0L);
     }

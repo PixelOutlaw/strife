@@ -113,7 +113,8 @@ public class AbilityManager {
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       if (MoveUtil.hasMoved((Player) caster.getEntity(), 30000)) {
-        caster.getChampion().getDetailsContainer().addWeights(ability, (Player) caster.getEntity());
+        float violationLevel = plugin.getViolationManager().getSafespotViolationMult((Player) caster.getEntity());
+        caster.getChampion().getDetailsContainer().registerAbilityUse(ability, violationLevel);
       }
     }
     if (caster.getEntity() instanceof Player) {

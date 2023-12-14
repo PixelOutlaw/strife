@@ -352,21 +352,21 @@ public class CombatListener implements Listener {
 
     if (eventDamage > 0) {
       eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
-
       if (damages.containsKey(DamageType.PHYSICAL)) {
         DamageUtil.attemptBleed(attacker, defender, damages.get(DamageType.PHYSICAL),
             damageModifiers, false);
       }
-      DamageUtil.attemptPoison(attacker, defender, damageModifiers);
     }
 
+
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
-      eventDamage *= 0.5;
+      eventDamage *= 0.5F;
       float bleed = eventDamage;
       DamageUtil.applyBleed(defender, defender, bleed, true, true, false);
     }
 
     if (damageModifiers.isApplyOnHitEffects()) {
+      DamageUtil.attemptPoison(attacker, defender, damageModifiers);
       Bukkit.getScheduler().runTaskLater(plugin, () ->
           DamageUtil.postDamage(attacker, defender, damageModifiers, true), 0L);
     }

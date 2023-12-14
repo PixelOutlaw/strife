@@ -4,53 +4,92 @@ import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.LifeSkillType;
 import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+@Getter @Setter
 public class CombatDetailsContainer {
 
-  private final Map<LifeSkillType, Float> skillWeight = new HashMap<>();
-  @Getter
-  private float totalExp = 0;
+  private float totalCombatXpGained = 0;
+  private int prayerActiveTicks = 0;
+  private int prayerInactiveTicks = 1;
+  private final Map<LifeSkillType, Float> skillWeights = new HashMap<>();
 
-  private static final float EXP_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.leveling.exp-converted-to-combat-skill-exp", 0.05);
-  private static final float WEIGHT_PERCENTAGE = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.leveling.combat-skill-exp-weight", 0.1);
 
-  public void addWeights(Ability ability, Player player) {
-    float violationLevel = StrifePlugin.getInstance().getViolationManager().getSafespotViolationMult(player);
+  private static final float XP_EXPONENT = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.leveling.combat-to-skill-xp-exponent", 0.5);
+  private static final float WEIGHT_EXPONENT = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.leveling.weight-to-skill-xp-exponent", 0.75);
+  private static final float PRAYER_EXPONENT = (float) StrifePlugin.getInstance().getSettings()
+      .getDouble("config.leveling.skill-to-prayer-xp-exponent", 0.5);
+
+  public void registerAbilityUse(Ability ability, float multiplier) {
     for (LifeSkillType type : ability.getAbilityIconData().getExpWeights().keySet()) {
-      float amount = ability.getAbilityIconData().getExpWeights().get(type) * violationLevel;
-      skillWeight.put(type, skillWeight.getOrDefault(type, 0f) + amount);
+      float amount = ability.getAbilityIconData().getExpWeights().get(type) * multiplier;
+      skillWeights.put(type, skillWeights.getOrDefault(type, 0f) + amount);
     }
   }
 
-  public void addExp(float amount) {
-    totalExp += amount;
+  public void addCombatXp(float amount) {
+    totalCombatXpGained += (float) Math.pow(amount, XP_EXPONENT);;
   }
 
-  public Map<LifeSkillType, Float> getExpValues() {
-    if (totalExp == 0) {
-      return null;
+  public void award(Champion champion) {
+    if (totalCombatXpGained == 0) {
+      clearAll();
+      return;
     }
-    float totalWeight = 0;
-    for (float amount : skillWeight.values()) {
-      totalWeight += amount;
+    float totalSkillWeight = 0;
+    for (LifeSkillType type : skillWeights.keySet()) {
+      totalSkillWeight += skillWeights.get(type);
     }
-    float xpTotal = totalExp * EXP_PERCENTAGE;
-    xpTotal += WEIGHT_PERCENTAGE * totalWeight;
-    xpTotal *= (float) (0.9f + StrifePlugin.RNG.nextFloat() * 0.2f);
-    Map<LifeSkillType, Float> rewards = new HashMap<>();
-    for (LifeSkillType type : skillWeight.keySet()) {
-      rewards.put(type, Math.max(1, xpTotal * (skillWeight.get(type) / totalWeight)));
+    float skillXpFromCombat = totalCombatXpGained;
+
+    if (totalSkillWeight > 0) {
+      float skillXpFromWeights = (float) Math.pow(totalSkillWeight, WEIGHT_EXPONENT);
+      float totalSkillXpAwarded = skillXpFromCombat + skillXpFromWeights;
+      totalSkillXpAwarded *= 0.9f + StrifePlugin.RNG.nextFloat() * 0.2f;
+
+      for (LifeSkillType type : skillWeights.keySet()) {
+        float amount = skillWeights.get(type);
+        float ratio = amount / totalSkillWeight;
+        try {
+          StrifePlugin.getInstance().getSkillExperienceManager().addExperience(
+              champion.getPlayer(), type, totalSkillXpAwarded * ratio, false, false);
+        } catch (Exception e) {
+          Bukkit.getLogger().warning("[Strife] Failed end of combat xp for " + champion.getPlayer().getName());
+          e.printStackTrace();
+        }
+      }
     }
-    return rewards;
+    sendPrayerXp(champion.getPlayer(), skillXpFromCombat);
+
+    champion.getDetailsContainer().clearAll();
+  }
+
+  private void sendPrayerXp(Player player, float totalSkillXp) {
+    if (prayerActiveTicks == 0) {
+      return;
+    }
+    float prayerXp = (float) Math.pow(totalSkillXp, PRAYER_EXPONENT);
+    prayerXp *= (float) prayerActiveTicks / (prayerActiveTicks + prayerInactiveTicks);
+    StrifePlugin.getInstance().getSkillExperienceManager()
+        .addExperience(player, LifeSkillType.PRAYER, prayerXp, false, false);
+  }
+
+  public void incrementPrayer(int active, int inactive) {
+    prayerActiveTicks += active;
+    prayerInactiveTicks += inactive;
   }
 
   public void clearAll() {
-    totalExp = 0;
-    skillWeight.clear();
+    totalCombatXpGained = 0;
+    prayerActiveTicks = 0;
+    prayerInactiveTicks = 1;
+    skillWeights.clear();
   }
 }

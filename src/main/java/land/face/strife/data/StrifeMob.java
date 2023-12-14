@@ -763,17 +763,14 @@ public class StrifeMob {
   }
 
   public float getMultishotRatio(int shotId) {
-    if (multishotMap.containsKey(shotId)) {
-      int amount = multishotMap.get(shotId);
-      multishotMap.put(shotId, amount + 1);
-      return switch (amount) {
-        case 1 -> 0.3f;
-        case 2 -> 0.1f;
-        default -> 0;
-      };
-    }
-    multishotMap.put(shotId, 1);
-    return 1;
+    int hits = multishotMap.getOrDefault(shotId, 0);
+    multishotMap.put(shotId, hits + 1);
+    return switch (hits) {
+      case 0 -> 1.0f;
+      case 1 -> 0.6f;
+      case 2 -> 0.36f;
+      default -> 0;
+    };
   }
 
   public void clearMultishot() {
