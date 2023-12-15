@@ -163,7 +163,8 @@ public class PlayerMountManager {
           //player.leaveVehicle();
           if (loadedMount.isFlying()) {
             //Bukkit.getLogger().info("[testoSTRIFE] Mounted flying");
-            Bukkit.getScheduler().runTaskLater(plugin, () -> model.getMountManager().ifPresent(mountManager -> {
+            //Bukkit.getScheduler().runTaskLater(plugin, () ->
+            model.getMountManager().ifPresent(mountManager -> {
               mountManager.setCanDrive(true);
               mountManager.setCanRide(true);
               //Bukkit.getLogger().info("[testoSTRIFE] Mounted flying2");
@@ -172,10 +173,12 @@ public class PlayerMountManager {
               mountManager.mountDriver(player, AirMountController.CUSTOM);
               player.setSprinting(false);
               ChunkUtil.setDespawnOnUnload(mountEntity);
-            }), 8L);
+            });
+            //}), 2L);
           } else {
             //Bukkit.getLogger().info("[testoSTRIFE] Mounted land2");
-            Bukkit.getScheduler().runTaskLater(plugin, () -> model.getMountManager().ifPresent(mountManager -> {
+            //Bukkit.getScheduler().runTaskLater(plugin, () ->
+            model.getMountManager().ifPresent(mountManager -> {
               mountManager.setCanDrive(true);
               mountManager.setCanRide(true);
               //Bukkit.getLogger().info("[testoSTRIFE] Mounted land2");
@@ -184,7 +187,8 @@ public class PlayerMountManager {
               mountManager.mountDriver(player, GroundMountController.CUSTOM);
               player.setSprinting(false);
               ChunkUtil.setDespawnOnUnload(mountEntity);
-            }), 8L);
+              //}), 2L);
+            });
           }
         }
       }

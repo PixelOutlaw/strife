@@ -71,6 +71,7 @@ public class WorldSpaceEffect {
         ChunkUtil.setDespawnOnUnload(stand);
         modeledEntity = ModelEngineAPI.createModeledEntity(stand);
         if (modeledEntity != null) {
+          modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
           modeledEntity.addModel(model, true);
           //modeledEntity.detectPlayers();
           modeledEntity.setBaseEntityVisible(false);

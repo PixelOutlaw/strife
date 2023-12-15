@@ -8,7 +8,6 @@ import java.util.EnumSet;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -101,7 +100,7 @@ public class FollowMasterGoal implements Goal<Mob> {
       return false;
     }
     teleportTicks++;
-    if (teleportTicks > 8) {
+    if (teleportTicks > 12) {
       selfMob.teleport(master.getLocation());
       teleportTicks = 0;
       //Bukkit.getLogger().info("[Strife][AI][fllow_master] Teleport ticks due to teleport success");

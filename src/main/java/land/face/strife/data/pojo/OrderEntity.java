@@ -57,6 +57,7 @@ public class OrderEntity {
     if (modeledEntity == null) {
       Bukkit.getLogger().warning("Failed to create modelled entity");
     }
+    modeledEntity.getBase().getBodyRotationController().setYBodyRot(stando.getLocation().getYaw());
     modeledEntity.addModel(model, true);
     modeledEntity.setBaseEntityVisible(false);
     Bukkit.getScheduler().runTaskLater(plugin, () -> {

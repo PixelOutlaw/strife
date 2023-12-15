@@ -190,6 +190,7 @@ public class CreateModelAnimation extends LocationEffect {
       if (modeledEntity == null) {
         Bukkit.getLogger().warning("Failed to create modelled entity");
       } else {
+        modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
         modeledEntity.addModel(model, true);
         modeledEntity.setModelRotationLocked(rotationLock);
         modeledEntity.setBaseEntityVisible(false);

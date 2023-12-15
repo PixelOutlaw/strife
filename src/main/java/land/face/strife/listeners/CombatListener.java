@@ -401,7 +401,7 @@ public class CombatListener implements Listener {
 
   public static void putMonsterHit(LivingEntity livingEntity) {
     if (!(livingEntity instanceof Player)) {
-      MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 1000);
+      MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 500);
     }
   }
 
