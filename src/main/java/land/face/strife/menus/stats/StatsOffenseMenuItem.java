@@ -158,7 +158,10 @@ public class StatsOffenseMenuItem extends MenuItem {
     float dps = total * (1 / StatUtil.getAttackTime(mob));
     lore.add(addStat("Estimated DPS: ", dps, " Damage", INT_FORMAT));
     lore.add(addStat("Accuracy Rating: ", 90 + mob.getStat(StrifeStat.ACCURACY), INT_FORMAT));
-    lore.add(addStat("Attack Speed: ", StatUtil.getAttackTime(mob), "s", TWO_DECIMAL));
+    String as = addStat("Attack Speed: ", StatUtil.getAttackTime(mob), "s", TWO_DECIMAL);
+    float attackSpeed = mob.getStat(StrifeStat.ATTACK_SPEED);
+    String bonus = FaceColor.GRAY + " (" + (attackSpeed >= 0 ? "+" : "") + INT_FORMAT.format(attackSpeed) + "%)";
+    lore.add(as + bonus);
 
     List<String> loreSection = new ArrayList<>();
     loreSection.add(breakLine);

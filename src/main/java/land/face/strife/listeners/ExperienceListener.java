@@ -20,14 +20,11 @@ package land.face.strife.listeners;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -40,7 +37,6 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -57,14 +53,7 @@ import org.bukkit.inventory.PlayerInventory;
 public class ExperienceListener implements Listener {
 
   private final StrifePlugin plugin;
-
-  private static final String LEVEL_UP = "&a&l( &f&lDANG &a&l/ &f&lSON! &a&l)";
-  private static final String LEVEL_DOWN = "&c&l( &f&lDANG &c&l/ &f&lSON! &c&l)";
-
   private static final Map<Integer, String> xpString = new HashMap<>();
-  private static final Map<Player, Location> lastPlayerLocationOnKill = new WeakHashMap<>();
-  private static final Map<Player, Integer> violationLevel = new WeakHashMap<>();
-
   private final List<String> penaltyFreeWorlds;
 
   public ExperienceListener(StrifePlugin plugin) {
@@ -106,11 +95,9 @@ public class ExperienceListener implements Listener {
 
     for (String key : mob.getMods()) {
       key = "mod-" + key;
-      if (LearninBooksPlugin.instance.getKnowledgeManager()
-          .getLoadedKnowledge().containsKey(key)) {
+      if (LearninBooksPlugin.instance.getKnowledgeManager().getLoadedKnowledge().containsKey(key)) {
         for (Player p : ev.getKillers()) {
-          LearninBooksPlugin.instance.getKnowledgeManager()
-              .incrementKnowledge(p, key, 1);
+          LearninBooksPlugin.instance.getKnowledgeManager().incrementKnowledge(p, key, 1);
         }
       }
     }

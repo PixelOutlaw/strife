@@ -47,11 +47,12 @@ public class XpBottleMenu extends ItemMenu {
     setItem(14, new SkillButton(plugin, LifeSkillType.ARCHERY, bowlId, 431, amount));
     setItem(15, new SkillButton(plugin, LifeSkillType.MARKSMANSHIP, bowlId, 435, amount));
     setItem(16, new SkillButton(plugin, LifeSkillType.SHIELD_MASTERY, bowlId, 416, amount));
-    setItem(23, new SkillButton(plugin, LifeSkillType.DUAL_WIELDING, bowlId, 408, amount));
-    setItem(24, new SkillButton(plugin, LifeSkillType.ARCANE_MAGICS, bowlId, 465, amount));
-    setItem(25, new SkillButton(plugin, LifeSkillType.NATURAL_MAGICS, bowlId, 470, amount));
-    setItem(32, new SkillButton(plugin, LifeSkillType.CELESTIAL_MAGICS, bowlId, 420, amount));
-    setItem(33, new SkillButton(plugin, LifeSkillType.BLACK_MAGICS, bowlId, 456, amount));
+    setItem(23, new SkillButton(plugin, LifeSkillType.DAGGER_MASTERY, bowlId, 471, amount));
+    setItem(24, new SkillButton(plugin, LifeSkillType.DUAL_WIELDING, bowlId, 408, amount));
+    setItem(25, new SkillButton(plugin, LifeSkillType.ARCANE_MAGICS, bowlId, 465, amount));
+    setItem(32, new SkillButton(plugin, LifeSkillType.NATURAL_MAGICS, bowlId, 470, amount));
+    setItem(33, new SkillButton(plugin, LifeSkillType.CELESTIAL_MAGICS, bowlId, 420, amount));
+    setItem(34, new SkillButton(plugin, LifeSkillType.BLACK_MAGICS, bowlId, 456, amount));
   }
 
 }

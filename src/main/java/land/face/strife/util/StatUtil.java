@@ -30,10 +30,16 @@ public class StatUtil {
   public static String COMBAT_ENTER_TOAST;
   public static String COMBAT_EXIT_TOAST;
 
+  public static float ARMOR_DENOMINATOR;
+  public static float WARD_DENOMINATOR;
+
   public static void refreshPlugin(StrifePlugin strifePlugin) {
     plugin = strifePlugin;
     COMBAT_ENTER_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_enter_combat>");
     COMBAT_EXIT_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_exit_combat>");
+
+    ARMOR_DENOMINATOR = (float) plugin.getSettings().getDouble("config.mechanics.defense.armor-denominator", 110);
+    WARD_DENOMINATOR = (float) plugin.getSettings().getDouble("config.mechanics.defense.ward-denominator", 110);
   }
 
   public static float getStat(StrifeMob mob, StrifeStat stat) {
@@ -55,7 +61,7 @@ public class StatUtil {
         }
         if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SIX)) {
           amount += 50;
-          amount += mob.getMaxLife() - mob.getEntity().getHealth();
+          amount += (float) (mob.getMaxLife() - mob.getEntity().getHealth());
         }
         return amount;
       }
@@ -140,6 +146,14 @@ public class StatUtil {
       case ENERGY_ON_KILL -> {
         return stats.getOrDefault(StrifeStat.ENERGY_ON_KILL, 0F) +
             (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.FIVE) ? 2 : 0);
+      }
+      case ENCHANT_SKILL -> {
+        return stats.getOrDefault(StrifeStat.ENCHANT_SKILL, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.ELEVEN) ? 4 : 0);
+      }
+      case CRAFT_SKILL -> {
+        return stats.getOrDefault(StrifeStat.CRAFT_SKILL, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.ELEVEN) ? 4 : 0);
       }
       case FIRE_RESIST, ICE_RESIST, LIGHTNING_RESIST, LIGHT_RESIST, DARK_RESIST, EARTH_RESIST -> {
         float amount = stats.getOrDefault(stat, 0f) + stats.getOrDefault(StrifeStat.ALL_RESIST, 0f);
@@ -288,7 +302,7 @@ public class StatUtil {
   }
 
   public static float getArmorMult(float armor) {
-    return (float) Math.pow(0.5f, armor / 105f);
+    return (float) Math.pow(0.5f, armor / ARMOR_DENOMINATOR);
   }
 
   public static float getWardingMult(StrifeMob attacker, StrifeMob defender) {
@@ -301,7 +315,7 @@ public class StatUtil {
   }
 
   public static float getWardingMult(float warding) {
-    return (float) Math.pow(0.5f, warding / 105f);
+    return (float) Math.pow(0.5f, warding / WARD_DENOMINATOR);
   }
 
   public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {

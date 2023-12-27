@@ -219,8 +219,9 @@ public class CombatListener implements Listener {
       return;
     }
 
-    float onHitChance = 1f;
-    float attackMultiplier = 1f;
+    float onHitChance = 1.0f;
+    float attackMultiplier = 1.0f;
+    float damageReductionRatio = 1.0f;
     float healMultiplier = 1f;
     float multishotRatio = 1f;
     boolean backAttack = false;

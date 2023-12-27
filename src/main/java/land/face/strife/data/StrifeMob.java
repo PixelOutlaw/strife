@@ -5,9 +5,12 @@ import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -378,38 +381,45 @@ public class StrifeMob {
   }
 
   public static Set<Player> getKillers(StrifeMob mob) {
-    Map<Party, Float> partyScores = new HashMap<>();
-    Set<Player> killers = new HashSet<>();
-    UUID topUUID = null;
-    float topScore = 0;
+    Map<Party, Float> applicableParties = new HashMap<>();
+    Map<Player, Float> applicableKillers = new HashMap<>();
     for (UUID uuid : mob.takenDamage.keySet()) {
       Player player = Bukkit.getPlayer(uuid);
       if (player == null || !player.isValid()) {
         continue;
       }
-      float score = mob.takenDamage.get(uuid);
       Party party = SnazzyPartiesPlugin.getInstance().getPartyManager().getParty(player);
       if (party == null) {
-        if (score > topScore) {
-          killers.clear();
-          killers.add(player);
-          topScore = score;
-          topUUID = player.getUniqueId();
-        }
-        continue;
+        applicableKillers.put(player, mob.takenDamage.get(uuid));
+      } else {
+        applicableParties.put(party, applicableParties.getOrDefault(party, 0f) + mob.takenDamage.get(uuid));
       }
-      float partyScore = partyScores.getOrDefault(party, 0f);
-      partyScore += score;
-      if (partyScore > topScore && topUUID != party.getLeader().getUUID()) {
-        killers.clear();
-        killers.addAll(SnazzyPartiesPlugin.getInstance().getPartyManager()
-            .getNearbyPlayers(party, mob.getEntity().getLocation(), 30));
-        topScore = partyScore;
-        topUUID = party.getLeader().getUUID();
-      }
-      partyScores.put(party, partyScore);
     }
-    return killers;
+    float maxKiller = 0;
+    float maxParty = 0;
+    Player winningKiller = null;
+    Party winningParty = null;
+    for (Entry<Player, Float> entry : applicableKillers.entrySet()) {
+      if (entry.getValue() > maxKiller) {
+        winningKiller = entry.getKey();
+        maxKiller = entry.getValue();
+      }
+    }
+    for (Entry<Party, Float> entry: applicableParties.entrySet()){
+      if (entry.getValue() > maxParty) {
+        winningParty = entry.getKey();
+        maxParty = entry.getValue();
+      }
+    }
+    if (maxKiller == 0 && maxParty == 0) {
+      return new HashSet<>();
+    }
+    if (maxKiller > maxParty) {
+      return new HashSet<>(List.of(winningKiller));
+    } else {
+      return new HashSet<>(SnazzyPartiesPlugin.getInstance().getPartyManager()
+          .getNearbyPlayers(winningParty, mob.getEntity().getLocation(), 30));
+    }
   }
 
   public boolean cacheUpdateRequired() {

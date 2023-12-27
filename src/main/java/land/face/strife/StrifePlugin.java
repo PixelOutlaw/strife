@@ -468,9 +468,7 @@ public class StrifePlugin extends FacePlugin {
     StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
     BoostTickTask boostTickTask = new BoostTickTask(boostManager);
     VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
-    Bukkit.getScheduler().runTaskLater(this, () -> {
-      new EveryTickTask(this);
-    }, 200L);
+    Bukkit.getScheduler().runTaskLater(this, () -> new EveryTickTask(this), 200L);
     IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();
     //regenTask = new RegenTask(this);

@@ -310,7 +310,11 @@ public class DamageUtil {
       pvpMult = PVP_MULT;
     }
 
-    float generalDamageMultiplier = StatUtil.getDamageMult(attacker);
+    float generalDamageMultiplier = mods.isUseBasicDamageMult() ? StatUtil.getDamageMult(attacker) : 1;
+    generalDamageMultiplier *= 1f + defender.getStat(StrifeStat.DAMAGE_TAKEN) / 100F;
+    if (mods.isApplyMinionDamageMult()) {
+      generalDamageMultiplier *= 1 + attacker.getStat(StrifeStat.MINION_DAMAGE) / 100;
+    }
     float minionDamageMultiplier = DamageUtil.getMinionMult(attacker);
 
     standardDamage += standardDamage * critMult;

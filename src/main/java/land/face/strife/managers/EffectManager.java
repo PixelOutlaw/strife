@@ -96,7 +96,6 @@ import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -104,7 +103,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import org.intellij.lang.annotations.Subst;
 
 public class EffectManager {
 
@@ -287,6 +285,8 @@ public class EffectManager {
         ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects",
             attackMult >= 0.6 || damageReductionRatio >= 0.6));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
+        ((Damage) effect).setUseBasicDamageMult(cs.getBoolean("use-basic-damage-mult", true));
+        ((Damage) effect).setUseMinionDamage(cs.getBoolean("use-minion-damage-mult", false));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
         ((Damage) effect).setSelfInflict(cs.getBoolean("self-inflict", false));

@@ -39,6 +39,8 @@ public class Damage extends Effect {
   private boolean canSneakAttack;
   private boolean isBlocking;
   private boolean applyOnHitEffects;
+  private boolean useBasicDamageMult;
+  private boolean useMinionDamage;
   private boolean showPopoffs;
   private boolean bypassBarrier;
   private boolean guardBreak;
@@ -71,6 +73,8 @@ public class Damage extends Effect {
     mods.setCanBeBlocked(canBeBlocked);
     mods.setApplyOnHitEffects(applyOnHitEffects);
     mods.setShowPopoffs(showPopoffs);
+    mods.setUseBasicDamageMult(useBasicDamageMult);
+    mods.setApplyMinionDamageMult(useMinionDamage);
     mods.setBypassBarrier(bypassBarrier);
     mods.setGuardBreak(guardBreak);
     mods.setScaleChancesWithAttack(false);

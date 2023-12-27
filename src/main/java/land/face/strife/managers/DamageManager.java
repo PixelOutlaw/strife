@@ -72,7 +72,7 @@ public class DamageManager {
     }
 
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
-      damage *= 0.5;
+      damage *= 0.5F;
       float bleed = damage;
       DamageUtil.applyBleed(attacker, defender, bleed, true, true, false);
     }
