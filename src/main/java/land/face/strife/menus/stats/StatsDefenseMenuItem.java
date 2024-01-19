@@ -156,12 +156,12 @@ public class StatsDefenseMenuItem extends MenuItem {
     addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), FaceColor.ORANGE, "\uD83D\uDD25");
     addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.ICE_RESIST), FaceColor.CYAN, "❄");
     addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), FaceColor.YELLOW, "⚡");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), FaceColor.GREEN, "₪");
     lore.add(resistDisplay.toString());
     StringBuilder resistDisplay2 = new StringBuilder();
     resistDisplay2.append(" ");
-    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), FaceColor.WHITE, "❂");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), FaceColor.GREEN, "₪");
     addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.DARK_RESIST), FaceColor.PURPLE, "☠");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), FaceColor.WHITE, "❂");
 
     lore.add(resistDisplay2.toString());
     lore.add(FaceColor.YELLOW + "Status Resistances:");

@@ -167,7 +167,7 @@ public class ProjectileUtil {
       return;
     }
     // x / 117.647 = 0.85
-    float projectileSpeed = 0.85f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 117.65f;
+    float projectileSpeed = 1.02f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100f;
     int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult);
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
 
@@ -178,7 +178,7 @@ public class ProjectileUtil {
       ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance, randomWandOffset(projectiles));
     }
 
-    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 1f);
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
     shotId++;
   }
 
@@ -259,7 +259,7 @@ public class ProjectileUtil {
       if (arrow.isValid()) {
         arrow.remove();
       }
-    }, 10 + (int) (18f * attackMult));
+    }, 8 + (int) (14f * attackMult));
 
     // DESPAWN_ON_CONTACT.put(arrow, true);
     // setPierce(arrow, pierceChance);
@@ -286,10 +286,8 @@ public class ProjectileUtil {
     setShotId(bullet);
   }
 
-  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread,
-      double verticalBonus) {
-    return getProjectileVelocity(shooter.getLocation().getDirection(), speed, spread,
-        verticalBonus, false);
+  public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
+    return getProjectileVelocity(shooter.getLocation().getDirection(), speed, spread, verticalBonus, false);
   }
 
   public static Vector getProjectileVelocity(Vector direction, float speed, double spread,

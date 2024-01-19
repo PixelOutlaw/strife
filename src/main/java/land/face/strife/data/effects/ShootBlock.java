@@ -2,9 +2,7 @@ package land.face.strife.data.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.timers.FallingBlockTimer;
@@ -24,8 +22,6 @@ public class ShootBlock extends LocationEffect {
   private double verticalBonus;
   private boolean zeroPitch;
   private List<String> hitEffects;
-
-  private final static Set<FallingBlockTimer> FALLING_BLOCKS = new HashSet<>();
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -51,17 +47,9 @@ public class ShootBlock extends LocationEffect {
       block.getLocation().setDirection(newDirection.normalize());
       block.setDropItem(false);
       block.setHurtEntities(false);
-
-      FALLING_BLOCKS.add(new FallingBlockTimer(caster, block));
+      new FallingBlockTimer(caster, block);
       SpecialStatusUtil.setHandledBlock(block, StringUtils.join(hitEffects, "~"));
     }
-  }
-
-  public static void clearTimers() {
-    for (FallingBlockTimer timer : FALLING_BLOCKS) {
-      timer.cancel();
-    }
-    FALLING_BLOCKS.clear();
   }
 
   public void setBlockData(BlockData blockData) {

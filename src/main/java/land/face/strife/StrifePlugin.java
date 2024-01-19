@@ -148,6 +148,7 @@ import land.face.strife.managers.StealthManager;
 import land.face.strife.managers.StrifeAttributeManager;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.managers.TopBarManager;
+import land.face.strife.managers.UnionManager;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.managers.VagabondManager;
 import land.face.strife.managers.ViolationManager;
@@ -241,6 +242,8 @@ public class StrifePlugin extends FacePlugin {
   private RuneManager runeManager;
   @Getter
   private CounterManager counterManager;
+  @Getter
+  private UnionManager unionManager;
   @Getter
   private CorruptionManager corruptionManager;
   @Getter
@@ -408,6 +411,7 @@ public class StrifePlugin extends FacePlugin {
     blockManager = new BlockManager(this);
     runeManager = new RuneManager(this);
     counterManager = new CounterManager(this);
+    unionManager = new UnionManager(this);
     corruptionManager = new CorruptionManager(this);
     attackSpeedManager = new AttackSpeedManager(this);
     indicatorManager = new IndicatorManager(this);
@@ -764,8 +768,6 @@ public class StrifePlugin extends FacePlugin {
       strifeMobManager.saveEnergy(player);
       strifeMobManager.despawnMinions(player);
     }
-
-    ShootBlock.clearTimers();
 
     for (BukkitTask task : taskList) {
       task.cancel();

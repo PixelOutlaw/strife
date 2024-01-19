@@ -43,25 +43,27 @@ public class ViolationManager {
       if (!MoveUtil.hasMoved(player, 60000)) {
         amount = 200;
       } else if (!MoveUtil.hasMoved(player, 10000)) {
-        amount += 5;
+        amount += 10;
       } else {
         double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
         if (distance < 0.5) {
-          amount += 2;
+          amount += 4;
         } else if (distance < 2) {
+          amount += 2;
+        } else if (distance < 4) {
           amount += 1;
-        } else if (distance > 144) {
-          amount = 0;
-        } else if (distance > 25) {
+        } else if (distance < 16) {
+          amount -= 12;
+        } else if (distance < 26) {
           amount -= 70;
         } else {
-          amount -= 12;
+          amount = 0;
         }
       }
       amount = Math.max(amount, 0);
       amount = Math.min(amount, 200);
       violationLevel.put(player, amount);
-      if (amount > 60) {
+      if (amount > 70) {
         mult = (200f - amount) / 200f;
       }
     }

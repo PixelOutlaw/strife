@@ -30,7 +30,6 @@ public class ChangeEnergy extends Effect {
 
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
 
-
     if (tickDuration == -1) {
       StatUtil.changeEnergy(target, applyMultipliers(caster, restoreAmount));
     } else {

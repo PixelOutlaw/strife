@@ -38,8 +38,7 @@ public class FallingBlockTimer extends BukkitRunnable {
       return;
     }
     LogUtil.printDebug("SUCCESS! FallingBlockTimer " + getTaskId() + " entity not valid");
-    block.getWorld().spawnParticle(Particle.BLOCK_DUST, block.getLocation(), 20, 0.7, 0.7, 0.7,
-        block.getBlockData());
+    block.getWorld().spawnParticle(Particle.BLOCK_DUST, block.getLocation(), 20, 0.7, 0.7, 0.7, block.getBlockData());
     block.setDropItem(false);
     String[] effects = SpecialStatusUtil.getHandledBlockEffects(block).split("~");
     if (effects.length == 0) {

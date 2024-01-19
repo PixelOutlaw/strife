@@ -120,6 +120,7 @@ public abstract class Condition {
     MINION,
     HAS_MINIONS,
     NEARBY_ENTITIES,
+    UNION,
     IN_COMBAT,
     CHANCE,
     STAT,

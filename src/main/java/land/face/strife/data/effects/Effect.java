@@ -136,6 +136,7 @@ public abstract class Effect {
     TELEPORT,
     TELEPORT_BEHIND,
     THRALL,
+    UNION,
     TITLE,
     CORRUPT,
     ATTACK_MOD,

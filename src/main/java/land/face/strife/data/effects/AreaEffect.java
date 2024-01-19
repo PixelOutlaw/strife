@@ -69,7 +69,7 @@ public class AreaEffect extends LocationEffect {
   private long lastApplication = System.currentTimeMillis();
 
   public void apply(StrifeMob caster, StrifeMob target) {
-    applyAtLocation(caster, TargetingUtil.getOriginLocation(target.getEntity(), getOrigin()));
+    applyAtLocation(caster, TargetingUtil.getOriginLocation(target.getEntity(), getOrigin(), getExtra()));
   }
 
   @Override

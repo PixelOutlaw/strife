@@ -428,14 +428,14 @@ public class DamageUtil {
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
       attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
-    doWhenHit(attacker, defender);
+    doWhenHit(attacker, defender, mods.getAttackType());
     if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.TEN)) {
       float prayerMinus = (float) defender.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER) * 0.05f;
       attacker.setPrayer(Math.max(0, attacker.getPrayer() - prayerMinus));
     }
   }
 
-  public static void doWhenHit(StrifeMob attacker, StrifeMob defender) {
+  public static void doWhenHit(StrifeMob attacker, StrifeMob defender, AttackType attackType) {
     if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
       defender.changeRage(defender.getStat(StrifeStat.RAGE_WHEN_HIT));
     }
@@ -443,6 +443,10 @@ public class DamageUtil {
       StatUtil.changeEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
     }
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
+    switch (attackType) {
+      case MELEE -> plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_MELEE_HIT);
+      case PROJECTILE -> plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_RANGED_HIT);
+    }
   }
 
   private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods,
@@ -586,8 +590,24 @@ public class DamageUtil {
 
   public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap, Map<AbilityMod, Float> abilityMods) {
-    damageMap.replaceAll((t, v) ->
-        damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods));
+    damageMap.replaceAll((t, v) -> damageMap.get(t)
+        * getDamageReduction(t, attacker, defender, abilityMods)
+        * resistTraitMult(defender, t)
+    );
+  }
+
+  public static float resistTraitMult(StrifeMob mob, DamageType type) {
+    return switch (type) {
+      case PHYSICAL -> mob.hasTrait(StrifeTrait.RESIST_PHYSICAL) ? 0.5f : 1f;
+      case MAGICAL -> mob.hasTrait(StrifeTrait.RESIST_MAGICAL) ? 0.5f : 1f;
+      case FIRE -> mob.hasTrait(StrifeTrait.RESIST_FIRE) ? 0.5f : 1f;
+      case ICE -> mob.hasTrait(StrifeTrait.RESIST_ICE) ? 0.5f : 1f;
+      case LIGHTNING -> mob.hasTrait(StrifeTrait.RESIST_LIGHTNING) ? 0.5f : 1f;
+      case EARTH -> mob.hasTrait(StrifeTrait.RESIST_EARTH) ? 0.5f : 1f;
+      case DARK -> mob.hasTrait(StrifeTrait.RESIST_DARK) ? 0.5f : 1f;
+      case LIGHT -> mob.hasTrait(StrifeTrait.RESIST_LIGHT) ? 0.5f : 1f;
+      default -> 1f;
+    };
   }
 
   public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
@@ -1312,7 +1332,9 @@ public class DamageUtil {
     BELOW_HEAD,
     HEAD,
     CENTER,
-    GROUND
+    GROUND,
+    MODEL_BONE,
+    UNION_BONE,
   }
 
   public enum DamageType {

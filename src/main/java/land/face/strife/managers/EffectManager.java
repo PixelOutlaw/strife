@@ -65,6 +65,7 @@ import land.face.strife.data.conditions.SneakCondition;
 import land.face.strife.data.conditions.StatCondition;
 import land.face.strife.data.conditions.StealthCondition;
 import land.face.strife.data.conditions.TimeCondition;
+import land.face.strife.data.conditions.UnionCondition;
 import land.face.strife.data.conditions.UniqueCondition;
 import land.face.strife.data.conditions.VelocityCondition;
 import land.face.strife.data.conditions.VelocityCondition.VelocityType;
@@ -627,6 +628,11 @@ public class EffectManager {
         ((Thrall) effect).setName(cs.getString("name", "&8«&7Thrall&8»"));
         ((Thrall) effect).setLifeSeconds(cs.getInt("lifespan-seconds", 20));
       }
+      case UNION -> {
+        effect = new Union();
+        ((Union) effect).setUnionId(cs.getString("union-id", ""));
+        ((Union) effect).setTicks(cs.getInt("duration-ticks", 20));
+      }
       case TITLE -> {
         effect = new Title();
         ((Title) effect).setTopTitle(cs.getString("upper", ""));
@@ -733,7 +739,7 @@ public class EffectManager {
         ((ModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
         ((ModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 0));
         ((ModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 0));
-        ((ModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
+        ((ModelAnimation) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((ModelAnimation) effect).setLockTicks(cs.getInt("lock-ticks", 0));
       }
       case CREATE_MODEL -> {
@@ -929,6 +935,7 @@ public class EffectManager {
     }
     if (effect instanceof LocationEffect) {
       ((LocationEffect) effect).setOrigin(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+      ((LocationEffect) effect).setExtra(cs.getString("extra", ""));
     }
     if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));
@@ -1124,6 +1131,9 @@ public class EffectManager {
         break;
       case IN_COMBAT:
         condition = new InCombatCondition(cs.getBoolean("state", true), cs.getBoolean("pvp-only", false));
+        break;
+      case UNION:
+        condition = new UnionCondition(cs.getString("union-id"));
         break;
       case TIME:
         long minTime = cs.getLong("min-time", 0);

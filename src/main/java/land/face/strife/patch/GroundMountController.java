@@ -33,9 +33,6 @@ public class GroundMountController extends AbstractMountController {
 
     if (input.getSide() != 0 || input.getFront() != 0) {
       MoveUtil.setLastMoved((Player) getEntity());
-      //model.setState(ModelState.WALK);
-    } else {
-      //model.setState(ModelState.IDLE);
     }
 
     float move = controller.isOnGround() ? landSpeed : landSpeed * 0.8f;
@@ -44,7 +41,6 @@ public class GroundMountController extends AbstractMountController {
     if (input.isJump() && controller.isOnGround()) {
       controller.jump();
       MoveUtil.setLastMoved((Player) getEntity());
-      //model.setState(ModelState.JUMP);
     }
   }
 

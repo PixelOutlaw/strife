@@ -55,12 +55,12 @@ public class RageTask extends BukkitRunnable {
       new TextComponent("\uD809\uDC1E")
   );
 
-  private static final int MAX_GRACE_TICKS = 50;
+  private static final int MAX_GRACE_TICKS = 32;
 
   public RageTask(StrifeMob mob) {
     this.parentMob = new WeakReference<>(mob);
     this.graceTicks = MAX_GRACE_TICKS;
-    runTaskTimer(StrifePlugin.getInstance(), 1L, 4L);
+    runTaskTimer(StrifePlugin.getInstance(), 1L, 5L);
   }
 
   @Override

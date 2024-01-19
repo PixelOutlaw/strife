@@ -89,6 +89,13 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   }
 
   @EventHandler
+  public void onPortal(final PlayerPortalEvent event) {
+    event.setCanCreatePortal(false);
+    event.setSearchRadius(1);
+    event.setCancelled(true);
+  }
+
+  @EventHandler
   public void onCast(AbilityCastEvent event) {
     if (event.getCaster().getEntity().getType() == EntityType.PLAYER) {
       plugin.getAbilityIconManager().updateChargesGui((Player) event.getCaster().getEntity());

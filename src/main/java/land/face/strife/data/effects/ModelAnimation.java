@@ -5,31 +5,30 @@ import land.face.strife.data.StrifeMob;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 
+@Setter
 public class ModelAnimation extends Effect {
 
-  @Setter
   private String animationId;
-  @Setter
   private int lerpIn;
-  @Setter
   private int lerpOut;
-  @Setter
-  private double speed = 1;
-  @Setter
+  private float speed = 1f;
   private int lockTicks = 0;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (target.getModelEntity() == null) {
+    if (target.getModelEntity() != null) {
+      if (lockTicks > 0) {
+        target.getModelEntity().setModelRotationLocked(true);
+        Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
+            target.getModelEntity().setModelRotationLocked(false), lockTicks);
+      }
+      for (ActiveModel model : target.getModelEntity().getModels().values()) {
+        model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
+      }
       return;
     }
-    if (lockTicks > 0) {
-      target.getModelEntity().setModelRotationLocked(true);
-      Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
-          target.getModelEntity().setModelRotationLocked(false), lockTicks);
-    }
-    for (ActiveModel model : target.getModelEntity().getModels().values()) {
-      model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
+    if (getPlugin().getUnionManager().hasActiveUnion(target)) {
+      getPlugin().getUnionManager().playUnionAnimation(target, animationId, speed, lockTicks);
     }
   }
 }

@@ -21,6 +21,7 @@ import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
 import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.Set;
@@ -194,8 +195,14 @@ public class TargetingListener implements Listener {
     if (event.getTarget() == null || event.getTarget().getType() != EntityType.PLAYER) {
       return;
     }
+    if (!MoveUtil.hasMoved((Player) event.getTarget(), 3000)) {
+      return;
+    }
     if (event.getEntity().getType() == EntityType.HOGLIN ||
-        event.getEntity().getType() == EntityType.ZOGLIN) {
+        event.getEntity().getType() == EntityType.ZOGLIN ||
+        event.getEntity().getType() == EntityType.SLIME ||
+        event.getEntity().getType() == EntityType.MAGMA_CUBE
+    ) {
       return;
     }
     if (event.getReason() == CLOSEST_PLAYER && event.getEntity() instanceof LivingEntity mob) {

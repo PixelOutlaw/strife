@@ -4,6 +4,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,6 +71,9 @@ public class AbilityManager {
   }
 
   public Ability getAbility(String name) {
+    if (StringUtils.isBlank(name)) {
+      return null;
+    }
     if (loadedAbilities.containsKey(name)) {
       return loadedAbilities.get(name);
     }

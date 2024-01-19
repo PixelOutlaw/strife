@@ -122,7 +122,9 @@ public class EntityAbilitySet {
 
   public enum TriggerAbilityType {
     ON_HIT,
+    WHEN_MELEE_HIT,
     WHEN_HIT,
+    WHEN_RANGED_HIT,
     PHASE_SHIFT,
     SHOOT,
     TIMER,

@@ -46,6 +46,7 @@ public class DoubleJumpListener implements Listener {
   private final float rollCostMult;
   private final float rollCostFlat;
   private final float rollCostDecay;
+  private final int rollLeviTicks;
   private final float maxRollCost;
 
   private final float airDashAscent;
@@ -76,6 +77,8 @@ public class DoubleJumpListener implements Listener {
         .getDouble("config.mechanics.agility.roll-cost-decay", 3f) / 1000;
     maxRollCost = (float) plugin.getSettings()
         .getDouble("config.mechanics.agility.max-roll-cost", 45);
+    rollLeviTicks = plugin.getSettings()
+        .getInt("config.mechanics.agility.roll-levitation-ticks", 2);
 
     airDashAscent = (float) plugin.getSettings()
         .getDouble("config.mechanics.agility.air-dash-ascent", 0.275);
@@ -190,19 +193,17 @@ public class DoubleJumpListener implements Listener {
         lastDodge.put(player, System.currentTimeMillis());
         dodgeCost.put(player, Math.min(maxRollCost, finalCurrentCost * rollCostMult + rollCostFlat));
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true, false));
-
         plugin.getAbilityManager().setGlobalCooldown(player, 16);
         plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
 
-        player.setVelocity(currentVelocity.add(horizontalMovement.normalize()
-            .multiply(rollPower)).setY(rollAscent));
-        player.getWorld().spawnParticle(particle,
-            player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
-        player.getWorld().playSound(player.getLocation(),
-            Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, rollLeviTicks, 1, true, false));
+
+        player.setVelocity(currentVelocity.add(horizontalMovement.normalize().multiply(rollPower)).setY(rollAscent));
+        player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
+        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
       }
-    }, 3L);
+    }, 2L);
   }
 
   private void doAirJump(StrifeMob mob, Player player, int jumps) {

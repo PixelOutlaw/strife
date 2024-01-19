@@ -88,7 +88,7 @@ public class BlockManager {
       if (!blockTimers.containsKey(defender.getEntity().getUniqueId())) {
         blockTimers.put(defender.getEntity().getUniqueId(), new BlockTimer(this, defender));
       }
-      DamageUtil.doWhenHit(attacker, defender);
+      DamageUtil.doWhenHit(attacker, defender, attackType);
       return true;
     }
     return false;

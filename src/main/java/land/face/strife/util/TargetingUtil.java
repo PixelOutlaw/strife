@@ -2,6 +2,12 @@ package land.face.strife.util;
 
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
+import com.ticxo.modelengine.api.model.bone.ModelBone;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -321,14 +328,14 @@ public class TargetingUtil {
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
       boolean targetEntities) {
-    return getTargetLocation(caster, target, range, OriginLocation.CENTER, targetEntities);
+    return getTargetLocation(caster, target, range, OriginLocation.CENTER, "", targetEntities);
   }
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
-      OriginLocation originLocation, boolean targetEntities) {
+      OriginLocation originLocation, String extra, boolean targetEntities) {
     if (target != null && caster.getLocation().distance(target.getLocation()) < range &&
         caster.hasLineOfSight(target)) {
-      return getOriginLocation(target, originLocation);
+      return getOriginLocation(target, originLocation, extra);
     }
     RayTraceResult result;
     if (targetEntities) {
@@ -345,7 +352,7 @@ public class TargetingUtil {
     }
     if (result.getHitEntity() != null) {
       LogUtil.printDebug(" - Using ENTITY location calculation");
-      return getOriginLocation((LivingEntity) result.getHitEntity(), originLocation);
+      return getOriginLocation((LivingEntity) result.getHitEntity(), originLocation, extra);
     }
     if (result.getHitBlock() != null) {
       LogUtil.printDebug(" - Using BLOCK location calculation");
@@ -391,8 +398,16 @@ public class TargetingUtil {
   }
 
   public static Location getOriginLocation(LivingEntity le, OriginLocation origin) {
+    return getOriginLocation(le, origin, "");
+  }
+
+  public static Location getOriginLocation(LivingEntity le, OriginLocation origin, String extra) {
     if (le == null) {
       return null;
+    }
+    if (origin == OriginLocation.MODEL_BONE && StringUtils.isBlank(extra)) {
+      Bukkit.getLogger().info("[Strife] Tried to get model bone but extra not provided");
+      origin = OriginLocation.CENTER;
     }
     switch (origin) {
       case HEAD -> {
@@ -405,9 +420,28 @@ public class TargetingUtil {
         return le.getEyeLocation().clone().add(0, 0.4, 0);
       }
       case CENTER -> {
-        Vector vec = le.getEyeLocation().toVector().subtract(le.getLocation().toVector())
-            .multiply(0.5);
+        Vector vec = le.getEyeLocation().toVector().subtract(le.getLocation().toVector()).multiply(0.5);
         return le.getLocation().clone().add(vec);
+      }
+      case MODEL_BONE -> {
+        if (StringUtils.isBlank(extra)) {
+          return le.getLocation();
+        }
+        ModeledEntity modeledEntity = ModelEngineAPI.getModeledEntity(le);
+        if (modeledEntity == null) {
+          return le.getLocation();
+        }
+        Optional<ActiveModel> activeModel = modeledEntity.getModels().values().stream().findFirst();
+        if (activeModel.isEmpty()) {
+          return le.getLocation();
+        }
+        Optional<ModelBone> bone = activeModel.get().getBone(extra);
+        if (bone.isPresent()) {
+          return bone.get().getLocation();
+        } else {
+          Bukkit.getLogger().info("[Strife] Bone ID " + extra + " not found for origin detection!");
+          return le.getLocation();
+        }
       }
       default -> {
         return le.getLocation();

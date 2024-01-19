@@ -3,6 +3,7 @@ package land.face.strife.tasks;
 import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -30,7 +31,7 @@ public class FrostTask extends BukkitRunnable {
       cancel();
       return;
     }
-    if (mob.getEntity().getType() != EntityType.PLAYER) {
+    if (mob.getEntity().getType() != EntityType.PLAYER || mob.hasTrait(StrifeTrait.ICY_VEINS)) {
       lowerFrostNormally(mob);
       return;
     }
