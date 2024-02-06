@@ -75,6 +75,7 @@ import land.face.strife.data.effects.*;
 import land.face.strife.data.effects.AreaEffect.AreaType;
 import land.face.strife.data.effects.AreaEffect.LineOfSight;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
+import land.face.strife.data.effects.CreateModelAnimation.AnimationType;
 import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
@@ -631,6 +632,8 @@ public class EffectManager {
       case UNION -> {
         effect = new Union();
         ((Union) effect).setUnionId(cs.getString("union-id", ""));
+        ((Union) effect).setAbilityId(cs.getString("ability-id", ""));
+        ((Union) effect).setBuffId(cs.getString("buff-id", ""));
         ((Union) effect).setTicks(cs.getInt("duration-ticks", 20));
       }
       case TITLE -> {
@@ -737,8 +740,9 @@ public class EffectManager {
       case MODEL_ANIMATION -> {
         effect = new ModelAnimation();
         ((ModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
-        ((ModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 0));
-        ((ModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 0));
+        ((ModelAnimation) effect).setUnionDelay(cs.getInt("union-delay", 0));
+        ((ModelAnimation) effect).setLerpIn((float) cs.getDouble("lerp-in", 0));
+        ((ModelAnimation) effect).setLerpOut((float) cs.getDouble("lerp-out", 0));
         ((ModelAnimation) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((ModelAnimation) effect).setLockTicks(cs.getInt("lock-ticks", 0));
       }
@@ -746,12 +750,14 @@ public class EffectManager {
         effect = new CreateModelAnimation();
         ((CreateModelAnimation) effect).setModelId(cs.getString("model-id"));
         ((CreateModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
-        ((CreateModelAnimation) effect).setLerpIn(cs.getInt("lerp-in", 0));
-        ((CreateModelAnimation) effect).setLerpOut(cs.getInt("lerp-out", 0));
-        ((CreateModelAnimation) effect).setSpeed(cs.getDouble("speed", 1));
+        ((CreateModelAnimation) effect).setLerpIn((float) cs.getDouble("lerp-in", 0));
+        ((CreateModelAnimation) effect).setLerpOut((float) cs.getDouble("lerp-out", 0));
+        ((CreateModelAnimation) effect).setSpeed((float) cs.getDouble("speed", 1));
+        ((CreateModelAnimation) effect).setScale((float) cs.getDouble("scale", 1));
         ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
-        ((CreateModelAnimation) effect).setTargetLock(cs.getBoolean("target-lock", false));
-        ((CreateModelAnimation) effect).setRandomRotation(cs.getBoolean("random-rotation", true));
+        ((CreateModelAnimation) effect).setEntityLock(cs.getBoolean("entity-lock", false));
+        ((CreateModelAnimation) effect).setAnimationType(
+            AnimationType.valueOf(cs.getString("rotation-type", "RANDOM_ROTATION")));
         ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", false));
         ((CreateModelAnimation) effect).setForceGrounded(cs.getBoolean("force-grounded", false));
         if (cs.getString("color") != null) {

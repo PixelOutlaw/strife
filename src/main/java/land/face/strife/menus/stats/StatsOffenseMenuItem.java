@@ -25,10 +25,16 @@ import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
@@ -89,8 +95,12 @@ public class StatsOffenseMenuItem extends MenuItem {
       type = AttackType.MELEE;
     }
 
-    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(mob, null, null);
+    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(mob, null, new DamageModifiers());
     DamageUtil.applyAttackTypeMods(mob, type, damageMap);
+
+    List<Entry<DamageType, Float>> retardMap = new ArrayList<>(damageMap.entrySet());
+    retardMap.sort(Entry.comparingByValue());
+    Collections.reverse(retardMap);
 
     ItemStack itemStack = getIcon().clone();
     ItemMeta itemMeta = itemStack.getItemMeta();
@@ -98,38 +108,44 @@ public class StatsOffenseMenuItem extends MenuItem {
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
 
-    float physical = damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
-    float magical = damageMap.getOrDefault(DamageType.MAGICAL, 0f);
-    float fire = damageMap.getOrDefault(DamageType.FIRE, 0f);
-    float ice = damageMap.getOrDefault(DamageType.ICE, 0f);
-    float lightning = damageMap.getOrDefault(DamageType.LIGHTNING, 0f);
-    float earth = damageMap.getOrDefault(DamageType.EARTH, 0f);
-    float light = damageMap.getOrDefault(DamageType.LIGHT, 0f);
-    float shadow = damageMap.getOrDefault(DamageType.DARK, 0f);
-    float trueDmg = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) - 1;
+    float totalMultiplier = 1f;
+    if (type == AttackType.PROJECTILE) {
+      totalMultiplier *= 1f + mob.getStat(StrifeStat.PROJECTILE_DAMAGE) / 100;
+    }
 
-    float total = physical + magical + fire + ice + lightning + earth + light + shadow;
-    total *= 1 + mob.getStat(StrifeStat.DAMAGE_MULT) / 100;
-    total += trueDmg;
+    float physical = totalMultiplier * damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
+    float magical = totalMultiplier * damageMap.getOrDefault(DamageType.MAGICAL, 0f);
+    float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f);
+    float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f);
+    float lightning = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHTNING, 0f);
+    float earth = totalMultiplier * damageMap.getOrDefault(DamageType.EARTH, 0f);
+    float light = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHT, 0f);
+    float shadow = totalMultiplier * damageMap.getOrDefault(DamageType.DARK, 0f);
+    float trueDmg = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) - 1;
+    float total = physical + magical + fire + ice + lightning + earth + light + shadow + trueDmg;
 
     lore.add(breakLine);
 
     lore.add(addStat("Total Damage: ", total, INT_FORMAT));
     StringBuilder damageDisplay = new StringBuilder();
-    if (physical > magical) {
-      addIfApplicable(damageDisplay, physical, FaceColor.RED, FaceColor.WHITE + "儀");
-      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, FaceColor.WHITE + "儁");
-    } else {
-      addIfApplicable(damageDisplay, magical, FaceColor.BLUE, FaceColor.WHITE + "儁");
-      addIfApplicable(damageDisplay, physical, FaceColor.RED, FaceColor.WHITE + "儀");
+
+    for (Entry<DamageType, Float> entry : retardMap) {
+      if (entry.getValue() < 1) {
+        continue;
+      }
+      switch (entry.getKey()) {
+        case PHYSICAL -> addIfApplicable(damageDisplay, physical, FaceColor.RED, FaceColor.WHITE + "儀");
+        case MAGICAL -> addIfApplicable(damageDisplay, magical, FaceColor.BLUE, FaceColor.WHITE + "儁");
+        case FIRE -> addIfApplicable(damageDisplay, fire, FaceColor.ORANGE, FaceColor.WHITE + "儂");
+        case ICE -> addIfApplicable(damageDisplay, ice, FaceColor.CYAN, FaceColor.WHITE + "儃");
+        case LIGHTNING -> addIfApplicable(damageDisplay, lightning, FaceColor.YELLOW, FaceColor.WHITE + "億");
+        case LIGHT -> addIfApplicable(damageDisplay, light, FaceColor.WHITE, FaceColor.WHITE + "儆");
+        case EARTH -> addIfApplicable(damageDisplay, earth, FaceColor.BROWN, FaceColor.WHITE + "儅");
+        case DARK -> addIfApplicable(damageDisplay, shadow, FaceColor.PURPLE, FaceColor.WHITE + "儇");
+        case TRUE_DAMAGE -> addIfApplicable(damageDisplay, trueDmg, FaceColor.LIGHT_GRAY, FaceColor.WHITE + "儈");
+      }
     }
-    addIfApplicable(damageDisplay, fire, FaceColor.ORANGE, FaceColor.WHITE + "儂");
-    addIfApplicable(damageDisplay, ice, FaceColor.CYAN, FaceColor.WHITE + "儃");
-    addIfApplicable(damageDisplay, lightning, FaceColor.YELLOW, FaceColor.WHITE + "億");
-    addIfApplicable(damageDisplay, earth, FaceColor.GREEN, FaceColor.WHITE + "儅");
-    addIfApplicable(damageDisplay, light, FaceColor.WHITE, FaceColor.WHITE + "儆");
-    addIfApplicable(damageDisplay, shadow, FaceColor.PURPLE, FaceColor.WHITE + "儇");
-    addIfApplicable(damageDisplay, trueDmg, FaceColor.LIGHT_GRAY, FaceColor.WHITE + "儈");
+
     lore.add(damageDisplay.toString());
     float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
     if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT) || critMult < 0.1) {

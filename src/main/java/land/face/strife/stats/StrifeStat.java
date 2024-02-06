@@ -26,6 +26,7 @@ public enum StrifeStat {
   LEVEL_REQUIREMENT("Level Requirement"),
   SKILL_REQUIREMENT("Skill Requirement"),
 
+  CHARACTER_SIZE("Character Size"),
   WEIGHT("Weight"),
 
   HEALTH("Maximum Life"),

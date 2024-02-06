@@ -105,8 +105,8 @@ public class ParticleTask extends BukkitRunnable {
         iterator.remove();
         continue;
       }
-      cParticle.getParticle().applyAtLocation(null, TargetingUtil.getOriginLocation(le,
-          cParticle.getParticle().getOrigin()));
+      cParticle.getParticle().applyAtLocation(null,
+          TargetingUtil.getOriginLocation(le, cParticle.getParticle().getOrigin(), cParticle.getParticle().getExtra()));
       cParticle.setTicksRemaining(cParticle.getTicksRemaining() - 1);
     }
   }

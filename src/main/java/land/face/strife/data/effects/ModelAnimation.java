@@ -9,9 +9,10 @@ import org.bukkit.Bukkit;
 public class ModelAnimation extends Effect {
 
   private String animationId;
-  private int lerpIn;
-  private int lerpOut;
+  private float lerpIn;
+  private float lerpOut;
   private float speed = 1f;
+  private int unionDelay = 0;
   private int lockTicks = 0;
 
   @Override
@@ -28,7 +29,7 @@ public class ModelAnimation extends Effect {
       return;
     }
     if (getPlugin().getUnionManager().hasActiveUnion(target)) {
-      getPlugin().getUnionManager().playUnionAnimation(target, animationId, speed, lockTicks);
+      getPlugin().getUnionManager().playUnionAnimation(target, animationId, speed, unionDelay, lockTicks);
     }
   }
 }

@@ -284,28 +284,28 @@ public class CombatListener implements Listener {
       plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
     }
 
-    DamageModifiers damageModifiers = new DamageModifiers();
-    damageModifiers.setBasicAttack(true);
-    damageModifiers.setAttackType(attackType);
-    damageModifiers.setAttackMultiplier(attackMultiplier);
-    damageModifiers.setHealMultiplier(healMultiplier);
-    damageModifiers.setDamageReductionRatio(1.0f);
+    DamageModifiers mods = new DamageModifiers();
+    mods.setBasicAttack(true);
+    mods.setAttackType(attackType);
+    mods.setAttackMultiplier(attackMultiplier);
+    mods.setHealMultiplier(healMultiplier);
+    mods.setDamageReductionRatio(1.0f);
     // TODO: actually handle on hit projectiles better
     if (onHitProjectile && multishotRatio == 1f) {
-      damageModifiers.setScaleChancesWithAttack(false);
+      mods.setScaleChancesWithAttack(false);
     } else {
-      damageModifiers.setScaleChancesWithAttack(true);
+      mods.setScaleChancesWithAttack(true);
     }
-    damageModifiers.setApplyOnHitEffects(StrifePlugin.RNG.nextFloat() < onHitChance);
-    damageModifiers.setSneakAttack(isSneakAttack);
-    damageModifiers.setBlocking(blocked);
-    damageModifiers.setGuardBreak(false);
+    mods.setApplyOnHitEffects(StrifePlugin.RNG.nextFloat() < onHitChance);
+    mods.setSneakAttack(isSneakAttack);
+    mods.setBlocking(blocked);
+    mods.setGuardBreak(false);
 
     if (backAttack) {
-      damageModifiers.getAbilityMods().put(AbilityMod.BACK_ATTACK, 1f);
+      mods.getAbilityMods().put(AbilityMod.BACK_ATTACK, 1f);
     }
 
-    boolean attackSuccess = DamageUtil.preDamage(attacker, defender, damageModifiers);
+    boolean attackSuccess = DamageUtil.preDamage(attacker, defender, mods);
 
     if (!attackSuccess) {
       removeIfExisting(projectile);
@@ -318,13 +318,14 @@ public class CombatListener implements Listener {
       return;
     }
 
-    Map<DamageType, Float> damages = DamageUtil.buildDamage(attacker, defender, damageModifiers);
-    DamageUtil.applyElementalEffects(attacker, defender, damages, damageModifiers);
-    DamageUtil.reduceDamage(attacker, defender, damages, damageModifiers);
+    Map<DamageType, Float> damages = DamageUtil.buildDamageMap(attacker, defender, mods);
+    DamageUtil.applyAttackTypeMods(attacker, mods.getAttackType(), damages);
+    DamageUtil.applyElementalEffects(attacker, defender, damages, mods);
+    DamageUtil.reduceDamage(attacker, defender, damages, mods);
 
-    float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, attackType, damages, damageModifiers);
+    float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, attackType, damages, mods);
 
-    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, damageModifiers);
+    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, mods);
     strifeDamageEvent.setFinalDamage(finalDamage);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
 
@@ -335,7 +336,7 @@ public class CombatListener implements Listener {
 
     if (attackEntity instanceof Bee) {
       plugin.getDamageManager().dealDamage(attacker, defender,
-          (float) strifeDamageEvent.getFinalDamage(), damageModifiers);
+          (float) strifeDamageEvent.getFinalDamage(), mods);
       event.setCancelled(true);
       return;
     }
@@ -355,7 +356,7 @@ public class CombatListener implements Listener {
       eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
       if (damages.containsKey(DamageType.PHYSICAL)) {
         DamageUtil.attemptBleed(attacker, defender, damages.get(DamageType.PHYSICAL),
-            damageModifiers, false);
+            mods, false);
       }
     }
 
@@ -366,10 +367,10 @@ public class CombatListener implements Listener {
       DamageUtil.applyBleed(defender, defender, bleed, true, true, false);
     }
 
-    if (damageModifiers.isApplyOnHitEffects()) {
-      DamageUtil.attemptPoison(attacker, defender, damageModifiers);
+    if (mods.isApplyOnHitEffects()) {
+      DamageUtil.attemptPoison(attacker, defender, mods);
       Bukkit.getScheduler().runTaskLater(plugin, () ->
-          DamageUtil.postDamage(attacker, defender, damageModifiers, true), 0L);
+          DamageUtil.postDamage(attacker, defender, mods, true), 0L);
     }
 
     if (eventDamage >= defendEntity.getHealth()) {

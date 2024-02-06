@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.Union;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.TargetingComparators.DistanceComparator;
@@ -182,14 +183,16 @@ public class TargetingUtil {
     return false;
   }
 
-  public static Set<LivingEntity> getEntitiesInArea(Location location, double radius) {
-    Collection<Entity> targetList = Objects.requireNonNull(location.getWorld())
-        .getNearbyEntities(location, radius, radius, radius);
+  public static Set<LivingEntity> getEntitiesInArea(Location loc, double size) {
+    loc = loc.clone().add(0, 0.5, 0);
+    Collection<Entity> targetList = Objects.requireNonNull(loc.getWorld()).getNearbyEntities(loc, size, size + 0.5, size);
+    double circleDist = Math.pow(size, 2);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity entity : targetList) {
-      if (!isInvalidTarget(entity)) {
-        validTargets.add((LivingEntity) entity);
+      if (entity.getLocation().distanceSquared(loc) > circleDist || isInvalidTarget(entity)) {
+        continue;
       }
+      validTargets.add((LivingEntity) entity);
     }
     return validTargets;
   }
@@ -327,21 +330,26 @@ public class TargetingUtil {
   }
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
-      boolean targetEntities) {
-    return getTargetLocation(caster, target, range, OriginLocation.CENTER, "", targetEntities);
+      boolean targetEntities, boolean friendly) {
+    return getTargetLocation(caster, target, range, OriginLocation.CENTER, "", targetEntities, friendly);
   }
 
   public static Location getTargetLocation(LivingEntity caster, LivingEntity target, double range,
-      OriginLocation originLocation, String extra, boolean targetEntities) {
+      OriginLocation originLocation, String extra, boolean targetEntities, boolean friendly) {
     if (target != null && caster.getLocation().distance(target.getLocation()) < range &&
         caster.hasLineOfSight(target)) {
       return getOriginLocation(target, originLocation, extra);
     }
     RayTraceResult result;
     if (targetEntities) {
-      result = caster.getWorld().rayTrace(caster.getEyeLocation(),
-          caster.getEyeLocation().getDirection(), range, FluidCollisionMode.NEVER, true, 0.2,
-          entity -> isValidRaycastTarget(caster, entity));
+      result = caster.getWorld().rayTrace(
+          caster.getEyeLocation(),
+          caster.getEyeLocation().getDirection(),
+          range,
+          FluidCollisionMode.NEVER,
+          true,
+          0.2,
+          entity -> isValidRaycastTarget(caster, entity) && friendly == isFriendly(caster, (LivingEntity) entity));
     } else {
       result = caster.getWorld().rayTraceBlocks(caster.getEyeLocation(),
           caster.getEyeLocation().getDirection(), range, FluidCollisionMode.NEVER, true);
@@ -436,6 +444,25 @@ public class TargetingUtil {
           return le.getLocation();
         }
         Optional<ModelBone> bone = activeModel.get().getBone(extra);
+        if (bone.isPresent()) {
+          return bone.get().getLocation();
+        } else {
+          Bukkit.getLogger().info("[Strife] Bone ID " + extra + " not found for origin detection!");
+          return le.getLocation();
+        }
+      }
+      case UNION_BONE -> {
+        if (StringUtils.isBlank(extra)) {
+          Bukkit.getLogger().info("[Strife] Bone ID " + extra + " not found for origin detection!");
+          return le.getLocation();
+        }
+        StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
+        Union union = StrifePlugin.getInstance().getUnionManager().getUnion(mob);
+        if (union == null) {
+          return le.getLocation();
+        }
+        ActiveModel activeModel = union.getActiveModel();
+        Optional<ModelBone> bone = activeModel.getBone(extra);
         if (bone.isPresent()) {
           return bone.get().getLocation();
         } else {

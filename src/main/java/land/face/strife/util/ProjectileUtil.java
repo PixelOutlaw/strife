@@ -259,7 +259,7 @@ public class ProjectileUtil {
       if (arrow.isValid()) {
         arrow.remove();
       }
-    }, 8 + (int) (14f * attackMult));
+    }, 10 + (int) (14f * attackMult));
 
     // DESPAWN_ON_CONTACT.put(arrow, true);
     // setPierce(arrow, pierceChance);

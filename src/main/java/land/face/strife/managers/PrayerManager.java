@@ -315,6 +315,7 @@ public class PrayerManager {
       cost *= pietyMult;
       if (cost >= currentPrayer) {
         removed = true;
+        PaletteUtil.sendMessage(p, "|white||i|" + prayerNames.get(prayer) + " deactivated due to low Faith!");
         it.remove();
       } else {
         switch (prayer) {

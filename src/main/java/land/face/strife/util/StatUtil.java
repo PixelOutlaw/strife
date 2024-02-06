@@ -206,10 +206,6 @@ public class StatUtil {
     return baseRestoreSpeed * (1 + (ae.getStat(StrifeStat.BARRIER_SPEED) / 100));
   }
 
-  public static float getDamageMult(StrifeMob ae) {
-    return 1 + ae.getStat(StrifeStat.DAMAGE_MULT) / 100;
-  }
-
   public static float getCriticalChance(StrifeMob attacker, float attackMult, float bonusCrit) {
     float totalCrit = attackMult * (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit);
     return totalCrit / 100;

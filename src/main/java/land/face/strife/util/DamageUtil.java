@@ -219,13 +219,6 @@ public class DamageUtil {
     return true;
   }
 
-  public static Map<DamageType, Float> buildDamage(StrifeMob attacker, StrifeMob defender,
-      DamageModifiers mods) {
-    Map<DamageType, Float> damageMap = DamageUtil.buildDamageMap(attacker, defender, mods);
-    applyAttackTypeMods(attacker, mods.getAttackType(), damageMap);
-    return damageMap;
-  }
-
   public static FaceColor getColorFromDamages(Map<DamageType, Float> damages) {
     DamageType selected = DamageType.TRUE_DAMAGE;
     float max = 0;
@@ -305,13 +298,13 @@ public class DamageUtil {
       }
     }
 
-    float pvpMult = 1f;
-    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player) {
-      pvpMult = PVP_MULT;
-    }
-
-    float generalDamageMultiplier = mods.isUseBasicDamageMult() ? StatUtil.getDamageMult(attacker) : 1;
+    float generalDamageMultiplier = 1f;
     generalDamageMultiplier *= 1f + defender.getStat(StrifeStat.DAMAGE_TAKEN) / 100F;
+    if (attackType != AttackType.BONUS) {
+      if (attacker.getStat(StrifeStat.PVP_ATTACK) > 0 && defender.getStat(StrifeStat.PVP_ATTACK) > 0) {
+        generalDamageMultiplier *= attacker.getStat(StrifeStat.PVP_ATTACK) / defender.getStat(StrifeStat.PVP_DEFENCE);
+      }
+    }
     if (mods.isApplyMinionDamageMult()) {
       generalDamageMultiplier *= 1 + attacker.getStat(StrifeStat.MINION_DAMAGE) / 100;
     }
@@ -320,7 +313,6 @@ public class DamageUtil {
     standardDamage += standardDamage * critMult;
     standardDamage *= potionMult;
     standardDamage *= generalDamageMultiplier;
-    standardDamage *= pvpMult;
     standardDamage *= minionDamageMultiplier;
 
     DamageUtil.applyLifeSteal(attacker, Math.min(standardDamage, defender.getEntity().getHealth()),
@@ -331,22 +323,19 @@ public class DamageUtil {
     }
     elementalDamage *= potionMult;
     elementalDamage *= generalDamageMultiplier;
-    elementalDamage *= pvpMult;
     elementalDamage *= minionDamageMultiplier;
 
-    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) *
-        mods.getDamageReductionRatio() * pvpMult;
+    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
     float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
     }
 
-    rawDamage *= DamageUtil.getTenacityMult(defender);
+    rawDamage *= DamageUtil.getTenacityMult(defender, false);
 
     if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
-      rawDamage *= 1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity()
-          .getMaxFreezeTicks());
+      rawDamage *= 1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
     }
     if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
       rawDamage *= 1 - (0.03f * defender.getEarthRunes());
@@ -357,7 +346,7 @@ public class DamageUtil {
 
     if (mods.isSneakAttack()) {
       if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
-        rawDamage += doSneakAttack(attacker, defender, mods, pvpMult);
+        rawDamage += doSneakAttack(attacker, defender, mods);
         boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
         float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
             attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
@@ -449,15 +438,12 @@ public class DamageUtil {
     }
   }
 
-  private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods,
-      float pvpMult) {
+  private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
     Player player = (Player) attacker.getEntity();
     SkillLevelData data = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, true);
     float sneakSkill = data.getLevelWithBonus();
     float sneakDamage = sneakSkill;
     sneakDamage += (float) (defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill));
-    sneakDamage *= mods.getAttackMultiplier();
-    sneakDamage *= pvpMult;
 
     SneakAttackEvent sneakEvent = DamageUtil
         .callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
@@ -562,21 +548,20 @@ public class DamageUtil {
     };
   }
 
-  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, StrifeMob target,
-      DamageModifiers mods) {
+  public static Map<DamageType, Float> buildDamageMap(StrifeMob attacker, StrifeMob target, DamageModifiers mods) {
     Map<DamageType, Float> damageMap = new HashMap<>();
-    boolean modsEnabled = mods != null;
+    float multiplier = !mods.isUseBasicDamageMult() ? 1 : 1 + attacker.getStat(StrifeStat.DAMAGE_MULT) / 100;
     for (DamageType damageType : DMG_TYPES) {
       float amount = getRawDamage(attacker, damageType);
       if (amount > 0) {
-        if (modsEnabled) {
-          amount *= mods.getDamageMultipliers().getOrDefault(damageType, 1f);
-          amount *= mods.getAttackMultiplier();
+        amount *= mods.getDamageMultipliers().getOrDefault(damageType, 1f);
+        amount *= mods.getAttackMultiplier();
+        if (damageType != DamageType.TRUE_DAMAGE) {
+          amount *= multiplier;
         }
         damageMap.put(damageType, amount);
       }
     }
-    if (modsEnabled) {
       for (BonusDamage bd : mods.getBonusDamages()) {
         float bonus = applyDamageScale(attacker, target, bd);
         if (bd.isNegateMinionDamage()) {
@@ -584,7 +569,6 @@ public class DamageUtil {
         }
         damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
       }
-    }
     return damageMap;
   }
 
@@ -822,11 +806,11 @@ public class DamageUtil {
     return 1 + mob.getStat(StrifeStat.MINION_MULT_INTERNAL) / 100;
   }
 
-  public static float getTenacityMult(StrifeMob defender) {
+  public static float getTenacityMult(StrifeMob defender, boolean maximumEffect) {
     if (defender.getStat(StrifeStat.TENACITY) < 1) {
       return 1;
     }
-    double percent = defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
+    double percent = maximumEffect ? 0 : defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
     float maxReduction = 1 - (float) Math.pow(0.5f, defender.getStat(StrifeStat.TENACITY) / 200);
     return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
   }

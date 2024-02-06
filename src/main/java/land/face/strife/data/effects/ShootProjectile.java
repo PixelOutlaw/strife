@@ -92,6 +92,7 @@ public class ShootProjectile extends Effect {
 
       assert projectileEntity.getEntityClass() != null;
       Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation, projectileEntity.getEntityClass(), e -> {
+        caster.getEntity().getCollidableExemptions().add(e.getUniqueId());
         if (projectileEntity == EntityType.SNOWBALL) {
           ((Snowball) e).setItem(thrownStack);
         }
@@ -101,6 +102,8 @@ public class ShootProjectile extends Effect {
         }
       });
       projectile.setShooter(caster.getEntity());
+      Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
+          caster.getEntity().getCollidableExemptions().remove(projectile.getUniqueId()), 20L * 30);
 
       if (silent) {
         projectile.setSilent(true);

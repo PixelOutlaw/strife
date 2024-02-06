@@ -462,9 +462,8 @@ public class AbilityManager {
       }
       case PARTY -> {
         if (caster.getEntity() instanceof Player) {
-          targets.addAll(
-              plugin.getSnazzyPartiesHook().getNearbyPartyMembers((Player) caster.getEntity(),
-                  caster.getEntity().getLocation(), 30));
+          targets.addAll(plugin.getSnazzyPartiesHook().getNearbyPartyMembers((Player) caster.getEntity(),
+              caster.getEntity().getLocation(), ability.getRange()));
         } else {
           targets.add(caster.getEntity());
         }
@@ -515,14 +514,14 @@ public class AbilityManager {
         LivingEntity targetEntity = (target == null || target.getEntity() == null)
             ? null : target.getEntity();
         Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity,
-            ability.getRange(), ability.isRaycastsTargetEntities());
+            ability.getRange(), ability.isRaycastsTargetEntities(), ability.isFriendly());
         return new TargetResponse(loc);
       }
       case TARGET_GROUND -> {
         LivingEntity targetEntity = (target == null || target.getEntity() == null)
             ? null : target.getEntity();
         Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity,
-            ability.getRange(), ability.isRaycastsTargetEntities());
+            ability.getRange(), ability.isRaycastsTargetEntities(), ability.isFriendly());
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);
       }

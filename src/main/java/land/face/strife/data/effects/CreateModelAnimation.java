@@ -21,41 +21,35 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+@Setter
 public class CreateModelAnimation extends LocationEffect {
 
-  public static Set<Entity> CURRENT_MODELS = new HashSet<>();
+  public static Set<ArmorStand> CURRENT_MODELS = new HashSet<>();
   private final Map<String, ModelBlueprint> cachedAnimationModels = new HashMap<>();
 
-  @Setter
   private String modelId;
-  @Setter
   private String boneId;
-  @Setter
   private String animationId;
-  @Setter
-  private int lerpIn;
-  @Setter
-  private int lerpOut;
-  @Setter
-  private double speed = 1;
-  @Setter
+  private float lerpIn;
+  private float lerpOut;
+  private float speed = 1;
+  private float scale = 1;
   private int lifespan;
-  @Setter
-  private boolean targetLock;
-  @Setter
-  private boolean randomRotation;
-  @Setter
+  private AnimationType animationType;
+  private boolean entityLock;
   private boolean rotationLock;
-  @Setter
   private boolean forceGrounded;
-  @Setter
   private Color color = null;
-  @Setter
   private Map<Integer, List<Triple<String, String, String>>> complexPart = null;
+
+  public enum AnimationType {
+    LOOK_DIRECTION,
+    LOOK_ROTATION,
+    RANDOM_ROTATION,
+  }
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -65,17 +59,12 @@ public class CreateModelAnimation extends LocationEffect {
       return;
     }
     Location loc = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
-
-    if (randomRotation) {
-      loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
-    } else {
-      if (rotationLock) {
-        loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
-      } else {
-        loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
-      }
-    }
     loc.setPitch(0);
+    switch (animationType) {
+      case LOOK_DIRECTION -> loc.setDirection(caster.getEntity().getEyeLocation().getDirection());
+      case LOOK_ROTATION -> loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+      case RANDOM_ROTATION -> loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
+    }
 
     int tries = 20;
     if (forceGrounded) {
@@ -102,7 +91,7 @@ public class CreateModelAnimation extends LocationEffect {
     });
     CURRENT_MODELS.add(stand);
 
-    if (targetLock) {
+    if (entityLock) {
       Vector relativePos = loc.subtract(target.getEntity().getLocation()).toVector();
       Vector direction = caster.getEntity().getLocation().clone().getDirection();
       BukkitRunnable runnable = new BukkitRunnable() {
@@ -139,18 +128,12 @@ public class CreateModelAnimation extends LocationEffect {
       Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + getId());
       return;
     }
-
-    if (randomRotation) {
-      loc.setYaw(StrifePlugin.RNG.nextFloat() * 360);
-    } else {
-      if (rotationLock) {
-        loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
-      } else {
-        loc.setYaw(StrifePlugin.RNG.nextFloat() * 360);
-      }
-    }
     loc.setPitch(0);
-
+    switch (animationType) {
+      case LOOK_DIRECTION -> loc.setDirection(caster.getEntity().getEyeLocation().getDirection());
+      case LOOK_ROTATION -> loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+      case RANDOM_ROTATION -> loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
+    }
     int tries = 20;
     if (forceGrounded) {
       while (tries > 0) {
@@ -185,13 +168,17 @@ public class CreateModelAnimation extends LocationEffect {
   }
 
   private void applyModelStuff(ArmorStand stand, ActiveModel model, float yaw) {
+    model.setScale(scale);
+    if (color != null) {
+      model.setDefaultTint(color);
+    }
     Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
       ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
       if (modeledEntity == null) {
         Bukkit.getLogger().warning("Failed to create modelled entity");
       } else {
         modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
-        modeledEntity.addModel(model, true);
+        modeledEntity.addModel(model, false);
         modeledEntity.setModelRotationLocked(rotationLock);
         modeledEntity.setBaseEntityVisible(false);
       }

@@ -31,8 +31,7 @@ public class LookAt extends Effect {
     } else {
       Location newLoc = fromTarget.getLocation().clone();
       Vector savedVelocity = fromTarget.getVelocity();
-      newLoc.setDirection(toTarget.getLocation()
-          .subtract(fromTarget.getLocation()).toVector().normalize());
+      newLoc.setDirection(toTarget.getLocation().subtract(fromTarget.getLocation()).toVector().normalize());
       fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
       fromTarget.setVelocity(savedVelocity);
     }

@@ -15,48 +15,36 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
+@Getter @Setter
 public class Ability {
 
   private final String id;
   private final String name;
-  @Getter @Setter
   private boolean hidden = true;
   private final TargetType targetType;
-  @Getter
   private final AbilityType castType;
   private final boolean raycastsTargetEntities;
-  @Getter
   private final boolean requireTarget;
-  @Getter
   private final boolean sneakSelfTarget;
   private final boolean cancelStealth;
   private final float range;
   private final float cost;
   private final List<Effect> effects;
   private final List<Effect> toggleOffEffects;
-  @Getter
   private final boolean deathUntoggle;
-  @Getter
   private final float cooldown;
-  @Getter
   private final float minCooldown;
   private final int maxCharges;
   private final int globalCooldownTicks;
   private final boolean showMessages;
   private final Set<Condition> conditions;
-  @Getter
   private final Set<Condition> filterConditions = new HashSet<>();
   private final AbilityIconData abilityIconData;
-  @Getter
   private final Map<StrifeStat, Float> passiveStats = new HashMap<>();
-  @Getter
   private final Map<StrifeStat, Float> togglePassiveStats = new HashMap<>();
-  @Getter
   private final boolean passiveStatsOnCooldown;
   private final boolean friendly;
-  @Getter @Setter
   private TargetingPriority targetingPriority;
-  @Getter @Setter
   private int maxTargets = 1;
 
   public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,

@@ -103,7 +103,8 @@ public class Damage extends Effect {
       }
     }
 
-    Map<DamageType, Float> damage = DamageUtil.buildDamage(caster, target, mods);
+    Map<DamageType, Float> damage = DamageUtil.buildDamageMap(caster, target, mods);
+    DamageUtil.applyAttackTypeMods(caster, mods.getAttackType(), damage);
     float multi = applyMultipliers(caster, 1) * multishotRatio;
     if (multi != 1) {
       damage.replaceAll((type, amount) -> amount * multi);

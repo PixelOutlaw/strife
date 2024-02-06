@@ -46,18 +46,15 @@ public class UnionManager {
       e.getValue().tick();
       if (e.getValue().canCancel()) {
         unionIterator.remove();
+        e.getValue().getStand().remove();
         if (e.getValue().getLoadedBuff() != null) {
           e.getKey().removeBuff(e.getValue().getLoadedBuff().getId(), e.getKey().getEntity().getUniqueId());
         }
-        continue;
-      }
-      if (e.getValue().getLoadedBuff() != null) {
-        e.getKey().addBuff(e.getValue().getLoadedBuff(), e.getKey().getEntity().getUniqueId(), 5);
       }
     }
   }
 
-  public void activateUnion(StrifeMob mob, String modelId, int ticks) {
+  public void activateUnion(StrifeMob mob, String modelId, String abilityId, String buffId, int ticks) {
     if (hasActiveUnion(mob)) {
       return;
     }
@@ -71,8 +68,14 @@ public class UnionManager {
     union.setUnionManager(this);
     union.setTicksRemaining(ticks);
     union.setActiveModel(model);
-    union.build(mob.getEntity(), mob.getEntity().getLocation());
+    union.setLoadedBuff(plugin.getBuffManager().getBuffFromId(buffId));
+    union.setAutoAttackAbility(plugin.getAbilityManager().getAbility(abilityId));
+    union.build(mob, mob.getEntity().getLocation());
     unions.put(mob, union);
+  }
+
+  public Union getUnion(StrifeMob mob) {
+    return unions.getOrDefault(mob, null);
   }
 
   public void endUnion(StrifeMob mob, String modelId) {
@@ -82,7 +85,7 @@ public class UnionManager {
     unions.get(mob).setTicksRemaining(-1);
   }
 
-  public void playUnionAnimation(StrifeMob mob, String animation, float speed, int lockTicks) {
+  public void playUnionAnimation(StrifeMob mob, String animation, float speed, int unionDelay, int lockTicks) {
     if (!hasActiveUnion(mob)) {
       return;
     }
@@ -91,6 +94,7 @@ public class UnionManager {
       me.setModelRotationLocked(true);
       Bukkit.getScheduler().runTaskLater(plugin, () -> me.setModelRotationLocked(false), lockTicks);
     }
+    unions.get(mob).setStallStamp(System.currentTimeMillis() + unionDelay);
     unions.get(mob).getActiveModel().getAnimationHandler().playAnimation(animation, 0.05, 0.05, speed, false);
   }
 

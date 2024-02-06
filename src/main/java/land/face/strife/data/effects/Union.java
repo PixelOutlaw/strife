@@ -10,6 +10,8 @@ import lombok.Setter;
 public class Union extends Effect {
 
   private String unionId;
+  private String abilityId;
+  private String buffId;
   private boolean disable;
   private boolean strictDuration;
   private float ticks;
@@ -29,6 +31,6 @@ public class Union extends Effect {
     if (!strictDuration) {
       ticks *= (1f + caster.getStat(StrifeStat.EFFECT_DURATION) / 100);
     }
-    getPlugin().getUnionManager().activateUnion(target, unionId, (int) ticks);
+    getPlugin().getUnionManager().activateUnion(target, unionId, abilityId, buffId, (int) ticks);
   }
 }

@@ -1,12 +1,13 @@
 package land.face.strife.data.effects;
 
-import java.util.Random;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,6 +17,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+@Getter
+@Setter
 public class StrifeParticle extends LocationEffect {
 
   private ParticleStyle style = ParticleStyle.NORMAL;
@@ -56,12 +59,10 @@ public class StrifeParticle extends LocationEffect {
         if (!strictDuration) {
           duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
         }
-        StrifePlugin.getInstance().getParticleTask()
-            .addContinuousParticle(target.getEntity(), this, (int) duration);
+        StrifePlugin.getInstance().getParticleTask().addContinuousParticle(target.getEntity(), this, (int) duration);
       }
     } else {
-      playAtLocation(caster, getLoc(target.getEntity()),
-          target.getEntity().getEyeLocation().getDirection());
+      playAtLocation(caster, getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
     }
   }
 
@@ -100,100 +101,8 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
-  public void setTickDuration(int tickDuration) {
-    this.tickDuration = tickDuration;
-  }
-
-  public void setParticle(Particle particle) {
-    this.particle = particle;
-  }
-
-  public void setQuantity(int quantity) {
-    this.quantity = quantity;
-  }
-
-  public float getSpeed() {
-    return speed;
-  }
-
-  public void setSpeed(float speed) {
-    this.speed = speed;
-  }
-
-  public void setSpread(float spread) {
-    this.spread = spread;
-  }
-
-  public void setStyle(ParticleStyle style) {
-    this.style = style;
-  }
-
-  public double getSize() {
-    return size;
-  }
-
-  public void setSize(float size) {
-    this.size = size;
-  }
-
-  public Particle getParticle() {
-    return particle;
-  }
-
-  public void setRed(double red) {
-    this.red = red;
-  }
-
-  public void setGreen(double green) {
-    this.green = green;
-  }
-
-  public void setBlue(double blue) {
-    this.blue = blue;
-  }
-
-  public void setArcAngle(double arcAngle) {
-    this.arcAngle = arcAngle;
-  }
-
-  public void setArcOffset(double arcOffset) {
-    this.arcOffset = arcOffset;
-  }
-
-  public void setAngleRotation(float angleRotation) {
-    this.angleRotation = angleRotation;
-  }
-
-  public void setOrbitSpeed(float orbitSpeed) {
-    this.orbitSpeed = orbitSpeed;
-  }
-
-  public void setRadius(float radius) {
-    this.radius = radius;
-  }
-
-  public void setEndRadius(float endRadius) {
-    this.endRadius = endRadius;
-  }
-
-  public void setLineOffset(float lineOffset) {
-    this.lineOffset = lineOffset;
-  }
-
-  public void setLineVertical(boolean lineVertical) {
-    this.lineVertical = lineVertical;
-  }
-
-  public void setLineIncrement(float lineIncrement) {
-    this.lineIncrement = lineIncrement;
-  }
-
-  public void setStrictDuration(boolean strictDuration) {
-    this.strictDuration = strictDuration;
-  }
-
   public Location getLoc(LivingEntity le) {
-    return TargetingUtil.getOriginLocation(le, getOrigin());
+    return TargetingUtil.getOriginLocation(le, getOrigin(), getExtra());
   }
 
   public void setItemData(ItemStack itemData) {

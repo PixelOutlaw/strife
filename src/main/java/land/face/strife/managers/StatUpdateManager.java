@@ -117,6 +117,11 @@ public class StatUpdateManager {
     mob.getEntity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(value);
   }
 
+  public void updateSize(StrifeMob mob) {
+    //float value = 0.95f * (1f + (mob.getStat(StrifeStat.CHARACTER_SIZE) / 100));
+    //mob.getEntity().getAttribute(Attribute.GENERIC_ENTITY_SCALE).setBaseValue(value);
+  }
+
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
     float speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
@@ -139,6 +144,7 @@ public class StatUpdateManager {
     updateMovementSpeed(strifeMob);
     updateHealth(strifeMob);
     updateWeight(strifeMob);
+    updateSize(strifeMob);
     float maxAir = plugin.getStrifeMobManager().getBaseAirTicks() * (1
         + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
     strifeMob.getEntity()

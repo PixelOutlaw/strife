@@ -113,6 +113,13 @@ public class StatsDefenseMenuItem extends MenuItem {
     }
     lore.add(addStat("Ward Rating: ", warding, INT_FORMAT) + wardReduction);
 
+    float tenacity = StatUtil.getStat(mob, StrifeStat.TENACITY);
+    if (tenacity > 4) {
+      lore.add(addStat("Tenacity: ", tenacity, INT_FORMAT));
+      float amount = 100f * (1 - DamageUtil.getTenacityMult(mob, true));
+      lore.add(FaceColor.GRAY.s() + " 0% ~ " + INT_FORMAT.format(amount) + "% Damage Reduction");
+    }
+
     float evasion = StatUtil.getEvasion(mob);
     float dodgeChance = StatUtil.getStat(mob, StrifeStat.DODGE_CHANCE);
     if (evasion > 0.1) {
