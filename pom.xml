@@ -183,12 +183,12 @@
       <artifactId>FancyHolograms</artifactId>
       <version>1.0.0</version>
       <scope>system</scope>
-      <systemPath>C:/Users/Faceguy/IdeaProjects/Libs/FancyHolograms-2.0.1.jar</systemPath>
+      <systemPath>C:/Users/Faceguy/IdeaProjects/Libs/FancyHolograms-2.0.5.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>com.ticxo.modelengine</groupId>
       <artifactId>ModelEngine</artifactId>
-      <version>R4.0.3</version>
+      <version>R4.0.4</version>
     </dependency>
     <dependency>
       <groupId>com.github.Sentropic</groupId>

@@ -33,6 +33,7 @@ public class CreateModelAnimation extends LocationEffect {
   private String modelId;
   private String boneId;
   private String animationId;
+  private List<String> animations;
   private float lerpIn;
   private float lerpOut;
   private float speed = 1;
@@ -87,6 +88,9 @@ public class CreateModelAnimation extends LocationEffect {
       e.setSilent(true);
       e.setMarker(true);
       e.setCanTick(false);
+      if (animationType == AnimationType.LOOK_DIRECTION) {
+        e.setVelocity(loc.getDirection().clone().multiply(0.05));
+      }
       ChunkUtil.setDespawnOnUnload(e);
     });
     CURRENT_MODELS.add(stand);
@@ -155,8 +159,12 @@ public class CreateModelAnimation extends LocationEffect {
       e.setSilent(true);
       e.setMarker(true);
       e.setCanTick(false);
+      if (animationType == AnimationType.LOOK_DIRECTION) {
+        e.setVelocity(loc.getDirection().multiply(0.05));
+      }
       ChunkUtil.setDespawnOnUnload(e);
     });
+    stand.getEyeLocation().setDirection(loc.getDirection());
     CURRENT_MODELS.add(stand);
 
     Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
@@ -178,6 +186,8 @@ public class CreateModelAnimation extends LocationEffect {
         Bukkit.getLogger().warning("Failed to create modelled entity");
       } else {
         modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
+        modeledEntity.getBase().getBodyRotationController().setYHeadRot(stand.getEyeLocation().getYaw());
+        modeledEntity.getBase().getBodyRotationController().setXHeadRot(stand.getEyeLocation().getPitch());
         modeledEntity.addModel(model, false);
         modeledEntity.setModelRotationLocked(rotationLock);
         modeledEntity.setBaseEntityVisible(false);

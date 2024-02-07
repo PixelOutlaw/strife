@@ -184,8 +184,9 @@ public class TargetingUtil {
   }
 
   public static Set<LivingEntity> getEntitiesInArea(Location loc, double size) {
-    loc = loc.clone().add(0, 0.5, 0);
-    Collection<Entity> targetList = Objects.requireNonNull(loc.getWorld()).getNearbyEntities(loc, size, size + 0.5, size);
+    size += 0.25;
+    loc = loc.clone().add(0, 0.25, 0);
+    Collection<Entity> targetList = Objects.requireNonNull(loc.getWorld()).getNearbyEntities(loc, size, size + 1, size);
     double circleDist = Math.pow(size, 2);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity entity : targetList) {
@@ -256,17 +257,6 @@ public class TargetingUtil {
     if (result == null) {
       return false;
     }
-    //if (result.getHitBlock() != null) {
-    //  Location particleLoc = result.getHitPosition().toLocation(start.getWorld());
-    //  particleLoc.getWorld().spawnParticle(
-    //      Particle.ITEM_CRACK,
-    //      particleLoc,
-    //      3,
-    //      0.0, 0.0, 0.0,
-    //      0.1,
-    //      new ItemStack(result.getHitBlock().getType())
-    //  );
-    //}
     return result.getHitEntity() != null;
   }
 

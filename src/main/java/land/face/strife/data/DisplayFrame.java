@@ -2,6 +2,7 @@ package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import de.oliver.fancyholograms.api.Hologram;
+import de.oliver.fancyholograms.api.data.TextHologramData;
 import java.util.List;
 import lombok.Data;
 import org.bukkit.Bukkit;
@@ -52,19 +53,19 @@ public class DisplayFrame {
 
   public void applyToDisplay(Hologram hologram, FaceColor color) {
     if (text != null) {
-      hologram.getData().setText(List.of(text));
+      ((TextHologramData) hologram.getData().getTypeData()).setText(List.of(text));
     }
     if (brightness != null) {
-      hologram.getData().setBrightness(brightness);
+      hologram.getData().getDisplayData().setBrightness(brightness);
     }
     if (rotation != null) {
-      hologram.getData().getLocation().setDirection(rotation);
+      hologram.getData().getDisplayData().getLocation().setDirection(rotation);
     }
     if (scale != null) {
-      hologram.getData().getScale().set(scale.x, scale.y, scale.z);
+      hologram.getData().getDisplayData().getScale().set(scale.x, scale.y, scale.z);
     }
     if (translation != null) {
-      hologram.getData().getTranslation().set(translation.x, translation.y, translation.z);
+      hologram.getData().getDisplayData().getTranslation().set(translation.x, translation.y, translation.z);
     }
     hologram.updateHologram();
     hologram.refreshHologram(Bukkit.getOnlinePlayers());
