@@ -28,6 +28,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
+@Getter @Setter
 public class AreaEffect extends LocationEffect {
 
   private final Map<UUID, List<HitData>> targetDelay = new HashMap<>();
@@ -37,33 +38,19 @@ public class AreaEffect extends LocationEffect {
 
   private final Map<Integer, Float> circleMathCache = new HashMap<>();
 
-  @Getter @Setter
   private AreaType areaType;
-  @Getter @Setter
   private TargetingPriority priority;
-  @Getter @Setter
   private LineOfSight lineOfSight;
-  @Getter @Setter
   private boolean excludeCaster;
-  @Getter
   private float range;
-  @Getter @Setter
   private float radius;
-  @Getter @Setter
   private float area;
-  @Getter @Setter
   private int maxTargets;
-  @Getter @Setter
   private boolean areaScaling;
-  @Getter @Setter
   private boolean multishotScaling;
-  @Getter @Setter
   private boolean canBeEvaded;
-  @Getter @Setter
   private boolean canBeBlocked;
-  @Getter @Setter
   private boolean canBeCountered;
-  @Getter @Setter
   private long targetingCooldown;
 
   private long lastApplication = System.currentTimeMillis();
@@ -153,15 +140,14 @@ public class AreaEffect extends LocationEffect {
     TargetingUtil.filterFriendlyEntities(areaTargets, caster, isFriendly());
     areaTargets.removeIf(e -> !PlayerDataUtil.areConditionsMet(caster,
         getPlugin().getStrifeMobManager().getStatMob(e), filterConditions));
-    if (areaTargets.size() == 0) {
+    if (areaTargets.isEmpty()) {
       return areaTargets;
     }
     switch (lineOfSight) {
       case CASTER -> areaTargets.removeIf(e ->
-          !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(),
-              e.getEyeLocation(), e));
-      case CENTER -> areaTargets.removeIf(
-          e -> !TargetingUtil.hasLineOfSight(location, e.getEyeLocation(), e));
+          !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
+      case CENTER -> areaTargets.removeIf(e ->
+          !TargetingUtil.hasLineOfSight(location.clone().add(0, 0.65, 0), e.getEyeLocation(), e));
     }
     if (maxTargets > 0) {
       int numTargets = maxTargets;
@@ -210,21 +196,9 @@ public class AreaEffect extends LocationEffect {
     return true;
   }
 
-  public List<Effect> getEffects() {
-    return effects;
-  }
-
   public void setRange(double range) {
     this.range = (float) range;
     this.area = (float) (Math.PI * Math.pow(range, 2));
-  }
-
-  public Map<AbilityMod, Float> getAttackModifiers() {
-    return attackModifiers;
-  }
-
-  public Set<Condition> getFilterConditions() {
-    return filterConditions;
   }
 
   public enum LineOfSight {

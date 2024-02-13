@@ -201,7 +201,6 @@ public class ProjectileUtil {
       ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed,
           randomBulletOffset(projectiles));
     }
-
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
         Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
     shotId++;

@@ -233,15 +233,15 @@ public class StatUtil {
 
     ae.getEntity().removePotionEffect(PotionEffectType.FAST_DIGGING);
     ae.getEntity().removePotionEffect(PotionEffectType.SLOW_DIGGING);
-    if (attackTime > 1.8) {
+    if (attackTime > 1.6) {
       ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 10, 1, true, false));
-    } else if (attackTime > 1.605) {
+    } else if (attackTime > 1.405) {
       ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 9, 0, true, false));
-    } else if (attackTime > 1.25) {
+    } else if (attackTime > 1.15) {
       // do nothing
-    } else if (attackTime > 0.9) {
+    } else if (attackTime > 0.85) {
       ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 8, 0, true, false));
-    } else if (attackTime > 0.6) {
+    } else if (attackTime > 0.55) {
       ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 7, 1, true, false));
     } else {
       ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 6, 2, true, false));

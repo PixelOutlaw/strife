@@ -18,28 +18,19 @@
  */
 package land.face.strife.listeners;
 
-import com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
-import land.face.strife.data.effects.AreaEffect;
-import land.face.strife.data.effects.AreaEffect.AreaType;
-import land.face.strife.data.effects.AreaEffect.LineOfSight;
-import land.face.strife.data.effects.AreaEffect.TargetingPriority;
-import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
@@ -79,8 +70,8 @@ public class ShootListener implements Listener {
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    flintlockSmoke = buildFlintlockSmoke();
-    flintlockFlare = buildFlintlockFlare();
+    flintlockSmoke = (StrifeParticle) plugin.getEffectManager().getEffect("FLINTLOCK-SMOKE");
+    flintlockFlare = (StrifeParticle) plugin.getEffectManager().getEffect("FLINTLOCK-FLARE");
 
     quiverTip = PaletteUtil.color(plugin.getSettings().getString("language.shooting.quiver-tip", "need quiver bro"));
     pistolTip = PaletteUtil.color(plugin.getSettings().getString("language.shooting.pistol-tip", "need quiver bro"));
@@ -320,39 +311,4 @@ public class ShootListener implements Listener {
       ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
     }
   }
-
-  private StrifeParticle buildFlintlockSmoke() {
-    StrifeParticle particle = new StrifeParticle();
-    particle.setFriendly(true);
-    particle.setParticle(Particle.CAMPFIRE_COSY_SMOKE);
-    particle.setOrigin(OriginLocation.BELOW_HEAD);
-    particle.setStyle(ParticleStyle.LINE);
-    particle.setSize(1);
-    particle.setRadius(0);
-    particle.setLineIncrement(0.2f);
-    particle.setQuantity(plugin.getSettings().getInt("config.flintlock.smoke-quantity", 1));
-    particle.setLineOffset(
-        (float) plugin.getSettings().getDouble("config.flintlock.smoke-offset", 1));
-    particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.smoke-speed", 2f));
-    particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.smoke-spread", 2f));
-    return particle;
-  }
-
-  private StrifeParticle buildFlintlockFlare() {
-    StrifeParticle particle = new StrifeParticle();
-    particle.setFriendly(true);
-    particle.setParticle(Particle.FLAME);
-    particle.setOrigin(OriginLocation.BELOW_HEAD);
-    particle.setStyle(ParticleStyle.LINE);
-    particle.setSize(1);
-    particle.setRadius(0);
-    particle.setLineIncrement(0.25f);
-    particle.setQuantity(plugin.getSettings().getInt("config.flintlock.flare-quantity", 1));
-    particle.setLineOffset(
-        (float) plugin.getSettings().getDouble("config.flintlock.flare-offset", 1));
-    particle.setSpeed((float) plugin.getSettings().getDouble("config.flintlock.flare-speed", 1f));
-    particle.setSpread((float) plugin.getSettings().getDouble("config.flintlock.flare-spread", 1f));
-    return particle;
-  }
-
 }

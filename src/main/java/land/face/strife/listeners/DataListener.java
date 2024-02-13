@@ -67,6 +67,7 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.MainHand;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -92,6 +93,11 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   public void onPortal(final PlayerPortalEvent event) {
     event.setCanCreatePortal(false);
     event.setSearchRadius(1);
+    event.setCancelled(true);
+  }
+
+  @EventHandler
+  public void onVehicleEnter(final VehicleEnterEvent event) {
     event.setCancelled(true);
   }
 

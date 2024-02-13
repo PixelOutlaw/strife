@@ -47,14 +47,14 @@ public class ViolationManager {
       } else {
         double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
         if (distance < 0.5) {
-          amount += 4;
+          amount += 3;
         } else if (distance < 2) {
           amount += 2;
         } else if (distance < 4) {
           amount += 1;
-        } else if (distance < 16) {
+        } else if (distance < 9) {
           amount -= 12;
-        } else if (distance < 26) {
+        } else if (distance < 16) {
           amount -= 70;
         } else {
           amount = 0;

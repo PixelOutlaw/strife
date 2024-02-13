@@ -79,7 +79,7 @@ public class DamageUtil {
   public static String ATTACK_BLOCKED;
   public static String ATTACK_DODGED;
 
-  public static float BASE_ATTACK_SECONDS = 1.6f;
+  public static float BASE_ATTACK_SECONDS = 1.4f;
 
   public static int BASE_RECHARGE_TICKS;
   public static long TICK_RATE;
@@ -110,7 +110,7 @@ public class DamageUtil {
     plugin = refreshedPlugin;
 
     BASE_ATTACK_SECONDS = (float) plugin.getSettings()
-        .getDouble("config.mechanics.attack-speed.base-attack-time", 1.6);
+        .getDouble("config.mechanics.attack-speed.base-attack-time", 1.4);
 
     PVP_MULT = (float) plugin.getSettings()
         .getDouble("config.mechanics.pvp-multiplier", 0.5);

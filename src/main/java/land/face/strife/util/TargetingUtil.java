@@ -184,9 +184,8 @@ public class TargetingUtil {
   }
 
   public static Set<LivingEntity> getEntitiesInArea(Location loc, double size) {
-    size += 0.25;
-    loc = loc.clone().add(0, 0.25, 0);
-    Collection<Entity> targetList = Objects.requireNonNull(loc.getWorld()).getNearbyEntities(loc, size, size + 1, size);
+    size += 1;
+    Collection<Entity> targetList = Objects.requireNonNull(loc.getWorld()).getNearbyEntities(loc, size, size, size);
     double circleDist = Math.pow(size, 2);
     Set<LivingEntity> validTargets = new HashSet<>();
     for (Entity entity : targetList) {
@@ -252,8 +251,7 @@ public class TargetingUtil {
       return true;
     }
     direction.normalize();
-    RayTraceResult result = start.getWorld()
-        .rayTrace(start, direction, 40, FluidCollisionMode.NEVER, true, 0.5, e -> e == entity);
+    RayTraceResult result = start.getWorld().rayTrace(start, direction, 40, FluidCollisionMode.NEVER, true, 0.3, e -> e == entity);
     if (result == null) {
       return false;
     }
@@ -346,7 +344,7 @@ public class TargetingUtil {
     }
     if (result == null) {
       LogUtil.printDebug(" - Using MAX RANGE location calculation");
-      return caster.getEyeLocation().add(caster.getEyeLocation().getDirection().multiply(Math.max(0, range - 1)));
+      return caster.getEyeLocation().add(caster.getEyeLocation().getDirection().multiply(Math.max(0, range - 0.35)));
     }
     if (result.getHitEntity() != null) {
       LogUtil.printDebug(" - Using ENTITY location calculation");
@@ -356,10 +354,18 @@ public class TargetingUtil {
       LogUtil.printDebug(" - Using BLOCK location calculation");
       switch (result.getHitBlockFace()) {
         case DOWN -> {
-          return result.getHitBlock().getLocation().add(0.5, -1.2, 0.5);
+          Location loc = caster.getLocation().clone();
+          loc.setX(result.getHitPosition().getX());
+          loc.setZ(result.getHitPosition().getZ());
+          loc.setY(result.getHitBlock().getLocation().getY() - 1);
+          return loc;
         }
         case UP -> {
-          return result.getHitBlock().getLocation().add(0.5, 1.5, 0.5);
+          Location loc = caster.getLocation().clone();
+          loc.setX(result.getHitPosition().getX());
+          loc.setZ(result.getHitPosition().getZ());
+          loc.setY(result.getHitBlock().getLocation().getY() + 1.5);
+          return loc;
         }
         default -> {
           Block targetBlock = result.getHitBlock();
@@ -376,8 +382,11 @@ public class TargetingUtil {
       }
     }
     LogUtil.printDebug(" - Using HIT RANGE location calculation");
-    return new Location(caster.getWorld(), result.getHitPosition().getX(), result.getHitPosition().getBlockY(),
-        result.getHitPosition().getZ());
+    return new Location(caster.getWorld(),
+        result.getHitPosition().getX(),
+        result.getHitPosition().getBlockY() + 0.25,
+        result.getHitPosition().getZ()
+    );
   }
 
   public static LivingEntity getMobTarget(StrifeMob strifeMob) {
