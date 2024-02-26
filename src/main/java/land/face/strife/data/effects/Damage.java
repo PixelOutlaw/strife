@@ -44,6 +44,7 @@ public class Damage extends Effect {
   private boolean showPopoffs;
   private boolean bypassBarrier;
   private boolean guardBreak;
+  private boolean fromAbility;
   private boolean selfInflict;
   private final List<Effect> hitEffects = new ArrayList<>();
   private final List<Effect> killEffects = new ArrayList<>();
@@ -77,6 +78,7 @@ public class Damage extends Effect {
     mods.setApplyMinionDamageMult(useMinionDamage);
     mods.setBypassBarrier(bypassBarrier);
     mods.setGuardBreak(guardBreak);
+    mods.setFromAbility(fromAbility);
     mods.setScaleChancesWithAttack(false);
     if (canSneakAttack && caster.getEntity() instanceof Player && getPlugin().getStealthManager()
         .canSneakAttack((Player) caster.getEntity())) {
@@ -142,7 +144,7 @@ public class Damage extends Effect {
     }
 
     if (damage.containsKey(DamageType.PHYSICAL)) {
-      DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, false);
+      DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, true,false);
     }
 
     StrifeMob finalTarget = target;

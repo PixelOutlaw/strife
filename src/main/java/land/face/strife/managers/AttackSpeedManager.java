@@ -68,7 +68,7 @@ public class AttackSpeedManager {
         (long) delaySeconds * 1000,
         hardReset
     );
-    int ticks = (int) Math.max(4, attackSeconds * 20 - 5);
+    int ticks = (int) Math.max(10, attackSeconds * 20);
     if (hardReset || ((Player) mob.getEntity()).getCooldown(Material.DIAMOND_CHESTPLATE) < ticks) {
       ((Player) mob.getEntity()).setCooldown(Material.DIAMOND_CHESTPLATE, ticks);
     }

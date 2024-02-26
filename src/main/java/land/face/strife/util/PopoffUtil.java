@@ -13,7 +13,6 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.effects.DamagePopoff;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Display;
 import org.bukkit.entity.Display.Billboard;
 import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.Player;
@@ -23,7 +22,7 @@ import org.joml.Vector3f;
 public class PopoffUtil {
 
   private static double MAX_GRAVITY = -2;
-  private HologramManager manager = FancyHologramsPlugin.get().getHologramManager();
+  private final HologramManager manager = FancyHologramsPlugin.get().getHologramManager();
 
   public static DamagePopoff createPopoff(Player player, Location location, Vector velocity,
       double gravity, int life, String text) {

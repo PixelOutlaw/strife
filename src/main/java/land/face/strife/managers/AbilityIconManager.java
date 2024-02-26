@@ -171,7 +171,7 @@ public class AbilityIconManager {
     if (cooldownTracker != null) {
       toggledOn = cooldownTracker.isToggleState();
     }
-    if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 2) {
+    if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 3) {
       return;
     }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(
@@ -188,7 +188,7 @@ public class AbilityIconManager {
     }
     if (ability.getCastType() == AbilityType.ATTACK) {
       if (ability.getGlobalCooldownTicks() > 5) {
-        plugin.getAttackSpeedManager().resetAttack(mob, 1f, (float) ability.getGlobalCooldownTicks() / 20f, false);
+        plugin.getAttackSpeedManager().resetAttack(mob, 0.25f, (float) ability.getGlobalCooldownTicks() / 20f, false);
       } else {
         plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
       }

@@ -144,7 +144,6 @@ public class PlayerMountManager {
     mob.forceSetStat(StrifeStat.HEALTH_MULT, 0);
     mob.forceSetStat(StrifeStat.WEIGHT, 200);
     mob.forceSetStat(StrifeStat.ARMOR, 250);
-    mob.forceSetStat(StrifeStat.WARDING, 250);
     mob.forceSetStat(StrifeStat.ALL_RESIST, 80);
     mob.forceSetStat(StrifeStat.DAMAGE_REDUCTION, -5);
     plugin.getStatUpdateManager().updateAllAttributes(mob);
@@ -233,6 +232,9 @@ public class PlayerMountManager {
     task.getMount().get().getEntity().eject();
     if (task.getModel() != null) {
       task.getModel().getMountManager().ifPresent(MountManager::dismountAll);
+      //if (player.getLocation().getBlock().getType().isSolid()) {
+      //  player.teleport(task.getModel().getModeledEntity().getBase().getLocation());
+      //}
       task.getModel().destroy();
     }
     task.getMount().get().getEntity().remove();

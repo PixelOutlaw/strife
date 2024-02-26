@@ -47,10 +47,10 @@ public enum StrifeStat {
   DAMAGE_TO_BARRIERS("Damage To Barriers"),
 
   PHYSICAL_DAMAGE("Physical Damage"),
-  MAGIC_DAMAGE("Magical Damage"),
+
+  ABILITY_DAMAGE("Ability Damage"),
 
   ARMOR("Armor"),
-  WARDING("Warding"),
   EVASION("Evasion"),
   DODGE_CHANCE("Dodge Chance"),
 
@@ -88,7 +88,6 @@ public enum StrifeStat {
   CRITICAL_DAMAGE("Critical Damage"),
 
   ARMOR_PENETRATION("Armor Penetration"),
-  WARD_PENETRATION("Ward Penetration"),
   ACCURACY("Accuracy"),
 
   FIRE_DAMAGE("Fire Damage"),
@@ -166,12 +165,10 @@ public enum StrifeStat {
   REGEN_MULT(),
   ARMOR_MULT(),
   EVASION_MULT(),
-  WARD_MULT(),
 
   MELEE_PHYSICAL_MULT(),
   RANGED_PHYSICAL_MULT(),
   PHYSICAL_MULT(),
-  MAGIC_MULT(),
 
   DAMAGE_MULT("Damage"),
   DAMAGE_TAKEN("Damage Taken"),

@@ -32,6 +32,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
@@ -90,8 +91,16 @@ public class StatsMiscMenuItem extends MenuItem {
     lore.add(FaceColor.TEAL.getColor() + "Movement Speed: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         mob.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);
-    lore.add(FaceColor.TEAL.getColor() + "Cooldown Reduction: " + FaceColor.WHITE.getColor()
-        + INT_FORMAT.format(mob.getStat(StrifeStat.COOLDOWN_REDUCTION)) + "%");
+    float cdr = StatUtil.getStat(mob, StrifeStat.COOLDOWN_REDUCTION);
+    if (cdr != 0) {
+      if (cdr > 69.5) {
+        lore.add(FaceColor.TEAL.getColor() + "Cooldown Reduction: " + FaceColor.WHITE.getColor()
+            + INT_FORMAT.format(mob.getStat(StrifeStat.COOLDOWN_REDUCTION)) + "% (MAX)");
+      } else {
+        lore.add(FaceColor.TEAL.getColor() + "Cooldown Reduction: " + FaceColor.WHITE.getColor()
+            + INT_FORMAT.format(mob.getStat(StrifeStat.COOLDOWN_REDUCTION)) + "%");
+      }
+    }
     lore.add(FaceColor.TEAL.getColor() + "Effect Duration: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         100 + mob.getStat(StrifeStat.EFFECT_DURATION)) + "%");
     lore.add(FaceColor.TEAL.getColor() + "Healing Power: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(

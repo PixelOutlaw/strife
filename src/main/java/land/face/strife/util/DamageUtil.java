@@ -6,8 +6,6 @@ import static land.face.strife.listeners.LoreAbilityListener.executeFiniteEffect
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_DEATH;
 import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
-import static land.face.strife.util.StatUtil.getDefenderWarding;
-import static land.face.strife.util.StatUtil.getWardingMult;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.World;
@@ -92,8 +90,6 @@ public class DamageUtil {
 
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
-
-  private static final float BLEED_PERCENT = 0.5f;
 
   private static float PVP_MULT;
 
@@ -230,7 +226,6 @@ public class DamageUtil {
     }
     return switch (selected) {
       case PHYSICAL -> FaceColor.RED;
-      case MAGICAL -> FaceColor.BLUE;
       case FIRE -> FaceColor.ORANGE;
       case ICE -> FaceColor.CYAN;
       case LIGHTNING -> FaceColor.YELLOW;
@@ -264,8 +259,7 @@ public class DamageUtil {
   public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender, AttackType attackType,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
 
-    double standardDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f) +
-        damageMap.getOrDefault(DamageType.MAGICAL, 0f);
+    double physicalDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
     double elementalDamage = damageMap.getOrDefault(DamageType.FIRE, 0f) +
         damageMap.getOrDefault(DamageType.ICE, 0f) +
         damageMap.getOrDefault(DamageType.LIGHTNING, 0f) +
@@ -310,23 +304,18 @@ public class DamageUtil {
     }
     float minionDamageMultiplier = DamageUtil.getMinionMult(attacker);
 
-    standardDamage += standardDamage * critMult;
-    standardDamage *= potionMult;
-    standardDamage *= generalDamageMultiplier;
-    standardDamage *= minionDamageMultiplier;
+    physicalDamage += physicalDamage * critMult;
+    physicalDamage *= potionMult;
+    physicalDamage *= generalDamageMultiplier;
+    physicalDamage *= minionDamageMultiplier;
 
-    DamageUtil.applyLifeSteal(attacker, Math.min(standardDamage, defender.getEntity().getHealth()),
-        mods.getHealMultiplier(), mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f));
-
-    if (criticalHit && attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
-      elementalDamage += elementalDamage * critMult;
-    }
+    elementalDamage += elementalDamage * critMult;
     elementalDamage *= potionMult;
     elementalDamage *= generalDamageMultiplier;
     elementalDamage *= minionDamageMultiplier;
 
     float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
-    float rawDamage = (float) Math.max(0D, (standardDamage + elementalDamage) - damageReduction);
+    float rawDamage = (float) Math.max(0D, (physicalDamage + elementalDamage) - damageReduction);
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
@@ -340,6 +329,16 @@ public class DamageUtil {
     if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
       rawDamage *= 1 - (0.03f * defender.getEarthRunes());
     }
+    if (mods.isFromAbility()) {
+      rawDamage *= 1 + attacker.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
+    }
+
+    DamageUtil.applyLifeSteal(attacker,
+        Math.min(rawDamage, defender.getEntity().getHealth()),
+        mods.getHealMultiplier(),
+        mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL,
+        0f)
+    );
 
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
     rawDamage += DamageUtil.getKnowledgeMult(attacker, defender);
@@ -384,20 +383,20 @@ public class DamageUtil {
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
       if (rawDamage == 0) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9,  "<aqua>０", 0.65f, 1.1f, 0.75f);
+            IndicatorStyle.RANDOM_POPOFF, 9,  "<aqua>０", 0.6f, 1.1f, 0.3f);
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
           damageString += "\uF802✸";
         }
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, damageString, 0.65f, 1.1f, 0.75f);
+            IndicatorStyle.RANDOM_POPOFF, 9, damageString, 0.6f, 1.1f, 0.3f);
       }
     } else if (mods.isShowPopoffs() && attacker.getMaster() != null &&
         attacker.getMaster().getEntity() instanceof Player) {
       damageString = buildDamageString(Math.round(rawDamage));
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
-          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.65f, 1.1f, 0.75f);
+          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.6f, 1.1f, 0.3f);
     }
     return rawDamage;
   }
@@ -492,7 +491,6 @@ public class DamageUtil {
   public static float getRawDamage(StrifeMob attacker, DamageType damageType) {
     return switch (damageType) {
       case PHYSICAL -> attacker.getStat(StrifeStat.PHYSICAL_DAMAGE);
-      case MAGICAL -> attacker.getStat(StrifeStat.MAGIC_DAMAGE);
       case FIRE -> attacker.getStat(StrifeStat.FIRE_DAMAGE);
       case ICE -> attacker.getStat(StrifeStat.ICE_DAMAGE);
       case LIGHTNING -> attacker.getStat(StrifeStat.LIGHTNING_DAMAGE);
@@ -583,7 +581,6 @@ public class DamageUtil {
   public static float resistTraitMult(StrifeMob mob, DamageType type) {
     return switch (type) {
       case PHYSICAL -> mob.hasTrait(StrifeTrait.RESIST_PHYSICAL) ? 0.5f : 1f;
-      case MAGICAL -> mob.hasTrait(StrifeTrait.RESIST_MAGICAL) ? 0.5f : 1f;
       case FIRE -> mob.hasTrait(StrifeTrait.RESIST_FIRE) ? 0.5f : 1f;
       case ICE -> mob.hasTrait(StrifeTrait.RESIST_ICE) ? 0.5f : 1f;
       case LIGHTNING -> mob.hasTrait(StrifeTrait.RESIST_LIGHTNING) ? 0.5f : 1f;
@@ -610,11 +607,7 @@ public class DamageUtil {
       physicalDamage *= 1 + physicalMult / 100;
       damageMap.put(DamageType.PHYSICAL, physicalDamage);
     }
-    if (damageMap.containsKey(DamageType.MAGICAL)) {
-      damageMap.put(DamageType.MAGICAL, damageMap.get(DamageType.MAGICAL)
-          * (1 + attacker.getStat(StrifeStat.MAGIC_MULT) / 100));
-    }
-    float elementalMult = 1 + (attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100);
+    float elementalMult = 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     if (damageMap.containsKey(DamageType.FIRE)) {
       damageMap.put(DamageType.FIRE, damageMap.get(DamageType.FIRE) * elementalMult);
     }
@@ -663,8 +656,7 @@ public class DamageUtil {
     float totalElementalDamage = 0;
     Map<DamageType, Float> elementalDamages = new HashMap<>();
     for (DamageType type : damageMap.keySet()) {
-      if (type != DamageType.PHYSICAL && type != DamageType.MAGICAL &&
-          type != DamageType.TRUE_DAMAGE) {
+      if (type != DamageType.PHYSICAL && type != DamageType.TRUE_DAMAGE) {
         float amount = damageMap.get(type);
         totalElementalDamage += amount;
         elementalDamages.put(type, amount);
@@ -721,10 +713,19 @@ public class DamageUtil {
         damageMap.put(DamageType.EARTH, newDamage);
       }
       case LIGHT -> {
-        bonus = getLightBonus(damageMap.get(finalElementType), attacker, defender.getEntity());
-        if (bonus > damageMap.get(finalElementType) / 2) {
-          damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
-        }
+        mods.getElementalStatuses().add(ElementalStatus.BANISH);
+        // half of your healing power, as a multiplier
+        float healingBonus = Math.max(0, StatUtil.getStat(attacker, StrifeStat.HEALING_POWER) / 200);
+        float lightDamage = damageMap.get(DamageType.LIGHT) * (1 + 0.2f + healingBonus);
+        defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.BLOCK_BELL_RESONATE, 1f, 2f);
+        defender.getEntity().getWorld().spawnParticle(
+            Particle.FIREWORKS_SPARK,
+            defender.getEntity().getLocation().clone().add(0, 0.4, 0),
+            16,
+            0.1, 0.1, 0.1,
+            0.15
+        );
+        damageMap.put(DamageType.LIGHT, lightDamage);
       }
     }
   }
@@ -743,18 +744,6 @@ public class DamageUtil {
           armor *= 0.8f;
         }
         return getArmorMult(armor);
-      }
-      case MAGICAL -> {
-        if (defend.getTraits().contains(StrifeTrait.ANTI_MAGIC)) {
-          return 0;
-        }
-        float warding = getDefenderWarding(attack, defend);
-        warding *= 1 - modDoubleMap.getOrDefault(AbilityMod.WARD_PEN_MULT, 0f);
-        warding -= modDoubleMap.getOrDefault(AbilityMod.WARD_PEN, 0f);
-        if (modDoubleMap.containsKey(AbilityMod.BACK_ATTACK)) {
-          warding *= 0.8f;
-        }
-        return getWardingMult(warding);
       }
       case FIRE -> {
         float fireResist = defend.getStat(StrifeStat.FIRE_RESIST) / 100;
@@ -895,22 +884,6 @@ public class DamageUtil {
     DamageUtil.addFrost(attacker, defender, frost);
   }
 
-  public static float getLightBonus(float damage, StrifeMob attacker, LivingEntity defender) {
-    float light = attacker.getEntity().getLocation().getBlock().getLightLevel();
-    float multiplier = (light - 4) / 10;
-    if (multiplier >= 0.5) {
-      defender.getWorld().playSound(defender.getEyeLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 2f);
-      defender.getWorld().spawnParticle(
-          Particle.FIREWORKS_SPARK,
-          defender.getEyeLocation(),
-          (int) (20 * multiplier),
-          0.1, 0.1, 0.1,
-          0.1
-      );
-    }
-    return damage * multiplier;
-  }
-
   public static boolean rollDodgeFromEvasion(StrifeMob attacker, StrifeMob defender,
       Map<AbilityMod, Float> mods) {
     float totalEvasion = StatUtil.getEvasion(defender);
@@ -1016,16 +989,13 @@ public class DamageUtil {
         def.getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100f);
   }
 
-  public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier,
-      double bonus) {
+  public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier, double bonus) {
     double lifeSteal = (attacker.getStat(StrifeStat.LIFE_STEAL) + bonus) / 100;
     restoreHealthWithPenalties(attacker.getEntity(), damage * lifeSteal * healMultiplier);
   }
 
-  public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier,
-      double healMultiplier, double bonus) {
-    double health =
-        (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * attackMultiplier * healMultiplier;
+  public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier, double healMult, double bonus) {
+    double health = (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * attackMultiplier * healMult;
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
@@ -1035,7 +1005,7 @@ public class DamageUtil {
   }
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
-      DamageModifiers mods, boolean bypassBarrier) {
+      DamageModifiers mods, boolean bypassArmor, boolean bypassBarrier) {
     if (defender.getBarrier() > 0 || mods.getAttackType() == AttackType.BONUS) {
       return false;
     }
@@ -1044,15 +1014,15 @@ public class DamageUtil {
     }
     float chance = (attacker.getStat(StrifeStat.BLEED_CHANCE) +
         mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_CHANCE, 0f)) / 100;
+    if (mods.isScaleChancesWithAttack()) {
+      chance *= Math.min(1f, mods.getAttackMultiplier());
+    }
     if (chance >= rollDouble()) {
-      float damage = rawPhysical * BLEED_PERCENT;
-      if (mods.isScaleChancesWithAttack()) {
-        damage *= Math.min(1f, mods.getAttackMultiplier());
-      }
-      float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) + mods.getAbilityMods()
-          .getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
+      float damage = rawPhysical * DOTUtil.PHYSICAL_BLEED_PERCENT;
+      float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) +
+          mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
       damage *= 1 + (bleedDamage / 100);
-      applyBleed(attacker, defender, damage, bypassBarrier, false, false);
+      applyBleed(attacker, defender, damage, bypassBarrier, bypassArmor, false);
     }
     return true;
   }
@@ -1146,9 +1116,7 @@ public class DamageUtil {
     if (defender.isInvincible()) {
       return;
     }
-    float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT) * 1.15f;
-    float warding = StatUtil.getStat(defender, StrifeStat.WARDING);
-    reflectDamage *= StatUtil.getWardingMult(warding);
+    float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
     if (reflectDamage <= 0.1) {
       return;
     }
@@ -1324,7 +1292,6 @@ public class DamageUtil {
   public enum DamageType {
     TRUE_DAMAGE,
     PHYSICAL,
-    MAGICAL,
     FIRE,
     ICE,
     LIGHTNING,
@@ -1338,8 +1305,6 @@ public class DamageUtil {
     ACCURACY_MULT,
     ARMOR_PEN,
     ARMOR_PEN_MULT,
-    WARD_PEN,
-    WARD_PEN_MULT,
     CRITICAL_CHANCE,
     CRITICAL_DAMAGE,
     LIFE_STEAL,

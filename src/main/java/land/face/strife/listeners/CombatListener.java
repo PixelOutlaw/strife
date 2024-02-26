@@ -230,15 +230,9 @@ public class CombatListener implements Listener {
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
       ItemStack item = attackEntity.getEquipment() == null ? null : attackEntity.getEquipment().getItemInMainHand();
-      if (ItemUtil.isWandOrStaff(item)) {
-        double attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
-        ProjectileUtil.shootWand(attacker, Math.pow(attackMult, 1.25D));
-        event.setCancelled(true);
-        return;
-      }
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
-      if (item != null && item.getType() == Material.BOW) {
-        attackMultiplier *= 0.6f;
+      if (item != null && (item.getType() == Material.BOW || item.getType() == Material.WOODEN_SWORD)) {
+        attackMultiplier *= 0.35f;
       }
       onHitChance = attackMultiplier;
       //double angle = attackEntity.getEyeLocation().getDirection()
@@ -355,8 +349,7 @@ public class CombatListener implements Listener {
     if (eventDamage > 0) {
       eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
       if (damages.containsKey(DamageType.PHYSICAL)) {
-        DamageUtil.attemptBleed(attacker, defender, damages.get(DamageType.PHYSICAL),
-            mods, false);
+        DamageUtil.attemptBleed(attacker, defender, damages.get(DamageType.PHYSICAL), mods, true, false);
       }
     }
 

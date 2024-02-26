@@ -1,6 +1,7 @@
 package land.face.strife.menus.prayer;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.ticxo.modelengine.api.animation.keyframe.type.ScriptKeyframe;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -37,8 +38,12 @@ public class PrayerIcon extends MenuItem {
     if (plugin.getPrayerManager().getPrayerLevelReq().get(prayer) >
         mob.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER)) {
       ItemStackExtensionsKt.setCustomModelData(stack, 800);
-      ItemStackExtensionsKt.setDisplayName(stack, FaceColor.WHITE + "Unknown Prayer");
-      TextUtils.setLore(stack, List.of("", FaceColor.GRAY + " ? ? ?", ""), false);
+      ItemStackExtensionsKt.setDisplayName(stack, plugin.getPrayerManager().getPrayerNames().get(prayer));
+      List<String> lore = new ArrayList<>();
+      lore.addAll(plugin.getPrayerManager().getPrayerLore().get(prayer));
+      lore.add("");
+      lore.add(FaceColor.ORANGE + "[Not Unlocked]");
+      TextUtils.setLore(stack, lore, false);
       return stack;
     }
     List<String> lore = new ArrayList<>();

@@ -26,6 +26,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.event.Event.Result;
@@ -73,11 +74,7 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
       if (ItemUtil.isTool(event.getPlayer().getEquipment().getItemInMainHand())) {
         return;
       }
-      if (ItemUtil.isWandOrStaff(event.getPlayer().getEquipment().getItemInMainHand())) {
-        float attackMult = plugin.getAttackSpeedManager().getAttackMultiplier(mob, 1);
-        ProjectileUtil.shootWand(mob, Math.pow(attackMult, 1.25f));
-      } else if (ItemUtil.isMeleeWeapon(event.getPlayer().getEquipment()
-          .getItemInMainHand().getType())) {
+      if (ItemUtil.isMeleeWeapon(event.getPlayer().getEquipment().getItemInMainHand().getType())) {
         plugin.getAttackSpeedManager().resetAttack(mob, 0.5f, false);
       } else {
         plugin.getAttackSpeedManager().resetAttack(mob, 1, false);

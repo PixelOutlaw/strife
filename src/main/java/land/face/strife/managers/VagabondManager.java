@@ -140,7 +140,7 @@ public class VagabondManager {
       switch (slot) {
         case HAND, OFF_HAND -> {
           ItemStack stack = entity.getEquipment().getItem(slot);
-          if (stack == null || stack.getType() == Material.AIR) {
+          if (stack.getType() == Material.AIR) {
             continue;
           }
           Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager()
@@ -149,7 +149,7 @@ public class VagabondManager {
         }
         default -> {
           ItemStack stack = entity.getEquipment().getItem(slot);
-          if (stack == null || stack.getType() == Material.AIR) {
+          if (stack.getType() == Material.AIR) {
             continue;
           }
           Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack);

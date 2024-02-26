@@ -51,9 +51,9 @@ public class PrayerMenu extends ItemMenu {
     setItem(37, new PrayerIcon(plugin, Prayer.ELEVEN));
     setItem(43, new PrayerIcon(plugin, Prayer.TWELVE));
 
-    setItem(39, new GodPrayerIcon(plugin, Prayer.THIRTEEN, 2));
+    setItem(47, new GodPrayerIcon(plugin, Prayer.THIRTEEN, 2));
     setItem(49, new GodPrayerIcon(plugin, Prayer.FOURTEEN, 3));
-    setItem(41, new GodPrayerIcon(plugin, Prayer.FIFTEEN, 4));
+    setItem(51, new GodPrayerIcon(plugin, Prayer.FIFTEEN, 4));
   }
 
 }

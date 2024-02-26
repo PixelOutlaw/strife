@@ -18,6 +18,7 @@ import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -48,10 +49,6 @@ public class StatUtil {
       case ARMOR -> {
         return stats.getOrDefault(StrifeStat.ARMOR, 0f) *
             (1 + stats.getOrDefault(StrifeStat.ARMOR_MULT, 0f) / 100);
-      }
-      case WARDING -> {
-        return stats.getOrDefault(StrifeStat.WARDING, 0f) *
-            (1 + stats.getOrDefault(StrifeStat.WARD_MULT, 0f) / 100);
       }
       case REGENERATION -> {
         float amount = stats.getOrDefault(StrifeStat.REGENERATION, 0f) *
@@ -128,8 +125,8 @@ public class StatUtil {
             (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.NINE) ? 10 : 0);
       }
       case COOLDOWN_REDUCTION -> {
-        return stats.getOrDefault(StrifeStat.COOLDOWN_REDUCTION, 0F) +
-            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.NINE) ? 10 : 0);
+        return Math.min(70, stats.getOrDefault(StrifeStat.COOLDOWN_REDUCTION, 0F) +
+            (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.NINE) ? 10 : 0));
       }
       case DODGE_CHANCE -> {
         return stats.getOrDefault(StrifeStat.DODGE_CHANCE, 0F) +
@@ -219,7 +216,8 @@ public class StatUtil {
 
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
-    if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
+    if (ae.getEntity().getEquipment().getItemInMainHand().getType() != Material.WOODEN_SWORD &&
+        ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
       attackBonus += ae.getRage() * 0.5f;
     } else {
       attackBonus += ae.getRage() * 0.2f;
@@ -284,10 +282,6 @@ public class StatUtil {
     return ae.getStat(StrifeStat.ARMOR_PENETRATION);
   }
 
-  public static float getWardPen(StrifeMob ae) {
-    return ae.getStat(StrifeStat.WARD_PENETRATION);
-  }
-
   public static double getArmorMult(StrifeMob attacker, StrifeMob defender) {
     float armor = getDefenderArmor(attacker, defender);
     return getArmorMult(armor);
@@ -299,19 +293,6 @@ public class StatUtil {
 
   public static float getArmorMult(float armor) {
     return (float) Math.pow(0.5f, armor / ARMOR_DENOMINATOR);
-  }
-
-  public static float getWardingMult(StrifeMob attacker, StrifeMob defender) {
-    float warding = getDefenderWarding(attacker, defender);
-    return getWardingMult(warding);
-  }
-
-  public static float getDefenderWarding(StrifeMob attacker, StrifeMob defender) {
-    return getStat(defender, StrifeStat.WARDING) - getWardPen(attacker);
-  }
-
-  public static float getWardingMult(float warding) {
-    return (float) Math.pow(0.5f, warding / WARD_DENOMINATOR);
   }
 
   public static Map<StrifeStat, Float> getStatMapFromSection(ConfigurationSection statSection) {

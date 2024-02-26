@@ -2,55 +2,30 @@ package land.face.strife.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
+@Getter
+@Setter
 public class AgilityLocationContainer {
 
-  private Map<UUID, Integer> progress = new HashMap<>();
+  private final Map<UUID, Integer> progress = new HashMap<>();
+  private final Set<UUID> recentPlayers = new HashSet<>();
 
   private String name;
   private float exp;
   private float difficulty;
   private List<Location> locations = new ArrayList<>();
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public float getExp() {
-    return exp;
-  }
-
-  public void setExp(float exp) {
-    this.exp = exp;
-  }
-
-  public float getDifficulty() {
-    return difficulty;
-  }
-
-  public void setDifficulty(float difficulty) {
-    this.difficulty = difficulty;
-  }
-
-  public List<Location> getLocations() {
-    return locations;
-  }
-
-  public Map<UUID, Integer> getProgress() {
-    return progress;
-  }
 
   public static void checkStart(AgilityLocationContainer cont, Player player, Location loc) {
     if (!cont.getProgress().containsKey(player.getUniqueId())) {

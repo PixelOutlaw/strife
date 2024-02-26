@@ -30,6 +30,7 @@ public class DOTUtil {
 
   private static float BLEED_FLAT;
   private static float BLEED_PERCENT;
+  public static float PHYSICAL_BLEED_PERCENT;
 
   private static LoadedBuff lavaDebuff;
 
@@ -57,6 +58,8 @@ public class DOTUtil {
         .getDouble("config.mechanics.bleed-flat-damage", 1);
     BLEED_PERCENT = (float) StrifePlugin.getInstance().getSettings()
         .getDouble("config.mechanics.bleed-percent-damage", 0.04);
+    PHYSICAL_BLEED_PERCENT = (float) StrifePlugin.getInstance().getSettings()
+        .getDouble("config.mechanics.bleed-base-physical-percent", 0.04);
 
     Map<StrifeStat, Float> debuffMap = new HashMap<>();
     debuffMap.put(StrifeStat.BURNING_RESIST, -12.5f);
@@ -85,8 +88,7 @@ public class DOTUtil {
     }
     LivingEntity le = mob.getEntity();
     int poisonPower = Objects.requireNonNull(le.getPotionEffect(POISON)).getAmplifier() + 1;
-    float damage = poisonPower *
-        poisonDamageMap.getOrDefault(mob.getLevel(), poisonDamageMap.get(300));
+    float damage = poisonPower * poisonDamageMap.getOrDefault(mob.getLevel(), poisonDamageMap.get(300));
     damage *= 1 - mob.getStat(StrifeStat.POISON_RESIST) / 100;
     return damage;
   }
@@ -97,8 +99,7 @@ public class DOTUtil {
     }
     LivingEntity le = mob.getEntity();
     int witherPower = Objects.requireNonNull(le.getPotionEffect(WITHER)).getAmplifier() + 1;
-    float damage = witherPower *
-        witherDamageMap.getOrDefault(mob.getLevel(), witherDamageMap.get(300));
+    float damage = witherPower * witherDamageMap.getOrDefault(mob.getLevel(), witherDamageMap.get(300));
     damage *= 1 - mob.getStat(StrifeStat.WITHER_RESIST) / 100;
     return damage;
   }

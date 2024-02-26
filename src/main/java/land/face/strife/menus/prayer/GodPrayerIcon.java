@@ -34,8 +34,7 @@ public class GodPrayerIcon extends MenuItem {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     SelectedGod god = mob.getChampion().getSaveData().getSelectedGod();
     ItemStack stack = new ItemStack(Material.PAPER);
-    if (god == null || god == SelectedGod.NONE ||
-        mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
+    if (god == null || god == SelectedGod.NONE) {
       ItemStackExtensionsKt.setCustomModelData(stack, 800);
       ItemStackExtensionsKt.setDisplayName(stack, FaceColor.WHITE + "Unknown Prayer");
       TextUtils.setLore(stack, List.of("", FaceColor.GRAY + " ? ? ?", ""), false);
@@ -58,20 +57,26 @@ public class GodPrayerIcon extends MenuItem {
     }
     lore.add("");
     lore.add(FaceColor.WHITE + "Faith: " + (int) mob.getPrayer() + " / " + (int) mob.getMaxPrayer());
-    boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
-    if (isActive) {
-      ItemStackExtensionsKt.setCustomModelData(stack, getActiveModelData(god, godLevel - 1));
+    if (mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
+      ItemStackExtensionsKt.setCustomModelData(stack, 800);
       lore.add("");
-      lore.add(FaceColor.YELLOW + "Click To Deactivate!");
-    } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-      ItemStackExtensionsKt.setCustomModelData(stack, 801);
-      lore.add("");
-      lore.add(FaceColor.RED + "You don't have enough Faith!");
+      lore.add(FaceColor.ORANGE + "[Not Unlocked]");
     } else {
-      // Inactive icon resource pack data: 870-872
-      ItemStackExtensionsKt.setCustomModelData(stack, 870 + godLevel - 2);
-      lore.add("");
-      lore.add(FaceColor.GREEN + "Click To Activate!");
+      boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
+      if (isActive) {
+        ItemStackExtensionsKt.setCustomModelData(stack, getActiveModelData(god, godLevel - 1));
+        lore.add("");
+        lore.add(FaceColor.YELLOW + "Click To Deactivate!");
+      } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
+        ItemStackExtensionsKt.setCustomModelData(stack, 801);
+        lore.add("");
+        lore.add(FaceColor.RED + "You don't have enough Faith!");
+      } else {
+        // Inactive icon resource pack data: 870-872
+        ItemStackExtensionsKt.setCustomModelData(stack, 870 + godLevel - 2);
+        lore.add("");
+        lore.add(FaceColor.GREEN + "Click To Activate!");
+      }
     }
     TextUtils.setLore(stack, lore, false);
     return stack;

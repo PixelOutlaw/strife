@@ -87,7 +87,9 @@ public class StatsDefenseMenuItem extends MenuItem {
     }
 
     lore.add(addStat("Maximum Life: ", mob.getMaxLife(), INT_FORMAT));
-    lore.add(addStat("Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, INT_FORMAT));
+    if (StatUtil.getStat(mob, StrifeStat.REGENERATION) > 0.5) {
+      lore.add(addStat("Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, INT_FORMAT));
+    }
     if (mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
       lore.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
@@ -100,18 +102,9 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (armor > 0.1) {
       float armorMultNumber = 100 * (1 - StatUtil.getArmorMult(armor));
       physReduction = " " + FaceColor.GRAY + "(-" + INT_FORMAT.format(armorMultNumber) + "%" +
-          FaceColor.RED + "⚔" + FaceColor.GRAY + ")";
+          FaceColor.TRUE_WHITE + "儀" + FaceColor.GRAY + ")";
     }
     lore.add(addStat("Armor Rating: ", armor, INT_FORMAT) + physReduction);
-
-    float warding = StatUtil.getStat(mob, StrifeStat.WARDING);
-    String wardReduction = "";
-    if (warding > 0.1) {
-      float wardMultNumber = 100 * (1 - StatUtil.getWardingMult(warding));
-      wardReduction = " " + FaceColor.GRAY + "(-" + INT_FORMAT.format(wardMultNumber) + "%" +
-          FaceColor.BLUE + "☄" + FaceColor.GRAY + ")";
-    }
-    lore.add(addStat("Ward Rating: ", warding, INT_FORMAT) + wardReduction);
 
     float tenacity = StatUtil.getStat(mob, StrifeStat.TENACITY);
     if (tenacity > 4) {
@@ -148,36 +141,34 @@ public class StatsDefenseMenuItem extends MenuItem {
       float blockRecovery = mob.getStat(StrifeStat.BLOCK_RECOVERY);
       if (blockRecovery != 0) {
         String plus = blockRecovery >= 0 ? FaceColor.WHITE + "+" : "";
-        lore.add(addStat("Block Recovery: " + plus,
-            mob.getStat(StrifeStat.BLOCK_RECOVERY), INT_FORMAT) + "%");
+        lore.add(addStat("Block Recovery: " + plus, mob.getStat(StrifeStat.BLOCK_RECOVERY), INT_FORMAT) + "%");
       }
     }
     if (mob.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
-      lore.add(addStat("Reflected Damage: ", mob.getStat(StrifeStat.DAMAGE_REFLECT),
-          INT_FORMAT));
+      lore.add(addStat("Reflected Damage: ", mob.getStat(StrifeStat.DAMAGE_REFLECT), INT_FORMAT));
     }
     lore.add(breakLine);
     lore.add(FaceColor.YELLOW + "Elemental Resistances:");
     StringBuilder resistDisplay = new StringBuilder();
     resistDisplay.append(" ");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), FaceColor.ORANGE, "\uD83D\uDD25");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.ICE_RESIST), FaceColor.CYAN, "❄");
-    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), FaceColor.YELLOW, "⚡");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.FIRE_RESIST), FaceColor.ORANGE, FaceColor.TRUE_WHITE + "儂");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.ICE_RESIST), FaceColor.CYAN, FaceColor.TRUE_WHITE + "儃");
+    addResist(resistDisplay, StatUtil.getStat(mob, StrifeStat.LIGHTNING_RESIST), FaceColor.YELLOW, FaceColor.TRUE_WHITE + "億");
     lore.add(resistDisplay.toString());
     StringBuilder resistDisplay2 = new StringBuilder();
     resistDisplay2.append(" ");
-    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), FaceColor.GREEN, "₪");
-    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.DARK_RESIST), FaceColor.PURPLE, "☠");
-    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), FaceColor.WHITE, "❂");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.EARTH_RESIST), FaceColor.BROWN, FaceColor.TRUE_WHITE + "儅");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.DARK_RESIST), FaceColor.PURPLE, FaceColor.TRUE_WHITE + "儇");
+    addResist(resistDisplay2, StatUtil.getStat(mob, StrifeStat.LIGHT_RESIST), FaceColor.WHITE, FaceColor.TRUE_WHITE + "儆");
 
     lore.add(resistDisplay2.toString());
     lore.add(FaceColor.YELLOW + "Status Resistances:");
     StringBuilder resistDisplay3 = new StringBuilder();
     resistDisplay3.append(" ");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BLEED_RESIST), FaceColor.RED, "\uD83D\uDCA7");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.POISON_RESIST), FaceColor.GREEN, "\uD83D\uDCA7");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BLEED_RESIST), FaceColor.CRIMSON, "儉");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.POISON_RESIST), FaceColor.GREEN, "儉");
     addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.WITHER_RESIST), FaceColor.DARK_GRAY, "☠");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), FaceColor.RED, "\uD83D\uDD25");
+    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), FaceColor.ORANGE, "\uD83D\uDD25");
     lore.add(resistDisplay3.toString());
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));

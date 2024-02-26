@@ -8,6 +8,7 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
@@ -48,8 +49,7 @@ public class CooldownTracker extends BukkitRunnable {
     this.holder = holder;
     this.ability = ability;
     this.slot = slot;
-    float cdReduction = (float) Math.max(0.2,
-        1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
+    float cdReduction = 1f - StatUtil.getStat(holder, StrifeStat.COOLDOWN_REDUCTION) / 100f;
     float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
     maxDuration = (int) (newCooldown * 20 / TICK_TIME);
     duration = maxDuration;
@@ -102,8 +102,7 @@ public class CooldownTracker extends BukkitRunnable {
         AbilityGainChargeEvent e = new AbilityGainChargeEvent(holder, this);
         StrifePlugin.getInstance().getServer().getPluginManager().callEvent(e);
       }
-      float cdReduction = (float) Math.max(0.2,
-          1 - holder.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100f);
+      float cdReduction = 1f - StatUtil.getStat(holder, StrifeStat.COOLDOWN_REDUCTION) / 100f;
       float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
       maxDuration = (int) (newCooldown * 20 / TICK_TIME);
       duration += maxDuration;

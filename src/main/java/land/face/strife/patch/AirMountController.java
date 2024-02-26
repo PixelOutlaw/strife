@@ -2,6 +2,7 @@ package land.face.strife.patch;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.ticxo.modelengine.api.animation.BlueprintAnimation.LoopMode;
+import com.ticxo.modelengine.api.animation.ModelState;
 import com.ticxo.modelengine.api.animation.property.SimpleProperty;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.bone.manager.MountManager;
@@ -44,6 +45,7 @@ public class AirMountController extends AbstractMountController {
       }
 
       if (input.getFront() != 0) {
+        //model.getAnimationHandler().stopAnimation("walk");
         Vector direction = getEntity().getLocation().getDirection().clone();
         if (direction.getY() < 0 && !model.getModeledEntity().getBase()
             .getLocation().clone().add(0, -0.5, 0).getBlock().getType().isAir()) {
@@ -78,7 +80,7 @@ public class AirMountController extends AbstractMountController {
             0.25,
             1
         );
-        anim.setForceLoopMode(LoopMode.LOOP);
+        //anim.setForceLoopMode(LoopMode.LOOP);
         model.getAnimationHandler().playAnimation(anim, true);
         model.getModeledEntity().getBase().setRenderRadius(34);
         return;

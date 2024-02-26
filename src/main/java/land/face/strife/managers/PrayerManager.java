@@ -21,6 +21,7 @@ import static land.face.strife.managers.GuiManager.noShadow;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,6 +34,8 @@ import land.face.strife.data.GodPrayerDetails;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
+import land.face.strife.events.EventConditionEvent;
+import land.face.strife.events.PrayerTickEvent;
 import land.face.strife.menus.prayer.PrayerMenu;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
@@ -295,18 +298,27 @@ public class PrayerManager {
     float pietyMult = 100f / (100f + playerMob.getStat(StrifeStat.PRAYER_COST));
     Iterator<Prayer> it = activePrayers.get(p).iterator();
     boolean removed = false;
+    List<String> str = new ArrayList<>();
+    SelectedGod selectedGod = playerMob.getChampion().getSaveData().getSelectedGod();
     while (it.hasNext()) {
       Prayer prayer = it.next();
       float currentPrayer = playerMob.getPrayer();
       float cost;
+      str.add(prayer.name());
       if (prayer.ordinal() > 11) {
         switch (prayer) {
-          case THIRTEEN -> cost = getGodPassiveOne()
-              .get(playerMob.getChampion().getSaveData().getSelectedGod()).getPerTickCost();
-          case FOURTEEN -> cost = getGodPassiveTwo()
-              .get(playerMob.getChampion().getSaveData().getSelectedGod()).getPerTickCost();
-          case FIFTEEN -> cost = getGodPassiveThree()
-              .get(playerMob.getChampion().getSaveData().getSelectedGod()).getPerTickCost();
+          case THIRTEEN -> {
+            cost = getGodPassiveOne().get(selectedGod).getPerTickCost();
+            str.add(prayer.name() + "-" + selectedGod.name());
+          }
+          case FOURTEEN -> {
+            cost = getGodPassiveTwo().get(selectedGod).getPerTickCost();
+            str.add(prayer.name() + "-" + selectedGod.name());
+          }
+          case FIFTEEN -> {
+            cost = getGodPassiveThree().get(selectedGod).getPerTickCost();
+            str.add(prayer.name() + "-" + selectedGod.name());
+          }
           default -> cost = 10;
         }
       } else {
@@ -327,6 +339,10 @@ public class PrayerManager {
         playerMob.setPrayer(currentPrayer - cost);
       }
     }
+
+    PrayerTickEvent event = new PrayerTickEvent(playerMob, str);
+    Bukkit.getPluginManager().callEvent(event);
+
     if (removed) {
       p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.MASTER, 0.65f, 2);
       playerMob.setReCache(true);

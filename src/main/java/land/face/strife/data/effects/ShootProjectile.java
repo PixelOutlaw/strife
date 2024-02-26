@@ -4,11 +4,16 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
+import com.ticxo.modelengine.api.model.bone.type.HeldItem;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.tasks.ThrownItemTask;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
@@ -22,6 +27,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
@@ -61,6 +67,7 @@ public class ShootProjectile extends Effect {
   private int maxDuration;
   private Disguise disguise = null;
   private ItemStack thrownStack = null;
+  @Getter
   private final List<Effect> hitEffects = new ArrayList<>();
   private boolean throwItem;
   private boolean throwSpin;
@@ -84,14 +91,15 @@ public class ShootProjectile extends Effect {
       } else {
         direction = caster.getEntity().getEyeLocation().getDirection();
       }
-      Vector velocity = ProjectileUtil
-          .getProjectileVelocity(direction, newSpeed, newSpread, verticalBonus, zeroPitch);
+      Vector velocity = ProjectileUtil.getProjectileVelocity(direction, newSpeed, newSpread, verticalBonus, zeroPitch);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
       }
 
+      Location location = originLocation.clone();
+      location.setDirection(direction);
       assert projectileEntity.getEntityClass() != null;
-      Projectile projectile = (Projectile) originLocation.getWorld().spawn(originLocation, projectileEntity.getEntityClass(), e -> {
+      Projectile projectile = (Projectile) location.getWorld().spawn(location, projectileEntity.getEntityClass(), e -> {
         caster.getEntity().getCollidableExemptions().add(e.getUniqueId());
         if (projectileEntity == EntityType.SNOWBALL) {
           ((Snowball) e).setItem(thrownStack);
@@ -159,46 +167,90 @@ public class ShootProjectile extends Effect {
         }, maxDuration);
       }
 
-      if (throwItem) {
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY);
-        ArrayList<Integer> list = new ArrayList<>();
-        list.add(projectile.getEntityId());
-        packet.getIntLists().write(0, list);
-        ProtocolLibrary.getProtocolManager().broadcastServerPacket(packet);
-        ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
-        if (stack.getType() == Material.AIR) {
-          stack = caster.getEntity().getEquipment().getItemInOffHand();
-          if (stack.getType() == Material.AIR) {
-            stack = new ItemStack(Material.IRON_SWORD);
-          }
-        }
-        new ThrownItemTask(projectile, stack, originLocation, throwSpin).runTaskTimer(getPlugin(), 0L, 1L);
+      if (StringUtils.isNotBlank(modelId)) {
+        applyModelStuff(modelId, caster, projectile, location, direction);
       }
     }
     ProjectileUtil.bumpShotId();
   }
 
+  private void applyModelStuff(String modelId, StrifeMob caster, Projectile proj, Location loc, Vector direction) {
+    ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
+    if (model == null) {
+      Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + getId());
+    } else {
+      ArmorStand stand = loc.getWorld().spawn(loc, ArmorStand.class, e -> {
+        e.setInvisible(true);
+        e.setInvulnerable(true);
+        e.setCollidable(false);
+        e.setAI(false);
+        e.setGravity(false);
+        e.setSilent(true);
+        e.setMarker(true);
+        e.setCanTick(false);
+        e.setVelocity(loc.getDirection());
+        e.getLocation().setDirection(direction);
+        e.getEyeLocation().setDirection(direction);
+        ChunkUtil.setDespawnOnUnload(e);
+      });
+      stand.getEyeLocation().setDirection(loc.getDirection());
+      proj.addPassenger(stand);
+      ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
+      if (modeledEntity == null) {
+        stand.remove();
+        Bukkit.getLogger().warning("Failed to create modelled entity");
+      } else {
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY);
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(proj.getEntityId());
+        packet.getIntLists().write(0, list);
+        ProtocolLibrary.getProtocolManager().broadcastServerPacket(packet);
+        modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getEyeLocation().getYaw());
+        modeledEntity.getBase().getBodyRotationController().setYHeadRot(stand.getEyeLocation().getYaw());
+        modeledEntity.getBase().getBodyRotationController().setXHeadRot(stand.getEyeLocation().getPitch());
+        Bukkit.getScheduler().runTaskTimer(getPlugin(), (task) -> {
+          if (!proj.isValid()) {
+            stand.remove();
+            task.cancel();
+          } else {
+            stand.getLocation().setDirection(proj.getVelocity());
+            stand.getEyeLocation().setDirection(proj.getVelocity());
+            modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getEyeLocation().getYaw());
+            modeledEntity.getBase().getBodyRotationController().setYHeadRot(stand.getEyeLocation().getYaw());
+            modeledEntity.getBase().getBodyRotationController().setXHeadRot(stand.getEyeLocation().getPitch());
+          }
+        }, 0L, 1L);
+        modeledEntity.addModel(model, false);
+        modeledEntity.setModelRotationLocked(false);
+        modeledEntity.setBaseEntityVisible(false);
+
+        if (throwItem) {
+          ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
+          if (stack.getType() == Material.AIR) {
+            stack = caster.getEntity().getEquipment().getItemInOffHand();
+            if (stack.getType() == Material.AIR) {
+              stack = new ItemStack(Material.IRON_SWORD);
+            }
+          }
+          var provider = new HeldItem.StaticItemStackSupplier(stack);
+          model.getBones().forEach((s, modelBone) ->
+              modelBone.getBoneBehavior(BoneBehaviorTypes.ITEM).ifPresent(heldItem ->
+                  heldItem.setItemProvider(provider)
+              )
+          );
+        }
+      }
+    }
+  }
+
   private Vector getCastDirection(LivingEntity caster, LivingEntity target) {
     Vector direction;
     if (targeted) {
-      direction = target.getLocation().toVector().subtract(
-          caster.getLocation().toVector()).normalize();
+      direction = target.getLocation().toVector().subtract(caster.getLocation().toVector()).normalize();
     } else {
       direction = caster.getEyeLocation().getDirection();
     }
     return direction;
-  }
-
-  public void setDisguise(Disguise disguise) {
-    this.disguise = disguise;
-  }
-
-  public void setThrownStack(ItemStack thrownStack) {
-    this.thrownStack = thrownStack;
-  }
-
-  public List<Effect> getHitEffects() {
-    return hitEffects;
   }
 
   private int getProjectileCount(StrifeMob caster) {
@@ -213,9 +265,6 @@ public class ShootProjectile extends Effect {
       return;
     }
     angle = Math.toRadians(angle + counter * (radialAngle / (projectiles - 1)));
-    double x = direction.getX();
-    double z = direction.getZ();
-    direction.setZ(z * Math.cos(angle) - x * Math.sin(angle));
-    direction.setX(z * Math.sin(angle) + x * Math.cos(angle));
+    direction.rotateAroundY(angle);
   }
 }

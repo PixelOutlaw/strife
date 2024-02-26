@@ -8,7 +8,6 @@ import java.util.*;
 
 public enum StrifeTrait {
 
-  ELEMENTAL_CRITS("Elemental Damage Can Crit"),
   NO_HEALTH_REGEN("Health Cannot Be Regenerated"),
   NO_BARRIER_ALLOWED("Maximum Barrier Is Always Zero"),
   NO_CRIT_MULT("Critical Strikes Do No Extra Damage"),
@@ -65,9 +64,6 @@ public enum StrifeTrait {
 
   INCORPOREAL("|orange||ul|Passive Effect - Incorporeal",
       " |yellow|Grants immunity to |white|Physical Damage"),
-  ANTI_MAGIC("|orange||ul|Passive Effect - Anti-Magic",
-
-      " |yellow|Grants immunity to |white|Magical Damage"),
   DEADLY_POISON("|orange||ul|Passive Effect - Deadly Poison",
       " |yellow|Poison can be applied up to VII"),
   SHIELD_BOUNCE("|orange||ul|Passive Effect - Shield Bounce",
@@ -79,8 +75,6 @@ public enum StrifeTrait {
 
   RESIST_PHYSICAL("|orange||ul|Resistance - Physical",
       " |yellow|Physical damage taken is halved"),
-  RESIST_MAGICAL("|orange||ul|Resistance - Magical",
-      " |yellow|Magical damage taken is halved"),
   RESIST_FIRE("|orange||ul|Resistance - Fire",
       " |yellow|Fire damage taken is halved"),
   RESIST_ICE("|orange||ul|Resistance - Ice",

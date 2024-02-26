@@ -296,7 +296,9 @@ public class EffectManager {
         delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
         List<String> killEffects = cs.getStringList("kill-effects");
         delayedSetEffects(((Damage) effect).getKillEffects(), killEffects, key, false);
-        ((Damage) effect).setAttackType(AttackType.valueOf(cs.getString("attack-type", "OTHER")));
+        AttackType attackType = AttackType.valueOf(cs.getString("attack-type", "OTHER"));
+        ((Damage) effect).setAttackType(attackType);
+        ((Damage) effect).setFromAbility(attackType != AttackType.BONUS);
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
         if (multCs != null) {
@@ -584,6 +586,9 @@ public class EffectManager {
       case SILENCE -> {
         effect = new Silence();
         ((Silence) effect).setDuration(cs.getInt("duration", 20));
+        ((Silence) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((Silence) effect).setSilenceAttacks(cs.getBoolean("silence-attacks", true));
+        ((Silence) effect).setSilenceSpells(cs.getBoolean("silence-spells", true));
       }
       case BLEED -> {
         effect = new Bleed();
@@ -1023,8 +1028,7 @@ public class EffectManager {
         condition = new StatCondition(stat);
         break;
       case ATTRIBUTE:
-        StrifeAttribute attribute = plugin.getAttributeManager()
-            .getAttribute(cs.getString("attribute", null));
+        StrifeAttribute attribute = plugin.getAttributeManager().getAttribute(cs.getString("attribute", null));
         if (attribute == null) {
           LogUtil.printError("Failed to load condition " + key + ". Invalid attribute.");
           return;

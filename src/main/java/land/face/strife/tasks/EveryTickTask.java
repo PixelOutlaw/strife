@@ -22,6 +22,8 @@ import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
@@ -36,6 +38,10 @@ import org.bukkit.util.Vector;
 public class EveryTickTask extends BukkitRunnable {
 
   private final StrifePlugin plugin;
+
+  private final Map<Player, Integer> lastLifeNum = new WeakHashMap<>();
+  private final Map<Player, Integer> lastEnergyNum = new WeakHashMap<>();
+  private final Map<Player, Integer> lastBarrierNum = new WeakHashMap<>();
 
   private final List<GUIComponent> attackIndication = List.of(
       new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兰")), 23, 0, Alignment.CENTER),
@@ -84,14 +90,18 @@ public class EveryTickTask extends BukkitRunnable {
         float maxLife = (float) p.getMaxHealth();
         float missingPercent = 1 - life / maxLife;
         int totalMissingSegments = (int) (178 * missingPercent);
-        gui.update(new GUIComponent("missing-life", GuiManager.HP_BAR.get(totalMissingSegments),
-            totalMissingSegments, 88, Alignment.RIGHT));
+        if (lastLifeNum.getOrDefault(p, -1) != totalMissingSegments) {
+          gui.update(GuiManager.HP_BAR.get(totalMissingSegments));
+          lastLifeNum.put(p, totalMissingSegments);
+        }
 
         float energy = mob.getEnergy();
         float missingEnergyPercent = 1 - energy / mob.getMaxEnergy();
         int missingEnergySegments = (int) (178 * missingEnergyPercent);
-        gui.update(new GUIComponent("missing-energy", GuiManager.ENERGY_BAR.get(missingEnergySegments),
-            missingEnergySegments, 88, Alignment.RIGHT));
+        if (lastEnergyNum.getOrDefault(p, -1) != missingEnergySegments) {
+          gui.update(GuiManager.ENERGY_BAR.get(missingEnergySegments));
+          lastEnergyNum.put(p, missingEnergySegments);
+        }
 
         float barrier = mob.getBarrier();
         if (dead) {
@@ -99,19 +109,16 @@ public class EveryTickTask extends BukkitRunnable {
         }
         float percentBarrier = barrier / mob.getMaxBarrier();
         int barrierSegments = (int) (178 * percentBarrier);
-        double barrierRatio = mob.getMaxBarrier() / maxLife;
-        TextComponent barrierText = barrierRatio < 0.5 ?
-            GuiManager.BARRIER_BAR_1.get(barrierSegments) : barrierRatio < 1.0 ?
-            GuiManager.BARRIER_BAR_2.get(barrierSegments) : GuiManager.BARRIER_BAR_3.get(barrierSegments);
-        gui.update(new GUIComponent("barrier-bar", barrierText, barrierSegments, -90, Alignment.LEFT));
+        if (lastBarrierNum.getOrDefault(p, -1) != barrierSegments) {
+          double barrierRatio = mob.getMaxBarrier() / maxLife;
+          GUIComponent barrierText = barrierRatio < 0.5 ?
+              GuiManager.BARRIER_BAR_1.get(barrierSegments) : barrierRatio < 1.0 ?
+              GuiManager.BARRIER_BAR_2.get(barrierSegments) : GuiManager.BARRIER_BAR_3.get(barrierSegments);
+          gui.update(barrierText);
+          lastBarrierNum.put(p, barrierSegments);
+        }
 
-        //int energySeperators = (int) Math.floor(maxLife / 100);
-
-        //String hpString = plugin.getGuiManager().convertToHpDisplay((int) (life + barrier));
-        //String energyString = plugin.getGuiManager().convertToEnergyDisplayFont((int) mob.getEnergy());
-
-        //gui.update(new GUIComponent("life-display", new TextComponent(hpString), hpString.length() * 8, 0, Alignment.CENTER));
-        //gui.update(new GUIComponent("energy-display", new TextComponent(energyString), energyString.length() * 8, 0, Alignment.CENTER));
+        // Energy separator logic - see history
 
         plugin.getGuiManager().updateAir(gui, p);
 

@@ -82,58 +82,6 @@ public class Ability {
     return id;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public TargetType getTargetType() {
-    return targetType;
-  }
-
-  public float getRange() {
-    return range;
-  }
-
-  public List<Effect> getEffects() {
-    return effects;
-  }
-
-  public List<Effect> getToggleOffEffects() {
-    return toggleOffEffects;
-  }
-
-  public boolean isCancelStealth() {
-    return cancelStealth;
-  }
-
-  public int getMaxCharges() {
-    return maxCharges;
-  }
-
-  public int getGlobalCooldownTicks() {
-    return globalCooldownTicks;
-  }
-
-  public boolean isShowMessages() {
-    return showMessages;
-  }
-
-  public Set<Condition> getConditions() {
-    return conditions;
-  }
-
-  public AbilityIconData getAbilityIconData() {
-    return abilityIconData;
-  }
-
-  public boolean isFriendly() {
-    return friendly;
-  }
-
-  public boolean isRaycastsTargetEntities() {
-    return raycastsTargetEntities;
-  }
-
   public float calcRealEnergyCost(StrifeMob mob) {
     if (cost >= 0) {
       return cost;

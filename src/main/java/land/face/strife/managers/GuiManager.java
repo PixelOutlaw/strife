@@ -147,11 +147,11 @@ public class GuiManager {
       new GUIComponent("air-bar", noShadow(new TextComponent("懗")), 25, 104, Alignment.CENTER)
   );
 
-  public static final Map<Integer, TextComponent> HP_BAR = new HashMap<>();
-  public static final Map<Integer, TextComponent> ENERGY_BAR = new HashMap<>();
-  public static final Map<Integer, TextComponent> BARRIER_BAR_1 = new HashMap<>();
-  public static final Map<Integer, TextComponent> BARRIER_BAR_2 = new HashMap<>();
-  public static final Map<Integer, TextComponent> BARRIER_BAR_3 = new HashMap<>();
+  public static final Map<Integer, GUIComponent> HP_BAR = new HashMap<>();
+  public static final Map<Integer, GUIComponent> ENERGY_BAR = new HashMap<>();
+  public static final Map<Integer, GUIComponent> BARRIER_BAR_1 = new HashMap<>();
+  public static final Map<Integer, GUIComponent> BARRIER_BAR_2 = new HashMap<>();
+  public static final Map<Integer, GUIComponent> BARRIER_BAR_3 = new HashMap<>();
   public static final Map<Integer, String> HEALTH_BAR_TARGET = new HashMap<>();
   public static final Map<Integer, String> BARRIER_BAR_TARGET = new HashMap<>();
 
@@ -521,11 +521,17 @@ public class GuiManager {
         barrierBar3.append("⑶\uF801");
         remainder--;
       }
-      HP_BAR.put(i, noShadow(new TextComponent(hpBar.toString())));
-      ENERGY_BAR.put(i, noShadow(new TextComponent(eBar.toString())));
-      BARRIER_BAR_1.put(i, noShadow(new TextComponent(barrierBar1.toString())));
-      BARRIER_BAR_2.put(i, noShadow(new TextComponent(barrierBar2.toString())));
-      BARRIER_BAR_3.put(i, noShadow(new TextComponent(barrierBar3.toString())));
+
+      HP_BAR.put(i,
+          new GUIComponent("missing-life", noShadow(new TextComponent(hpBar.toString())), i, 88, Alignment.RIGHT));
+      ENERGY_BAR.put(i,
+          new GUIComponent("missing-energy", noShadow(new TextComponent(eBar.toString())), i, 88, Alignment.RIGHT));
+      BARRIER_BAR_1.put(i,
+          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
+      BARRIER_BAR_2.put(i,
+          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
+      BARRIER_BAR_3.put(i,
+          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
     }
     Bukkit.getLogger().info("[Strife] Missing life/energy bars built!");
   }

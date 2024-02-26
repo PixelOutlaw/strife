@@ -38,6 +38,7 @@ public class DamageModifiers {
   private boolean applyMinionDamageMult = false;
   private boolean bypassBarrier = false;
   private boolean guardBreak = false;
+  private boolean fromAbility = false;
 
   private static Map<DamageType, Float> buildBaseDamageMults() {
     Map<DamageType, Float> base = new HashMap<>();
@@ -52,7 +53,8 @@ public class DamageModifiers {
     FREEZE,
     SHOCK,
     CORRUPT,
-    CRUNCH
+    CRUNCH,
+    BANISH
   }
 
 }

@@ -112,17 +112,16 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (type == AttackType.PROJECTILE) {
       totalMultiplier *= 1f + mob.getStat(StrifeStat.PROJECTILE_DAMAGE) / 100;
     }
-
+    float elementalMult = 1 + mob.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     float physical = totalMultiplier * damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
-    float magical = totalMultiplier * damageMap.getOrDefault(DamageType.MAGICAL, 0f);
-    float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f);
-    float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f);
-    float lightning = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHTNING, 0f);
-    float earth = totalMultiplier * damageMap.getOrDefault(DamageType.EARTH, 0f);
-    float light = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHT, 0f);
-    float shadow = totalMultiplier * damageMap.getOrDefault(DamageType.DARK, 0f);
+    float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f) * elementalMult;
+    float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f) * elementalMult;
+    float lightning = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHTNING, 0f) * elementalMult;
+    float earth = totalMultiplier * damageMap.getOrDefault(DamageType.EARTH, 0f) * elementalMult;
+    float light = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHT, 0f) * elementalMult;
+    float shadow = totalMultiplier * damageMap.getOrDefault(DamageType.DARK, 0f)  * elementalMult;
     float trueDmg = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) - 1;
-    float total = physical + magical + fire + ice + lightning + earth + light + shadow + trueDmg;
+    float total = physical + fire + ice + lightning + earth + light + shadow + trueDmg;
 
     lore.add(breakLine);
 
@@ -135,7 +134,6 @@ public class StatsOffenseMenuItem extends MenuItem {
       }
       switch (entry.getKey()) {
         case PHYSICAL -> addIfApplicable(damageDisplay, physical, FaceColor.RED, FaceColor.WHITE + "儀");
-        case MAGICAL -> addIfApplicable(damageDisplay, magical, FaceColor.BLUE, FaceColor.WHITE + "儁");
         case FIRE -> addIfApplicable(damageDisplay, fire, FaceColor.ORANGE, FaceColor.WHITE + "儂");
         case ICE -> addIfApplicable(damageDisplay, ice, FaceColor.CYAN, FaceColor.WHITE + "儃");
         case LIGHTNING -> addIfApplicable(damageDisplay, lightning, FaceColor.YELLOW, FaceColor.WHITE + "億");
@@ -149,11 +147,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     lore.add(damageDisplay.toString());
     float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
     if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT) || critMult < 0.1) {
-      float critDamage;
-      critDamage = physical + magical;
-      if (mob.hasTrait(StrifeTrait.ELEMENTAL_CRITS)) {
-        critDamage += fire + ice + lightning + earth + light + shadow;
-      }
+      float critDamage = physical + fire + ice + lightning + earth + light + shadow;
       float critChance = Math.min(1, Math.max(mob.getStat(StrifeStat.CRITICAL_RATE), 0) / 100);
       total += critChance * critDamage * critMult;
     }
@@ -178,7 +172,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     float attackSpeed = mob.getStat(StrifeStat.ATTACK_SPEED);
     String bonus = FaceColor.GRAY + " (" + (attackSpeed >= 0 ? "+" : "") + INT_FORMAT.format(attackSpeed) + "%)";
     lore.add(as + bonus);
-
+    lore.add(addStat("Ability Damage: ", 100 + mob.getStat(StrifeStat.ABILITY_DAMAGE), "%", INT_FORMAT));
     List<String> loreSection = new ArrayList<>();
     loreSection.add(breakLine);
     if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
@@ -197,10 +191,6 @@ public class StatsOffenseMenuItem extends MenuItem {
     double aPen = mob.getStat(StrifeStat.ARMOR_PENETRATION) - bases.getOrDefault(StrifeStat.ARMOR_PENETRATION, 0f);
     if (aPen != 0) {
       loreSection.add(addStat("Armor Penetration: " + ChatColor.WHITE + plus(aPen), aPen, INT_FORMAT));
-    }
-    double wPen = mob.getStat(StrifeStat.WARD_PENETRATION) - bases.getOrDefault(StrifeStat.WARD_PENETRATION, 0f);
-    if (wPen != 0) {
-      loreSection.add(addStat("Ward Penetration: " + ChatColor.WHITE + plus(wPen), wPen, INT_FORMAT));
     }
     if (mob.getStat(StrifeStat.BLEED_CHANCE) > 0) {
       loreSection.add(addStat("Bleed Chance: ", mob.getStat(StrifeStat.BLEED_CHANCE), "%", INT_FORMAT));

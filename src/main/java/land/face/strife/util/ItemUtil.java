@@ -58,7 +58,9 @@ public class ItemUtil {
 
   public static boolean isMeleeWeapon(Material material) {
     return switch (material) {
-      case WOODEN_AXE, WOODEN_HOE, WOODEN_SHOVEL, STONE_AXE, STONE_SWORD, STONE_HOE, STONE_SHOVEL, IRON_AXE, IRON_SWORD, IRON_HOE, IRON_SHOVEL, GOLDEN_AXE, GOLDEN_SWORD, GOLDEN_HOE, GOLDEN_SHOVEL, DIAMOND_AXE, DIAMOND_SWORD, DIAMOND_HOE, DIAMOND_SHOVEL -> true;
+      case WOODEN_HOE, WOODEN_SHOVEL, STONE_AXE, STONE_SWORD, STONE_HOE, STONE_SHOVEL, IRON_AXE,
+          IRON_SWORD, IRON_HOE, IRON_SHOVEL, GOLDEN_AXE, GOLDEN_SWORD, GOLDEN_HOE, GOLDEN_SHOVEL, DIAMOND_AXE,
+          DIAMOND_SWORD, DIAMOND_HOE, DIAMOND_SHOVEL -> true;
       default -> false;
     };
   }
@@ -100,8 +102,9 @@ public class ItemUtil {
   }
 
   public static boolean isDualWield(EntityEquipment equipment) {
-    return isMeleeWeapon(equipment.getItemInMainHand().getType()) && isMeleeWeapon(
-        equipment.getItemInOffHand().getType());
+    return (isMeleeWeapon(equipment.getItemInMainHand().getType()) && isMeleeWeapon(
+        equipment.getItemInOffHand().getType())) || (isWand(equipment.getItemInMainHand()) && isWand(
+        equipment.getItemInOffHand()));
   }
 
   public static boolean isValidOffhand(ItemStack mainItem, ItemStack offItem) {
@@ -176,6 +179,17 @@ public class ItemUtil {
     }
     int itemData = getCustomData(stack);
     return itemData > 8999 && itemData < 11000;
+  }
+
+  public static boolean isWand(ItemStack stack) {
+    if (stack == null) {
+      return false;
+    }
+    if (stack.getType() != Material.WOODEN_SWORD) {
+      return false;
+    }
+    int itemData = getCustomData(stack);
+    return itemData > 8999 && itemData < 10000;
   }
 
   public static boolean isValidMageOffhand(ItemStack stack) {
