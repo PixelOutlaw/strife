@@ -48,7 +48,7 @@ public class MountCommand extends BaseCommand {
   private final String notInCombat;
 
   private final List<Material> mountIgnoreMats = List.of(
-      AIR, CAVE_AIR, VOID_AIR, TALL_GRASS, GRASS, FERN, LARGE_FERN, CORNFLOWER, POPPY, DANDELION,
+      AIR, CAVE_AIR, VOID_AIR, TALL_GRASS, SHORT_GRASS, FERN, LARGE_FERN, CORNFLOWER, POPPY, DANDELION,
       SUNFLOWER, OXEYE_DAISY, AZURE_BLUET, SNOW
   );
 
